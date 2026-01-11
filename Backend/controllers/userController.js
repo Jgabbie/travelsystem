@@ -20,4 +20,15 @@ const createUsers = (req, res) => {
         });
 };
 
-module.exports = { getUsers, createUsers };
+const delUsers = (req, res) => {
+    const { id } = req.params;
+
+    UserModel.findByIdAndDelete(id)
+        .then(user => res.json(user))
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: err.message })
+        });
+};
+
+module.exports = { getUsers, createUsers, delUsers };
