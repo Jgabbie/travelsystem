@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
+
+    const navigate = useNavigate();
+
     const [values, setValues] = useState({
         username: '',
         password: ''
@@ -12,6 +16,11 @@ export default function LoginPage() {
         e.preventDefault();
         const { username, password } = values;
         setOutput("Logging in with " + username + " and " + password);
+    }
+
+    const goToSignup = (e) => {
+        e.preventDefault();
+        navigate('/signup');
     }
 
     return (
@@ -27,6 +36,7 @@ export default function LoginPage() {
                     <input onChange={(e) => setValues({ ...values, password: e.target.value })} type="password" id="password" name="password" required />
                 </div>
                 <button type="submit">Login</button>
+                <button onClick={goToSignup}>Go to Signup</button>
             </form>
             <div>
                 <p> {output} </p>
