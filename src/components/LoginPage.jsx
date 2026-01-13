@@ -1,5 +1,7 @@
+import axios from 'axios';
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+
 
 export default function LoginPage() {
 
@@ -14,6 +16,22 @@ export default function LoginPage() {
 
     const login = (e) => {
         e.preventDefault();
+
+        axios.get('http://localhost:8000/api/getUsers')
+            .then(response => {
+                const users = response.data;
+                const user = users.find(user => user.username === values.username && user.password === values.password);
+                if (user) {
+                    setOutput("Login successful! Welcome " + user.username);
+                    navigate('/home');
+                } else {
+                    setOutput("Invalid username or password.");
+                }
+            })
+            .catch(error => {
+                console.log("Error fetching users: " + error.message);
+            });
+
         const { username, password } = values;
         setOutput("Logging in with " + username + " and " + password);
     }
