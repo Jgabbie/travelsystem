@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 
 
-export default function LoginPage() {
+export default function LoginPage({ login }) {
 
     const navigate = useNavigate();
 
@@ -14,7 +14,7 @@ export default function LoginPage() {
 
     const [output, setOutput] = useState('');
 
-    const login = (e) => {
+    const handleLogin = (e) => {
         e.preventDefault();
 
         axios.get('http://localhost:8000/api/getUsers')
@@ -23,6 +23,7 @@ export default function LoginPage() {
                 const user = users.find(user => user.username === values.username && user.password === values.password);
                 if (user) {
                     setOutput("Login successful! Welcome " + user.username);
+                    login(user.username, user.password)
                     navigate('/home');
                 } else {
                     setOutput("Invalid username or password.");
@@ -32,8 +33,8 @@ export default function LoginPage() {
                 console.log("Error fetching users: " + error.message);
             });
 
-        const { username, password } = values;
-        setOutput("Logging in with " + username + " and " + password);
+        // const { username, password } = values;
+        // setOutput("Logging in with " + username + " and " + password);
     }
 
     const goToSignup = (e) => {
@@ -43,7 +44,7 @@ export default function LoginPage() {
 
     return (
         <div>
-            <form method='post' onSubmit={login}>
+            <form method='post' onSubmit={handleLogin}>
                 <h2>Travel System Login</h2>
                 <div>
                     <label htmlFor="username">Username:</label>

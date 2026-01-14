@@ -10,9 +10,9 @@ const getUsers = (req, res) => {
 };
 
 const createUsers = (req, res) => {
-    const { username, password, email, phone } = req.body;
+    const { username, firstname, lastname, password, email, phone } = req.body;
 
-    UserModel.create({ username, password, email, phone })
+    UserModel.create({ username, firstname, lastname, password, email, phone })
         .then(user => res.json(user))
         .catch(err => {
             console.error(err);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -6,7 +6,25 @@ export default function SignupPage() {
 
     const navigate = useNavigate();
 
-    const validate = async (field, value) => {
+    const [getUsers, setUsers] = useState([])
+    const [getEmails, setEmails] = useState([])
+
+    useEffect(() => {
+        axios.get('http://localhost:8000/api/getUsers')
+            .then((response) => {
+                setUsers(response.data.map(user => user.username))
+                setEmails(response.data.map(user => user.emails))
+            })
+            .catch(error => {
+                setOutput("Signup failed: " + error.response.data.message);
+            });
+    }, [])
+
+
+
+    const validate = (field, value) => {
+
+
 
         if (field === "username") {
             if (value === "") {
@@ -15,15 +33,20 @@ export default function SignupPage() {
             if (value.length < 8) {
                 return "Username must be at least 8 characters"
             }
+            if (getUsers.find(user => user === value)) {
+                return "Username already exists"
+            }
+        }
 
-            try {
-                const response = await axios.get("http://localhost:8000/api/getUsers")
-                const usernames = response.data.map(user => user.username)
-                if (usernames.includes(value)) {
-                    return "Username already exists"
-                }
-            } catch (error) {
-                console.log("Error fetching usernames: " + error.message);
+        if (field === "firstname") {
+            if (value === "") {
+                return "Firstname is required."
+            }
+        }
+
+        if (field === "lastname") {
+            if (value === "") {
+                return "Lastname is required."
             }
         }
 
@@ -37,15 +60,8 @@ export default function SignupPage() {
             if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
                 return "Invalid Email."
             }
-
-            try {
-                const response = await axios.get("http://localhost:8000/api/getUsers")
-                const emails = response.data.map(user => user.email)
-                if (emails.includes(value)) {
-                    return "Email has already been used."
-                }
-            } catch (error) {
-                console.log("Error fetching emails: " + error.message)
+            if (getEmails.find(email => email === value)) {
+                return "This email is already registered"
             }
         }
 
@@ -54,7 +70,10 @@ export default function SignupPage() {
                 return "Phone is required."
             }
             if (value.length < 8) {
-                return "Phone must be 15 digits"
+                return "Phone must be 11 digits"
+            }
+            if (/^09\d{10}$/.test(value)) {
+                return "Invalid Phone Number"
             }
         }
 
@@ -63,11 +82,20 @@ export default function SignupPage() {
                 return "Password is required."
             }
             if (value.length < 8) {
-                return "Password must be at least 8 characters"
+                return "Password must be at least 8 characters."
+            }
+            if (!/\d/.test(value)) {
+                return "Password must have at least one number."
+            }
+            if (!/[A-Z]/.test(value)) {
+                return "Password must have at least one uppercase character."
+            }
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+                return "Password must have at least contain one special character."
             }
         }
 
-        if (field === "confirmpassword") {
+        if (field === "confirmPassword") {
             if (value === "") {
                 return "Password is required."
             }
@@ -75,10 +103,14 @@ export default function SignupPage() {
                 return "Password and Confirm password does not match"
             }
         }
+
+        return ""
     }
 
     const [error, setError] = useState({
         username: '',
+        firstname: '',
+        lastname: '',
         password: '',
         confirmPassword: '',
         email: '',
@@ -87,6 +119,8 @@ export default function SignupPage() {
 
     const [values, setValues] = useState({
         username: '',
+        firstname: '',
+        lastname: '',
         password: '',
         confirmPassword: '',
         email: '',
@@ -101,44 +135,25 @@ export default function SignupPage() {
 
     const [output, setOutput] = useState('');
 
-    // const validationsSignup = () => {
-
-    //     if (!values.username || !values.password || !values.confirmPassword || !values.email || !values.phone) {
-    //         return setOutput("All fields are required.");
-    //     }
-
-    //     if (values.password !== values.confirmPassword) {
-    //         return setOutput("Passwords do not match.")
-    //     }
-
-    //     if (values.password.length < 6) {
-    //         return setOutput("Password must be at least 6 characters long.");
-
-    //     }
-
-    //     if (values.username.length < 7) {
-    //         return setOutput("Username must be at least 8 characters long")
-    //     }
-
-    //     if (values.phone.substring(0, 2) !== "09" || values.phone.length !== 10) {
-    //         return setOutput("Phone must be valid.")
-    //     }
-    // }
-
     const signup = (e) => {
 
         e.preventDefault();
 
-        if (error) {
+
+        if (error.username !== "" && error.firstname !== "" && error.lastname !== "" && error.email !== "" && error.phone !== "" && error.password !== "" && error.confirmPassword !== "") {
             return console.log("Inputs are invalid!")
-        } else {
+        }
+
+        {
             axios.post('http://localhost:8000/api/createUsers', values)
                 .then(() => {
                     setOutput("Signup successful! Please log in.");
                     setValues({
                         username: "",
+                        firstname: '',
+                        lastname: '',
                         password: "",
-                        confirmpassword: "",
+                        confirmPassword: "",
                         email: "",
                         phone: ""
                     })
@@ -161,23 +176,59 @@ export default function SignupPage() {
                     <h2>Travel System Signup</h2>
                     <div>
                         <label htmlFor="username">Username:</label>
-                        <input onChange={(e) => valueHandler("username", e.target.value)} type="text" id="username" name="username" required />
+                        <input value={values.username} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} onKeyDown={(e) => {
+                            if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="text" id="username" name="username" required />
+                    </div>
+                    <div>
+                        <label htmlFor="firstname">First Name:</label>
+                        <input value={values.firstname} maxLength={20} onChange={(e) => valueHandler("firstname", e.target.value)} onKeyDown={(e) => {
+                            if (!/^[A-Za-z]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="text" id="firstname" name="firstname" required />
+                    </div>
+                    <div>
+                        <label htmlFor="lastname">Last Name:</label>
+                        <input value={values.lastname} maxLength={15} onChange={(e) => valueHandler("lastname", e.target.value)} onKeyDown={(e) => {
+                            if (!/^[A-Za-z]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="text" id="lastname" name="lastname" required />
                     </div>
                     <div>
                         <label htmlFor="email">Email:</label>
-                        <input onChange={(e) => valueHandler("email", e.target.value)} type="email" id="email" name="email" required />
+                        <input value={values.email} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} onKeyDown={(e) => {
+                            if (e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="email" id="email" name="email" required />
                     </div>
                     <div>
                         <label htmlFor="phone">Phone:</label>
-                        <input onChange={(e) => valueHandler("phone", e.target.value)} type="tel" id="phone" name="phone" required />
+                        <input value={values.phone} maxLength={11} onChange={(e) => valueHandler("phone", e.target.value)} onKeyDown={(e) => {
+                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="tel" id="phone" name="phone" required />
                     </div>
                     <div>
                         <label htmlFor="password">Password:</label>
-                        <input onChange={(e) => valueHandler("password", e.target.value)} type="password" id="password" name="password" required />
+                        <input value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} onKeyDown={(e) => {
+                            if (e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="password" id="password" name="password" required />
                     </div>
                     <div>
                         <label htmlFor="confirmPassword">Confirm Password:</label>
-                        <input onChange={(e) => valueHandler("confirmpassword", e.target.value)} type="password" id="confirmPassword" name="confirmPassword" required />
+                        <input value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} onKeyDown={(e) => {
+                            if (e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="password" id="confirmPassword" name="confirmPassword" required />
                     </div>
                     <button type="submit">Signup</button>
                     <button onClick={goToLogin}>Go to Login</button>
@@ -188,7 +239,7 @@ export default function SignupPage() {
                     <p>{error.email}</p>
                     <p>{error.phone}</p>
                     <p>{error.password}</p>
-                    <p>{error.confirmpassword}</p>
+                    <p>{error.confirmPassword}</p>
                 </div>
             </div>
         </div>
