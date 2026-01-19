@@ -1,4 +1,29 @@
 const UserModel = require('../models/user');
+const bcrypt = require("bcryptjs")
+
+
+const getUserData = async (req, res) => {
+
+    try {
+        const { userId } = req
+        const user = await UserModel.findById(userId)
+
+        if (!user) {
+            return res.status(409).json({ message: "User not found: " + req.body })
+        }
+
+        res.json({
+            success: true,
+            userData: {
+                username: user.username,
+                isAccountVerified: user.isAccountVerified
+            }
+        })
+
+    } catch (e) {
+        res.status(500).json({ message: "Get User Data Function failed: " + e.message })
+    }
+}
 
 const getUsers = (req, res) => {
     UserModel.find()
@@ -9,8 +34,9 @@ const getUsers = (req, res) => {
         });
 };
 
-const createUsers = (req, res) => {
+const createUsers = async (req, res) => {
     const { username, firstname, lastname, password, email, phone } = req.body;
+
 
     UserModel.create({ username, firstname, lastname, password, email, phone })
         .then(user => res.json(user))
@@ -31,4 +57,4 @@ const delUsers = (req, res) => {
         });
 };
 
-module.exports = { getUsers, createUsers, delUsers };
+module.exports = { getUsers, createUsers, delUsers, getUserData };

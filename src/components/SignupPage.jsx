@@ -6,25 +6,28 @@ export default function SignupPage() {
 
     const navigate = useNavigate();
 
-    const [getUsers, setUsers] = useState([])
-    const [getEmails, setEmails] = useState([])
+    const [error, setError] = useState({
+        username: '',
+        firstname: '',
+        lastname: '',
+        password: '',
+        confirmPassword: '',
+        email: '',
+        phone: ''
+    })
 
-    useEffect(() => {
-        axios.get('http://localhost:8000/api/getUsers')
-            .then((response) => {
-                setUsers(response.data.map(user => user.username))
-                setEmails(response.data.map(user => user.emails))
-            })
-            .catch(error => {
-                setOutput("Signup failed: " + error.response.data.message);
-            });
-    }, [])
-
+    const [values, setValues] = useState({
+        username: '',
+        firstname: '',
+        lastname: '',
+        password: '',
+        confirmPassword: '',
+        email: '',
+        phone: ''
+    });
 
 
     const validate = (field, value) => {
-
-
 
         if (field === "username") {
             if (value === "") {
@@ -32,9 +35,6 @@ export default function SignupPage() {
             }
             if (value.length < 8) {
                 return "Username must be at least 8 characters"
-            }
-            if (getUsers.find(user => user === value)) {
-                return "Username already exists"
             }
         }
 
@@ -59,9 +59,6 @@ export default function SignupPage() {
             }
             if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
                 return "Invalid Email."
-            }
-            if (getEmails.find(email => email === value)) {
-                return "This email is already registered"
             }
         }
 
@@ -107,63 +104,85 @@ export default function SignupPage() {
         return ""
     }
 
-    const [error, setError] = useState({
-        username: '',
-        firstname: '',
-        lastname: '',
-        password: '',
-        confirmPassword: '',
-        email: '',
-        phone: ''
-    })
+    //Checks for username and email duplicates, might change later since it continously create api requests every time the user types?
+    //Frontend validations should show live
+    //Backend validations should show if user submitted the form
 
-    const [values, setValues] = useState({
-        username: '',
-        firstname: '',
-        lastname: '',
-        password: '',
-        confirmPassword: '',
-        email: '',
-        phone: ''
-    });
+    useEffect(() => {
+        const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
+        if (frontEndError) {
+            return
+        }
 
+        axios.post('http://localhost:8000/api/auth/checkDups', { username: values.username })
+            .then(() => {
+                return
+            })
+            .catch(error => {
+                if (error.response)
+                    setError(prev => ({ ...prev, username: "Signup failed: " + error.response.data.message }));
+            });
+
+    }, [values.username])
+
+    useEffect(() => {
+        const frontEndError = validate("email", values.email)
+        if (frontEndError) {
+            return
+        }
+
+        axios.post('http://localhost:8000/api/auth/checkDups', { email: values.email })
+            .then(() => {
+                return
+            })
+            .catch(error => {
+                if (error.response)
+                    setError(prev => ({ ...prev, email: "Signup failed: " + error.response.data.message }));
+            });
+    }, [values.email])
+
+
+    //gets value from each input field and set it as object in the set values useeffect, same for the errors
     const valueHandler = (field, value) => {
-        setValues({ ...values, [field]: value })
-        setError({ ...error, [field]: validate(field, value) })
+        setValues({ ...values, [field]: value }) //gets and stores values in each field
+        setError({ ...error, [field]: validate(field, value) }) //gets value, validate, then if it triggers a validation, it returns a validation message
     }
 
 
     const [output, setOutput] = useState('');
 
-    const signup = (e) => {
+    const signup = async (e) => {
 
         e.preventDefault();
-
-
+        //checks if the each fields have error messages
         if (error.username !== "" && error.firstname !== "" && error.lastname !== "" && error.email !== "" && error.phone !== "" && error.password !== "" && error.confirmPassword !== "") {
             return console.log("Inputs are invalid!")
         }
 
-        {
-            axios.post('http://localhost:8000/api/createUsers', values)
-                .then(() => {
-                    setOutput("Signup successful! Please log in.");
-                    setValues({
-                        username: "",
-                        firstname: '',
-                        lastname: '',
-                        password: "",
-                        confirmPassword: "",
-                        email: "",
-                        phone: ""
-                    })
-                })
-                .catch(error => {
-                    setOutput("Signup failed: " + error.response.data.message);
-                });
-        }
+        try {
+            //calls signupUser api in the authController to hash password and store the data
 
+            const response = await axios.post('http://localhost:8000/api/auth/signupUser', values, { withCredentials: true })
+            //withCredentials allows to send/receive cookies, and the cookie that will appear in the Application contains the token, that contains the userId
+
+            setOutput("Signup successful! Please log in.");
+            setValues({
+                username: "",
+                firstname: '',
+                lastname: '',
+                password: "",
+                confirmPassword: "",
+                email: "",
+                phone: ""
+            })
+            navigate('/email-verify')
+        } catch (err) {
+            const errorMsg = err.response?.data?.message || "Verification failed"
+            console.error("Error: ", errorMsg)
+            alert(errorMsg)
+        }
     }
+
 
     const goToLogin = (e) => {
         e.preventDefault();

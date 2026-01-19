@@ -1,34 +1,27 @@
 import logo from './logo.svg';
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import './App.css';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import LandingPage from './components/LandingPage';
-import { useState } from 'react';
-import ProtectedRoute from './components/ProtectedRoute';
+import EmailVerify from './components/EmailVerify';
+import ResetPassword from './components/ResetPassword';
+import ResetPasswordOTP from './components/ResetPasswordOTP';
+import SetNewPassword from './components/SetNewPassword';
+
 
 function App() {
-
-  const [getIsAuthenticated, setIsAuthenticated] = useState(false)
-
-  const login = () => {
-    setIsAuthenticated(true)
-  }
-
-  const logout = () => {
-    setIsAuthenticated(true)
-  }
-
   return (
-    <div className="App">
+    <div>
       <BrowserRouter>
         <Routes>
-          <Route element={<ProtectedRoute is getIsAuthenticated={getIsAuthenticated} />}>
-            <Route path="/home" element={<LandingPage logout={logout} />} />
-          </Route>
-          <Route path="/login" element={<LoginPage login={login} />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path='/home' element={<LandingPage />} />
+          <Route path='/login' element={<LoginPage />} />
+          <Route path='/signup' element={<SignupPage />} />
+          <Route path='/email-verify' element={<EmailVerify />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
+          <Route path='/reset-password-otp' element={<ResetPasswordOTP />} />
+          <Route path='/set-newpassword' element={<SetNewPassword />} />
         </Routes>
       </BrowserRouter>
     </div>
