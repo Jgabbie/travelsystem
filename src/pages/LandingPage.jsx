@@ -1,13 +1,36 @@
 import axios from 'axios'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-
 
 export default function LandingPage() {
 
+    const [isVerified, setIsVerified] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+
     const navigate = useNavigate()
 
+    useEffect(() => {
+        const checkVerification = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/is-verified', {
+                    method: "POST",
+                    credentials: "include"
+                })
+                if (response.ok) {
+                    setIsVerified(true)
+                } else {
+                    setIsVerified(false)
+                }
+            } catch (err) {
+                setIsVerified(false)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        checkVerification()
+    }, [])
+
+    if (isLoading) return <div> Loading ...</div>
 
     const goToSignup = (e) => {
         e.preventDefault();
@@ -39,6 +62,7 @@ export default function LandingPage() {
                 LOGOUT
             </button>
 
+            {isVerified && <button> BOOK NOW </button>}
 
         </div>
     )

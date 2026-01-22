@@ -27,8 +27,12 @@ const signupUser = async (req, res) => {
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
 
         user.verifyOtp = otp;
-        user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000
+        user.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000 //10 minutes timer
 
+        user.verifyToken = token
+        user.verifyTokenExpireAt = Date.now() + 15 * 60 * 1000 //15 minutes timer
+
+        user.role = "User" //set the role of the new registered user
         await user.save()
 
         const mailOptions = {
@@ -67,6 +71,10 @@ const loginUser = async (req, res) => {
         if (!matchPass) {
             return res.status(409).json({ message: "Inavlid Username or Password" })
         }
+
+        // if (!user.isAccountVerified) {
+        //     return res.status(403).json({ message: "Account is not verified" })
+        // }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
 
@@ -202,6 +210,15 @@ const isAuthenticated = async (req, res) => {
     }
 }
 
+// Checks if user is verified
+const isUserVerified = async (req, res) => {
+    try {
+        return res.status(200).json({ message: "User is Verified" })
+    } catch (e) {
+        res.status(500).json({ message: "is User Verified Function failed " + e.message })
+    }
+}
+
 const sendResetOtp = async (req, res) => {
     const { email } = req.body
 
@@ -294,4 +311,4 @@ const resetPassword = async (req, res) => {
 }
 
 
-module.exports = { loginUser, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp };
+module.exports = { loginUser, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified };

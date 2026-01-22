@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import { Input } from 'antd';
+import '../style/loginpage.css'
 
 
 export default function LoginPage() {
@@ -46,22 +48,27 @@ export default function LoginPage() {
     return (
         <div>
             <form method='post' onSubmit={handleLogin}>
-                <h2>Travel System Login</h2>
+                <div id='heading-div'>
+                    <h1 id='heading'>Welcome</h1>
+                    <h4 id='second-heading'>Login Account</h4>
+                </div>
+
+
                 <div>
                     <label htmlFor="username">Username:</label>
-                    <input onChange={(e) => setValues({ ...values, username: e.target.value })} onKeyDown={(e) => {
+                    <Input maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} onKeyDown={(e) => {
                         if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
                             e.preventDefault()
                         }
-                    }} type="text" id="username" name="username" required />
+                    }} type="text" id="username" name="username" className='input-fields' required />
                 </div>
                 <div>
                     <label htmlFor="password">Password:</label>
-                    <input onChange={(e) => setValues({ ...values, password: e.target.value })} onKeyDown={(e) => {
+                    <Input.Password onChange={(e) => setValues({ ...values, password: e.target.value })} onKeyDown={(e) => {
                         if (e.key === " " && e.key !== "Backspace") {
                             e.preventDefault()
                         }
-                    }} type="password" id="password" name="password" required />
+                    }} type="password" id="password" name="password" className='input-fields' required />
                 </div>
                 <button type="submit">Login</button>
                 <button onClick={goToSignup}>Go to Signup</button>

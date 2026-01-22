@@ -166,6 +166,7 @@ export default function SignupPage() {
             //withCredentials allows to send/receive cookies, and the cookie that will appear in the Application contains the token, that contains the userId
 
             setOutput("Signup successful! Please log in.");
+            navigate('/email-verify', { state: { email: values.email } })
             setValues({
                 username: "",
                 firstname: '',
@@ -175,7 +176,6 @@ export default function SignupPage() {
                 email: "",
                 phone: ""
             })
-            navigate('/email-verify')
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
@@ -188,6 +188,7 @@ export default function SignupPage() {
         e.preventDefault();
         navigate('/login');
     }
+
     return (
         <div>
             <div>

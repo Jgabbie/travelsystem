@@ -1,7 +1,6 @@
 import axios from 'axios'
 import React, { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 export default function ResetPasswordOTP() {
 
@@ -12,6 +11,11 @@ export default function ResetPasswordOTP() {
     console.log(email)
 
     const [getOTP, setOTP] = useState("")
+
+    if (!email) {
+        return <Navigate to="/reset-password" replace />
+    }
+
 
     const submitOTP = async (e) => {
         e.preventDefault()

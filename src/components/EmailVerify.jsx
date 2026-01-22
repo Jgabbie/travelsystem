@@ -1,13 +1,20 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
-
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 export default function EmailVerify() {
 
     const navigate = useNavigate()
+    const location = useLocation()
+
+    const { email } = location.state || {}
 
     const [getOTP, setOTP] = useState("")
+
+    // if (!email) {
+    //     return <Navigate to="/signup" replace />
+    // }
+
 
     const submitOTP = async (e) => {
         e.preventDefault()
@@ -16,7 +23,7 @@ export default function EmailVerify() {
 
             if (response.data.success || response.status === 200) {
                 alert("Account Verified")
-                navigate('/home')
+                navigate('/login')
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"

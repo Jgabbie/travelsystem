@@ -1,7 +1,9 @@
+//This is not safe
+// Use tokens as another "key" to be able to set a new password
+
 import axios from 'axios'
 import React, { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 export default function SetNewPassword() {
 
@@ -16,6 +18,10 @@ export default function SetNewPassword() {
     const [error, setError] = useState({
         password: ''
     })
+
+    if (!email) {
+        return <Navigate to="/reset-password" replace />
+    }
 
     const validate = (field, value) => {
         if (field === "password") {
