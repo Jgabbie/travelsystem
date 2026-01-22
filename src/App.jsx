@@ -8,6 +8,9 @@ import EmailVerify from './components/EmailVerify';
 import ResetPassword from './components/ResetPassword';
 import ResetPasswordOTP from './components/ResetPasswordOTP';
 import SetNewPassword from './components/SetNewPassword';
+import Logging from './components/Logging';
+
+
 
 
 function App() {
@@ -22,6 +25,7 @@ function App() {
           <Route path='/reset-password' element={<ResetPassword />} />
           <Route path='/reset-password-otp' element={<ResetPasswordOTP />} />
           <Route path='/set-newpassword' element={<SetNewPassword />} />
+          <Route path='/logging' element={<Logging />} />
         </Routes>
       </BrowserRouter>
     </div>
