@@ -2,6 +2,7 @@ const UserModel = require('../models/user');
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const transporter = require('../config/nodemailer')
+const logAction = require('../utils/logger');
 
 
 //signup
@@ -44,6 +45,10 @@ const signupUser = async (req, res) => {
 
         await transporter.sendMail(mailOptions)
 
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            await logAction("USER_CREATED_ACC", user._id, { 
+            username: user.username, email: user.email }, ip);
+
         // const mailOptions = {
         //     from: process.env.SENDER_EMAIL,
         //     to: email,
@@ -85,6 +90,9 @@ const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        await logAction("USER_LOGIN", user._id, { username: user.username }, ip);
+
         res.status(200).json({ message: "Login Successful!" })
 
     } catch (e) {
@@ -119,8 +127,25 @@ const checkDups = async (req, res) => {
 
 //logout
 const logoutUser = async (req, res) => {
+    const { token } = req.cookies;
+
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+            const user = await UserModel.findById(decoded.id);
+            const logDetails = user ? { username: user.username } : { note: "User not found" };
+
+            await logAction("USER_LOGOUT", decoded.id, logDetails, ip);
+            
+        } catch (e) {
+            console.log("Logout logging skipped (token invalid)");
+        }
+    }
+
+    // 2. Clear the cookie to actually log them out
     try {
-        //removes cookie when logging out
         res.clearCookie('token', {
             httpOnly: true,
             secure: false,

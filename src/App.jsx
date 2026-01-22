@@ -10,6 +10,10 @@ import ResetPassword from './components/ResetPassword';
 import ResetPasswordOTP from './components/ResetPasswordOTP';
 import SetNewPassword from './components/SetNewPassword';
 import ProtectedRoute from './components/ProtectedRoute';
+import Logging from './components/Logging';
+
+
+
 
 function App() {
   const [isVerified, setIsVerified] = useState(false)
@@ -61,6 +65,7 @@ function App() {
           </Route>
 
           <Route path='*' element={<Navigate to="/login" replace />} />
+          <Route path='/logging' element={<Logging />} />
         </Routes>
       </BrowserRouter>
     </div>

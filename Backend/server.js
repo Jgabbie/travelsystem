@@ -5,6 +5,7 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const userRoutes = require("./routes/userRoutes")
 const authRoutes = require("./routes/authRoutes")
+const logRoutes = require("./routes/logRoutes");
 
 
 const app = express()
@@ -23,6 +24,7 @@ mongoose.connect("mongodb://localhost:27017/travelsystem")
 
 app.use('/api/user', userRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/logs', logRoutes);
 
 
 app.listen(8000, () => {
