@@ -155,32 +155,34 @@ export default function SignupPage() {
 
         e.preventDefault();
         //checks if the each fields have error messages
-        if (error.username !== "" && error.firstname !== "" && error.lastname !== "" && error.email !== "" && error.phone !== "" && error.password !== "" && error.confirmPassword !== "") {
+        if (error.username !== "" || error.firstname !== "" || error.lastname !== "" || error.email !== "" || error.phone !== "" || error.password !== "" || error.confirmPassword !== "") {
             return console.log("Inputs are invalid!")
+        } else {
+            try {
+                //calls signupUser api in the authController to hash password and store the data
+
+                const response = await axios.post('http://localhost:8000/api/auth/signupUser', values, { withCredentials: true })
+                //withCredentials allows to send/receive cookies, and the cookie that will appear in the Application contains the token, that contains the userId
+
+                setOutput("Signup successful! Please log in.");
+                navigate('/email-verify', { state: { email: values.email } })
+                setValues({
+                    username: "",
+                    firstname: '',
+                    lastname: '',
+                    password: "",
+                    confirmPassword: "",
+                    email: "",
+                    phone: ""
+                })
+            } catch (err) {
+                const errorMsg = err.response?.data?.message || "Verification failed"
+                console.error("Error: ", errorMsg)
+                alert(errorMsg)
+            }
         }
 
-        try {
-            //calls signupUser api in the authController to hash password and store the data
 
-            const response = await axios.post('http://localhost:8000/api/auth/signupUser', values, { withCredentials: true })
-            //withCredentials allows to send/receive cookies, and the cookie that will appear in the Application contains the token, that contains the userId
-
-            setOutput("Signup successful! Please log in.");
-            navigate('/email-verify', { state: { email: values.email } })
-            setValues({
-                username: "",
-                firstname: '',
-                lastname: '',
-                password: "",
-                confirmPassword: "",
-                email: "",
-                phone: ""
-            })
-        } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
-            console.error("Error: ", errorMsg)
-            alert(errorMsg)
-        }
     }
 
 

@@ -4,6 +4,9 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 export default function ResetPasswordOTP() {
 
+
+
+
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -60,6 +63,11 @@ export default function ResetPasswordOTP() {
                     <button onClick={resendOTP}>RE-SEND OTP</button>
                 </form>
             </div>
+
+
+
         </>
+
+
     )
 }

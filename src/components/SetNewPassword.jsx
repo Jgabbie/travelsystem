@@ -4,6 +4,8 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Input, Button } from 'antd';
+import '../style/newpasswordpage.css'
 
 export default function SetNewPassword() {
 
@@ -12,11 +14,13 @@ export default function SetNewPassword() {
 
     const { email } = location.state || {}
 
-    const [getNewPassword, setNewPassword] = useState({
-        password: ''
+    const [values, setValues] = useState({
+        password: '',
+        confirmPassword: ''
     })
     const [error, setError] = useState({
-        password: ''
+        password: '',
+        confirmPassword: ''
     })
 
     if (!email) {
@@ -42,11 +46,20 @@ export default function SetNewPassword() {
             }
         }
 
+        if (field === "confirmPassword") {
+            if (value === "") {
+                return "Confirm Password is required."
+            }
+            if (value !== values.password) {
+                return "Password and Confirm password does not match"
+            }
+        }
+
         return ""
     }
 
     const valueHandler = (field, value) => {
-        setNewPassword({ ...getNewPassword, [field]: value })
+        setValues({ ...values, [field]: value })
         setError({ ...error, [field]: validate(field, value) })
     }
 
@@ -58,7 +71,7 @@ export default function SetNewPassword() {
         }
 
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/reset-password', { newPassword: getNewPassword.password, email: email })
+            const response = await axios.post('http://localhost:8000/api/auth/reset-password', { newPassword: values.password, email: email })
 
             if (response.data.success || response.status === 200) {
                 alert("Password has been reset successfully")
@@ -71,20 +84,57 @@ export default function SetNewPassword() {
         }
     }
 
+    const goToLogin = (e) => {
+        e.preventDefault();
+        navigate('/login');
+    }
+
     return (
         <>
-            <div>
-                <h1>Reset Password</h1>
-                <form onSubmit={submitNewPassword}>
-                    <label htmlFor="password">Password:</label>
-                    <input value={getNewPassword.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} onKeyDown={(e) => {
-                        if (e.key === " " && e.key !== "Backspace") {
-                            e.preventDefault()
-                        }
-                    }} type="password" id="password" name="password" required />
-                    <button type='submit'> Reset Password </button>
-                </form>
-                <p>{error.password}</p>
+            <div id='newpassword-container'>
+                <div id='newpassword-form'>
+
+                    <form onSubmit={submitNewPassword}>
+                        <div id='heading-div'>
+                            <h1 id='heading'>Set New Password</h1>
+                            <h4 id='second-heading'>Enter New Password</h4>
+                        </div>
+
+
+                        <div className='div-input-fields'>
+                            <label className='labels' htmlFor="password">Password</label>
+                            <Input value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your new password' onKeyDown={(e) => {
+                                if (e.key === " " && e.key !== "Backspace") {
+                                    e.preventDefault()
+                                }
+                            }} type="password" id="password" name="password" className='input-fields' required />
+                        </div>
+
+                        <p id='error-message'>{error.password}</p>
+
+                        <div className='div-input-fields'>
+                            <label className='labels' htmlFor="confirmPassword">Confirm Password</label>
+                            <Input value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter confirm password' onKeyDown={(e) => {
+                                if (e.key === " " && e.key !== "Backspace") {
+                                    e.preventDefault()
+                                }
+                            }} type="password" id="confirmPassword" name="confirmPassword" className='input-fields' required />
+                        </div>
+
+                        <p id='error-message'>{error.confirmPassword}</p>
+
+                        <div id='links-container'>
+                            <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
+                        </div>
+
+                        <Button id='newpassword-button' htmlType='submit'> Reset Password </Button>
+                    </form>
+                </div>
+
+                <div id='div-image-banner'>
+                    <img src='/images/ResetPasswordPage_Banner.png' alt='Banner' id='image-banner' />
+                </div>
+
             </div>
         </>
 
