@@ -1,3 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+html,
+body,
+#root {
+  background-color: #F5F8FF;
+  height: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
 
 .landing-container {
   font-family: 'Arial', sans-serif;
@@ -5,14 +17,17 @@
   width: 100%;
 }
 
-
+/* navigation bar */
 .navbar {
+  position: fixed;
+  z-index: 1000;
+  width: 95%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 50px;
   background-color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .logo-section {
@@ -35,7 +50,49 @@
   color: #0056b3;
   cursor: pointer;
   margin-left: 20px;
+  margin-bottom: 5px;
   font-size: 16px;
+}
+
+/* links */
+#links-container {
+  display: flex;
+  flex-direction: row;
+  white-space: nowrap;
+}
+
+.label-links {
+  font-size: 18px;
+  font-weight: 600;
+  color: #305797;
+  margin-top: 3px;
+}
+
+.button-links {
+  font-size: 18px;
+  font-weight: 600;
+  color: #992A46;
+  margin-left: 0px;
+  padding-left: 0px;
+  padding-right: 22px;
+}
+
+.button-links:hover {
+  text-decoration: underline;
+  color: #992A46 !important;
+  border-width: 0px !important;
+}
+
+.user-name-link {
+  font-size: 18px;
+  font-weight: 600;
+  color: #305797;
+}
+
+.user-name-link:hover {
+  text-decoration: underline;
+  color: #992A46 !important;
+  border-width: 0px !important;
 }
 
 .contact-info {
@@ -44,10 +101,43 @@
   margin-right: 20px;
 }
 
+/* user dropdown component */
+.ant-dropdown {
+  height: 30px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.ant-dropdown-menu {}
+
+.dropdown-space {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+
+.user-dropdown-icon {
+  margin-top: 0px !important;
+}
+
+.username-dropdown {
+  color: #305797;
+}
+
+.user-dropdown-button {
+  margin-left: 30px;
+}
+
+
+/* hero section */
 .hero-section {
   position: relative;
   height: 600px;
- background-image: url(''); /* DITO YUNG PICTURE SA GITNA */
+  background-image: url('/public/images/LandingPage_BackgroundImg.png');
+  /* DITO YUNG PICTURE SA GITNA */
   background-position: center;
   display: flex;
   flex-direction: column;
@@ -59,7 +149,10 @@
 
 .hero-overlay {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -70,19 +163,22 @@
 }
 
 .hero-content h1 {
-  font-size: 48px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 80px;
   margin-bottom: 10px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hero-content p {
-  font-size: 18px;
-  max-width: 600px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 24px;
+  max-width: 700px;
   margin: 0 auto;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 
+/* search component */
 .search-widget {
   position: absolute;
   bottom: -60px;
@@ -90,14 +186,13 @@
   width: 80%;
   max-width: 1000px;
   border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   padding: 30px;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-
 
 .search-row {
   display: flex;
@@ -122,6 +217,8 @@
   font-size: 20px;
 }
 
+
+/* filter/dropdown component */
 .filter-row {
   display: flex;
   justify-content: space-between;
@@ -176,4 +273,193 @@
 .budget-slider {
   width: 100%;
   cursor: pointer;
+}
+
+/* page link buttons */
+.page-link-buttons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-top: 80px;
+  padding-bottom: 50px;
+  gap: 130px;
+}
+
+.page-link-buttons {
+  margin: 0 20px;
+  font-weight: bold;
+  font-size: 24px;
+  color: #0056b3;
+  text-decoration: none;
+}
+
+.page-link-buttons:hover {
+  color: #0056b3 !important;
+}
+
+/* hero section packages */
+.hero-section-packages {
+  position: relative;
+  height: 600px;
+  background-image: url('/public/images/LandingPage_BackgroundImg.png');
+  /* DITO YUNG PICTURE SA GITNA */
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+}
+
+.hero-overlay-packages {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content-packages {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 100px;
+}
+
+.hero-content-packages h1 {
+  font-family: "Montserrat", sans-serif;
+  font-size: 80px;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content-packages p {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.packages-button {
+  color: #0056b3 !important;
+  background-color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 70px;
+  border-radius: 30px;
+  border-width: 3px;
+  border-color: #0056b3;
+  height: 65px;
+  width: 500px;
+}
+
+.packages-button:hover {
+  background-color: #0056b3 !important;
+  color: #fff !important;
+  border-radius: 30px !important;
+  border-width: 3px !important;
+  border-color: #0056b3 !important;
+}
+
+.popular-packages-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 35px;
+  color: #000000;
+  margin: 40px;
+}
+
+.popular-packages {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+  margin: 40px;
+}
+
+/* hero section explore */
+.explore-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.explore-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 35px;
+  color: #000000;
+  margin-left: 40px;
+
+}
+
+.explore-local-packages-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-local-packages {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-left: 40px;
+}
+
+.explore-local-packages-section-right {
+  margin-top: 43px;
+}
+
+.explore-local-packages-section-right img {
+  height: 655px;
+  width: 475px;
+  margin-right: 40px;
+  margin-left: 40px;
+  margin-top: 45px;
+  border-radius: 20px;
+}
+
+.explore-local-packages-section-right Button {
+  color: #0056b3 !important;
+  background-color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 30px;
+  border-width: 3px;
+  border-color: #0056b3;
+  height: 50px;
+  width: 200px;
+  margin-top: 15px;
+  margin-left: 40px;
+}
+
+.explore-local-packages-section-right Button:hover {
+  background-color: #0056b3 !important;
+  color: #fff !important;
+  border-radius: 30px !important;
+  border-width: 3px !important;
+  border-color: #0056b3 !important;
+}
+
+.explore-world-section {
+  display: flex;
+  flex-direction: row;
+}
+
+.explore-world-text {
+  margin-left: 40px;
+  margin-top: 0;
+}
+
+.explore-world-text-heading {
+  font-family: "Montserrat", sans-serif;
+  font-size: 24px;
+  color: #000000;
+}
+
+.explore-world-text-description {
+  font-family: "Montserrat", sans-serif;
+  font-size: 15px;
+  color: #000000;
+  text-align: justify;
+  margin-right: 40px;
 }

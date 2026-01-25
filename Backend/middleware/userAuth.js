@@ -14,6 +14,9 @@ const userAuth = async (req, res, next) => {
 
         const tokenDecode = jwt.verify(token, process.env.JWT_SECRET)
 
+        console.log("TOKEN: " + token)
+        console.log("SECRET: " + process.env.JWT_SECRET)
+
         // const user = await User.findById(tokenDecode.id) //get userid
 
         // if (!user.isAccountVerified) { //check if user is verified

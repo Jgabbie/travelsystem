@@ -13,8 +13,9 @@ app.use(cors({
     origin: "http://localhost:3000",
     credentials: true,
 }));
-app.use(express.json())
 app.use(cookieParser())
+app.use(express.json())
+
 
 app.get('/', (req, res) => res.send("API Working"))
 

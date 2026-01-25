@@ -2,17 +2,16 @@ import logo from './logo.svg';
 import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom";
 import './App.css';
 import { useEffect, useState } from 'react';
-import LoginPage from './components/LoginPage';
+import LoginPage from './pages/LoginPage';
 import SignupPage from './components/SignupPage';
 import LandingPage from './pages/LandingPage';
+import PackagePage from './pages/PackagePage';
 import EmailVerify from './components/EmailVerify';
 import ResetPassword from './components/ResetPassword';
 import ResetPasswordOTP from './components/ResetPasswordOTP';
 import SetNewPassword from './components/SetNewPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import Logging from './components/Logging';
-
-
 
 
 function App() {
@@ -39,6 +38,8 @@ function App() {
         }
       } catch (err) {
         setIsAuth(false)
+        const errorMsg = err.response?.data?.message || "Verification failed"
+        console.error("Error: ", errorMsg)
       } finally {
         setIsLoading(false)
       }
@@ -59,9 +60,10 @@ function App() {
           <Route path='/reset-password' element={<ResetPassword />} />
           <Route path='/reset-password-otp' element={<ResetPasswordOTP />} />
           <Route path='/set-newpassword' element={<SetNewPassword />} />
-
+          <Route path='/home' element={<LandingPage />} />
+          <Route path='/package' element={<PackagePage />} />
           <Route element={<ProtectedRoute getIsAuthenticated={isAuth} />}>
-            <Route path='/home' element={<LandingPage />} />
+
           </Route>
 
           <Route path='*' element={<Navigate to="/login" replace />} />

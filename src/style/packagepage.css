@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+html,
+body,
+#root {
+    background-color: #F5F8FF;
+    height: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+
+.package-container {
+    color: #333;
+    width: 100%;
+}
+
+/* navigation bar */
+.navbar {
+    position: fixed;
+    z-index: 1000;
+    width: 95%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: #555;
+}
+
+.logo-img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.nav-links button {
+    background: none;
+    border: none;
+    font-weight: bold;
+    color: #0056b3;
+    cursor: pointer;
+    margin-left: 20px;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+/* links */
+#links-container {
+    display: flex;
+    flex-direction: row;
+    white-space: nowrap;
+}
+
+.label-links {
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+    margin-top: 3px;
+}
+
+.button-links {
+    font-size: 18px;
+    font-weight: 600;
+    color: #992A46;
+    margin-left: 0px;
+    padding-left: 0px;
+    padding-right: 22px;
+}
+
+.button-links:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+    border-width: 0px !important;
+}
+
+.user-name-link {
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+}
+
+.user-name-link:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+    border-width: 0px !important;
+}
+
+/* user dropdown component */
+.ant-dropdown {
+    height: 30px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.ant-dropdown-menu {}
+
+.dropdown-space {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.user-dropdown-icon {
+    margin-top: 0px !important;
+}
+
+.username-dropdown {
+    color: #305797;
+}
+
+.user-dropdown-button {
+    margin-left: 30px;
+}
+
+.package-box {
+    display: flex;
+    flex-direction: row;
+}
+
+
+
+
+/* leftside */
+.package-left {
+    display: flex;
+    flex-direction: column;
+    margin-left: 40px;
+}
+
+.package-name-duration {
+    display: flex;
+    flex-direction: row;
+    gap: 320px;
+}
+
+.package-name-duration h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    margin-top: 90px;
+}
+
+.package-img-des img {
+    height: 390px;
+    width: 690px;
+}
+
+.package-img-des p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    width: 690px;
+    text-align: justify;
+}
+
+/* rightside */
+.package-right {
+    display: flex;
+    flex-direction: column;
+    margin-left: 80px;
+}
+
+.package-right h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    margin-top: 90px;
+}
+
+.package-price-button {
+    display: flex;
+    flex-direction: row;
+    gap: 290px;
+}
+
+.package-price-button h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 34px;
+    margin-top: 0px;
+}
+
+.package-price-button Button {
+    color: #0056b3 !important;
+    background-color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 30px;
+    border-width: 3px;
+    border-color: #0056b3;
+    height: 40px;
+    width: 200px;
+}
+
+.package-price-button Button:hover {
+    background-color: #0056b3 !important;
+    color: #fff !important;
+    border-radius: 30px !important;
+    border-width: 3px !important;
+    border-color: #0056b3 !important;
+}
+
+/* .package-tabs {
+    background-color: #0056b3;
+} */
+
+.ant-tabs-nav {
+    background-color: #0056b3;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.ant-tabs-nav-list {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100%;
+}

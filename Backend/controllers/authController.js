@@ -46,8 +46,9 @@ const signupUser = async (req, res) => {
         await transporter.sendMail(mailOptions)
 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            await logAction("USER_CREATED_ACC", user._id, { 
-            username: user.username, email: user.email }, ip);
+        await logAction("USER_CREATED_ACC", user._id, {
+            username: user.username, email: user.email
+        }, ip);
 
         // const mailOptions = {
         //     from: process.env.SENDER_EMAIL,
@@ -138,7 +139,7 @@ const logoutUser = async (req, res) => {
             const logDetails = user ? { username: user.username } : { note: "User not found" };
 
             await logAction("USER_LOGOUT", decoded.id, logDetails, ip);
-            
+
         } catch (e) {
             console.log("Logout logging skipped (token invalid)");
         }
@@ -228,8 +229,25 @@ const verifyEmail = async (req, res) => {
 // Checks if user is authenticated
 // Checks if user is logged in
 const isAuthenticated = async (req, res) => {
+
     try {
-        return res.status(200).json({ message: "User is Authenticated" })
+        const userId = req.userId
+        if (!userId) {
+            return res.status(401).json({ message: "User is not Authenticated" })
+        }
+        const currentUser = await UserModel.findById(userId)
+
+
+        if (!currentUser) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        return res.status(200).json({
+            message: "User is Authenticated",
+            user: {
+                username: currentUser.username
+            }
+        })
     } catch (e) {
         res.status(500).json({ message: "is Authenticated Function failed " + e.message })
     }
