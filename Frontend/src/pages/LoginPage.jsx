@@ -46,8 +46,8 @@ export default function LoginPage() {
     }
 
     return (
-        <div id='login-container'>
-            <div id='login-form'>
+        <div className='login-page-container'>
+            <div className='login-left-side'>
                 <form method='post' onSubmit={handleLogin}>
 
                     <div id='heading-div'>
@@ -61,7 +61,7 @@ export default function LoginPage() {
                             if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
                                 e.preventDefault()
                             }
-                        }} type="text" id="username" name="username" className='input-fields' required />
+                        }} type="text" id="username" name="username" className='input-fields-login' required />
                     </div>
 
                     <div className='div-input-fields'>
@@ -70,7 +70,7 @@ export default function LoginPage() {
                             if (e.key === " " && e.key !== "Backspace") {
                                 e.preventDefault()
                             }
-                        }} type="password" id="password" name="password" className='input-fields' required />
+                        }} type="password" id="password" name="password" className='input-fields-login' required />
                     </div>
 
                     <p id='error-message'>{error}</p>
@@ -84,9 +84,9 @@ export default function LoginPage() {
                 </form>
             </div>
 
-            <div id='div-image-banner'>
-                <img src='/images/LoginPage_Banner.png' alt='Banner' id='image-banner' />
+            <div className='login-right-side'>
             </div>
+
 
         </div>
     )

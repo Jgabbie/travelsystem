@@ -89,10 +89,9 @@ export default function ResetPassword() {
     }
 
     return (
-        <div id='resetpassword-container'>
-            <div id='resetpassword-form'>
+        <div className='resetpassword-page-container'>
+            <div className='resetpassword-left-side'>
                 <form onSubmit={resetPassword}>
-
                     <div id='heading-div'>
                         <h1 id='heading'>Reset Password</h1>
                         <h4 id='second-heading'>Enter Email to Reset Password</h4>
@@ -115,11 +114,12 @@ export default function ResetPassword() {
 
                     <Button id='resetpassword-button' htmlType="submit">Reset Password</Button>
                 </form>
+
             </div>
 
-            <div id='div-image-banner'>
-                <img src='/images/ResetPasswordPage_Banner.png' alt='Banner' id='image-banner' />
+            <div className='resetpassword-right-side'>
             </div>
+
 
             <Modal
                 open={isModalOpen}

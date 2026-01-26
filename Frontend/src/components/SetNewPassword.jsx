@@ -90,53 +90,47 @@ export default function SetNewPassword() {
     }
 
     return (
-        <>
-            <div id='newpassword-container'>
-                <div id='newpassword-form'>
+        <div className='newpassword-page-container'>
+            <div className='newpassword-left-side'>
+                <form onSubmit={submitNewPassword}>
+                    <div id='heading-div'>
+                        <h1 id='heading'>Set New Password</h1>
+                        <h4 id='second-heading'>Enter New Password</h4>
+                    </div>
 
-                    <form onSubmit={submitNewPassword}>
-                        <div id='heading-div'>
-                            <h1 id='heading'>Set New Password</h1>
-                            <h4 id='second-heading'>Enter New Password</h4>
-                        </div>
+                    <div className='div-input-fields'>
+                        <label className='labels' htmlFor="password">Password</label>
+                        <Input value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your new password' onKeyDown={(e) => {
+                            if (e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="password" id="password" name="password" className='input-fields' required />
+                    </div>
 
+                    <p id='error-message'>{error.password}</p>
 
-                        <div className='div-input-fields'>
-                            <label className='labels' htmlFor="password">Password</label>
-                            <Input value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your new password' onKeyDown={(e) => {
-                                if (e.key === " " && e.key !== "Backspace") {
-                                    e.preventDefault()
-                                }
-                            }} type="password" id="password" name="password" className='input-fields' required />
-                        </div>
+                    <div className='div-input-fields'>
+                        <label className='labels' htmlFor="confirmPassword">Confirm Password</label>
+                        <Input value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter confirm password' onKeyDown={(e) => {
+                            if (e.key === " " && e.key !== "Backspace") {
+                                e.preventDefault()
+                            }
+                        }} type="password" id="confirmPassword" name="confirmPassword" className='input-fields' required />
+                    </div>
 
-                        <p id='error-message'>{error.password}</p>
+                    <p id='error-message'>{error.confirmPassword}</p>
 
-                        <div className='div-input-fields'>
-                            <label className='labels' htmlFor="confirmPassword">Confirm Password</label>
-                            <Input value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter confirm password' onKeyDown={(e) => {
-                                if (e.key === " " && e.key !== "Backspace") {
-                                    e.preventDefault()
-                                }
-                            }} type="password" id="confirmPassword" name="confirmPassword" className='input-fields' required />
-                        </div>
+                    <div id='links-container'>
+                        <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
+                    </div>
 
-                        <p id='error-message'>{error.confirmPassword}</p>
-
-                        <div id='links-container'>
-                            <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
-                        </div>
-
-                        <Button id='newpassword-button' htmlType='submit'> Reset Password </Button>
-                    </form>
-                </div>
-
-                <div id='div-image-banner'>
-                    <img src='/images/ResetPasswordPage_Banner.png' alt='Banner' id='image-banner' />
-                </div>
-
+                    <Button id='newpassword-button' htmlType='submit'> Reset Password </Button>
+                </form>
             </div>
-        </>
+
+            <div className='newpassword-right-side'>
+            </div>
+        </div>
 
     )
 }

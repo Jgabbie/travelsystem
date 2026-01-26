@@ -1,9 +1,10 @@
 import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
-import '../style/LandingPage.css'
+import '../style/landingpage.css'
 import { Button, Dropdown, Space, Card } from 'antd';
 import { DownOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
 import LoginModal from '../components/LoginModal';
+import SignupModal from '../components/SignupModal';
 
 
 export default function LandingPage() {
@@ -11,6 +12,8 @@ export default function LandingPage() {
     const exploreRef = useRef(null)
 
     const [isLoginVisible, setIsLoginVisble] = useState(false)
+    const [isSignupVisible, setIsSignupVisble] = useState(false)
+
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null)
     const [isLoading, setIsLoading] = useState(true); // Default true to avoid flash
@@ -119,7 +122,7 @@ export default function LandingPage() {
                     :
                     <div className="nav-links">
                         <span className="regsignin">
-                            <Button className='button-links' type="link">SIGN UP</Button>
+                            <Button className='button-links' type="link" onClick={() => setIsSignupVisble(true)}>SIGN UP</Button>
                             |
                             <Button className='button-links' type="link" onClick={() => setIsLoginVisble(true)}>LOG IN</Button>
                         </span>
@@ -133,6 +136,12 @@ export default function LandingPage() {
                 isOpenLogin={isLoginVisible}
                 isCloseLogin={() => setIsLoginVisble(false)}
                 onLoginSuccess={checkAuthentication}
+            />
+
+            {/* open signup modal */}
+            <SignupModal
+                isOpenSignup={isSignupVisible}
+                isCloseSignup={() => setIsSignupVisble(false)}
             />
 
 
@@ -412,24 +421,7 @@ export default function LandingPage() {
                         <Button>VIEW MORE</Button>
                     </div>
                 </div>
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
-
         </div>
     );
 }

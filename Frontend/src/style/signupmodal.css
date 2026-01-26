@@ -1,0 +1,167 @@
+/* Modal design */
+
+body {
+    width: 100% !important;
+    padding-right: 0px !important;
+    overflow-y: auto !important;
+}
+
+.signup-modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    top: 60px;
+}
+
+#signup-heading-modal {
+    font-family: "Montserrat", sans-serif;
+    font-size: 35px;
+    color: #305797;
+    line-height: 10px;
+    width: 550px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+#signup-secondary-heading-modal {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #305797;
+    line-height: 5px;
+    width: 550px;
+}
+
+/* fields */
+
+.signup-input-fields-modal-group {
+    width: 263px;
+    height: 35px;
+    font-size: 13px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.signup-input-fields-modal {
+    width: 540px;
+    height: 35px;
+    font-size: 13px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.signup-input-fields-modal:hover {
+    border-color: #305797;
+    border-width: 2px;
+}
+
+/* add "within" for the passwordfield */
+.signup-input-fields-modal:focus-within {
+    border-color: #305797 !important;
+    border-width: 2px !important;
+}
+
+.ant-input-password input {
+    width: 500px;
+    font-size: 14px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.ant-input-status-error {
+    border-width: 2px !important;
+}
+
+.signup-labels-modal {
+    font-size: 12px;
+    font-family: "Roboto", sans-serif;
+    color: #305797;
+}
+
+.signup-div-input-fields-modal {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+#signup-links-container-modal {
+    display: flex;
+    flex-direction: row;
+    white-space: nowrap;
+    gap: 120px;
+}
+
+.signup-label-links-modal {
+    font-size: 16px;
+    font-weight: 600;
+    color: #305797;
+}
+
+.signup-button-links-modal {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 6px;
+    margin-left: 0px;
+    padding-left: 4px;
+    color: #992A46;
+}
+
+.signup-button-links-modal:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+}
+
+#signup-button-modal {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    background-color: #305797;
+    color: #FFF;
+    width: 240px;
+    height: 40px;
+}
+
+#signup-button-modal:hover {
+    background-color: #e9e9e9;
+    color: #305797;
+}
+
+.signup-input-row-modal,
+#signup-heading-modal,
+#signup-secondary-heading-modal,
+.signup-label-links-modal,
+#signup-error-message-modal {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+#signup-error-message-modal {
+    color: #ff0000;
+    width: 500px;
+}
+
+.signup-input-row-modal {
+    display: flex;
+    gap: 5px;
+}
+
+.signup-input-group-modal {
+    margin-right: 7px;
+}
+
+.signup-input-row-modal .signup-input-group-modal {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.signup-input-row-modal,
+.signup-input-row-modal::placeholder {
+    text-align: center;
+    /* Centered for name fields only */
+}
+
+/* BUTTONS & LINKS */
+.signup-button-row-modal {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
