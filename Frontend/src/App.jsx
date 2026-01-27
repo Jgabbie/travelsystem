@@ -10,6 +10,13 @@ import ResetPasswordOTP from './components/ResetPasswordOTP';
 import SetNewPassword from './components/SetNewPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import Logging from './components/Logging';
+import AdminLayout from "./components/AdminLayout";
+import BookingManagement from "./pages/BookingManagement";
+import UserManagement from "./pages/UserManagement";
+import PackageManagement from "./pages/PackageManagement";
+import AddPackage from "./pages/AddPackage";
+import "./styles/admin.css";
+import "antd/dist/reset.css";
 
 
 function App() {
@@ -61,7 +68,16 @@ function App() {
           <Route path='/home' element={<LandingPage />} />
           <Route path='/package' element={<PackagePage />} />
           <Route element={<ProtectedRoute getIsAuthenticated={isAuth} />}>
-
+          
+          {/* ADMIN ROUTING SIR */}
+          <Route element={<AdminLayout />}>  
+          <Route index element={<Navigate to="/bookings" />} />
+          <Route path="/bookings" element={<BookingManagement />} />
+          <Route path="/users" element={<UserManagement />} />
+          <Route path="/packages" element={<PackageManagement />} />
+          <Route path="/packages/add" element={<AddPackage />} />
+        </Route>
+          
           </Route>
 
           <Route path='*' element={<Navigate to="/login" replace />} />

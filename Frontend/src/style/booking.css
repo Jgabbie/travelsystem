@@ -1,0 +1,10 @@
+.page-header {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
