@@ -1,7 +1,7 @@
 import { Input, Button, Card } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import "../styles/packages.css";
+import "../style/packages.css";
 
 export default function PackageManagement() {
   const navigate = useNavigate();

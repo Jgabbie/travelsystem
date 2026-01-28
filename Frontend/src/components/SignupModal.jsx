@@ -3,11 +3,14 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../style/signupmodal.css';
+import EmailVerifyModal from './EmailVerifyModal';
 
 
 export default function SignupModal({ isOpenSignup, isCloseSignup }) {
 
     const navigate = useNavigate();
+
+    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
 
     const [error, setError] = useState({
         username: '', firstname: '', lastname: '', password: '',
@@ -94,7 +97,17 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
         try {
             await axios.post('http://localhost:8000/api/auth/signupUser', values, { withCredentials: true });
             setOutput("Signup successful!");
-            navigate('/email-verify', { state: { email: values.email } });
+            setValues({
+                username: '',
+                firstname: '',
+                lastname: '',
+                email: '',
+                phone: '',
+                password: '',
+                confirmPassword: ''
+            })
+            isCloseSignup()
+            setIsOTPModalVisible(true)
         } catch (err) {
             alert(err.response?.data?.message || "Verification failed");
         }
@@ -116,8 +129,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
                 onCancel={() => {
                     setValues({
                         username: '',
+                        firstname: '',
+                        lastname: '',
+                        email: '',
+                        phone: '',
                         password: '',
-
+                        confirmPassword: ''
                     })
                     setError("")
                     isCloseSignup()
@@ -177,7 +194,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
 
                         <div className="signup-input-group-modal">
                             <label className='signup-labels-modal'>Phone Number</label>
-                            <Input status={error.phone ? "error" : ""} maxLength={11} onChange={(e) => valueHandler("phone", e.target.value)} autoComplete='off' placeholder='Enter your Username' onKeyDown={(e) => {
+                            <Input status={error.phone ? "error" : ""} maxLength={11} onChange={(e) => valueHandler("phone", e.target.value)} autoComplete='off' placeholder='Enter your Phone Number' onKeyDown={(e) => {
                                 if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                     e.preventDefault()
                                 }
@@ -216,8 +233,15 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
                         </div>
                     </form>
                 </div>
-
             </Modal>
+
+            {/* open email verify modal */}
+            <EmailVerifyModal
+                isOpenOTPModal={isOTPModalVisible}
+                isCloseOTPModal={() => setIsOTPModalVisible(false)}
+                userEmail={values.email}
+            />
+
         </div>
     )
 }

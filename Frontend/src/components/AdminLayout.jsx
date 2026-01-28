@@ -2,7 +2,7 @@ import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
 import SideNav from "./SideNav";
 import TopNav from "./TopNav";
-import "../styles/admin.css";
+import "../style/admin.css";
 
 const { Content } = Layout;
 

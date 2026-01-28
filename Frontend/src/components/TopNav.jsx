@@ -1,6 +1,6 @@
 import { Layout, Badge, Avatar } from "antd";
 import { BellOutlined, UserOutlined } from "@ant-design/icons";
-import "../styles/topnav.css";
+import "../style/topnav.css";
 
 const { Header } = Layout;
 

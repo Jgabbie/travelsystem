@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
+const { response } = require('express');
 
 
 //signup
@@ -11,27 +12,12 @@ const signupUser = async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10)
-
         const user = await UserModel.create({ username, firstname, lastname, hashedPassword, email, phone })
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
-
-        //set cookies to store token, to store user.id when signing up and logging in
-        res.cookie('token', token, {
-            httpOnly: true, //safety from XSS attacks
-            secure: false, // if production set true if development set false,  currently development
-            sameSite: 'lax', //cross site, cookie is only stored in the current site being used
-            maxAge: 7 * 24 * 60 * 60 * 1000 //expiry or the duration of the cookie
-        })
-
-        //email to send welcome message to new user
 
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
-
-        user.verifyOtp = otp;
+        const hashedOtp = await bcrypt.hash(otp, 10)
+        user.verifyOtp = hashedOtp;
         user.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000 //10 minutes timer
-
-        user.verifyToken = token
-        user.verifyTokenExpireAt = Date.now() + 15 * 60 * 1000 //15 minutes timer
 
         user.role = "User" //set the role of the new registered user
         await user.save()
@@ -50,18 +36,10 @@ const signupUser = async (req, res) => {
             username: user.username, email: user.email
         }, ip);
 
-        // const mailOptions = {
-        //     from: process.env.SENDER_EMAIL,
-        //     to: email,
-        //     subject: 'Welcome to M&RC Travel and Tours',
-        //     text: `Welcome to M&RC Travel and Tours website. Your account has been created with email id: ${email}`
-        // }
-
         res.status(200).json({ message: "Signup Successful!", userId: user._id })
     } catch (e) {
         res.status(500).json({ message: "Signup Function failed " + e.message })
     }
-
 };
 
 //login
@@ -70,21 +48,32 @@ const loginUser = async (req, res) => {
     try {
         const user = await UserModel.findOne({ username })
         if (!user) {
-            return res.status(409).json({ message: "Inavlid Username or Password" })
+            return res.status(401).json({ message: "Inavlid Username or Password" })
         }
 
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
-            return res.status(409).json({ message: "Inavlid Username or Password" })
+            return res.status(401).json({ message: "Inavlid Username or Password" })
         }
 
-        // if (!user.isAccountVerified) {
-        //     return res.status(403).json({ message: "Account is not verified" })
-        // }
+        if (!user.isAccountVerified) {
+            return res.status(403).json({ message: "Account is not verified", email: user.email })
+        }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
+        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '15m' })
+        const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
 
-        res.cookie('token', token, {
+        user.refreshToken = refreshToken
+        await user.save()
+
+        res.cookie('accessToken', accessToken, {
+            httpOnly: false,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 15 * 60 * 1000
+        })
+
+        res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
@@ -98,6 +87,34 @@ const loginUser = async (req, res) => {
 
     } catch (e) {
         res.status(500).json({ message: "Login Function failed " + e.message })
+    }
+}
+
+const refreshToken = async (req, res) => {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) {
+        return res.status(401).json({ message: "No refresh token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH_KEY);
+        const user = await UserModel.findById(decoded.id);
+        if (!user || user.refreshToken !== refreshToken) {
+            return res.status(403).json({ message: "Invalid refresh token" });
+        }
+
+        const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '15m' });
+
+        res.cookie('token', newAccessToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 15 * 60 * 1000
+        });
+
+        res.status(200).json({ message: "Access token refreshed" });
+    } catch (err) {
+        res.status(500).json({ message: "Refresh Token Function failed " + err.message });
     }
 }
 
@@ -128,50 +145,57 @@ const checkDups = async (req, res) => {
 
 //logout
 const logoutUser = async (req, res) => {
-    const { token } = req.cookies;
 
-    if (token) {
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
-            const user = await UserModel.findById(decoded.id);
-            const logDetails = user ? { username: user.username } : { note: "User not found" };
-
-            await logAction("USER_LOGOUT", decoded.id, logDetails, ip);
-
-        } catch (e) {
-            console.log("Logout logging skipped (token invalid)");
-        }
-    }
-
-    // 2. Clear the cookie to actually log them out
     try {
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
-        })
+        const { refreshToken } = req.cookies;
+
+        if (!refreshToken) {
+            res.clearCookie('accessToken')
+            res.clearCookie('refreshToken')
+            return res.status(200).json({ message: "Logged Out" })
+        }
+
+        const user = await UserModel.findOne({ refreshToken })
+        if (user) {
+            user.refreshToken = ''
+            await user.save()
+        }
+
+        res.clearCookie('accessToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
+        res.clearCookie('refreshToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
+        res.clearCookie('token', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
+
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        await logAction("USER_LOGOUT", user ? user._id : null, { username: user ? user.username : 'Unknown' }, ip);
 
         res.status(200).json({ message: "Logged Out" })
-    } catch (e) {
+    }
+
+    catch (e) {
         res.status(500).json({ message: "Logout Function failed " + e.message })
     }
 }
 
 const sendVerifyOtp = async (req, res) => {
     try {
-        const userId = req.userId
-        const user = await UserModel.findById(userId)
+        const { email } = req.body
+        console.log("Email:" + email)
 
-        // if (user.isAccountVerified) {
-        //     return res.status(409).json({ message: "Account already verified" })
-        // }
+
+        const user = await UserModel.findOne({ email: email })
+
+        if (!user) {
+            return res.status(405).json({ message: "User not found" })
+        }
+
+        if (user.isAccountVerified) {
+            return res.status(409).json({ message: "Account already verified" })
+        }
 
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
-
         user.verifyOtp = otp;
-        user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000
+        const hashedOtp = await bcrypt.hash(otp, 10)
+        user.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000
 
         await user.save()
 
@@ -192,15 +216,14 @@ const sendVerifyOtp = async (req, res) => {
 }
 
 const verifyEmail = async (req, res) => {
-    const { otp } = req.body
-    const userId = req.userId
+    const { otp, email } = req.body
 
-    if (!userId || !otp) {
-        return res.status(400).json({ message: "Missing User or OTP" })
-    }
+    // if (!userId || !otp) {
+    //     return res.status(400).json({ message: "Missing User or OTP" })
+    // }
 
     try {
-        const user = await UserModel.findById(userId)
+        const user = await UserModel.findOne({ email })
 
         if (!user) {
             return res.status(409).json({ message: "User not found" })
@@ -276,8 +299,8 @@ const sendResetOtp = async (req, res) => {
         }
 
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
-
-        user.resetOtp = otp;
+        const hashedOtp = await bcrypt.hash(otp, 10)
+        user.resetOtp = hashedOtp;
         user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000
 
         await user.save()
@@ -299,36 +322,50 @@ const sendResetOtp = async (req, res) => {
 
 const checkResetOtp = async (req, res) => {
     const { email, otp } = req.body
+
     const user = await UserModel.findOne({ email })
     if (!user) {
         return res.status(409).json({ message: "User not found" })
-    }
-
-    if (user.resetOtp === "" || user.resetOtp !== otp) {
-        return res.status(409).json({ message: "Invalid OTP" })
     }
 
     if (user.resetOtpExpireAt < Date.now()) {
         return res.status(409).json({ message: "OTP expired" })
     }
 
-    return res.status(200).json({ message: "Password has been reset successfully" })
+    const isValidOtp = await bcrypt.compare(otp, user.resetOtp)
+    if (!isValidOtp) {
+        return res.status(409).json({ message: "Invalid OTP" })
+    }
 
+    const resetToken = jwt.sign({ id: user._id, scope: "password-reset" }, process.env.JWT_SECRET_RESET_KEY, { expiresIn: '5m' })
+
+    user.resetOtp = ''
+    user.resetOtpExpireAt = ''
+    await user.save
+
+    return res.status(200).json({ message: "You can now reset your password", resetToken })
 }
 
 //Password reset
 const resetPassword = async (req, res) => {
-    const { email, newPassword } = req.body
+    const { newPassword, token } = req.body
 
-    if (!email || !newPassword) {
-        return res.status(401).json({ message: "Email and New password is required" })
+    if (!token || !newPassword) {
+        return res.status(401).json({ message: "Token and new password is required" })
     }
 
     try {
 
-        const user = await UserModel.findOne({ email })
+        let payload
+        try {
+            payload = jwt.verify(token, process.env.JWT_SECRET_RESET_KEY)
+        } catch (err) {
+            return res.status(401).json({ message: "Invalid or expired token" })
+        }
+
+        const user = await UserModel.findById(payload.id)
         if (!user) {
-            return res.status(404).json({ message: "User not found" })
+            return res.status(409).json({ message: "User not found" })
         }
 
         console.log("This is the new password: " + newPassword)
@@ -354,4 +391,4 @@ const resetPassword = async (req, res) => {
 }
 
 
-module.exports = { loginUser, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified };
+module.exports = { loginUser, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified, refreshToken };

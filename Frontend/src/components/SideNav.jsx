@@ -6,7 +6,7 @@ import {
   LogoutOutlined
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import "../styles/sidenav.css";
+import "../style/sidenav.css";
 
 const { Sider } = Layout;
 

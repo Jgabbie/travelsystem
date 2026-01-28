@@ -3,6 +3,7 @@ import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button } from 'antd';
 import '../style/loginpage.css'
+import EmailVerifyModal from '../components/EmailVerifyModal';
 
 
 
@@ -16,6 +17,8 @@ export default function LoginPage() {
         password: ''
     });
 
+    const [email, setEmail] = useState('');
+    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false);
     const [error, setError] = useState('');
 
     const handleLogin = async (e) => {
@@ -24,8 +27,27 @@ export default function LoginPage() {
         try {
             const response = await axios.post('http://localhost:8000/api/auth/loginUser', { username: values.username, password: values.password }, { withCredentials: true })
             alert("Login Successful")
-            navigate('/home')
+            setValues({
+                username: '',
+                password: ''
+            })
         } catch (err) {
+            const status = err.response?.status;
+            const data = err.response?.data;
+
+            if (status === 403) {
+                const email = data.email
+                const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: email })
+                setValues({
+                    username: '',
+                    password: ''
+                })
+                setEmail(email)
+                setIsOTPModalVisible(true)
+                return
+            }
+
+
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setError(errorMsg)
@@ -57,7 +79,7 @@ export default function LoginPage() {
 
                     <div className='div-input-fields'>
                         <label className='labels' htmlFor="username">Username</label>
-                        <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' placeholder='Enter your Username' onKeyDown={(e) => {
+                        <Input status={error ? "error" : ""} value={values.username} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' placeholder='Enter your Username' onKeyDown={(e) => {
                             if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
                                 e.preventDefault()
                             }
@@ -66,7 +88,7 @@ export default function LoginPage() {
 
                     <div className='div-input-fields'>
                         <label className='labels' htmlFor="password">Password</label>
-                        <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' placeholder='Enter your Password' onKeyDown={(e) => {
+                        <Input.Password status={error ? "error" : ""} value={values.password} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' placeholder='Enter your Password' onKeyDown={(e) => {
                             if (e.key === " " && e.key !== "Backspace") {
                                 e.preventDefault()
                             }
@@ -87,7 +109,11 @@ export default function LoginPage() {
             <div className='login-right-side'>
             </div>
 
-
+            <EmailVerifyModal
+                isOpenOTPModal={isOTPModalVisible}
+                isCloseOTPModal={() => setIsOTPModalVisible(false)}
+                userEmail={email}
+            />
         </div>
     )
 }

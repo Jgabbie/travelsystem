@@ -98,7 +98,7 @@ body {
 .signup-button-links-modal {
     font-size: 16px;
     font-weight: 600;
-    margin-top: 6px;
+    margin-top: 2px;
     margin-left: 0px;
     padding-left: 4px;
     color: #992A46;
@@ -163,5 +163,5 @@ body {
 .signup-button-row-modal {
     display: flex;
     justify-content: space-between;
-    margin-top: 5px;
+    margin-top: 15px;
 }

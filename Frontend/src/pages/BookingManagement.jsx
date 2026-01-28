@@ -1,6 +1,6 @@
 import { Input, Select, Button, Table, Tag } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import "../styles/booking.css";
+import "../style/booking.css";
 
 export default function BookingManagement() {
   const columns = [

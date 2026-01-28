@@ -3,19 +3,16 @@ const User = require("../models/user")
 
 //This gatekeeps the cookie, and checks if the cookie is real.
 const userAuth = async (req, res, next) => {
-    const { token } = req.cookies
+    const { accessToken } = req.cookies
 
-    if (!token) {
+    if (!accessToken) {
         return res.status(401).json({ message: "Not Authorized. Login Again" })
     }
 
     try {
         //once the verification of the cookie is done, it will unlock the data inside which is the "userId"
 
-        const tokenDecode = jwt.verify(token, process.env.JWT_SECRET)
-
-        console.log("TOKEN: " + token)
-        console.log("SECRET: " + process.env.JWT_SECRET)
+        const tokenDecode = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS_KEY)
 
         // const user = await User.findById(tokenDecode.id) //get userid
 

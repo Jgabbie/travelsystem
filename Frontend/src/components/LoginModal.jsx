@@ -3,12 +3,15 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../style/loginmodal.css';
+import EmailVerifyModal from './EmailVerifyModal';
+
 
 
 export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }) {
 
     const navigate = useNavigate();
-
+    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
+    const [email, setEmail] = useState('');
     const [values, setValues] = useState({
         username: '',
         password: ''
@@ -34,8 +37,28 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
             if (onLoginSuccess) {
                 onLoginSuccess()
             }
+            setValues({
+                username: '',
+                password: ''
+            })
             isCloseLogin()
         } catch (err) {
+            const status = err.response?.status;
+            const data = err.response?.data;
+
+            if (status === 403) {
+                const email = data.email
+                const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: email })
+                setValues({
+                    username: '',
+                    password: ''
+                })
+                setEmail(email)
+                setIsOTPModalVisible(true)
+                isCloseLogin()
+                return
+            }
+
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setError(errorMsg)
@@ -103,8 +126,15 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
                         <Button id='login-button-modal' htmlType="submit">Log in</Button>
                     </form>
                 </div>
-
             </Modal>
+
+            <EmailVerifyModal
+                isOpenOTPModal={isOTPModalVisible}
+                isCloseOTPModal={() => setIsOTPModalVisible(false)}
+                userEmail={email}
+            />
+
+
         </div>
     )
 }

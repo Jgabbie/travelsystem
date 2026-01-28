@@ -63,9 +63,6 @@ export default function ResetPasswordOTP() {
                     <button onClick={resendOTP}>RE-SEND OTP</button>
                 </form>
             </div>
-
-
-
         </>
 
 

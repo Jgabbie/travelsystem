@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { Input, Button } from 'antd';
+import { Input, Button, Modal } from 'antd';
 import '../style/signuppage.css';
+import EmailVerifyModal from './EmailVerifyModal';
 
 export default function SignupPage() {
     const navigate = useNavigate();
+
+    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
+    const [email, setEmail] = useState("")
 
     const [error, setError] = useState({
         username: '', firstname: '', lastname: '', password: '',
@@ -49,6 +53,7 @@ export default function SignupPage() {
         return "";
     };
 
+    //might add a delay timer to reduce the api calls
     useEffect(() => {
         const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
         if (frontEndError) {
@@ -63,9 +68,9 @@ export default function SignupPage() {
                 if (error.response)
                     setError(prev => ({ ...prev, username: "Signup failed: " + error.response.data.message }));
             });
-
     }, [values.username])
 
+    //might add a delay timer to reduce the api calls
     useEffect(() => {
         const frontEndError = validate("email", values.email)
         if (frontEndError) {
@@ -92,7 +97,17 @@ export default function SignupPage() {
         try {
             await axios.post('http://localhost:8000/api/auth/signupUser', values, { withCredentials: true });
             setOutput("Signup successful!");
-            navigate('/email-verify', { state: { email: values.email } });
+            setEmail(values.email)
+            setIsOTPModalVisible(true)
+            setValues({
+                username: '',
+                firstname: '',
+                lastname: '',
+                email: '',
+                phone: '',
+                password: '',
+                confirmPassword: ''
+            })
         } catch (err) {
             alert(err.response?.data?.message || "Verification failed");
         }
@@ -164,7 +179,7 @@ export default function SignupPage() {
 
                         <div className="input-group">
                             <label className='labels-signup'>Phone Number</label>
-                            <Input status={error.phone ? "error" : ""} maxLength={11} onChange={(e) => valueHandler("phone", e.target.value)} autoComplete='off' placeholder='Enter your Username' onKeyDown={(e) => {
+                            <Input status={error.phone ? "error" : ""} maxLength={11} onChange={(e) => valueHandler("phone", e.target.value)} autoComplete='off' placeholder='Enter your Phone Number' onKeyDown={(e) => {
                                 if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                     e.preventDefault()
                                 }
@@ -204,6 +219,14 @@ export default function SignupPage() {
                     </form>
                 </div>
             </div>
+
+            {/* open email verify modal */}
+            <EmailVerifyModal
+                isOpenOTPModal={isOTPModalVisible}
+                isCloseOTPModal={() => setIsOTPModalVisible(false)}
+                userEmail={email}
+            />
+
         </div>
 
     );

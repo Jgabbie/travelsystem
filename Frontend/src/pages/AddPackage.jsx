@@ -1,6 +1,6 @@
 import { Input, Button, Card, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import "../styles/addpackage.css";
+import "../style/addpackage.css";
 
 export default function AddPackage() {
   return (

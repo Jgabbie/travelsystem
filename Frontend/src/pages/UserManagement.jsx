@@ -1,6 +1,6 @@
 import { Table, Input, Select, Button, Tag } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import "../styles/users.css";
+import "../style/users.css";
 
 export default function UserManagement() {
   const columns = [

@@ -7,7 +7,9 @@ import '../style/resetpasswordpage.css'
 
 export default function ResetPassword() {
 
+    const [isOTPValid, setIsOTPValid] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [resetToken, setResetToken] = useState("")
     const [timer, setTimer] = useState(0)
     const [errorOTP, setErrorOTP] = useState("")
 
@@ -38,7 +40,7 @@ export default function ResetPassword() {
 
     const [getOTP, setOTP] = useState("")
     const [getEmail, setEmail] = useState("")
-    const [error, setError] = useState('');
+    const [errorEmail, setErrorEmail] = useState('');
 
     const resetPassword = async (e) => {
         e.preventDefault()
@@ -47,11 +49,10 @@ export default function ResetPassword() {
             console.log(getEmail)
             showModal()
             setTimer(60)
-            //navigate('/reset-password-otp', { state: { email: getEmail } })
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
-            setError(errorMsg)
+            setErrorEmail(errorMsg)
         }
     }
 
@@ -59,10 +60,12 @@ export default function ResetPassword() {
         e.preventDefault()
         try {
             const response = await axios.post('http://localhost:8000/api/auth/check-reset-otp', { email: getEmail, otp: getOTP })
-
             if (response.data.success || response.status === 200) {
+                setResetToken(response.data.resetToken)
                 alert("OTP for reset password is correct")
-                navigate('/set-newpassword', { state: { email: getEmail } })
+                setIsModalOpen(false)
+                setIsOTPValid(true)
+                setOTP("")
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
@@ -74,7 +77,8 @@ export default function ResetPassword() {
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: getEmail })
+            const response = await axios.post('http://localhost:8000/api/auth/send-reset-otp', { email: getEmail })
+            setTimer(60)
             alert("OTP sent!")
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
@@ -88,37 +92,154 @@ export default function ResetPassword() {
         navigate('/login');
     }
 
+    //password validations
+
+    const [values, setValues] = useState({
+        password: '',
+        confirmPassword: ''
+    })
+    const [error, setError] = useState({
+        password: '',
+        confirmPassword: ''
+    })
+
+    const validate = (field, value) => {
+        if (field === "password") {
+            if (value === "") {
+                return "Password is required."
+            }
+            if (value.length < 8) {
+                return "Password must be at least 8 characters."
+            }
+            if (!/\d/.test(value)) {
+                return "Password must have at least one number."
+            }
+            if (!/[A-Z]/.test(value)) {
+                return "Password must have at least one uppercase character."
+            }
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+                return "Password must have at least contain one special character."
+            }
+        }
+
+        if (field === "confirmPassword") {
+            if (value === "") {
+                return "Confirm Password is required."
+            }
+            if (value !== values.password) {
+                return "Password and Confirm password does not match"
+            }
+        }
+
+        return ""
+    }
+
+    const valueHandler = (field, value) => {
+        setValues({ ...values, [field]: value })
+        setError({ ...error, [field]: validate(field, value) })
+    }
+
+    const submitNewPassword = async (e) => {
+        e.preventDefault()
+
+        if (error.password !== "") {
+            return console.log("Inputs are invalid!")
+        }
+
+        try {
+            const response = await axios.post('http://localhost:8000/api/auth/reset-password', { newPassword: values.password, token: resetToken })
+
+            if (response.data.success || response.status === 200) {
+                alert("Password has been reset successfully")
+                navigate('/login')
+            }
+        } catch (err) {
+            const errorMsg = err.response?.data?.message || "Verification failed"
+            console.error("Error: ", errorMsg)
+            alert(errorMsg)
+        }
+    }
+
+
     return (
-        <div className='resetpassword-page-container'>
-            <div className='resetpassword-left-side'>
-                <form onSubmit={resetPassword}>
-                    <div id='heading-div'>
-                        <h1 id='heading'>Reset Password</h1>
-                        <h4 id='second-heading'>Enter Email to Reset Password</h4>
+        <div>
+            {isOTPValid ?
+                <div className='newpassword-page-container'>
+                    <div className='newpassword-left-side'>
+                        <form onSubmit={submitNewPassword}>
+                            <div id='heading-div'>
+                                <h1 id='heading'>Set New Password</h1>
+                                <h4 id='second-heading'>Enter New Password</h4>
+                            </div>
+
+                            <div className='div-input-fields'>
+                                <label className='labels' htmlFor="password">Password</label>
+                                <Input value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your new password' onKeyDown={(e) => {
+                                    if (e.key === " " && e.key !== "Backspace") {
+                                        e.preventDefault()
+                                    }
+                                }} type="password" id="password" name="password" className='input-fields' required />
+                            </div>
+
+                            <p id='error-message'>{error.password}</p>
+
+                            <div className='div-input-fields'>
+                                <label className='labels' htmlFor="confirmPassword">Confirm Password</label>
+                                <Input value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter confirm password' onKeyDown={(e) => {
+                                    if (e.key === " " && e.key !== "Backspace") {
+                                        e.preventDefault()
+                                    }
+                                }} type="password" id="confirmPassword" name="confirmPassword" className='input-fields' required />
+                            </div>
+
+                            <p id='error-message'>{error.confirmPassword}</p>
+
+                            <div id='links-container'>
+                                <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
+                            </div>
+
+                            <Button id='newpassword-button' htmlType='submit'> Reset Password </Button>
+                        </form>
                     </div>
 
-                    <div className='div-input-fields'>
-                        <label className='labels' htmlFor="email">Email</label>
-                        <Input status={error ? "error" : ""} value={getEmail} maxLength={40} onChange={(e) => setEmail(e.target.value)} autoComplete='off' placeholder='Enter your Email' onKeyDown={(e) => {
-                            if (e.key === " " && e.key !== "Backspace") {
-                                e.preventDefault()
-                            }
-                        }} type="email" id="email" name="email" className='input-fields' required />
+                    <div className='newpassword-right-side'>
+                    </div>
+                </div>
+
+                :
+
+                <div className='resetpassword-page-container'>
+                    <div className='resetpassword-left-side'>
+                        <form onSubmit={resetPassword}>
+                            <div id='heading-div'>
+                                <h1 id='heading'>Reset Password</h1>
+                                <h4 id='second-heading'>Enter Email to Reset Password</h4>
+                            </div>
+
+                            <div className='div-input-fields'>
+                                <label className='labels' htmlFor="email">Email</label>
+                                <Input status={errorEmail ? "error" : ""} value={getEmail} maxLength={40} onChange={(e) => setEmail(e.target.value)} autoComplete='off' placeholder='Enter your Email' onKeyDown={(e) => {
+                                    if (e.key === " " && e.key !== "Backspace") {
+                                        e.preventDefault()
+                                    }
+                                }} type="email" id="email" name="email" className='input-fields' required />
+                            </div>
+
+                            <p id='error-message'>{errorEmail}</p>
+
+                            <div id='links-container'>
+                                <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
+                            </div>
+
+                            <Button id='resetpassword-button' htmlType="submit">Reset Password</Button>
+                        </form>
+
                     </div>
 
-                    <p id='error-message'>{error}</p>
-
-                    <div id='links-container'>
-                        <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
+                    <div className='resetpassword-right-side'>
                     </div>
-
-                    <Button id='resetpassword-button' htmlType="submit">Reset Password</Button>
-                </form>
-
-            </div>
-
-            <div className='resetpassword-right-side'>
-            </div>
+                </div>
+            }
 
 
             <Modal
@@ -133,7 +254,6 @@ export default function ResetPassword() {
                 <div id='resetpassword-container-modal'>
                     <h1 id='heading-modal'>Verify OTP</h1>
                     <p id='secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
-                    <p className='label-links-modal'>Didn't get the code? <Button className='button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
 
                     <form onSubmit={submitOTP}>
                         <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
@@ -147,11 +267,16 @@ export default function ResetPassword() {
                         <Button id='submit-otp-button' htmlType="submit">Submit</Button>
                     </form>
 
-                    <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
+                    {
+                        timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
+                            :
+                            <p className='label-links-modal'>Didn't get the code? <Button className='button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
+                    }
                 </div>
-
             </Modal>
 
+
         </div>
+
     )
 }

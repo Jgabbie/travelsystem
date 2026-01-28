@@ -12,10 +12,7 @@ const UserSchema = new mongoose.Schema({
     isAccountVerified: { type: Boolean, default: false },
     resetOtp: { type: String, default: '' },
     resetOtpExpireAt: { type: Number, default: 0 },
-    resetToken: { type: String, default: '' },
-    resetTokenExpireAt: { type: Number, default: 0 },
-    verifyToken: { type: String, default: '' },
-    verifyTokenExpireAt: { type: Number, default: 0 },
+    refreshToken: { type: String, default: '' }
 });
 
 const UserModel = mongoose.model("users", UserSchema);
