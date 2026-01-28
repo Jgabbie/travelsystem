@@ -16,6 +16,8 @@ import UserManagement from "./pages/UserManagement";
 import PackageManagement from "./pages/PackageManagement";
 import AddPackage from "./pages/AddPackage";
 import "antd/dist/reset.css";
+import AdminDashboard from "./pages/AdminDashboard";
+import TransactionManagement from "./pages/TransactionManagement";
 
 
 function App() {
@@ -68,9 +70,11 @@ function App() {
           <Route path='/package' element={<PackagePage />} />
 
           <Route element={<AdminLayout />}>
-            <Route index element={<Navigate to="/bookings" />} />
+            <Route index element={<Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={<AdminDashboard />} />
             <Route path="/bookings" element={<BookingManagement />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/transactions" element={<TransactionManagement />} />
             <Route path="/packages" element={<PackageManagement />} />
             <Route path="/packages/add" element={<AddPackage />} />
           </Route>

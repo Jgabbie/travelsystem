@@ -1,0 +1,25 @@
+.transaction-page h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.filters {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.search {
+  width: 280px;
+}
+
+.transaction-table {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pagination-area {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}

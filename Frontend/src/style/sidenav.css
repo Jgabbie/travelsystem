@@ -1,3 +1,39 @@
+
 .sidenav {
-  height: 100vh;
+  background: #2f5f9f !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.sidenav .ant-menu {
+  background: transparent !important;
+  border-right: none;
+  color: white;
+  padding-top: 20px;
+}
+
+
+.sidenav .ant-menu-item {
+  color: white !important;
+  font-size: 15px;
+  margin: 6px 12px;
+  border-radius: 10px;
+}
+
+
+.sidenav .ant-menu-item .anticon {
+  font-size: 18px;
+}
+
+
+.sidenav .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+
+.sidenav .ant-menu-item-selected {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
 }
