@@ -14,6 +14,11 @@ export default function SideNav() {
         <NavLink to="/users" className="nav-item">Users</NavLink>
         <NavLink to="/transactions" className="nav-item">Transactions</NavLink>
         <NavLink to="/packages" className="nav-item">Packages</NavLink>
+        
+        {/* --- NEW TABS --- */}
+        <div style={{ margin: "10px 0", borderTop: "1px solid rgba(255,255,255,0.2)" }}></div>
+        <NavLink to="/logging" className="nav-item">Logging</NavLink>
+        <NavLink to="/auditing" className="nav-item">Auditing</NavLink>
       </div>
 
       <div className="nav-bottom">

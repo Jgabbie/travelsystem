@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Tag, Table } from 'antd'; // Using Ant Design Table for better look
 
 export default function Logging() {
     const [logs, setLogs] = useState([]);
@@ -17,52 +18,79 @@ export default function Logging() {
                 setLoading(false);
             } catch (err) {
                 console.error("Failed to fetch logs", err);
-                alert("Access Denied or Error fetching logs");
-                navigate('/login');
+                // navigate('/login'); // Optional: redirect if error
             }
         };
 
         fetchLogs();
     }, [navigate]);
 
+    // Ant Design Table Columns
+    const columns = [
+        {
+            title: 'Date/Time',
+            dataIndex: 'timestamp',
+            key: 'timestamp',
+            render: (text) => new Date(text).toLocaleString(),
+        },
+        {
+            title: 'Action',
+            dataIndex: 'action',
+            key: 'action',
+            render: (text) => <strong>{text}</strong>
+        },
+        {
+            title: 'Performed By',
+            dataIndex: 'performedBy',
+            key: 'performedBy',
+            render: (user) => user ? (
+                <div>
+                    <div>{user.username}</div>
+                    <small style={{ color: 'gray' }}>{user.email}</small>
+                </div>
+            ) : "Unknown"
+        },
+        {
+            title: 'Role',
+            key: 'role',
+            render: (_, record) => {
+                const role = record.performedBy?.role || "N/A";
+                // Color code: Admin = Gold/Orange, User = Blue
+                const color = role === 'Admin' ? 'gold' : 'blue';
+                return (
+                    <Tag color={color}>
+                        {role.toUpperCase()}
+                    </Tag>
+                );
+            }
+        },
+        {
+            title: 'Details',
+            dataIndex: 'details',
+            key: 'details',
+            render: (details) => (
+                <pre style={{ margin: 0, fontSize: '11px', maxHeight: '100px', overflow: 'auto' }}>
+                    {JSON.stringify(details, null, 2)}
+                </pre>
+            )
+        },
+        {
+            title: 'IP Address',
+            dataIndex: 'ipAddress',
+            key: 'ipAddress',
+        },
+    ];
+
     return (
         <div style={{ padding: "20px" }}>
-            <h2>Logging</h2>
-            {loading ? (
-                <p>Loading logs...</p>
-            ) : (
-                <table border="1" cellPadding="10" style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                        <tr style={{ backgroundColor: "#f2f2f2" }}>
-                            <th>Date/Time</th>
-                            <th>Action</th>
-                            <th>Performed By</th>
-                            <th>Details</th>
-                            <th>IP Address</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {logs.map((log) => (
-                            <tr key={log._id}>
-                                <td>{new Date(log.timestamp).toLocaleString()}</td>
-                                <td>{log.action}</td>
-                                <td>
-                                    {log.performedBy ? (
-                                        <>
-                                            <strong>{log.performedBy.username}</strong><br/>
-                                            <small>{log.performedBy.email}</small>
-                                        </>
-                                    ) : "Unknown User"}
-                                </td>
-                                <td>
-                                    <pre style={{ margin: 0 }}>{JSON.stringify(log.details, null, 2)}</pre>
-                                </td>
-                                <td>{log.ipAddress}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+            <h1 className="page-header">System Logs</h1>
+            <Table 
+                columns={columns} 
+                dataSource={logs} 
+                rowKey="_id"
+                loading={loading}
+                pagination={{ pageSize: 8 }}
+            />
         </div>
     );
 }
