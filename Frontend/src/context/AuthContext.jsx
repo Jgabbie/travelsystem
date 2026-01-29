@@ -1,23 +1,25 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import axiosInstance from '../config/axiosConfig';
 
+
+//use axiosInstance to make the code cleaner
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [user, setUser] = useState(null); //store user
+    const [isAuthenticated, setIsAuthenticated] = useState(false); //if user is logged in
+    const [isAdmin, setIsAdmin] = useState(false); //if user is admin
+    const [isLoading, setIsLoading] = useState(true); //loading state while checking auth or performing the login, logout, signup functions
+    const [error, setError] = useState(null); //store error
 
-    // Check authentication status on mount
+
+    //just check if user is logged in or not
     const checkAuth = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await axios.post(
-                'http://localhost:8000/api/auth/is-auth',
-                {},
-                { withCredentials: true }
+            const response = await axiosInstance.post(
+                '/auth/is-auth'
             );
 
             if (response.status === 200 && response.data) {
@@ -30,25 +32,32 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setIsAuthenticated(false);
             setIsAdmin(false);
-            setError(err.message || 'Authentication check failed');
         } finally {
             setIsLoading(false);
         }
     }, []);
 
-    // Initial auth check
+    //this runs every render of a page
     useEffect(() => {
-        checkAuth();
-    }, [checkAuth]);
+        const auth = async () => {
+            try {
+                await checkAuth();
+            } catch (err) {
+                console.error("Auth check failed:", err);
+            }
+        }
+        auth();
+    }, []);
 
+
+    //logs in the user
     const login = useCallback(async (credentials) => {
         try {
-            const response = await axios.post(
-                'http://localhost:8000/api/auth/loginUser',
+            const response = await axiosInstance.post(
+                '/auth/loginUser',
                 credentials,
                 { withCredentials: true }
             );
-
             setUser(response.data.user || null);
             setIsAuthenticated(true);
             setIsAdmin(response.data.user?.role === 'Admin' || false);
@@ -62,11 +71,12 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    //logs out the user
     const logout = useCallback(async () => {
         try {
             setIsLoading(true);
-            await axios.post(
-                'http://localhost:8000/api/auth/logoutUser',
+            await axiosInstance.post(
+                '/auth/logoutUser',
                 {},
                 { withCredentials: true }
             );
@@ -81,10 +91,11 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    //signs up the user
     const signup = useCallback(async (userData) => {
         try {
-            const response = await axios.post(
-                'http://localhost:8000/api/auth/signupUser',
+            const response = await axiosInstance.post(
+                '/auth/signupUser',
                 userData,
                 { withCredentials: true }
             );
@@ -101,10 +112,12 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    //clear error state
     const clearError = useCallback(() => {
         setError(null);
     }, []);
 
+    //these are values that can be accessible by using useAuth()
     const value = {
         user,
         isAuthenticated,
@@ -118,6 +131,8 @@ export const AuthProvider = ({ children }) => {
         clearError,
     };
 
+    //wraps the children components so the the values can be accessed
+    //children is the <App/> component stored in index.js
     return (
         <AuthContext.Provider value={value}>
             {children}
@@ -125,7 +140,7 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// Hook to use auth context
+// to use the auth context in other components and destructure the values
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

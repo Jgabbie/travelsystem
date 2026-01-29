@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
-const { response } = require('express');
 
 
 //signup
@@ -67,10 +66,10 @@ const loginUser = async (req, res) => {
         await user.save()
 
         res.cookie('accessToken', accessToken, {
-            httpOnly: false,
+            httpOnly: true,
             secure: false,
             sameSite: 'lax',
-            maxAge: 15 * 60 * 1000
+            maxAge: 15 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
@@ -85,6 +84,7 @@ const loginUser = async (req, res) => {
 
         res.status(200).json({
             message: "Login Successful!",
+            accessToken,
             user: {
                 id: user._id,
                 username: user.username,
@@ -113,11 +113,11 @@ const refreshToken = async (req, res) => {
 
         const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '15m' });
 
-        res.cookie('token', newAccessToken, {
+        res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
-            maxAge: 15 * 60 * 1000
+            maxAge: 15 * 60 * 60 * 1000
         });
 
         res.status(200).json({ message: "Access token refreshed" });

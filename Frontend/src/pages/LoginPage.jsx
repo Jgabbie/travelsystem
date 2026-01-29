@@ -33,7 +33,6 @@ export default function LoginPage() {
                 password: ''
             })
 
-
             const userRole = response.user?.role;
             console.log("User Role:", userRole);
             if (userRole === 'Admin') {

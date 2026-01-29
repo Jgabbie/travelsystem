@@ -134,7 +134,7 @@ body {
 .hero-section {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/LandingPage_BackgroundImg.png');
+    background-image: url('/public/images/LandingPage_Banner.png');
     background-position: center;
     display: flex;
     flex-direction: column;
@@ -296,7 +296,7 @@ body {
 .hero-section-packages {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/LandingPage_BackgroundImg.png');
+    background-image: url('/public/images/LandingPage2_Banner.png');
     background-position: center;
     display: flex;
     flex-direction: column;

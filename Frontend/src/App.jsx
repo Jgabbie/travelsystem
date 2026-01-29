@@ -1,5 +1,4 @@
-import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom";
-import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -18,8 +17,6 @@ import AddPackage from "./pages/AddPackage";
 import AdminDashboard from "./pages/AdminDashboard";
 import TransactionManagement from "./pages/TransactionManagement";
 
-
-
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from "./routes/AdminRoute";
@@ -27,9 +24,6 @@ import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 
 import "antd/dist/reset.css";
-
-
-
 
 function App() {
 
@@ -60,8 +54,8 @@ function App() {
           </Route>
         </Route>
 
+        {/* protected routes */}
         <Route element={<ProtectedRoute />}>
-          {/* protected routes */}
           <Route path='/package' element={<PackagePage />} />
           <Route path='/profile' element={<ProfilePage />} />
         </Route>

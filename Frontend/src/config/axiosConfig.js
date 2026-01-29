@@ -1,8 +1,9 @@
 import axios from 'axios';
 
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
-// Create axios instance with default config
+//creates an instance that can be used throughout the system when send a request to the backend, basically just shortens the call syntax
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
@@ -11,38 +12,33 @@ const axiosInstance = axios.create({
     },
 });
 
-// Request interceptor
-axiosInstance.interceptors.request.use(
-    (config) => {
-        // Add any auth tokens if stored in localStorage/sessionStorage
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
-
-// Response interceptor
 axiosInstance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        // Handle 401 Unauthorized - redirect to login
-        if (error.response?.status === 401) {
-            localStorage.removeItem('authToken');
-            window.location.href = '/login';
-        }
+    res => res,
+    async error => {
+        const originalRequest = error.config;
 
-        // Handle 403 Forbidden
-        if (error.response?.status === 403) {
-            console.error('Access forbidden:', error.response.data);
+        // Prevent retry loop for /auth/is-auth or /auth/refresh-token
+        if (
+            error.response?.status === 401 &&
+            !originalRequest._retry &&
+            !originalRequest.url.includes('/auth/is-auth') &&
+            !originalRequest.url.includes('/auth/refresh-token')
+        ) {
+            originalRequest._retry = true;
+
+            try {
+                await axios.post(`${API_BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
+                return axiosInstance(originalRequest);
+            } catch {
+                window.location.href = '/login'; // kick out if refresh fails
+            }
         }
 
         return Promise.reject(error);
     }
 );
+
+
+
 
 export default axiosInstance;
