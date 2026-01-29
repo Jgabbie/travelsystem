@@ -1,3 +1,6 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
 .admin-layout {
   min-height: 100vh;
 }
@@ -14,4 +17,4 @@
 
 .ant-menu-item-selected {
   background-color: rgba(255, 255, 255, 0.25) !important;
-}
+} */

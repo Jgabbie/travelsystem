@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../style/emailverifymodal.css'
 
 export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, userEmail }) {
 
@@ -62,7 +63,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
         <div>
             <Modal
                 open={isOpenOTPModal}
-                className='resetpassword-modal'
+                className='emailverify-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 onCancel={() => {
@@ -72,26 +73,26 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
                 }}
             >
 
-                <div id='resetpassword-container-modal'>
-                    <h1 id='heading-modal'>Verify OTP</h1>
-                    <p id='secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
+                <div className='emailverify-container-modal'>
+                    <h1 className='emailverify-heading-modal'>Verify OTP</h1>
+                    <p className='emailverify-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
                     <form onSubmit={submitOTP}>
                         <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
                             if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                 e.preventDefault()
                             }
-                        }} type="tel" id="enterOTP" name="enterOTP" className='input-fields-modal' required />
+                        }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
 
                         <p id='error-message-modal'>{errorOTP}</p>
 
-                        <Button id='submit-otp-button' htmlType="submit">Submit</Button>
+                        <Button id='emailverify-submit-otp-button' htmlType="submit">Submit</Button>
                     </form>
 
                     {
-                        timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
+                        timer > 0 ? <p id='emailverify-footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                             :
-                            <p className='label-links-modal'>Didn't get the code? <Button className='button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
+                            <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
                     }
                 </div>
 

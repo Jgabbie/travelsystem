@@ -4,39 +4,50 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button } from 'antd';
 import '../style/loginpage.css'
 import EmailVerifyModal from '../components/EmailVerifyModal';
-
+import { useAuth } from '../context/AuthContext';
 
 
 export default function LoginPage() {
 
     const navigate = useNavigate();
+    const { login } = useAuth();
 
+    const [email, setEmail] = useState('');
+    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false);
+    const [error, setError] = useState('');
 
     const [values, setValues] = useState({
         username: '',
         password: ''
     });
 
-    const [email, setEmail] = useState('');
-    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false);
-    const [error, setError] = useState('');
-
     const handleLogin = async (e) => {
         e.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/loginUser', { username: values.username, password: values.password }, { withCredentials: true })
+            const response = await login({ username: values.username, password: values.password })
+            console.log("Login Response:", response.data);
             alert("Login Successful")
             setValues({
                 username: '',
                 password: ''
             })
+
+            setTimeout(() => {
+                const userRole = response.user?.role;
+                if (userRole === 'Admin') {
+                    navigate('/admin/bookings')
+                } else {
+                    navigate('/home')
+                }
+            }, 1000);
+
         } catch (err) {
             const status = err.response?.status;
             const data = err.response?.data;
-
+            const email = data.email
+            console.log("Email: ", email);
             if (status === 403) {
-                const email = data.email
                 const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: email })
                 setValues({
                     username: '',
@@ -45,16 +56,10 @@ export default function LoginPage() {
                 setEmail(email)
                 setIsOTPModalVisible(true)
                 return
+            } else {
+                setError(data.message || 'Login failed. Please try again.');
             }
-
-
-            const errorMsg = err.response?.data?.message || "Verification failed"
-            console.error("Error: ", errorMsg)
-            setError(errorMsg)
         }
-
-        // const { username, password } = values;
-        // setOutput("Logging in with " + username + " and " + password);
     }
 
     const goToSignup = (e) => {
@@ -73,8 +78,8 @@ export default function LoginPage() {
                 <form method='post' onSubmit={handleLogin}>
 
                     <div id='heading-div'>
-                        <h1 id='heading'>Welcome</h1>
-                        <h4 id='second-heading'>Login Account</h4>
+                        <h1 className='login-heading'>Welcome</h1>
+                        <h4 className='login-secondary-heading'>Login Account</h4>
                     </div>
 
                     <div className='div-input-fields'>
@@ -97,9 +102,9 @@ export default function LoginPage() {
 
                     <p id='error-message'>{error}</p>
 
-                    <div id='links-container'>
-                        <p className='label-links'>Need an Account?<Button className='button-links' type="link" onClick={goToSignup}>Signup here</Button></p>
-                        <p className='label-links'>Forget your<Button className='button-links' type="link" onClick={resetPassword}>Password?</Button></p>
+                    <div className='links-container-login'>
+                        <p className='label-links-login'>Need an Account?<Button className='button-links-login' type="link" onClick={goToSignup}>Signup here</Button></p>
+                        <p className='label-links-login'>Forget your<Button className='button-links-login' type="link" onClick={resetPassword}>Password?</Button></p>
                     </div>
 
                     <Button id='login-button' htmlType="submit">Login</Button>

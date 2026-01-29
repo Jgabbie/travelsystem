@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Input, Button, Modal } from 'antd';
 import '../style/resetpasswordpage.css'
+import '../style/newpasswordpage.css'
 
 
 export default function ResetPassword() {
@@ -167,35 +168,35 @@ export default function ResetPassword() {
                 <div className='newpassword-page-container'>
                     <div className='newpassword-left-side'>
                         <form onSubmit={submitNewPassword}>
-                            <div id='heading-div'>
-                                <h1 id='heading'>Set New Password</h1>
-                                <h4 id='second-heading'>Enter New Password</h4>
+                            <div>
+                                <h1 className='newpassword-heading'>Set New Password</h1>
+                                <h4 className='newpassword-secondary-heading'>Enter New Password</h4>
                             </div>
 
                             <div className='div-input-fields'>
-                                <label className='labels' htmlFor="password">Password</label>
+                                <label className='newpassword-labels' htmlFor="password">Password</label>
                                 <Input value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your new password' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
-                                }} type="password" id="password" name="password" className='input-fields' required />
+                                }} type="password" id="password" name="password" className='newpassword-input-fields' required />
                             </div>
 
                             <p id='error-message'>{error.password}</p>
 
                             <div className='div-input-fields'>
-                                <label className='labels' htmlFor="confirmPassword">Confirm Password</label>
+                                <label className='newpassword-labels' htmlFor="confirmPassword">Confirm Password</label>
                                 <Input value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter confirm password' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
-                                }} type="password" id="confirmPassword" name="confirmPassword" className='input-fields' required />
+                                }} type="password" id="confirmPassword" name="confirmPassword" className='newpassword-input-fields' required />
                             </div>
 
                             <p id='error-message'>{error.confirmPassword}</p>
 
-                            <div id='links-container'>
-                                <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
+                            <div id='newpassword-links-container'>
+                                <p className='newpassword-label-links'>Remember your password?<Button className='newpassword-button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
                             </div>
 
                             <Button id='newpassword-button' htmlType='submit'> Reset Password </Button>
@@ -211,12 +212,13 @@ export default function ResetPassword() {
                 <div className='resetpassword-page-container'>
                     <div className='resetpassword-left-side'>
                         <form onSubmit={resetPassword}>
-                            <div id='heading-div'>
-                                <h1 id='heading'>Reset Password</h1>
-                                <h4 id='second-heading'>Enter Email to Reset Password</h4>
+
+                            <div>
+                                <h1 className='resetpassword-heading'>Reset Password</h1>
+                                <h4 className='resetpassword-second-heading'>Enter Email to Reset Password</h4>
                             </div>
 
-                            <div className='div-input-fields'>
+                            <div className='resetpassword-div-input-fields'>
                                 <label className='labels' htmlFor="email">Email</label>
                                 <Input status={errorEmail ? "error" : ""} value={getEmail} maxLength={40} onChange={(e) => setEmail(e.target.value)} autoComplete='off' placeholder='Enter your Email' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
@@ -227,8 +229,8 @@ export default function ResetPassword() {
 
                             <p id='error-message'>{errorEmail}</p>
 
-                            <div id='links-container'>
-                                <p className='label-links'>Remember your password?<Button className='button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
+                            <div id='resetpassword-links-container'>
+                                <p className='resetpassword-label-links'>Remember your password?<Button className='resetpassword-button-links' type='link' onClick={goToLogin}>Go to Login</Button></p>
                             </div>
 
                             <Button id='resetpassword-button' htmlType="submit">Reset Password</Button>
@@ -251,9 +253,9 @@ export default function ResetPassword() {
                 onCancel={handleCancel}
             >
 
-                <div id='resetpassword-container-modal'>
-                    <h1 id='heading-modal'>Verify OTP</h1>
-                    <p id='secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
+                <div className='resetpassword-container-modal'>
+                    <h1 className='resetpassword-heading-modal'>Verify OTP</h1>
+                    <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
                     <form onSubmit={submitOTP}>
                         <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
@@ -270,13 +272,10 @@ export default function ResetPassword() {
                     {
                         timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                             :
-                            <p className='label-links-modal'>Didn't get the code? <Button className='button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
+                            <p className='resetpassword-label-links-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
                     }
                 </div>
             </Modal>
-
-
         </div>
-
     )
 }

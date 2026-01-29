@@ -15,13 +15,69 @@ const getUserData = async (req, res) => {
         res.json({
             success: true,
             userData: {
+                _id: user._id,
                 username: user.username,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
                 isAccountVerified: user.isAccountVerified
             }
         })
 
     } catch (e) {
         res.status(500).json({ message: "Get User Data Function failed: " + e.message })
+    }
+}
+
+const updateUserData = async (req, res) => {
+    try {
+        const { userId } = req
+        const { firstname, lastname, email, phone } = req.body
+
+        if (!firstname || !lastname || !email || !phone) {
+            return res.status(400).json({ message: "All fields are required" })
+        }
+
+        const user = await UserModel.findById(userId)
+
+        if (!user) {
+            return res.status(409).json({ message: "User not found" })
+        }
+
+        // Check if email is already taken by another user
+        if (email !== user.email) {
+            const existingUser = await UserModel.findOne({ email })
+            if (existingUser) {
+                return res.status(400).json({ message: "Email already in use" })
+            }
+        }
+
+        user.firstname = firstname
+        user.lastname = lastname
+        user.email = email
+        user.phone = phone
+
+        await user.save()
+
+        res.json({
+            success: true,
+            message: "Profile updated successfully",
+            userData: {
+                _id: user._id,
+                username: user.username,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                isAccountVerified: user.isAccountVerified
+            }
+        })
+
+    } catch (e) {
+        res.status(500).json({ message: "Update User Data Function failed: " + e.message })
     }
 }
 
@@ -57,4 +113,4 @@ const delUsers = (req, res) => {
         });
 };
 
-module.exports = { getUsers, createUsers, delUsers, getUserData };
+module.exports = { getUsers, createUsers, delUsers, getUserData, updateUserData };

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 * {
@@ -7,14 +8,12 @@
     padding: 0;
 }
 
-
 .signup-page-container {
     background-color: #F5F8FF;
     display: flex;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    font-family: 'Roboto', sans-serif;
 }
 
 .signup-left-side {
@@ -35,7 +34,7 @@
     padding: 40px;
 }
 
-.form-container-box {
+.signup-form-container-box {
     width: 100%;
     max-width: 500px;
 }
@@ -43,41 +42,16 @@
 .signup-header {
     font-family: 'Montserrat', sans-serif;
     font-size: 45px;
+    font-weight: 600;
     text-align: center;
     color: #305797;
     margin-bottom: 16px;
 }
 
-/* GENERAL INPUT STYLING (Left Aligned) */
-.input-group {
+.sigup-input-group {
     margin-bottom: 12px;
 }
 
-/* .input-group label {
-    display: block;
-    color: #305797;
-    font-size: 14px;
-    margin-bottom: 5px;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 0px;
-    font-size: 15px;
-    color: #000000;
-    outline: none;
-    text-align: left;
-
-}
-
-input::placeholder {
-    color: #8C8C8C;
-    text-align: left;
-
-} */
-
-/* new signup css */
 .input-fields-signup-group {
     width: 240px;
     height: 40px;
@@ -97,7 +71,6 @@ input::placeholder {
     border-width: 2px;
 }
 
-/* add "within" for the passwordfield */
 .input-fields-signup:focus-within {
     border-color: #305797 !important;
     border-width: 2px !important;
@@ -125,7 +98,6 @@ input::placeholder {
     margin-top: 5px;
 }
 
-/* new button */
 #signup-button {
     font-family: "Roboto", sans-serif;
     font-size: 20px;
@@ -140,7 +112,22 @@ input::placeholder {
     color: #305797;
 }
 
-/* button links */
+.input-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.input-row .input-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.input-row input,
+.input-row input::placeholder {
+    text-align: center;
+}
+
 .button-links-signup {
     font-size: 14px;
     font-weight: 600;
@@ -161,75 +148,15 @@ input::placeholder {
     margin-left: 10px;
 }
 
-/* TARGETED: Center ONLY First and Last name placeholders */
-.input-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 12px;
-}
-
-.input-row .input-group {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.input-row input,
-.input-row input::placeholder {
-    text-align: center;
-    /* Centered for name fields only */
-}
-
-/* BUTTONS & LINKS */
 .button-row {
     display: flex;
     justify-content: space-between;
     margin-top: 22px;
 }
 
-/* .signup-btn {
-    padding: 12px 55px;
-    background-color: #4076A0;
-    color: white;
-    border: none;
-    border-radius: 15px;
-    font-size: 17px;
-    cursor: pointer;
-} */
-
-.login-link-text {
-    font-size: 14px;
-    color: #305797;
-    text-align: right;
-    font-weight: 500;
-}
-
-.login-link-text a {
-    color: #9E2847;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-/* ERROR MESSAGES
-.error-list {
-    margin-top: 15px;
-    text-align: center;
-    /* Centers the error text */
-
-/* PREVENTS JUMPING: 
-       Reserving a minimum height (e.g., 80px) ensures the container 
-       is already there even when empty, so the layout won't move. */
-/* min-height: 90px;
-
+.signup-link-text {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-} */
-
-/* .error-text {
-    color: #9E2847;
-    font-size: 14px;
-    /* Slightly larger for better readability */
-/* font-weight: 500;
-    margin-bottom: 5px;
-    width: 100%;
-}  */
+    flex-direction: row;
+    white-space: nowrap;
+    gap: 100px;
+}

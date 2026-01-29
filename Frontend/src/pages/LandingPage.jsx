@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import '../style/landingpage.css'
-import { Button, Dropdown, Space, Card } from 'antd';
+import { Button, Dropdown, Space, Card, Spin } from 'antd';
 import { DownOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
 import LoginModal from '../components/LoginModal';
 import SignupModal from '../components/SignupModal';
@@ -56,7 +56,7 @@ export default function LandingPage() {
         }
     };
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return <div><Spin></Spin></div>;
 
 
     //dropdown menu items
@@ -103,7 +103,7 @@ export default function LandingPage() {
             {/* --- 1. NAVBAR --- */}
             <nav className="navbar">
                 <div className="logo-section">
-                    <img src={null} alt="Logo" className="logo-img" />
+                    <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
                     <span>M&RC Travel and Tours</span>
                 </div>
 
@@ -112,7 +112,7 @@ export default function LandingPage() {
                     <div>
                         <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
                             <Space className='dropdown-space'>
-                                <h4>
+                                <h4 className='username-text'>
                                     Welcome, <span className='username-dropdown'>{user?.username.toUpperCase()}</span>
                                 </h4>
                                 <DownOutlined className='user-dropdown-icon' />
@@ -122,9 +122,9 @@ export default function LandingPage() {
                     :
                     <div className="nav-links">
                         <span className="regsignin">
-                            <Button className='button-links' type="link" onClick={() => setIsSignupVisble(true)}>SIGN UP</Button>
+                            <Button className='landing-button-links' type="link" onClick={() => setIsSignupVisble(true)}>SIGN UP</Button>
                             |
-                            <Button className='button-links' type="link" onClick={() => setIsLoginVisble(true)}>LOG IN</Button>
+                            <Button className='landing-button-links' type="link" onClick={() => setIsLoginVisble(true)}>LOG IN</Button>
                         </span>
                     </div>
                 }
@@ -219,8 +219,6 @@ export default function LandingPage() {
                     </div>
                 </div>
             </div>
-
-
 
             <div className='page-link-buttons-container'>
                 <Button className='page-link-buttons' type='link' onClick={() => packagesRef.current?.scrollIntoView({ behavior: 'smooth' })} >Popular Packages</Button>
@@ -326,7 +324,7 @@ export default function LandingPage() {
 
             </div>
 
-            <div ref={exploreRef} style={{ paddingTop: '50px', marginTop: '30px' }}>
+            <div ref={exploreRef} style={{ paddingTop: '100px', marginTop: '50px' }}>
                 <div className='explore-container'>
                     <div className='explore-local-packages-section'>
                         <h1 className='explore-text'>Local Tour Packages</h1>

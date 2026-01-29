@@ -1,4 +1,5 @@
-/* Modal design */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 body {
     width: 100% !important;
@@ -17,6 +18,7 @@ body {
 #signup-heading-modal {
     font-family: "Montserrat", sans-serif;
     font-size: 35px;
+    font-weight: 600;
     color: #305797;
     line-height: 10px;
     width: 550px;
@@ -27,13 +29,11 @@ body {
 #signup-secondary-heading-modal {
     font-family: "Montserrat", sans-serif;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
     color: #305797;
     line-height: 5px;
     width: 550px;
 }
-
-/* fields */
 
 .signup-input-fields-modal-group {
     width: 263px;
@@ -54,7 +54,6 @@ body {
     border-width: 2px;
 }
 
-/* add "within" for the passwordfield */
 .signup-input-fields-modal:focus-within {
     border-color: #305797 !important;
     border-width: 2px !important;
@@ -156,10 +155,8 @@ body {
 .signup-input-row-modal,
 .signup-input-row-modal::placeholder {
     text-align: center;
-    /* Centered for name fields only */
 }
 
-/* BUTTONS & LINKS */
 .signup-button-row-modal {
     display: flex;
     justify-content: space-between;

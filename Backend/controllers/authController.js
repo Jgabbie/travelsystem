@@ -83,7 +83,15 @@ const loginUser = async (req, res) => {
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         await logAction("USER_LOGIN", user._id, { username: user.username }, ip);
 
-        res.status(200).json({ message: "Login Successful!" })
+        res.status(200).json({
+            message: "Login Successful!",
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
+        })
 
     } catch (e) {
         res.status(500).json({ message: "Login Function failed " + e.message })
@@ -268,7 +276,10 @@ const isAuthenticated = async (req, res) => {
         return res.status(200).json({
             message: "User is Authenticated",
             user: {
-                username: currentUser.username
+                id: currentUser._id,
+                username: currentUser.username,
+                email: currentUser.email,
+                role: currentUser.role
             }
         })
     } catch (e) {

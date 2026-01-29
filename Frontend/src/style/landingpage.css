@@ -20,7 +20,6 @@ body {
     position: relative;
 }
 
-/* navigation bar */
 .navbar {
     position: fixed;
     z-index: 1000;
@@ -42,36 +41,36 @@ body {
 }
 
 .logo-img {
-    height: 40px;
-    margin-right: 10px;
+    height: 50px;
+    width: 50px;
+    margin-right: 25px;
+    margin-bottom: 5px;
 }
 
-.nav-links button {
+.logo-section span {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+.nav-links Button {
     background: none;
     border: none;
     font-weight: bold;
     color: #0056b3;
     cursor: pointer;
     margin-left: 20px;
-    margin-bottom: 5px;
     font-size: 16px;
 }
 
-/* links */
-#links-container {
-    display: flex;
-    flex-direction: row;
-    white-space: nowrap;
-}
-
-.label-links {
+.landing-label-links {
     font-size: 18px;
     font-weight: 600;
     color: #305797;
     margin-top: 3px;
 }
 
-.button-links {
+.landing-button-links {
     font-size: 18px;
     font-weight: 600;
     color: #992A46;
@@ -80,7 +79,7 @@ body {
     padding-right: 22px;
 }
 
-.button-links:hover {
+.landing-button-links:hover {
     text-decoration: underline;
     color: #992A46 !important;
     border-width: 0px !important;
@@ -98,13 +97,6 @@ body {
     border-width: 0px !important;
 }
 
-.contact-info {
-    font-size: 12px;
-    color: #888;
-    margin-right: 20px;
-}
-
-/* user dropdown component */
 .ant-dropdown {
     height: 30px;
     margin-top: 0px;
@@ -113,34 +105,36 @@ body {
     padding-bottom: 0px;
 }
 
-.ant-dropdown-menu {}
-
 .dropdown-space {
-    margin-top: 0px !important;
+    margin-top: 10px !important;
     margin-bottom: 0px !important;
     padding-top: 0px !important;
     padding-bottom: 0px !important;
 }
 
 .user-dropdown-icon {
-    margin-top: 0px !important;
+    margin-bottom: 10px !important;
+}
+
+.username-text {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
 }
 
 .username-dropdown {
+    font-family: "Montserrat", sans-serif;
     color: #305797;
+    margin-left: 5px;
 }
 
 .user-dropdown-button {
     margin-left: 30px;
 }
 
-
-/* hero section */
 .hero-section {
     position: relative;
     height: 600px;
     background-image: url('/public/images/LandingPage_BackgroundImg.png');
-    /* DITO YUNG PICTURE SA GITNA */
     background-position: center;
     display: flex;
     flex-direction: column;
@@ -168,6 +162,7 @@ body {
 .hero-content h1 {
     font-family: "Montserrat", sans-serif;
     font-size: 80px;
+    font-weight: 600;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -175,13 +170,12 @@ body {
 .hero-content p {
     font-family: "Montserrat", sans-serif;
     font-size: 24px;
+    font-weight: 600;
     max-width: 700px;
     margin: 0 auto;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-
-/* search component */
 .search-widget {
     position: absolute;
     bottom: -60px;
@@ -220,8 +214,6 @@ body {
     font-size: 20px;
 }
 
-
-/* filter/dropdown component */
 .filter-row {
     display: flex;
     justify-content: space-between;
@@ -278,7 +270,6 @@ body {
     cursor: pointer;
 }
 
-/* page link buttons */
 .page-link-buttons-container {
     display: flex;
     flex-direction: row;
@@ -302,12 +293,10 @@ body {
     color: #0056b3 !important;
 }
 
-/* hero section packages */
 .hero-section-packages {
     position: relative;
     height: 600px;
     background-image: url('/public/images/LandingPage_BackgroundImg.png');
-    /* DITO YUNG PICTURE SA GITNA */
     background-position: center;
     display: flex;
     flex-direction: column;
@@ -335,6 +324,7 @@ body {
 .hero-content-packages h1 {
     font-family: "Montserrat", sans-serif;
     font-size: 80px;
+    font-weight: 600;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -342,6 +332,7 @@ body {
 .hero-content-packages p {
     font-family: "Montserrat", sans-serif;
     font-size: 20px;
+    font-weight: 600;
     max-width: 1200px;
     margin: 0 auto;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -371,6 +362,7 @@ body {
 .popular-packages-text {
     font-family: "Montserrat", sans-serif;
     font-size: 35px;
+    font-weight: 600;
     color: #000000;
     margin: 40px;
 }
@@ -382,7 +374,6 @@ body {
     margin: 40px;
 }
 
-/* hero section explore */
 .explore-container {
     display: flex;
     flex-direction: row;
@@ -391,6 +382,7 @@ body {
 .explore-text {
     font-family: "Montserrat", sans-serif;
     font-size: 35px;
+    font-weight: 600;
     color: #000000;
     margin-left: 40px;
     margin-bottom: 20px;
@@ -408,8 +400,6 @@ body {
     margin-left: 40px;
     margin-bottom: 20px;
 }
-
-.explore-local-packages-section-right {}
 
 .explore-local-packages-section-right img {
     height: 615px;
@@ -455,12 +445,14 @@ body {
 .explore-world-text-heading {
     font-family: "Montserrat", sans-serif;
     font-size: 24px;
+    font-weight: 600;
     color: #000000;
 }
 
 .explore-world-text-description {
     font-family: "Montserrat", sans-serif;
     font-size: 15px;
+    font-weight: 600;
     color: #000000;
     text-align: justify;
     margin-right: 40px;

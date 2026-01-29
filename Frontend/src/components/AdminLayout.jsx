@@ -10,7 +10,6 @@ export default function AdminLayout() {
   return (
     <Layout className="admin-layout">
       <SideNav />
-
       <Layout>
         <TopNav />
         <Content className="admin-content">
