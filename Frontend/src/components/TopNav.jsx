@@ -10,9 +10,6 @@ export default function TopNav() {
       <div className="brand">M&RC Travel and Tours</div>
 
       <div className="topnav-right">
-        <Badge count={2}>
-          <BellOutlined />
-        </Badge>
         <span>Admin</span>
         <Avatar icon={<UserOutlined />} />
       </div>
