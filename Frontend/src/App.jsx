@@ -15,70 +15,48 @@ import BookingManagement from "./pages/BookingManagement";
 import UserManagement from "./pages/UserManagement";
 import PackageManagement from "./pages/PackageManagement";
 import AddPackage from "./pages/AddPackage";
-
-
-import PublicRoute from "./routes/PublicRoute";
-import ProtectedRoute from './routes/ProtectedRoute';
-import AdminRoute from "./routes/AdminRoute";
-
-
-import "antd/dist/reset.css";
 import AdminDashboard from "./pages/AdminDashboard";
 import TransactionManagement from "./pages/TransactionManagement";
 
 
 
+import PublicRoute from "./routes/PublicRoute";
+import ProtectedRoute from './routes/ProtectedRoute';
+import AdminRoute from "./routes/AdminRoute";
+import GuestsUsersRoute from "./routes/GuestsUsersRoute";
+
+
+import "antd/dist/reset.css";
+
+
+
+
 function App() {
-  // const [isAuth, setIsAuth] = useState(false)
-  // const [isLoading, setIsLoading] = useState(false)
-
-  // //CheckAuth
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     try {
-  //       const response = await fetch('http://localhost:8000/api/auth/is-auth', {
-  //         method: "POST",
-  //         credentials: "include"
-  //       })
-  //       if (response.ok) {
-  //         setIsAuth(true)
-  //       } else {
-  //         setIsAuth(false)
-  //       }
-  //     } catch (err) {
-  //       setIsAuth(false)
-  //       const errorMsg = err.response?.data?.message || "Verification failed"
-  //       console.error("Error: ", errorMsg)
-  //     } finally {
-  //       setIsLoading(false)
-  //     }
-  //   }
-  //   checkAuth()
-  // }, [])
-
-  // if (isLoading) return <div> Loading ...</div>
 
   return (
     <div>
       <Routes>
+
+        <Route element={<GuestsUsersRoute />}>
+          <Route path='/home' element={<LandingPage />} />
+        </Route>
         {/* public routes */}
         <Route element={<PublicRoute />}>
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignupPage />} />
-          <Route path='/home' element={<LandingPage />} />
           <Route path='/reset-password' element={<ResetPassword />} />
         </Route>
 
         {/* admin routes */}
-        <Route path="/admin" element={<AdminRoute />}>
+        <Route element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
             <Route index element={<Navigate to="/dashboard" />} />
-            <Route path="/dashboard" element={<AdminDashboard />} />
-            <Route path="/bookings" element={<BookingManagement />} />
-            <Route path="/users" element={<UserManagement />} />
-            <Route path="/transactions" element={<TransactionManagement />} />
-            <Route path="/packages" element={<PackageManagement />} />
-            <Route path="/packages/add" element={<AddPackage />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="bookings" element={<BookingManagement />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="transactions" element={<TransactionManagement />} />
+            <Route path="packages" element={<PackageManagement />} />
+            <Route path="packages/add" element={<AddPackage />} />
           </Route>
         </Route>
 

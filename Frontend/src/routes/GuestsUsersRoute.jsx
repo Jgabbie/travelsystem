@@ -1,14 +1,9 @@
-import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { Spin } from 'antd';
+import React from 'react'
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Spin } from 'antd';
 
-/**
- * ProtectedRoute - Protects routes that require authentication
- * Only authenticated non-admin users can access these routes
- * Admins are redirected to the admin dashboard
- */
-const ProtectedRoute = () => {
+const GuestsUsersRoute = () => {
     const { isAuthenticated, isLoading, isAdmin } = useAuth();
 
     if (isLoading) {
@@ -24,15 +19,11 @@ const ProtectedRoute = () => {
         );
     }
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
-
-    if (isAdmin) {
+    if (isAdmin && isAuthenticated) {
         return <Navigate to="/dashboard" replace />;
     }
 
     return <Outlet />;
 };
 
-export default ProtectedRoute;
+export default GuestsUsersRoute;

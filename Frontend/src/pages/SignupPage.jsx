@@ -4,10 +4,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button, Modal } from 'antd';
 import '../style/signuppage.css';
 import EmailVerifyModal from '../components/EmailVerifyModal';
-
+import { useAuth } from '../context/AuthContext';
 
 export default function SignupPage() {
     const navigate = useNavigate();
+    const { signup } = useAuth();
 
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
     const [email, setEmail] = useState("")
@@ -93,23 +94,23 @@ export default function SignupPage() {
         setError({ ...error, [field]: validate(field, value) });
     };
 
-    const signup = async (e) => {
+    const handleSignup = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8000/api/auth/signupUser', values, { withCredentials: true });
-            setOutput("Signup successful!");
-            setEmail(values.email)
-            setIsOTPModalVisible(true)
-            setValues({
-                username: '',
-                firstname: '',
-                lastname: '',
-                email: '',
-                phone: '',
-                password: '',
-                confirmPassword: ''
-            })
+            const response = await signup(values);
+            if (response) {
+                const userEmail = values.email
+                setEmail(userEmail)
+                setIsOTPModalVisible(true)
+                setValues({
+                    username: '', firstname: '', lastname: '', password: '',
+                    confirmPassword: '', email: '', phone: ''
+                })
+            } else {
+                console.log("Response is falsy:", response)
+            }
         } catch (err) {
+            console.log("Error: " + err)
             alert(err.response?.data?.message || "Verification failed");
         }
     };
@@ -131,7 +132,7 @@ export default function SignupPage() {
                 <div className="signup-form-container-box">
                     <h2 className="signup-header">Sign up</h2>
 
-                    <form onSubmit={signup}>
+                    <form onSubmit={handleSignup}>
                         <div className="signup-input-group">
                             <label className='labels-signup'>Username</label>
                             <Input status={error.username ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' placeholder='Enter your Username' onKeyDown={(e) => {

@@ -4,13 +4,16 @@ import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../style/signupmodal.css';
 import EmailVerifyModal from './EmailVerifyModal';
+import { useAuth } from '../context/AuthContext';
 
 
 export default function SignupModal({ isOpenSignup, isCloseSignup }) {
 
     const navigate = useNavigate();
+    const { signup } = useAuth();
 
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
+    const [email, setEmail] = useState("")
 
     const [error, setError] = useState({
         username: '', firstname: '', lastname: '', password: '',
@@ -92,22 +95,26 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
         setError({ ...error, [field]: validate(field, value) });
     };
 
-    const signup = async (e) => {
+    const handleSignup = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8000/api/auth/signupUser', values, { withCredentials: true });
-            setOutput("Signup successful!");
-            setValues({
-                username: '',
-                firstname: '',
-                lastname: '',
-                email: '',
-                phone: '',
-                password: '',
-                confirmPassword: ''
-            })
-            isCloseSignup()
-            setIsOTPModalVisible(true)
+            const response = await signup(values);
+            if (response) {
+                const userEmail = values.email
+                setIsOTPModalVisible(true)
+                isCloseSignup()
+                setEmail(userEmail)
+                setValues({
+                    username: '',
+                    firstname: '',
+                    lastname: '',
+                    email: '',
+                    phone: '',
+                    password: '',
+                    confirmPassword: ''
+                })
+
+            }
         } catch (err) {
             alert(err.response?.data?.message || "Verification failed");
         }
@@ -117,7 +124,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
         e.preventDefault();
         navigate('/login');
     };
-
 
     return (
         <div>
@@ -145,7 +151,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
                     <h1 id='signup-heading-modal'>Welcome</h1>
                     <p id='signup-secondary-heading-modal'>Create an Account</p>
 
-                    <form onSubmit={signup}>
+                    <form onSubmit={handleSignup}>
                         <div className="signup-input-group-modal">
                             <label className='signup-labels-modal'>Username</label>
                             <Input status={error.username ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' placeholder='Enter your Username' onKeyDown={(e) => {
@@ -239,7 +245,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
             <EmailVerifyModal
                 isOpenOTPModal={isOTPModalVisible}
                 isCloseOTPModal={() => setIsOTPModalVisible(false)}
-                userEmail={values.email}
+                userEmail={email}
             />
 
         </div>

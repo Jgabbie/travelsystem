@@ -4,12 +4,16 @@ import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../style/loginmodal.css';
 import EmailVerifyModal from './EmailVerifyModal';
+import { useAuth } from '../context/AuthContext';
+
 
 
 
 export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }) {
 
     const navigate = useNavigate();
+    const { login } = useAuth();
+
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
     const [email, setEmail] = useState('');
     const [values, setValues] = useState({
@@ -32,7 +36,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
         e.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/loginUser', { username: values.username, password: values.password }, { withCredentials: true })
+            const response = await login({ username: values.username, password: values.password })
             alert("Login Successful")
             if (onLoginSuccess) {
                 onLoginSuccess()

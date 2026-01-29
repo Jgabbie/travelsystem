@@ -201,8 +201,8 @@ const sendVerifyOtp = async (req, res) => {
         }
 
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
-        user.verifyOtp = otp;
         const hashedOtp = await bcrypt.hash(otp, 10)
+        user.verifyOtp = hashedOtp;
         user.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000
 
         await user.save()
@@ -226,10 +226,6 @@ const sendVerifyOtp = async (req, res) => {
 const verifyEmail = async (req, res) => {
     const { otp, email } = req.body
 
-    // if (!userId || !otp) {
-    //     return res.status(400).json({ message: "Missing User or OTP" })
-    // }
-
     try {
         const user = await UserModel.findOne({ email })
 
@@ -237,12 +233,13 @@ const verifyEmail = async (req, res) => {
             return res.status(409).json({ message: "User not found" })
         }
 
-        if (user.verifyOtp === '' || user.verifyOtp !== otp) {
-            return res.status(409).json({ message: "Invalid OTP" })
-        }
-
         if (user.verifyOtpExpireAt < Date.now()) {
             return res.status(409).json({ message: "OTP Expired" })
+        }
+
+        const matchPass = await bcrypt.compare(otp, user.verifyOtp)
+        if (!matchPass) {
+            return res.status(409).json({ message: "Invalid OTP" })
         }
 
         user.isAccountVerified = true

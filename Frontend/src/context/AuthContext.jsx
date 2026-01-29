@@ -43,26 +43,22 @@ export const AuthProvider = ({ children }) => {
 
     const login = useCallback(async (credentials) => {
         try {
-            setIsLoading(true);
             const response = await axios.post(
                 'http://localhost:8000/api/auth/loginUser',
                 credentials,
                 { withCredentials: true }
             );
 
-            if (response.status === 200) {
-                setUser(response.data.user || null);
-                setIsAuthenticated(true);
-                setIsAdmin(response.data.user?.role === 'Admin' || false);
-                setError(null);
-                return response.data;
-            }
+            setUser(response.data.user || null);
+            setIsAuthenticated(true);
+            setIsAdmin(response.data.user?.role === 'Admin' || false);
+            setError(null);
+            return response.data;
+
         } catch (err) {
             const errorMessage = err.response?.data?.message || err.message || 'Login failed';
             setError(errorMessage);
             throw err;
-        } finally {
-            setIsLoading(false);
         }
     }, []);
 
@@ -87,14 +83,12 @@ export const AuthProvider = ({ children }) => {
 
     const signup = useCallback(async (userData) => {
         try {
-            setIsLoading(true);
             const response = await axios.post(
                 'http://localhost:8000/api/auth/signupUser',
                 userData,
                 { withCredentials: true }
             );
-
-            if (response.status === 201) {
+            if (response.status === 200) {
                 setError(null);
                 return response.data;
             }

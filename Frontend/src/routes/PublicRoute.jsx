@@ -25,7 +25,7 @@ const PublicRoute = () => {
 
     // If user is authenticated, redirect to home (or admin if admin)
     if (isAuthenticated) {
-        return <Navigate to={isAdmin ? '/admin/bookings' : '/home'} replace />;
+        return <Navigate to={isAdmin ? '/dashboard' : '/home'} replace />;
     }
 
     return <Outlet />;

@@ -26,28 +26,27 @@ export default function LoginPage() {
 
         try {
             const response = await login({ username: values.username, password: values.password })
-            console.log("Login Response:", response.data);
+            console.log("Login Response:", response);
             alert("Login Successful")
             setValues({
                 username: '',
                 password: ''
             })
 
-            setTimeout(() => {
-                const userRole = response.user?.role;
-                if (userRole === 'Admin') {
-                    navigate('/admin/bookings')
-                } else {
-                    navigate('/home')
-                }
-            }, 1000);
+
+            const userRole = response.user?.role;
+            console.log("User Role:", userRole);
+            if (userRole === 'Admin') {
+                navigate('/admin/bookings')
+            } else {
+                navigate('/home')
+            }
 
         } catch (err) {
             const status = err.response?.status;
             const data = err.response?.data;
-            const email = data.email
-            console.log("Email: ", email);
             if (status === 403) {
+                const email = data.email
                 const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: email })
                 setValues({
                     username: '',
