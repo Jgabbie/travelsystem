@@ -79,8 +79,14 @@ const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
+        // --- UPDATED LOGGING LOGIC ---
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        await logAction("USER_LOGIN", user._id, { username: user.username }, ip);
+        
+        // Check role to determine action name
+        const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : "USER_LOGIN";
+
+        await logAction(actionName, user._id, { username: user.username }, ip);
+        // -----------------------------
 
         res.status(200).json({
             message: "Login Successful!",
@@ -173,8 +179,19 @@ const logoutUser = async (req, res) => {
         res.clearCookie('refreshToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
         res.clearCookie('token', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
 
+        // --- UPDATED LOGGING LOGIC ---
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        await logAction("USER_LOGOUT", user ? user._id : null, { username: user ? user.username : 'Unknown' }, ip);
+        
+        // Determine action based on the user found (if any)
+        const actionName = (user && user.role === 'Admin') ? "ADMIN_LOGOUT" : "USER_LOGOUT";
+
+        await logAction(
+            actionName, 
+            user ? user._id : null, 
+            { username: user ? user.username : 'Unknown' }, 
+            ip
+        );
+        // -----------------------------
 
         res.status(200).json({ message: "Logged Out" })
     }
