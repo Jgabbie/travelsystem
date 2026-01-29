@@ -72,13 +72,13 @@ function App() {
         {/* admin routes */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
-            <Route index element={<Navigate to="/dashboard" />} />
-            <Route path="/dashboard" element={<AdminDashboard />} />
-            <Route path="/bookings" element={<BookingManagement />} />
-            <Route path="/users" element={<UserManagement />} />
-            <Route path="/transactions" element={<TransactionManagement />} />
-            <Route path="/packages" element={<PackageManagement />} />
-            <Route path="/packages/add" element={<AddPackage />} />
+            <Route index element={<Navigate to="dashboard" />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="bookings" element={<BookingManagement />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="transactions" element={<TransactionManagement />} />
+            <Route path="packages" element={<PackageManagement />} />
+            <Route path="packages/add" element={<AddPackage />} />
           </Route>
         </Route>
 

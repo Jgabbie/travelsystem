@@ -1,38 +1,44 @@
 .sidenav {
-  background: #2f5f9f !important;
+  background: #2f5f9f;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+
+ 
+  display: flex !important;
+  flex-direction: column !important;
+
+  padding: 16px;
 }
 
 
-.sidenav .ant-menu {
-  background: transparent !important;
-  border-right: none;
-  color: white;
+.nav-bottom {
+  margin-top: auto;
   padding-top: 20px;
+  padding-bottom: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
 
+.logout {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 
-.sidenav .ant-menu-item {
-  color: white !important;
+.nav-item {
+  color: white;
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: 12px;
   font-size: 15px;
-  margin: 6px 12px;
-  border-radius: 10px;
+  transition: 0.2s;
 }
 
-
-.sidenav .ant-menu-item .anticon {
-  font-size: 18px;
+.nav-item:hover {
+  background: rgba(255,255,255,0.15);
 }
 
-
-.sidenav .ant-menu-item:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
+.nav-item.active {
+  background: rgba(255,255,255,0.25);
 }
 
-
-.sidenav .ant-menu-item-selected {
-  background: rgba(255, 255, 255, 0.25) !important;
-  color: white !important;
+.logout {
+  margin-top: 20px;
 }
