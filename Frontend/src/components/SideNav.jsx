@@ -1,47 +1,24 @@
-import React from "react";
-import { Layout, Menu } from "antd";
-import {
-  DashboardOutlined,
-  CalendarOutlined,
-  UserOutlined,
-  AppstoreOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
-
-import { useNavigate, useLocation } from "react-router-dom";
+import { Layout } from "antd";
+import { NavLink } from "react-router-dom";
+import "../style/sidenav.css";
 
 const { Sider } = Layout;
 
-
 export default function SideNav() {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-
   return (
     <Sider className="sidenav" width={220}>
 
-      <Menu
-        selectedKeys={[pathname]}
-        mode="inline"
-        onClick={({ key }) => navigate(key)}
-        items={[
-          { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard" },
-          { key: "/bookings", icon: <CalendarOutlined />, label: "Bookings" },
-          { key: "/users", icon: <UserOutlined />, label: "Users" },
-          { key: "/transactions", icon: <AppstoreOutlined />, label: "Transactions" },
-          { key: "/packages", icon: <AppstoreOutlined />, label: "Packages" },
+      <div className="nav-top">
+        <NavLink to="/dashboard" className="nav-item">Dashboard</NavLink>
+        <NavLink to="/bookings" className="nav-item">Bookings</NavLink>
+        <NavLink to="/users" className="nav-item">Users</NavLink>
+        <NavLink to="/transactions" className="nav-item">Transactions</NavLink>
+        <NavLink to="/packages" className="nav-item">Packages</NavLink>
+      </div>
 
-        ]}
-      />
-
-      <Menu
-        mode="inline"
-        onClick={({ key }) => navigate(key)}
-        style={{ marginTop: "auto" }}
-        items={[
-          { key: "/login", icon: <LogoutOutlined />, label: "Logout" }
-        ]}
-      />
+      <div className="nav-bottom">
+        <NavLink to="/login" className="nav-item logout">Logout</NavLink>
+      </div>
 
     </Sider>
   );

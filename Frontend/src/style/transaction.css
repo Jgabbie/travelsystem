@@ -1,25 +1,15 @@
-.transaction-page h1 {
-  font-size: 28px;
-  margin-bottom: 20px;
+.page-header {
+  font-size: 24px;
+  margin-bottom: 16px;
 }
 
-.filters {
-  margin-bottom: 20px;
-  width: 100%;
-}
-
-.search {
-  width: 280px;
-}
-
-.transaction-table {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.pagination-area {
-  margin-top: 20px;
+.transaction-actions {
   display: flex;
-  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.search-input {
+  width: 200px;
 }

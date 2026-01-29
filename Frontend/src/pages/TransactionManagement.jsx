@@ -1,38 +1,32 @@
-import {
-  Input,
-  Button,
-  Space,
-  Select,
-  Table,
-  Tag,
-  Pagination,
-} from "antd";
+import { Input, Select, Button, Table, Tag, Space, DatePicker } from "antd";
 import {
   SearchOutlined,
-  ExportOutlined,
+  EditOutlined,
   DeleteOutlined,
-  InfoCircleOutlined,
 } from "@ant-design/icons";
 
 import "../style/transaction.css";
 
 export default function TransactionManagement() {
+
   const columns = [
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Travel Package", dataIndex: "package" },
     { title: "Payment Date & Time", dataIndex: "date" },
     { title: "Total Price", dataIndex: "price" },
     { title: "Transaction Method", dataIndex: "method" },
+
     {
-      title: "Transaction Status",
+      title: "Status",
       dataIndex: "status",
-      render: (status) => <Tag color="green">{status}</Tag>,
+      render: s => <Tag color="green">{s}</Tag>,
     },
+
     {
       title: "Actions",
       render: () => (
         <Space>
-          <Button icon={<InfoCircleOutlined />} />
+          <Button type="primary" icon={<EditOutlined />} />
           <Button danger icon={<DeleteOutlined />} />
         </Space>
       ),
@@ -43,44 +37,34 @@ export default function TransactionManagement() {
     key: i,
     ref: "BKRF-87HDW82QJD",
     package: "Boracay4D2N",
-    date: "November 25, 2024 10:02:00",
+    date: "November 25, 2024 10:02 AM",
     price: "₱21,000",
     method: "Bank Transfer",
     status: "Paid",
   }));
 
   return (
-    <div className="transaction-page">
+    <>
+      <h1 className="page-header">Transaction Management</h1>
 
-      <h1>Transaction Management</h1>
+      <div className="transaction-actions">
 
-      <Space className="filters" wrap>
         <Input
-          placeholder="Enter Transaction Reference..."
           prefix={<SearchOutlined />}
-          className="search"
+          placeholder="Search transaction..."
+          className="search-input"
         />
 
-        <Select placeholder="Price" />
-        <Select placeholder="Type" />
-        <Select placeholder="Status" />
+        <Select placeholder="Method" style={{ width: 160 }} />
 
-        <Button type="primary" icon={<ExportOutlined />}>
-          Export
-        </Button>
-      </Space>
+        <Select placeholder="Status" style={{ width: 140 }} />
 
-      <Table
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        className="transaction-table"
-      />
+        <DatePicker placeholder="Payment Date" />
 
-      <div className="pagination-area">
-        <Pagination total={140} pageSize={8} showSizeChanger />
+        <Button type="primary">Export</Button>
       </div>
 
-    </div>
+      <Table columns={columns} dataSource={data} pagination={{ pageSize: 6 }} />
+    </>
   );
 }
