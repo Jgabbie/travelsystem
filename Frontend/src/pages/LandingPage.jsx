@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import '../style/landingpage.css'
 import { Button, Dropdown, Space, Card, Spin, Modal } from 'antd';
 import {
-    DownOutlined, LogoutOutlined, SettingOutlined, HomeOutlined,
+    DownOutlined, LogoutOutlined, HomeOutlined,
     UserOutlined, IdcardOutlined, CreditCardOutlined, StarOutlined, CarryOutOutlined, EnvironmentOutlined, GlobalOutlined
 } from '@ant-design/icons';
 import LoginModal from '../components/LoginModal';
@@ -24,7 +24,6 @@ export default function LandingPage() {
     const [isLoginVisible, setIsLoginVisble] = useState(false)
     const [isSignupVisible, setIsSignupVisble] = useState(false)
     const [isLoading, setIsLoading] = useState(true);
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [budget, setBudget] = useState(16000);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -43,7 +42,6 @@ export default function LandingPage() {
     };
 
     //check if user is logged in on load
-
     const checkAuth = async () => {
         try {
             const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
@@ -63,17 +61,12 @@ export default function LandingPage() {
     console.log("Auth Context Data in Landing Page:", auth);
 
     const logout = async () => {
-        setIsLoggingOut(true);
         try {
             showModal()
         } catch (err) {
             console.error('Logout failed:', err);
-        } finally {
-            setIsLoggingOut(false);
         }
     };
-
-    if (isLoading) return <div><Spin></Spin></div>;
 
 
     //dropdown menu items
@@ -138,7 +131,7 @@ export default function LandingPage() {
 
     return (
         <div className="landing-container">
-            <LoadingScreen isVisible={isLoggingOut} message="Loading..." />
+            <LoadingScreen isVisible={isLoading} message="Loading..." />
 
             <Modal
                 title="Confirm Logout"
@@ -163,7 +156,7 @@ export default function LandingPage() {
                         <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
                             <Space className='dropdown-space'>
                                 <h4 className='username-text'>
-                                    Welcome, <span className='username-dropdown'>{auth.username.toUpperCase()}</span>
+                                    Welcome, <span className='username-dropdown'>{auth?.username?.toUpperCase()}</span>
                                 </h4>
                                 <DownOutlined className='user-dropdown-icon' />
                             </Space>

@@ -30,12 +30,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
         setError('');
     }
 
-    const loadingDuration = () => {
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 1500);
-    }
-
     //clear form when modal is closed
     useEffect(() => {
         if (!isOpenLogin) {
@@ -49,10 +43,25 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
         e.preventDefault();
         setIsLoading(true);
         try {
-            await axiosInstance.post('/auth/loginUser', { username: values.username, password: values.password })
+            const response = await axiosInstance.post(
+                '/auth/loginUser',
+                { username: values.username, password: values.password }
+            )
             if (onLoginSuccess) {
+                const userRole = response.data.user?.role;
+
+                console.log("userRole:", userRole)
+
+                setIsLoading(false);
+
+                setAuth({ username: values.username, role: userRole });
+                if (userRole === 'Admin') {
+                    navigate('/dashboard')
+                } else {
+                    navigate('/home')
+                }
+
                 isCloseLogin()
-                loadingDuration()
                 onLoginSuccess()
                 clearForm()
             }

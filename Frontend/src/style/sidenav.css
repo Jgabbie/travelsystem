@@ -8,7 +8,6 @@
   padding: 16px;
 }
 
-
 .nav-top {
   display: flex;
   flex-direction: column;
@@ -16,12 +15,11 @@
   margin-bottom: 20px;
 }
 
-
 .nav-bottom {
   margin-top: auto;
   padding-top: 20px;
   padding-bottom: 16px;
-  border-top: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .nav-item {
@@ -33,15 +31,17 @@
   transition: 0.2s;
 }
 
-.nav-item:hover {
-  background: rgba(255,255,255,0.15);
+.nav-item:hover,
+.nav-item .logout {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .nav-item.active {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
 }
-s
-.logout {
+
+.sidenav .logout {
+  background: none;
   margin-top: 5px;
   display: block;
 }

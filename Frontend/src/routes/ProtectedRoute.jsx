@@ -5,14 +5,14 @@ import { useAuth } from '../hooks/useAuth';
 const ProtectedRoute = () => {
     const { auth } = useAuth();
 
-    const isAuthenticated = auth && auth.accessToken; //if authenticated
-    const isAdmin = auth && auth.role === 'Admin'; //if authenticated user is admin
+    // const isAuthenticated = !!auth?.username; //if authenticated
+    // const isAdmin = auth?.role === 'Admin'; //if authenticated user is admin
 
-    if (!isAuthenticated) {
+    if (!auth) {
         return <Navigate to="/login" replace />;
     }
 
-    if (isAdmin) {
+    if (auth?.role === 'Admin') {
         return <Navigate to="/dashboard" replace />;
     }
 

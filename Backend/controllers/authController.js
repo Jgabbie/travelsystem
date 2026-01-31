@@ -50,25 +50,20 @@ const loginUser = async (req, res) => {
     try {
         const user = await UserModel.findOne({ username })
 
-        // 1. User not found
         if (!user) {
             return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
-        // 2. Check Password
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
             await logAction("LOGIN_FAILED", user._id, { reason: "Incorrect Password" }, ip);
-
             return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
-        // 3. Check Verification
         if (!user.isAccountVerified) {
             return res.status(403).json({ message: "Account is not verified", email: user.email })
         }
 
-        // 4. Generate Tokens
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '15m' })
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
 
@@ -90,10 +85,9 @@ const loginUser = async (req, res) => {
         })
 
         // --- UPDATED LOGGING LOGIC ---
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        //const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
         // Check role to determine action name
-
         //LOG SUCCESSFUL LOGIN
         const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : "USER_LOGIN";
         await logAction(actionName, user._id, { username: user.username }, ip);

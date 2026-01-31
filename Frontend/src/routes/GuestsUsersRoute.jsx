@@ -5,10 +5,10 @@ import { useAuth } from '../hooks/useAuth';
 const GuestsUsersRoute = () => {
     const { auth } = useAuth();
 
-    const isAuthenticated = auth && auth.accessToken; //if authenticated
-    const isAdmin = auth && auth.role === 'Admin'; //if authenticated user is admin
+    // const isAuthenticated = !!auth?.username; //if authenticated
+    // const isAdmin = auth?.role === 'Admin'; //if authenticated user is admin
 
-    if (isAdmin && isAuthenticated) {
+    if (auth?.role === "Admin" && auth) {
         return <Navigate to="/dashboard" replace />;
     }
 

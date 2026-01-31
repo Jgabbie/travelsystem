@@ -7,6 +7,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 24px;
+
 }
 
 .topnav-right {
@@ -19,4 +20,11 @@
   font-family: "Montserrat", sans-serif;
   font-size: 18px;
   font-weight: 600;
+}
+
+.user-topnav {
+  font-family: "Roboto", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #305797;
 }

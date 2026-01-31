@@ -6,8 +6,27 @@ import axiosInstance from '../config/axiosConfig';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [auth, setAuth] = useState({}); //if user is logged in
+    const [auth, setAuth] = useState(null); //if user is logged in
 
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const res = await axiosInstance.get('/auth/is-auth', {
+                    withCredentials: true
+                });
+
+                const { user } = res.data;
+                setAuth({
+                    username: user.username,
+                    role: user.role
+                });
+            } catch {
+                setAuth(null);
+            }
+        };
+
+        checkAuth();
+    }, []);
     //wraps the children components so the the values can be accessed
     //children is the <App/> component stored in index.js
     return (

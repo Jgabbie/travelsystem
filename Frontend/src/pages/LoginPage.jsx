@@ -41,20 +41,16 @@ export default function LoginPage() {
             const response = await axiosInstance.post(
                 '/auth/loginUser',
                 { username: values.username, password: values.password },
-                { withCredentials: true }
             );
-
             const userRole = response.data.user?.role;
-            const accessToken = response.data.accessToken;
 
             console.log("userRole:", userRole)
-            console.log("userToken:", accessToken)
 
             setIsLoading(false);
 
-            setAuth({ username: values.username, role: userRole, accessToken: accessToken });
+            setAuth({ username: values.username, role: userRole });
             if (userRole === 'Admin') {
-                navigate('/admin/bookings')
+                navigate('/dashboard')
             } else {
                 navigate('/home')
             }

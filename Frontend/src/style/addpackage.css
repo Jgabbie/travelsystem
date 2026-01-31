@@ -4,4 +4,34 @@
 .add-package-form input,
 .add-package-form textarea {
   margin-bottom: 12px;
-} 
+}
+
+/* Prevent whole page from scrolling */
+body,
+html,
+#root {
+  overflow: hidden;
+  height: 100%;
+}
+
+.add-package-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-package-form.ant-card {
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-package-form .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
