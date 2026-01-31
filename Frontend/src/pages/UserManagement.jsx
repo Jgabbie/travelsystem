@@ -10,6 +10,7 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetRole, setTargetRole] = useState("User"); // Default role to add
+   const [searchText, setSearchText] = useState("");
 
   // Fetch users from backend
   const fetchUsers = async () => {
@@ -60,6 +61,12 @@ export default function UserManagement() {
         }
     }
   }
+
+    const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchText.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   // --- Dropdown Menu Items ---
   const addUserItems = [
@@ -119,10 +126,13 @@ export default function UserManagement() {
       <h1 className="page-header">User Management</h1>
 
       <div className="user-actions">
-        <Input
+         <Input
           prefix={<SearchOutlined />}
-          placeholder="Search user..."
+          placeholder="Search name, username or email..."
           className="search-input"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          allowClear
         />
 
         <Select placeholder="Role" style={{ width: 140 }}>
@@ -146,7 +156,7 @@ export default function UserManagement() {
       <Table
         loading={loading}
         columns={columns}
-        dataSource={users}
+        dataSource={filteredUsers}
         pagination={{ pageSize: 6 }}
       />
 
