@@ -1,12 +1,12 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Tag, Table } from 'antd'; // Using Ant Design Table for better look
+import { Tag, Table, Input } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 
 export default function Logging() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+    const [searchText, setSearchText] = useState('');
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -18,26 +18,47 @@ export default function Logging() {
                 setLoading(false);
             } catch (err) {
                 console.error("Failed to fetch logs", err);
-                // navigate('/login'); // Optional: redirect if error
             }
         };
-
         fetchLogs();
-    }, [navigate]);
+    }, []);
 
-    // Ant Design Table Columns
+    // Filter logic for Search Bar
+    const filteredLogs = logs.filter(log => {
+        const searchLower = searchText.toLowerCase();
+        return (
+            log.action.toLowerCase().includes(searchLower) ||
+            log.performedBy?.username?.toLowerCase().includes(searchLower) ||
+            log.performedBy?.email?.toLowerCase().includes(searchLower)
+        );
+    });
+
     const columns = [
         {
             title: 'Date/Time',
             dataIndex: 'timestamp',
             key: 'timestamp',
+            sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
             render: (text) => new Date(text).toLocaleString(),
         },
         {
             title: 'Action',
             dataIndex: 'action',
             key: 'action',
-            render: (text) => <strong>{text}</strong>
+            filters: [
+                { text: 'Login (User)', value: 'USER_LOGIN' },
+                { text: 'Login (Admin)', value: 'ADMIN_LOGIN' },
+                { text: 'Logout', value: 'USER_LOGOUT' },
+                { text: 'Failed Login', value: 'LOGIN_FAILED' },
+            ],
+            onFilter: (value, record) => record.action.includes(value),
+            render: (text) => {
+                let color = 'default';
+                if (text.includes('LOGIN')) color = 'green';
+                if (text.includes('LOGOUT')) color = 'orange';
+                if (text.includes('FAILED')) color = 'red';
+                return <Tag color={color}>{text}</Tag>;
+            }
         },
         {
             title: 'Performed By',
@@ -45,23 +66,23 @@ export default function Logging() {
             key: 'performedBy',
             render: (user) => user ? (
                 <div>
-                    <div>{user.username}</div>
-                    <small style={{ color: 'gray' }}>{user.email}</small>
+                    <div style={{ fontWeight: 'bold' }}>{user.username}</div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>{user.email}</div>
                 </div>
             ) : "Unknown"
         },
         {
             title: 'Role',
             key: 'role',
+            filters: [
+                { text: 'Admin', value: 'Admin' },
+                { text: 'User', value: 'User' },
+            ],
+            onFilter: (value, record) => record.performedBy?.role === value,
             render: (_, record) => {
                 const role = record.performedBy?.role || "N/A";
-                // Color code: Admin = Gold/Orange, User = Blue
                 const color = role === 'Admin' ? 'gold' : 'blue';
-                return (
-                    <Tag color={color}>
-                        {role.toUpperCase()}
-                    </Tag>
-                );
+                return <Tag color={color}>{role.toUpperCase()}</Tag>;
             }
         },
         {
@@ -69,24 +90,27 @@ export default function Logging() {
             dataIndex: 'details',
             key: 'details',
             render: (details) => (
-                <pre style={{ margin: 0, fontSize: '11px', maxHeight: '100px', overflow: 'auto' }}>
-                    {JSON.stringify(details, null, 2)}
-                </pre>
+                <div style={{ fontSize: '12px', color: '#555' }}>
+                    {JSON.stringify(details).replace(/["{}]/g, '').replace(/:/g, ': ')}
+                </div>
             )
-        },
-        {
-            title: 'IP Address',
-            dataIndex: 'ipAddress',
-            key: 'ipAddress',
         },
     ];
 
     return (
         <div style={{ padding: "20px" }}>
             <h1 className="page-header">System Logs</h1>
+            
+            <Input
+                placeholder="Search logs by action, username, or email..."
+                prefix={<SearchOutlined />}
+                style={{ marginBottom: 20, width: 300 }}
+                onChange={(e) => setSearchText(e.target.value)}
+            />
+
             <Table 
                 columns={columns} 
-                dataSource={logs} 
+                dataSource={filteredLogs} 
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 8 }}
