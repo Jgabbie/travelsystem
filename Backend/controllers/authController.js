@@ -44,21 +44,32 @@ const signupUser = async (req, res) => {
 //login
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
+    // Capture IP immediately for logging
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
     try {
         const user = await UserModel.findOne({ username })
+        
+        // 1. User not found
         if (!user) {
-            return res.status(401).json({ message: "Inavlid Username or Password" })
+            return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
+        // 2. Check Password
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
-            return res.status(401).json({ message: "Inavlid Username or Password" })
+            // 🚨 NEW: Log Failed Login Attempt
+            await logAction("LOGIN_FAILED", user._id, { reason: "Incorrect Password" }, ip);
+            
+            return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
+        // 3. Check Verification
         if (!user.isAccountVerified) {
             return res.status(403).json({ message: "Account is not verified", email: user.email })
         }
 
+        // 4. Generate Tokens
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '15m' })
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
 
@@ -79,14 +90,9 @@ const loginUser = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
-        // --- UPDATED LOGGING LOGIC ---
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        
-        // Check role to determine action name
+        // ✅ LOG SUCCESSFUL LOGIN
         const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : "USER_LOGIN";
-
         await logAction(actionName, user._id, { username: user.username }, ip);
-        // -----------------------------
 
         res.status(200).json({
             message: "Login Successful!",
@@ -179,7 +185,6 @@ const logoutUser = async (req, res) => {
         res.clearCookie('refreshToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
         res.clearCookie('token', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
 
-        // --- UPDATED LOGGING LOGIC ---
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         
         // Determine action based on the user found (if any)
@@ -191,7 +196,6 @@ const logoutUser = async (req, res) => {
             { username: user ? user.username : 'Unknown' }, 
             ip
         );
-        // -----------------------------
 
         res.status(200).json({ message: "Logged Out" })
     }
@@ -393,19 +397,16 @@ const resetPassword = async (req, res) => {
             return res.status(409).json({ message: "User not found" })
         }
 
-        console.log("This is the new password: " + newPassword)
-
         const hashedPassword = await bcrypt.hash(newPassword, 10)
 
         user.hashedPassword = hashedPassword
         user.resetOtp = ''
         user.resetOtpExpireAt = 0
 
-        console.log(user.hashedPassword)
+        await user.save()
 
-        const updatedUser = await user.save()
-
-        console.log(updatedUser.hashedPassword)
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        await logAction("PASSWORD_CHANGE", user._id, { method: "Reset via Email" }, ip);
 
         return res.status(200).json({ message: "Password has been reset successfully" })
 
