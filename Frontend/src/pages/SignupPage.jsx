@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
-import { Input, Button, Modal } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { Input, Button } from 'antd';
 import '../style/signuppage.css';
 import EmailVerifyModal from '../components/EmailVerifyModal';
-import { useAuth } from '../context/AuthContext';
+import axiosInstance from '../config/axiosConfig';
 
 export default function SignupPage() {
     const navigate = useNavigate();
-    const { signup } = useAuth();
 
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
     const [email, setEmail] = useState("")
@@ -23,18 +21,18 @@ export default function SignupPage() {
         confirmPassword: '', email: '', phone: ''
     });
 
-    const [output, setOutput] = useState('');
-
     const validate = (field, value) => {
         if (field === "username") {
             if (value === "") return "Username is required.";
             if (value.length < 8) return "Username must be at least 8 characters";
         }
         if (field === "firstname") {
-            if (value === "") return "Firstname is required.";
+            if (value === "") return "First name is required.";
+            if (value.length < 2) return "First name must be at least 2 characters.";
         }
         if (field === "lastname") {
-            if (value === "") return "Lastname is required.";
+            if (value === "") return "Last name is required.";
+            if (value.length < 2) return "Last name must be at least 2 characters.";
         }
         if (field === "email") {
             if (value === "") return "Email is required.";
@@ -43,10 +41,14 @@ export default function SignupPage() {
         if (field === "phone") {
             if (value === "") return "Phone is required.";
             if (value.length < 11) return "Phone must be 11 digits";
+            if (value.slice(0, 2) !== "09") return "Phone number must start with 09";
         }
         if (field === "password") {
             if (value === "") return "Password is required.";
             if (value.length < 8) return "Password must be at least 8 characters.";
+            if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter.";
+            if (!/[0-9]/.test(value)) return "Password must contain at least one number.";
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character.";
         }
         if (field === "confirmPassword") {
             if (value === "") return "Confirm Password is required.";
@@ -56,13 +58,14 @@ export default function SignupPage() {
     };
 
     //might add a delay timer to reduce the api calls
+    //check if duplicate username
     useEffect(() => {
         const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
         if (frontEndError) {
             return
         }
 
-        axios.post('http://localhost:8000/api/auth/checkDups', { username: values.username })
+        axiosInstance.post('/auth/checkDups', { username: values.username })
             .then(() => {
                 return
             })
@@ -73,13 +76,14 @@ export default function SignupPage() {
     }, [values.username])
 
     //might add a delay timer to reduce the api calls
+    //check if duplicate email
     useEffect(() => {
         const frontEndError = validate("email", values.email)
         if (frontEndError) {
             return
         }
 
-        axios.post('http://localhost:8000/api/auth/checkDups', { email: values.email })
+        axiosInstance.post('/auth/checkDups', { email: values.email })
             .then(() => {
                 return
             })
@@ -94,27 +98,36 @@ export default function SignupPage() {
         setError({ ...error, [field]: validate(field, value) });
     };
 
+    //signup function
     const handleSignup = async (e) => {
         e.preventDefault();
+
+        if (error.username || error.firstname || error.lastname || error.password || error.confirmPassword || error.email || error.phone) {
+            return console.log("Invalid Inputs")
+        }
+
         try {
-            const response = await signup(values);
+            const response = await axiosInstance.post('/auth/signupUser', values);
             if (response) {
                 const userEmail = values.email
                 setEmail(userEmail)
                 setIsOTPModalVisible(true)
                 setValues({
-                    username: '', firstname: '', lastname: '', password: '',
-                    confirmPassword: '', email: '', phone: ''
+                    username: '',
+                    firstname: '',
+                    lastname: '',
+                    email: '',
+                    phone: '',
+                    password: '',
+                    confirmPassword: '',
                 })
-            } else {
-                console.log("Response is falsy:", response)
             }
         } catch (err) {
-            console.log("Error: " + err)
-            alert(err.response?.data?.message || "Verification failed");
+            console.log("Invalid Inputs")
         }
     };
 
+    //go to login page
     const goToLogin = (e) => {
         e.preventDefault();
         navigate('/login');
@@ -145,7 +158,7 @@ export default function SignupPage() {
                         </div>
 
                         <div className="input-row">
-                            <div className="input-group">
+                            <div>
                                 <label className='labels-signup'>First name</label>
                                 <Input status={error.firstname ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("firstname", e.target.value)} autoComplete='off' placeholder='Firstname' onKeyDown={(e) => {
                                     if (!/^[A-Za-z]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
@@ -156,7 +169,7 @@ export default function SignupPage() {
                                 <p id='error-message-signup'>{error.firstname}</p>
                             </div>
 
-                            <div className="input-group">
+                            <div className="signup-input-group">
                                 <label className='labels-signup'>Last name</label>
                                 <Input status={error.lastname ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("lastname", e.target.value)} autoComplete='off' placeholder='Lastname' onKeyDown={(e) => {
                                     if (!/^[A-Za-z]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
@@ -168,7 +181,7 @@ export default function SignupPage() {
                             </div>
                         </div>
 
-                        <div className="input-group">
+                        <div className="signup-input-group">
                             <label className='labels-signup'>Email</label>
                             <Input status={error.email ? "error" : ""} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} autoComplete='off' placeholder='Enter your Email' onKeyDown={(e) => {
                                 if (e.key === " " && e.key !== "Backspace") {
@@ -179,7 +192,7 @@ export default function SignupPage() {
                             <p id='error-message-signup'>{error.email}</p>
                         </div>
 
-                        <div className="input-group">
+                        <div className="signup-input-group">
                             <label className='labels-signup'>Phone Number</label>
                             <Input status={error.phone ? "error" : ""} maxLength={11} onChange={(e) => valueHandler("phone", e.target.value)} autoComplete='off' placeholder='Enter your Phone Number' onKeyDown={(e) => {
                                 if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
@@ -190,7 +203,7 @@ export default function SignupPage() {
                             <p id='error-message-signup'>{error.phone}</p>
                         </div>
 
-                        <div className="input-group">
+                        <div className="signup-input-group">
                             <label className='labels-signup'>Password</label>
                             <Input.Password status={error.password ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your Password' onKeyDown={(e) => {
                                 if (e.key === " " && e.key !== "Backspace") {
@@ -201,7 +214,7 @@ export default function SignupPage() {
                             <p id='error-message-signup'>{error.password}</p>
                         </div>
 
-                        <div className="input-group">
+                        <div className="signup-input-group">
                             <label className='labels-signup'>Confirm Password</label>
                             <Input.Password status={error.confirmPassword ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter Confirm Password' onKeyDown={(e) => {
                                 if (e.key === " " && e.key !== "Backspace") {

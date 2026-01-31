@@ -1,58 +1,75 @@
-import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import '../style/landingpage.css'
-import { Button, Dropdown, Space, Card, Spin } from 'antd';
-import { DownOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Space, Card, Spin, Modal } from 'antd';
+import {
+    DownOutlined, LogoutOutlined, SettingOutlined, HomeOutlined,
+    UserOutlined, IdcardOutlined, CreditCardOutlined, StarOutlined, CarryOutOutlined, EnvironmentOutlined, GlobalOutlined
+} from '@ant-design/icons';
 import LoginModal from '../components/LoginModal';
 import SignupModal from '../components/SignupModal';
+import LoadingScreen from '../components/LoadingScreen';
+import { useAuth } from '../hooks/useAuth';
+import axiosInstance from '../config/axiosConfig';
+import useRefreshToken from '../hooks/useRefreshToken';
 
 
 export default function LandingPage() {
+    const refresh = useRefreshToken();
+
+    const { auth, setAuth } = useAuth();
+
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
 
     const [isLoginVisible, setIsLoginVisble] = useState(false)
     const [isSignupVisible, setIsSignupVisble] = useState(false)
+    const [isLoading, setIsLoading] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [budget, setBudget] = useState(16000);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null)
-    const [isLoading, setIsLoading] = useState(true); // Default true to avoid flash
-    const [budget, setBudget] = useState(16000); // For the slider
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
 
+    const handleOk = async () => {
+        setIsModalOpen(false);
+        await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
+        setAuth(null);
+    };
 
-    const checkAuthentication = async () => {
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    //check if user is logged in on load
+
+    const checkAuth = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/auth/is-auth', {
-                method: "POST",
-                credentials: "include"
-            });
-            if (response.ok) {
-                const data = await response.json()
-                setIsAuthenticated(true);
-                setUser(data.user)
-            } else {
-                setIsAuthenticated(false);
-            }
+            const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
+            const { user } = response.data;
+            setAuth({ username: user.username, role: user.role });
         } catch (err) {
-            setIsAuthenticated(false);
-            const errorMsg = err.response?.data?.message || "Verification failed"
-            console.error("Error: ", errorMsg)
+            setAuth(null);
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        checkAuthentication()
-    }, [])
+        checkAuth();
+    }, []);
+
+    console.log("Auth Context Data in Landing Page:", auth);
 
     const logout = async () => {
+        setIsLoggingOut(true);
         try {
-            await axios.post('http://localhost:8000/api/auth/logoutUser', {}, { withCredentials: true });
-            alert("Logout Successful");
-            checkAuthentication()
+            showModal()
         } catch (err) {
-            console.error("Error logging out", err);
+            console.error('Logout failed:', err);
+        } finally {
+            setIsLoggingOut(false);
         }
     };
 
@@ -63,28 +80,49 @@ export default function LandingPage() {
     const items = [
         {
             key: '1',
-            label: 'Profile',
+            label: 'Home',
+            icon: <HomeOutlined />
         },
         {
             key: '2',
-            label: 'Settings',
-            icon: <SettingOutlined />,
+            label: 'Profile',
+            icon: <UserOutlined />,
         },
         {
             key: '3',
-            label: 'Settings',
-            icon: <SettingOutlined />,
+            label: 'Bookings',
+            icon: <CarryOutOutlined />,
         },
         {
             key: '4',
-            label: 'Settings',
-            icon: <SettingOutlined />,
+            label: 'Destinations',
+            icon: <EnvironmentOutlined />,
+        },
+        {
+            key: '5',
+            label: 'Featured',
+            icon: <StarOutlined />,
+        },
+        {
+            key: '6',
+            label: 'Transactions',
+            icon: <CreditCardOutlined />,
+        },
+        {
+            key: '7',
+            label: 'VISA Assistance',
+            icon: <IdcardOutlined />,
+        },
+        {
+            key: '8',
+            label: 'Passport Assistance',
+            icon: <GlobalOutlined />,
         },
         {
             type: 'divider',
         },
         {
-            key: '5',
+            key: '9',
             label: 'Logout',
             icon: <LogoutOutlined />,
             danger: true,
@@ -93,13 +131,25 @@ export default function LandingPage() {
 
     //dropdown menu items handler/functions
     const handleMenuClick = ({ key }) => {
-        if (key === '5') {
+        if (key === '9') {
             logout()
         }
     }
 
     return (
         <div className="landing-container">
+            <LoadingScreen isVisible={isLoggingOut} message="Loading..." />
+
+            <Modal
+                title="Confirm Logout"
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}
+            >
+                <p>Are you sure you want to logout?</p>
+            </Modal>
+
             {/* --- 1. NAVBAR --- */}
             <nav className="navbar">
                 <div className="logo-section">
@@ -108,12 +158,12 @@ export default function LandingPage() {
                 </div>
 
                 {/* if authenticated, show username, if not, then show signup and login button links */}
-                {isAuthenticated ?
+                {auth ?
                     <div>
                         <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
                             <Space className='dropdown-space'>
                                 <h4 className='username-text'>
-                                    Welcome, <span className='username-dropdown'>{user?.username.toUpperCase()}</span>
+                                    Welcome, <span className='username-dropdown'>{auth.username.toUpperCase()}</span>
                                 </h4>
                                 <DownOutlined className='user-dropdown-icon' />
                             </Space>
@@ -135,7 +185,7 @@ export default function LandingPage() {
             <LoginModal
                 isOpenLogin={isLoginVisible}
                 isCloseLogin={() => setIsLoginVisble(false)}
-                onLoginSuccess={checkAuthentication}
+                onLoginSuccess={checkAuth}
             />
 
             {/* open signup modal */}
@@ -233,7 +283,7 @@ export default function LandingPage() {
                         <p>
                             Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
                         </p>
-                        <Button className='packages-button'>BROWSE TOUR PACKAGES</Button>
+                        <Button className='packages-button' onClick={() => { refresh() }}>BROWSE TOUR PACKAGES</Button>
                     </div>
                 </div>
 

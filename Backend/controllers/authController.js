@@ -47,12 +47,12 @@ const loginUser = async (req, res) => {
     try {
         const user = await UserModel.findOne({ username })
         if (!user) {
-            return res.status(401).json({ message: "Inavlid Username or Password" })
+            return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
-            return res.status(401).json({ message: "Inavlid Username or Password" })
+            return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
         if (!user.isAccountVerified) {
@@ -81,7 +81,7 @@ const loginUser = async (req, res) => {
 
         // --- UPDATED LOGGING LOGIC ---
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        
+
         // Check role to determine action name
         const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : "USER_LOGIN";
 
@@ -181,14 +181,14 @@ const logoutUser = async (req, res) => {
 
         // --- UPDATED LOGGING LOGIC ---
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        
+
         // Determine action based on the user found (if any)
         const actionName = (user && user.role === 'Admin') ? "ADMIN_LOGOUT" : "USER_LOGOUT";
 
         await logAction(
-            actionName, 
-            user ? user._id : null, 
-            { username: user ? user.username : 'Unknown' }, 
+            actionName,
+            user ? user._id : null,
+            { username: user ? user.username : 'Unknown' },
             ip
         );
         // -----------------------------
@@ -274,14 +274,12 @@ const verifyEmail = async (req, res) => {
 // Checks if user is authenticated
 // Checks if user is logged in
 const isAuthenticated = async (req, res) => {
-
     try {
         const userId = req.userId
         if (!userId) {
             return res.status(401).json({ message: "User is not Authenticated" })
         }
         const currentUser = await UserModel.findById(userId)
-
 
         if (!currentUser) {
             return res.status(404).json({ message: "User not found" })
@@ -320,7 +318,7 @@ const sendResetOtp = async (req, res) => {
     try {
         const user = await UserModel.findOne({ email })
         if (!user) {
-            return res.status(409).json({ message: "User not found" })
+            return res.status(200).json({ message: "OTP sent to your email" })
         }
 
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number

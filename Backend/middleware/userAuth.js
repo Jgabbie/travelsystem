@@ -14,20 +14,11 @@ const userAuth = async (req, res, next) => {
 
         const tokenDecode = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS_KEY)
 
-        // const user = await User.findById(tokenDecode.id) //get userid
-
-        // if (!user.isAccountVerified) { //check if user is verified
-        //     return res.status(403).json({
-        //         message: "Please verify email"
-        //     })
-        // }
-
         if (tokenDecode.id) {
             req.userId = tokenDecode.id // passing the info to know who is the "userId"
         } else {
             return res.json({ message: "Not Authorized. Login Again" })
         }
-
         next()
 
     } catch (e) {

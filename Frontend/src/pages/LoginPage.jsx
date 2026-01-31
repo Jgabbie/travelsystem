@@ -1,40 +1,58 @@
-import axios from 'axios';
-import React, { useContext, useState } from 'react'
+import axiosInstance from '../config/axiosConfig';
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button } from 'antd';
-import '../style/loginpage.css'
+import { useAuth } from '../hooks/useAuth';
 import EmailVerifyModal from '../components/EmailVerifyModal';
-import { useAuth } from '../context/AuthContext';
-
+import LoadingScreen from '../components/LoadingScreen';
+import '../style/loginpage.css'
 
 export default function LoginPage() {
 
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { setAuth } = useAuth();
 
     const [email, setEmail] = useState('');
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false);
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const [values, setValues] = useState({
         username: '',
         password: ''
     });
 
+
+    //clear form function
+    const clearForm = () => {
+        setValues({
+            username: '',
+            password: ''
+        });
+        setError('');
+    }
+
+    //login function
     const handleLogin = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
 
         try {
-            const response = await login({ username: values.username, password: values.password })
-            console.log("Login Response:", response);
-            alert("Login Successful")
-            setValues({
-                username: '',
-                password: ''
-            })
+            const response = await axiosInstance.post(
+                '/auth/loginUser',
+                { username: values.username, password: values.password },
+                { withCredentials: true }
+            );
 
-            const userRole = response.user?.role;
-            console.log("User Role:", userRole);
+            const userRole = response.data.user?.role;
+            const accessToken = response.data.accessToken;
+
+            console.log("userRole:", userRole)
+            console.log("userToken:", accessToken)
+
+            setIsLoading(false);
+
+            setAuth({ username: values.username, role: userRole, accessToken: accessToken });
             if (userRole === 'Admin') {
                 navigate('/admin/bookings')
             } else {
@@ -46,25 +64,29 @@ export default function LoginPage() {
             const data = err.response?.data;
             if (status === 403) {
                 const email = data.email
-                const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: email })
+                await axiosInstance.post('auth/send-verify-otp', { email: email })
                 setValues({
                     username: '',
                     password: ''
                 })
                 setEmail(email)
+                setIsLoading(false)
                 setIsOTPModalVisible(true)
                 return
             } else {
+                setIsLoading(false)
                 setError(data.message || 'Login failed. Please try again.');
             }
         }
     }
 
+    //go to signup page
     const goToSignup = (e) => {
         e.preventDefault();
         navigate('/signup');
     }
 
+    //go to reset password page
     const resetPassword = (e) => {
         e.preventDefault();
         navigate('/reset-password');
@@ -98,7 +120,7 @@ export default function LoginPage() {
                         }} type="password" id="password" name="password" className='input-fields-login' required />
                     </div>
 
-                    <p id='error-message'>{error}</p>
+                    <p id='error-message' style={{ height: 12 }}>{error}</p>
 
                     <div className='links-container-login'>
                         <p className='label-links-login'>Need an Account?<Button className='button-links-login' type="link" onClick={goToSignup}>Signup here</Button></p>
@@ -117,6 +139,8 @@ export default function LoginPage() {
                 isCloseOTPModal={() => setIsOTPModalVisible(false)}
                 userEmail={email}
             />
+
+            <LoadingScreen isVisible={isLoading} />
         </div>
     )
 }

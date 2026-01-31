@@ -1,19 +1,20 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../style/signupmodal.css';
+import LoadingScreen from './LoadingScreen';
 import EmailVerifyModal from './EmailVerifyModal';
-import { useAuth } from '../context/AuthContext';
+import axiosInstance from '../config/axiosConfig';
+
 
 
 export default function SignupModal({ isOpenSignup, isCloseSignup }) {
 
     const navigate = useNavigate();
-    const { signup } = useAuth();
 
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
     const [email, setEmail] = useState("")
+    const [isLoading, setIsLoading] = useState(false);
 
     const [error, setError] = useState({
         username: '', firstname: '', lastname: '', password: '',
@@ -25,18 +26,19 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
         confirmPassword: '', email: '', phone: ''
     });
 
-    const [output, setOutput] = useState('');
-
+    //input validations
     const validate = (field, value) => {
         if (field === "username") {
             if (value === "") return "Username is required.";
             if (value.length < 8) return "Username must be at least 8 characters";
         }
         if (field === "firstname") {
-            if (value === "") return "Firstname is required.";
+            if (value === "") return "First name is required.";
+            if (value.length < 2) return "First name must be at least 2 characters.";
         }
         if (field === "lastname") {
-            if (value === "") return "Lastname is required.";
+            if (value === "") return "Last name is required.";
+            if (value.length < 2) return "Last name must be at least 2 characters.";
         }
         if (field === "email") {
             if (value === "") return "Email is required.";
@@ -45,10 +47,14 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
         if (field === "phone") {
             if (value === "") return "Phone is required.";
             if (value.length < 11) return "Phone must be 11 digits";
+            if (value.slice(0, 2) !== "09") return "Phone number must start with 09";
         }
         if (field === "password") {
             if (value === "") return "Password is required.";
             if (value.length < 8) return "Password must be at least 8 characters.";
+            if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter.";
+            if (!/[0-9]/.test(value)) return "Password must contain at least one number.";
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character.";
         }
         if (field === "confirmPassword") {
             if (value === "") return "Confirm Password is required.";
@@ -57,13 +63,13 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
         return "";
     };
 
+    //check for duplicate username
     useEffect(() => {
         const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
         if (frontEndError) {
             return
         }
-
-        axios.post('http://localhost:8000/api/auth/checkDups', { username: values.username })
+        axiosInstance.post('/auth/checkDups', { username: values.username })
             .then(() => {
                 return
             })
@@ -71,16 +77,15 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
                 if (error.response)
                     setError(prev => ({ ...prev, username: "Signup failed: " + error.response.data.message }));
             });
-
     }, [values.username])
 
+    //check for duplicate username
     useEffect(() => {
         const frontEndError = validate("email", values.email)
         if (frontEndError) {
             return
         }
-
-        axios.post('http://localhost:8000/api/auth/checkDups', { email: values.email })
+        axiosInstance.post('/auth/checkDups', { email: values.email })
             .then(() => {
                 return
             })
@@ -95,15 +100,18 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
         setError({ ...error, [field]: validate(field, value) });
     };
 
+    //signup function
     const handleSignup = async (e) => {
         e.preventDefault();
+        setIsLoading(true)
         try {
-            const response = await signup(values);
+            const response = await axiosInstance.post('/auth/signupUser', values);
             if (response) {
                 const userEmail = values.email
-                setIsOTPModalVisible(true)
-                isCloseSignup()
                 setEmail(userEmail)
+                setIsLoading(false)
+                isCloseSignup()
+                setIsOTPModalVisible(true)
                 setValues({
                     username: '',
                     firstname: '',
@@ -111,15 +119,15 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
                     email: '',
                     phone: '',
                     password: '',
-                    confirmPassword: ''
+                    confirmPassword: '',
                 })
-
             }
         } catch (err) {
-            alert(err.response?.data?.message || "Verification failed");
+            console.log("Invalid Inputs")
         }
     };
 
+    //go to login page
     const goToLogin = (e) => {
         e.preventDefault();
         navigate('/login');
@@ -248,6 +256,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup }) {
                 userEmail={email}
             />
 
+            <LoadingScreen isVisible={isLoading} />
         </div>
     )
 }

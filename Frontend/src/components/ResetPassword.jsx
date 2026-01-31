@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Input, Button, Modal } from 'antd';
 import '../style/resetpasswordpage.css'
 import '../style/newpasswordpage.css'
+import axiosInstance from '../config/axiosConfig';
+import LoadingScreen from './LoadingScreen';
 
 
 export default function ResetPassword() {
@@ -13,6 +15,7 @@ export default function ResetPassword() {
     const [resetToken, setResetToken] = useState("")
     const [timer, setTimer] = useState(0)
     const [errorOTP, setErrorOTP] = useState("")
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         let interval = null
@@ -24,18 +27,6 @@ export default function ResetPassword() {
         return () => clearInterval(interval)
     }, [timer])
 
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const handleOk = () => {
-        setIsModalOpen(false);
-    };
-
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
-
 
     const navigate = useNavigate();
 
@@ -43,57 +34,62 @@ export default function ResetPassword() {
     const [getEmail, setEmail] = useState("")
     const [errorEmail, setErrorEmail] = useState('');
 
+    //reset password function
     const resetPassword = async (e) => {
         e.preventDefault()
+        setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/send-reset-otp', { email: getEmail })
+            await axiosInstance.post('/auth/send-reset-otp', { email: getEmail })
+            setIsLoading(false);
             console.log(getEmail)
             showModal()
             setTimer(60)
         } catch (err) {
+            setIsLoading(false);
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorEmail(errorMsg)
         }
     }
 
+    //submit OTP function
     const submitOTP = async (e) => {
         e.preventDefault()
+        setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/check-reset-otp', { email: getEmail, otp: getOTP })
+            const response = await axiosInstance.post('/auth/check-reset-otp', { email: getEmail, otp: getOTP })
             if (response.data.success || response.status === 200) {
                 setResetToken(response.data.resetToken)
-                alert("OTP for reset password is correct")
+                setIsLoading(false);
                 setIsModalOpen(false)
                 setIsOTPValid(true)
                 setOTP("")
             }
         } catch (err) {
+            setIsLoading(false);
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorOTP(errorMsg)
         }
     }
 
+    //resent OTP function
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/send-reset-otp', { email: getEmail })
+            const response = await axiosInstance.post('/auth/send-reset-otp', { email: getEmail })
             setTimer(60)
-            alert("OTP sent!")
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
-            alert(errorMsg)
         }
     }
 
+    //go to login page
     const goToLogin = (e) => {
         e.preventDefault();
         navigate('/login');
     }
-
-    //password validations
 
     const [values, setValues] = useState({
         password: '',
@@ -104,6 +100,21 @@ export default function ResetPassword() {
         confirmPassword: ''
     })
 
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleOk = () => {
+        setErrorOTP("")
+        setIsModalOpen(false);
+    };
+
+    const handleCancel = () => {
+        setErrorOTP("")
+        setIsModalOpen(false);
+    };
+
+    //password validations
     const validate = (field, value) => {
         if (field === "password") {
             if (value === "") {
@@ -131,7 +142,6 @@ export default function ResetPassword() {
                 return "Password and Confirm password does not match"
             }
         }
-
         return ""
     }
 
@@ -140,27 +150,27 @@ export default function ResetPassword() {
         setError({ ...error, [field]: validate(field, value) })
     }
 
+    //submit new password function
     const submitNewPassword = async (e) => {
         e.preventDefault()
-
+        setIsLoading(true);
         if (error.password !== "") {
+            setIsLoading(false);
             return console.log("Inputs are invalid!")
         }
 
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/reset-password', { newPassword: values.password, token: resetToken })
-
+            const response = await axiosInstance.post('/auth/reset-password', { newPassword: values.password, token: resetToken })
             if (response.data.success || response.status === 200) {
-                alert("Password has been reset successfully")
+                setIsLoading(false);
                 navigate('/login')
             }
         } catch (err) {
+            setIsLoading(false);
             const errorMsg = err.response?.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
-            alert(errorMsg)
         }
     }
-
 
     return (
         <div>
@@ -175,7 +185,7 @@ export default function ResetPassword() {
 
                             <div className='div-input-fields'>
                                 <label className='newpassword-labels' htmlFor="password">Password</label>
-                                <Input value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your new password' onKeyDown={(e) => {
+                                <Input.Password value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' placeholder='Enter your new password' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
@@ -186,7 +196,7 @@ export default function ResetPassword() {
 
                             <div className='div-input-fields'>
                                 <label className='newpassword-labels' htmlFor="confirmPassword">Confirm Password</label>
-                                <Input value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter confirm password' onKeyDown={(e) => {
+                                <Input.Password value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' placeholder='Enter confirm password' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
@@ -272,10 +282,12 @@ export default function ResetPassword() {
                     {
                         timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                             :
-                            <p className='resetpassword-label-links-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
+                            <p id='footer-text-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
                     }
                 </div>
             </Modal>
+
+            <LoadingScreen isVisible={isLoading} />
         </div>
     )
 }

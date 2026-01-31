@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
+import { useEffect } from "react";
 
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -8,8 +10,8 @@ import LandingPage from './pages/LandingPage';
 import PackagePage from './pages/PackagePage';
 import ProfilePage from "./pages/ProfilePage";
 
-import Logging from './pages/Logging'; // Ensure this matches your file path
-import Auditing from './components/Auditing'; // Ensure this matches your file path
+import Logging from './pages/Logging';
+import Auditing from './components/Auditing';
 
 import AdminLayout from "./components/AdminLayout";
 import BookingManagement from "./pages/BookingManagement";
@@ -25,8 +27,28 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
+import useRefreshToken from "./hooks/useRefreshToken";
 
 function App() {
+
+  const { setAuth } = useAuth();
+  const refreshToken = useRefreshToken();
+
+
+  useEffect(() => {
+    const refreshOnLoad = async () => {
+      try {
+        const newAccessToken = await refreshToken();
+        if (newAccessToken) {
+          setAuth(prev => ({ ...prev, accessToken: newAccessToken }));
+        }
+      } catch (err) {
+        console.error("Failed to refresh access token on load:", err);
+      }
+    }
+    refreshOnLoad();
+  }, []);
+
   return (
     <div>
       <Routes>
@@ -52,7 +74,7 @@ function App() {
             <Route path="transactions" element={<TransactionManagement />} />
             <Route path="packages" element={<PackageManagement />} />
             <Route path="packages/add" element={<AddPackage />} />
-            
+
             {/* NEW LOGGING & AUDITING ROUTES */}
             <Route path="logging" element={<Logging />} />
             <Route path="auditing" element={<Auditing />} />

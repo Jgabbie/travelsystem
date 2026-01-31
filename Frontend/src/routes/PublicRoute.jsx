@@ -1,27 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Spin } from 'antd';
+import { useAuth } from '../hooks/useAuth';
 
-/**
- * PublicRoute - For pages that should not be accessible to authenticated users
- * Like login and signup pages. Redirects authenticated users to home.
- */
 const PublicRoute = () => {
-    const { isAuthenticated, isLoading, isAdmin } = useAuth();
+    const { auth } = useAuth();
 
-    if (isLoading) {
-        return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh'
-            }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
+    const isAuthenticated = auth && auth.accessToken; //if authenticated
+    const isAdmin = auth && auth.role === 'Admin'; //if authenticated user is admin
 
     // If user is authenticated, redirect to home (or admin if admin)
     if (isAuthenticated) {

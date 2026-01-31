@@ -1,26 +1,17 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../config/axiosConfig';
 
 export default function EmailVerify() {
 
     const navigate = useNavigate()
-    const location = useLocation()
-
-    const { email } = location.state || {}
-
     const [getOTP, setOTP] = useState("")
-
-    // if (!email) {
-    //     return <Navigate to="/signup" replace />
-    // }
-
 
     const submitOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/verify-account', { otp: getOTP }, { withCredentials: true })
-
+            const response = await axiosInstance.post('/auth/verify-account', { otp: getOTP })
             if (response.data.success || response.status === 200) {
                 alert("Account Verified")
                 navigate('/login')
@@ -35,7 +26,7 @@ export default function EmailVerify() {
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', {}, { withCredentials: true })
+            const response = await axiosInstance.post('/auth/send-verify-otp')
             alert("OTP sent!")
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"

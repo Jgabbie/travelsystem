@@ -1,18 +1,16 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../style/loginmodal.css';
 import EmailVerifyModal from './EmailVerifyModal';
-import { useAuth } from '../context/AuthContext';
-
-
-
+import LoadingScreen from './LoadingScreen';
+import { useAuth } from '../hooks/useAuth';
+import axiosInstance from '../config/axiosConfig';
 
 export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }) {
 
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { setAuth } = useAuth();
 
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
     const [email, setEmail] = useState('');
@@ -21,59 +19,80 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
         password: ''
     });
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
+    //clear form function
+    const clearForm = () => {
+        setValues({
+            username: '',
+            password: ''
+        });
+        setError('');
+    }
+
+    const loadingDuration = () => {
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 1500);
+    }
+
+    //clear form when modal is closed
     useEffect(() => {
         if (!isOpenLogin) {
-            setValues({
-                username: '',
-                password: ''
-            })
+            clearForm();
             setError("")
         }
-    }, [])
+    }, [isOpenLogin])
 
+    //login function
     const handleLogin = async (e) => {
         e.preventDefault();
-
+        setIsLoading(true);
         try {
-            const response = await login({ username: values.username, password: values.password })
-            alert("Login Successful")
+            await axiosInstance.post('/auth/loginUser', { username: values.username, password: values.password })
             if (onLoginSuccess) {
+                isCloseLogin()
+                loadingDuration()
                 onLoginSuccess()
+                clearForm()
             }
-            setValues({
-                username: '',
-                password: ''
-            })
-            isCloseLogin()
+
         } catch (err) {
+            setIsLoading(false);
             const status = err.response?.status;
             const data = err.response?.data;
 
             if (status === 403) {
-                const email = data.email
-                const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: email })
-                setValues({
-                    username: '',
-                    password: ''
-                })
-                setEmail(email)
-                setIsOTPModalVisible(true)
-                isCloseLogin()
-                return
+                try {
+                    const email = data.email
+                    const response = await axiosInstance.post('auth/send-verify-otp', { email: email })
+                    setValues({
+                        username: '',
+                        password: ''
+                    })
+                    setEmail(email)
+                    setIsOTPModalVisible(true)
+                    isCloseLogin()
+                    return
+                } catch (error) {
+                    const errorMsg = error.response?.data?.message || "Verification failed"
+                    console.error("Error: ", errorMsg)
+                    setError(errorMsg)
+                }
             }
-
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.response?.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
         }
     }
 
+    //go to signup page
     const goToSignup = (e) => {
         e.preventDefault();
         navigate('/signup');
     }
 
+    //go to reset password page
     const resetPassword = (e) => {
         e.preventDefault();
         navigate('/reset-password');
@@ -82,6 +101,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
 
     return (
         <div>
+            <LoadingScreen isVisible={isLoading} message="Logging in..." onComplete={() => console.log("Loading complete")} />
             <Modal
                 open={isOpenLogin}
                 className='login-modal'

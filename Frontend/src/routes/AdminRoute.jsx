@@ -1,27 +1,12 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Spin } from 'antd';
+import { useAuth } from '../hooks/useAuth';
 
-/**
- * AdminRoute - Protects routes that require admin access
- * Only authenticated admin users can access these routes
- */
 const AdminRoute = () => {
-    const { isAuthenticated, isLoading, isAdmin } = useAuth();
+    const { auth } = useAuth();
 
-    if (isLoading) {
-        return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh'
-            }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
+    const isAuthenticated = auth && auth.accessToken; //if authenticated
+    const isAdmin = auth && auth.role === 'Admin'; //if authenticated user is admin
 
     // Check if user is authenticated and is an admin
     if (!isAuthenticated) {
