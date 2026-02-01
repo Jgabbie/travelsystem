@@ -1,23 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Button, Tag, Space, Dropdown, message, Row, Col, Statistic, Card } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, DownOutlined, UserAddOutlined, SafetyCertificateOutlined, UserOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  Table,
+  Input,
+  Select,
+  Button,
+  Tag,
+  Space,
+  Dropdown,
+  message,
+  Row,
+  Col,
+  Statistic,
+  Card
+} from "antd";
+
+import {
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  DownOutlined,
+  UserAddOutlined,
+  SafetyCertificateOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined
+} from "@ant-design/icons";
+
 import axios from 'axios';
-import AddUserModal from "../components/AddUserModal"; // Import the new modal
+import AddUserModal from "../components/AddUserModal";
 import "../style/users.css";
 
 export default function UserManagement() {
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [targetRole, setTargetRole] = useState("User"); // Default role to add
-  const [searchText, setSearchText] = useState("");
 
-  // Fetch users from backend
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [targetRole, setTargetRole] = useState("User");
+
+  const [searchText, setSearchText] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+
+  // ================= FETCH USERS =================
+
   const getUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8000/api/user/getUsers', { withCredentials: true });
-      // Add 'key' prop for Ant Design Table
+      const response = await axios.get(
+        "http://localhost:8000/api/user/getUsers",
+        { withCredentials: true }
+      );
+
       const formattedData = response.data.map(user => ({
         key: user._id,
         id: user._id,
@@ -27,9 +60,9 @@ export default function UserManagement() {
         role: user.role || "User",
         status: user.isAccountVerified ? "Verified" : "Pending"
       }));
+
       setUsers(formattedData);
-    } catch (err) {
-      console.error("Failed to fetch users", err);
+    } catch {
       message.error("Failed to load users");
     } finally {
       setLoading(false);
@@ -40,57 +73,62 @@ export default function UserManagement() {
     getUsers();
   }, []);
 
+  // ================= DELETE =================
+
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      try {
-        await axios.delete(`http://localhost:8000/api/user/deleteUsers`, {
-          data: { id }, // Pass ID in body or change route to /deleteUsers/:id
+    if (!window.confirm("Delete this user?")) return;
+
+    try {
+      await axios.delete(
+        `http://localhost:8000/api/user/deleteUsers`,
+        {
+          data: { id },
           withCredentials: true
-        });
-        // Note: Your current route is /deleteUsers/:id so specific axios call:
-        // await axios.delete(`http://localhost:8000/api/user/deleteUsers/${id}`)
-        // But let's assume you fix the route or use query param. 
-        // Based on your code provided: router.delete('/deleteUsers', userController.delUsers) 
-        // But controller uses req.params.id. This route definition in userRoutes.js is likely wrong 
-        // and should be router.delete('/deleteUsers/:id', ...). 
-        // For now, I'll refresh data assuming deletion works or you fix route.
-        message.success("User deleted");
-        getUsers();
-      } catch (err) {
-        message.error("Delete failed");
-      }
+        }
+      );
+      message.success("User deleted");
+      getUsers();
+    } catch {
+      message.error("Delete failed");
     }
-  }
+  };
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchText.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchText.toLowerCase())
-  );
+  // ================= FILTERS =================
 
-  // --- Dropdown Menu Items ---
+  const filteredUsers = users.filter(user => {
+
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchText.toLowerCase());
+
+    const matchesRole =
+      roleFilter === "" || user.role === roleFilter;
+
+    return matchesSearch && matchesRole;
+  });
+
+  // ================= DROPDOWN =================
+
   const addUserItems = [
     {
-      key: 'Admin',
-      label: 'Add Admin',
-      icon: <SafetyCertificateOutlined />,
+      key: "Admin",
+      label: "Add Admin",
+      icon: <SafetyCertificateOutlined />
     },
     {
-      key: 'User',
-      label: 'Add Normal User',
-      icon: <UserAddOutlined />,
-    },
+      key: "User",
+      label: "Add Normal User",
+      icon: <UserAddOutlined />
+    }
   ];
 
   const handleMenuClick = (e) => {
-    setTargetRole(e.key); // Set role to 'Admin' or 'User'
-    setIsModalOpen(true); // Open the modal
+    setTargetRole(e.key);
+    setIsModalOpen(true);
   };
 
-  const menuProps = {
-    items: addUserItems,
-    onClick: handleMenuClick,
-  };
+  // ================= TABLE =================
 
   const columns = [
     { title: "Name", dataIndex: "name" },
@@ -106,8 +144,8 @@ export default function UserManagement() {
     {
       title: "Status",
       dataIndex: "status",
-      render: s => (
-        <Tag color={s === "Verified" ? "green" : "orange"}>{s}</Tag>
+      render: status => (
+        <Tag color={status === "Verified" ? "green" : "orange"}>{status}</Tag>
       )
     },
     {
@@ -115,20 +153,28 @@ export default function UserManagement() {
       render: (_, record) => (
         <Space>
           <Button type="primary" icon={<EditOutlined />} />
-          <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)} />
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+          />
         </Space>
       )
     }
   ];
 
+  // ================= STATS =================
+
   const totalUsers = users.length;
-  const verifiedUsers = users.filter(user => user.status === "Verified").length;
-  const unverifiedUsers = users.filter(user => user.status === "Pending").length;
+  const verifiedUsers = users.filter(u => u.status === "Verified").length;
+  const unverifiedUsers = users.filter(u => u.status === "Pending").length;
 
   return (
     <div className="user-management-container">
+
       <h1 className="page-header">User Management</h1>
 
+      {/* 📊 STATS */}
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col xs={24} sm={8}>
           <Card>
@@ -161,7 +207,9 @@ export default function UserManagement() {
         </Col>
       </Row>
 
+      {/* 🔧 ACTIONS */}
       <div className="user-actions">
+
         <Input
           prefix={<SearchOutlined />}
           placeholder="Search name, username or email..."
@@ -174,15 +222,20 @@ export default function UserManagement() {
         <Select
           placeholder="Role"
           style={{ width: 140 }}
-          options={
-            [{ value: "admin", label: "Admin" },
-            { value: "customer", label: "User" }]
-          }>
-        </Select>
+          allowClear
+          value={roleFilter || undefined}
+          onChange={(value) => setRoleFilter(value || "")}
+          options={[
+            { value: "Admin", label: "Admin" },
+            { value: "User", label: "User" }
+          ]}
+        />
 
         <Button onClick={getUsers}>Refresh</Button>
 
-        <Dropdown menu={menuProps}>
+        <Dropdown
+          menu={{ items: addUserItems, onClick: handleMenuClick }}
+        >
           <Button type="primary">
             <Space>
               Add User
@@ -192,6 +245,7 @@ export default function UserManagement() {
         </Dropdown>
       </div>
 
+      {/* 📋 TABLE */}
       <Card style={{ marginTop: 20 }}>
         <Table
           loading={loading}
@@ -201,6 +255,7 @@ export default function UserManagement() {
         />
       </Card>
 
+      {/* ➕ MODAL */}
       <AddUserModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

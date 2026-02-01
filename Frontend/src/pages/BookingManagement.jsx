@@ -10,19 +10,23 @@ import {
   ClockCircleOutlined, CheckCircleOutlined,
   CloseCircleOutlined
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import "../style/booking.css";
 
 export default function BookingManagement() {
 
   const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [bookingDateFilter, setBookingDateFilter] = useState(null);
+  const [travelDateFilter, setTravelDateFilter] = useState(null);
 
   const data = [
     {
       key: 1,
       ref: "BKRF-101",
       pkg: "Boracay Beach Tour",
-      travelDate: "Jan 10, 2025",
-      bookingDate: "Dec 28, 2024 10:30 AM",
+      travelDate: "2025-01-10",
+      bookingDate: "2024-12-28",
       qty: 2,
       status: "Confirmed"
     },
@@ -30,8 +34,8 @@ export default function BookingManagement() {
       key: 2,
       ref: "BKRF-102",
       pkg: "Palawan Island Hopping",
-      travelDate: "Feb 5, 2025",
-      bookingDate: "Jan 1, 2025 3:15 PM",
+      travelDate: "2025-02-05",
+      bookingDate: "2025-01-01",
       qty: 4,
       status: "Pending"
     },
@@ -39,8 +43,8 @@ export default function BookingManagement() {
       key: 3,
       ref: "BKRF-103",
       pkg: "Bohol Countryside Tour",
-      travelDate: "Mar 20, 2025",
-      bookingDate: "Feb 10, 2025 9:00 AM",
+      travelDate: "2025-03-20",
+      bookingDate: "2025-02-10",
       qty: 1,
       status: "Confirmed"
     },
@@ -48,8 +52,8 @@ export default function BookingManagement() {
       key: 4,
       ref: "BKRF-104",
       pkg: "Cebu City Adventure",
-      travelDate: "Apr 2, 2025",
-      bookingDate: "Mar 12, 2025 1:45 PM",
+      travelDate: "2025-04-02",
+      bookingDate: "2025-03-12",
       qty: 3,
       status: "Cancelled"
     },
@@ -57,25 +61,56 @@ export default function BookingManagement() {
       key: 5,
       ref: "BKRF-105",
       pkg: "Siargao Surf Trip",
-      travelDate: "May 15, 2025",
-      bookingDate: "Apr 1, 2025 11:20 AM",
+      travelDate: "2025-05-15",
+      bookingDate: "2025-04-01",
       qty: 2,
       status: "Pending"
     }
   ];
 
+  // ================= FILTER LOGIC =================
 
-  const filteredData = data.filter(item =>
-    item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
-    item.pkg.toLowerCase().includes(searchText.toLowerCase()) ||
-    item.status.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredData = data.filter(item => {
+
+    const matchesSearch =
+      item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.pkg.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.status.toLowerCase().includes(searchText.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "" || item.status === statusFilter;
+
+    const matchesBookingDate =
+      !bookingDateFilter ||
+      dayjs(item.bookingDate).isSame(bookingDateFilter, "day");
+
+    const matchesTravelDate =
+      !travelDateFilter ||
+      dayjs(item.travelDate).isSame(travelDateFilter, "day");
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesBookingDate &&
+      matchesTravelDate
+    );
+  });
+
+  // ================= TABLE =================
 
   const columns = [
     { title: "Reference", dataIndex: "ref" },
     { title: "Package", dataIndex: "pkg" },
-    { title: "Travel Date", dataIndex: "travelDate" },
-    { title: "Booking Date & Time", dataIndex: "bookingDate" },
+    {
+      title: "Travel Date",
+      dataIndex: "travelDate",
+      render: d => dayjs(d).format("MMM DD, YYYY")
+    },
+    {
+      title: "Booking Date",
+      dataIndex: "bookingDate",
+      render: d => dayjs(d).format("MMM DD, YYYY")
+    },
     { title: "Travellers", dataIndex: "qty" },
     {
       title: "Status",
@@ -84,8 +119,8 @@ export default function BookingManagement() {
         <Tag
           color={
             s === "Confirmed" ? "green" :
-              s === "Pending" ? "orange" :
-                "red"
+            s === "Pending" ? "orange" :
+            "red"
           }
         >
           {s}
@@ -103,20 +138,23 @@ export default function BookingManagement() {
     }
   ];
 
-  const totalBookings = data.length;
-  const totalConfirmedBookings = data.filter((element, index) => element.status === "Confirmed").length;
-  const totalPendingBookings = data.filter((element, index) => element.status === "Pending").length;
-  const totalCancelledBookings = data.filter((element, index) => element.status === "Cancelled").length;
+  // ================= STATS =================
+
+  const totalBookings = filteredData.length;
+  const totalConfirmed = filteredData.filter(b => b.status === "Confirmed").length;
+  const totalPending = filteredData.filter(b => b.status === "Pending").length;
+  const totalCancelled = filteredData.filter(b => b.status === "Cancelled").length;
 
   return (
     <div>
       <h1 className="page-header">Booking Management</h1>
 
+      {/* 📊 STATS */}
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col xs={24} sm={6}>
           <Card>
             <Statistic
-              title="Total Bookings"
+              title="Total"
               value={totalBookings}
               prefix={<CalendarOutlined />}
             />
@@ -127,7 +165,7 @@ export default function BookingManagement() {
           <Card>
             <Statistic
               title="Pending"
-              value={totalPendingBookings}
+              value={totalPending}
               prefix={<ClockCircleOutlined />}
             />
           </Card>
@@ -137,7 +175,7 @@ export default function BookingManagement() {
           <Card>
             <Statistic
               title="Confirmed"
-              value={totalConfirmedBookings}
+              value={totalConfirmed}
               prefix={<CheckCircleOutlined />}
             />
           </Card>
@@ -147,15 +185,15 @@ export default function BookingManagement() {
           <Card>
             <Statistic
               title="Cancelled"
-              value={totalCancelledBookings}
+              value={totalCancelled}
               prefix={<CloseCircleOutlined />}
             />
           </Card>
         </Col>
       </Row>
 
+      {/* 🔧 FILTER BAR */}
       <div className="booking-actions">
-
 
         <Input
           prefix={<SearchOutlined />}
@@ -166,11 +204,32 @@ export default function BookingManagement() {
           allowClear
         />
 
-        <Select placeholder="Status" style={{ width: 140 }} />
+        <Select
+          placeholder="Status"
+          style={{ width: 140 }}
+          allowClear
+          value={statusFilter || undefined}
+          onChange={(v) => setStatusFilter(v || "")}
+          options={[
+            { value: "Confirmed", label: "Confirmed" },
+            { value: "Pending", label: "Pending" },
+            { value: "Cancelled", label: "Cancelled" }
+          ]}
+        />
 
-        <DatePicker placeholder="Booking Date" />
+        <DatePicker
+          placeholder="Booking Date"
+          value={bookingDateFilter}
+          onChange={(d) => setBookingDateFilter(d)}
+          allowClear
+        />
 
-        <DatePicker placeholder="Travel Date" />
+        <DatePicker
+          placeholder="Travel Date"
+          value={travelDateFilter}
+          onChange={(d) => setTravelDateFilter(d)}
+          allowClear
+        />
 
         <Button type="primary">Export</Button>
       </div>
