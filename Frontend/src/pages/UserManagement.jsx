@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Button, Tag, Space, DatePicker, Dropdown, message } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, DownOutlined, UserAddOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { Table, Input, Select, Button, Tag, Space, Dropdown, message, Row, Col, Statistic, Card } from "antd";
+import { SearchOutlined, EditOutlined, DeleteOutlined, DownOutlined, UserAddOutlined, SafetyCertificateOutlined, UserOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import axios from 'axios';
 import AddUserModal from "../components/AddUserModal"; // Import the new modal
 import "../style/users.css";
@@ -10,10 +10,10 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetRole, setTargetRole] = useState("User"); // Default role to add
-   const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   // Fetch users from backend
-  const fetchUsers = async () => {
+  const getUsers = async () => {
     setLoading(true);
     try {
       const response = await axios.get('http://localhost:8000/api/user/getUsers', { withCredentials: true });
@@ -37,32 +37,32 @@ export default function UserManagement() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    getUsers();
   }, []);
 
   const handleDelete = async (id) => {
-    if(window.confirm("Are you sure you want to delete this user?")) {
-        try {
-            await axios.delete(`http://localhost:8000/api/user/deleteUsers`, { 
-                data: { id }, // Pass ID in body or change route to /deleteUsers/:id
-                withCredentials: true 
-            });
-            // Note: Your current route is /deleteUsers/:id so specific axios call:
-            // await axios.delete(`http://localhost:8000/api/user/deleteUsers/${id}`)
-            // But let's assume you fix the route or use query param. 
-            // Based on your code provided: router.delete('/deleteUsers', userController.delUsers) 
-            // But controller uses req.params.id. This route definition in userRoutes.js is likely wrong 
-            // and should be router.delete('/deleteUsers/:id', ...). 
-            // For now, I'll refresh data assuming deletion works or you fix route.
-            message.success("User deleted");
-            fetchUsers();
-        } catch (err) {
-            message.error("Delete failed");
-        }
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        await axios.delete(`http://localhost:8000/api/user/deleteUsers`, {
+          data: { id }, // Pass ID in body or change route to /deleteUsers/:id
+          withCredentials: true
+        });
+        // Note: Your current route is /deleteUsers/:id so specific axios call:
+        // await axios.delete(`http://localhost:8000/api/user/deleteUsers/${id}`)
+        // But let's assume you fix the route or use query param. 
+        // Based on your code provided: router.delete('/deleteUsers', userController.delUsers) 
+        // But controller uses req.params.id. This route definition in userRoutes.js is likely wrong 
+        // and should be router.delete('/deleteUsers/:id', ...). 
+        // For now, I'll refresh data assuming deletion works or you fix route.
+        message.success("User deleted");
+        getUsers();
+      } catch (err) {
+        message.error("Delete failed");
+      }
     }
   }
 
-    const filteredUsers = users.filter(user =>
+  const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchText.toLowerCase()) ||
     user.username.toLowerCase().includes(searchText.toLowerCase()) ||
     user.email.toLowerCase().includes(searchText.toLowerCase())
@@ -96,8 +96,8 @@ export default function UserManagement() {
     { title: "Name", dataIndex: "name" },
     { title: "Username", dataIndex: "username" },
     { title: "Email", dataIndex: "email" },
-    { 
-      title: "Role", 
+    {
+      title: "Role",
       dataIndex: "role",
       render: role => (
         <Tag color={role === "Admin" ? "purple" : "blue"}>{role}</Tag>
@@ -121,12 +121,48 @@ export default function UserManagement() {
     }
   ];
 
+  const totalUsers = users.length;
+  const verifiedUsers = users.filter(user => user.status === "Verified").length;
+  const unverifiedUsers = users.filter(user => user.status === "Pending").length;
+
   return (
-    <>
+    <div className="user-management-container">
       <h1 className="page-header">User Management</h1>
 
+      <Row gutter={16} style={{ marginBottom: 20 }}>
+        <Col xs={24} sm={8}>
+          <Card>
+            <Statistic
+              title="Total Users"
+              value={totalUsers}
+              prefix={<UserOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={8}>
+          <Card>
+            <Statistic
+              title="Verified Users"
+              value={verifiedUsers}
+              prefix={<CheckCircleOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={8}>
+          <Card>
+            <Statistic
+              title="Unverified Users"
+              value={unverifiedUsers}
+              prefix={<ExclamationCircleOutlined />}
+            />
+          </Card>
+        </Col>
+      </Row>
+
       <div className="user-actions">
-         <Input
+        <Input
           prefix={<SearchOutlined />}
           placeholder="Search name, username or email..."
           className="search-input"
@@ -135,14 +171,17 @@ export default function UserManagement() {
           allowClear
         />
 
-        <Select placeholder="Role" style={{ width: 140 }}>
-          <Select.Option value="admin">Admin</Select.Option>
-          <Select.Option value="customer">User</Select.Option>
+        <Select
+          placeholder="Role"
+          style={{ width: 140 }}
+          options={
+            [{ value: "admin", label: "Admin" },
+            { value: "customer", label: "User" }]
+          }>
         </Select>
 
-        <Button onClick={fetchUsers}>Refresh</Button>
+        <Button onClick={getUsers}>Refresh</Button>
 
-        {/* --- MODIFIED ADD USER BUTTON --- */}
         <Dropdown menu={menuProps}>
           <Button type="primary">
             <Space>
@@ -153,20 +192,21 @@ export default function UserManagement() {
         </Dropdown>
       </div>
 
-      <Table
-        loading={loading}
-        columns={columns}
-        dataSource={filteredUsers}
-        pagination={{ pageSize: 6 }}
-      />
+      <Card style={{ marginTop: 20 }}>
+        <Table
+          loading={loading}
+          columns={columns}
+          dataSource={filteredUsers}
+          pagination={{ pageSize: 6 }}
+        />
+      </Card>
 
-      {/* --- ADD USER MODAL --- */}
-      <AddUserModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <AddUserModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         roleToAdd={targetRole}
-        refreshData={fetchUsers}
+        refreshData={getUsers}
       />
-    </>
+    </div>
   );
 }

@@ -9,7 +9,7 @@ import { useAuth } from "../hooks/useAuth";
 const { Sider } = Layout;
 
 export default function SideNav() {
-  const { auth, setAuth } = useAuth();
+  const { setAuth } = useAuth();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -45,11 +45,11 @@ export default function SideNav() {
           <NavLink to="/bookings" className="nav-item">Bookings</NavLink>
           <NavLink to="/transactions" className="nav-item">Transactions</NavLink>
           <NavLink to="/packages" className="nav-item">Packages</NavLink>
-          <NavLink to="/reviews" className="nav-item">Review</NavLink>
+          <NavLink to="/ratings" className="nav-item">Review</NavLink>
           <NavLink to="/passport-applications" className="nav-item">Passport Applications</NavLink>
-          <NavLink to="/VISA-applications" className="nav-item">VISA Applications</NavLink>
+          <NavLink to="/visa-applications" className="nav-item">VISA Applications</NavLink>
 
-          {/* --- NEW TABS --- */}
+
           <div style={{ margin: "10px 0", borderTop: "1px solid rgba(255,255,255,0.2)" }}></div>
           <NavLink to="/logging" className="nav-item">Logging</NavLink>
           <NavLink to="/auditing" className="nav-item">Auditing</NavLink>

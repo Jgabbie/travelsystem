@@ -7,11 +7,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 24px;
-
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .topnav-right {
   display: flex;
+  flex-direction: row;
   gap: 16px;
   align-items: center;
 }
@@ -27,4 +30,14 @@
   font-size: 18px;
   font-weight: 600;
   color: #305797;
+  margin-top: 10px;
+  margin-left: 5px;
+}
+
+.user-welcome {
+  font-family: "Roboto", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #000000;
+  margin-top: 10px;
 }

@@ -9,4 +9,74 @@
 
 .package-card {
   margin-bottom: 16px;
-} 
+}
+
+.package-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.package-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.package-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.package-name,
+.package-code {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.package-price {
+  font-size: 14px;
+  color: #6e6e6e;
+  margin: 4px 0 12px 0;
+}
+
+.package-description {
+  font-size: 13px;
+  margin: 8px 0;
+  width: 930px;
+  text-align: justify;
+}
+
+.package-available-slots {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 57px;
+}
+
+.viewdetails-package-button,
+.edit-package-button,
+.add-package-button {
+  border-color: #305797;
+  background-color: #fff !important;
+  color: #305797 !important;
+}
+
+.add-package-button:hover,
+.viewdetails-package-button:hover,
+.edit-package-button:hover {
+  background-color: #1c3f72 !important;
+  color: #fff !important;
+}
+
+.delete-package-button {
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.delete-package-button:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}

@@ -14,8 +14,8 @@ export default function TopNav() {
       <div className="brand">M&RC Travel and Tours</div>
 
       <div className="topnav-right">
-        <span className="user-topnav">{auth?.username}</span>
-        <Avatar icon={<UserOutlined />} />
+        <h3 className="user-welcome">Welcome, <span className="user-topnav">{auth?.username}</span> </h3>
+        <Avatar className="user-icon" icon={<UserOutlined />} />
       </div>
     </Header>
   );

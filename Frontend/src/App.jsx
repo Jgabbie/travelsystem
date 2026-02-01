@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "./hooks/useAuth";
-import { useEffect } from "react";
+// import { useAuth } from "./hooks/useAuth";
+// import { useEffect } from "react";
 
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -20,6 +20,9 @@ import PackageManagement from "./pages/PackageManagement";
 import AddPackage from "./pages/AddPackage";
 import AdminDashboard from "./pages/AdminDashboard";
 import TransactionManagement from "./pages/TransactionManagement";
+import ReviewRatings from "./pages/ReviewRatings";
+import VisaApplications from "./pages/VisaApplications";
+import PassportApplications from "./pages/PassportApplications";
 
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -27,27 +30,27 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
-import useRefreshToken from "./hooks/useRefreshToken";
+//import useRefreshToken from "./hooks/useRefreshToken";
+
+
 
 function App() {
 
-  const { setAuth } = useAuth();
-  const refreshToken = useRefreshToken();
-
-
-  useEffect(() => {
-    const refreshOnLoad = async () => {
-      try {
-        const newAccessToken = await refreshToken();
-        if (newAccessToken) {
-          setAuth(prev => ({ ...prev, accessToken: newAccessToken }));
-        }
-      } catch (err) {
-        console.error("Failed to refresh access token on load:", err);
-      }
-    }
-    refreshOnLoad();
-  }, []);
+  // const { setAuth } = useAuth();
+  // const refreshToken = useRefreshToken();
+  // useEffect(() => {
+  //   const refreshOnLoad = async () => {
+  //     try {
+  //       const newAccessToken = await refreshToken();
+  //       if (newAccessToken) {
+  //         setAuth(prev => ({ ...prev, accessToken: newAccessToken }));
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to refresh access token on load:", err);
+  //     }
+  //   }
+  //   refreshOnLoad();
+  // }, []);
 
   return (
     <div>
@@ -74,6 +77,9 @@ function App() {
             <Route path="transactions" element={<TransactionManagement />} />
             <Route path="packages" element={<PackageManagement />} />
             <Route path="packages/add" element={<AddPackage />} />
+            <Route path="ratings" element={<ReviewRatings />} />
+            <Route path="visa-applications" element={<VisaApplications />} />
+            <Route path="passport-applications" element={<PassportApplications />} />
 
             {/* NEW LOGGING & AUDITING ROUTES */}
             <Route path="logging" element={<Logging />} />

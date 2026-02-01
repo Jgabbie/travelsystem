@@ -1,6 +1,15 @@
 import React, { useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, DatePicker } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  Input, Select, Button, Table,
+  Tag, Space, DatePicker, Row,
+  Col, Card, Statistic
+} from "antd";
+import {
+  SearchOutlined, EditOutlined,
+  DeleteOutlined, CalendarOutlined,
+  ClockCircleOutlined, CheckCircleOutlined,
+  CloseCircleOutlined
+} from "@ant-design/icons";
 import "../style/booking.css";
 
 export default function BookingManagement() {
@@ -15,7 +24,7 @@ export default function BookingManagement() {
       travelDate: "Jan 10, 2025",
       bookingDate: "Dec 28, 2024 10:30 AM",
       qty: 2,
-      status: "Paid"
+      status: "Confirmed"
     },
     {
       key: 2,
@@ -33,7 +42,7 @@ export default function BookingManagement() {
       travelDate: "Mar 20, 2025",
       bookingDate: "Feb 10, 2025 9:00 AM",
       qty: 1,
-      status: "Cancelled"
+      status: "Confirmed"
     },
     {
       key: 4,
@@ -42,7 +51,7 @@ export default function BookingManagement() {
       travelDate: "Apr 2, 2025",
       bookingDate: "Mar 12, 2025 1:45 PM",
       qty: 3,
-      status: "Paid"
+      status: "Cancelled"
     },
     {
       key: 5,
@@ -74,9 +83,9 @@ export default function BookingManagement() {
       render: s => (
         <Tag
           color={
-            s === "Paid" ? "green" :
-            s === "Pending" ? "orange" :
-            "red"
+            s === "Confirmed" ? "green" :
+              s === "Pending" ? "orange" :
+                "red"
           }
         >
           {s}
@@ -94,9 +103,56 @@ export default function BookingManagement() {
     }
   ];
 
+  const totalBookings = data.length;
+  const totalConfirmedBookings = data.filter((element, index) => element.status === "Confirmed").length;
+  const totalPendingBookings = data.filter((element, index) => element.status === "Pending").length;
+  const totalCancelledBookings = data.filter((element, index) => element.status === "Cancelled").length;
+
   return (
-    <>
+    <div>
       <h1 className="page-header">Booking Management</h1>
+
+      <Row gutter={16} style={{ marginBottom: 20 }}>
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Total Bookings"
+              value={totalBookings}
+              prefix={<CalendarOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Pending"
+              value={totalPendingBookings}
+              prefix={<ClockCircleOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Confirmed"
+              value={totalConfirmedBookings}
+              prefix={<CheckCircleOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Cancelled"
+              value={totalCancelledBookings}
+              prefix={<CloseCircleOutlined />}
+            />
+          </Card>
+        </Col>
+      </Row>
 
       <div className="booking-actions">
 
@@ -119,11 +175,13 @@ export default function BookingManagement() {
         <Button type="primary">Export</Button>
       </div>
 
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        pagination={{ pageSize: 6 }}
-      />
-    </>
+      <Card>
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          pagination={{ pageSize: 6 }}
+        />
+      </Card>
+    </div>
   );
 }

@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, DatePicker } from "antd";
 import {
-  SearchOutlined,
-  EditOutlined,
-  DeleteOutlined,
+  Input, Select, Button, Table,
+  Tag, Space, DatePicker, Row, Col,
+  Card, Statistic
+} from "antd";
+import {
+  SearchOutlined, EditOutlined,
+  DeleteOutlined, SwapOutlined,
+  CheckCircleOutlined, ClockCircleOutlined,
+  CloseCircleOutlined
 } from "@ant-design/icons";
 
 import "../style/transaction.css";
@@ -47,7 +52,7 @@ export default function TransactionManagement() {
       date: "Dec 18, 2024 6:30 PM",
       price: "₱18,800",
       method: "Bank Transfer",
-      status: "Failed",
+      status: "Unpaid",
     },
     {
       key: 5,
@@ -81,8 +86,8 @@ export default function TransactionManagement() {
         <Tag
           color={
             s === "Paid" ? "green" :
-            s === "Pending" ? "orange" :
-            "red"
+              s === "Pending" ? "orange" :
+                "red"
           }
         >
           {s}
@@ -100,9 +105,56 @@ export default function TransactionManagement() {
     },
   ];
 
+  const totalTransactions = data.length;
+  const totalSuccessful = data.filter(item => item.status === "Paid").length;
+  const totalPending = data.filter(item => item.status === "Pending").length;
+  const totalUnpaid = data.filter(item => item.status === "Unpaid").length;
+
   return (
-    <>
+    <div>
       <h1 className="page-header">Transaction Management</h1>
+
+      <Row gutter={16} style={{ marginBottom: 20 }}>
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Total Transactions"
+              value={totalTransactions}
+              prefix={<SwapOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Successful"
+              value={totalSuccessful}
+              prefix={<CheckCircleOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Pending"
+              value={totalPending}
+              prefix={<ClockCircleOutlined />}
+            />
+          </Card>
+        </Col>
+
+        <Col xs={24} sm={6}>
+          <Card>
+            <Statistic
+              title="Unpaid"
+              value={totalUnpaid}
+              prefix={<CloseCircleOutlined />}
+            />
+          </Card>
+        </Col>
+      </Row>
 
       <div className="transaction-actions">
 
@@ -124,12 +176,13 @@ export default function TransactionManagement() {
 
         <Button type="primary">Export</Button>
       </div>
-
-      <Table
-        columns={columns}
-        dataSource={filteredData}
-        pagination={{ pageSize: 6 }}
-      />
-    </>
+      <Card>
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          pagination={{ pageSize: 6 }}
+        />
+      </Card>
+    </div>
   );
 }

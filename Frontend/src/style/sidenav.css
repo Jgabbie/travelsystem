@@ -1,11 +1,13 @@
 .sidenav {
   background: #2f5f9f;
   min-height: 100vh;
-
   display: flex !important;
   flex-direction: column !important;
-
   padding: 16px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: fit-content;
 }
 
 .nav-top {
@@ -44,4 +46,7 @@
   background: none;
   margin-top: 5px;
   display: block;
+  position: sticky !important;
+  top: 0;
+  z-index: 1000;
 }

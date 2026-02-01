@@ -1,15 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
-.add-package-form input,
-.add-package-form textarea {
-  margin-bottom: 12px;
-}
-
 /* Prevent whole page from scrolling */
 body,
-html,
-#root {
+html {
   overflow: hidden;
   height: 100%;
 }
@@ -33,5 +27,133 @@ html,
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+}
+
+.add-package-header-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.footer-add-packages {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.save-package-button {
+  background-color: #305797 !important;
+  color: white !important;
+  width: 200px !important;
+}
+
+.startenddates-add-package {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-package-inputs {
+  font-size: 16px !important;
+  width: 500px !important;
+}
+
+.add-package-inputs:hover,
+.add-package-inputs:focus,
+.add-package-input-textarea:hover,
+.add-package-input-textarea:focus {
+  border-color: #305797 !important;
+}
+
+.add-package-input-textarea {
+  font-size: 16px !important;
+  min-height: 80px !important;
+}
+
+.add-package-input-labels {
+  color: #305797;
+  font-size: 13px;
+  margin-bottom: 0px;
+  height: 10px;
+}
+
+.add-package-duration-select {
+  font-size: 16px !important;
+  width: 500px !important;
+}
+
+.section-headers {
+  font-size: 22px;
+  font-weight: 600;
+  height: 10px;
+  line-height: .5;
+  margin-bottom: 0px;
+  margin-top: 20px;
+}
+
+.delete-add-package-button {
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.delete-add-package-button:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.back-add-package-button {
+  border-color: #305797 !important;
+  color: #305797 !important;
+}
+
+.back-add-package-button:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.add-package-add-button:hover {
+  border-color: #305797 !important;
+  color: #305797 !important;
+}
+
+/* radio button design */
+.radio-button-add-package .ant-radio-inner {
+  border-color: #305797;
+}
+
+.radio-button-add-package .ant-radio-checked .ant-radio-inner {
+  border-color: #305797;
+  background-color: #305797;
+}
+
+.radio-button-add-package .ant-radio-wrapper:hover .ant-radio-inner {
+  border-color: #305797;
+}
+
+/* checkbox design */
+.ant-checkbox-inner {
+  border-color: #305797;
+}
+
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #305797;
+  border-color: #305797;
+}
+
+
+.ant-checkbox-wrapper:hover .ant-checkbox-inner {
+  border-color: #305797;
+}
+
+/* hover effects on checkbox*/
+.add-package-container .ant-checkbox-wrapper:hover .ant-checkbox-inner {
+  border-color: #305797;
+  box-shadow: 0 0 0 3px rgba(48, 87, 151, 0.15);
+}
+
+.add-package-container .ant-checkbox-inner {
+  transition: all 0.2s ease;
 }

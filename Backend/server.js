@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const userRoutes = require("./routes/userRoutes")
 const authRoutes = require("./routes/authRoutes")
 const logRoutes = require("./routes/logRoutes");
+const packageRoutes = require("./routes/packageRoutes");
 
 
 const app = express()
@@ -16,7 +17,6 @@ app.use(cors({
 app.use(cookieParser())
 app.use(express.json())
 
-
 app.get('/', (req, res) => res.send("API Working"))
 
 mongoose.connect("mongodb://localhost:27017/travelsystem")
@@ -25,8 +25,8 @@ mongoose.connect("mongodb://localhost:27017/travelsystem")
 
 app.use('/api/user', userRoutes)
 app.use('/api/auth', authRoutes)
-app.use('/api/logs', logRoutes);
-
+app.use('/api/logs', logRoutes)
+app.use('/api/package', packageRoutes)
 
 app.listen(8000, () => {
     console.log('Server is up and running');

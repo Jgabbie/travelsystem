@@ -3,12 +3,10 @@ import "../style/adminDashboard.css";
 
 export default function AdminDashboard() {
   return (
-    <div className="admin-dashboard">
-
-      <h1>Dashboard</h1>
+    <div>
+      <h1 className="page-header">Dashboard</h1>
 
       <Row gutter={20}>
-
         <Col span={6}>
           <Card className="dash-card">
             <p>Total Transactions</p>
@@ -36,7 +34,6 @@ export default function AdminDashboard() {
             <h2>12</h2>
           </Card>
         </Col>
-
       </Row>
 
       <div className="dashboard-section">
