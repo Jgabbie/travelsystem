@@ -9,7 +9,8 @@ const LogSchema = new mongoose.Schema({
     performedBy: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'users', // Links to your User model
-        required: true 
+        required: false, // Allow system/unknown users for failed logins
+        default: null
     },
     
     details: { 

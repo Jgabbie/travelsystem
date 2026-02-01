@@ -59,6 +59,8 @@ export default function Logging() {
                 if (text.includes('FAILED')) color = 'red';
                 return <Tag color={color}>{text}</Tag>;
             }
+
+            
         },
         {
             title: 'Performed By',
