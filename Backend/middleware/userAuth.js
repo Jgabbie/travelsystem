@@ -22,8 +22,7 @@ const userAuth = async (req, res, next) => {
         next()
 
     } catch (e) {
-        console.log(process.env.JWT_SECRET)
-        res.status(500).json({ message: "User Auth Function failed " + e.message })
+        res.status(401).json({ message: "Not Authorized. Login Again" })
     }
 }
 

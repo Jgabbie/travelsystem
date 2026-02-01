@@ -18,6 +18,7 @@ export default function Logging() {
                 setLoading(false);
             } catch (err) {
                 console.error("Failed to fetch logs", err);
+                setLoading(false);
             }
         };
         fetchLogs();
@@ -91,11 +92,15 @@ export default function Logging() {
             title: 'Details',
             dataIndex: 'details',
             key: 'details',
-            render: (details) => (
-                <div style={{ fontSize: '12px', color: '#555' }}>
-                    {JSON.stringify(details).replace(/["{}]/g, '').replace(/:/g, ': ')}
-                </div>
-            )
+            render: (details) => {
+                if (!details) {
+                    return <div style={{ fontSize: '12px', color: '#888' }}>No details</div>;
+                }
+                const text = JSON.stringify(details)
+                    .replace(/["{}]/g, '')
+                    .replace(/:/g, ': ');
+                return <div style={{ fontSize: '12px', color: '#555' }}>{text}</div>;
+            }
         },
     ];
 
