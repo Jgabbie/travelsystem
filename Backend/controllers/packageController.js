@@ -1,10 +1,11 @@
 const PackageModel = require("../models/package");
+const logAction = require("../utils/logger");
 
 const addPackage = async (req, res) => {
     const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, addons, inclusions, exclusions, itineraries } = req.body;
     try {
 
-        const newUser = await PackageModel.create({
+        const newPackage = await PackageModel.create({
             packageName: name,
             packageCode: code,
             packagePricePerPax: Number(pricePerPax),
@@ -21,7 +22,31 @@ const addPackage = async (req, res) => {
             packageItineraries: itineraries
         });
 
-        res.status(201).json({ message: "Package created successfully", package: newUser });
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        await logAction(
+            "PACKAGE_CREATED",
+            req.userId || null,
+            {
+                packageId: newPackage._id,
+                packageCode: newPackage.packageCode,
+                packageName: newPackage.packageName,
+                pricePerPax: newPackage.packagePricePerPax,
+                availableSlots: newPackage.packageAvailableSlots,
+                description: newPackage.packageDescription,
+                packageType: newPackage.packageType,
+                duration: newPackage.packageDuration,
+                dateRanges: newPackage.packageSpecificDate,
+                hotels: newPackage.packageHotels,
+                airlines: newPackage.packageAirlines,
+                addons: newPackage.packageAddons,
+                inclusions: newPackage.packageInclusions,
+                exclusions: newPackage.packageExclusions,
+                itineraries: newPackage.packageItineraries
+            },
+            ip
+        );
+
+        res.status(201).json({ message: "Package created successfully", package: newPackage });
 
     } catch (err) {
         console.error(err);
@@ -50,7 +75,7 @@ const removePackage = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
-    }
+    }   
 };
 
 module.exports = { addPackage, getPackages, removePackage };

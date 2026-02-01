@@ -59,11 +59,23 @@ export default function Auditing() {
             title: 'Change Details',
             dataIndex: 'details',
             key: 'details',
-            render: (details) => (
-                <pre style={{ margin: 0, fontSize: '11px' }}>
-                    {JSON.stringify(details, null, 2)}
-                </pre>
-            )
+            render: (details, record) => {
+                const isPackageCreate = record.action === 'PACKAGE_CREATED';
+                if (isPackageCreate) {
+                    return (
+                        <div style={{ fontSize: '11px' }}>
+                            <div><strong>Name:</strong> {details?.packageName || 'N/A'}</div>
+                            <div><strong>Code:</strong> {details?.packageCode || 'N/A'}</div>
+                        </div>
+                    );
+                }
+
+                return (
+                    <pre style={{ margin: 0, fontSize: '11px' }}>
+                        {JSON.stringify(details, null, 2)}
+                    </pre>
+                );
+            }
         }
     ];
 
