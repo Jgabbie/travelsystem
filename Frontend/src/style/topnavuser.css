@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.navbar {
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: #555;
+}
+
+.logo-img {
+    height: 50px;
+    width: 50px;
+    margin-right: 25px;
+    margin-bottom: 5px;
+}
+
+.logo-section span {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+.nav-links Button {
+    background: none;
+    border: none;
+    font-weight: bold;
+    color: #0056b3;
+    cursor: pointer;
+    margin-left: 20px;
+    font-size: 16px;
+}
+
+.landing-label-links {
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+    margin-top: 3px;
+}
+
+.landing-button-links {
+    font-size: 18px;
+    font-weight: 600;
+    color: #992A46;
+    margin-left: 0px;
+    padding-left: 0px;
+    padding-right: 22px;
+}
+
+.landing-button-links:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+    border-width: 0px !important;
+}
+
+.user-name-link {
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+}
+
+.user-name-link:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+    border-width: 0px !important;
+}
+
+.ant-dropdown {
+    height: 30px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.dropdown-space {
+    margin-top: 10px !important;
+    margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.user-dropdown-icon {
+    margin-bottom: 10px !important;
+}
+
+.username-text {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+}
+
+.username-dropdown {
+    font-family: "Montserrat", sans-serif;
+    color: #305797;
+    margin-left: 5px;
+}
+
+.user-dropdown-button {
+    margin-left: 30px;
+}

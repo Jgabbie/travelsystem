@@ -5,10 +5,8 @@ const userAuth = require('../middleware/userAuth');
 
 router.get('/data', userAuth, userController.getUserData);
 router.put('/data', userAuth, userController.updateUserData);
-router.get('/getUsers', userController.getUsers);
-
 router.post('/createUsers', userAuth, userController.createUsers);
-
+router.get('/getUsers', userController.getUsers);
 router.delete('/deleteUsers', userController.delUsers);
 
 module.exports = router;

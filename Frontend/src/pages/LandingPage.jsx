@@ -1,194 +1,24 @@
 import React, { useEffect, useState, useRef } from 'react';
 import '../style/landingpage.css'
 import { Button, Dropdown, Space, Card, Spin, Modal } from 'antd';
-import {
-    DownOutlined, LogoutOutlined, HomeOutlined,
-    UserOutlined, IdcardOutlined, CreditCardOutlined, StarOutlined, CarryOutOutlined, EnvironmentOutlined, GlobalOutlined
-} from '@ant-design/icons';
-import LoginModal from '../components/LoginModal';
-import SignupModal from '../components/SignupModal';
-import LoadingScreen from '../components/LoadingScreen';
+import { SearchOutlined } from '@ant-design/icons';
 import { useAuth } from '../hooks/useAuth';
-import axiosInstance from '../config/axiosConfig';
 import useRefreshToken from '../hooks/useRefreshToken';
-
+import { useNavigate } from 'react-router-dom';
+import TopNavUser from '../components/TopNavUser';
 
 export default function LandingPage() {
     const refresh = useRefreshToken();
 
-    const { auth, setAuth } = useAuth();
-
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
 
-    const [isLoginVisible, setIsLoginVisble] = useState(false)
-    const [isSignupVisible, setIsSignupVisble] = useState(false)
-    const [isLoading, setIsLoading] = useState(true);
     const [budget, setBudget] = useState(16000);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const handleOk = async () => {
-        setIsModalOpen(false);
-        await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
-        setAuth(null);
-    };
-
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
-
-    //check if user is logged in on load
-    const checkAuth = async () => {
-        try {
-            const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
-            const { user } = response.data;
-            setAuth({ username: user.username, role: user.role });
-        } catch (err) {
-            setAuth(null);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        checkAuth();
-    }, []);
-
-    console.log("Auth Context Data in Landing Page:", auth);
-
-    const logout = async () => {
-        try {
-            showModal()
-        } catch (err) {
-            console.error('Logout failed:', err);
-        }
-    };
-
-
-    //dropdown menu items
-    const items = [
-        {
-            key: '1',
-            label: 'Home',
-            icon: <HomeOutlined />
-        },
-        {
-            key: '2',
-            label: 'Profile',
-            icon: <UserOutlined />,
-        },
-        {
-            key: '3',
-            label: 'Bookings',
-            icon: <CarryOutOutlined />,
-        },
-        {
-            key: '4',
-            label: 'Destinations',
-            icon: <EnvironmentOutlined />,
-        },
-        {
-            key: '5',
-            label: 'Featured',
-            icon: <StarOutlined />,
-        },
-        {
-            key: '6',
-            label: 'Transactions',
-            icon: <CreditCardOutlined />,
-        },
-        {
-            key: '7',
-            label: 'VISA Assistance',
-            icon: <IdcardOutlined />,
-        },
-        {
-            key: '8',
-            label: 'Passport Assistance',
-            icon: <GlobalOutlined />,
-        },
-        {
-            type: 'divider',
-        },
-        {
-            key: '9',
-            label: 'Logout',
-            icon: <LogoutOutlined />,
-            danger: true,
-        },
-    ];
-
-    //dropdown menu items handler/functions
-    const handleMenuClick = ({ key }) => {
-        if (key === '9') {
-            logout()
-        }
-    }
 
     return (
         <div className="landing-container">
-            <LoadingScreen isVisible={isLoading} message="Loading..." />
+            <TopNavUser />
 
-            <Modal
-                title="Confirm Logout"
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                open={isModalOpen}
-                onOk={handleOk}
-                onCancel={handleCancel}
-            >
-                <p>Are you sure you want to logout?</p>
-            </Modal>
-
-            {/* --- 1. NAVBAR --- */}
-            <nav className="navbar">
-                <div className="logo-section">
-                    <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
-                    <span>M&RC Travel and Tours</span>
-                </div>
-
-                {/* if authenticated, show username, if not, then show signup and login button links */}
-                {auth ?
-                    <div>
-                        <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
-                            <Space className='dropdown-space'>
-                                <h4 className='username-text'>
-                                    Welcome, <span className='username-dropdown'>{auth?.username?.toUpperCase()}</span>
-                                </h4>
-                                <DownOutlined className='user-dropdown-icon' />
-                            </Space>
-                        </Dropdown>
-                    </div>
-                    :
-                    <div className="nav-links">
-                        <span className="regsignin">
-                            <Button className='landing-button-links' type="link" onClick={() => setIsSignupVisble(true)}>SIGN UP</Button>
-                            |
-                            <Button className='landing-button-links' type="link" onClick={() => setIsLoginVisble(true)}>LOG IN</Button>
-                        </span>
-                    </div>
-                }
-            </nav>
-
-
-            {/* open login modal */}
-            <LoginModal
-                isOpenLogin={isLoginVisible}
-                isCloseLogin={() => setIsLoginVisble(false)}
-                onLoginSuccess={checkAuth}
-            />
-
-            {/* open signup modal */}
-            <SignupModal
-                isOpenSignup={isSignupVisible}
-                isCloseSignup={() => setIsSignupVisble(false)}
-            />
-
-
-            {/* --- 2. BODY --- */}
             <div className="hero-section">
                 <div className="hero-overlay"></div>
                 <div className="hero-content">
@@ -201,7 +31,7 @@ export default function LandingPage() {
 
                     <div className="search-row">
                         <input type="text" placeholder="Search here..." className="search-input" />
-                        <button className="search-btn">🔍</button>
+                        <button className="search-btn"><SearchOutlined /></button>
                     </div>
 
 
@@ -362,9 +192,6 @@ export default function LandingPage() {
                     </Card>
 
                 </div>
-
-
-
             </div>
 
             <div ref={exploreRef} style={{ paddingTop: '100px', marginTop: '50px' }}>

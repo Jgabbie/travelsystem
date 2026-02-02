@@ -1,0 +1,177 @@
+import React, { useEffect, useState } from 'react'
+import { Dropdown, Space, Button, Modal } from 'antd';
+import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, EnvironmentOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, GlobalOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useAuth } from '../hooks/useAuth';
+import '../style/topnavuser.css'
+import LoginModal from './LoginModal';
+import SignupModal from './SignupModal';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../config/axiosConfig';
+
+export default function TopNavUser() {
+    const { auth, setAuth } = useAuth();
+    const navigate = useNavigate();
+
+    const checkAuth = async () => {
+        try {
+            const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
+            const { user } = response.data;
+            setAuth({ username: user.username, role: user.role });
+        } catch (err) {
+            setAuth(null);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    const [isLoginVisible, setIsLoginVisible] = useState(false);
+    const [isSignupVisible, setIsSignupVisible] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const handleOk = async () => {
+        setIsModalOpen(false);
+        await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
+        setAuth(null);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const logout = async () => {
+        try {
+            showModal()
+        } catch (err) {
+            console.error('Logout failed:', err);
+        }
+    };
+
+    //dropdown menu items
+    const items = [
+        {
+            key: '1',
+            label: 'Home',
+            icon: <HomeOutlined />
+        },
+        {
+            key: '2',
+            label: 'Profile',
+            icon: <UserOutlined />,
+        },
+        {
+            key: '3',
+            label: 'Bookings',
+            icon: <CarryOutOutlined />,
+        },
+        {
+            key: '4',
+            label: 'Destinations',
+            icon: <EnvironmentOutlined />,
+        },
+        {
+            key: '5',
+            label: 'Featured',
+            icon: <StarOutlined />,
+        },
+        {
+            key: '6',
+            label: 'Transactions',
+            icon: <CreditCardOutlined />,
+        },
+        {
+            key: '7',
+            label: 'VISA Assistance',
+            icon: <IdcardOutlined />,
+        },
+        {
+            key: '8',
+            label: 'Passport Assistance',
+            icon: <GlobalOutlined />,
+        },
+        {
+            type: 'divider',
+        },
+        {
+            key: '9',
+            label: 'Logout',
+            icon: <LogoutOutlined />,
+            danger: true,
+        },
+    ];
+
+    //dropdown menu items handler/functions
+    const handleMenuClick = ({ key }) => {
+        if (key === '9') {
+            logout()
+        } else if (key === '1') {
+            navigate('/home');
+        } else if (key === '2') {
+            navigate('/profile');
+        }
+    }
+
+    return (
+        <div>
+            <nav className="navbar">
+                <div className="logo-section">
+                    <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
+                    <span>M&RC Travel and Tours</span>
+                </div>
+
+                {/* if authenticated, show username, if not, then show signup and login button links */}
+                {auth ?
+                    <div>
+                        <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
+                            <Space className='dropdown-space'>
+                                <h4 className='username-text'>
+                                    Welcome, <span className='username-dropdown'>{auth?.username?.toUpperCase()}</span>
+                                </h4>
+                                <DownOutlined className='user-dropdown-icon' />
+                            </Space>
+                        </Dropdown>
+                    </div>
+                    :
+                    <div className="nav-links">
+                        <span className="regsignin">
+                            <Button className='landing-button-links' type="link" onClick={() => setIsSignupVisible(true)}>SIGN UP</Button>
+                            |
+                            <Button className='landing-button-links' type="link" onClick={() => setIsLoginVisible(true)}>LOG IN</Button>
+                        </span>
+                    </div>
+                }
+            </nav>
+
+            {/* open login modal */}
+            <LoginModal
+                isOpenLogin={isLoginVisible}
+                isCloseLogin={() => setIsLoginVisible(false)}
+                onLoginSuccess={checkAuth}
+            />
+
+            {/* open signup modal */}
+            <SignupModal
+                isOpenSignup={isSignupVisible}
+                isCloseSignup={() => setIsSignupVisible(false)}
+            />
+
+            <Modal
+                title="Confirm Logout"
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}
+            >
+                <p>Are you sure you want to logout?</p>
+            </Modal>
+        </div>
+    )
+}

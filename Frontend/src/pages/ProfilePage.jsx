@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Input, Button, Form, message, Spin, Card, Space, Modal } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import '../style/profilepage.css'
+import axiosInstance from '../config/axiosConfig';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import TopNavUser from '../components/TopNavUser';
 
 export default function ProfilePage() {
     const [userData, setUserData] = useState(null)
@@ -9,7 +13,8 @@ export default function ProfilePage() {
     const [editing, setEditing] = useState(false)
     const [saving, setSaving] = useState(false)
     const [form] = Form.useForm()
-
+    const navigate = useNavigate();
+    const { auth } = useAuth();
     // Fetch user data on component mount
     useEffect(() => {
         fetchUserData()
@@ -18,13 +23,12 @@ export default function ProfilePage() {
     const fetchUserData = async () => {
         try {
             setLoading(true)
-            const response = await fetch('http://localhost:8000/api/user/data', {
-                method: 'GET',
-                credentials: 'include'
+            const response = await axiosInstance.get('/user/data', {
+                withCredentials: true
             })
 
-            if (response.ok) {
-                const data = await response.json()
+            if (response.status === 200) {
+                const data = response.data
                 setUserData(data.userData)
                 form.setFieldsValue({
                     username: data.userData.username,
@@ -67,22 +71,20 @@ export default function ProfilePage() {
     const handleSave = async (values) => {
         try {
             setSaving(true)
-            const response = await fetch('http://localhost:8000/api/user/data', {
-                method: 'PUT',
-                credentials: 'include',
+            const response = await axiosInstance.put('/user/data', {
+                firstname: values.firstname,
+                lastname: values.lastname,
+                email: values.email,
+                phone: values.phone
+            }, {
+                withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    firstname: values.firstname,
-                    lastname: values.lastname,
-                    email: values.email,
-                    phone: values.phone
-                })
+                }
             })
 
-            if (response.ok) {
-                const data = await response.json()
+            if (response.status === 200) {
+                const data = response.data
                 setUserData(data.userData)
                 setEditing(false)
                 message.success('Profile updated successfully!')
@@ -122,6 +124,9 @@ export default function ProfilePage() {
 
     return (
         <div className="profile-container">
+
+            <TopNavUser />
+
             <Card
                 className="profile-card"
                 title={
