@@ -1,14 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-// import { useAuth } from "./hooks/useAuth";
-// import { useEffect } from "react";
 
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
 import ResetPassword from './components/ResetPassword';
-
 import LandingPage from './pages/LandingPage';
+
 import PackagePage from './pages/PackagePage';
 import ProfilePage from "./pages/ProfilePage";
+import UserBookings from "./pages/UserBookings";
+import UserTransactions from "./pages/UserTransactions";
+import PassAndVisaService from "./pages/PassAndVisaService";
+import Wishlist from "./pages/Wishlist";
+import DestinationsPackages from "./pages/DestinationsPackages";
 
 import Logging from './pages/Logging';
 import Auditing from './components/Auditing';
@@ -30,31 +31,17 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
-//import useRefreshToken from "./hooks/useRefreshToken";
+
+
 
 
 
 function App() {
-
-  // const { setAuth } = useAuth();
-  // const refreshToken = useRefreshToken();
-  // useEffect(() => {
-  //   const refreshOnLoad = async () => {
-  //     try {
-  //       const newAccessToken = await refreshToken();
-  //       if (newAccessToken) {
-  //         setAuth(prev => ({ ...prev, accessToken: newAccessToken }));
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to refresh access token on load:", err);
-  //     }
-  //   }
-  //   refreshOnLoad();
-  // }, []);
-
   return (
     <div>
       <Routes>
+
+        <Route path='/' element={<Navigate to="/home" replace />} />
 
         <Route element={<GuestsUsersRoute />}>
           <Route path='/home' element={<LandingPage />} />
@@ -62,8 +49,6 @@ function App() {
 
         {/* public routes */}
         <Route element={<PublicRoute />}>
-          <Route path='/login' element={<LoginPage />} />
-          <Route path='/signup' element={<SignupPage />} />
           <Route path='/reset-password' element={<ResetPassword />} />
         </Route>
 
@@ -77,6 +62,7 @@ function App() {
             <Route path="transactions" element={<TransactionManagement />} />
             <Route path="packages" element={<PackageManagement />} />
             <Route path="packages/add" element={<AddPackage />} />
+            <Route path="/packages/edit/:id" element={<AddPackage />} />
             <Route path="ratings" element={<ReviewRatings />} />
             <Route path="visa-applications" element={<VisaApplications />} />
             <Route path="passport-applications" element={<PassportApplications />} />
@@ -91,9 +77,16 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path='/package' element={<PackagePage />} />
           <Route path='/profile' element={<ProfilePage />} />
+          <Route path='/user-bookings' element={<UserBookings />} />
+          <Route path='/user-transactions' element={<UserTransactions />} />
+          <Route path='/passandvisa-service' element={<PassAndVisaService />} />
+          <Route path='/wishlist' element={<Wishlist />} />
+          <Route path='/destinations-packages' element={<DestinationsPackages />} />
         </Route>
 
-        <Route path='*' element={<Navigate to="/login" replace />} />
+
+
+        <Route path='*' element={<Navigate to="/home" replace />} />
       </Routes>
     </div>
   );

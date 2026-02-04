@@ -119,8 +119,8 @@ export default function BookingManagement() {
         <Tag
           color={
             s === "Confirmed" ? "green" :
-            s === "Pending" ? "orange" :
-            "red"
+              s === "Pending" ? "orange" :
+                "red"
           }
         >
           {s}
@@ -131,8 +131,8 @@ export default function BookingManagement() {
       title: "Actions",
       render: () => (
         <Space>
-          <Button type="primary" icon={<EditOutlined />} />
-          <Button danger icon={<DeleteOutlined />} />
+          <Button className='editbutton-bookingmanagement' type="primary" icon={<EditOutlined />} />
+          <Button className='deletebutton-bookingmanagement' danger icon={<DeleteOutlined />} />
         </Space>
       )
     }
@@ -231,7 +231,7 @@ export default function BookingManagement() {
           allowClear
         />
 
-        <Button type="primary">Export</Button>
+        <Button className="exportbutton-bookingmanagement" type="primary">Export</Button>
       </div>
 
       <Card>

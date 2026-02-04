@@ -11,6 +11,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
     const [timer, setTimer] = useState(0)
     const [errorOTP, setErrorOTP] = useState("")
     const [getOTP, setOTP] = useState("")
+    const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
 
     useEffect(() => {
         if (isOpenOTPModal) {
@@ -36,8 +37,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
             if (response.data.success || response.status === 200) {
                 setOTP("")
                 isCloseOTPModal()
-                alert("Account has been verified")
-                navigate('/home')
+                setIsVerifiedModalOpen(true)
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
@@ -96,6 +96,27 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
                     }
                 </div>
 
+            </Modal>
+
+            <Modal
+                open={isVerifiedModalOpen}
+                className='emailverify-success-modal'
+                footer={null}
+                closable={false}
+            >
+                <div className='emailverify-container-modal'>
+                    <h1 className='emailverify-heading-modal'>Account has been verified</h1>
+                    <p className='emailverify-secondary-heading-modal'>You can now proceed to your account.</p>
+                    <Button
+                        id='emailverify-success-button'
+                        onClick={() => {
+                            setIsVerifiedModalOpen(false)
+                            navigate('/home')
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </div>
             </Modal>
         </div >
     )

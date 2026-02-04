@@ -10,28 +10,28 @@ export default function AdminDashboard() {
         <Col span={6}>
           <Card className="dash-card">
             <p>Total Transactions</p>
-            <h2>140</h2>
+            <h2>__</h2>
           </Card>
         </Col>
 
         <Col span={6}>
           <Card className="dash-card">
             <p>Total Bookings</p>
-            <h2>56</h2>
+            <h2>__</h2>
           </Card>
         </Col>
 
         <Col span={6}>
           <Card className="dash-card">
             <p>Total Users</p>
-            <h2>32</h2>
+            <h2>__</h2>
           </Card>
         </Col>
 
         <Col span={6}>
           <Card className="dash-card">
             <p>Total Packages</p>
-            <h2>12</h2>
+            <h2>__</h2>
           </Card>
         </Col>
       </Row>
@@ -40,10 +40,7 @@ export default function AdminDashboard() {
         <h2>Recent Activity</h2>
 
         <Card className="activity-card">
-          <p>New booking added</p>
-          <p>User registered</p>
-          <p>Package updated</p>
-          <p>Transaction completed</p>
+
         </Card>
       </div>
 

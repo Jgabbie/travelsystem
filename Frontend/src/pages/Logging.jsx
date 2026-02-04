@@ -61,7 +61,7 @@ export default function Logging() {
                 return <Tag color={color}>{text}</Tag>;
             }
 
-            
+
         },
         {
             title: 'Performed By',
@@ -105,9 +105,9 @@ export default function Logging() {
     ];
 
     return (
-        <div style={{ padding: "20px" }}>
+        <div>
             <h1 className="page-header">System Logs</h1>
-            
+
             <Input
                 placeholder="Search logs by action, username, or email..."
                 prefix={<SearchOutlined />}
@@ -115,9 +115,9 @@ export default function Logging() {
                 onChange={(e) => setSearchText(e.target.value)}
             />
 
-            <Table 
-                columns={columns} 
-                dataSource={filteredLogs} 
+            <Table
+                columns={columns}
+                dataSource={filteredLogs}
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 8 }}

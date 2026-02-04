@@ -7,7 +7,7 @@ import LoadingScreen from './LoadingScreen';
 import { useAuth } from '../hooks/useAuth';
 import axiosInstance from '../config/axiosConfig';
 
-export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }) {
+export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, onOpenSignup }) {
 
     const navigate = useNavigate();
     const { setAuth } = useAuth();
@@ -20,6 +20,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     //clear form function
     const clearForm = () => {
@@ -29,14 +30,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
         });
         setError('');
     }
-
-    //clear form when modal is closed
-    useEffect(() => {
-        if (!isOpenLogin) {
-            clearForm();
-            setError("")
-        }
-    }, [isOpenLogin])
 
     //login function
     const handleLogin = async (e) => {
@@ -95,10 +88,26 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
         }
     }
 
+    //clear forms
+    const clearForms = () => {
+        setValues({
+            username: '',
+            password: ''
+        })
+        setError("")
+        setShowPassword(false);
+        isCloseLogin()
+    }
+
     //go to signup page
     const goToSignup = (e) => {
         e.preventDefault();
-        navigate('/signup');
+        if (onOpenSignup) {
+            clearForms();
+            isCloseLogin();
+            onOpenSignup();
+            return;
+        }
     }
 
     //go to reset password page
@@ -107,33 +116,42 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
         navigate('/reset-password');
     }
 
+    const blockClipboardKeys = (e) => {
+        const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+        if (
+            isCtrlOrCmd &&
+            ["c", "v", "x", "a"].includes(e.key.toLowerCase())
+        ) {
+            e.preventDefault();
+        }
+    };
+
+    const blockShortcuts = (e) => {
+        e.preventDefault();
+    };
 
     return (
         <div>
             <LoadingScreen isVisible={isLoading} message="Logging in..." onComplete={() => console.log("Loading complete")} />
+
+
             <Modal
                 open={isOpenLogin}
                 className='login-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                onCancel={() => {
-                    setValues({
-                        username: '',
-                        password: ''
-                    })
-                    setError("")
-                    isCloseLogin()
-                }}
+                onCancel={clearForms}
             >
 
                 <div id='login-container-modal'>
                     <h1 id='login-heading-modal'>Welcome</h1>
                     <p id='login-secondary-heading-modal'>Login Account</p>
 
-                    <form onSubmit={handleLogin}>
+                    <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
                         <div className='login-div-input-fields-modal'>
                             <label className='login-labels-modal' htmlFor="username">Username</label>
-                            <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' placeholder='Enter your Username' onKeyDown={(e) => {
+                            <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
                                 if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
                                     e.preventDefault()
                                 }
@@ -142,18 +160,18 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
 
                         <div className='login-div-input-fields-modal'>
                             <label className='login-labels-modal' htmlFor="password">Password</label>
-                            <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' placeholder='Enter your Password' onKeyDown={(e) => {
+                            <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
                                 if (e.key === " " && e.key !== "Backspace") {
                                     e.preventDefault()
                                 }
-                            }} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
+                            }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} key={isOpenLogin ? "" : false} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
                         </div>
 
                         <p id='login-error-message-modal'>{error}</p>
 
                         <div id='login-links-container-modal'>
-                            <p className='login-label-links-modal'>Need an Account?<Button className='login-button-links-modal' type="link" onClick={goToSignup}>Signup here</Button></p>
-                            <p className='login-label-links-modal'>Forget your<Button className='login-button-links-modal' type="link" onClick={resetPassword}>Password?</Button></p>
+                            <Button className='login-button-links-modal' type="link" onClick={goToSignup}>Need an Account? Signup here</Button>
+                            <Button className='login-button-links-modal' type="link" onClick={resetPassword} > Forgot your Password?</Button>
                         </div>
 
                         <Button id='login-button-modal' htmlType="submit">Log in</Button>
@@ -168,6 +186,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess }
             />
 
 
-        </div>
+        </div >
     )
 }

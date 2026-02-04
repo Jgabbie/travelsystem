@@ -13,3 +13,36 @@
 .search-input {
   width: 200px;
 }
+
+.editbutton-transactionmanagement {
+  border-color: #305797;
+  background-color: #fff !important;
+  color: #305797 !important;
+}
+
+.editbutton-transactionmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.deletebutton-transactionmanagement {
+  border-color: #d93025;
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.deletebutton-transactionmanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.exportbutton-transactionmanagement {
+  border-color: #305797;
+  color: #305797 !important;
+  background-color: #fff !important;
+}
+
+.exportbutton-transactionmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}

@@ -11,14 +11,27 @@ import axiosInstance from '../config/axiosConfig';
 export default function TopNavUser() {
     const { auth, setAuth } = useAuth();
     const navigate = useNavigate();
+    const [profileImage, setProfileImage] = useState('');
 
     const checkAuth = async () => {
         try {
             const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
             const { user } = response.data;
             setAuth({ username: user.username, role: user.role });
+            const profileResponse = await axiosInstance.get('/user/data', { withCredentials: true });
+            const profile = profileResponse?.data?.userData;
+            setProfileImage(
+                profile?.profileImageUrl ||
+                profile?.profileImage ||
+                profile?.avatarUrl ||
+                user?.profileImageUrl ||
+                user?.profileImage ||
+                user?.avatarUrl ||
+                ''
+            );
         } catch (err) {
             setAuth(null);
+            setProfileImage('');
         } finally {
             setIsLoading(false);
         }
@@ -79,7 +92,7 @@ export default function TopNavUser() {
         },
         {
             key: '5',
-            label: 'Featured',
+            label: 'Wishlist',
             icon: <StarOutlined />,
         },
         {
@@ -89,13 +102,8 @@ export default function TopNavUser() {
         },
         {
             key: '7',
-            label: 'VISA Assistance',
+            label: 'Passport & Visa Service',
             icon: <IdcardOutlined />,
-        },
-        {
-            key: '8',
-            label: 'Passport Assistance',
-            icon: <GlobalOutlined />,
         },
         {
             type: 'divider',
@@ -116,7 +124,23 @@ export default function TopNavUser() {
             navigate('/home');
         } else if (key === '2') {
             navigate('/profile');
+        } else if (key === '3') {
+            navigate('/user-bookings');
+        } else if (key === '4') {
+            navigate('/destinations-packages');
+        } else if (key === '5') {
+            navigate('/wishlist');
+        } else if (key === '6') {
+            navigate('/user-transactions');
+        } else if (key === '7') {
+            navigate('/passandvisa-service');
         }
+    }
+
+    const getInitials = () => {
+        const name = auth?.username?.trim() || '';
+        if (!name) return 'U';
+        return name[0].toUpperCase();
     }
 
     return (
@@ -132,6 +156,13 @@ export default function TopNavUser() {
                     <div>
                         <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
                             <Space className='dropdown-space'>
+                                <div className='nav-user-avatar'>
+                                    {profileImage ? (
+                                        <img src={profileImage} alt="Profile" className='nav-user-avatar-img' />
+                                    ) : (
+                                        <div className='nav-user-avatar-placeholder'>{getInitials()}</div>
+                                    )}
+                                </div>
                                 <h4 className='username-text'>
                                     Welcome, <span className='username-dropdown'>{auth?.username?.toUpperCase()}</span>
                                 </h4>
@@ -155,12 +186,14 @@ export default function TopNavUser() {
                 isOpenLogin={isLoginVisible}
                 isCloseLogin={() => setIsLoginVisible(false)}
                 onLoginSuccess={checkAuth}
+                onOpenSignup={() => setIsSignupVisible(true)}
             />
 
             {/* open signup modal */}
             <SignupModal
                 isOpenSignup={isSignupVisible}
                 isCloseSignup={() => setIsSignupVisible(false)}
+                onOpenLogin={() => setIsLoginVisible(true)}
             />
 
             <Modal

@@ -115,8 +115,8 @@ export default function TransactionManagement() {
         <Tag
           color={
             s === "Paid" ? "green" :
-            s === "Pending" ? "orange" :
-            "red"
+              s === "Pending" ? "orange" :
+                "red"
           }
         >
           {s}
@@ -127,14 +127,14 @@ export default function TransactionManagement() {
       title: "Actions",
       render: () => (
         <Space>
-          <Button type="primary" icon={<EditOutlined />} />
-          <Button danger icon={<DeleteOutlined />} />
+          <Button className="editbutton-transactionmanagement" type="primary" icon={<EditOutlined />} />
+          <Button className="deletebutton-transactionmanagement" danger icon={<DeleteOutlined />} />
         </Space>
       )
     }
   ];
 
-  // ================= STATS (LIVE) =================
+
 
   const totalTransactions = filteredData.length;
   const totalSuccessful = filteredData.filter(t => t.status === "Paid").length;
@@ -145,7 +145,7 @@ export default function TransactionManagement() {
     <div>
       <h1 className="page-header">Transaction Management</h1>
 
-      {/* 📊 STATS */}
+
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col xs={24} sm={6}>
           <Card>
@@ -188,7 +188,6 @@ export default function TransactionManagement() {
         </Col>
       </Row>
 
-      {/* 🔧 FILTER BAR */}
       <div className="transaction-actions">
 
         <Input
@@ -233,7 +232,7 @@ export default function TransactionManagement() {
           allowClear
         />
 
-        <Button type="primary">Export</Button>
+        <Button className="exportbutton-transactionmanagement" type="primary">Export</Button>
       </div>
 
       <Card>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Input,
   Button,
@@ -13,13 +13,18 @@ import {
 import { UploadOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../style/addpackage.css";
 import axiosInstance from "../config/axiosConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import dayjs from "dayjs";
+
 
 const { RangePicker } = DatePicker;
 
 export default function AddPackage() {
 
   const navigate = useNavigate();
+
+  const { id } = useParams();
+  const isEdit = Boolean(id);
 
   const [packageInfo, setPackageInfo] = useState({
     name: "",
@@ -155,27 +160,76 @@ export default function AddPackage() {
 
   //add package function
 
-  const addPackage = async () => {
-    console.log("Adding package...");
-    console.log({ ...packageInfo, dateType, dateRanges, duration, hotels, airlines, addons, inclusions, exclusions, itineraries });
+  const savePackage = async () => {
+    const payload = {
+      ...packageInfo,
+      packageType,
+      dateRanges,
+      duration,
+      hotels,
+      airlines,
+      addons,
+      inclusions,
+      exclusions,
+      itineraries
+    };
+
     try {
-      const response = await axiosInstance.post('/package/add-package', {
-        ...packageInfo,
-        packageType,
-        dateRanges,
-        duration,
-        hotels,
-        airlines,
-        addons,
-        inclusions,
-        exclusions,
-        itineraries
-      });
-      console.log("Package added:", response.data);
+      if (isEdit) {
+        await axiosInstance.put(`/package/update-package/${id}`, payload);
+      } else {
+        await axiosInstance.post("/package/add-package", payload);
+      }
+
+      navigate("/packages");
     } catch (err) {
-      console.error("Failed to add package:", err);
+      console.error("Failed to save package:", err);
     }
-  }
+  };
+
+
+  useEffect(() => {
+    if (!isEdit) return;
+
+    const getPackage = async () => {
+      try {
+        const res = await axiosInstance.get(`/package/get-package/${id}`);
+        const pkg = res.data;
+
+        setPackageInfo({
+          name: pkg.packageName,
+          code: pkg.packageCode,
+          pricePerPax: pkg.packagePricePerPax,
+          availableSlots: pkg.packageAvailableSlots,
+          description: pkg.packageDescription
+        });
+
+        setPackageType(pkg.packageType);
+        setDuration(pkg.packageDuration);
+
+        setHotels(pkg.packageHotels || []);
+        setAirlines(pkg.packageAirlines || []);
+        setAddons(pkg.packageAddons || {});
+        setInclusions(pkg.packageInclusions || []);
+        setExclusions(pkg.packageExclusions || []);
+        setItineraries(pkg.packageItineraries || {});
+
+        if (pkg.packageSpecificDate?.length) {
+          setDateType("specified");
+          setDateRanges(
+            pkg.packageSpecificDate.map(range => [dayjs(range[0]), dayjs(range[1])])
+          );
+        } else {
+          setDateType("any");
+        }
+
+      } catch (err) {
+        console.error("Failed to load package", err);
+      }
+    };
+
+    getPackage();
+  }, [id]);
 
 
   return (
@@ -183,7 +237,7 @@ export default function AddPackage() {
 
       <Card className="add-package-form">
         <div className="add-package-header-container">
-          <h1>Add Package</h1>
+          <h1>{isEdit ? "Edit Package" : "Add Package"}</h1>
           <Button className="back-add-package-button" onClick={() => { navigate("/packages") }}>Back to Package Management</Button>
         </div>
 
@@ -192,19 +246,19 @@ export default function AddPackage() {
           <h2 className="section-headers">Package Information</h2>
 
           <label className="add-package-input-labels">Package Name</label>
-          <Input className="add-package-inputs" placeholder="Package Name" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, name: e.target.value }) }} />
+          <Input value={packageInfo.name} className="add-package-inputs" placeholder="Package Name" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, name: e.target.value }) }} />
 
           <label className="add-package-input-labels">Package Code</label>
-          <Input className="add-package-inputs" placeholder="Package Code" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, code: e.target.value }) }} />
+          <Input value={packageInfo.code} className="add-package-inputs" placeholder="Package Code" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, code: e.target.value }) }} />
 
           <label className="add-package-input-labels">Price Per Pax</label>
-          <Input className="add-package-inputs" placeholder="Price Per Pax" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, pricePerPax: e.target.value }) }} />
+          <Input value={packageInfo.pricePerPax} className="add-package-inputs" placeholder="Price Per Pax" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, pricePerPax: e.target.value }) }} />
 
           <label className="add-package-input-labels">Available Slots</label>
-          <Input className="add-package-inputs" placeholder="Available Slots" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, availableSlots: e.target.value }) }} />
+          <Input value={packageInfo.availableSlots} className="add-package-inputs" placeholder="Available Slots" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, availableSlots: e.target.value }) }} />
 
           <label className="add-package-input-labels">Package Description</label>
-          <Input.TextArea className="add-package-input-textarea" autoSize={{ minRows: 4, maxRows: 8 }} placeholder="Package Description" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, description: e.target.value }) }} />
+          <Input.TextArea value={packageInfo.description} className="add-package-input-textarea" autoSize={{ minRows: 4, maxRows: 8 }} placeholder="Package Description" style={{ marginBottom: 10 }} onChange={(e) => { setPackageInfo({ ...packageInfo, description: e.target.value }) }} />
 
           <h2 className="section-headers">Date Availability, Tour Duration and Package Type</h2>
           {/* Date Availability */}
@@ -401,8 +455,14 @@ export default function AddPackage() {
         </div>
 
         <div className="footer-add-packages">
-          <Button className="save-package-button" type="primary" block style={{ marginTop: 20 }} onClick={() => addPackage()}>
-            Save Package
+          <Button
+            className="save-package-button"
+            type="primary"
+            block
+            style={{ marginTop: 20 }}
+            onClick={savePackage}
+          >
+            {isEdit ? "Update Package" : "Save Package"}
           </Button>
         </div>
 

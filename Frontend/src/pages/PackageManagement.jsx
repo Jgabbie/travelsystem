@@ -116,7 +116,7 @@ export default function PackageManagement() {
               View Details
             </Button>
 
-            <Button className="edit-package-button" type="primary" icon={<EditOutlined />} />
+            <Button className="edit-package-button" type="primary" icon={<EditOutlined />} onClick={() => navigate(`/packages/edit/${pkg._id}`)} />
             <Button className="delete-package-button" danger icon={<DeleteOutlined />} onClick={() => removePackage(pkg._id)} />
           </div>
         </Card>

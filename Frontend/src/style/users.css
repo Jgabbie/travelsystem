@@ -12,3 +12,29 @@
 .search-input {
   width: 200px;
 }
+
+.adduser-usermanagement {
+  background-color: #305797 !important;
+}
+
+.editbutton-usermanagement {
+  border-color: #305797;
+  background-color: #fff !important;
+  color: #305797 !important;
+}
+
+.editbutton-usermanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.deletebutton-usermanagement {
+  border-color: #d93025;
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.deletebutton-usermanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}

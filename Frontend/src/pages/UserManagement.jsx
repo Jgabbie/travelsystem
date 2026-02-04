@@ -152,8 +152,8 @@ export default function UserManagement() {
       title: "Actions",
       render: (_, record) => (
         <Space>
-          <Button type="primary" icon={<EditOutlined />} />
-          <Button
+          <Button className='editbutton-usermanagement' type="primary" icon={<EditOutlined />} />
+          <Button className='deletebutton-usermanagement'
             danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}
@@ -163,7 +163,6 @@ export default function UserManagement() {
     }
   ];
 
-  // ================= STATS =================
 
   const totalUsers = users.length;
   const verifiedUsers = users.filter(u => u.status === "Verified").length;
@@ -174,7 +173,6 @@ export default function UserManagement() {
 
       <h1 className="page-header">User Management</h1>
 
-      {/* 📊 STATS */}
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col xs={24} sm={8}>
           <Card>
@@ -207,7 +205,6 @@ export default function UserManagement() {
         </Col>
       </Row>
 
-      {/* 🔧 ACTIONS */}
       <div className="user-actions">
 
         <Input
@@ -236,7 +233,7 @@ export default function UserManagement() {
         <Dropdown
           menu={{ items: addUserItems, onClick: handleMenuClick }}
         >
-          <Button type="primary">
+          <Button className='adduser-usermanagement' type="primary">
             <Space>
               Add User
               <DownOutlined />
@@ -245,7 +242,6 @@ export default function UserManagement() {
         </Dropdown>
       </div>
 
-      {/* 📋 TABLE */}
       <Card style={{ marginTop: 20 }}>
         <Table
           loading={loading}
@@ -255,7 +251,6 @@ export default function UserManagement() {
         />
       </Card>
 
-      {/* ➕ MODAL */}
       <AddUserModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

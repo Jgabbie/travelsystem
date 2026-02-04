@@ -75,7 +75,58 @@ const removePackage = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
-    }   
+    }
 };
 
-module.exports = { addPackage, getPackages, removePackage };
+const getPackage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pkg = await PackageModel.findById(id);
+
+        if (!pkg) return res.status(404).json({ message: "Package not found" });
+
+        // send everything as-is
+        res.status(200).json(pkg);
+    } catch (err) {
+        console.error("getPackage error:", err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const updatePackage = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const updatedPackage = await PackageModel.findByIdAndUpdate(
+            id,
+            {
+                packageName: req.body.name,
+                packageCode: req.body.code,
+                packagePricePerPax: req.body.pricePerPax,
+                packageAvailableSlots: req.body.availableSlots,
+                packageDuration: req.body.duration,
+                packageDescription: req.body.description,
+                packageType: req.body.packageType,
+                packageSpecificDate: req.body.dateRanges,
+                packageHotels: req.body.hotels,
+                packageAirlines: req.body.airlines,
+                packageAddons: req.body.addons,
+                packageInclusions: req.body.inclusions,
+                packageExclusions: req.body.exclusions,
+                packageItineraries: req.body.itineraries
+            },
+            { new: true }
+        );
+
+        if (!updatedPackage) {
+            return res.status(404).json({ message: "Package not found" });
+        }
+
+        res.status(200).json(updatedPackage);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+module.exports = { addPackage, getPackages, removePackage, getPackage, updatePackage };

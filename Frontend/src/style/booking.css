@@ -13,3 +13,36 @@
 .search-input {
   width: 200px;
 }
+
+.editbutton-bookingmanagement {
+  border-color: #305797;
+  background-color: #fff !important;
+  color: #305797 !important;
+}
+
+.editbutton-bookingmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.deletebutton-bookingmanagement {
+  border-color: #d93025;
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.deletebutton-bookingmanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.exportbutton-bookingmanagement {
+  border-color: #305797;
+  color: #305797 !important;
+  background-color: #fff !important;
+}
+
+.exportbutton-bookingmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}

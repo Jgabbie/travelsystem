@@ -20,6 +20,7 @@ const getUserData = async (req, res) => {
                 lastname: user.lastname,
                 email: user.email,
                 phone: user.phone,
+                profileImage: user.profileImage,
                 role: user.role,
                 isAccountVerified: user.isAccountVerified
             }
@@ -33,7 +34,7 @@ const getUserData = async (req, res) => {
 const updateUserData = async (req, res) => {
     try {
         const { userId } = req
-        const { firstname, lastname, email, phone } = req.body
+        const { firstname, lastname, email, phone, profileImage } = req.body
 
         if (!firstname || !lastname || !email || !phone) {
             return res.status(400).json({ message: "All fields are required" })
@@ -57,6 +58,9 @@ const updateUserData = async (req, res) => {
         user.lastname = lastname
         user.email = email
         user.phone = phone
+        if (typeof profileImage === 'string') {
+            user.profileImage = profileImage
+        }
 
         await user.save()
 
@@ -70,6 +74,7 @@ const updateUserData = async (req, res) => {
                 lastname: user.lastname,
                 email: user.email,
                 phone: user.phone,
+                profileImage: user.profileImage,
                 role: user.role,
                 isAccountVerified: user.isAccountVerified
             }
@@ -92,8 +97,8 @@ const getUsers = (req, res) => {
 
 const createUsers = async (req, res) => {
     const { username, firstname, lastname, password, email, phone, role } = req.body;
-    
-    const adminId = req.userId; 
+
+    const adminId = req.userId;
 
     if (!adminId) {
         return res.status(401).json({ message: "Unauthorized: Admin ID missing" });
@@ -115,21 +120,21 @@ const createUsers = async (req, res) => {
             phone,
             hashedPassword,
             role: role || "User",
-            isAccountVerified: true 
+            isAccountVerified: true
         });
 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        
+
         const actionName = role === "Admin" ? "ADMIN_CREATED_ADMIN" : "ADMIN_CREATED_USER";
 
         await logAction(
-            actionName,          
-            adminId,             
-            {                   
+            actionName,
+            adminId,
+            {
                 new_user_id: newUser._id,
                 new_user_role: newUser.role,
                 new_username: newUser.username
-            }, 
+            },
             ip
         );
 

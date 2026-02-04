@@ -12,15 +12,15 @@ export default function Auditing() {
                 const response = await axios.get('http://localhost:8000/api/logs/get-logs', {
                     withCredentials: true
                 });
-                
+
                 // FILTER: Only show Audit Events (Exclude Logins/Logouts)
                 const auditEvents = response.data.filter(log => {
                     const action = log.action;
                     return ![
-                        'USER_LOGIN', 
-                        'ADMIN_LOGIN', 
-                        'USER_LOGOUT', 
-                        'ADMIN_LOGOUT', 
+                        'USER_LOGIN',
+                        'ADMIN_LOGIN',
+                        'USER_LOGOUT',
+                        'ADMIN_LOGOUT',
                         'LOGIN_FAILED'
                     ].includes(action);
                 });
@@ -80,15 +80,12 @@ export default function Auditing() {
     ];
 
     return (
-        <div style={{ padding: "20px" }}>
+        <div>
             <h1 className="page-header">Security Audit Trail</h1>
-            <p style={{color: 'gray', marginBottom: '20px'}}>
-                Tracks sensitive account changes, creations, and security events.
-            </p>
 
-            <Table 
-                columns={columns} 
-                dataSource={logs} 
+            <Table
+                columns={columns}
+                dataSource={logs}
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 8 }}
