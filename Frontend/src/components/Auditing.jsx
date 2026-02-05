@@ -1,31 +1,21 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { Tag, Table } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Tag, Table, Input } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 
 export default function Auditing() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchText, setSearchText] = useState('');
 
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/logs/get-logs', {
+                const response = await axios.get('http://localhost:8000/api/logs/get-audits', {
                     withCredentials: true
                 });
 
-                // FILTER: Only show Audit Events (Exclude Logins/Logouts)
-                const auditEvents = response.data.filter(log => {
-                    const action = log.action;
-                    return ![
-                        'USER_LOGIN',
-                        'ADMIN_LOGIN',
-                        'USER_LOGOUT',
-                        'ADMIN_LOGOUT',
-                        'LOGIN_FAILED'
-                    ].includes(action);
-                });
-
-                setLogs(auditEvents);
+                setLogs(response.data);
                 setLoading(false);
             } catch (err) {
                 console.error("Failed to fetch audit logs", err);
@@ -34,17 +24,35 @@ export default function Auditing() {
         fetchLogs();
     }, []);
 
+    const actionFilters = useMemo(() => {
+        const uniqueActions = Array.from(new Set(logs.map((log) => log.action))).filter(Boolean);
+        return uniqueActions.map((action) => ({ text: action, value: action }));
+    }, [logs]);
+
+    // Filter logic for Search Bar
+    const filteredLogs = logs.filter(log => {
+        const searchLower = searchText.toLowerCase();
+        return (
+            log.action?.toLowerCase().includes(searchLower) ||
+            log.performedBy?.username?.toLowerCase().includes(searchLower) ||
+            log.performedBy?.email?.toLowerCase().includes(searchLower)
+        );
+    });
+
     const columns = [
         {
             title: 'Date',
             dataIndex: 'timestamp',
             key: 'timestamp',
+            sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
             render: (text) => new Date(text).toLocaleString(),
         },
         {
             title: 'Audit Event',
             dataIndex: 'action',
             key: 'action',
+            filters: actionFilters,
+            onFilter: (value, record) => record.action?.includes(value),
             render: (text) => <Tag color="purple">{text}</Tag>
         },
         {
@@ -52,8 +60,25 @@ export default function Auditing() {
             dataIndex: 'performedBy',
             key: 'performedBy',
             render: (user) => user ? (
-                <span>{user.username} ({user.role})</span>
+                <div>
+                    <div style={{ fontWeight: 'bold' }}>{user.username} ({user.role})</div>
+                    <div style={{ fontSize: '12px', color: '#888' }}>{user.email}</div>
+                </div>
             ) : "System/Unknown"
+        },
+        {
+            title: 'Role',
+            key: 'role',
+            filters: [
+                { text: 'Admin', value: 'Admin' },
+                { text: 'User', value: 'User' },
+            ],
+            onFilter: (value, record) => record.performedBy?.role === value,
+            render: (_, record) => {
+                const role = record.performedBy?.role || "N/A";
+                const color = role === 'Admin' ? 'gold' : 'blue';
+                return <Tag color={color}>{role.toUpperCase()}</Tag>;
+            }
         },
         {
             title: 'Change Details',
@@ -83,9 +108,16 @@ export default function Auditing() {
         <div>
             <h1 className="page-header">Security Audit Trail</h1>
 
+            <Input
+                placeholder="Search logs by action, username, or email..."
+                prefix={<SearchOutlined />}
+                style={{ marginBottom: 20, width: 300 }}
+                onChange={(e) => setSearchText(e.target.value)}
+            />
+
             <Table
                 columns={columns}
-                dataSource={logs}
+                dataSource={filteredLogs}
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 8 }}

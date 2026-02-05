@@ -106,12 +106,8 @@ export default function ProfilePage() {
             if (/[ -]$/.test(value)) return "Last name must not end with a space or dash.";
         }
         if (field === "email") {
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
             if (value === "") return "Email is required.";
             if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) return "Invalid Email.";
-            if (!emailRegex.test(value)) {
-                return "Please use a valid email domain (e.g. gmail.com).";
-            }
         }
         if (field === "phone") {
             if (value === "") return "Phone is required.";

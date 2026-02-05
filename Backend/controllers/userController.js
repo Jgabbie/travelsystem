@@ -54,6 +54,30 @@ const updateUserData = async (req, res) => {
             }
         }
 
+        const updatedFields = {}
+        const changes = []
+
+        if (user.firstname !== firstname) {
+            updatedFields.firstname = { from: user.firstname, to: firstname }
+            changes.push('firstname')
+        }
+        if (user.lastname !== lastname) {
+            updatedFields.lastname = { from: user.lastname, to: lastname }
+            changes.push('lastname')
+        }
+        if (user.email !== email) {
+            updatedFields.email = { from: user.email, to: email }
+            changes.push('email')
+        }
+        if (user.phone !== phone) {
+            updatedFields.phone = { from: user.phone, to: phone }
+            changes.push('phone')
+        }
+        if (typeof profileImage === 'string' && user.profileImage !== profileImage) {
+            updatedFields.profileImage = { from: Boolean(user.profileImage), to: Boolean(profileImage) }
+            changes.push('profileImage')
+        }
+
         user.firstname = firstname
         user.lastname = lastname
         user.email = email
@@ -63,6 +87,19 @@ const updateUserData = async (req, res) => {
         }
 
         await user.save()
+
+        if (changes.length > 0) {
+            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            await logAction(
+                'USER_PROFILE_UPDATED',
+                userId,
+                {
+                    updatedFields,
+                    changedFieldCount: changes.length,
+                },
+                ip
+            )
+        }
 
         res.json({
             success: true,

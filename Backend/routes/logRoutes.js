@@ -18,5 +18,6 @@ const adminOnly = async (req, res, next) => {
 };
 
 router.get('/get-logs', userAuth, adminOnly, logController.getLogs);
+router.get('/get-audits', userAuth, adminOnly, logController.getAudits);
 
 module.exports = router;

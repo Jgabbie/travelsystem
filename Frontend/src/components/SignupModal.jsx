@@ -78,12 +78,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             if (/[ -]$/.test(value)) return "Last name must not end with a space or dash.";
         }
         if (field === "email") {
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
             if (value === "") return "Email is required.";
             if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) return "Invalid Email.";
-            if (!emailRegex.test(value)) {
-                return "Please use a valid email domain (e.g. gmail.com).";
-            }
         }
         if (field === "phone") {
             if (value === "") return "Phone is required.";
@@ -144,7 +140,34 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     //signup function
     const handleSignup = async (e) => {
         e.preventDefault();
-        setIsLoading(true)
+
+        const fieldsToValidate = [
+            "username",
+            "firstname",
+            "lastname",
+            "email",
+            "phone",
+            "password",
+            "confirmPassword",
+        ];
+
+        const validationErrors = fieldsToValidate.reduce((acc, field) => {
+            acc[field] = validate(field, values[field]);
+            return acc;
+        }, {});
+
+        const combinedErrors = {
+            ...error,
+            ...validationErrors,
+        };
+
+        const hasErrors = Object.values(combinedErrors).some((message) => message);
+        if (hasErrors) {
+            setError(combinedErrors);
+            return;
+        }
+
+        setIsLoading(true);
         try {
             const response = await axiosInstance.post('/auth/signupUser', values);
             if (response) {
