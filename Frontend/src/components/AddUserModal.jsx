@@ -1,30 +1,168 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button, Form, message, Select } from 'antd';
+import { Modal, Input, Button, Select, message } from 'antd';
 import axios from 'axios';
+import '../style/addusermodal.css';
 
 export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }) {
     const [loading, setLoading] = useState(false);
-    const [form] = Form.useForm();
+    const [values, setValues] = useState({
+        role: roleToAdd || 'User',
+        username: '',
+        firstname: '',
+        lastname: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: ''
+    });
+    const [error, setError] = useState({
+        role: '',
+        username: '',
+        firstname: '',
+        lastname: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: ''
+    });
 
     // Reset form when modal opens
     useEffect(() => {
         if (isOpen) {
-            form.resetFields();
+            const nextRole = roleToAdd || 'User';
+            setValues({
+                role: nextRole,
+                username: '',
+                firstname: '',
+                lastname: '',
+                email: '',
+                phone: '',
+                password: '',
+                confirmPassword: ''
+            });
+            setError({
+                role: '',
+                username: '',
+                firstname: '',
+                lastname: '',
+                email: '',
+                phone: '',
+                password: '',
+                confirmPassword: ''
+            });
         }
-    }, [isOpen, form]);
+    }, [isOpen, roleToAdd]);
 
-    const handleCreate = async (values) => {
+    //proper case function
+    const toProperCase = (value) =>
+        value
+            .toLowerCase()
+            .split(" ")
+            .map(word =>
+                word
+                    .split("-")
+                    .map(
+                        part =>
+                            part.charAt(0).toUpperCase() + part.slice(1)
+                    )
+                    .join("-")
+            )
+            .join(" ");
+
+    //input validations (same as SignupModal)
+    const validate = (field, value, currentValues = values) => {
+        if (field === "role") {
+            if (value === "") return "Role is required.";
+        }
+        if (field === "username") {
+            if (value === "") return "Username is required.";
+            if (value.length < 8) return "Username must be at least 8 characters";
+        }
+        if (field === "firstname") {
+            if (value === "") return "First name is required.";
+            if (value.length < 2) return "First name must be at least 2 characters.";
+            if (/[ ]$/.test(value)) return "First name must not end with a space.";
+        }
+        if (field === "lastname") {
+            if (value === "") return "Last name is required.";
+            if (value.length < 2) return "Last name must be at least 2 characters.";
+            if (/[ -]$/.test(value)) return "Last name must not end with a space or dash.";
+        }
+        if (field === "email") {
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$/;
+            if (value === "") return "Email is required.";
+            if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) return "Invalid Email.";
+            if (!emailRegex.test(value)) {
+                return "Please use a valid email domain (e.g. gmail.com).";
+            }
+        }
+        if (field === "phone") {
+            if (value === "") return "Phone is required.";
+            if (value.length < 12) return "Phone must be 10 digits";
+            if (value.slice(0, 1) !== "8" && value.slice(0, 1) !== "9") return "Phone number must start with 8 or 9";
+        }
+        if (field === "password") {
+            if (currentValues.role === 'Admin') return "";
+            if (value === "") return "Password is required.";
+            if (value.length < 8) return "Password must be at least 8 characters.";
+            if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter.";
+            if (!/[0-9]/.test(value)) return "Password must contain at least one number.";
+            if (!/[!@#$%^&*(),.?\":{}|<>]/.test(value)) return "Password must contain at least one special character.";
+        }
+        if (field === "confirmPassword") {
+            if (currentValues.role === 'Admin') return "";
+            if (value === "") return "Confirm Password is required.";
+            if (value !== currentValues.password) return "Passwords do not match";
+        }
+        return "";
+    };
+
+    const valueHandler = (field, value) => {
+        const updatedValues = { ...values, [field]: value };
+        setValues(updatedValues);
+        setError({ ...error, [field]: validate(field, value, updatedValues) });
+    };
+
+    const handleRoleChange = (roleValue) => {
+        const updatedValues = {
+            ...values,
+            role: roleValue,
+            ...(roleValue === 'Admin' ? { password: '', confirmPassword: '' } : {})
+        };
+        setValues(updatedValues);
+        setError({
+            ...error,
+            role: validate('role', roleValue, updatedValues),
+            password: roleValue === 'Admin' ? '' : error.password,
+            confirmPassword: roleValue === 'Admin' ? '' : error.confirmPassword
+        });
+    };
+
+    const handleCreate = async (e) => {
+        e.preventDefault();
         setLoading(true);
         try {
-            // We include the role passed from the parent (Admin or User)
-            const payload = { ...values, role: roleToAdd };
-            
+            const payload = { ...values };
+            if (payload.role === 'Admin') {
+                delete payload.password;
+                delete payload.confirmPassword;
+            }
+
             await axios.post('http://localhost:8000/api/user/createUsers', payload, {
                 withCredentials: true
             });
 
-            message.success(`${roleToAdd} created successfully!`);
-            form.resetFields();
+            message.success(`${values.role} created successfully!`);
+            setValues({
+                role: roleToAdd || 'User',
+                username: '',
+                firstname: '',
+                lastname: '',
+                email: '',
+                phone: '',
+                password: '',
+                confirmPassword: ''
+            });
             refreshData(); // Refresh the table
             onClose(); // Close modal
         } catch (err) {
@@ -35,97 +173,242 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         }
     };
 
+    const validateAll = () => {
+        const fields = ['role', 'username', 'firstname', 'lastname', 'email', 'phone'];
+        if (values.role !== 'Admin') {
+            fields.push('password', 'confirmPassword');
+        }
+        const nextErrors = { ...error };
+        let hasError = false;
+
+        fields.forEach((field) => {
+            const msg = validate(field, values[field], values);
+            nextErrors[field] = msg;
+            if (msg) hasError = true;
+        });
+
+        setError(nextErrors);
+        return !hasError;
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!validateAll()) return;
+        handleCreate(e);
+    };
+
     return (
         <Modal
-            title={`Add New ${roleToAdd}`}
+            className="adduser-modal"
+            title={null}
             open={isOpen}
             onCancel={onClose}
             footer={null}
             destroyOnClose
         >
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleCreate}
-                initialValues={{ role: roleToAdd }}
-            >
-                <Form.Item
-                    name="username"
-                    label="Username"
-                    rules={[{ required: true, message: 'Please input username' }, { min: 8, message: 'Min 8 chars' }]}
-                >
-                    <Input placeholder="Username" />
-                </Form.Item>
+            <div className="adduser-container">
+                <h2 className="adduser-title">Add New {values.role}</h2>
+                <p className="adduser-subtitle">Fill out the details below to create a new {values.role?.toLowerCase()}.</p>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <Form.Item
-                        name="firstname"
-                        label="First Name"
-                        style={{ flex: 1 }}
-                        rules={[{ required: true }]}
-                    >
-                        <Input placeholder="First Name" />
-                    </Form.Item>
-                    <Form.Item
-                        name="lastname"
-                        label="Last Name"
-                        style={{ flex: 1 }}
-                        rules={[{ required: true }]}
-                    >
-                        <Input placeholder="Last Name" />
-                    </Form.Item>
-                </div>
+                <form className="adduser-form" onSubmit={handleSubmit}>
+                    <div className="adduser-field">
+                        <label className="adduser-label">Role</label>
+                        <Select
+                            value={values.role}
+                            className="adduser-input adduser-select"
+                            onChange={handleRoleChange}
+                            options={[
+                                { value: 'Admin', label: 'Admin' },
+                                { value: 'User', label: 'User' }
+                            ]}
+                        />
+                        <p className="adduser-error">{error.role}</p>
+                    </div>
 
-                <Form.Item
-                    name="email"
-                    label="Email"
-                    rules={[{ required: true, type: 'email' }]}
-                >
-                    <Input placeholder="Email" />
-                </Form.Item>
-
-                <Form.Item
-                    name="phone"
-                    label="Phone"
-                    rules={[{ required: true, len: 11, message: 'Must be 11 digits' }]}
-                >
-                    <Input placeholder="09xxxxxxxxx" />
-                </Form.Item>
-
-                <Form.Item
-                    name="password"
-                    label="Password"
-                    rules={[{ required: true, min: 8, message: 'Min 8 chars' }]}
-                >
-                    <Input.Password placeholder="Password" />
-                </Form.Item>
-
-                <Form.Item
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    dependencies={['password']}
-                    rules={[
-                        { required: true },
-                        ({ getFieldValue }) => ({
-                            validator(_, value) {
-                                if (!value || getFieldValue('password') === value) {
-                                    return Promise.resolve();
+                    <div className="adduser-field">
+                        <label className="adduser-label" htmlFor="username">Username</label>
+                        <Input
+                            id="username"
+                            className="adduser-input"
+                            value={values.username}
+                            status={error.username ? 'error' : ''}
+                            maxLength={20}
+                            onChange={(e) => valueHandler('username', e.target.value)}
+                            onKeyDown={(e) => {
+                                if (!/^[A-Za-z0-9]+$/.test(e.key) || (e.key === " " && e.key !== "Backspace")) {
+                                    e.preventDefault();
                                 }
-                                return Promise.reject(new Error('Passwords do not match!'));
-                            },
-                        }),
-                    ]}
-                >
-                    <Input.Password placeholder="Confirm Password" />
-                </Form.Item>
+                            }}
+                            autoComplete="off"
+                            required
+                        />
+                        <p className="adduser-error">{error.username}</p>
+                    </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
-                    <Button onClick={onClose}>Cancel</Button>
-                    <Button type="primary" htmlType="submit" loading={loading}>
-                        Create {roleToAdd}
-                    </Button>
-                </div>
-            </Form>
+                    <div className="adduser-row">
+                        <div className="adduser-col">
+                            <label className="adduser-label" htmlFor="firstname">First Name</label>
+                            <Input
+                                id="firstname"
+                                className="adduser-input"
+                                value={values.firstname}
+                                status={error.firstname ? 'error' : ''}
+                                maxLength={20}
+                                onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                onKeyDown={(e) => {
+                                    const value = e.target.value;
+                                    if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+
+                                    if (
+                                        !/^[A-Za-z ]$/.test(e.key) &&
+                                        e.key !== "Backspace" &&
+                                        e.key !== "ArrowLeft" &&
+                                        e.key !== "ArrowRight"
+                                    ) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                                autoComplete="off"
+                                required
+                            />
+                            <p className="adduser-error">{error.firstname}</p>
+                        </div>
+
+                        <div className="adduser-col">
+                            <label className="adduser-label" htmlFor="lastname">Last Name</label>
+                            <Input
+                                id="lastname"
+                                className="adduser-input"
+                                value={values.lastname}
+                                status={error.lastname ? 'error' : ''}
+                                maxLength={20}
+                                onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                onKeyDown={(e) => {
+                                    const value = e.target.value;
+                                    if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                    if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                    if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                    if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                    if (
+                                        !/^[A-Za-z -]$/.test(e.key) &&
+                                        e.key !== "Backspace" &&
+                                        e.key !== "ArrowLeft" &&
+                                        e.key !== "ArrowRight"
+                                    ) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                                autoComplete="off"
+                                required
+                            />
+                            <p className="adduser-error">{error.lastname}</p>
+                        </div>
+                    </div>
+
+                    <div className="adduser-field">
+                        <label className="adduser-label" htmlFor="email">Email</label>
+                        <Input
+                            id="email"
+                            className="adduser-input"
+                            value={values.email}
+                            status={error.email ? 'error' : ''}
+                            maxLength={40}
+                            onChange={(e) => valueHandler('email', e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === " " && e.key !== "Backspace") {
+                                    e.preventDefault();
+                                }
+                            }}
+                            autoComplete="off"
+                            required
+                        />
+                        <p className="adduser-error">{error.email}</p>
+                    </div>
+
+                    <div className="adduser-field">
+                        <label className="adduser-label" htmlFor="phone">Phone Number</label>
+                        <Input
+                            id="phone"
+                            className="adduser-input"
+                            addonBefore="+63"
+                            value={values.phone}
+                            status={error.phone ? 'error' : ''}
+                            maxLength={12}
+                            onChange={(e) => {
+                                let value = e.target.value.replace(/\D/g, "");
+
+                                let formatted = "";
+                                if (value.length > 0) formatted += value.slice(0, 3);
+                                if (value.length >= 4) formatted += " " + value.slice(3, 6);
+                                if (value.length >= 7) formatted += " " + value.slice(6, 10);
+
+                                valueHandler('phone', formatted);
+                            }}
+                            onKeyDown={(e) => {
+                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                    e.preventDefault();
+                                }
+                            }}
+                            autoComplete="off"
+                            required
+                        />
+                        <p className="adduser-error">{error.phone}</p>
+                    </div>
+
+                    {values.role !== 'Admin' && (
+                        <>
+                            <div className="adduser-field">
+                                <label className="adduser-label" htmlFor="password">Password</label>
+                                <Input.Password
+                                    id="password"
+                                    className="adduser-input"
+                                    value={values.password}
+                                    status={error.password ? 'error' : ''}
+                                    maxLength={20}
+                                    onChange={(e) => valueHandler('password', e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === " " && e.key !== "Backspace") {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    autoComplete="off"
+                                    required
+                                />
+                                <p className="adduser-error">{error.password}</p>
+                            </div>
+
+                            <div className="adduser-field">
+                                <label className="adduser-label" htmlFor="confirmPassword">Confirm Password</label>
+                                <Input.Password
+                                    id="confirmPassword"
+                                    className="adduser-input"
+                                    value={values.confirmPassword}
+                                    status={error.confirmPassword ? 'error' : ''}
+                                    maxLength={20}
+                                    onChange={(e) => valueHandler('confirmPassword', e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === " " && e.key !== "Backspace") {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    autoComplete="off"
+                                    required
+                                />
+                                <p className="adduser-error">{error.confirmPassword}</p>
+                            </div>
+                        </>
+                    )}
+
+                    <div className="adduser-actions">
+                        <Button className="adduser-cancel-btn" onClick={onClose}>Cancel</Button>
+                        <Button className="adduser-submit-btn" type="primary" htmlType="submit" loading={loading}>
+                            Create {values.role}
+                        </Button>
+                    </div>
+                </form>
+            </div>
         </Modal>
     );
 }

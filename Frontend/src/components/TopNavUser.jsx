@@ -147,7 +147,7 @@ export default function TopNavUser() {
         <div>
             <nav className="navbar">
                 <div className="logo-section">
-                    <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
+                    <img src={"/images/Logo.png"} alt="Logo" className="admin-logo-img" />
                     <span>M&RC Travel and Tours</span>
                 </div>
 
@@ -197,13 +197,20 @@ export default function TopNavUser() {
             />
 
             <Modal
-                title="Confirm Logout"
+                className="logout-confirm-modal"
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 open={isModalOpen}
-                onOk={handleOk}
+                footer={null}
                 onCancel={handleCancel}
             >
-                <p>Are you sure you want to logout?</p>
+                <div className="logout-confirm-content">
+                    <h2 className="logout-confirm-title">Confirm Logout</h2>
+                    <p className="logout-confirm-text">Are you sure you want to logout?</p>
+                    <div className="logout-confirm-actions">
+                        <Button className="logout-cancel-btn" onClick={handleCancel}>Cancel</Button>
+                        <Button className="logout-confirm-btn" type="primary" onClick={handleOk}>Logout</Button>
+                    </div>
+                </div>
             </Modal>
         </div>
     )

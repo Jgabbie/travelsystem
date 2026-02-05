@@ -2,8 +2,12 @@ const PackageModel = require("../models/package");
 const logAction = require("../utils/logger");
 
 const addPackage = async (req, res) => {
-    const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, addons, inclusions, exclusions, itineraries } = req.body;
+    const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, addons, termsAndConditions, inclusions, exclusions, itineraries, image } = req.body;
     try {
+
+        if (name === undefined || code === undefined || pricePerPax === undefined || availableSlots === undefined || description === undefined || packageType === undefined || duration === undefined || hotels === undefined || airlines === undefined || addons === undefined || termsAndConditions === undefined || inclusions === undefined || exclusions === undefined || itineraries === undefined) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
 
         const newPackage = await PackageModel.create({
             packageName: name,
@@ -13,13 +17,18 @@ const addPackage = async (req, res) => {
             packageDescription: description,
             packageType: packageType,
             packageDuration: Number(duration),
-            packageSpecificDate: dateRanges,
+            packageSpecificDate: (dateRanges || []).map(range => [
+                new Date(range[0]),
+                new Date(range[1])
+            ]),
             packageHotels: hotels,
             packageAirlines: airlines,
             packageAddons: addons,
+            packageTermsConditions: termsAndConditions,
             packageInclusions: inclusions,
             packageExclusions: exclusions,
-            packageItineraries: itineraries
+            packageItineraries: itineraries,
+            image: image || ''
         });
 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -39,9 +48,11 @@ const addPackage = async (req, res) => {
                 hotels: newPackage.packageHotels,
                 airlines: newPackage.packageAirlines,
                 addons: newPackage.packageAddons,
+                termsAndConditions: newPackage.packageTermsConditions,
                 inclusions: newPackage.packageInclusions,
                 exclusions: newPackage.packageExclusions,
-                itineraries: newPackage.packageItineraries
+                itineraries: newPackage.packageItineraries,
+                image: newPackage.image || ''
             },
             ip
         );
@@ -101,18 +112,23 @@ const updatePackage = async (req, res) => {
             {
                 packageName: req.body.name,
                 packageCode: req.body.code,
-                packagePricePerPax: req.body.pricePerPax,
-                packageAvailableSlots: req.body.availableSlots,
-                packageDuration: req.body.duration,
+                packagePricePerPax: Number(req.body.pricePerPax),
+                packageAvailableSlots: Number(req.body.availableSlots),
+                packageDuration: Number(req.body.duration),
                 packageDescription: req.body.description,
                 packageType: req.body.packageType,
-                packageSpecificDate: req.body.dateRanges,
+                packageSpecificDate: (req.body.dateRanges || []).map(range => [
+                    new Date(range[0]),
+                    new Date(range[1])
+                ]),
                 packageHotels: req.body.hotels,
                 packageAirlines: req.body.airlines,
                 packageAddons: req.body.addons,
                 packageInclusions: req.body.inclusions,
                 packageExclusions: req.body.exclusions,
-                packageItineraries: req.body.itineraries
+                packageTermsConditions: req.body.termsAndConditions,
+                packageItineraries: req.body.itineraries,
+                image: req.body.image || ''
             },
             { new: true }
         );

@@ -228,6 +228,7 @@ export default function ProfilePage() {
         reader.readAsDataURL(file)
     }
 
+    // save profile changes
     const handleSave = async () => {
         const nextErrors = {
             firstname: validate('firstname', values.firstname),

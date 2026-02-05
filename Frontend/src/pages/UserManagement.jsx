@@ -108,26 +108,6 @@ export default function UserManagement() {
     return matchesSearch && matchesRole;
   });
 
-  // ================= DROPDOWN =================
-
-  const addUserItems = [
-    {
-      key: "Admin",
-      label: "Add Admin",
-      icon: <SafetyCertificateOutlined />
-    },
-    {
-      key: "User",
-      label: "Add Normal User",
-      icon: <UserAddOutlined />
-    }
-  ];
-
-  const handleMenuClick = (e) => {
-    setTargetRole(e.key);
-    setIsModalOpen(true);
-  };
-
   // ================= TABLE =================
 
   const columns = [
@@ -230,16 +210,12 @@ export default function UserManagement() {
 
         <Button onClick={getUsers}>Refresh</Button>
 
-        <Dropdown
-          menu={{ items: addUserItems, onClick: handleMenuClick }}
-        >
-          <Button className='adduser-usermanagement' type="primary">
-            <Space>
-              Add User
-              <DownOutlined />
-            </Space>
-          </Button>
-        </Dropdown>
+
+        <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>
+          Add User
+        </Button>
+
+
       </div>
 
       <Card style={{ marginTop: 20 }}>

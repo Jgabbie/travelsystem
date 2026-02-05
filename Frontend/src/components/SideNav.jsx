@@ -55,22 +55,7 @@ export default function SideNav() {
           <NavLink to="/auditing" className="nav-item">Auditing</NavLink>
         </div>
 
-        <div className="nav-bottom">
-          <NavLink className="nav-item logout" onClick={logout}>Logout</NavLink>
-        </div>
-
       </Sider>
-
-      <Modal
-        title="Confirm Logout"
-        closable={{ 'aria-label': 'Custom Close Button' }}
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-      >
-        <p>Are you sure you want to logout?</p>
-      </Modal>
-
     </>
 
   );
