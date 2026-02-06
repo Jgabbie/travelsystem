@@ -5,7 +5,7 @@ const addPackage = async (req, res) => {
     const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, addons, termsAndConditions, inclusions, exclusions, itineraries, image } = req.body;
     try {
 
-        if (name === undefined || code === undefined || pricePerPax === undefined || availableSlots === undefined || description === undefined || packageType === undefined || duration === undefined || hotels === undefined || airlines === undefined || addons === undefined || termsAndConditions === undefined || inclusions === undefined || exclusions === undefined || itineraries === undefined) {
+        if (name === null || code === null || pricePerPax === null || availableSlots === null || description === null || packageType === null || duration === null || hotels === null || airlines === null || addons === null || termsAndConditions === null || inclusions === null || exclusions === null || itineraries === null) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 

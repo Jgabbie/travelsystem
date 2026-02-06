@@ -9,14 +9,13 @@ import {
   Select,
   Space,
   Checkbox,
-  message
+  message,
 } from "antd";
 import { UploadOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../style/addpackage.css";
 import axiosInstance from "../config/axiosConfig";
 import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
-
 
 const { RangePicker } = DatePicker;
 
@@ -28,6 +27,8 @@ export default function AddPackage() {
   const fileInputRef = useRef(null)
   const isEdit = Boolean(id);
 
+  const [backEndErrors, setBackEndErrors] = useState(null);
+
   const [errors, setErrors] = useState({
     name: "",
     code: "",
@@ -35,7 +36,6 @@ export default function AddPackage() {
     availableSlots: "",
     description: "",
     dateType: "",
-    dateRanges: "",
     duration: "",
     packageType: "",
     hotels: "",
@@ -48,15 +48,15 @@ export default function AddPackage() {
   });
 
   const [values, setValues] = useState({
-    name: "",
-    code: "",
-    pricePerPax: 0,
-    availableSlots: 0,
-    description: "",
-    dateType: "any",
+    name: null,
+    code: null,
+    pricePerPax: null,
+    availableSlots: null,
+    description: null,
+    dateType: null,
     dateRanges: [],
-    duration: undefined,
-    packageType: "domestic",
+    duration: null,
+    packageType: null,
     hotels: [],
     airlines: [],
     addons: {
@@ -64,7 +64,7 @@ export default function AddPackage() {
       meals: false,
       insurance: false,
       optionalTours: false,
-      optionalToursDetail: ""
+      optionalToursDetail: null
     },
     inclusions: [],
     exclusions: [],
@@ -73,64 +73,118 @@ export default function AddPackage() {
     image: null
   });
 
-  const valueHandler = (field, value) => {
-    setValues({ ...values, [field]: value });
-    setErrors({ ...errors, [field]: validate(field, value) });
+  const validateAll = (updatedValues) => {
+    const newErrors = {
+      name: validate("name", updatedValues.name),
+      code: validate("code", updatedValues.code),
+      pricePerPax: validate("pricePerPax", updatedValues.pricePerPax),
+      availableSlots: validate("availableSlots", updatedValues.availableSlots),
+      description: validate("description", updatedValues.description),
+      dateType: validate("dateType", updatedValues.dateType),
+      duration: validate("duration", updatedValues.duration),
+      packageType: validate("packageType", updatedValues.packageType),
+      hotels: validate("hotels", updatedValues.hotels),
+      airlines: validate("airlines", updatedValues.airlines),
+      addons: validate("addons", updatedValues.addons),
+      inclusions: validate("inclusions", updatedValues.inclusions),
+      exclusions: validate("exclusions", updatedValues.exclusions),
+      termsConditions: validate("termsConditions", updatedValues.termsConditions),
+      itineraries: validate("itineraries", updatedValues.itineraries),
+      image: validate("image", updatedValues.image),
+    };
+    setErrors(newErrors);
   };
+
+
+
+  const valueHandler = (field, value) => {
+    const updatedValues = { ...values, [field]: value };
+    setValues(updatedValues);
+    validateAll(updatedValues);
+  };
+
+
+  useEffect(() => {
+    if (backEndErrors) {
+      let errorMsg = "";
+
+      if (typeof backEndErrors === "string") {
+        errorMsg = backEndErrors;
+      } else if (backEndErrors.message) {
+        errorMsg = backEndErrors.message;
+      } else if (backEndErrors.error) {
+        errorMsg = backEndErrors.error;
+      } else {
+        // fallback: stringify anything else
+        errorMsg = JSON.stringify(backEndErrors);
+      }
+
+      message.error(errorMsg);
+    }
+  }, [backEndErrors]);
 
 
   //validations
   const validate = (field, value) => {
     if (field === "name") {
-      if (value === "") return "Package name is required.";
+      if (!value) return "Package name is required.";
     }
     if (field === "code") {
-      if (value === "") return "Package code is required.";
+      if (!value) return "Package code is required.";
     }
     if (field === "pricePerPax") {
-      if (value === "") return "Price per pax is required.";
+      if (!value) return "Price per pax is required.";
     }
     if (field === "availableSlots") {
-      if (value === "") return "Available slots is required.";
+      if (!value) return "Available slots is required.";
     }
     if (field === "description") {
-      if (value === "") return "Description is required.";
+      if (!value) return "Description is required.";
     }
     if (field === "dateType") {
-      if (value === "") return "Date type is required.";
+      if (!value) return "Date type is required.";
       if (value === "specified" && values.dateRanges.length === 0) {
         return "At least one date range is required.";
       }
     }
     if (field === "duration") {
-      if (value === "") return "Duration is required.";
+      if (!value) return "Duration is required.";
     }
     if (field === "packageType") {
-      if (value === "") return "Package type is required.";
+      if (!value) return "Package type is required.";
     }
     if (field === "hotels") {
-      if (value === "") return "Hotels are required.";
+      if (!value.length) return "Hotels are required.";
+      const hasEmpty = value.some(h => !h.name || !h.stars || !h.type);
+      if (hasEmpty) return "All hotels must have name, stars, and type.";
     }
     if (field === "airlines") {
-      if (value === "") return "Airlines are required.";
+      if (!value.length) return "Airlines are required.";
+      const hasEmpty = value.some(a => !a.name || !a.type);
+      if (hasEmpty) return "All Airlines must have a type."
     }
     if (field === "addons") {
-      if (value === "") return "Addons are required.";
-      if (value.optionalTours && value.optionalToursDetail === "") {
+      if (!value.luggage && !value.meals && !value.insurance && !value.optionalTours)
+        return "At least one add-on selection is required.";
+      if (value.optionalTours && !value.optionalToursDetail)
         return "Optional tours details are required.";
-      }
     }
     if (field === "inclusions") {
-      if (value === "") return "Inclusions are required.";
+      if (!value.length) return "Inclusions are required.";
+      if (value.some(v => !v || !v.trim())) return "All inclusions must be filled.";
     }
     if (field === "exclusions") {
-      if (value === "") return "Exclusions are required.";
+      if (!value.length) return "Exclusions are required.";
+      if (value.some(v => !v || !v.trim())) return "All exclusions must be filled.";
     }
     if (field === "termsConditions") {
-      if (value === "") return "Terms and Conditions are required.";
+      if (!value.length) return "Terms and Conditions are required.";
+      if (value.some(v => !v || !v.trim())) return "All Terms and Conditions must be filled.";
     }
     if (field === "itineraries") {
-      if (value === "") return "Itineraries are required.";
+      if (!Object.keys(value).length) return "Itineraries are required.";
+      const hasEmptyDay = Object.values(value).some(dayActivities => !dayActivities.length || dayActivities.some(a => !a || !a.trim()));
+      if (hasEmptyDay) return "All itinerary days must have at least one activity filled.";
     }
     if (field === "image") {
       if (!value) return "Package image is required.";
@@ -280,6 +334,41 @@ export default function AddPackage() {
 
   //add package and update package function
   const savePackage = async () => {
+    let hasError = false;
+
+    // Validate each field manually
+    const newErrors = {
+      name: validate("name", values.name),
+      code: validate("code", values.code),
+      pricePerPax: validate("pricePerPax", values.pricePerPax),
+      availableSlots: validate("availableSlots", values.availableSlots),
+      description: validate("description", values.description),
+      dateType: validate("dateType", values.dateType),
+      duration: validate("duration", values.duration),
+      packageType: validate("packageType", values.packageType),
+      hotels: validate("hotels", values.hotels),
+      airlines: validate("airlines", values.airlines),
+      addons: validate("addons", values.addons),
+      inclusions: validate("inclusions", values.inclusions),
+      exclusions: validate("exclusions", values.exclusions),
+      termsConditions: validate("termsConditions", values.termsConditions),
+      itineraries: validate("itineraries", values.itineraries),
+      image: validate("image", values.image)
+    };
+
+    // Check if any field has error
+    for (let field in newErrors) {
+      if (newErrors[field]) hasError = true;
+    }
+
+    setErrors(newErrors);
+
+    if (hasError) {
+      message.error("Please fill all required fields correctly.");
+      return; // stop submission
+    }
+
+    // Build payload
     const payload = {
       name: values.name,
       code: values.code,
@@ -297,7 +386,7 @@ export default function AddPackage() {
       termsAndConditions: values.termsConditions,
       itineraries: values.itineraries,
       image: values.image
-    }
+    };
 
     try {
       if (isEdit) {
@@ -305,9 +394,9 @@ export default function AddPackage() {
       } else {
         await axiosInstance.post("/package/add-package", payload);
       }
-
       navigate("/packages");
     } catch (err) {
+      setBackEndErrors(err.response?.data || err.message);
       console.error("Failed to save package:", err);
     }
   };
@@ -345,6 +434,7 @@ export default function AddPackage() {
 
       } catch (err) {
         console.error("Failed to load package", err);
+        setBackEndErrors(err.response?.data || err.message);
       }
     };
 
@@ -390,7 +480,7 @@ export default function AddPackage() {
           <h2 className="section-headers">Package Information</h2>
           {/* packagemame, code, price per pax, available slots, description */}
           <label className="add-package-input-labels">Package Name</label>
-          <Input maxLength={30} value={values.name} className="add-package-inputs" style={{ marginBottom: 10 }}
+          <Input status={errors.name ? "errors" : ""} maxLength={30} value={values.name} className="add-package-inputs"
             onKeyDown={(e) => {
               const allowedKeys = [
                 "Backspace",
@@ -412,7 +502,7 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.name}</p>
 
           <label className="add-package-input-labels">Package Code</label>
-          <Input maxLength={20} value={values.code} className="add-package-inputs" style={{ marginBottom: 10 }}
+          <Input status={errors.code ? "errors" : ""} maxLength={20} value={values.code} className="add-package-inputs"
             onKeyDown={(e) => {
               const allowedKeys = [
                 "Backspace",
@@ -538,7 +628,7 @@ export default function AddPackage() {
           <h2 className="section-headers">Hotels, Airline, and Addons</h2>
           {/* HOTELS */}
           <Card size="small" title="Hotels" style={{ marginTop: 5 }}>
-            {values.hotels.map((hotel, index) => (
+            {values.hotels?.map((hotel, index) => (
               <Space key={index} style={{ width: "100%", marginBottom: 16 }}>
                 <Input className="add-package-inputs" placeholder="Hotel Name" value={hotel.name}
                   onKeyDown={(e) => {
@@ -586,7 +676,7 @@ export default function AddPackage() {
 
           {/* AIRLINES */}
           <Card size="small" title="Airlines" style={{ marginTop: 20 }}>
-            {values.airlines.map((airline, index) => (
+            {values.airlines?.map((airline, index) => (
               <Space key={index} style={{ width: "100%", marginBottom: 16 }}>
                 <Input className="add-package-inputs" placeholder="Airline Name" value={airline.name}
                   onKeyDown={(e) => {
@@ -663,7 +753,7 @@ export default function AddPackage() {
           <h2 className="section-headers">Inclusions, Exclusions, and Terms & Conditions</h2>
           {/* INCLUSIONS */}
           <Card size="small" title="Inclusions" style={{ marginTop: 5 }}>
-            {values.inclusions.map((item, index) => (
+            {values.inclusions?.map((item, index) => (
               <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
                 <Input className="add-package-inputs" value={item}
                   onKeyDown={(e) => {
@@ -692,7 +782,7 @@ export default function AddPackage() {
 
           {/* EXCLUSIONS */}
           <Card size="small" title="Exclusions" style={{ marginTop: 20 }}>
-            {values.exclusions.map((item, index) => (
+            {values.exclusions?.map((item, index) => (
               <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
                 <Input className="add-package-inputs" value={item}
                   onKeyDown={(e) => {
@@ -722,7 +812,7 @@ export default function AddPackage() {
 
           {/* TERMS AND CONDITIONS */}
           <Card size="small" title="Terms and Conditions" style={{ marginTop: 20, marginBottom: 15 }}>
-            {values.termsConditions.map((item, index) => (
+            {values.termsConditions?.map((item, index) => (
               <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
                 <Input className="add-package-inputs" value={item}
                   onKeyDown={(e) => {
@@ -753,7 +843,7 @@ export default function AddPackage() {
           <h2 className="section-headers">Itinerary</h2>
           {/* ITINERARIES */}
           <Card size="small" title="Itineraries" style={{ marginTop: 5 }}>
-            {Object.keys(values.itineraries).map(day => (
+            {Object.keys(values.itineraries ?? {}).map(day => (
               <div key={day} style={{ marginBottom: 20 }}>
                 <h4>{day.replace("day", "Day ")}:</h4>
                 {values.itineraries[day].map((item, index) => (
