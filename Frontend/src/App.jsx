@@ -67,7 +67,7 @@ function App() {
             <Route path="visa-applications" element={<VisaApplications />} />
             <Route path="passport-applications" element={<PassportApplications />} />
 
-            {/* NEW LOGGING & AUDITING ROUTES */}
+            {/* logging and auditing routes */}
             <Route path="logging" element={<Logging />} />
             <Route path="auditing" element={<Auditing />} />
           </Route>
