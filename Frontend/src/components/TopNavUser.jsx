@@ -133,7 +133,6 @@ export default function TopNavUser() {
     const navItems = [
         { label: 'HOME', route: '/home' },
         { label: 'DESTINATIONS', route: '/destinations-packages' },
-        { label: 'ABOUT', route: '/about' },
         { label: 'SERVICES', route: '/passandvisa-service' },
     ];
 

@@ -1,20 +1,45 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, Row, Select, Slider, Tag, Typography } from 'antd'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography } from 'antd'
 import TopNavUser from '../components/TopNavUser'
 import '../style/destinations-packages.css'
 import axiosInstance from '../config/axiosConfig'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export default function DestinationsPackages() {
     const navigate = useNavigate()
+    const location = useLocation()
     const [packages, setPackages] = useState([])
     const [search, setSearch] = useState('')
     const [budgetRange, setBudgetRange] = useState([0, 40000])
     const [selectedActivities, setSelectedActivities] = useState([])
     const [tourType, setTourType] = useState('All')
-    const [daysRange, setDaysRange] = useState([1, 7])
+    const [daysValue, setDaysValue] = useState(7)
 
     const { Title, Text } = Typography
+
+    const handleBudgetInputChange = (index, value) => {
+        const sanitized = Number.isFinite(value) ? value : 0
+        const minValue = 0
+        const maxValue = 50000
+        const next = [...budgetRange]
+        const clamped = Math.min(Math.max(sanitized, minValue), maxValue)
+        next[index] = clamped
+        if (index === 0 && next[0] > next[1]) {
+            next[1] = next[0]
+        }
+        if (index === 1 && next[1] < next[0]) {
+            next[0] = next[1]
+        }
+        setBudgetRange(next)
+    }
+
+    const handleDaysInputChange = (value) => {
+        const sanitized = Number.isFinite(value) ? value : 1
+        const minValue = 1
+        const maxValue = 10
+        const clamped = Math.min(Math.max(sanitized, minValue), maxValue)
+        setDaysValue(clamped)
+    }
 
     useEffect(() => {
         const fetchPackages = async () => {
@@ -46,6 +71,42 @@ export default function DestinationsPackages() {
         fetchPackages()
     }, [])
 
+    useEffect(() => {
+        const params = new URLSearchParams(location.search)
+        const query = params.get('q')
+        const activity = params.get('activity')
+        const tourTypeParam = params.get('tourType')
+        const minBudget = Number(params.get('minBudget'))
+        const maxBudget = Number(params.get('maxBudget'))
+        const maxDays = Number(params.get('maxDays'))
+
+        if (query !== null) {
+            setSearch(query)
+        }
+
+        if (activity) {
+            setSelectedActivities([activity])
+        }
+
+        if (tourTypeParam && ['All', 'Domestic', 'International'].includes(tourTypeParam)) {
+            setTourType(tourTypeParam)
+        }
+
+        if (Number.isFinite(minBudget) && Number.isFinite(maxBudget)) {
+            const clampedMin = Math.max(0, Math.min(minBudget, 50000))
+            const clampedMax = Math.max(0, Math.min(maxBudget, 50000))
+            setBudgetRange([
+                Math.min(clampedMin, clampedMax),
+                Math.max(clampedMin, clampedMax)
+            ])
+        }
+
+        if (Number.isFinite(maxDays)) {
+            const clampedDays = Math.max(1, Math.min(maxDays, 10))
+            setDaysValue(clampedDays)
+        }
+    }, [location.search])
+
     const activityOptions = useMemo(() => {
         const unique = new Set()
         packages.forEach((pkg) => {
@@ -74,7 +135,7 @@ export default function DestinationsPackages() {
             const matchesType = tourType === 'All' || pkg.type === tourType
 
             const matchesDays =
-                pkg.days >= daysRange[0] && pkg.days <= daysRange[1]
+                pkg.days >= 1 && pkg.days <= daysValue
 
             return (
                 matchesSearch &&
@@ -84,12 +145,15 @@ export default function DestinationsPackages() {
                 matchesDays
             )
         })
-    }, [packages, search, budgetRange, selectedActivities, tourType, daysRange])
+    }, [packages, search, budgetRange, selectedActivities, tourType, daysValue])
 
     return (
         <div>
             <TopNavUser />
             <div className="destinations-page">
+
+                {/* addimage */}
+
                 <header className="destinations-header">
                     <Title level={2}>Destinations & Packages</Title>
                     <Text type="secondary">
@@ -98,21 +162,57 @@ export default function DestinationsPackages() {
                     </Text>
                 </header>
 
-                <div className="destinations-controls">
-                    <div className="destinations-search">
-                        <Text className="destinations-label">Search</Text>
-                        <Input
-                            allowClear
-                            placeholder="Search by destination or package"
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                        />
-                    </div>
+                <div className="destinations-search">
+                    <Text className="destinations-label">Search</Text>
+                    <Input
+                        maxLength={60}
+                        className='destinations-inputs'
+                        allowClear
+                        placeholder="Search by destination or package"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                    />
+                </div>
 
+                <div className="destinations-controls">
                     <Row gutter={[16, 16]} className="destinations-filter-grid">
                         <Col xs={24} md={12} xl={6}>
                             <div className="filter-field">
                                 <Text className="destinations-label">Budget (₱)</Text>
+                                <div className="filter-range-inputs">
+                                    <InputNumber
+                                        className='destinations-inputs'
+                                        min={0}
+                                        max={50000}
+                                        maxLength={6}
+                                        value={budgetRange[0]}
+                                        onChange={(value) => handleBudgetInputChange(0, value)}
+                                        formatter={(value) => `₱${value}`}
+                                        parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }}
+
+                                    />
+                                    <span className="filter-range-separator">to</span>
+                                    <InputNumber
+                                        className='destinations-inputs'
+                                        min={0}
+                                        max={50000}
+                                        maxLength={6}
+                                        value={budgetRange[1]}
+                                        onChange={(value) => handleBudgetInputChange(1, value)}
+                                        formatter={(value) => `₱${value}`}
+                                        parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                </div>
                                 <Slider
                                     range
                                     min={0}
@@ -131,6 +231,7 @@ export default function DestinationsPackages() {
                             <div className="filter-field">
                                 <Text className="destinations-label">Activities</Text>
                                 <Select
+                                    className='destinations-inputs'
                                     mode="multiple"
                                     allowClear
                                     placeholder="Select activities"
@@ -148,6 +249,7 @@ export default function DestinationsPackages() {
                             <div className="filter-field">
                                 <Text className="destinations-label">Tour Type</Text>
                                 <Select
+                                    className='destinations-inputs'
                                     value={tourType}
                                     onChange={(value) => setTourType(value)}
                                     options={[
@@ -162,16 +264,31 @@ export default function DestinationsPackages() {
                         <Col xs={24} md={12} xl={6}>
                             <div className="filter-field">
                                 <Text className="destinations-label">Days of Tour</Text>
+                                <div className="filter-range-inputs">
+                                    <InputNumber
+                                        className='destinations-inputs'
+                                        min={1}
+                                        max={10}
+                                        maxLength={2}
+                                        value={daysValue}
+                                        onChange={handleDaysInputChange}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    <span className="filter-range-separator">Max Days</span>
+                                </div>
                                 <Slider
-                                    range
                                     min={1}
                                     max={10}
-                                    value={daysRange}
-                                    onChange={(value) => setDaysRange(value)}
+                                    value={daysValue}
+                                    onChange={setDaysValue}
                                     tooltip={{ formatter: (value) => `${value} day${value > 1 ? 's' : ''}` }}
                                 />
                                 <Text className="filter-hint">
-                                    {daysRange[0]} - {daysRange[1]} days
+                                    Up to {daysValue} days
                                 </Text>
                             </div>
                         </Col>

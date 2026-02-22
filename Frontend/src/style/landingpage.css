@@ -179,7 +179,7 @@ body {
 .search-widget {
     position: absolute;
     bottom: -60px;
-    background: white;
+    background: rgba(255, 255, 255);
     width: 80%;
     max-width: 1000px;
     border-radius: 15px;
@@ -203,6 +203,13 @@ body {
     border-radius: 5px;
     background-color: #f9f9f9;
     font-size: 16px;
+    color: #333;
+}
+
+.search-input:focus {
+    border-color: #305797;
+    outline: none;
+    background-color: #fff;
 }
 
 .search-btn {
@@ -240,14 +247,28 @@ body {
     text-transform: uppercase;
 }
 
-.filter-select {
-    border: none;
+.landing-select .ant-select-selector {
+    border: none !important;
+    background: transparent !important;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
     color: #333;
-    width: 100%;
-    cursor: pointer;
-    background: transparent;
+    padding: 0 !important;
+    min-height: unset !important;
+}
+
+.landing-select .ant-select-selection-item,
+.landing-select .ant-select-selection-placeholder {
+    color: #333;
+}
+
+.landing-select .ant-select-arrow {
+    color: #666;
+}
+
+.landing-select:hover,
+.landing-select:focus-within {
+    border-color: #305797 !important;
 }
 
 .budget-control {
@@ -268,6 +289,20 @@ body {
 .budget-slider {
     width: 100%;
     cursor: pointer;
+}
+
+.budget-slider .ant-slider-track {
+    background-color: #305797;
+}
+
+.budget-slider .ant-slider-handle::after {
+    background-color: #305797;
+    box-shadow: 0 0 0 2px #305797;
+}
+
+.budget-slider .ant-slider-handle:hover::after,
+.budget-slider .ant-slider-handle:focus-visible::after {
+    box-shadow: 0 0 0 4px rgba(48, 87, 151, 0.3);
 }
 
 .page-link-buttons-container {
@@ -460,4 +495,65 @@ body {
     color: #000000;
     text-align: justify;
     margin-right: 40px;
+}
+
+.aboutus-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000;
+    margin-left: 40px;
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+.chatbot-fab {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1200;
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 999px;
+    background-color: #305797;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 12px 28px rgba(48, 87, 151, 0.35);
+}
+
+.chatbot-fab:hover {
+    background-color: #244574 !important;
+}
+
+.chatbot-modal .ant-modal {
+    position: fixed;
+    right: 24px;
+    bottom: 88px;
+    top: auto;
+    margin: 0;
+    width: 320px !important;
+}
+
+.chatbot-modal .ant-modal-content {
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+}
+
+.chatbot-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chatbot-message {
+    background: #f1f5f9;
+    color: #1f2a44;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.chatbot-actions {
+    display: flex;
+    justify-content: flex-end;
 }

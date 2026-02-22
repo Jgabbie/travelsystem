@@ -11,6 +11,8 @@ const adminRoutes = require("./routes/adminRoute");
 const bookingRoutes = require("./routes/bookingRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
+const paymentRoutes = require("./routes/paymentRoute");
+
 
 const app = express()
 app.use(cors({
@@ -35,6 +37,7 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/booking', bookingRoutes)
 app.use('/api/rating', ratingRoutes)
 app.use('/api/wishlist', wishlistRoutes)
+app.use('/api/payment', paymentRoutes);
 
 app.listen(8000, () => {
     console.log('Server is up and running');

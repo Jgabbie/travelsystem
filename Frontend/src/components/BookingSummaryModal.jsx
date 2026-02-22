@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Modal, Button } from 'antd'
 import { CheckCircleFilled } from '@ant-design/icons'
 import '../style/bookingsummarymodal.css'
+import axiosInstance from '../config/axiosConfig'
 
 const DEFAULT_SUMMARY = {
     packageName: 'Baguio City Tour',
@@ -31,8 +32,37 @@ export default function BookingSummaryModal({
     open,
     onCancel,
     onProceed,
-    summary
+    summary,
+    successUrl,
+    cancelUrl,
+    bookingPayload
 }) {
+
+    const [bankInstructions, setBankInstructions] = useState([]);
+    const [bankReference, setBankReference] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    //paymongo checkout
+    const handleCheckout = async () => {
+        try {
+            if (bookingPayload) {
+                localStorage.setItem('pendingBooking', JSON.stringify(bookingPayload));
+                sessionStorage.removeItem('bookingSaved');
+            }
+            const res = await axiosInstance.post("/payment/create-checkout-session", {
+                successUrl,
+                cancelUrl
+            });
+
+            const checkoutUrl = res.data.data.attributes.checkout_url;
+
+            window.location.href = checkoutUrl;
+        } catch (err) {
+            console.error(err.response?.data || err.message);
+            alert("Checkout failed. Check server logs.");
+        }
+    };
+
     //get summary data or use default option to test booking
     const data = summary ? { ...DEFAULT_SUMMARY, ...summary } : DEFAULT_SUMMARY
     const travelers = data.travelers?.length ? data.travelers : ['None selected']
@@ -126,8 +156,8 @@ export default function BookingSummaryModal({
 
 
             <div className="booking-summary-actions">
-                <Button className="booking-summary-proceed" onClick={onProceed}>
-                    Proceed
+                <Button className="booking-summary-proceed" onClick={handleCheckout}>
+                    Proceed to Payment
                 </Button>
                 <Button className="booking-summary-cancel" onClick={onCancel}>
                     Cancel

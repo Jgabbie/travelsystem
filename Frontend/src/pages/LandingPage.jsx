@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import '../style/landingpage.css'
-import { Button, Card } from 'antd';
+import { Button, Card, Input, Modal, Select, Slider } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import TopNavUser from '../components/TopNavUser';
 import LoginModal from '../components/LoginModal';
@@ -13,9 +13,16 @@ export default function LandingPage() {
 
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
+    const aboutusRef = useRef(null)
 
-    const [budget, setBudget] = useState(16000);
+    const [budgetRange, setBudgetRange] = useState([12000, 30000]);
+    const [activity, setActivity] = useState('Adventure Type');
+    const [duration, setDuration] = useState('Length of Stay');
+    const [pax, setPax] = useState('Number of Travelers');
+    const [searchTerm, setSearchTerm] = useState('');
     const [isLoginVisible, setIsLoginVisible] = useState(false)
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+    const [chatMessage, setChatMessage] = useState('')
 
     const handleBrowsePackages = () => {
         if (auth) {
@@ -23,6 +30,36 @@ export default function LandingPage() {
             return
         }
         setIsLoginVisible(true)
+    }
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        const trimmed = searchTerm.trim();
+
+        if (trimmed) {
+            params.set('q', trimmed);
+        }
+
+        if (activity && activity !== 'Adventure Type') {
+            params.set('activity', activity);
+        }
+
+        if (duration && duration !== 'Length of Stay') {
+            const parsedDays = Number.parseInt(duration, 10);
+            if (Number.isFinite(parsedDays)) {
+                params.set('maxDays', String(parsedDays));
+            }
+        }
+
+        if (pax && pax !== 'Tour Type') {
+            params.set('tourType', pax);
+        }
+
+        params.set('minBudget', String(budgetRange[0]));
+        params.set('maxBudget', String(budgetRange[1]));
+
+        const query = params.toString();
+        navigate(query ? `/destinations-packages?${query}` : '/destinations-packages');
     }
 
     return (
@@ -40,8 +77,22 @@ export default function LandingPage() {
                 <div className="search-widget">
 
                     <div className="search-row">
-                        <input type="text" placeholder="Search here..." className="search-input" />
-                        <button className="search-btn"><SearchOutlined /></button>
+                        <input
+                            type="text"
+                            placeholder="Search here..."
+                            className="search-input"
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                    event.preventDefault();
+                                    handleSearch();
+                                }
+                            }}
+                        />
+                        <button className="search-btn" onClick={handleSearch}>
+                            <SearchOutlined />
+                        </button>
                     </div>
 
 
@@ -50,53 +101,69 @@ export default function LandingPage() {
 
                         <div className="filter-group">
                             <label>ACTIVITIES</label>
-                            <select className="filter-select">
-                                <option>Adventure Type</option>
-                                <option>Beach</option>
-                                <option>Hiking</option>
-                                <option>City Tour</option>
-                            </select>
+                            <Select
+                                className="landing-select"
+                                value={activity}
+                                onChange={setActivity}
+                                options={[
+                                    { value: 'Adventure Type', label: 'Adventure Type' },
+                                    { value: 'Beach', label: 'Beach' },
+                                    { value: 'Hiking', label: 'Hiking' },
+                                    { value: 'City Tour', label: 'City Tour' },
+                                ]}
+                            />
                         </div>
 
 
                         <div className="filter-group">
                             <label>DURATION</label>
-                            <select className="filter-select">
-                                <option>Length of Stay</option>
-                                <option>2 Days</option>
-                                <option>3 Days</option>
-                                <option>4 Days</option>
-                                <option>5 Days</option>
-                                <option>6 Days</option>
-                                <option>7 Days</option>
-                            </select>
+                            <Select
+                                className="landing-select"
+                                value={duration}
+                                onChange={setDuration}
+                                options={[
+                                    { value: 'Length of Stay', label: 'Length of Stay' },
+                                    { value: '2 Days', label: '2 Days' },
+                                    { value: '3 Days', label: '3 Days' },
+                                    { value: '4 Days', label: '4 Days' },
+                                    { value: '5 Days', label: '5 Days' },
+                                    { value: '6 Days', label: '6 Days' },
+                                    { value: '7 Days', label: '7 Days' },
+                                ]}
+                            />
                         </div>
 
 
                         <div className="filter-group">
-                            <label>PAX</label>
-                            <select className="filter-select">
-                                <option>Number of Travelers</option>
-                                <option>Solo Booking</option>
-                                <option>Group Booking</option>
-                            </select>
+                            <label>TOUR TYPE</label>
+                            <Select
+                                className="landing-select"
+                                value={pax}
+                                onChange={setPax}
+                                options={[
+                                    { value: 'Tour Type', label: 'Tour Type' },
+                                    { value: 'Domestic', label: 'Domestic' },
+                                    { value: 'International', label: 'International' },
+                                ]}
+                            />
                         </div>
 
 
                         <div className="filter-group" style={{ minWidth: '200px' }}>
                             <label>BUDGET</label>
                             <div className="budget-labels">
-                                <span>₱12,000</span>
-                                <span>₱{budget.toLocaleString()}</span>
+                                <span>₱{budgetRange[0].toLocaleString()}</span>
+                                <span>₱{budgetRange[1].toLocaleString()}</span>
                             </div>
-                            <input
-                                type="range"
-                                min="12000"
-                                max="50000"
-                                step="1000"
-                                value={budget}
-                                onChange={(e) => setBudget(Number(e.target.value))}
+                            <Slider
+                                range
+                                min={0}
+                                max={50000}
+                                step={1000}
+                                value={budgetRange}
+                                onChange={setBudgetRange}
                                 className="budget-slider"
+                                tooltip={{ formatter: (value) => `₱${value}` }}
                             />
                         </div>
                     </div>
@@ -106,6 +173,7 @@ export default function LandingPage() {
             <div className='page-link-buttons-container'>
                 <Button className='page-link-buttons' type='link' onClick={() => packagesRef.current?.scrollIntoView({ behavior: 'smooth' })} >Popular Packages</Button>
                 <Button className='page-link-buttons' type='link' onClick={() => exploreRef.current?.scrollIntoView({ behavior: 'smooth' })} >Explore Now!</Button>
+                <Button className='page-link-buttons' type='link' onClick={() => aboutusRef.current?.scrollIntoView({ behavior: 'smooth' })} >About Us</Button>
             </div>
 
             <div ref={packagesRef} style={{ paddingTop: '50px', marginTop: '30px' }}>
@@ -296,11 +364,74 @@ export default function LandingPage() {
                 </div>
             </div>
 
+
+            <div ref={aboutusRef} style={{ paddingTop: '100px', marginTop: '50px' }}>
+                <div className='explore-container'>
+                    <div className='explore-local-packages-section'>
+                        <h1 className='explore-text'>About Us</h1>
+
+                        <p className='aboutus-text'>
+                            M&RC Travel and Tours is a dedicated travel company committed to turning your dream vacations into unforgettable experiences.
+                            We specialize in carefully curated travel packages that combine convenience, value, and adventure—whether you’re planning a
+                            relaxing getaway, a family holiday, a romantic escape, or a group tour.
+                        </p>
+
+                        <p className='aboutus-text'>
+                            Our team is passionate about travel and focused on delivering personalized service from start to finish.
+                            From flights and accommodations to guided tours and activities, we handle every detail so you can travel with confidence and peace of mind.
+                            We partner with trusted airlines, hotels, and local operators to ensure quality, safety, and memorable journeys for every client.
+                        </p>
+
+                        <p className='aboutus-text'>
+                            At M&RC Travel and Tours, we believe that travel should be easy, enjoyable, and accessible to everyone.
+                            Our mission is to help you explore new destinations, create lasting memories, and experience the world without the stress of planning.
+                        </p>
+
+                        <p className='aboutus-text'>
+                            Let us take you there — your journey begins with M&RC Travel and Tours.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+
             <LoginModal
                 isOpenLogin={isLoginVisible}
                 isCloseLogin={() => setIsLoginVisible(false)}
                 onLoginSuccess={() => navigate('/destinations-packages')}
             />
+
+            <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
+                Chatbot
+            </Button>
+
+            <Modal
+                open={isChatbotOpen}
+                onCancel={() => setIsChatbotOpen(false)}
+                footer={null}
+                title="Chatbot"
+                wrapClassName="chatbot-modal"
+            >
+                <div className="chatbot-body">
+                    <div className="chatbot-message">
+                        Hi! How can I help you today?
+                    </div>
+                    <Input.TextArea
+                        value={chatMessage}
+                        onChange={(event) => setChatMessage(event.target.value)}
+                        placeholder="Type your message..."
+                        rows={3}
+                    />
+                    <div className="chatbot-actions">
+                        <Button
+                            type="primary"
+                            disabled={!chatMessage.trim()}
+                        >
+                            Send
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

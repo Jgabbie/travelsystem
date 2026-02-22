@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import '../style/packagepage.css'
 import { Button, Tabs, Modal, Rate, Input, message } from 'antd';
 import axiosInstance from '../config/axiosConfig';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import TopNavUser from '../components/TopNavUser'
 import ChooseDateModal from '../components/ChooseDateModal'
@@ -13,9 +13,12 @@ import TravelersModal from '../components/TravelersModal'
 import AddOnsModal from '../components/AddOnsModal'
 import BookingSummaryModal from '../components/BookingSummaryModal'
 import CustomizeBookingModal from '../components/CustomizeBookingModal'
+import { useAuth } from '../hooks/useAuth'
 
 export default function PackagePage() {
     const { id } = useParams();
+    const location = useLocation();
+    const { auth } = useAuth();
 
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
@@ -113,6 +116,53 @@ export default function PackagePage() {
     useEffect(() => {
         fetchRatings()
     }, [fetchRatings])
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const bookingStatus = searchParams.get('booking');
+
+        if (bookingStatus === 'return') {
+            localStorage.removeItem('pendingBooking');
+            sessionStorage.removeItem('bookingSaved');
+            const cleanedUrl = `${location.pathname}`;
+            window.history.replaceState({}, '', cleanedUrl);
+            return;
+        }
+
+        if (bookingStatus === 'success') {
+            const alreadySaved = sessionStorage.getItem('bookingSaved');
+            const saveInProgress = sessionStorage.getItem('bookingSaving');
+            const stored = localStorage.getItem('pendingBooking');
+
+            if (!alreadySaved && !saveInProgress && stored) {
+                sessionStorage.setItem('bookingSaving', 'true');
+                const payload = JSON.parse(stored);
+                axiosInstance
+                    .post('/booking/create-booking', {
+                        packageId: payload.packageId,
+                        bookingDetails: payload.bookingDetails
+                    })
+                    .then(() => {
+                        sessionStorage.setItem('bookingSaved', 'true');
+                        localStorage.removeItem('pendingBooking');
+                        setIsBookingSuccessOpen(true);
+                    })
+                    .catch(() => {
+                        sessionStorage.removeItem('bookingSaved');
+                        message.error('Booking failed. Please try again.');
+                    })
+                    .finally(() => {
+                        sessionStorage.removeItem('bookingSaving');
+                        const cleanedUrl = `${location.pathname}`;
+                        window.history.replaceState({}, '', cleanedUrl);
+                    });
+            } else {
+                setIsBookingSuccessOpen(true);
+                const cleanedUrl = `${location.pathname}`;
+                window.history.replaceState({}, '', cleanedUrl);
+            }
+        }
+    }, [location.pathname, location.search]);
 
 
 
@@ -344,6 +394,30 @@ export default function PackagePage() {
         imageUrl: packageData?.image || ''
     }
 
+    const bookingPayload = packageData?._id
+        ? {
+            packageId: packageData._id,
+            bookingDetails: {
+                travelDate: selectedDate,
+                arrangement: arrangementSelection,
+                packageType: fixedCustomSelection,
+                groupType: soloGroupSelection,
+                travelers: travelerCounts,
+                addOns: selectedAddOns,
+                airlines: selectedAirlines,
+                hotels: selectedHotels,
+                packageName: packageData?.packageName || ''
+            }
+        }
+        : null
+
+    const successUrl = id
+        ? `${window.location.origin}/package/${id}?booking=success`
+        : `${window.location.origin}/package?booking=success`;
+    const cancelUrl = id
+        ? `${window.location.origin}/package/${id}?booking=return`
+        : `${window.location.origin}/package?booking=return`;
+
     const handleSubmitReview = async () => {
         if (!reviewForm.rating || !reviewForm.comment.trim()) {
             return
@@ -543,6 +617,9 @@ export default function PackagePage() {
                 onCancel={resetBookingFlow}
                 onProceed={handleProceedSummary}
                 summary={summaryData}
+                successUrl={successUrl}
+                cancelUrl={cancelUrl}
+                bookingPayload={bookingPayload}
             />
 
             <Modal

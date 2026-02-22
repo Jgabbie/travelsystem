@@ -32,11 +32,23 @@
 .destinations-controls {
     max-width: 1280px;
     margin: 0 auto 24px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 12px 28px rgba(31, 42, 68, 0.08);
     display: grid;
     gap: 16px;
 }
 
 .destinations-search {
+    max-width: 1280px;
+    margin: 0 auto 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -69,9 +81,40 @@
     gap: 8px;
 }
 
+.filter-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-range-inputs .ant-input-number {
+    width: 100%;
+    min-width: 120px;
+}
+
+.filter-range-separator {
+    font-size: 12px;
+    color: #305797;
+    font-weight: 600;
+}
+
 .filter-hint {
     font-size: 12px;
     color: #6b7280;
+}
+
+.destinations-controls .ant-slider-track {
+    background-color: #305797;
+}
+
+.destinations-controls .ant-slider-handle::after {
+    background-color: #305797;
+    box-shadow: 0 0 0 2px #305797;
+}
+
+.destinations-controls .ant-slider-handle:hover::after,
+.destinations-controls .ant-slider-handle:focus-visible::after {
+    box-shadow: 0 0 0 4px rgba(48, 87, 151, 0.3);
 }
 
 .destinations-results {
@@ -206,6 +249,11 @@
 .destinations-budget {
     font-size: 12px;
     color: #6b7280;
+}
+
+.destinations-inputs:hover,
+.destinations-inputs:focus-within {
+    border-color: #305797 !important;
 }
 
 @media (max-width: 768px) {
