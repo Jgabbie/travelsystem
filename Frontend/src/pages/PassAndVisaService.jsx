@@ -74,6 +74,15 @@ export default function PassAndVisaService() {
     return (
         <div>
             <TopNavUser />
+
+            <div className="passandvisa-hero-section">
+                <div className="passandvisa-hero-overlay"></div>
+                <div className="passandvisa-hero-content">
+                    <h1>Need some Assistance?</h1>
+                    <p>M&RC Travel and Tours is here to guide you in getting your passport or visa for your upcoming trip!</p>
+                </div>
+            </div>
+
             <div className="passport-assistance">
                 <header className='passandvisa-header'>
                     <Title level={2}>Passport and VISA Services</Title>

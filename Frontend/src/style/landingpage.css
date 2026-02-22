@@ -497,6 +497,53 @@ body {
     margin-right: 40px;
 }
 
+
+.hero-section-aboutus {
+    position: relative;
+    height: 600px;
+    background-image: url('/public/images/LandingPage2_Banner.png');
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+}
+
+.hero-overlay-aboutus {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content-aboutus {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 100px;
+}
+
+.hero-content-aboutus h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 80px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content-aboutus p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 .aboutus-text {
     font-family: "Montserrat", sans-serif;
     font-size: 16px;
@@ -506,6 +553,8 @@ body {
     margin-bottom: 20px;
     line-height: 1.7;
 }
+
+
 
 .chatbot-fab {
     position: fixed;
@@ -556,4 +605,253 @@ body {
 .chatbot-actions {
     display: flex;
     justify-content: flex-end;
+}
+
+@media (max-width: 1200px) {
+
+    .hero-content h1,
+    .hero-content-packages h1,
+    .hero-content-aboutus h1 {
+        font-size: 56px;
+    }
+
+    .hero-content p,
+    .hero-content-packages p,
+    .hero-content-aboutus p {
+        font-size: 18px;
+    }
+
+    .search-widget {
+        width: 90%;
+    }
+
+    .page-link-buttons-container {
+        gap: 60px;
+    }
+
+    .popular-packages {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 992px) {
+
+    .hero-section,
+    .hero-section-packages,
+    .hero-section-aboutus {
+        height: 520px;
+    }
+
+    .hero-content {
+        margin-bottom: 60px;
+    }
+
+    .search-widget {
+        padding: 20px;
+    }
+
+    .filter-row {
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        flex: 1 1 45%;
+        border-right: none;
+        padding-right: 0;
+    }
+
+    .page-link-buttons-container {
+        flex-wrap: wrap;
+        gap: 24px;
+        margin-top: 140px;
+    }
+
+    .explore-container {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .explore-local-packages {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .explore-local-packages-section-right img {
+        width: 100%;
+        max-width: 520px;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    .explore-local-packages-section-right Button {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .hero-section,
+    .hero-section-packages,
+    .hero-section-aboutus {
+        height: auto;
+        padding: 120px 16px 40px;
+    }
+
+    .hero-content,
+    .hero-content-packages,
+    .hero-content-aboutus {
+        margin-bottom: 24px;
+    }
+
+    .hero-content h1,
+    .hero-content-packages h1,
+    .hero-content-aboutus h1 {
+        font-size: 40px;
+    }
+
+    .hero-content p,
+    .hero-content-packages p,
+    .hero-content-aboutus p {
+        font-size: 16px;
+    }
+
+    .search-widget {
+        position: static;
+        width: 100%;
+        margin-top: 20px;
+        max-width: none;
+    }
+
+    .search-row {
+        flex-direction: column;
+    }
+
+    .search-btn {
+        width: 100%;
+        height: 44px;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .page-link-buttons-container {
+        margin-top: 40px;
+        padding-bottom: 30px;
+    }
+
+    .page-link-buttons {
+        font-size: 18px;
+        margin: 0 8px;
+    }
+
+    .packages-button {
+        width: 100%;
+        max-width: 360px;
+        height: 54px;
+        font-size: 18px;
+    }
+
+    .popular-packages {
+        margin: 20px;
+    }
+
+    .popular-packages .ant-card {
+        width: 100% !important;
+        max-width: 360px;
+    }
+
+    .popular-packages .ant-card-cover img {
+        height: 200px !important;
+        object-fit: cover;
+    }
+
+    .explore-text {
+        margin-left: 20px;
+        font-size: 28px;
+    }
+
+    .explore-local-packages {
+        margin-left: 20px;
+    }
+
+    .explore-world-section {
+        flex-direction: column;
+        gap: 16px;
+        padding: 0 20px 20px;
+    }
+
+    .explore-world-section img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 520px;
+        margin: 0 !important;
+    }
+
+    .explore-world-text {
+        margin-left: 0;
+    }
+
+    .explore-world-text-description {
+        margin-right: 0;
+    }
+
+    .aboutus-text {
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+    .chatbot-modal .ant-modal {
+        width: 90% !important;
+        right: 5%;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .hero-content h1,
+    .hero-content-packages h1,
+    .hero-content-aboutus h1 {
+        font-size: 32px;
+    }
+
+    .hero-content p,
+    .hero-content-packages p,
+    .hero-content-aboutus p {
+        font-size: 14px;
+    }
+
+    .search-widget {
+        padding: 16px;
+    }
+
+    .page-link-buttons {
+        font-size: 16px;
+    }
+
+    .popular-packages-text {
+        font-size: 26px;
+        margin: 20px;
+    }
+
+    .explore-text {
+        font-size: 24px;
+    }
+
+    .explore-local-packages-section-right Button {
+        width: 160px;
+        height: 44px;
+    }
+
+    .chatbot-fab {
+        right: 16px;
+        bottom: 16px;
+        height: 44px;
+        padding: 0 16px;
+    }
 }

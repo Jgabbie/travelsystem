@@ -150,10 +150,16 @@ export default function DestinationsPackages() {
     return (
         <div>
             <TopNavUser />
+
+            <div className="destinations-hero-section">
+                <div className="destinations-hero-overlay"></div>
+                <div className="destinations-hero-content">
+                    <h1>Find your destination</h1>
+                    <p>Discover affordable packages and explore around the world by setting you preferrences!</p>
+                </div>
+            </div>
+
             <div className="destinations-page">
-
-                {/* addimage */}
-
                 <header className="destinations-header">
                     <Title level={2}>Destinations & Packages</Title>
                     <Text type="secondary">

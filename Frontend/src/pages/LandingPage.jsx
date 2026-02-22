@@ -367,7 +367,20 @@ export default function LandingPage() {
 
             <div ref={aboutusRef} style={{ paddingTop: '100px', marginTop: '50px' }}>
                 <div className='explore-container'>
+
+
                     <div className='explore-local-packages-section'>
+
+                        <div className="hero-section-aboutus">
+                            <div className="hero-overlay-aboutus"></div>
+                            <div className="hero-content-aboutus">
+                                <h1>M&RC Travel and Tours</h1>
+                                <p>
+                                    Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
+                                </p>
+                            </div>
+                        </div>
+
                         <h1 className='explore-text'>About Us</h1>
 
                         <p className='aboutus-text'>

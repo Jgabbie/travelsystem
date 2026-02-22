@@ -49,7 +49,7 @@ export default function UserBookings() {
             bookingType: details.packageType
                 ? `${details.packageType.charAt(0).toUpperCase()}${details.packageType.slice(1)}`
                 : '--',
-            status: booking.status || 'pending'
+            status: booking.status || 'Complete'
         }
     }), [bookings])
 
