@@ -44,6 +44,47 @@
     font-size: 16px;
 }
 
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.nav-buttonlinks-group {
+    display: flex;
+    align-items: center;
+    gap: 45px;
+    margin-right: 50px;
+}
+
+.nav-buttonlinks.ant-btn-link {
+    padding: 0;
+    height: auto;
+    line-height: 1;
+    letter-spacing: 0.4px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    color: #2b4f8f;
+    margin-left: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-buttonlinks.ant-btn-link:hover,
+.nav-buttonlinks.ant-btn-link:focus-visible {
+    color: #992A46 !important;
+    transform: translateY(-1px);
+}
+
+.nav-buttonlinks--active.ant-btn-link {
+    color: #992A46 !important;
+    text-decoration: underline;
+    text-underline-offset: 6px;
+}
+
+.dropdown-div {
+    margin-bottom: 3px;
+}
+
 .landing-label-links {
     font-size: 18px;
     font-weight: 600;
@@ -60,7 +101,8 @@
     padding-right: 22px;
 }
 
-.landing-button-links:hover {
+.landing-button-links:hover,
+.nav-buttonlinks.ant-btn-link:hover {
     text-decoration: underline;
     color: #992A46 !important;
     border-width: 0px !important;
@@ -183,6 +225,12 @@
     font-size: 14px;
     border-radius: 8px;
     height: 38px;
+}
+
+.logout-cancel-btn:hover,
+.logout-cancel-btn:focus-visible {
+    border-color: #305797 !important;
+    color: #305797 !important;
 }
 
 .logout-confirm-btn {

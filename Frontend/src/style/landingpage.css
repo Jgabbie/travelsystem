@@ -287,11 +287,15 @@ body {
     font-size: 24px;
     color: #0056b3;
     text-decoration: none;
+    border-width: 0px !important;
 }
 
 .page-link-buttons:hover {
     color: #0056b3 !important;
+    border-width: 0px !important;
+    text-decoration: underline;
 }
+
 
 .hero-section-packages {
     position: relative;

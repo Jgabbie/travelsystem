@@ -12,23 +12,31 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    top: 60px;
+    top: 115px;
+}
+
+#login-container-modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 600px;
 }
 
 #login-heading-modal {
     font-family: "Montserrat", sans-serif;
-    font-size: 45px;
+    font-size: 55px;
     font-weight: 600;
     color: #305797;
     line-height: 10px;
     width: 550px;
     margin-bottom: 30px;
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 #login-secondary-heading-modal {
     font-family: "Montserrat", sans-serif;
-    font-size: 20px;
+    font-size: 30px;
     font-weight: 500;
     color: #305797;
     margin-top: 3px;
@@ -46,12 +54,12 @@ body {
 
 .login-input-fields-modal:hover {
     border-color: #305797;
-    border-width: 2px;
+    border-width: 1px;
 }
 
 .login-input-fields-modal:focus-within {
     border-color: #305797 !important;
-    border-width: 2px !important;
+    border-width: 1px !important;
 }
 
 .ant-input-password input {
@@ -61,7 +69,7 @@ body {
 }
 
 .ant-input-status-error {
-    border-width: 2px !important;
+    border-width: 1px !important;
 }
 
 .login-labels-modal {
@@ -104,6 +112,17 @@ body {
 .login-button-links-modal:hover {
     text-decoration: underline;
     color: #992A46 !important;
+    border: "none" !important;
+}
+
+.login-button-links-modal.ant-btn {
+    border: none !important;
+}
+
+.login-button-links-modal.ant-btn:hover,
+.login-button-links-modal.ant-btn:focus {
+    border: none !important;
+    box-shadow: none !important;
 }
 
 #login-button-modal {
@@ -134,5 +153,6 @@ body {
 
 #login-error-message-modal {
     color: #ff0000;
-    width: 500px;
+    width: 555px;
+    text-align: left;
 }

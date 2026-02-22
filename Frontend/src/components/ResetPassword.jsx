@@ -17,6 +17,7 @@ export default function ResetPassword() {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
+    //otp modal timer effect
     useEffect(() => {
         let interval = null
         if (timer > 0) {

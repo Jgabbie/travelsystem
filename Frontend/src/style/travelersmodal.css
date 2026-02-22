@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.travelers-modal .ant-modal-content {
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.travelers-modal .ant-modal {
+    top: 0;
+}
+
+.travelers-modal .ant-modal-body {
+    padding: 15px 0 0;
+}
+
+.travelers-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.travelers-title {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    color: #1f2a44;
+}
+
+.travelers-header {
+    display: flex;
+    justify-content: space-between;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.travelers-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.traveler-card {
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.traveler-card h3 {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    color: #1f2a44;
+}
+
+.traveler-card p {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.traveler-counter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.traveler-counter button {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #305797;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.traveler-counter span {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #1f2a44;
+    min-width: 24px;
+    text-align: center;
+}
+
+.travelers-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.travelers-proceed {
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.travelers-cancel {
+    background-color: #992A46 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+@media (max-width: 600px) {
+    .travelers-header {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

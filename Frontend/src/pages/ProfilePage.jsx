@@ -26,56 +26,8 @@ export default function ProfilePage() {
         phone: ''
     });
 
-    const recentReviews = [
-        {
-            _id: 'rev-1',
-            title: 'El Nido Island Hopping',
-            date: 'Jan 22, 2026',
-            snippet: 'Amazing tour guides and crystal-clear water. Highly recommended!',
-            rating: 5
-        },
-        {
-            _id: 'rev-2',
-            title: 'Baguio City Weekend',
-            date: 'Jan 10, 2026',
-            snippet: 'Cool weather, great food, and smooth booking experience.',
-            rating: 4
-        },
-        {
-            _id: 'rev-3',
-            title: 'Bohol Countryside Tour',
-            date: 'Dec 28, 2025',
-            snippet: 'Loved the Chocolate Hills and river cruise. Worth every peso.',
-            rating: 5
-        }
-    ]
-
-    const recentBookings = [
-        {
-            _id: 'book-1',
-            title: 'Cebu City Heritage Tour',
-            date: 'Feb 1, 2026',
-            status: 'Confirmed',
-            amount: '₱3,500',
-            reference: 'BK-10231'
-        },
-        {
-            _id: 'book-2',
-            title: 'Siargao Surf Adventure',
-            date: 'Jan 18, 2026',
-            status: 'Pending',
-            amount: '₱6,200',
-            reference: 'BK-10189'
-        },
-        {
-            _id: 'book-3',
-            title: 'Vigan Day Trip',
-            date: 'Dec 30, 2025',
-            status: 'Completed',
-            amount: '₱2,400',
-            reference: 'BK-10102'
-        }
-    ]
+    const [recentReviews, setRecentReviews] = useState([])
+    const [recentBookings, setRecentBookings] = useState([])
 
     //proper case function
     const toProperCase = (value) =>
@@ -137,6 +89,8 @@ export default function ProfilePage() {
     // Fetch user data on component mount
     useEffect(() => {
         fetchUserData()
+        fetchRecentBookings()
+        fetchRecentReviews()
     }, [])
 
     const fetchUserData = async () => {
@@ -172,6 +126,69 @@ export default function ProfilePage() {
             message.error('Error loading profile')
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchRecentBookings = async () => {
+        try {
+            const response = await axiosInstance.get('/booking/my-bookings', {
+                withCredentials: true
+            })
+            const bookings = (response.data || []).slice(0, 3).map((booking) => {
+                const details = booking.bookingDetails || {}
+                const travelDate = details.travelDate
+                const date = travelDate
+                    ? new Date(travelDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    })
+                    : 'Recently'
+                const packageType = details.packageType || ''
+                const statusRaw = booking.status || 'pending'
+                const status = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1)
+
+                return {
+                    _id: booking._id,
+                    title: details.packageName || 'Package',
+                    date,
+                    status,
+                    packageType: packageType ? `${packageType.charAt(0).toUpperCase()}${packageType.slice(1)}` : '--',
+                    reference: booking.reference || 'BK-00000'
+                }
+            })
+            setRecentBookings(bookings)
+        } catch (error) {
+            setRecentBookings([])
+        }
+    }
+
+    const fetchRecentReviews = async () => {
+        try {
+            const response = await axiosInstance.get('/rating/my-ratings', {
+                withCredentials: true
+            })
+            const reviews = (response.data || []).slice(0, 3).map((rating) => {
+                const pkg = rating.packageId || {}
+                const date = rating.createdAt
+                    ? new Date(rating.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    })
+                    : 'Recently'
+
+                return {
+                    _id: rating._id,
+                    title: pkg.packageName || 'Package',
+                    date,
+                    snippet: rating.review || 'View review details.',
+                    rating: rating.rating || 0
+                }
+            })
+            setRecentReviews(reviews)
+        } catch (error) {
+            setRecentReviews([])
         }
     }
 
@@ -317,7 +334,7 @@ export default function ProfilePage() {
                                                     {booking?.status || 'Pending'}
                                                 </span>
                                             </div>
-                                            <p className="profile-booking-details">Ref: {booking?.reference || 'BK-00000'} • {booking?.amount || '₱0'}</p>
+                                            <p className="profile-booking-details">Ref: {booking?.reference || 'BK-00000'} • {booking?.packageType} Booking</p>
                                         </div>
                                     ))}
                                 </div>

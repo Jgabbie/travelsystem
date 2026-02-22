@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
 
                 const { user } = res.data;
                 setAuth({
+                    id: user.id,
                     username: user.username,
                     role: user.role
                 });

@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.arrangement-modal .ant-modal-content {
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.arrangement-modal .ant-modal-body {
+    padding: 15px 0 0;
+}
+
+.arrangement-content {
+    padding-top: 6px;
+}
+
+.arrangement-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.arrangement-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.arrangement-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 16px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.arrangement-card h3 {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #1f2a44;
+}
+
+.arrangement-card p {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.arrangement-card.is-selected {
+    border-color: #305797;
+    box-shadow: 0 8px 18px rgba(48, 87, 151, 0.18);
+}
+
+.arrangement-image {
+    width: 100%;
+    height: 140px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e0e7ff, #f9fafb);
+    border: 1px solid #e5e7eb;
+}
+
+.arrangement-image.all-in {
+    background-image: url('/public/images/allinpackage.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.arrangement-image.land {
+    background-image: url('/public/images/landarrangement.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.arrangement-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.arrangement-proceed {
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.arrangement-cancel {
+    background-color: #992A46 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+@media (max-width: 768px) {
+    .arrangement-cards {
+        grid-template-columns: 1fr;
+    }
+}

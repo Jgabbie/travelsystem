@@ -1,86 +1,84 @@
-import React, { useMemo, useState } from 'react'
-import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message } from 'antd'
 import '../style/wishlist.css'
 import TopNavUser from '../components/TopNavUser'
-
-const FAKE_PACKAGES = [
-    {
-        id: 1,
-        title: 'Bohol Beach Escape',
-        location: 'Bohol',
-        duration: '3D2N',
-        price: 6499,
-        rating: 4.7,
-        category: 'Beach',
-        availability: 'Available',
-    },
-    {
-        id: 2,
-        title: 'Sagada Mountain Retreat',
-        location: 'Sagada',
-        duration: '4D3N',
-        price: 7999,
-        rating: 4.8,
-        category: 'Mountain',
-        availability: 'Few slots',
-    },
-    {
-        id: 3,
-        title: 'Ilocos Heritage Tour',
-        location: 'Ilocos',
-        duration: '2D1N',
-        price: 3999,
-        rating: 4.4,
-        category: 'City',
-        availability: 'Available',
-    },
-    {
-        id: 4,
-        title: 'Siargao Surf Weekend',
-        location: 'Siargao',
-        duration: '3D2N',
-        price: 8999,
-        rating: 4.9,
-        category: 'Beach',
-        availability: 'Sold out',
-    },
-    {
-        id: 5,
-        title: 'Cebu Foodie City Walk',
-        location: 'Cebu',
-        duration: '1D',
-        price: 2299,
-        rating: 4.2,
-        category: 'City',
-        availability: 'Available',
-    },
-    {
-        id: 6,
-        title: 'Baguio Cool Weather Getaway',
-        location: 'Baguio',
-        duration: '2D1N',
-        price: 3599,
-        rating: 4.5,
-        category: 'Mountain',
-        availability: 'Few slots',
-    },
-]
+import { useNavigate } from 'react-router-dom'
+import axiosInstance from '../config/axiosConfig'
 
 export default function Wishlist() {
+    const navigate = useNavigate()
     const [search, setSearch] = useState('')
     const [category, setCategory] = useState('All')
     const [availability, setAvailability] = useState('All')
     const [priceRange, setPriceRange] = useState('All')
+    const [wishlistItems, setWishlistItems] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
 
     const { Title, Text } = Typography
 
+    useEffect(() => {
+        const loadWishlist = async () => {
+            try {
+                setIsLoading(true)
+                const response = await axiosInstance.get('/wishlist')
+                const wishlist = response?.data?.wishlist || []
+                setWishlistItems(wishlist)
+            } catch (error) {
+                const errorMessage =
+                    error?.response?.data?.message || 'Unable to load wishlist.'
+                message.error(errorMessage)
+                setWishlistItems([])
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        loadWishlist()
+    }, [])
+
+    const wishlistPackages = useMemo(() => {
+        return wishlistItems.map((entry) => {
+            const pkg = entry?.packageId || {}
+            const availableSlots = Number(pkg.packageAvailableSlots || 0)
+            const availabilityLabel =
+                availableSlots <= 0
+                    ? 'Sold out'
+                    : availableSlots <= 5
+                        ? 'Few slots'
+                        : 'Available'
+
+            return {
+                wishlistId: entry._id,
+                packageId: pkg._id || entry.packageId,
+                title: pkg.packageName || 'Package',
+                location: pkg.packageCode || pkg.packageType || 'Package',
+                duration: pkg.packageDuration ? `${pkg.packageDuration} DAYS` : 'N/A',
+                price: pkg.packagePricePerPax ?? 0,
+                category: pkg.packageType || 'Other',
+                availability: availabilityLabel,
+                typeLabel: pkg.packageType || 'Package'
+            }
+        })
+    }, [wishlistItems])
+
+    const categoryOptions = useMemo(() => {
+        const categories = Array.from(
+            new Set(wishlistPackages.map((pkg) => pkg.category).filter(Boolean))
+        )
+        return [
+            { value: 'All', label: 'All' },
+            ...categories.map((value) => ({ value, label: value }))
+        ]
+    }, [wishlistPackages])
+
     const filteredPackages = useMemo(() => {
         const query = search.trim().toLowerCase()
-        return FAKE_PACKAGES.filter((pkg) => {
+        return wishlistPackages.filter((pkg) => {
             const matchesQuery =
                 query.length === 0 ||
                 pkg.title.toLowerCase().includes(query) ||
-                pkg.location.toLowerCase().includes(query)
+                pkg.location.toLowerCase().includes(query) ||
+                pkg.category.toLowerCase().includes(query)
 
             const matchesCategory = category === 'All' || pkg.category === category
             const matchesAvailability =
@@ -96,7 +94,25 @@ export default function Wishlist() {
 
             return matchesQuery && matchesCategory && matchesAvailability && matchesPrice
         })
-    }, [search, category, availability, priceRange])
+    }, [search, category, availability, priceRange, wishlistPackages])
+
+    const handleRemove = async (packageId) => {
+        if (!packageId) return
+        try {
+            await axiosInstance.delete('/wishlist/remove', { data: { packageId } })
+            setWishlistItems((prev) =>
+                prev.filter((entry) => {
+                    const entryPackageId = entry?.packageId?._id || entry?.packageId
+                    return entryPackageId !== packageId
+                })
+            )
+            message.success('Removed from wishlist')
+        } catch (error) {
+            const errorMessage =
+                error?.response?.data?.message || 'Unable to remove wishlist item.'
+            message.error(errorMessage)
+        }
+    }
 
     return (
         <div>
@@ -125,12 +141,7 @@ export default function Wishlist() {
                                 <Select
                                     value={category}
                                     onChange={(value) => setCategory(value)}
-                                    options={[
-                                        { value: 'All', label: 'All' },
-                                        { value: 'Beach', label: 'Beach' },
-                                        { value: 'Mountain', label: 'Mountain' },
-                                        { value: 'City', label: 'City' },
-                                    ]}
+                                    options={categoryOptions}
                                 />
                             </div>
                         </Col>
@@ -175,14 +186,18 @@ export default function Wishlist() {
                         <Text type="secondary">{filteredPackages.length} found</Text>
                     </div>
 
-                    {filteredPackages.length === 0 ? (
+                    {isLoading ? (
+                        <div className="wishlist-empty">
+                            <Empty description="Loading wishlist..." />
+                        </div>
+                    ) : filteredPackages.length === 0 ? (
                         <div className="wishlist-empty">
                             <Empty description="No packages match your filters right now." />
                         </div>
                     ) : (
                         <Row gutter={[18, 18]}>
                             {filteredPackages.map((pkg) => (
-                                <Col xs={24} sm={12} lg={8} key={pkg.id}>
+                                <Col xs={24} sm={12} lg={8} key={pkg.wishlistId || pkg.packageId}>
                                     <Card className="wishlist-card" hoverable>
                                         <div className="wishlist-card-header">
                                             <div>
@@ -193,7 +208,7 @@ export default function Wishlist() {
                                                     {pkg.location}
                                                 </Text>
                                             </div>
-                                            <Tag className="wishlist-rating">⭐ {pkg.rating}</Tag>
+                                            <Tag className="wishlist-rating">{pkg.typeLabel}</Tag>
                                         </div>
                                         <div className="wishlist-card-meta">
                                             <Text type="secondary">{pkg.duration}</Text>
@@ -203,9 +218,22 @@ export default function Wishlist() {
                                         </div>
                                         <div className="wishlist-card-footer">
                                             <Text className="wishlist-price">
-                                                ₱{pkg.price.toLocaleString()}
+                                                ₱{Number(pkg.price || 0).toLocaleString()}
                                             </Text>
-                                            <Button type="primary">View details</Button>
+                                            <div className="wishlist-card-actions">
+                                                <Button
+                                                    type="primary"
+                                                    onClick={() => navigate(`/package/${pkg.packageId}`)}
+                                                >
+                                                    View details
+                                                </Button>
+                                                <Button
+                                                    className="wishlist-remove-button"
+                                                    onClick={() => handleRemove(pkg.packageId)}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </div>
                                         </div>
                                     </Card>
                                 </Col>

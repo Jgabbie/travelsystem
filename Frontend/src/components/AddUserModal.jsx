@@ -53,7 +53,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         }
     }, [isOpen, roleToAdd]);
 
-    //proper case function
+    //proper casing function, first letter is capitalized for each name
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -113,12 +113,14 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         return "";
     };
 
+    //handles input changes and the validations
     const valueHandler = (field, value) => {
         const updatedValues = { ...values, [field]: value };
         setValues(updatedValues);
         setError({ ...error, [field]: validate(field, value, updatedValues) });
     };
 
+    //if role is changed to Admin, remove password fields
     const handleRoleChange = (roleValue) => {
         const updatedValues = {
             ...values,
@@ -134,6 +136,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         });
     };
 
+    //add user
     const handleCreate = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -169,6 +172,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         }
     };
 
+    // validate the fields before submitting
     const validateAll = () => {
         const fields = ['role', 'username', 'firstname', 'lastname', 'email', 'phone'];
         if (values.role !== 'Admin') {
@@ -187,6 +191,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         return !hasError;
     };
 
+    // form submit handler
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!validateAll()) return;

@@ -8,6 +8,7 @@ export default function Auditing() {
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
 
+    //get audit logs from backend and map to state
     useEffect(() => {
         const fetchLogs = async () => {
             try {
@@ -24,6 +25,9 @@ export default function Auditing() {
         fetchLogs();
     }, []);
 
+    //use memo - code only runs when logs changes
+    //filters the logs by action
+    //this just basically gets the unique actions for better filtering like "CREATE_USER", "DELETE_PACKAGE", etc.
     const actionFilters = useMemo(() => {
         const uniqueActions = Array.from(new Set(logs.map((log) => log.action))).filter(Boolean);
         return uniqueActions.map((action) => ({ text: action, value: action }));
@@ -39,6 +43,7 @@ export default function Auditing() {
         );
     });
 
+    //columns for the audit logs table
     const columns = [
         {
             title: 'Date',
@@ -111,6 +116,7 @@ export default function Auditing() {
             <Input
                 placeholder="Search logs by action, username, or email..."
                 prefix={<SearchOutlined />}
+                className="logs-search-input"
                 style={{ marginBottom: 20, width: 300 }}
                 onChange={(e) => setSearchText(e.target.value)}
             />

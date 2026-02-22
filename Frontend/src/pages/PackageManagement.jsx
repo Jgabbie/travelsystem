@@ -1,4 +1,4 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message } from "antd";
 import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "../style/packages.css";
@@ -22,13 +22,35 @@ export default function PackageManagement() {
   }
 
   const removePackage = async (id) => {
-    try {
-      const response = await axiosInstance.delete(`/package/remove-package/${id}`);
-      console.log("Package removed:", response.data);
-      getPackages();
-    } catch (error) {
-      console.error("Error removing package:", error);
-    }
+    Modal.confirm({
+      className: "logout-confirm-modal",
+      icon: null,
+      title: (
+        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+          Confirm Delete
+        </div>
+      ),
+      content: (
+        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+          <p className="logout-confirm-text">Are you sure you want to delete this package?</p>
+        </div>
+      ),
+      okText: "Delete",
+      cancelText: "Cancel",
+      okButtonProps: { className: "logout-confirm-btn" },
+      cancelButtonProps: { className: "logout-cancel-btn" },
+      onOk: async () => {
+        try {
+          const response = await axiosInstance.delete(`/package/remove-package/${id}`);
+          console.log("Package removed:", response.data);
+          message.success("Package removed successfully");
+          getPackages();
+        } catch (error) {
+          console.error("Error removing package:", error);
+          message.error("Package removed unsuccessfully");
+        }
+      }
+    });
   }
 
   const getPackages = async () => {
@@ -100,14 +122,24 @@ export default function PackageManagement() {
       {packagesData.length > 0 ? packagesData.map(pkg => (
         <Card key={pkg._id} className="package-card">
           <div className="package-container">
-            <div className="package-info">
-              <h3 className="package-name">{pkg.packageName}</h3>
-              <h3 className="package-code">{pkg.packageCode}</h3>
-              <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+            <div className="package-media">
+              {pkg.image ? (
+                <img className="package-image" src={pkg.image} alt={pkg.packageName} />
+              ) : (
+                <div className="package-image-placeholder">No Image</div>
+              )}
             </div>
 
-            <p className="package-description">{pkg.packageDescription}</p>
-            <h1 className="package-available-slots">Available Slots: {pkg.packageAvailableSlots}</h1>
+            <div className="package-details">
+              <div className="package-info">
+                <h3 className="package-name">{pkg.packageName}</h3>
+                <h3 className="package-code">{pkg.packageCode}</h3>
+                <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+              </div>
+
+              <p className="package-description">{pkg.packageDescription}</p>
+              <h1 className="package-available-slots">Available Slots: {pkg.packageAvailableSlots}</h1>
+            </div>
 
           </div>
 
@@ -133,20 +165,45 @@ export default function PackageManagement() {
         footer={null}
         open={isModalOpen}
         onCancel={() => { handleCancel() }}
+        className="package-details-modal"
+        width={820}
       >
-        <h1>{pkg.packageName}</h1>
-        <h2>{pkg.packageCode}</h2>
+        <div className="package-details-modal-header">
+          <div>
+            <p className="package-details-code">{pkg.packageCode}</p>
+            <h2 className="package-details-title">{pkg.packageName}</h2>
+          </div>
+          <div className="package-details-price">₱{pkg.packagePricePerPax} / pax</div>
+        </div>
 
-        <p>{pkg.packageDescription}</p>
-        <p>Price per Pax: ₱{pkg.packagePricePerPax}</p>
-        <p>Available Slots: {pkg.packageAvailableSlots}</p>
-        <p>Package Type: {pkg.packageType?.toUpperCase()}</p>
-        <p>Duration: {pkg.packageDuration} days</p>
-      </Modal>
+        <div className="package-details-body">
+          <div className="package-details-media">
+            {pkg.image ? (
+              <img className="package-details-image" src={pkg.image} alt={pkg.packageName} />
+            ) : (
+              <div className="package-details-image-placeholder">No Image</div>
+            )}
+          </div>
 
+          <div className="package-details-content">
+            <p className="package-details-description">{pkg.packageDescription}</p>
 
-      <Modal>
-
+            <div className="package-details-stats">
+              <div className="package-details-stat">
+                <span className="package-details-label">Available Slots</span>
+                <span className="package-details-value">{pkg.packageAvailableSlots}</span>
+              </div>
+              <div className="package-details-stat">
+                <span className="package-details-label">Package Type</span>
+                <span className="package-details-value">{pkg.packageType?.toUpperCase()}</span>
+              </div>
+              <div className="package-details-stat">
+                <span className="package-details-label">Duration</span>
+                <span className="package-details-value">{pkg.packageDuration} days</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </Modal>
     </div>
   );

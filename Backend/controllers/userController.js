@@ -1,4 +1,5 @@
 const UserModel = require('../models/user');
+const ArchivedUserModel = require('../models/archivedusers');
 const bcrypt = require("bcryptjs");
 const logAction = require('../utils/logger');
 
@@ -183,15 +184,51 @@ const createUsers = async (req, res) => {
     }
 };
 
-const delUsers = (req, res) => {
-    const { id } = req.params;
+const delUsers = async (req, res) => {
+    const { id } = req.body;
 
-    UserModel.findByIdAndDelete(id)
-        .then(user => res.json(user))
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ error: err.message })
+    if (!id) {
+        return res.status(400).json({ message: "User id is required" });
+    }
+
+    try {
+        const user = await UserModel.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        await ArchivedUserModel.create({
+            originalUserId: user._id,
+            username: user.username,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+            hashedPassword: user.hashedPassword,
+            phone: user.phone,
+            profileImage: user.profileImage,
+            role: user.role,
+            isAccountVerified: user.isAccountVerified
         });
+
+        await UserModel.findByIdAndDelete(id);
+
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        await logAction(
+            "ADMIN_DELETED_USER",
+            req.userId || null,
+            {
+                deletedUserId: user._id,
+                deletedUsername: user.username
+            },
+            ip
+        );
+
+        res.json({ message: "User archived and deleted", userId: user._id });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
 };
 
 module.exports = { getUsers, createUsers, delUsers, getUserData, updateUserData };

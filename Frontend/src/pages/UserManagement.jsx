@@ -4,6 +4,8 @@ import {
   Input,
   Select,
   Button,
+  Form,
+  Modal,
   Tag,
   Space,
   Dropdown,
@@ -32,6 +34,8 @@ import "../style/users.css";
 
 export default function UserManagement() {
 
+  const [form] = Form.useForm();
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -40,6 +44,7 @@ export default function UserManagement() {
 
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [editingKey, setEditingKey] = useState("");
 
   // ================= FETCH USERS =================
 
@@ -76,21 +81,39 @@ export default function UserManagement() {
   // ================= DELETE =================
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this user?")) return;
-
-    try {
-      await axios.delete(
-        `http://localhost:8000/api/user/deleteUsers`,
-        {
-          data: { id },
-          withCredentials: true
+    Modal.confirm({
+      className: "logout-confirm-modal",
+      icon: null,
+      title: (
+        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+          Confirm Delete
+        </div>
+      ),
+      content: (
+        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+          <p className="logout-confirm-text">Are you sure you want to delete this user?</p>
+        </div>
+      ),
+      okText: "Delete",
+      cancelText: "Cancel",
+      okButtonProps: { className: "logout-confirm-btn" },
+      cancelButtonProps: { className: "logout-cancel-btn" },
+      onOk: async () => {
+        try {
+          await axios.delete(
+            `http://localhost:8000/api/user/deleteUsers`,
+            {
+              data: { id },
+              withCredentials: true
+            }
+          );
+          message.success("User deleted");
+          getUsers();
+        } catch {
+          message.error("Delete failed");
         }
-      );
-      message.success("User deleted");
-      getUsers();
-    } catch {
-      message.error("Delete failed");
-    }
+      }
+    });
   };
 
   // ================= FILTERS =================
@@ -108,15 +131,82 @@ export default function UserManagement() {
     return matchesSearch && matchesRole;
   });
 
+  const isEditing = (record) => record.key === editingKey;
+
+  const edit = (record) => {
+    form.setFieldsValue({
+      name: record.name,
+      username: record.username,
+      role: record.role
+    });
+    setEditingKey(record.key);
+  };
+
+  const cancel = () => {
+    setEditingKey("");
+  };
+
+  const save = async (key) => {
+    try {
+      const row = await form.validateFields();
+      const newData = [...users];
+      const index = newData.findIndex((item) => item.key === key);
+
+      if (index > -1) {
+        Modal.confirm({
+          className: "logout-confirm-modal",
+          icon: null,
+          title: (
+            <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+              Confirm Changes
+            </div>
+          ),
+          content: (
+            <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+              <p className="logout-confirm-text">Are you sure about these changes?</p>
+            </div>
+          ),
+          okText: "Save",
+          cancelText: "Cancel",
+          okButtonProps: { className: "logout-confirm-btn" },
+          cancelButtonProps: { className: "logout-cancel-btn" },
+          onOk: async () => {
+            try {
+              await axios.put(
+                `http://localhost:8000/api/admin/editUser/${key}`,
+                {
+                  username: row.username,
+                  name: row.name,
+                  role: row.role
+                },
+                { withCredentials: true }
+              );
+              const item = newData[index];
+              newData.splice(index, 1, { ...item, ...row });
+              setUsers(newData);
+              setEditingKey("");
+              message.success("User updated");
+            } catch (err) {
+              message.error(err?.response?.data?.message || "Update failed");
+            }
+          }
+        });
+      }
+    } catch {
+      message.error("Please fix validation errors");
+    }
+  };
+
   // ================= TABLE =================
 
   const columns = [
-    { title: "Name", dataIndex: "name" },
-    { title: "Username", dataIndex: "username" },
+    { title: "Name", dataIndex: "name", editable: true },
+    { title: "Username", dataIndex: "username", editable: true },
     { title: "Email", dataIndex: "email" },
     {
       title: "Role",
       dataIndex: "role",
+      editable: true,
       render: role => (
         <Tag color={role === "Admin" ? "purple" : "blue"}>{role}</Tag>
       )
@@ -132,16 +222,99 @@ export default function UserManagement() {
       title: "Actions",
       render: (_, record) => (
         <Space>
-          <Button className='editbutton-usermanagement' type="primary" icon={<EditOutlined />} />
-          <Button className='deletebutton-usermanagement'
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-          />
+          {isEditing(record) ? (
+            <>
+              <Button
+                className='savebutton-usermanagement'
+                type="primary"
+                onClick={() => save(record.key)}
+              >
+                Save
+              </Button>
+              <Button className='cancelbutton-usermanagement' onClick={cancel}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                className='editbutton-usermanagement'
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => edit(record)}
+                disabled={editingKey !== ""}
+              />
+              <Button
+                className='deletebutton-usermanagement'
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(record.id)}
+                disabled={editingKey !== ""}
+              />
+            </>
+          )}
         </Space>
       )
     }
   ];
+
+  const mergedColumns = columns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+
+    const inputType = col.dataIndex === "role" ? "select" : "text";
+
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType,
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record)
+      })
+    };
+  });
+
+  const EditableCell = ({
+    editing,
+    dataIndex,
+    inputType,
+    record,
+    children,
+    ...restProps
+  }) => {
+    let inputNode = <Input />;
+
+    if (inputType === "select") {
+      inputNode = (
+        <Select
+          className="user-edit-select"
+          options={[
+            { value: "Admin", label: "Admin" },
+            { value: "User", label: "User" }
+          ]}
+        />
+      );
+    }
+
+    return (
+      <td {...restProps}>
+        {editing ? (
+          <Form.Item
+            name={dataIndex}
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: `Please enter ${dataIndex}` }]}
+          >
+            {inputNode}
+          </Form.Item>
+        ) : (
+          children
+        )}
+      </td>
+    );
+  };
 
 
   const totalUsers = users.length;
@@ -197,6 +370,7 @@ export default function UserManagement() {
         />
 
         <Select
+          className='user-select'
           placeholder="Role"
           style={{ width: 140 }}
           allowClear
@@ -208,9 +382,6 @@ export default function UserManagement() {
           ]}
         />
 
-        <Button onClick={getUsers}>Refresh</Button>
-
-
         <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>
           Add User
         </Button>
@@ -219,12 +390,20 @@ export default function UserManagement() {
       </div>
 
       <Card style={{ marginTop: 20 }}>
-        <Table
-          loading={loading}
-          columns={columns}
-          dataSource={filteredUsers}
-          pagination={{ pageSize: 6 }}
-        />
+        <Form form={form} component={false}>
+          <Table
+            components={{
+              body: {
+                cell: EditableCell
+              }
+            }}
+            loading={loading}
+            columns={mergedColumns}
+            dataSource={filteredUsers}
+            pagination={{ pageSize: 6 }}
+            rowClassName="editable-row"
+          />
+        </Form>
       </Card>
 
       <AddUserModal

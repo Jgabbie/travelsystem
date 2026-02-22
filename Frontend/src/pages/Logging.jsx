@@ -111,6 +111,7 @@ export default function Logging() {
             <Input
                 placeholder="Search logs by action, username, or email..."
                 prefix={<SearchOutlined />}
+                className="logs-search-input"
                 style={{ marginBottom: 20, width: 300 }}
                 onChange={(e) => setSearchText(e.target.value)}
             />

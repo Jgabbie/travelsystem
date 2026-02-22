@@ -64,7 +64,7 @@ const loginUser = async (req, res) => {
             return res.status(403).json({ message: "Account is not verified", email: user.email })
         }
 
-        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '15m' })
+        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '2h' })
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
 
         user.refreshToken = refreshToken
@@ -74,7 +74,7 @@ const loginUser = async (req, res) => {
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
-            maxAge: 15 * 60 * 60 * 1000
+            maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
@@ -83,9 +83,6 @@ const loginUser = async (req, res) => {
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
-
-        // --- UPDATED LOGGING LOGIC ---
-        //const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
         // Check role to determine action name
         //LOG SUCCESSFUL LOGIN
@@ -121,13 +118,13 @@ const refreshToken = async (req, res) => {
             return res.status(403).json({ message: "Invalid refresh token" });
         }
 
-        const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '15m' });
+        const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '2h' });
 
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
-            maxAge: 15 * 60 * 60 * 1000
+            maxAge: 2 * 60 * 60 * 1000
         });
 
         res.status(200).json({ message: "Access token refreshed" });

@@ -1,19 +1,29 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import '../style/landingpage.css'
-import { Button, Dropdown, Space, Card, Spin, Modal } from 'antd';
+import { Button, Card } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import { useAuth } from '../hooks/useAuth';
-import useRefreshToken from '../hooks/useRefreshToken';
-import { useNavigate } from 'react-router-dom';
 import TopNavUser from '../components/TopNavUser';
+import LoginModal from '../components/LoginModal';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 export default function LandingPage() {
-    const refresh = useRefreshToken();
+    const navigate = useNavigate()
+    const { auth } = useAuth()
 
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
 
     const [budget, setBudget] = useState(16000);
+    const [isLoginVisible, setIsLoginVisible] = useState(false)
+
+    const handleBrowsePackages = () => {
+        if (auth) {
+            navigate('/destinations-packages')
+            return
+        }
+        setIsLoginVisible(true)
+    }
 
     return (
         <div className="landing-container">
@@ -106,7 +116,7 @@ export default function LandingPage() {
                         <p>
                             Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
                         </p>
-                        <Button className='packages-button' onClick={() => { refresh() }}>BROWSE TOUR PACKAGES</Button>
+                        <Button className='packages-button' onClick={handleBrowsePackages}>BROWSE TOUR PACKAGES</Button>
                     </div>
                 </div>
 
@@ -122,15 +132,15 @@ export default function LandingPage() {
                             <img style={{ height: 250 }}
                                 draggable={false}
                                 alt="example"
-                                src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
+                                src="https://japanspecialist.com/o/adaptive-media/image/3834410/big/4_Nagoya.jpg?t=1756118459754"
                             />
                         }
                     >
                         <h2>
-                            Travel and Tour Package
+                            Nagoya Tour Package
                         </h2>
                         <p>
-                            Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet, lectus velit tempus lectus, ac molestie purus lorem at sem.
+                            Explore the perfect balance of tradition and modern life in Nagoya, Japan’s vibrant industrial and cultural hub. This tour takes you through historic landmarks, modern cityscapes, and authentic local experiences that reveal a side of Japan often missed by first-time visitors.
                         </p>
                     </Card>
 
@@ -141,15 +151,15 @@ export default function LandingPage() {
                             <img style={{ height: 250 }}
                                 draggable={false}
                                 alt="example"
-                                src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
+                                src="https://static.toiimg.com/photo/111258550.cms"
                             />
                         }
                     >
                         <h2>
-                            Travel and Tour Package
+                            Seoul Tour Package
                         </h2>
                         <p>
-                            Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet, lectus velit tempus lectus, ac molestie purus lorem at sem.
+                            Experience the dynamic heart of Seoul, where ancient palaces stand beside futuristic skylines and vibrant street culture. This tour takes you through South Korea’s rich history, cutting-edge trends, and world-famous cuisine—all in one unforgettable journey.
                         </p>
                     </Card>
 
@@ -160,15 +170,15 @@ export default function LandingPage() {
                             <img style={{ height: 250 }}
                                 draggable={false}
                                 alt="example"
-                                src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
+                                src="https://media.istockphoto.com/id/533554773/photo/white-beach-boracay-philippines.jpg?s=612x612&w=0&k=20&c=BVCgea8yLM6WBJrCgbntaRGFHU_hCotyg4QWMZ_32ps="
                             />
                         }
                     >
                         <h2>
-                            Travel and Tour Package
+                            Boracay Tour Package
                         </h2>
                         <p>
-                            Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet, lectus velit tempus lectus, ac molestie purus lorem at sem.
+                            Escape to the world-famous island of Boracay, known for its powdery white sand, crystal-clear waters, and breathtaking sunsets. This tropical paradise offers the perfect mix of relaxation, adventure, and vibrant island life.
                         </p>
                     </Card>
 
@@ -179,15 +189,15 @@ export default function LandingPage() {
                             <img style={{ height: 250 }}
                                 draggable={false}
                                 alt="example"
-                                src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
+                                src="https://www.elnidoparadise.com/wp-content/uploads/entalula-beach-el-nido-palawan-2.jpg"
                             />
                         }
                     >
                         <h2>
-                            Travel and Tour Package
+                            El Nido Tour Package
                         </h2>
                         <p>
-                            Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet, lectus velit tempus lectus, ac molestie purus lorem at sem.
+                            Discover the breathtaking beauty of El Nido, Palawan—famous for its dramatic limestone cliffs, hidden lagoons, and crystal-clear turquoise waters. This tour offers a perfect tropical escape surrounded by some of the most stunning seascapes in the Philippines.
                         </p>
                     </Card>
 
@@ -206,15 +216,34 @@ export default function LandingPage() {
                                     <img style={{ height: 200 }}
                                         draggable={false}
                                         alt="example"
-                                        src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
+                                        src="https://pinayodyssey.com/wp-content/uploads/2023/12/img_5850.jpg"
                                     />
                                 }
                             >
                                 <h2>
-                                    Travel and Tour Package
+                                    Baguio City Tour Package
                                 </h2>
                                 <p>
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
+                                    Baguio City is the "Summer Capital of the Philippines," perched in the Cordillera Mountains and celebrated for its refreshing pine-scented air and cool highland climate.
+                                </p>
+                            </Card>
+
+                            <Card
+                                hoverable
+                                style={{ width: 300 }}
+                                cover={
+                                    <img style={{ height: 200 }}
+                                        draggable={false}
+                                        alt="example"
+                                        src="https://www.beyondmydoor.com/wp-content/uploads/2024/03/Kalesa-Ride-Calle-Crisologo%E2%80%8B-Vigan-Philippines-1024x776.webp"
+                                    />
+                                }
+                            >
+                                <h2>
+                                    Vigan City Tour Package
+                                </h2>
+                                <p>
+                                    Step back in time and experience the rich history and cultural charm of Vigan City, a UNESCO World Heritage Site.
                                 </p>
                             </Card>
 
@@ -230,29 +259,10 @@ export default function LandingPage() {
                                 }
                             >
                                 <h2>
-                                    Travel and Tour Package
+                                    Batanes Tour Package
                                 </h2>
                                 <p>
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
-                                </p>
-                            </Card>
-
-                            <Card
-                                hoverable
-                                style={{ width: 300 }}
-                                cover={
-                                    <img style={{ height: 200 }}
-                                        draggable={false}
-                                        alt="example"
-                                        src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
-                                    />
-                                }
-                            >
-                                <h2>
-                                    Travel and Tour Package
-                                </h2>
-                                <p>
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
+                                    Discover the untouched beauty of Batanes, the northernmost paradise of the Philippines, where rolling hills meet endless seas and time seems to slow down.
                                 </p>
                             </Card>
 
@@ -263,17 +273,12 @@ export default function LandingPage() {
                             <img style={{ height: 250, width: 400, marginLeft: 40, marginBottom: 40 }}
                                 draggable={false}
                                 alt="example"
-                                src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
+                                src="https://www.hertz.com/content/dam/hertz/global/blog-articles/planning-a-trip/kyoto-japan/kyoto-header.jpg"
                             />
                             <div className='explore-world-text'>
                                 <h2 className='explore-world-text-heading'>Kyoto, Japan</h2>
                                 <p className='explore-world-text-description'>
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
-                                    Sed egestas sodales quam et tristique. Integer at ligula nisl. Morbi sodales, enim id feugiat imperdiet
+                                    Experience the cultural heart of Japan with our Kyoto tour package, featuring ancient temples, serene gardens, and traditional tea houses. Explore iconic landmarks such as Kiyomizu-dera, Fushimi Inari Shrine, and the Arashiyama Bamboo Grove. Enjoy comfortable accommodations and guided experiences throughout your journey. Perfect for travelers seeking history, culture, and unforgettable memories.
                                 </p>
                             </div>
                         </div>
@@ -284,12 +289,18 @@ export default function LandingPage() {
                         <img
                             draggable={false}
                             alt="example"
-                            src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
+                            src="https://i.pinimg.com/736x/0c/57/3e/0c573eba9d6beacea2a2c6b59874a138.jpg"
                         />
                         <Button>VIEW MORE</Button>
                     </div>
                 </div>
             </div>
+
+            <LoginModal
+                isOpenLogin={isLoginVisible}
+                isCloseLogin={() => setIsLoginVisible(false)}
+                onLoginSuccess={() => navigate('/destinations-packages')}
+            />
         </div>
     );
 }

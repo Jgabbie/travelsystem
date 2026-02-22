@@ -13,12 +13,14 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
     const [getOTP, setOTP] = useState("")
     const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
 
+    //start timer when OTP modal opens
     useEffect(() => {
         if (isOpenOTPModal) {
             setTimer(60)
         }
     }, [isOpenOTPModal])
 
+    //decrease timer every second until it reaches 0
     useEffect(() => {
         let interval = null
         if (timer > 0) {
@@ -29,6 +31,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
         return () => clearInterval(interval)
     }, [timer])
 
+    //submit OTP for verification
     const submitOTP = async (e) => {
         e.preventDefault()
         try {
@@ -46,6 +49,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
         }
     }
 
+    //resend OTP and restart timer
     const resendOTP = async (e) => {
         e.preventDefault()
         try {

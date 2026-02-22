@@ -116,6 +116,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         navigate('/reset-password');
     }
 
+    //block clipboard shortcuts, only few shortcuts
     const blockClipboardKeys = (e) => {
         const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
@@ -127,6 +128,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         }
     };
 
+    //block shortcut keys, all shortcuts
     const blockShortcuts = (e) => {
         e.preventDefault();
     };

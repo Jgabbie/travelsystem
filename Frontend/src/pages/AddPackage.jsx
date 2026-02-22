@@ -73,6 +73,9 @@ export default function AddPackage() {
     image: null
   });
 
+  const hasFormErrors = Object.values(errors).some(Boolean);
+
+  //package validation
   const validateAll = (updatedValues) => {
     const newErrors = {
       name: validate("name", updatedValues.name),
@@ -95,8 +98,6 @@ export default function AddPackage() {
     setErrors(newErrors);
   };
 
-
-
   const valueHandler = (field, value) => {
     const updatedValues = { ...values, [field]: value };
     setValues(updatedValues);
@@ -115,7 +116,6 @@ export default function AddPackage() {
       } else if (backEndErrors.error) {
         errorMsg = backEndErrors.error;
       } else {
-        // fallback: stringify anything else
         errorMsg = JSON.stringify(backEndErrors);
       }
 
@@ -469,7 +469,7 @@ export default function AddPackage() {
   return (
     <div>
 
-      <Card className="add-package-form">
+      <Card className={`add-package-form${hasFormErrors ? " add-package-form-error" : ""}`}>
         <div className="add-package-header-container">
           <h1>{isEdit ? "Edit Package" : "Add Package"}</h1>
           <Button className="back-add-package-button" onClick={() => { navigate("/packages") }}>Back to Package Management</Button>
@@ -480,7 +480,11 @@ export default function AddPackage() {
           <h2 className="section-headers">Package Information</h2>
           {/* packagemame, code, price per pax, available slots, description */}
           <label className="add-package-input-labels">Package Name</label>
-          <Input status={errors.name ? "errors" : ""} maxLength={30} value={values.name} className="add-package-inputs"
+          <Input
+            status={errors.name ? "error" : ""}
+            maxLength={30}
+            value={values.name}
+            className={`add-package-inputs${errors.name ? " add-package-inputs-error" : ""}`}
             onKeyDown={(e) => {
               const allowedKeys = [
                 "Backspace",
@@ -502,7 +506,11 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.name}</p>
 
           <label className="add-package-input-labels">Package Code</label>
-          <Input status={errors.code ? "errors" : ""} maxLength={20} value={values.code} className="add-package-inputs"
+          <Input
+            status={errors.code ? "error" : ""}
+            maxLength={20}
+            value={values.code}
+            className={`add-package-inputs${errors.code ? " add-package-inputs-error" : ""}`}
             onKeyDown={(e) => {
               const allowedKeys = [
                 "Backspace",
@@ -523,7 +531,11 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.code}</p>
 
           <label className="add-package-input-labels">Price Per Pax</label>
-          <Input maxLength={7} value={priceFormat(values.pricePerPax)} className="add-package-inputs" style={{ marginBottom: 10 }}
+          <Input
+            maxLength={7}
+            value={priceFormat(values.pricePerPax)}
+            className={`add-package-inputs${errors.pricePerPax ? " add-package-inputs-error" : ""}`}
+            style={{ marginBottom: 10 }}
             onKeyDown={(e) => {
               if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                 e.preventDefault()
@@ -539,7 +551,10 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.pricePerPax}</p>
 
           <label maxLength={3} className="add-package-input-labels">Available Slots</label>
-          <Input value={values.availableSlots} className="add-package-inputs" style={{ marginBottom: 10 }}
+          <Input
+            value={values.availableSlots}
+            className={`add-package-inputs${errors.availableSlots ? " add-package-inputs-error" : ""}`}
+            style={{ marginBottom: 10 }}
             onKeyDown={(e) => {
               if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                 e.preventDefault()
@@ -552,7 +567,13 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.availableSlots}</p>
 
           <label maxLength={200} className="add-package-input-labels">Package Description</label>
-          <Input.TextArea value={values.description} className="add-package-input-textarea" autoSize={{ minRows: 4, maxRows: 8 }} style={{ marginBottom: 10 }} onChange={(e) => { valueHandler("description", e.target.value) }} />
+          <Input.TextArea
+            value={values.description}
+            className={`add-package-input-textarea${errors.description ? " add-package-input-textarea-error" : ""}`}
+            autoSize={{ minRows: 4, maxRows: 8 }}
+            style={{ marginBottom: 10 }}
+            onChange={(e) => { valueHandler("description", e.target.value) }}
+          />
           <p className="add-package-error-message">{errors.description}</p>
 
           <h2 className="section-headers">Date Availability, Tour Duration and Package Type</h2>
@@ -594,9 +615,10 @@ export default function AddPackage() {
           {/* Duration */}
           <label className="add-package-input-labels">Tour Duration</label>
           <Select
-            className="add-package-duration-select"
+            className={`add-package-duration-select${errors.duration ? " add-package-select-error" : ""}`}
             style={{ width: "100%", marginBottom: 10 }}
             value={values.duration}
+            status={errors.duration ? "error" : ""}
             onChange={(value) => {
               valueHandler("duration", value);
               initItinerary(value);
@@ -627,7 +649,12 @@ export default function AddPackage() {
 
           <h2 className="section-headers">Hotels, Airline, and Addons</h2>
           {/* HOTELS */}
-          <Card size="small" title="Hotels" style={{ marginTop: 5 }}>
+          <Card
+            size="small"
+            title="Hotels"
+            className={errors.hotels ? "add-package-card-error" : ""}
+            style={{ marginTop: 5 }}
+          >
             {values.hotels?.map((hotel, index) => (
               <Space key={index} style={{ width: "100%", marginBottom: 16 }}>
                 <Input className="add-package-inputs" placeholder="Hotel Name" value={hotel.name}
@@ -675,7 +702,12 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.hotels}</p>
 
           {/* AIRLINES */}
-          <Card size="small" title="Airlines" style={{ marginTop: 20 }}>
+          <Card
+            size="small"
+            title="Airlines"
+            className={errors.airlines ? "add-package-card-error" : ""}
+            style={{ marginTop: 20 }}
+          >
             {values.airlines?.map((airline, index) => (
               <Space key={index} style={{ width: "100%", marginBottom: 16 }}>
                 <Input className="add-package-inputs" placeholder="Airline Name" value={airline.name}
@@ -714,7 +746,12 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.airlines}</p>
 
           {/* ADDONS */}
-          <Card size="small" title="Addons" style={{ marginTop: 20, marginBottom: 15 }}>
+          <Card
+            size="small"
+            title="Addons"
+            className={errors.addons ? "add-package-card-error" : ""}
+            style={{ marginTop: 20, marginBottom: 15 }}
+          >
             <Checkbox checked={values.addons.luggage} onChange={(e) => handleAddonChange("luggage", e.target.checked)}>Luggage</Checkbox>
             <Checkbox checked={values.addons.meals} onChange={(e) => handleAddonChange("meals", e.target.checked)}>Meals</Checkbox>
             <Checkbox checked={values.addons.insurance} onChange={(e) => handleAddonChange("insurance", e.target.checked)}>Travel Insurance</Checkbox>
@@ -752,7 +789,12 @@ export default function AddPackage() {
 
           <h2 className="section-headers">Inclusions, Exclusions, and Terms & Conditions</h2>
           {/* INCLUSIONS */}
-          <Card size="small" title="Inclusions" style={{ marginTop: 5 }}>
+          <Card
+            size="small"
+            title="Inclusions"
+            className={errors.inclusions ? "add-package-card-error" : ""}
+            style={{ marginTop: 5 }}
+          >
             {values.inclusions?.map((item, index) => (
               <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
                 <Input className="add-package-inputs" value={item}
@@ -781,7 +823,12 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.inclusions}</p>
 
           {/* EXCLUSIONS */}
-          <Card size="small" title="Exclusions" style={{ marginTop: 20 }}>
+          <Card
+            size="small"
+            title="Exclusions"
+            className={errors.exclusions ? "add-package-card-error" : ""}
+            style={{ marginTop: 20 }}
+          >
             {values.exclusions?.map((item, index) => (
               <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
                 <Input className="add-package-inputs" value={item}
@@ -811,7 +858,12 @@ export default function AddPackage() {
           <p className="add-package-error-message">{errors.exclusions}</p>
 
           {/* TERMS AND CONDITIONS */}
-          <Card size="small" title="Terms and Conditions" style={{ marginTop: 20, marginBottom: 15 }}>
+          <Card
+            size="small"
+            title="Terms and Conditions"
+            className={errors.termsConditions ? "add-package-card-error" : ""}
+            style={{ marginTop: 20, marginBottom: 15 }}
+          >
             {values.termsConditions?.map((item, index) => (
               <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
                 <Input className="add-package-inputs" value={item}
@@ -842,7 +894,12 @@ export default function AddPackage() {
 
           <h2 className="section-headers">Itinerary</h2>
           {/* ITINERARIES */}
-          <Card size="small" title="Itineraries" style={{ marginTop: 5 }}>
+          <Card
+            size="small"
+            title="Itineraries"
+            className={errors.itineraries ? "add-package-card-error" : ""}
+            style={{ marginTop: 5 }}
+          >
             {Object.keys(values.itineraries ?? {}).map(day => (
               <div key={day} style={{ marginBottom: 20 }}>
                 <h4>{day.replace("day", "Day ")}:</h4>
@@ -898,6 +955,11 @@ export default function AddPackage() {
               Upload Package Image
             </Button>
             <p className="package-image-help">PNG/JPG up to 2MB.</p>
+            {values.image && (
+              <div className="package-image-preview">
+                <img src={values.image} alt="Package preview" className="package-image-preview-img" />
+              </div>
+            )}
           </div>
         </div>
 

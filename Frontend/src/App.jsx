@@ -24,6 +24,8 @@ import TransactionManagement from "./pages/TransactionManagement";
 import ReviewRatings from "./pages/ReviewRatings";
 import VisaApplications from "./pages/VisaApplications";
 import PassportApplications from "./pages/PassportApplications";
+import AdminProfile from "./pages/AdminProfile";
+import CancellationRequests from "./pages/CancellationRequests";
 
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -31,8 +33,6 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
-
-
 
 
 
@@ -66,6 +66,8 @@ function App() {
             <Route path="ratings" element={<ReviewRatings />} />
             <Route path="visa-applications" element={<VisaApplications />} />
             <Route path="passport-applications" element={<PassportApplications />} />
+            <Route path="cancellation-requests" element={<CancellationRequests />} />
+            <Route path="adminprofile" element={<AdminProfile />} />
 
             {/* logging and auditing routes */}
             <Route path="logging" element={<Logging />} />
@@ -76,6 +78,7 @@ function App() {
         {/* protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route path='/package' element={<PackagePage />} />
+          <Route path='/package/:id' element={<PackagePage />} />
           <Route path='/profile' element={<ProfilePage />} />
           <Route path='/user-bookings' element={<UserBookings />} />
           <Route path='/user-transactions' element={<UserTransactions />} />

@@ -8,6 +8,7 @@
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
+
 .profile-container {
     flex: 1;
     display: flex;
@@ -15,6 +16,7 @@
     align-items: flex-start;
     padding: 20px;
     padding-top: 100px;
+    overflow: visible;
 }
 
 .profile-content {

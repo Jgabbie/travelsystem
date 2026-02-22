@@ -1,76 +1,13 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Col, Input, Row, Select, Slider, Tag, Typography } from 'antd'
 import TopNavUser from '../components/TopNavUser'
 import '../style/destinations-packages.css'
-
-const SAMPLE_PACKAGES = [
-    {
-        id: 1,
-        title: 'Bohol Beach Escape',
-        location: 'Bohol, PH',
-        type: 'Domestic',
-        days: 3,
-        budget: 6500,
-        activities: ['Beach', 'Island Hopping'],
-        rating: 4.7,
-    },
-    {
-        id: 2,
-        title: 'Sagada Mountain Retreat',
-        location: 'Sagada, PH',
-        type: 'Domestic',
-        days: 4,
-        budget: 8200,
-        activities: ['Hiking', 'Nature'],
-        rating: 4.8,
-    },
-    {
-        id: 3,
-        title: 'Tokyo City Highlights',
-        location: 'Tokyo, JP',
-        type: 'International',
-        days: 5,
-        budget: 38000,
-        activities: ['City Tour', 'Food', 'Shopping'],
-        rating: 4.9,
-    },
-    {
-        id: 4,
-        title: 'Siargao Surf Weekend',
-        location: 'Siargao, PH',
-        type: 'Domestic',
-        days: 3,
-        budget: 9800,
-        activities: ['Beach', 'Surfing'],
-        rating: 4.6,
-    },
-    {
-        id: 5,
-        title: 'Seoul Culture + Food',
-        location: 'Seoul, KR',
-        type: 'International',
-        days: 4,
-        budget: 29000,
-        activities: ['City Tour', 'Food', 'Museums'],
-        rating: 4.5,
-    },
-    {
-        id: 6,
-        title: 'Palawan Island Escape',
-        location: 'Palawan, PH',
-        type: 'Domestic',
-        days: 5,
-        budget: 15500,
-        activities: ['Beach', 'Island Hopping', 'Snorkeling'],
-        rating: 4.9,
-    },
-]
-
-const ALL_ACTIVITIES = Array.from(
-    new Set(SAMPLE_PACKAGES.flatMap((pkg) => pkg.activities))
-)
+import axiosInstance from '../config/axiosConfig'
+import { useNavigate } from 'react-router-dom'
 
 export default function DestinationsPackages() {
+    const navigate = useNavigate()
+    const [packages, setPackages] = useState([])
     const [search, setSearch] = useState('')
     const [budgetRange, setBudgetRange] = useState([0, 40000])
     const [selectedActivities, setSelectedActivities] = useState([])
@@ -79,9 +16,47 @@ export default function DestinationsPackages() {
 
     const { Title, Text } = Typography
 
+    useEffect(() => {
+        const fetchPackages = async () => {
+            try {
+                const response = await axiosInstance.get('/package/get-packages')
+                const mapped = (response.data || []).map((pkg) => {
+                    const rating = Number((4.2 + Math.random() * 0.7).toFixed(1))
+                    return {
+                        id: pkg._id,
+                        title: pkg.packageName,
+                        location: pkg.packageType === 'international' ? 'International' : 'Philippines',
+                        type: pkg.packageType === 'international' ? 'International' : 'Domestic',
+                        days: pkg.packageDuration,
+                        budget: pkg.packagePricePerPax,
+                        activities: Array.isArray(pkg.packageInclusions) && pkg.packageInclusions.length
+                            ? pkg.packageInclusions.slice(0, 3)
+                            : ['Tour', 'Sightseeing'],
+                        rating,
+                        image: pkg.image || ''
+                    }
+                })
+                setPackages(mapped)
+            } catch (error) {
+                console.error('Failed to load packages:', error)
+                setPackages([])
+            }
+        }
+
+        fetchPackages()
+    }, [])
+
+    const activityOptions = useMemo(() => {
+        const unique = new Set()
+        packages.forEach((pkg) => {
+            pkg.activities?.forEach((activity) => unique.add(activity))
+        })
+        return Array.from(unique)
+    }, [packages])
+
     const filteredPackages = useMemo(() => {
         const query = search.trim().toLowerCase()
-        return SAMPLE_PACKAGES.filter((pkg) => {
+        return packages.filter((pkg) => {
             const matchesSearch =
                 query.length === 0 ||
                 pkg.title.toLowerCase().includes(query) ||
@@ -109,7 +84,7 @@ export default function DestinationsPackages() {
                 matchesDays
             )
         })
-    }, [search, budgetRange, selectedActivities, tourType, daysRange])
+    }, [packages, search, budgetRange, selectedActivities, tourType, daysRange])
 
     return (
         <div>
@@ -161,7 +136,7 @@ export default function DestinationsPackages() {
                                     placeholder="Select activities"
                                     value={selectedActivities}
                                     onChange={(value) => setSelectedActivities(value)}
-                                    options={ALL_ACTIVITIES.map((activity) => ({
+                                    options={activityOptions.map((activity) => ({
                                         value: activity,
                                         label: activity,
                                     }))}
@@ -212,7 +187,18 @@ export default function DestinationsPackages() {
                     <Row gutter={[18, 18]}>
                         {filteredPackages.map((pkg) => (
                             <Col xs={24} sm={12} lg={8} key={pkg.id}>
-                                <Card className="destinations-card" hoverable>
+                                <Card
+                                    className="destinations-card"
+                                    hoverable
+                                    onClick={() => navigate(`/package/${pkg.id}`)}
+                                >
+                                    <div className="destinations-card-image">
+                                        {pkg.image ? (
+                                            <img src={pkg.image} alt={pkg.title} />
+                                        ) : (
+                                            <div className="destinations-card-image-placeholder">No Image</div>
+                                        )}
+                                    </div>
                                     <div className="destinations-card-header">
                                         <div>
                                             <Title level={5} className="destinations-card-title">

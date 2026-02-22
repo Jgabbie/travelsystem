@@ -13,8 +13,29 @@
   width: 200px;
 }
 
+.user-actions .ant-input:hover,
+.user-actions .ant-input:focus,
+.user-actions .ant-input-focused,
+.user-actions .ant-input-affix-wrapper:hover,
+.user-actions .ant-input-affix-wrapper-focused,
+.user-actions .ant-input-affix-wrapper:focus-within {
+  border-color: #305797 !important;
+}
+
+.user-select:hover,
+.user-select:focus-within {
+  border-color: #305797 !important;
+}
+
 .adduser-usermanagement {
+  border-color: #305797;
+  color: #305797 !important;
+  background-color: #fff !important;
+}
+
+.adduser-usermanagement:hover {
   background-color: #305797 !important;
+  color: #fff !important;
 }
 
 .editbutton-usermanagement {
@@ -28,6 +49,28 @@
   color: #fff !important;
 }
 
+.savebutton-usermanagement {
+  border-color: #1f8f3a;
+  background-color: #1f8f3a !important;
+  color: #fff !important;
+}
+
+.savebutton-usermanagement:hover {
+  background-color: #167a30 !important;
+  color: #fff !important;
+}
+
+.cancelbutton-usermanagement {
+  border-color: #d93025;
+  color: #d93025 !important;
+  background-color: #fff !important;
+}
+
+.cancelbutton-usermanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
 .deletebutton-usermanagement {
   border-color: #d93025;
   background-color: #fff !important;
@@ -35,6 +78,28 @@
 }
 
 .deletebutton-usermanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.approve-cancellation {
+  border-color: #1f8f3a;
+  background-color: #1f8f3a !important;
+  color: #fff !important;
+}
+
+.approve-cancellation:hover {
+  background-color: #167a30 !important;
+  color: #fff !important;
+}
+
+.reject-cancellation {
+  border-color: #d93025;
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.reject-cancellation:hover {
   background-color: #d93025 !important;
   color: #fff !important;
 }

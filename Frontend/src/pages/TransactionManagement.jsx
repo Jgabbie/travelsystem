@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   Input, Select, Button, Table,
   Tag, Space, DatePicker, Row, Col,
-  Card, Statistic
+  Card, Statistic, Form, message, Modal
 } from "antd";
 import {
   SearchOutlined, EditOutlined,
@@ -20,7 +20,10 @@ export default function TransactionManagement() {
   const [statusFilter, setStatusFilter] = useState("");
   const [paymentDateFilter, setPaymentDateFilter] = useState(null);
 
-  const data = [
+  const [form] = Form.useForm();
+  const [editingKey, setEditingKey] = useState("");
+
+  const [data, setData] = useState([
     {
       key: 1,
       ref: "TRX-10021",
@@ -66,7 +69,7 @@ export default function TransactionManagement() {
       method: "GCash",
       status: "Paid",
     }
-  ];
+  ]);
 
   // ================= FILTER LOGIC =================
 
@@ -98,19 +101,104 @@ export default function TransactionManagement() {
 
   // ================= TABLE =================
 
+  const isEditing = (record) => record.key === editingKey;
+
+  const edit = (record) => {
+    form.setFieldsValue({
+      package: record.package,
+      date: dayjs(record.date),
+      price: record.price,
+      method: record.method,
+      status: record.status
+    });
+    setEditingKey(record.key);
+  };
+
+  const cancel = () => {
+    setEditingKey("");
+  };
+
+  const handleDelete = (key) => {
+    Modal.confirm({
+      className: "logout-confirm-modal",
+      icon: null,
+      title: (
+        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+          Confirm Delete
+        </div>
+      ),
+      content: (
+        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+          <p className="logout-confirm-text">Are you sure you want to delete this transaction?</p>
+        </div>
+      ),
+      okText: "Delete",
+      cancelText: "Cancel",
+      okButtonProps: { className: "logout-confirm-btn" },
+      cancelButtonProps: { className: "logout-cancel-btn" },
+      onOk: () => {
+        setData((prev) => prev.filter((item) => item.key !== key));
+        message.success("Transaction deleted");
+      }
+    });
+  };
+
+  const save = async (key) => {
+    try {
+      const row = await form.validateFields();
+      const newData = [...data];
+      const index = newData.findIndex((item) => item.key === key);
+
+      if (index > -1) {
+        Modal.confirm({
+          className: "logout-confirm-modal",
+          icon: null,
+          title: (
+            <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+              Confirm Changes
+            </div>
+          ),
+          content: (
+            <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+              <p className="logout-confirm-text">Are you sure about these changes?</p>
+            </div>
+          ),
+          okText: "Save",
+          cancelText: "Cancel",
+          okButtonProps: { className: "logout-confirm-btn" },
+          cancelButtonProps: { className: "logout-cancel-btn" },
+          onOk: () => {
+            const updatedRow = { ...newData[index], ...row };
+            if (dayjs.isDayjs(updatedRow.date)) {
+              updatedRow.date = updatedRow.date.format("YYYY-MM-DD HH:mm");
+            }
+            newData.splice(index, 1, updatedRow);
+            setData(newData);
+            setEditingKey("");
+            message.success("Transaction updated");
+          }
+        });
+      }
+    } catch {
+      message.error("Please fix validation errors");
+    }
+  };
+
   const columns = [
     { title: "Transaction Reference", dataIndex: "ref" },
-    { title: "Travel Package", dataIndex: "package" },
+    { title: "Travel Package", dataIndex: "package", editable: true },
     {
       title: "Payment Date & Time",
       dataIndex: "date",
+      editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY hh:mm A")
     },
-    { title: "Total Price", dataIndex: "price" },
-    { title: "Transaction Method", dataIndex: "method" },
+    { title: "Total Price", dataIndex: "price", editable: true },
+    { title: "Transaction Method", dataIndex: "method", editable: true },
     {
       title: "Status",
       dataIndex: "status",
+      editable: true,
       render: s => (
         <Tag
           color={
@@ -125,14 +213,119 @@ export default function TransactionManagement() {
     },
     {
       title: "Actions",
-      render: () => (
+      render: (_, record) => (
         <Space>
-          <Button className="editbutton-transactionmanagement" type="primary" icon={<EditOutlined />} />
-          <Button className="deletebutton-transactionmanagement" danger icon={<DeleteOutlined />} />
+          {isEditing(record) ? (
+            <>
+              <Button
+                className="savebutton-transactionmanagement"
+                type="primary"
+                onClick={() => save(record.key)}
+              >
+                Save
+              </Button>
+              <Button className="cancelbutton-transactionmanagement" onClick={cancel}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                className="editbutton-transactionmanagement"
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => edit(record)}
+                disabled={editingKey !== ""}
+              />
+              <Button
+                className="deletebutton-transactionmanagement"
+                danger
+                icon={<DeleteOutlined />}
+                disabled={editingKey !== ""}
+                onClick={() => handleDelete(record.key)}
+              />
+            </>
+          )}
         </Space>
       )
     }
   ];
+
+  const mergedColumns = columns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+
+    let inputType = "text";
+    if (col.dataIndex === "method") inputType = "method";
+    if (col.dataIndex === "status") inputType = "status";
+    if (col.dataIndex === "date") inputType = "date";
+
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType,
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record)
+      })
+    };
+  });
+
+  const EditableCell = ({
+    editing,
+    dataIndex,
+    inputType,
+    children,
+    ...restProps
+  }) => {
+    let inputNode = <Input />;
+
+    if (inputType === "method") {
+      inputNode = (
+        <Select
+          options={[
+            { value: "Bank Transfer", label: "Bank Transfer" },
+            { value: "GCash", label: "GCash" },
+            { value: "Credit Card", label: "Credit Card" }
+          ]}
+        />
+      );
+    }
+
+    if (inputType === "status") {
+      inputNode = (
+        <Select
+          options={[
+            { value: "Paid", label: "Paid" },
+            { value: "Pending", label: "Pending" },
+            { value: "Unpaid", label: "Unpaid" }
+          ]}
+        />
+      );
+    }
+
+    if (inputType === "date") {
+      inputNode = <DatePicker showTime format="YYYY-MM-DD HH:mm" />;
+    }
+
+    return (
+      <td {...restProps}>
+        {editing ? (
+          <Form.Item
+            name={dataIndex}
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: `Please enter ${dataIndex}` }]}
+          >
+            {inputNode}
+          </Form.Item>
+        ) : (
+          children
+        )}
+      </td>
+    );
+  };
 
 
 
@@ -200,6 +393,7 @@ export default function TransactionManagement() {
         />
 
         <Select
+          className="transaction-select"
           placeholder="Method"
           style={{ width: 160 }}
           allowClear
@@ -213,6 +407,7 @@ export default function TransactionManagement() {
         />
 
         <Select
+          className="transaction-select"
           placeholder="Status"
           style={{ width: 140 }}
           allowClear
@@ -236,11 +431,19 @@ export default function TransactionManagement() {
       </div>
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 6 }}
-        />
+        <Form form={form} component={false}>
+          <Table
+            components={{
+              body: {
+                cell: EditableCell
+              }
+            }}
+            columns={mergedColumns}
+            dataSource={filteredData}
+            pagination={{ pageSize: 6 }}
+            rowClassName="editable-row"
+          />
+        </Form>
       </Card>
     </div>
   );

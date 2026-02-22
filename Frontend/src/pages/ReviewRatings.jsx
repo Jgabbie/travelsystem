@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Card,
     Table,
@@ -14,8 +14,45 @@ import {
     MessageOutlined,
     ClockCircleOutlined,
 } from "@ant-design/icons";
+import axiosInstance from "../config/axiosConfig";
+import dayjs from "dayjs";
 
 export default function ReviewRatings() {
+    const [ratings, setRatings] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchRatings = async () => {
+            setLoading(true);
+            try {
+                const response = await axiosInstance.get("/rating/all-ratings");
+                const mapped = (response.data || []).map((rating) => {
+                    const user = rating.userId || {};
+                    const pkg = rating.packageId || {};
+                    const fullName = [user.firstname, user.lastname].filter(Boolean).join(" ");
+                    const name = fullName || user.username || "User";
+
+                    return {
+                        id: rating._id,
+                        user: name,
+                        packageName: pkg.packageName || "Package",
+                        rating: rating.rating,
+                        comment: rating.review || "",
+                        date: rating.createdAt
+                            ? dayjs(rating.createdAt).format("MMM D, YYYY")
+                            : "—"
+                    };
+                });
+                setRatings(mapped);
+            } catch {
+                setRatings([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRatings();
+    }, []);
     const columns = [
         {
             title: "User",
@@ -23,11 +60,16 @@ export default function ReviewRatings() {
             key: "user",
         },
         {
+            title: "Package",
+            dataIndex: "packageName",
+            key: "packageName",
+        },
+        {
             title: "Rating",
             dataIndex: "rating",
             key: "rating",
             render: (rating) =>
-                rating ? `${rating} ⭐` : <Tag color="default">—</Tag>,
+                rating ? `${rating} Stars` : <Tag color="default">—</Tag>,
         },
         {
             title: "Comment",
@@ -36,21 +78,18 @@ export default function ReviewRatings() {
             ellipsis: true,
         },
         {
-            title: "Status",
-            dataIndex: "status",
-            key: "status",
-            render: (status) => (
-                <Tag color="blue">{status || "N/A"}</Tag>
-            ),
+            title: "Date",
+            dataIndex: "date",
+            key: "date",
+            render: (date) => (
+                <span>{date || "—"}</span>
+            )
         },
         {
             title: "Actions",
             key: "actions",
             render: () => (
                 <>
-                    <Button size="small" disabled>
-                        Approve
-                    </Button>
                     <Button
                         size="small"
                         danger
@@ -64,6 +103,17 @@ export default function ReviewRatings() {
         },
     ];
 
+    const averageRating = useMemo(() => {
+        if (!ratings.length) return null;
+        const total = ratings.reduce((sum, item) => sum + (item.rating || 0), 0);
+        return (total / ratings.length).toFixed(1);
+    }, [ratings]);
+
+    const latestReview = useMemo(() => {
+        if (!ratings.length) return "—";
+        return ratings[0]?.date || "—";
+    }, [ratings]);
+
     return (
         <div >
 
@@ -74,7 +124,7 @@ export default function ReviewRatings() {
                     <Card>
                         <Statistic
                             title="Average Rating"
-                            value="—"
+                            value={averageRating ?? "—"}
                             prefix={<StarOutlined />}
                         />
                     </Card>
@@ -83,7 +133,7 @@ export default function ReviewRatings() {
                     <Card>
                         <Statistic
                             title="Total Reviews"
-                            value="—"
+                            value={ratings.length || "—"}
                             prefix={<MessageOutlined />}
                         />
                     </Card>
@@ -91,8 +141,8 @@ export default function ReviewRatings() {
                 <Col xs={24} sm={8}>
                     <Card>
                         <Statistic
-                            title="Pending Approval"
-                            value="—"
+                            title="Latest Review"
+                            value={latestReview}
                             prefix={<ClockCircleOutlined />}
                         />
                     </Card>
@@ -102,8 +152,9 @@ export default function ReviewRatings() {
             <Card>
                 <Table
                     columns={columns}
-                    dataSource={[]}
+                    dataSource={ratings}
                     rowKey="id"
+                    loading={loading}
                     pagination={false}
                     locale={{
                         emptyText: (

@@ -12,7 +12,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    top: 25px;
+    top: 70px;
 }
 
 #signup-heading-modal {
@@ -49,14 +49,20 @@ body {
     font-family: "Montserrat", sans-serif;
 }
 
-.signup-input-fields-modal:hover {
-    border-color: #305797;
-    border-width: 2px;
+.signup-input-fields-modal:hover,
+.signup-input-fields-modal-group:hover,
+.signup-input-fields-modal:focus-within,
+.signup-input-fields-modal-group:focus-within,
+.ant-input-group-wrapper:hover .ant-input-group .ant-input,
+.ant-input-group-wrapper:focus-within .ant-input-group .ant-input {
+    border-color: #305797 !important;
+    border-width: 1px !important;
 }
 
-.signup-input-fields-modal:focus-within {
+.ant-input-group-wrapper:hover .ant-input-group-addon,
+.ant-input-group-wrapper:focus-within .ant-input-group-addon {
     border-color: #305797 !important;
-    border-width: 2px !important;
+    border-width: 1px !important;
 }
 
 .ant-input-password input {
@@ -66,7 +72,7 @@ body {
 }
 
 .ant-input-status-error {
-    border-width: 2px !important;
+    border-width: 1px !important;
 }
 
 .signup-labels-modal {
@@ -101,11 +107,23 @@ body {
     margin-left: 0px;
     padding-left: 4px;
     color: #305797;
+    border: "none" !important;
 }
 
 .signup-button-links-modal:hover {
     text-decoration: underline;
     color: #992A46 !important;
+    border: "none" !important;
+}
+
+.signup-button-links-modal.ant-btn {
+    border: none !important;
+}
+
+.signup-button-links-modal.ant-btn:hover,
+.signup-button-links-modal.ant-btn:focus {
+    border: none !important;
+    box-shadow: none !important;
 }
 
 #signup-button-modal {
@@ -125,16 +143,18 @@ body {
 #signup-heading-modal,
 #signup-secondary-heading-modal,
 .signup-label-links-modal,
-#signup-error-message-modal {
+.signup-error-message-modal {
     display: block;
     margin-left: auto;
     margin-right: auto;
     text-align: center;
 }
 
-#signup-error-message-modal {
-    color: #ff0000;
-    width: 500px;
+.signup-error-message-modal {
+    height: 10px;
+    font-size: 10px;
+    color: #ff0000 !important;
+    text-align: left;
 }
 
 .signup-input-row-modal {
@@ -144,6 +164,7 @@ body {
 
 .signup-input-group-modal {
     margin-right: 7px;
+    margin-top: 12px;
 }
 
 .signup-input-row-modal .signup-input-group-modal {

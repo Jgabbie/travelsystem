@@ -4,9 +4,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 export default function ResetPasswordOTP() {
 
-
-
-
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -18,7 +15,6 @@ export default function ResetPasswordOTP() {
     if (!email) {
         return <Navigate to="/reset-password" replace />
     }
-
 
     const submitOTP = async (e) => {
         e.preventDefault()

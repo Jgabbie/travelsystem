@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Input, Select, Button, Table,
   Tag, Space, DatePicker, Row,
-  Col, Card, Statistic
+  Col, Card, Statistic, Form, message, Modal
 } from "antd";
 import {
   SearchOutlined, EditOutlined,
@@ -11,6 +11,7 @@ import {
   CloseCircleOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import axiosInstance from "../config/axiosConfig";
 import "../style/booking.css";
 
 export default function BookingManagement() {
@@ -20,57 +21,52 @@ export default function BookingManagement() {
   const [bookingDateFilter, setBookingDateFilter] = useState(null);
   const [travelDateFilter, setTravelDateFilter] = useState(null);
 
-  const data = [
-    {
-      key: 1,
-      ref: "BKRF-101",
-      pkg: "Boracay Beach Tour",
-      travelDate: "2025-01-10",
-      bookingDate: "2024-12-28",
-      qty: 2,
-      status: "Confirmed"
-    },
-    {
-      key: 2,
-      ref: "BKRF-102",
-      pkg: "Palawan Island Hopping",
-      travelDate: "2025-02-05",
-      bookingDate: "2025-01-01",
-      qty: 4,
-      status: "Pending"
-    },
-    {
-      key: 3,
-      ref: "BKRF-103",
-      pkg: "Bohol Countryside Tour",
-      travelDate: "2025-03-20",
-      bookingDate: "2025-02-10",
-      qty: 1,
-      status: "Confirmed"
-    },
-    {
-      key: 4,
-      ref: "BKRF-104",
-      pkg: "Cebu City Adventure",
-      travelDate: "2025-04-02",
-      bookingDate: "2025-03-12",
-      qty: 3,
-      status: "Cancelled"
-    },
-    {
-      key: 5,
-      ref: "BKRF-105",
-      pkg: "Siargao Surf Trip",
-      travelDate: "2025-05-15",
-      bookingDate: "2025-04-01",
-      qty: 2,
-      status: "Pending"
-    }
-  ];
+  const [form] = Form.useForm();
+  const [editingKey, setEditingKey] = useState("");
 
-  // ================= FILTER LOGIC =================
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const filteredData = data.filter(item => {
+  useEffect(() => {
+    const fetchBookings = async () => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get("/booking/all-bookings");
+        const rows = (response.data || []).map((booking) => { //make sure that rows is always an array
+          const details = booking.bookingDetails || {};
+          const travelerCounts = details.travelers || {};
+          const travelersTotal = Object.values(travelerCounts) //convert object values to array then sum it all up by using reduce to get the total number of travelers
+            .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+          const statusRaw = booking.status || "pending"; //get status
+          const statusFormatted =
+            statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1); //capitalize first letter of status
+
+          return { // create a new object for the table row
+            key: booking._id,
+            ref: booking.reference || booking._id,
+            pkg: details.packageName || "Package",
+            travelDate: details.travelDate || booking.createdAt,
+            bookingDate: booking.createdAt,
+            qty: travelersTotal || 0,
+            status: statusFormatted
+          };
+        });
+        setData(rows); //insert rows to data state
+      } catch (error) {
+        message.error("Unable to load bookings");
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+
+  //filter data
+  const filteredData = useMemo(() => data.filter(item => {
 
     const matchesSearch =
       item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -94,27 +90,160 @@ export default function BookingManagement() {
       matchesBookingDate &&
       matchesTravelDate
     );
-  });
+  }), [data, searchText, statusFilter, bookingDateFilter, travelDateFilter]);
 
-  // ================= TABLE =================
+  // editing functions
+  const isEditing = (record) => record.key === editingKey;
 
+  const edit = (record) => {
+    form.setFieldsValue({
+      pkg: record.pkg,
+      travelDate: dayjs(record.travelDate),
+      bookingDate: dayjs(record.bookingDate),
+      qty: record.qty,
+      status: record.status
+    });
+    setEditingKey(record.key);
+  };
+
+  //cancel editing
+  const cancel = () => {
+    setEditingKey("");
+  };
+
+
+  //delete booking
+  const handleDelete = (key) => {
+    Modal.confirm({
+      className: "logout-confirm-modal",
+      icon: null,
+      title: (
+        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+          Confirm Delete
+        </div>
+      ),
+      content: (
+        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+          <p className="logout-confirm-text">Are you sure you want to delete this booking?</p>
+        </div>
+      ),
+      okText: "Delete",
+      cancelText: "Cancel",
+      okButtonProps: { className: "logout-confirm-btn" },
+      cancelButtonProps: { className: "logout-cancel-btn" },
+      onOk: async () => {
+        try {
+          await axiosInstance.delete(`/booking/${key}`);
+          setData((prev) => prev.filter((item) => item.key !== key));
+          message.success("Booking deleted");
+        } catch (error) {
+          message.error("Unable to delete booking");
+        }
+      }
+    });
+  };
+
+  //save edited booking
+  const save = async (key) => {
+    try {
+      const row = await form.validateFields();
+      const newData = [...data];
+      const index = newData.findIndex((item) => item.key === key);
+
+      if (index > -1) {
+        Modal.confirm({
+          className: "logout-confirm-modal",
+          icon: null,
+          title: (
+            <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+              Confirm Changes
+            </div>
+          ),
+          content: (
+            <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+              <p className="logout-confirm-text">Are you sure about these changes?</p>
+            </div>
+          ),
+          okText: "Save",
+          cancelText: "Cancel",
+          okButtonProps: { className: "logout-confirm-btn" },
+          cancelButtonProps: { className: "logout-cancel-btn" },
+          onOk: async () => { //merge the new values to the existing row data
+            const updatedRow = { ...newData[index], ...row };
+            if (dayjs.isDayjs(updatedRow.travelDate)) { //check if dates are dayjs objects and convert them to string format
+              updatedRow.travelDate = updatedRow.travelDate.format("YYYY-MM-DD");
+            }
+            if (dayjs.isDayjs(updatedRow.bookingDate)) {
+              updatedRow.bookingDate = updatedRow.bookingDate.format("YYYY-MM-DD");
+            }
+
+            try {
+              const statusValue = updatedRow.status //make status lowercase
+                ? updatedRow.status.toLowerCase()
+                : undefined;
+
+              const payload = { //object sent to the backend
+                status: statusValue,
+                bookingDetails: {
+                  packageName: updatedRow.pkg,
+                  travelDate: updatedRow.travelDate,
+                  bookingDate: updatedRow.bookingDate,
+                  travelers: { total: updatedRow.qty }
+                }
+              };
+
+              const response = await axiosInstance.put(`/booking/${key}`, payload);
+              const saved = response.data;
+              const savedDetails = saved.bookingDetails || {};
+              const statusRaw = saved.status || updatedRow.status || "pending";
+              const statusFormatted =
+                statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
+
+              //replace old row with the updated one and update the table data
+              //first parameter of splice is the index to start changing, second parameter is how many items to delete, third parameter is the new item to add
+              newData.splice(index, 1, {
+                ...updatedRow,
+                pkg: savedDetails.packageName || updatedRow.pkg,
+                travelDate: savedDetails.travelDate || updatedRow.travelDate,
+                bookingDate: savedDetails.bookingDate || updatedRow.bookingDate,
+                status: statusFormatted
+              });
+
+              setData(newData);
+              setEditingKey("");
+              message.success("Booking updated");
+            } catch (error) {
+              message.error("Unable to update booking");
+            }
+          }
+        });
+      }
+    } catch {
+      message.error("Please fix validation errors");
+    }
+  };
+
+  //header columns
   const columns = [
     { title: "Reference", dataIndex: "ref" },
-    { title: "Package", dataIndex: "pkg" },
+    { title: "Package", dataIndex: "pkg", editable: true },
     {
       title: "Travel Date",
       dataIndex: "travelDate",
+      editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY")
     },
     {
       title: "Booking Date",
       dataIndex: "bookingDate",
+      editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY")
     },
-    { title: "Travellers", dataIndex: "qty" },
+    { title: "Travellers", dataIndex: "qty", editable: true },
     {
       title: "Status",
       dataIndex: "status",
+      editable: true,
       render: s => (
         <Tag
           color={
@@ -129,16 +258,112 @@ export default function BookingManagement() {
     },
     {
       title: "Actions",
-      render: () => (
+      render: (_, record) => (
         <Space>
-          <Button className='editbutton-bookingmanagement' type="primary" icon={<EditOutlined />} />
-          <Button className='deletebutton-bookingmanagement' danger icon={<DeleteOutlined />} />
+          {isEditing(record) ? (
+            <>
+              <Button
+                className="savebutton-bookingmanagement"
+                type="primary"
+                onClick={() => save(record.key)}
+              >
+                Save
+              </Button>
+              <Button className="cancelbutton-bookingmanagement" onClick={cancel}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                className='editbutton-bookingmanagement'
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => edit(record)}
+                disabled={editingKey !== ""}
+              />
+              <Button
+                className='deletebutton-bookingmanagement'
+                danger
+                icon={<DeleteOutlined />}
+                disabled={editingKey !== ""}
+                onClick={() => handleDelete(record.key)}
+              />
+            </>
+          )}
         </Space>
       )
     }
   ];
 
-  // ================= STATS =================
+  //modify columns that can be editable
+  const mergedColumns = columns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+
+    //determine input type
+    let inputType = "text";
+    if (col.dataIndex === "status") inputType = "select";
+    if (col.dataIndex === "travelDate" || col.dataIndex === "bookingDate") inputType = "date";
+
+    //in every row, onCell is called to get current data(record), to determine inputType, and if the row is being edited
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType,
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record)
+      })
+    };
+  });
+
+  //editable cell components
+  const EditableCell = ({
+    editing,
+    dataIndex,
+    inputType,
+    children,
+    ...restProps
+  }) => {
+    let inputNode = <Input />;
+
+    if (inputType === "select") {
+      inputNode = (
+        <Select
+          options={[
+            { value: "Confirmed", label: "Confirmed" },
+            { value: "Pending", label: "Pending" },
+            { value: "Cancelled", label: "Cancelled" }
+          ]}
+        />
+      );
+    }
+
+    if (inputType === "date") {
+      inputNode = <DatePicker format="YYYY-MM-DD" />;
+    }
+
+    // if editing is true, render the input node, if not render the default cell value (children)
+    return (
+      <td {...restProps}>
+        {editing ? (
+          <Form.Item
+            name={dataIndex}
+            style={{ margin: 0 }}
+            rules={[{ required: true, message: `Please enter ${dataIndex}` }]}
+          >
+            {inputNode}
+          </Form.Item>
+        ) : (
+          children
+        )}
+      </td>
+    );
+  };
+
 
   const totalBookings = filteredData.length;
   const totalConfirmed = filteredData.filter(b => b.status === "Confirmed").length;
@@ -149,7 +374,6 @@ export default function BookingManagement() {
     <div>
       <h1 className="page-header">Booking Management</h1>
 
-      {/* 📊 STATS */}
       <Row gutter={16} style={{ marginBottom: 20 }}>
         <Col xs={24} sm={6}>
           <Card>
@@ -192,7 +416,6 @@ export default function BookingManagement() {
         </Col>
       </Row>
 
-      {/* 🔧 FILTER BAR */}
       <div className="booking-actions">
 
         <Input
@@ -205,6 +428,7 @@ export default function BookingManagement() {
         />
 
         <Select
+          className="booking-select"
           placeholder="Status"
           style={{ width: 140 }}
           allowClear
@@ -235,11 +459,20 @@ export default function BookingManagement() {
       </div>
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 6 }}
-        />
+        <Form form={form} component={false}>
+          <Table
+            components={{
+              body: {
+                cell: EditableCell
+              }
+            }}
+            columns={mergedColumns}
+            dataSource={filteredData}
+            loading={loading}
+            pagination={{ pageSize: 6 }}
+            rowClassName="editable-row"
+          />
+        </Form>
       </Card>
     </div>
   );

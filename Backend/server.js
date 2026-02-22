@@ -7,7 +7,10 @@ const userRoutes = require("./routes/userRoutes")
 const authRoutes = require("./routes/authRoutes")
 const logRoutes = require("./routes/logRoutes");
 const packageRoutes = require("./routes/packageRoutes");
-
+const adminRoutes = require("./routes/adminRoute");
+const bookingRoutes = require("./routes/bookingRoutes");
+const ratingRoutes = require("./routes/ratingRoutes");
+const wishlistRoutes = require("./routes/wishlistRoutes");
 
 const app = express()
 app.use(cors({
@@ -28,6 +31,10 @@ app.use('/api/user', userRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/logs', logRoutes)
 app.use('/api/package', packageRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/booking', bookingRoutes)
+app.use('/api/rating', ratingRoutes)
+app.use('/api/wishlist', wishlistRoutes)
 
 app.listen(8000, () => {
     console.log('Server is up and running');

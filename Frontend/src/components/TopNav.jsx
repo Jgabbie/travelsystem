@@ -77,7 +77,7 @@ export default function TopNav() {
   const items = [
     {
       key: '1',
-      label: 'Home',
+      label: 'Dashboard',
       icon: <HomeOutlined />
     },
     {
@@ -103,7 +103,7 @@ export default function TopNav() {
     } else if (key === '1') {
       navigate('/dashboard');
     } else if (key === '2') {
-      navigate('/admin-profile');
+      navigate('/adminprofile');
     }
   }
 

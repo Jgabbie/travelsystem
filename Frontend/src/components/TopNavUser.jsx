@@ -5,12 +5,13 @@ import { useAuth } from '../hooks/useAuth';
 import '../style/topnavuser.css'
 import LoginModal from './LoginModal';
 import SignupModal from './SignupModal';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/axiosConfig';
 
 export default function TopNavUser() {
     const { auth, setAuth } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [profileImage, setProfileImage] = useState('');
 
     const checkAuth = async () => {
@@ -77,39 +78,29 @@ export default function TopNavUser() {
         },
         {
             key: '2',
-            label: 'Profile',
+            label: 'My Profile',
             icon: <UserOutlined />,
         },
         {
             key: '3',
-            label: 'Bookings',
+            label: 'My Bookings',
             icon: <CarryOutOutlined />,
         },
         {
             key: '4',
-            label: 'Destinations',
-            icon: <EnvironmentOutlined />,
-        },
-        {
-            key: '5',
-            label: 'Wishlist',
+            label: 'My Wishlist',
             icon: <StarOutlined />,
         },
         {
-            key: '6',
-            label: 'Transactions',
+            key: '5',
+            label: 'My Transactions',
             icon: <CreditCardOutlined />,
-        },
-        {
-            key: '7',
-            label: 'Passport & Visa Service',
-            icon: <IdcardOutlined />,
         },
         {
             type: 'divider',
         },
         {
-            key: '9',
+            key: '6',
             label: 'Logout',
             icon: <LogoutOutlined />,
             danger: true,
@@ -118,7 +109,7 @@ export default function TopNavUser() {
 
     //dropdown menu items handler/functions
     const handleMenuClick = ({ key }) => {
-        if (key === '9') {
+        if (key === '6') {
             logout()
         } else if (key === '1') {
             navigate('/home');
@@ -127,13 +118,9 @@ export default function TopNavUser() {
         } else if (key === '3') {
             navigate('/user-bookings');
         } else if (key === '4') {
-            navigate('/destinations-packages');
-        } else if (key === '5') {
             navigate('/wishlist');
-        } else if (key === '6') {
+        } else if (key === '5') {
             navigate('/user-transactions');
-        } else if (key === '7') {
-            navigate('/passandvisa-service');
         }
     }
 
@@ -142,6 +129,13 @@ export default function TopNavUser() {
         if (!name) return 'U';
         return name[0].toUpperCase();
     }
+
+    const navItems = [
+        { label: 'HOME', route: '/home' },
+        { label: 'DESTINATIONS', route: '/destinations-packages' },
+        { label: 'ABOUT', route: '/about' },
+        { label: 'SERVICES', route: '/passandvisa-service' },
+    ];
 
     return (
         <div>
@@ -153,22 +147,37 @@ export default function TopNavUser() {
 
                 {/* if authenticated, show username, if not, then show signup and login button links */}
                 {auth ?
-                    <div>
-                        <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
-                            <Space className='dropdown-space'>
-                                <div className='nav-user-avatar'>
-                                    {profileImage ? (
-                                        <img src={profileImage} alt="Profile" className='nav-user-avatar-img' />
-                                    ) : (
-                                        <div className='nav-user-avatar-placeholder'>{getInitials()}</div>
-                                    )}
-                                </div>
-                                <h4 className='username-text'>
-                                    Welcome, <span className='username-dropdown'>{auth?.username?.toUpperCase()}</span>
-                                </h4>
-                                <DownOutlined className='user-dropdown-icon' />
-                            </Space>
-                        </Dropdown>
+                    <div className="nav-links">
+                        <div className='nav-buttonlinks-group'>
+                            {navItems.map((item) => (
+                                <Button
+                                    key={item.route}
+                                    className={`nav-buttonlinks${location.pathname === item.route ? ' nav-buttonlinks--active' : ''}`}
+                                    type="link"
+                                    onClick={() => navigate(item.route)}
+                                >
+                                    {item.label}
+                                </Button>
+                            ))}
+                        </div>
+                        <div className="dropdown-div">
+                            <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
+                                <Space className='dropdown-space'>
+                                    <div className='nav-user-avatar'>
+                                        {profileImage ? (
+                                            <img src={profileImage} alt="Profile" className='nav-user-avatar-img' />
+                                        ) : (
+                                            <div className='nav-user-avatar-placeholder'>{getInitials()}</div>
+                                        )}
+                                    </div>
+                                    <h4 className='username-text'>
+                                        Welcome, <span className='username-dropdown'>{auth?.username?.toUpperCase()}</span>
+                                    </h4>
+                                    <DownOutlined className='user-dropdown-icon' />
+                                </Space>
+                            </Dropdown>
+                        </div>
+
                     </div>
                     :
                     <div className="nav-links">

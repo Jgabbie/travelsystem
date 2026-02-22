@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.addons-modal .ant-modal-content {
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.addons-modal .ant-modal-body {
+    padding: 15px 0 0;
+}
+
+.addons-content {
+    padding-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.addons-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.addons-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 16px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addons-card h3 {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #1f2a44;
+}
+
+.addons-card p {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.addons-card.is-selected {
+    border-color: #305797;
+    box-shadow: 0 8px 18px rgba(48, 87, 151, 0.18);
+}
+
+.addons-image {
+    width: 100%;
+    height: 140px;
+    border-radius: 12px;
+    background-color: #f9fafb;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid #e5e7eb;
+}
+
+.addons-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.addons-proceed {
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.addons-cancel {
+    background-color: #992A46 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+@media (max-width: 768px) {
+    .addons-cards {
+        grid-template-columns: 1fr;
+    }
+}

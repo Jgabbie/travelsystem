@@ -14,6 +14,21 @@
   width: 200px;
 }
 
+.booking-actions .ant-input:hover,
+.booking-actions .ant-input:focus,
+.booking-actions .ant-input-focused,
+.booking-actions .ant-input-affix-wrapper:hover,
+.booking-actions .ant-input-affix-wrapper-focused,
+.booking-actions .ant-input-affix-wrapper:focus-within {
+  border-color: #305797 !important;
+}
+
+.booking-select:hover,
+.booking-select:focus-within {
+  border-color: #305797 !important;
+}
+
+
 .editbutton-bookingmanagement {
   border-color: #305797;
   background-color: #fff !important;
@@ -22,6 +37,28 @@
 
 .editbutton-bookingmanagement:hover {
   background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.savebutton-bookingmanagement {
+  border-color: #1f8f3a;
+  background-color: #1f8f3a !important;
+  color: #fff !important;
+}
+
+.savebutton-bookingmanagement:hover {
+  background-color: #167a30 !important;
+  color: #fff !important;
+}
+
+.cancelbutton-bookingmanagement {
+  border-color: #d93025;
+  color: #d93025 !important;
+  background-color: #fff !important;
+}
+
+.cancelbutton-bookingmanagement:hover {
+  background-color: #d93025 !important;
   color: #fff !important;
 }
 
