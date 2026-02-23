@@ -88,11 +88,16 @@ export default function TopNavUser() {
         },
         {
             key: '4',
+            label: 'My Quotations',
+            icon: <IdcardOutlined />,
+        },
+        {
+            key: '5',
             label: 'My Wishlist',
             icon: <StarOutlined />,
         },
         {
-            key: '5',
+            key: '6',
             label: 'My Transactions',
             icon: <CreditCardOutlined />,
         },
@@ -100,7 +105,7 @@ export default function TopNavUser() {
             type: 'divider',
         },
         {
-            key: '6',
+            key: '7',
             label: 'Logout',
             icon: <LogoutOutlined />,
             danger: true,
@@ -109,7 +114,7 @@ export default function TopNavUser() {
 
     //dropdown menu items handler/functions
     const handleMenuClick = ({ key }) => {
-        if (key === '6') {
+        if (key === '7') {
             logout()
         } else if (key === '1') {
             navigate('/home');
@@ -118,8 +123,10 @@ export default function TopNavUser() {
         } else if (key === '3') {
             navigate('/user-bookings');
         } else if (key === '4') {
-            navigate('/wishlist');
+            navigate('/user-package-quotation');
         } else if (key === '5') {
+            navigate('/wishlist');
+        } else if (key === '6') {
             navigate('/user-transactions');
         }
     }

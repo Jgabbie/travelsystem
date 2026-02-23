@@ -123,4 +123,12 @@
     .user-transactions-container {
         padding: 110px 16px 32px;
     }
+
+    .user-transactions-header h2 {
+        font-size: 22px;
+    }
+
+    .user-transactions-table {
+        padding: 12px;
+    }
 }

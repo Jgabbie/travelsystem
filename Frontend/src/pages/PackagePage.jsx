@@ -13,6 +13,7 @@ import TravelersModal from '../components/TravelersModal'
 import AddOnsModal from '../components/AddOnsModal'
 import BookingSummaryModal from '../components/BookingSummaryModal'
 import CustomizeBookingModal from '../components/CustomizeBookingModal'
+import PackageQuotationModal from '../components/modals/PackageQuotationModal'
 import { useAuth } from '../hooks/useAuth'
 
 export default function PackagePage() {
@@ -31,6 +32,7 @@ export default function PackagePage() {
     const [isBookingSummaryOpen, setIsBookingSummaryOpen] = useState(false)
     const [isConfirmBookingOpen, setIsConfirmBookingOpen] = useState(false)
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false)
+    const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false)
     const [selectedDate, setSelectedDate] = useState(null)
     const [travelerCounts, setTravelerCounts] = useState(null)
     const [selectedAddOns, setSelectedAddOns] = useState([])
@@ -69,6 +71,7 @@ export default function PackagePage() {
         setIsAddOnsModalOpen(false)
         setIsBookingSummaryOpen(false)
         setIsBookingSuccessOpen(false)
+        setIsQuotationModalOpen(false)
     }
 
     useEffect(() => {
@@ -296,10 +299,14 @@ export default function PackagePage() {
         setFixedCustomSelection(nextSelection)
         setIsFixedCustomModalOpen(false)
         if (nextSelection === 'custom') {
-            setIsCustomizeBookingOpen(true)
+            setIsQuotationModalOpen(true)
             return
         }
         setIsSoloGroupModalOpen(true)
+    }
+
+    const handleSubmitQuotation = () => {
+        setIsQuotationModalOpen(false)
     }
 
     const handleProceedCustomizeBooking = ({ airlines, hotels }) => {
@@ -591,6 +598,18 @@ export default function PackagePage() {
                 onProceed={handleProceedCustomizeBooking}
                 defaultAirlines={selectedAirlines}
                 defaultHotels={selectedHotels}
+            />
+
+            <PackageQuotationModal
+                open={isQuotationModalOpen}
+                onCancel={resetBookingFlow}
+                onSubmit={handleSubmitQuotation}
+                basePrice={packageData?.packagePricePerPax || 0}
+                days={packageData?.packageDuration || 1}
+                fixedItinerary={packageData?.packageItineraries || {}}
+                itinerary={Object.keys(packageData?.packageItineraries || {})
+                    .sort((a, b) => Number(a.replace('day', '')) - Number(b.replace('day', '')))
+                    .map((dayKey) => dayKey.replace('day', 'Day '))}
             />
 
             <SoloOrGrouped

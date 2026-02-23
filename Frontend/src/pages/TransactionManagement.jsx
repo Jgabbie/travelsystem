@@ -442,6 +442,7 @@ export default function TransactionManagement() {
             dataSource={filteredData}
             pagination={{ pageSize: 6 }}
             rowClassName="editable-row"
+            scroll={{ x: "max-content" }}
           />
         </Form>
       </Card>

@@ -38,7 +38,7 @@
     margin: 0;
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
-    color: #1f2a44;
+    color: #305797;
 }
 
 .package-duration {
@@ -145,7 +145,7 @@
 .package-price {
     font-size: 28px;
     font-weight: 700;
-    color: #1f2a44;
+    color: #305797;
 }
 
 .package-availability-button {
@@ -209,7 +209,7 @@
 
 .package-review-name {
     font-weight: 600;
-    color: #1f2a44;
+    color: #305797;
 }
 
 .package-review-comment {
@@ -235,7 +235,7 @@
 .package-review-form h3 {
     margin: 0;
     font-size: 16px;
-    color: #1f2a44;
+    color: #305797;
 }
 
 .package-wishlist-modal .ant-modal-content {
@@ -246,7 +246,7 @@
 .package-wishlist-title {
     margin: 0 0 8px;
     font-size: 20px;
-    color: #1f2a44;
+    color: #305797;
     font-family: "Montserrat", sans-serif;
 }
 

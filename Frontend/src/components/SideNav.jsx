@@ -44,6 +44,7 @@ export default function SideNav() {
           <NavLink to="/users" className="nav-item">Users</NavLink>
           <NavLink to="/bookings" className="nav-item">Bookings</NavLink>
           <NavLink to="/transactions" className="nav-item">Transactions</NavLink>
+          <NavLink to="/package-quotation" className="nav-item">Quotation Requests</NavLink>
           <NavLink to="/packages" className="nav-item">Packages</NavLink>
           <NavLink to="/ratings" className="nav-item">Review</NavLink>
           <NavLink to="/passport-applications" className="nav-item">Passport Applications</NavLink>

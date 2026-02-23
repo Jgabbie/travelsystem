@@ -158,6 +158,7 @@ export default function UserBookings() {
                         dataSource={dataSource}
                         loading={loading}
                         pagination={{ pageSize: 5 }}
+                        scroll={{ x: 'max-content' }}
                     />
                 </div>
             </div>

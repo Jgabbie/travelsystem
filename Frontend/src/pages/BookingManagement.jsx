@@ -8,7 +8,7 @@ import {
   SearchOutlined, EditOutlined,
   DeleteOutlined, CalendarOutlined,
   ClockCircleOutlined, CheckCircleOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined, EyeOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axiosInstance from "../config/axiosConfig";
@@ -141,6 +141,14 @@ export default function BookingManagement() {
         }
       }
     });
+  };
+
+  //handle view booking details
+  const handleView = (key) => {
+    const booking = data.find((item) => item.key === key);
+    if (booking) {
+      console.log("Viewing booking details:", booking);
+    }
   };
 
   //save edited booking
@@ -289,12 +297,21 @@ export default function BookingManagement() {
                 disabled={editingKey !== ""}
                 onClick={() => handleDelete(record.key)}
               />
+              <Button
+                className='viewbutton-bookingmanagement'
+                type="primary"
+                icon={<EyeOutlined />}
+                onClick={() => handleView(record.key)}
+                disabled={editingKey !== ""}
+              />
             </>
           )}
         </Space>
       )
     }
   ];
+
+
 
   //modify columns that can be editable
   const mergedColumns = columns.map((col) => {
@@ -471,6 +488,7 @@ export default function BookingManagement() {
             loading={loading}
             pagination={{ pageSize: 6 }}
             rowClassName="editable-row"
+            scroll={{ x: "max-content" }}
           />
         </Form>
       </Card>

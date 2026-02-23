@@ -13,34 +13,11 @@ export default function DestinationsPackages() {
     const [budgetRange, setBudgetRange] = useState([0, 40000])
     const [selectedActivities, setSelectedActivities] = useState([])
     const [tourType, setTourType] = useState('All')
-    const [daysValue, setDaysValue] = useState(7)
+    const [daysValue, setDaysValue] = useState(3)
 
     const { Title, Text } = Typography
 
-    const handleBudgetInputChange = (index, value) => {
-        const sanitized = Number.isFinite(value) ? value : 0
-        const minValue = 0
-        const maxValue = 50000
-        const next = [...budgetRange]
-        const clamped = Math.min(Math.max(sanitized, minValue), maxValue)
-        next[index] = clamped
-        if (index === 0 && next[0] > next[1]) {
-            next[1] = next[0]
-        }
-        if (index === 1 && next[1] < next[0]) {
-            next[0] = next[1]
-        }
-        setBudgetRange(next)
-    }
-
-    const handleDaysInputChange = (value) => {
-        const sanitized = Number.isFinite(value) ? value : 1
-        const minValue = 1
-        const maxValue = 10
-        const clamped = Math.min(Math.max(sanitized, minValue), maxValue)
-        setDaysValue(clamped)
-    }
-
+    //get all packages from package collection and map it
     useEffect(() => {
         const fetchPackages = async () => {
             try {
@@ -67,11 +44,14 @@ export default function DestinationsPackages() {
                 setPackages([])
             }
         }
-
         fetchPackages()
     }, [])
 
+
+    //gets the values from the search bar from the landing page and sets the filters based on the configuration of the user
     useEffect(() => {
+        if (!location.search) return //if no inputs from the search bar, then skip parsing and just show all packages
+
         const params = new URLSearchParams(location.search)
         const query = params.get('q')
         const activity = params.get('activity')
@@ -92,18 +72,18 @@ export default function DestinationsPackages() {
             setTourType(tourTypeParam)
         }
 
+
+        // it checks first if the min and max budget values are integers or values then , set the budget range
         if (Number.isFinite(minBudget) && Number.isFinite(maxBudget)) {
-            const clampedMin = Math.max(0, Math.min(minBudget, 50000))
-            const clampedMax = Math.max(0, Math.min(maxBudget, 50000))
             setBudgetRange([
-                Math.min(clampedMin, clampedMax),
-                Math.max(clampedMin, clampedMax)
+                Math.min(minBudget, maxBudget),
+                Math.max(minBudget, maxBudget)
             ])
         }
 
+        // same as the budget range, check if the max days is an integer then set the days value
         if (Number.isFinite(maxDays)) {
-            const clampedDays = Math.max(1, Math.min(maxDays, 10))
-            setDaysValue(clampedDays)
+            setDaysValue(maxDays)
         }
     }, [location.search])
 
@@ -192,16 +172,16 @@ export default function DestinationsPackages() {
                                         max={50000}
                                         maxLength={6}
                                         value={budgetRange[0]}
-                                        onChange={(value) => handleBudgetInputChange(0, value)}
+                                        onChange={(value) => setBudgetRange([value, budgetRange[1]])}
                                         formatter={(value) => `₱${value}`}
-                                        parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
+                                        parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))} // converts the value to a number and removes the non digit values like peso sign and commas
                                         onKeyDown={(e) => {
                                             if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                                 e.preventDefault()
                                             }
                                         }}
-
                                     />
+
                                     <span className="filter-range-separator">to</span>
                                     <InputNumber
                                         className='destinations-inputs'
@@ -209,7 +189,7 @@ export default function DestinationsPackages() {
                                         max={50000}
                                         maxLength={6}
                                         value={budgetRange[1]}
-                                        onChange={(value) => handleBudgetInputChange(1, value)}
+                                        onChange={(value) => setBudgetRange([budgetRange[0], value])}
                                         formatter={(value) => `₱${value}`}
                                         parser={(value) => Number(String(value).replace(/[^0-9]/g, ''))}
                                         onKeyDown={(e) => {
@@ -277,7 +257,7 @@ export default function DestinationsPackages() {
                                         max={10}
                                         maxLength={2}
                                         value={daysValue}
-                                        onChange={handleDaysInputChange}
+                                        onChange={setDaysValue}
                                         onKeyDown={(e) => {
                                             if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                                 e.preventDefault()
@@ -291,7 +271,7 @@ export default function DestinationsPackages() {
                                     max={10}
                                     value={daysValue}
                                     onChange={setDaysValue}
-                                    tooltip={{ formatter: (value) => `${value} day${value > 1 ? 's' : ''}` }}
+                                    tooltip={{ formatter: (value) => `${value} day${value > 1 ? 's' : ''}` }} //if one day then show "day", if more that one day then show "days"
                                 />
                                 <Text className="filter-hint">
                                     Up to {daysValue} days

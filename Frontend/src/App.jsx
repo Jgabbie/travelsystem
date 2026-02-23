@@ -26,6 +26,8 @@ import VisaApplications from "./pages/VisaApplications";
 import PassportApplications from "./pages/PassportApplications";
 import AdminProfile from "./pages/AdminProfile";
 import CancellationRequests from "./pages/CancellationRequests";
+import QuotationManagement from "./pages/QuotationManagement";
+import UserPackageQuotation from "./pages/UserPackageQuotation";
 
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -33,7 +35,6 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
-
 
 
 function App() {
@@ -68,7 +69,7 @@ function App() {
             <Route path="passport-applications" element={<PassportApplications />} />
             <Route path="cancellation-requests" element={<CancellationRequests />} />
             <Route path="adminprofile" element={<AdminProfile />} />
-
+            <Route path="package-quotation" element={<QuotationManagement />} />
             {/* logging and auditing routes */}
             <Route path="logging" element={<Logging />} />
             <Route path="auditing" element={<Auditing />} />
@@ -85,6 +86,7 @@ function App() {
           <Route path='/passandvisa-service' element={<PassAndVisaService />} />
           <Route path='/wishlist' element={<Wishlist />} />
           <Route path='/destinations-packages' element={<DestinationsPackages />} />
+          <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
         </Route>
 
 

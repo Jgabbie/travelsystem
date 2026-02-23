@@ -1,0 +1,267 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.quotation-modal .ant-modal-content {
+    border-radius: 18px;
+    padding: 24px;
+    background: #ffffff;
+    box-shadow: 0 18px 50px rgba(19, 35, 66, 0.2);
+}
+
+.quotation-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.quotation-header h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1f2a44;
+    margin: 0 0 6px;
+}
+
+.quotation-header p {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    color: #5b677a;
+    margin: 0;
+}
+
+.quotation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.quotation-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.quotation-field label {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #5b677a;
+}
+
+.quotation-input,
+.quotation-field .ant-input,
+.quotation-field .ant-input-number,
+.quotation-field .ant-input-number-input {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+}
+
+.quotation-input {
+    margin-top: 10px;
+}
+
+.quotation-input:hover,
+.quotation-input:focus-within {
+    border-color: #305797 !important;
+}
+
+.quotation-input.ant-input-number {
+    width: 100%;
+}
+
+.quotation-budget {
+    grid-column: span 2;
+}
+
+.quotation-budget-values {
+    display: flex;
+    justify-content: space-between;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #305797;
+}
+
+.quotation-slider .ant-slider-track {
+    background-color: #305797;
+}
+
+.quotation-slider .ant-slider-handle::after {
+    box-shadow: 0 0 0 2px #305797;
+    background-color: #305797;
+}
+
+.quotation-slider .ant-slider-handle:hover::after,
+.quotation-slider .ant-slider-handle:focus-visible::after {
+    box-shadow: 0 0 0 4px rgba(48, 87, 151, 0.28);
+}
+
+.quotation-itinerary h3 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2a44;
+    margin: 0 0 8px;
+}
+
+.quotation-fixed-itinerary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    background: #f7f9fc;
+    border: 1px solid #e3e9f3;
+    margin-bottom: 16px;
+}
+
+.quotation-fixed-itinerary h3 {
+    margin: 0;
+}
+
+.quotation-fixed-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+}
+
+.quotation-fixed-day h4 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #305797;
+    margin: 0 0 6px;
+}
+
+.quotation-fixed-day ul {
+    margin: 0;
+    padding-left: 18px;
+    color: #1f2a44;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.quotation-itinerary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.quotation-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.quotation-cancel {
+    font-family: "Roboto", sans-serif;
+    border-radius: 10px;
+    height: 40px;
+}
+
+.quotation-submit {
+    font-family: "Roboto", sans-serif;
+    font-weight: 600;
+    background-color: #305797;
+    border-radius: 10px;
+    height: 40px;
+}
+
+.quotation-submit:hover {
+    background-color: #244574 !important;
+}
+
+.package-quotation-error {
+    color: #e74c3c !important;
+    height: 10px;
+    font-size: 12px;
+}
+
+.quotation-input.input-error {
+    border-color: #e74c3c !important;
+}
+
+.quotation-modal .ant-modal-content {
+    border-radius: 18px;
+    padding: 24px;
+    background: #ffffff;
+    box-shadow: 0 18px 50px rgba(19, 35, 66, 0.2);
+}
+
+.quotation-modal-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #305797;
+    margin: 0 0 6px;
+}
+
+.quotation-modal-text {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    color: #5b677a;
+    margin: 0;
+}
+
+.quotation-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.quotation-modal-button {
+    font-family: "Roboto", sans-serif;
+    font-weight: 600;
+    background-color: #305797;
+    border-radius: 10px;
+    height: 40px;
+    color: #fff;
+}
+
+.quotation-modal-button:hover {
+    background-color: #9f9f9f !important;
+    border-color: #305797 !important;
+    color: #305797 !important;
+}
+
+@media (max-width: 900px) {
+    .quotation-modal .ant-modal {
+        width: 90% !important;
+        max-width: 720px;
+    }
+
+    .quotation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quotation-budget {
+        grid-column: span 1;
+    }
+
+    .quotation-itinerary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quotation-fixed-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .quotation-modal .ant-modal-content {
+        padding: 18px;
+    }
+
+    .quotation-header h2 {
+        font-size: 22px;
+    }
+
+    .quotation-actions {
+        flex-direction: column;
+    }
+
+    .quotation-actions .ant-btn {
+        width: 100%;
+    }
+}

@@ -88,6 +88,7 @@ export default function UserTransactions() {
                         columns={columns}
                         dataSource={dataSource}
                         pagination={{ pageSize: 5 }}
+                        scroll={{ x: 'max-content' }}
                     />
                 </div>
             </div>

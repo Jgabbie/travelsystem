@@ -5,6 +5,7 @@
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .package-toolbar .ant-input:hover,
@@ -251,6 +252,25 @@
 }
 
 @media (max-width: 768px) {
+  .package-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .package-container {
+    flex-direction: column;
+  }
+
+  .package-media {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .package-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
   .package-details-body {
     grid-template-columns: 1fr;
   }

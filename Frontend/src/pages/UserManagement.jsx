@@ -402,6 +402,7 @@ export default function UserManagement() {
             dataSource={filteredUsers}
             pagination={{ pageSize: 6 }}
             rowClassName="editable-row"
+            scroll={{ x: "max-content" }}
           />
         </Form>
       </Card>

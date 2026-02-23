@@ -17,6 +17,7 @@ export default function LandingPage() {
 
     const [budgetRange, setBudgetRange] = useState([12000, 30000]);
     const [activity, setActivity] = useState('Adventure Type');
+    const [type, setType] = useState('Tour Type');
     const [duration, setDuration] = useState('Length of Stay');
     const [pax, setPax] = useState('Number of Travelers');
     const [searchTerm, setSearchTerm] = useState('');
@@ -51,8 +52,8 @@ export default function LandingPage() {
             }
         }
 
-        if (pax && pax !== 'Tour Type') {
-            params.set('tourType', pax);
+        if (type && type !== 'Tour Type') {
+            params.set('tourType', type);
         }
 
         params.set('minBudget', String(budgetRange[0]));
@@ -82,10 +83,10 @@ export default function LandingPage() {
                             placeholder="Search here..."
                             className="search-input"
                             value={searchTerm}
-                            onChange={(event) => setSearchTerm(event.target.value)}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter') {
-                                    event.preventDefault();
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
                                     handleSearch();
                                 }
                             }}
@@ -138,8 +139,8 @@ export default function LandingPage() {
                             <label>TOUR TYPE</label>
                             <Select
                                 className="landing-select"
-                                value={pax}
-                                onChange={setPax}
+                                value={type}
+                                onChange={setType}
                                 options={[
                                     { value: 'Tour Type', label: 'Tour Type' },
                                     { value: 'Domestic', label: 'Domestic' },
@@ -431,7 +432,7 @@ export default function LandingPage() {
                     </div>
                     <Input.TextArea
                         value={chatMessage}
-                        onChange={(event) => setChatMessage(event.target.value)}
+                        onChange={(e) => setChatMessage(e.target.value)}
                         placeholder="Type your message..."
                         rows={3}
                     />

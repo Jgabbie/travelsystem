@@ -13,6 +13,17 @@
   width: 200px;
 }
 
+@media (max-width: 768px) {
+  .user-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}
+
 .user-actions .ant-input:hover,
 .user-actions .ant-input:focus,
 .user-actions .ant-input-focused,
