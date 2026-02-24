@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [auth, setAuth] = useState(null); //if user is logged in
-    //const [authLoading, setAuthLoading] = useState(true);
+    const [authLoading, setAuthLoading] = useState(true);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -25,9 +25,9 @@ export const AuthProvider = ({ children }) => {
             } catch {
                 setAuth(null);
             }
-            // finally {
-            //     setAuthLoading(false);
-            // }
+            finally {
+                setAuthLoading(false);
+            }
         };
 
         checkAuth();
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
     //wraps the children components so the the values can be accessed
     //children is the <App/> component stored in index.js
     return (
-        <AuthContext.Provider value={{ auth, setAuth, }}>
+        <AuthContext.Provider value={{ auth, setAuth, authLoading }}>
             {children}
         </AuthContext.Provider>
     );

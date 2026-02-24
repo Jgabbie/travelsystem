@@ -56,20 +56,17 @@ export default function Wishlist() {
                 price: pkg.packagePricePerPax ?? 0,
                 category: pkg.packageType || 'Other',
                 availability: availabilityLabel,
-                typeLabel: pkg.packageType || 'Package'
+                typeLabel: pkg.packageType || 'Package',
+                image: pkg.image || ''
             }
         })
     }, [wishlistItems])
 
-    const categoryOptions = useMemo(() => {
-        const categories = Array.from(
-            new Set(wishlistPackages.map((pkg) => pkg.category).filter(Boolean))
-        )
-        return [
-            { value: 'All', label: 'All' },
-            ...categories.map((value) => ({ value, label: value }))
-        ]
-    }, [wishlistPackages])
+    const categoryOptions = useMemo(() => ([
+        { value: 'All', label: 'All' },
+        { value: 'Domestic', label: 'Domestic' },
+        { value: 'International', label: 'International' }
+    ]), [])
 
     const filteredPackages = useMemo(() => {
         const query = search.trim().toLowerCase()
@@ -117,68 +114,79 @@ export default function Wishlist() {
     return (
         <div>
             <TopNavUser />
+
+            <div className="destinations-hero-section">
+                <div className="destinations-hero-overlay"></div>
+                <div className="destinations-hero-content">
+                    <h1>Your Favorites Are Here!</h1>
+                    <p>Discover packages that are currently available or in discount!</p>
+                </div>
+            </div>
+
             <div className="wishlist-page">
                 <header className="wishlist-header">
                     <Title level={2}>Your Wishlist</Title>
                     <Text type="secondary">Search and filter the packages you saved for later.</Text>
                 </header>
 
-                <div className="wishlist-controls">
-                    <div className="wishlist-search">
-                        <Text className="wishlist-label">Search</Text>
-                        <Input
-                            allowClear
-                            placeholder="Search by destination or package name"
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                        />
+                <Card className="wishlist-controls-card" bordered={false}>
+                    <div className="wishlist-controls">
+                        <div className="wishlist-search">
+                            <Text className="wishlist-label">Search</Text>
+                            <Input
+                                allowClear
+                                placeholder="Search by destination or package name"
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                            />
+                        </div>
+
+                        <Row gutter={[16, 16]} className="wishlist-filter-grid">
+                            <Col xs={24} sm={12} md={8}>
+                                <div className="filter-field">
+                                    <Text className="wishlist-label">Category</Text>
+                                    <Select
+                                        value={category}
+                                        onChange={(value) => setCategory(value)}
+                                        options={categoryOptions}
+                                    />
+                                </div>
+                            </Col>
+
+                            <Col xs={24} sm={12} md={8}>
+                                <div className="filter-field">
+                                    <Text className="wishlist-label">Availability</Text>
+                                    <Select
+                                        value={availability}
+                                        onChange={(value) => setAvailability(value)}
+                                        options={[
+                                            { value: 'All', label: 'All' },
+                                            { value: 'Available', label: 'Available' },
+                                            { value: 'Few slots', label: 'Few slots' },
+                                            { value: 'Sold out', label: 'Sold out' },
+                                        ]}
+                                    />
+                                </div>
+                            </Col>
+
+                            <Col xs={24} sm={12} md={8}>
+                                <div className="filter-field">
+                                    <Text className="wishlist-label">Price</Text>
+                                    <Select
+                                        value={priceRange}
+                                        onChange={(value) => setPriceRange(value)}
+                                        options={[
+                                            { value: 'All', label: 'All' },
+                                            { value: 'Under 4000', label: 'Under 4000' },
+                                            { value: '4000-7000', label: '4000-7000' },
+                                            { value: '7000+', label: '7000+' },
+                                        ]}
+                                    />
+                                </div>
+                            </Col>
+                        </Row>
                     </div>
-
-                    <Row gutter={[16, 16]} className="wishlist-filter-grid">
-                        <Col xs={24} sm={12} md={8}>
-                            <div className="filter-field">
-                                <Text className="wishlist-label">Category</Text>
-                                <Select
-                                    value={category}
-                                    onChange={(value) => setCategory(value)}
-                                    options={categoryOptions}
-                                />
-                            </div>
-                        </Col>
-
-                        <Col xs={24} sm={12} md={8}>
-                            <div className="filter-field">
-                                <Text className="wishlist-label">Availability</Text>
-                                <Select
-                                    value={availability}
-                                    onChange={(value) => setAvailability(value)}
-                                    options={[
-                                        { value: 'All', label: 'All' },
-                                        { value: 'Available', label: 'Available' },
-                                        { value: 'Few slots', label: 'Few slots' },
-                                        { value: 'Sold out', label: 'Sold out' },
-                                    ]}
-                                />
-                            </div>
-                        </Col>
-
-                        <Col xs={24} sm={12} md={8}>
-                            <div className="filter-field">
-                                <Text className="wishlist-label">Price</Text>
-                                <Select
-                                    value={priceRange}
-                                    onChange={(value) => setPriceRange(value)}
-                                    options={[
-                                        { value: 'All', label: 'All' },
-                                        { value: 'Under 4000', label: 'Under 4000' },
-                                        { value: '4000-7000', label: '4000-7000' },
-                                        { value: '7000+', label: '7000+' },
-                                    ]}
-                                />
-                            </div>
-                        </Col>
-                    </Row>
-                </div>
+                </Card>
 
                 <section className="wishlist-results">
                     <div className="wishlist-results-header">
@@ -199,6 +207,13 @@ export default function Wishlist() {
                             {filteredPackages.map((pkg) => (
                                 <Col xs={24} sm={12} lg={8} key={pkg.wishlistId || pkg.packageId}>
                                     <Card className="wishlist-card" hoverable>
+                                        <div className="wishlist-card-image">
+                                            {pkg.image ? (
+                                                <img src={pkg.image} alt={pkg.title} />
+                                            ) : (
+                                                <div className="wishlist-card-image-placeholder">No image</div>
+                                            )}
+                                        </div>
                                         <div className="wishlist-card-header">
                                             <div>
                                                 <Title level={5} className="wishlist-card-title">

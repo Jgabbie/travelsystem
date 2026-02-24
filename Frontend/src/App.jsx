@@ -10,6 +10,7 @@ import UserTransactions from "./pages/UserTransactions";
 import PassAndVisaService from "./pages/PassAndVisaService";
 import Wishlist from "./pages/Wishlist";
 import DestinationsPackages from "./pages/DestinationsPackages";
+import UserBookingInvoice from "./pages/UserBookingInvoice";
 
 import Logging from './pages/Logging';
 import Auditing from './components/Auditing';
@@ -35,7 +36,6 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
-
 
 function App() {
   return (
@@ -87,6 +87,7 @@ function App() {
           <Route path='/wishlist' element={<Wishlist />} />
           <Route path='/destinations-packages' element={<DestinationsPackages />} />
           <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
+          <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
         </Route>
 
 

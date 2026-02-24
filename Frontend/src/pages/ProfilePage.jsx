@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, message, Spin, Card, Space, Rate } from 'antd';
+import { Input, Button, message, Spin, Card, Space, Rate, DatePicker, Select } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs'
 import '../style/profilepage.css'
 import axiosInstance from '../config/axiosConfig';
 import TopNavUser from '../components/TopNavUser';
@@ -23,7 +24,11 @@ export default function ProfilePage() {
         firstname: '',
         lastname: '',
         email: '',
-        phone: ''
+        phone: '',
+        homeAddress: '',
+        gender: '',
+        birthdate: '',
+        nationality: ''
     });
 
     const [recentReviews, setRecentReviews] = useState([])
@@ -114,7 +119,11 @@ export default function ProfilePage() {
                     firstname: data.userData.firstname,
                     lastname: data.userData.lastname,
                     email: data.userData.email,
-                    phone: data.userData.phone
+                    phone: data.userData.phone,
+                    homeAddress: data.userData.homeAddress || '',
+                    gender: data.userData.gender || '',
+                    birthdate: data.userData.birthdate || '',
+                    nationality: data.userData.nationality || ''
                 })
             } else if (response.status === 401) {
                 message.error('Please login to view your profile')
@@ -205,7 +214,11 @@ export default function ProfilePage() {
                 firstname: userData.firstname,
                 lastname: userData.lastname,
                 email: userData.email,
-                phone: userData.phone
+                phone: userData.phone,
+                homeAddress: userData.homeAddress || '',
+                gender: userData.gender || '',
+                birthdate: userData.birthdate || '',
+                nationality: userData.nationality || ''
             })
             setProfileImage(
                 userData?.profileImageUrl ||
@@ -262,7 +275,11 @@ export default function ProfilePage() {
                 lastname: values.lastname,
                 email: values.email,
                 phone: values.phone,
-                profileImage: profileImage || ''
+                profileImage: profileImage || '',
+                homeAddress: values.homeAddress,
+                gender: values.gender,
+                birthdate: values.birthdate,
+                nationality: values.nationality
             }, {
                 withCredentials: true,
                 headers: {
@@ -279,6 +296,13 @@ export default function ProfilePage() {
                 profileImage ||
                 ''
             )
+            setValues((prev) => ({
+                ...prev,
+                homeAddress: data.userData?.homeAddress || '',
+                gender: data.userData?.gender || '',
+                birthdate: data.userData?.birthdate || '',
+                nationality: data.userData?.nationality || ''
+            }))
             setEditing(false)
             message.success('Profile updated successfully!')
         } catch (error) {
@@ -508,6 +532,60 @@ export default function ProfilePage() {
                                 {error.phone && (
                                     <p className="profile-error-message">{error.phone}</p>
                                 )}
+                            </div>
+
+                            <div className="profile-field">
+                                <label className="profile-label">Home Address</label>
+                                <Input
+                                    placeholder="Enter your home address"
+                                    allowClear
+                                    value={values.homeAddress}
+                                    disabled={!editing}
+                                    onChange={(e) => valueHandler('homeAddress', e.target.value)}
+                                />
+                            </div>
+
+                            <div className="profile-field">
+                                <label className="profile-label">Gender</label>
+                                <Select
+                                    placeholder="Select gender"
+                                    value={values.gender || undefined}
+                                    disabled={!editing}
+                                    onChange={(value) => valueHandler('gender', value || '')}
+                                    options={[
+                                        { value: 'Male', label: 'Male' },
+                                        { value: 'Female', label: 'Female' },
+                                        { value: 'Other', label: 'Other' },
+                                        { value: 'Prefer not to say', label: 'Prefer not to say' }
+                                    ]}
+                                    allowClear
+                                />
+                            </div>
+
+                            <div className="profile-field">
+                                <label className="profile-label">Birthdate</label>
+                                <DatePicker
+                                    placeholder="Select birthdate"
+                                    value={values.birthdate ? dayjs(values.birthdate) : null}
+                                    disabled={!editing}
+                                    onChange={(date) =>
+                                        valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
+                                    }
+                                    format="YYYY-MM-DD"
+                                    allowClear
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+
+                            <div className="profile-field">
+                                <label className="profile-label">Nationality</label>
+                                <Input
+                                    placeholder="Enter your nationality"
+                                    allowClear
+                                    value={values.nationality}
+                                    disabled={!editing}
+                                    onChange={(e) => valueHandler('nationality', e.target.value)}
+                                />
                             </div>
 
                             {userData?.role && (

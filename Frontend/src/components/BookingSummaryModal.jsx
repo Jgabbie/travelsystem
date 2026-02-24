@@ -31,25 +31,57 @@ const getDisplayDate = (value) => {
 export default function BookingSummaryModal({
     open,
     onCancel,
-    onProceed,
     summary,
     successUrl,
     cancelUrl,
     bookingPayload
 }) {
 
-    const [bankInstructions, setBankInstructions] = useState([]);
-    const [bankReference, setBankReference] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
 
     //paymongo checkout
+
+
+    //get summary data or use default option to test booking
+    const data = summary ? { ...DEFAULT_SUMMARY, ...summary } : DEFAULT_SUMMARY
+    const travelers = data.travelers?.length ? data.travelers : ['None selected']
+    const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : ['None selected']
+    const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : ['None selected']
+    const addons = data.addons?.length ? data.addons : ['None selected']
+    const travelDate = getDisplayDate(data.travelDate)
+    const travelersCount = data.groupType === 'solo'
+        ? 1
+        : (data.travelerCount?.adult || 0)
+        + (data.travelerCount?.child || 0)
+        + (data.travelerCount?.infant || 0)
+        + (data.travelerCount?.senior || 0)
+    const packagePricePerPax = data.packagePricePerPax || 0
+    const totalPrice = packagePricePerPax * travelersCount
+    const packageName = data.packageName || 'Tour Package'
+
+    console.log("BookingSummaryModal data:", {
+        data,
+        travelers,
+        hotelOptions,
+        airlineOptions,
+        addons,
+        travelDate,
+        packagePricePerPax,
+        totalPrice,
+        travelersCount
+    })
+
     const handleCheckout = async () => {
         try {
             if (bookingPayload) {
                 localStorage.setItem('pendingBooking', JSON.stringify(bookingPayload));
                 sessionStorage.removeItem('bookingSaved');
             }
+
+
             const res = await axiosInstance.post("/payment/create-checkout-session", {
+                packageName,
+                travelersCount,
+                totalPrice,
                 successUrl,
                 cancelUrl
             });
@@ -62,14 +94,6 @@ export default function BookingSummaryModal({
             alert("Checkout failed. Check server logs.");
         }
     };
-
-    //get summary data or use default option to test booking
-    const data = summary ? { ...DEFAULT_SUMMARY, ...summary } : DEFAULT_SUMMARY
-    const travelers = data.travelers?.length ? data.travelers : ['None selected']
-    const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : ['None selected']
-    const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : ['None selected']
-    const addons = data.addons?.length ? data.addons : ['None selected']
-    const travelDate = getDisplayDate(data.travelDate)
 
     return (
         <Modal
@@ -133,6 +157,18 @@ export default function BookingSummaryModal({
                         <span className="booking-summary-label">Travel Date:</span>
                         <span className="booking-summary-value">
                             {travelDate || 'Not set'}
+                        </span>
+                    </div>
+                    <div className="booking-summary-row">
+                        <span className="booking-summary-label">Booking Type:</span>
+                        <span className="booking-summary-value">
+                            {data.groupType === 'solo' ? 'Solo booking' : 'Group booking'}
+                        </span>
+                    </div>
+                    <div className="booking-summary-row">
+                        <span className="booking-summary-label">Total Price:</span>
+                        <span className="booking-summary-value">
+                            ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>

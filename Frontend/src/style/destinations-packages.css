@@ -259,7 +259,7 @@
 .destinations-hero-section {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/LandingPage_Banner.png');
+    background-image: url('/public/images/Destination_BackgroundImage.jpg');
     background-position: center;
     display: flex;
     flex-direction: column;

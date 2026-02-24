@@ -7,25 +7,20 @@ export default function SoloOrGrouped({
     onCancel,
     onProceed,
     onSelect,
-    defaultSelection
+    selection
 }) {
-
-    const [selection, setSelection] = useState(defaultSelection || null)
 
     //select function
     const handleSelect = (value) => {
-        setSelection(value)
-        if (onSelect) onSelect(value)
+        onSelect?.(value)
     }
 
     const handleProceed = () => {
         if (!selection) return
-        if (onProceed) onProceed(selection)
-        setSelection(null)
+        onProceed?.(selection)
     }
 
     const handleCancel = () => {
-        setSelection(null)
         if (onSelect) onSelect(null)
         if (onCancel) onCancel()
     }

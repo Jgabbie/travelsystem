@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Input, Select, Button, Table,
   Tag, Space, DatePicker, Row, Col,
@@ -12,6 +12,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "../style/transaction.css";
+import axiosInstance from "../config/axiosConfig";
 
 export default function TransactionManagement() {
 
@@ -23,55 +24,29 @@ export default function TransactionManagement() {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState("");
 
-  const [data, setData] = useState([
-    {
-      key: 1,
-      ref: "TRX-10021",
-      package: "Boracay 4D3N Getaway",
-      date: "2024-11-25 10:02",
-      price: "₱21,000",
-      method: "Bank Transfer",
-      status: "Paid",
-    },
-    {
-      key: 2,
-      ref: "TRX-10022",
-      package: "Palawan Island Adventure",
-      date: "2024-12-01 14:45",
-      price: "₱35,500",
-      method: "GCash",
-      status: "Paid",
-    },
-    {
-      key: 3,
-      ref: "TRX-10023",
-      package: "Bohol Nature Tour",
-      date: "2024-12-10 09:15",
-      price: "₱12,000",
-      method: "Credit Card",
-      status: "Pending",
-    },
-    {
-      key: 4,
-      ref: "TRX-10024",
-      package: "Cebu City Escape",
-      date: "2024-12-18 18:30",
-      price: "₱18,800",
-      method: "Bank Transfer",
-      status: "Unpaid",
-    },
-    {
-      key: 5,
-      ref: "TRX-10025",
-      package: "Siargao Surf Experience",
-      date: "2025-01-05 11:00",
-      price: "₱27,000",
-      method: "GCash",
-      status: "Paid",
-    }
-  ]);
+  const [data, setData] = useState([]);
 
-  // ================= FILTER LOGIC =================
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await axiosInstance.get("/transaction/user-transactions");
+        const transactions = response.data.map((t) => ({
+          key: t._id,
+          ref: t.reference,
+          package: t.packageName || "",
+          date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
+          price: `₱${Number(t.amount || 0).toLocaleString()}`,
+          method: t.method || "",
+          status: t.status || ""
+        }));
+        setData(transactions);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+        message.error("Unable to load transactions.");
+      }
+    };
+    fetchTransactions();
+  }, []);
 
   const filteredData = data.filter(item => {
 
@@ -136,9 +111,14 @@ export default function TransactionManagement() {
       cancelText: "Cancel",
       okButtonProps: { className: "logout-confirm-btn" },
       cancelButtonProps: { className: "logout-cancel-btn" },
-      onOk: () => {
-        setData((prev) => prev.filter((item) => item.key !== key));
-        message.success("Transaction deleted");
+      onOk: async () => {
+        try {
+          await axiosInstance.delete(`/transaction/${key}`);
+          setData((prev) => prev.filter((item) => item.key !== key));
+          message.success("Transaction deleted");
+        } catch (error) {
+          message.error("Failed to delete transaction");
+        }
       }
     });
   };
@@ -167,15 +147,35 @@ export default function TransactionManagement() {
           cancelText: "Cancel",
           okButtonProps: { className: "logout-confirm-btn" },
           cancelButtonProps: { className: "logout-cancel-btn" },
-          onOk: () => {
+          onOk: async () => {
             const updatedRow = { ...newData[index], ...row };
             if (dayjs.isDayjs(updatedRow.date)) {
               updatedRow.date = updatedRow.date.format("YYYY-MM-DD HH:mm");
             }
-            newData.splice(index, 1, updatedRow);
-            setData(newData);
-            setEditingKey("");
-            message.success("Transaction updated");
+
+            const parsedAmount = Number(
+              String(updatedRow.price || "").replace(/[^0-9.-]/g, "")
+            );
+            const amount = Number.isFinite(parsedAmount) ? parsedAmount : 0;
+            updatedRow.price = `₱${amount.toLocaleString()}`;
+
+            try {
+              const payload = {
+                packageName: updatedRow.package,
+                method: updatedRow.method,
+                status: updatedRow.status,
+                amount
+              };
+
+              await axiosInstance.put(`/transaction/${key}`, payload);
+
+              newData.splice(index, 1, updatedRow);
+              setData(newData);
+              setEditingKey("");
+              message.success("Transaction updated");
+            } catch (error) {
+              message.error("Failed to update transaction");
+            }
           }
         });
       }
@@ -446,6 +446,6 @@ export default function TransactionManagement() {
           />
         </Form>
       </Card>
-    </div>
+    </div >
   );
 }

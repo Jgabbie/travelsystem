@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Modal, Input, InputNumber, Slider, Button, message } from 'antd'
 import '../../style/packagequotationmodal.css'
+import axiosInstance from '../../config/axiosConfig'
+
 
 const buildItineraryLabels = (itinerary, days) => {
     if (Array.isArray(itinerary) && itinerary.length) {
@@ -104,6 +106,18 @@ export default function PackageQuotationModal({
                 additionalComments
             })
             setIsBookingSuccessOpen(true)
+
+            // axiosInstance.post('/api/quotation/create-quotation', {
+            //     packageId: package._id,
+            //     travelDetails: {
+            //         travelers,
+            //         preferredAirlines,
+            //         preferredHotels,
+            //         budgetRange,
+            //         itineraryNotes,
+            //         additionalComments
+            //     }
+            // })
         }
     }
 

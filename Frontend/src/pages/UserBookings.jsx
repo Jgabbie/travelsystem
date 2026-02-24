@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import axiosInstance from '../config/axiosConfig'
 import TopNavUser from '../components/TopNavUser'
 import '../style/userbookings.css'
+import { useNavigate } from 'react-router-dom'
 
 
 export default function UserBookings() {
@@ -13,6 +14,8 @@ export default function UserBookings() {
     const [cancelReason, setCancelReason] = useState('')
     const [cancelOtherReason, setCancelOtherReason] = useState('')
     const [cancelTargetKey, setCancelTargetKey] = useState(null)
+
+    const navigate = useNavigate()
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -52,6 +55,11 @@ export default function UserBookings() {
             status: booking.status || 'Complete'
         }
     }), [bookings])
+
+    const viewBookingInvoice = () => {
+        navigate('/user-booking-invoice')
+    }
+
 
     const openCancelModal = (key) => {
         setCancelTargetKey(key)
@@ -132,7 +140,10 @@ export default function UserBookings() {
             key: 'actions',
             render: (_, record) => (
                 <Space>
-                    <Button className="user-bookings-action user-bookings-action-primary">View</Button>
+                    <Button
+                        className="user-bookings-action user-bookings-action-primary"
+                        onClick={viewBookingInvoice}
+                    >View</Button>
                     <Button
                         className="user-bookings-action user-bookings-action-danger"
                         onClick={() => openCancelModal(record.key)}
