@@ -4,6 +4,7 @@ import '../../style/packagequotationmodal.css'
 import axiosInstance from '../../config/axiosConfig'
 
 
+
 const buildItineraryLabels = (itinerary, days) => {
     if (Array.isArray(itinerary) && itinerary.length) {
         return itinerary.map((label, index) => label || `Day ${index + 1}`)
@@ -17,6 +18,7 @@ export default function PackageQuotationModal({
     open,
     onCancel,
     onSubmit,
+    bookingPayload,
     basePrice = 0,
     days = 1,
     itinerary = [],
@@ -107,18 +109,28 @@ export default function PackageQuotationModal({
             })
             setIsBookingSuccessOpen(true)
 
-            // axiosInstance.post('/api/quotation/create-quotation', {
-            //     packageId: package._id,
-            //     travelDetails: {
-            //         travelers,
-            //         preferredAirlines,
-            //         preferredHotels,
-            //         budgetRange,
-            //         itineraryNotes,
-            //         additionalComments
-            //     }
-            // })
+            axiosInstance.post('/quotation/create-quotation', {
+                packageId: bookingPayload.packageId,
+                packageName: bookingPayload.bookingDetails.packageName,
+                travelDetails: {
+                    travelers,
+                    preferredAirlines,
+                    preferredHotels,
+                    budgetRange,
+                    itineraryNotes,
+                    additionalComments
+                }
+            })
+                .then((response) => {
+                    console.log('Quotation request submitted successfully!' + (response.data?.message || ''))
+                })
+                .catch((error) => {
+                    console.log('Failed to submit quotation request. Please try again.' + (error.response?.data?.message || ''))
+                })
         }
+
+        //test values
+        console.log("Booking Payload: ", bookingPayload)
     }
 
     return (
@@ -148,7 +160,6 @@ export default function PackageQuotationModal({
                                 onChange={(value) => setTravelers(value || 1)}
                                 className={`quotation-input ${error.travelers ? 'input-error' : ''}`}
                                 required
-                                aria-required="true"
                                 onKeyDown={(e) => {
                                     if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                         e.preventDefault()
@@ -168,7 +179,6 @@ export default function PackageQuotationModal({
                                 onChange={(e) => setPreferredAirlines(e.target.value)}
                                 className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
                                 required
-                                aria-required="true"
                             />
                             <p className='package-quotation-error'>{error.preferredAirlines}</p>
                         </div>
@@ -183,7 +193,6 @@ export default function PackageQuotationModal({
                                 onChange={(e) => setPreferredHotels(e.target.value)}
                                 className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
                                 required
-                                aria-required="true"
                             />
                             <p className='package-quotation-error'>{error.preferredHotels}</p>
                         </div>
@@ -203,7 +212,6 @@ export default function PackageQuotationModal({
                                 onChange={setBudgetRange}
                                 className={`quotation-slider ${error.budgetRange ? 'input-error' : ''}`}
                                 tooltip={{ formatter: (value) => `₱ ${value}` }}
-                                aria-required="true"
                             />
                             <p className='package-quotation-error'>{error.budgetRange}</p>
                         </div>
@@ -246,7 +254,6 @@ export default function PackageQuotationModal({
                                         }}
                                         className={`quotation-input ${error.itineraryNotes ? 'input-error' : ''}`}
                                         required
-                                        aria-required="true"
                                     />
                                     <p className='package-quotation-error'>{error.itineraryNotes}</p>
                                 </div>

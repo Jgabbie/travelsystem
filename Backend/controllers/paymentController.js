@@ -1,9 +1,18 @@
 const axios = require("axios");
+const { v4: uuidv4 } = require("uuid");
+const TokenCheckoutModel = require("../models/tokencheckout");
+const QuotationModel = require("../models/quotations");
 
 const createCheckoutSession = async (req, res) => {
     try {
-        const successUrl = req.body?.successUrl || "http://localhost:3000/home";
-        const cancelUrl = req.body?.cancelUrl || "http://localhost:3000/home";
+        const totalPrice = req.body?.totalPrice
+        const packageName = req.body?.packageName || 'Tour Package'
+        const travelersCount = req.body?.travelersCount || 1
+        const successUrl = req.body?.successUrl
+        const cancelUrl = req.body?.cancelUrl
+
+        console.log("Creating checkout session with URLs:", { successUrl, cancelUrl });
+
         const response = await axios.post(
             "https://api.paymongo.com/v1/checkout_sessions",
             {
@@ -15,9 +24,9 @@ const createCheckoutSession = async (req, res) => {
                         },
                         line_items: [
                             {
-                                name: "Baguio City Tour",
+                                name: packageName,
                                 quantity: 1,
-                                amount: 2900000,
+                                amount: totalPrice * 100, // Convert to cents
                                 currency: "PHP",
                             },
                         ],
@@ -52,4 +61,30 @@ const createCheckoutSession = async (req, res) => {
     }
 };
 
-module.exports = { createCheckoutSession };
+
+const createCheckoutToken = async (req, res) => {
+    const { quotationId, travelers } = req.body;
+    const userId = req.userId;
+
+    // Validate quotation
+    const quotation = await QuotationModel.findById(quotationId);
+    if (!quotation) return res.status(404).json({ message: "Quotation not found" });
+
+    console.log(quotation)
+    // Create temporary checkout token
+    const token = uuidv4(); // generate random token
+
+    // Store minimal booking data server-side
+    await TokenCheckoutModel.create({
+        token,
+        userId,
+        quotationId,
+        travelers,
+        totalPrice: 29000, //temporary price
+        createdAt: new Date(),
+    });
+
+    res.status(201).json({ token });
+};
+
+module.exports = { createCheckoutSession, createCheckoutToken };

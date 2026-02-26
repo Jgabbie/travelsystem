@@ -103,7 +103,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             if (value.length < 8) return "Password must be at least 8 characters.";
             if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter.";
             if (!/[0-9]/.test(value)) return "Password must contain at least one number.";
-            if (!/[!@#$%^&*(),.?\":{}|<>]/.test(value)) return "Password must contain at least one special character.";
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character.";
         }
         if (field === "confirmPassword") {
             if (currentValues.role === 'Admin') return "";

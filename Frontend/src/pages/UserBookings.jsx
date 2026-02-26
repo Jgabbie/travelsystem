@@ -60,7 +60,6 @@ export default function UserBookings() {
         navigate('/user-booking-invoice')
     }
 
-
     const openCancelModal = (key) => {
         setCancelTargetKey(key)
         setCancelReason('')

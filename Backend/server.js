@@ -2,7 +2,9 @@ require("dotenv").config()
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+const path = require('path')
 const cookieParser = require('cookie-parser')
+
 const userRoutes = require("./routes/userRoutes")
 const authRoutes = require("./routes/authRoutes")
 const logRoutes = require("./routes/logRoutes");
@@ -12,6 +14,10 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const paymentRoutes = require("./routes/paymentRoute");
+const transactionRoute = require("./routes/transactionRoute");
+const quotationRoutes = require("./routes/quotationRoutes")
+const flightPriceRoutes = require("./routes/flightpriceRoutes")
+
 
 
 const app = express()
@@ -38,6 +44,11 @@ app.use('/api/booking', bookingRoutes)
 app.use('/api/rating', ratingRoutes)
 app.use('/api/wishlist', wishlistRoutes)
 app.use('/api/payment', paymentRoutes);
+app.use('/api/transaction', transactionRoute);
+app.use('/api/quotation', quotationRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/flights", flightPriceRoutes);
+
 
 app.listen(8000, () => {
     console.log('Server is up and running');

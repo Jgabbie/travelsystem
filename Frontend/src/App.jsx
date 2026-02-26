@@ -11,6 +11,8 @@ import PassAndVisaService from "./pages/PassAndVisaService";
 import Wishlist from "./pages/Wishlist";
 import DestinationsPackages from "./pages/DestinationsPackages";
 import UserBookingInvoice from "./pages/UserBookingInvoice";
+import UserQuotationRequest from "./pages/UserQuotationRequest";
+import UserPackageQuotation from "./pages/UserPackageQuotation";
 
 import Logging from './pages/Logging';
 import Auditing from './components/Auditing';
@@ -28,7 +30,8 @@ import PassportApplications from "./pages/PassportApplications";
 import AdminProfile from "./pages/AdminProfile";
 import CancellationRequests from "./pages/CancellationRequests";
 import QuotationManagement from "./pages/QuotationManagement";
-import UserPackageQuotation from "./pages/UserPackageQuotation";
+import QuotationRequest from "./pages/QuotationRequest";
+
 
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -36,6 +39,8 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
+
+
 
 function App() {
   return (
@@ -70,6 +75,7 @@ function App() {
             <Route path="cancellation-requests" element={<CancellationRequests />} />
             <Route path="adminprofile" element={<AdminProfile />} />
             <Route path="package-quotation" element={<QuotationManagement />} />
+            <Route path="quotation/:id" element={<QuotationRequest />} />
             {/* logging and auditing routes */}
             <Route path="logging" element={<Logging />} />
             <Route path="auditing" element={<Auditing />} />
@@ -88,6 +94,8 @@ function App() {
           <Route path='/destinations-packages' element={<DestinationsPackages />} />
           <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
           <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
+          <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
+
         </Route>
 
 

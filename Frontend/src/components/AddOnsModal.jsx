@@ -16,9 +16,9 @@ const ADD_ONS = [
         image: '/images/flightmeals.jpg'
     },
     {
-        key: 'entertainment',
-        title: 'Entertainment',
-        description: 'Upgrade your in-flight entertainment options.',
+        key: 'airportpickup',
+        title: 'Airport pickup',
+        description: 'Get a convenient pickup service at the airport.',
         image: '/images/flightentertainment.jpg'
     },
     {

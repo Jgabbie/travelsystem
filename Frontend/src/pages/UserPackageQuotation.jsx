@@ -3,37 +3,55 @@ import { Table, Tag, Button, Space, Input, Select, Row, Col, Card, Statistic } f
 import { SearchOutlined, EyeOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import TopNavUser from '../components/TopNavUser'
 import '../style/userquotation.css'
+import axiosInstance from '../config/axiosConfig'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function UserPackageQuotation() {
     const [searchText, setSearchText] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
+    const [quotations, setQuotations] = useState([])
+    const [loading, setLoading] = useState(false)
 
-    const [data] = useState([
-        {
-            key: 'QR-10021',
-            reference: 'QR-10021',
-            packageName: 'Boracay 4D3N Getaway',
-            travelers: 3,
-            status: 'Pending'
-        },
-        {
-            key: 'QR-10022',
-            reference: 'QR-10022',
-            packageName: 'Seoul City Explorer',
-            travelers: 2,
-            status: 'Approved'
-        },
-        {
-            key: 'QR-10023',
-            reference: 'QR-10023',
-            packageName: 'Baguio Highlands Tour',
-            travelers: 4,
-            status: 'Rejected'
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchQuotations = async () => {
+            setLoading(true);
+            try {
+                const response = await axiosInstance.get('/quotation/my-quotations');
+                setQuotations(response.data || []);
+            } catch (error) {
+                console.error('Error fetching quotations:', error);
+                setQuotations([]);
+            } finally {
+                setLoading(false);
+            }
         }
-    ])
+        fetchQuotations();
+    }, [])
+
+    const viewQuotation = (id) => {
+        // Implement view logic, e.g. navigate to detail page
+        navigate(`/user-quotation-request/${id}`);
+        console.log('View quotation with ID:', id)
+
+    }
+
+    const dataSource = useMemo(() => quotations.map((quotation) => {
+        const travelDetails = quotation.travelDetails || {}
+
+        return {
+            key: quotation._id,
+            reference: quotation.reference || quotation._id,
+            packageName: quotation.packageName || "N/A",
+            travelers: travelDetails.travelers || 0,
+            status: quotation.status || "Pending"
+        }
+    }), [quotations])
 
     const filteredData = useMemo(() => (
-        data.filter((item) => {
+        quotations.filter((item) => {
             const matchesSearch =
                 item.reference.toLowerCase().includes(searchText.toLowerCase()) ||
                 item.packageName.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -44,7 +62,7 @@ export default function UserPackageQuotation() {
 
             return matchesSearch && matchesStatus
         })
-    ), [data, searchText, statusFilter])
+    ), [quotations, searchText, statusFilter])
 
     const totalRequests = filteredData.length
     const totalPending = filteredData.filter((item) => item.status === 'Pending').length
@@ -82,9 +100,9 @@ export default function UserPackageQuotation() {
         {
             title: 'Actions',
             key: 'actions',
-            render: () => (
+            render: (_, record) => (
                 <Space>
-                    <Button className="user-quotation-action user-quotation-action-primary" icon={<EyeOutlined />}>
+                    <Button className="user-quotation-action user-quotation-action-primary" icon={<EyeOutlined />} onClick={() => viewQuotation(record.key)}>
                         View
                     </Button>
                 </Space>
@@ -104,7 +122,8 @@ export default function UserPackageQuotation() {
                 <div className="user-quotation-table">
                     <Table
                         columns={columns}
-                        dataSource={filteredData}
+                        dataSource={dataSource}
+                        loading={loading}
                         pagination={{ pageSize: 5 }}
                         scroll={{ x: 'max-content' }}
                     />

@@ -14,12 +14,14 @@ import AddOnsModal from '../components/AddOnsModal'
 import BookingSummaryModal from '../components/BookingSummaryModal'
 import CustomizeBookingModal from '../components/CustomizeBookingModal'
 import PackageQuotationModal from '../components/modals/PackageQuotationModal'
+import BookingProcess from '../components/BookingProcess';
 
 export default function PackagePage() {
     const { id } = useParams();
     const location = useLocation();
 
     //states for modals
+    const [isBookingProcessOpen, setIsBookingProcessOpen] = useState(false)
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
@@ -89,7 +91,12 @@ export default function PackagePage() {
             try {
                 setPackageLoading(true)
                 const response = await axiosInstance.get(`/package/get-package/${id}`)
-                setPackageData(response.data)
+                // const mergedData = response.data.map(item => ({
+                //     ...item,
+                //     origin: "MNL",
+                //     destination: "CEB"
+                // }));
+                setPackageData(response.data); //temp origin and destination for testing, replace with actual data from package when available
                 setPackageError('')
             } catch (error) {
                 console.error('Failed to load package:', error)
@@ -323,6 +330,9 @@ export default function PackagePage() {
         }
     }
 
+    const handleBookingProcess = () => {
+        setIsArrangementModalOpen(true)
+    }
 
     // when user click "Check Availability"
     const handleOpenDateModal = () => {
@@ -358,14 +368,6 @@ export default function PackagePage() {
         setIsQuotationModalOpen(false)
     }
 
-    //might remove this now
-    const handleProceedCustomizeBooking = ({ airlines, hotels }) => {
-        setSelectedAirlines(airlines || [])
-        setSelectedHotels(hotels || [])
-        setIsCustomizeBookingOpen(false)
-        setIsSoloGroupModalOpen(true)
-    }
-
     //proceed to solo or grouped booking then opens travelers modal
     const handleProceedSoloGroup = (selection) => {
         const nextSelection = selection || soloGroupSelection
@@ -399,7 +401,8 @@ export default function PackagePage() {
         setIsConfirmBookingOpen(true)
     }
 
-
+    //duplicated?
+    //two bookings being created?
     //submit booking details to backend and show success modal if successful
     const handleConfirmBooking = () => {
         const packageId = packageData?._id || id
@@ -525,8 +528,6 @@ export default function PackagePage() {
             message.error('Unable to submit review')
         }
     }
-
-
 
     return (
         <div>
@@ -667,7 +668,7 @@ export default function PackagePage() {
                                     <div className="package-pricepax">
                                         ₱{packageData?.packagePricePerPax?.toLocaleString() || '--'}
                                     </div>
-                                    <Button className="package-availability-button" onClick={handleOpenDateModal}>
+                                    <Button className="package-availability-button" onClick={handleBookingProcess}>
                                         Check Availability
                                     </Button>
                                 </div>
@@ -699,6 +700,14 @@ export default function PackagePage() {
                 </div>
             </Modal>
 
+            <BookingProcess
+                open={isBookingProcessOpen}
+                onCancel={resetBookingFlow}
+                packageData={packageData}
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+            />
+
             <ChooseDateModal
                 open={isDateModalOpen}
                 onCancel={resetBookingFlow}
@@ -723,20 +732,11 @@ export default function PackagePage() {
                 onSelect={setFixedCustomSelection}
             />
 
-            {/* might remove this modal */}
-            <CustomizeBookingModal
-                open={isCustomizeBookingOpen}
-                onCancel={resetBookingFlow}
-                onProceed={handleProceedCustomizeBooking}
-                defaultAirlines={selectedAirlines}
-                defaultHotels={selectedHotels}
-            />
-
-
             <PackageQuotationModal
                 open={isQuotationModalOpen}
                 onCancel={resetBookingFlow}
                 onSubmit={handleSubmitQuotation}
+                bookingPayload={bookingPayload}
                 basePrice={packageData?.packagePricePerPax || 0}
                 days={packageData?.packageDuration || 1}
                 fixedItinerary={packageData?.packageItineraries || {}}

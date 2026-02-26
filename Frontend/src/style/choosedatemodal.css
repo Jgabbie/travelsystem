@@ -169,6 +169,22 @@
     color: #305797 !important;
 }
 
+.calendar-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    /* adjust for modal */
+}
+
+.calendar-price {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #1890ff;
+    font-weight: bold;
+}
+
 @media (max-width: 768px) {
     .choose-date-content {
         grid-template-columns: 1fr;

@@ -22,6 +22,10 @@ const getUserData = async (req, res) => {
                 email: user.email,
                 phone: user.phone,
                 profileImage: user.profileImage,
+                homeAddress: user.homeAddress || '',
+                gender: user.gender || '',
+                birthdate: user.birthdate || '',
+                nationality: user.nationality || '',
                 role: user.role,
                 isAccountVerified: user.isAccountVerified
             }
@@ -35,7 +39,17 @@ const getUserData = async (req, res) => {
 const updateUserData = async (req, res) => {
     try {
         const { userId } = req
-        const { firstname, lastname, email, phone, profileImage } = req.body
+        const {
+            firstname,
+            lastname,
+            email,
+            phone,
+            profileImage,
+            homeAddress,
+            gender,
+            birthdate,
+            nationality
+        } = req.body
 
         if (!firstname || !lastname || !email || !phone) {
             return res.status(400).json({ message: "All fields are required" })
@@ -78,6 +92,22 @@ const updateUserData = async (req, res) => {
             updatedFields.profileImage = { from: Boolean(user.profileImage), to: Boolean(profileImage) }
             changes.push('profileImage')
         }
+        if (typeof homeAddress === 'string' && user.homeAddress !== homeAddress) {
+            updatedFields.homeAddress = { from: user.homeAddress, to: homeAddress }
+            changes.push('homeAddress')
+        }
+        if (typeof gender === 'string' && user.gender !== gender) {
+            updatedFields.gender = { from: user.gender, to: gender }
+            changes.push('gender')
+        }
+        if (typeof birthdate === 'string' && user.birthdate !== birthdate) {
+            updatedFields.birthdate = { from: user.birthdate, to: birthdate }
+            changes.push('birthdate')
+        }
+        if (typeof nationality === 'string' && user.nationality !== nationality) {
+            updatedFields.nationality = { from: user.nationality, to: nationality }
+            changes.push('nationality')
+        }
 
         user.firstname = firstname
         user.lastname = lastname
@@ -85,6 +115,18 @@ const updateUserData = async (req, res) => {
         user.phone = phone
         if (typeof profileImage === 'string') {
             user.profileImage = profileImage
+        }
+        if (typeof homeAddress === 'string') {
+            user.homeAddress = homeAddress
+        }
+        if (typeof gender === 'string') {
+            user.gender = gender
+        }
+        if (typeof birthdate === 'string') {
+            user.birthdate = birthdate
+        }
+        if (typeof nationality === 'string') {
+            user.nationality = nationality
         }
 
         await user.save()
@@ -113,6 +155,10 @@ const updateUserData = async (req, res) => {
                 email: user.email,
                 phone: user.phone,
                 profileImage: user.profileImage,
+                homeAddress: user.homeAddress || '',
+                gender: user.gender || '',
+                birthdate: user.birthdate || '',
+                nationality: user.nationality || '',
                 role: user.role,
                 isAccountVerified: user.isAccountVerified
             }

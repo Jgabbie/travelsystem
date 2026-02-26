@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Modal, Button } from 'antd'
 import { CheckCircleFilled } from '@ant-design/icons'
 import '../style/bookingsummarymodal.css'

@@ -1,4 +1,7 @@
 const UserModel = require("../models/user");
+const BookingModel = require("../models/booking");
+const PackageModel = require("../models/package");
+const TransactionModel = require("../models/transactions");
 const logAction = require("../utils/logger");
 
 const getAdmins = async (req, res) => {
@@ -95,4 +98,30 @@ const editUser = async (req, res) => {
     }
 };
 
-module.exports = { getAdmins, editUser };
+const getDashboardStats = async (req, res) => {
+    try {
+        const requester = await UserModel.findById(req.userId).lean();
+        if (!requester || requester.role !== "Admin") {
+            return res.status(403).json({ message: "Forbidden: Admins only" });
+        }
+
+        const [totalTransactions, totalBookings, totalUsers, totalPackages] = await Promise.all([
+            TransactionModel.countDocuments({}),
+            BookingModel.countDocuments({}),
+            UserModel.countDocuments({}),
+            PackageModel.countDocuments({})
+        ]);
+
+        res.status(200).json({
+            totalTransactions,
+            totalBookings,
+            totalUsers,
+            totalPackages
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { getAdmins, editUser, getDashboardStats };

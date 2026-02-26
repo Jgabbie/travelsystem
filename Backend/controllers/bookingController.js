@@ -1,4 +1,5 @@
 const BookingModel = require('../models/booking')
+const PackageModel = require('../models/package')
 const CancellationModel = require('../models/cancellations')
 const logAction = require('../utils/logger')
 
@@ -9,22 +10,49 @@ const generateBookingReference = () => {
 }
 
 const createBooking = async (req, res) => {
-    const { packageId, bookingDetails } = req.body
+    const { packageId, bookingDetails, checkoutToken } = req.body
     const userId = req.userId
+    const { packageName } = bookingDetails || {}
+
+    console.log(bookingDetails)
+
+    //find package by name to get its id, then create booking with that package id
     try {
-        if (!packageId || !userId || !bookingDetails) {
+
+        let finalPackageId = packageId;
+
+        if (!userId || !bookingDetails || !checkoutToken) {
             return res.status(400).json({ message: "Missing required fields" })
         }
+
+        const existingBooking = await BookingModel.findOne({ checkoutToken });
+        if (existingBooking) {
+            return res.status(200).json(existingBooking); // return existing booking
+        }
+
+        if (!finalPackageId && packageName) {
+            const pkg = await PackageModel.findOne({ packageName });
+            if (!pkg) {
+                return res.status(404).json({ message: "Package not found" });
+            }
+            finalPackageId = pkg._id;
+        }
+
+        if (!finalPackageId) {
+            return res.status(400).json({ message: "Package ID is required" });
+        }
+
         const newBooking = await BookingModel.create({
-            packageId,
+            packageId: finalPackageId,
             userId,
             bookingDetails,
+            checkoutToken,
             reference: generateBookingReference(),
-            status: 'pending'
+            status: 'Successful'
         })
         logAction('BOOKING_CREATED', userId, {
             bookingId: newBooking._id,
-            packageId
+            packageId: finalPackageId
         })
         res.status(201).json(newBooking)
     } catch (error) {
@@ -34,7 +62,6 @@ const createBooking = async (req, res) => {
 
 const getUserBookings = async (req, res) => {
     const userId = req.userId
-
     try {
         const bookings = await BookingModel.find({ userId }).sort({ createdAt: -1 })
         res.status(200).json(bookings)
