@@ -1,13 +1,12 @@
 const LogModel = require('../models/log');
+const AuditModel = require('../models/audit');
 
 const getLogs = async (req, res) => {
     try {
-        // In a real app, check if req.userId is an ADMIN here!
-        
-        // Fetch logs and populate the 'performedBy' field to show usernames instead of just IDs
+        // Fetch logs and populate 'performedBy' with username, email, AND role
         const logs = await LogModel.find()
-            .populate('performedBy', 'username email') // Only get username and email
-            .sort({ timestamp: -1 }); // Newest first
+            .populate('performedBy', 'username email role') 
+            .sort({ timestamp: -1 });
 
         res.status(200).json(logs);
     } catch (error) {
@@ -15,4 +14,16 @@ const getLogs = async (req, res) => {
     }
 };
 
-module.exports = { getLogs };
+const getAudits = async (req, res) => {
+    try {
+        const audits = await AuditModel.find()
+            .populate('performedBy', 'username email role')
+            .sort({ timestamp: -1 });
+
+        res.status(200).json(audits);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching audits: " + error.message });
+    }
+};
+
+module.exports = { getLogs, getAudits };

@@ -1,0 +1,322 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.passport-assistance {
+    min-height: 100vh;
+    padding: 40px 24px 40px;
+    background: #f6f8fc;
+    font-family: "Roboto", sans-serif;
+}
+
+.passandvisa-header {
+    max-width: 1280px;
+    margin: 0 auto 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.passandvisa-header h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    color: #1f2a44;
+    margin: 0;
+
+}
+
+.passandvisa-header p {
+    margin: 0;
+    color: #5b6476;
+    font-size: 14px;
+}
+
+.passport-visa-layout {
+    max-width: 1320px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #1f2a44;
+    font-family: "Montserrat", sans-serif;
+}
+
+.section-header p {
+    margin: 0;
+    color: #5b6476;
+    font-size: 14px;
+}
+
+.visa-section,
+.passport-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    position: sticky;
+    top: 120px;
+    align-self: start;
+}
+
+.visa-controls {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.visa-search {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.visa-search .ant-input {
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.visa-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.visa-filters .ant-select {
+    width: 100%;
+}
+
+.visa-filters .ant-select-selector {
+    border-radius: 10px !important;
+    min-height: 40px;
+    align-items: center;
+}
+
+.field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.visa-list {
+    display: grid;
+    gap: 14px;
+}
+
+.visa-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #f8fafc;
+}
+
+.visa-card h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: #0f172a;
+    font-family: "Montserrat", sans-serif;
+}
+
+.visa-card p {
+    margin: 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.visa-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.visa-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.visa-apply-btn {
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #305797;
+    border-color: #305797;
+    box-shadow: 0 8px 16px rgba(48, 87, 151, 0.18);
+}
+
+.visa-apply-btn:hover,
+.visa-apply-btn:focus {
+    background: #f1f3f5 !important;
+    border-color: #305797 !important;
+    color: #1f2a44 !important;
+}
+
+.visa-tags .ant-tag {
+    border-radius: 999px;
+    font-size: 11px;
+    border: none;
+    background: #eef2ff;
+    color: #305797;
+    font-weight: 600;
+}
+
+.visa-tags .tag-express {
+    background: #ecfdf3;
+    color: #067647;
+}
+
+.visa-tags .tag-standard {
+    background: #fff7ed;
+    color: #b45309;
+}
+
+.passport-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.passport-card-grid .passport-card {
+    width: 100%;
+}
+
+.passport-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.passport-card h3 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    color: #0f172a;
+    font-family: "Montserrat", sans-serif;
+}
+
+.passport-card p {
+    margin: 0;
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.passport-card:hover,
+.passport-card:focus-visible {
+    border-color: #305797;
+    box-shadow: 0 12px 28px rgba(48, 87, 151, 0.2);
+    transform: translateY(-2px);
+}
+
+.passport-card:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.passport-card:focus-visible {
+    outline: 3px solid rgba(48, 87, 151, 0.35);
+    outline-offset: 3px;
+}
+
+.passandvisa-hero-section {
+    position: relative;
+    height: 600px;
+    background-image: url('/public/images/PassportAndVisa_BackgroundImage.jpg');
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin-bottom: 0;
+}
+
+.passandvisa-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.passandvisa-hero-content {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 100px;
+}
+
+.passandvisa-hero-content h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 80px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.passandvisa-hero-content p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    max-width: 700px;
+    margin: 0 auto;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+
+@media (max-width: 640px) {
+    .passport-assistance {
+        padding: 100px 16px 28px;
+    }
+
+    .passport-assistance h2 {
+        font-size: 22px;
+        margin-bottom: 16px;
+    }
+
+    .passport-visa-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .passport-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .visa-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .visa-actions {
+        width: 100%;
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,96 @@
+.page-header {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.transaction-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  width: 200px;
+}
+
+@media (max-width: 768px) {
+  .transaction-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}
+
+.transaction-actions .ant-input:hover,
+.transaction-actions .ant-input:focus,
+.transaction-actions .ant-input-focused,
+.transaction-actions .ant-input-affix-wrapper:hover,
+.transaction-actions .ant-input-affix-wrapper-focused,
+.transaction-actions .ant-input-affix-wrapper:focus-within {
+  border-color: #305797 !important;
+}
+
+.transaction-select:hover,
+.transaction-select:focus-within {
+  border-color: #305797 !important;
+}
+
+.editbutton-transactionmanagement {
+  border-color: #305797;
+  background-color: #fff !important;
+  color: #305797 !important;
+}
+
+.editbutton-transactionmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.savebutton-transactionmanagement {
+  border-color: #1f8f3a;
+  background-color: #1f8f3a !important;
+  color: #fff !important;
+}
+
+.savebutton-transactionmanagement:hover {
+  background-color: #167a30 !important;
+  color: #fff !important;
+}
+
+.cancelbutton-transactionmanagement {
+  border-color: #d93025;
+  color: #d93025 !important;
+  background-color: #fff !important;
+}
+
+.cancelbutton-transactionmanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.deletebutton-transactionmanagement {
+  border-color: #d93025;
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.deletebutton-transactionmanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.exportbutton-transactionmanagement {
+  border-color: #305797;
+  color: #305797 !important;
+  background-color: #fff !important;
+}
+
+.exportbutton-transactionmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}

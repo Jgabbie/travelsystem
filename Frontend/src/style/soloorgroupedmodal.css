@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.solo-group-modal .ant-modal-content {
+    border-radius: 16px;
+    padding: 30px;
+}
+
+.solo-group-modal .ant-modal-body {
+    padding: 15px 0 0;
+}
+
+.solo-group-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.solo-group-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    height: 400px;
+}
+
+.solo-group-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 16px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.solo-group-card h3 {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #1f2a44;
+}
+
+.solo-group-card p {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.solo-group-card.is-selected {
+    border-color: #305797;
+    box-shadow: 0 8px 18px rgba(48, 87, 151, 0.18);
+}
+
+.solo-group-image {
+    width: 100%;
+    height: 200px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e0e7ff, #f9fafb);
+    border: 1px solid #e5e7eb;
+}
+
+.solo-group-image.solo {
+    background-image: url('/public/images/solobooking.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.solo-group-image.group {
+    background-image: url('/public/images/groupedbooking.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.solo-group-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.solo-group-proceed {
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.solo-group-cancel {
+    background-color: #992A46 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+@media (max-width: 768px) {
+    .solo-group-cards {
+        grid-template-columns: 1fr;
+    }
+}

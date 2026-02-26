@@ -1,0 +1,52 @@
+.sidenav {
+  background: #2f5f9f;
+  min-height: 100vh;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: fit-content;
+}
+
+.nav-top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.nav-bottom {
+  margin-top: auto;
+  padding-top: 20px;
+  padding-bottom: 16px;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.nav-item {
+  color: white;
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.nav-item:hover,
+.nav-item .logout {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.sidenav .logout {
+  background: none;
+  margin-top: 5px;
+  display: block;
+  position: sticky !important;
+  top: 0;
+  z-index: 1000;
+}

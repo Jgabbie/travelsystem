@@ -1,0 +1,857 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+html,
+body {
+    background-color: #F5F8FF;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    scroll-behavior: smooth;
+    margin: 0;
+}
+
+.landing-container {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    width: 100%;
+    position: relative;
+}
+
+.navbar {
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: #555;
+}
+
+.logo-img {
+    height: 50px;
+    width: 50px;
+    margin-right: 25px;
+    margin-bottom: 5px;
+}
+
+.logo-section span {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+.nav-links Button {
+    background: none;
+    border: none;
+    font-weight: bold;
+    color: #0056b3;
+    cursor: pointer;
+    margin-left: 20px;
+    font-size: 16px;
+}
+
+.landing-label-links {
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+    margin-top: 3px;
+}
+
+.landing-button-links {
+    font-size: 18px;
+    font-weight: 600;
+    color: #992A46;
+    margin-left: 0px;
+    padding-left: 0px;
+    padding-right: 22px;
+}
+
+.landing-button-links:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+    border-width: 0px !important;
+}
+
+.user-name-link {
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+}
+
+.user-name-link:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+    border-width: 0px !important;
+}
+
+.ant-dropdown {
+    height: 30px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.dropdown-space {
+    margin-top: 10px !important;
+    margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.user-dropdown-icon {
+    margin-bottom: 10px !important;
+}
+
+.username-text {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+}
+
+.username-dropdown {
+    font-family: "Montserrat", sans-serif;
+    color: #305797;
+    margin-left: 5px;
+}
+
+.user-dropdown-button {
+    margin-left: 30px;
+}
+
+.hero-section {
+    position: relative;
+    height: 600px;
+    background-image: url('/public/images/LandingPage_Banner.png');
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 100px;
+}
+
+.hero-content h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 80px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    max-width: 700px;
+    margin: 0 auto;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.search-widget {
+    position: absolute;
+    bottom: -60px;
+    background: rgba(255, 255, 255);
+    width: 80%;
+    max-width: 1000px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.search-row {
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    font-size: 16px;
+    color: #333;
+}
+
+.search-input:focus {
+    border-color: #305797;
+    outline: none;
+    background-color: #fff;
+}
+
+.search-btn {
+    background-color: #2E5994;
+    border: none;
+    padding: 0 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.filter-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.filter-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #eee;
+    padding-right: 20px;
+}
+
+.filter-group:last-child {
+    border-right: none;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #888;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.landing-select .ant-select-selector {
+    border: none !important;
+    background: transparent !important;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    padding: 0 !important;
+    min-height: unset !important;
+}
+
+.landing-select .ant-select-selection-item,
+.landing-select .ant-select-selection-placeholder {
+    color: #333;
+}
+
+.landing-select .ant-select-arrow {
+    color: #666;
+}
+
+.landing-select:hover,
+.landing-select:focus-within {
+    border-color: #305797 !important;
+}
+
+.budget-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.budget-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+    color: #0056b3;
+    margin-bottom: 5px;
+}
+
+.budget-slider {
+    width: 100%;
+    cursor: pointer;
+}
+
+.budget-slider .ant-slider-track {
+    background-color: #305797;
+}
+
+.budget-slider .ant-slider-handle::after {
+    background-color: #305797;
+    box-shadow: 0 0 0 2px #305797;
+}
+
+.budget-slider .ant-slider-handle:hover::after,
+.budget-slider .ant-slider-handle:focus-visible::after {
+    box-shadow: 0 0 0 4px rgba(48, 87, 151, 0.3);
+}
+
+.page-link-buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-top: 120px;
+    padding-bottom: 50px;
+    gap: 130px;
+}
+
+.page-link-buttons {
+    margin: 0 20px;
+    font-weight: bold;
+    font-size: 24px;
+    color: #0056b3;
+    text-decoration: none;
+    border-width: 0px !important;
+}
+
+.page-link-buttons:hover {
+    color: #0056b3 !important;
+    border-width: 0px !important;
+    text-decoration: underline;
+}
+
+
+.hero-section-packages {
+    position: relative;
+    height: 600px;
+    background-image: url('/public/images/LandingPage2_Banner.png');
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+.hero-overlay-packages {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content-packages {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 100px;
+}
+
+.hero-content-packages h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 80px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content-packages p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.packages-button {
+    color: #0056b3 !important;
+    background-color: #fff;
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 70px;
+    border-radius: 30px;
+    border-width: 3px;
+    border-color: #0056b3;
+    height: 65px;
+    width: 500px;
+}
+
+.packages-button:hover {
+    background-color: #0056b3 !important;
+    color: #fff !important;
+    border-radius: 30px !important;
+    border-width: 3px !important;
+    border-color: #0056b3 !important;
+}
+
+.popular-packages-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 35px;
+    font-weight: 600;
+    color: #000000;
+    margin: 40px;
+}
+
+.popular-packages {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    margin: 40px;
+}
+
+.explore-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.explore-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 35px;
+    font-weight: 600;
+    color: #000000;
+    margin-left: 40px;
+    margin-bottom: 20px;
+}
+
+.explore-local-packages-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.explore-local-packages {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-left: 40px;
+    margin-bottom: 20px;
+}
+
+.explore-local-packages-section-right img {
+    height: 640px;
+    width: 475px;
+    margin-right: 40px;
+    margin-left: 40px;
+    margin-top: 60px;
+    border-radius: 20px;
+}
+
+.explore-local-packages-section-right Button {
+    color: #0056b3 !important;
+    background-color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 30px;
+    border-width: 3px;
+    border-color: #0056b3;
+    height: 50px;
+    width: 200px;
+    margin-top: 15px;
+    margin-left: 40px;
+}
+
+.explore-local-packages-section-right Button:hover {
+    background-color: #0056b3 !important;
+    color: #fff !important;
+    border-radius: 30px !important;
+    border-width: 3px !important;
+    border-color: #0056b3 !important;
+}
+
+.explore-world-section {
+    display: flex;
+    flex-direction: row;
+}
+
+.explore-world-text {
+    margin-left: 40px;
+    margin-top: 0;
+}
+
+.explore-world-text-heading {
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: #000000;
+}
+
+.explore-world-text-description {
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #000000;
+    text-align: justify;
+    margin-right: 40px;
+}
+
+
+.hero-section-aboutus {
+    position: relative;
+    height: 600px;
+    background-image: url('/public/images/AboutUs_BackgroundImage.jpeg');
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+}
+
+.hero-overlay-aboutus {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.59);
+}
+
+.hero-content-aboutus {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 100px;
+}
+
+.hero-content-aboutus h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 80px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-content-aboutus p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.aboutus-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000;
+    margin-left: 40px;
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+
+
+.chatbot-fab {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1200;
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 999px;
+    background-color: #305797;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 12px 28px rgba(48, 87, 151, 0.35);
+}
+
+.chatbot-fab:hover {
+    background-color: #244574 !important;
+}
+
+.chatbot-modal .ant-modal {
+    position: fixed;
+    right: 24px;
+    bottom: 88px;
+    top: auto;
+    margin: 0;
+    width: 320px !important;
+}
+
+.chatbot-modal .ant-modal-content {
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+}
+
+.chatbot-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chatbot-message {
+    background: #f1f5f9;
+    color: #1f2a44;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.chatbot-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 1200px) {
+
+    .hero-content h1,
+    .hero-content-packages h1,
+    .hero-content-aboutus h1 {
+        font-size: 56px;
+    }
+
+    .hero-content p,
+    .hero-content-packages p,
+    .hero-content-aboutus p {
+        font-size: 18px;
+    }
+
+    .search-widget {
+        width: 90%;
+    }
+
+    .page-link-buttons-container {
+        gap: 60px;
+    }
+
+    .popular-packages {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 992px) {
+
+    .hero-section,
+    .hero-section-packages,
+    .hero-section-aboutus {
+        height: 520px;
+    }
+
+    .hero-content {
+        margin-bottom: 60px;
+    }
+
+    .search-widget {
+        padding: 20px;
+    }
+
+    .filter-row {
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        flex: 1 1 45%;
+        border-right: none;
+        padding-right: 0;
+    }
+
+    .page-link-buttons-container {
+        flex-wrap: wrap;
+        gap: 24px;
+        margin-top: 140px;
+    }
+
+    .explore-container {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .explore-local-packages {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .explore-local-packages-section-right img {
+        width: 100%;
+        max-width: 520px;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    .explore-local-packages-section-right Button {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .hero-section,
+    .hero-section-packages,
+    .hero-section-aboutus {
+        height: auto;
+        padding: 120px 16px 40px;
+    }
+
+    .hero-content,
+    .hero-content-packages,
+    .hero-content-aboutus {
+        margin-bottom: 24px;
+    }
+
+    .hero-content h1,
+    .hero-content-packages h1,
+    .hero-content-aboutus h1 {
+        font-size: 40px;
+    }
+
+    .hero-content p,
+    .hero-content-packages p,
+    .hero-content-aboutus p {
+        font-size: 16px;
+    }
+
+    .search-widget {
+        position: static;
+        width: 100%;
+        margin-top: 20px;
+        max-width: none;
+    }
+
+    .search-row {
+        flex-direction: column;
+    }
+
+    .search-btn {
+        width: 100%;
+        height: 44px;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .page-link-buttons-container {
+        margin-top: 40px;
+        padding-bottom: 30px;
+    }
+
+    .page-link-buttons {
+        font-size: 18px;
+        margin: 0 8px;
+    }
+
+    .packages-button {
+        width: 100%;
+        max-width: 360px;
+        height: 54px;
+        font-size: 18px;
+    }
+
+    .popular-packages {
+        margin: 20px;
+    }
+
+    .popular-packages .ant-card {
+        width: 100% !important;
+        max-width: 360px;
+    }
+
+    .popular-packages .ant-card-cover img {
+        height: 200px !important;
+        object-fit: cover;
+    }
+
+    .explore-text {
+        margin-left: 20px;
+        font-size: 28px;
+    }
+
+    .explore-local-packages {
+        margin-left: 20px;
+    }
+
+    .explore-world-section {
+        flex-direction: column;
+        gap: 16px;
+        padding: 0 20px 20px;
+    }
+
+    .explore-world-section img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 520px;
+        margin: 0 !important;
+    }
+
+    .explore-world-text {
+        margin-left: 0;
+    }
+
+    .explore-world-text-description {
+        margin-right: 0;
+    }
+
+    .aboutus-text {
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+    .chatbot-modal .ant-modal {
+        width: 90% !important;
+        right: 5%;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .hero-content h1,
+    .hero-content-packages h1,
+    .hero-content-aboutus h1 {
+        font-size: 32px;
+    }
+
+    .hero-content p,
+    .hero-content-packages p,
+    .hero-content-aboutus p {
+        font-size: 14px;
+    }
+
+    .search-widget {
+        padding: 16px;
+    }
+
+    .page-link-buttons {
+        font-size: 16px;
+    }
+
+    .popular-packages-text {
+        font-size: 26px;
+        margin: 20px;
+    }
+
+    .explore-text {
+        font-size: 24px;
+    }
+
+    .explore-local-packages-section-right Button {
+        width: 160px;
+        height: 44px;
+    }
+
+    .chatbot-fab {
+        right: 16px;
+        bottom: 16px;
+        height: 44px;
+        padding: 0 16px;
+    }
+}

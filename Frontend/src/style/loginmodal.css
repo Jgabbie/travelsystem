@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+    width: 100% !important;
+    padding-right: 0px !important;
+    overflow-y: auto !important;
+}
+
+.login-modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    top: 115px;
+}
+
+#login-container-modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 600px;
+}
+
+#login-heading-modal {
+    font-family: "Montserrat", sans-serif;
+    font-size: 55px;
+    font-weight: 600;
+    color: #305797;
+    line-height: 10px;
+    width: 550px;
+    margin-bottom: 30px;
+    margin-top: 30px;
+}
+
+#login-secondary-heading-modal {
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    font-weight: 500;
+    color: #305797;
+    margin-top: 3px;
+    margin-bottom: 20px;
+    line-height: 5px;
+    width: 550px;
+}
+
+.login-input-fields-modal {
+    width: 560px;
+    height: 60px;
+    font-size: 22px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.login-input-fields-modal:hover {
+    border-color: #305797;
+    border-width: 1px;
+}
+
+.login-input-fields-modal:focus-within {
+    border-color: #305797 !important;
+    border-width: 1px !important;
+}
+
+.ant-input-password input {
+    width: 600px;
+    font-size: 22px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.ant-input-status-error {
+    border-width: 1px !important;
+}
+
+.login-labels-modal {
+    font-size: 16px;
+    font-family: "Roboto", sans-serif;
+    color: #305797;
+}
+
+.login-div-input-fields-modal {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#login-links-container-modal {
+    display: flex;
+    flex-direction: row;
+    white-space: nowrap;
+    margin-left: 20px;
+    gap: 90px;
+}
+
+.login-label-links-modal {
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+}
+
+.login-button-links-modal {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 4px;
+    margin-left: 0px;
+    padding-left: 4px;
+    color: #305797;
+}
+
+.login-button-links-modal:hover {
+    text-decoration: underline;
+    color: #992A46 !important;
+    border: "none" !important;
+}
+
+.login-button-links-modal.ant-btn {
+    border: none !important;
+}
+
+.login-button-links-modal.ant-btn:hover,
+.login-button-links-modal.ant-btn:focus {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#login-button-modal {
+    font-family: "Roboto", sans-serif;
+    font-size: 20px;
+    background-color: #305797;
+    color: #FFF;
+    width: 240px;
+    height: 50px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#login-button-modal:hover {
+    background-color: #e9e9e9;
+    color: #305797;
+}
+
+#login-button-modal,
+#login-heading-modal,
+#login-secondary-heading-modal,
+#login-error-message-modal {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+#login-error-message-modal {
+    color: #ff0000;
+    width: 555px;
+    text-align: left;
+}

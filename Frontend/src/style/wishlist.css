@@ -1,0 +1,300 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.wishlist-page {
+    min-height: 100vh;
+    padding: 110px 32px 40px;
+    background: #f5f7fb;
+    font-family: "Roboto", sans-serif;
+}
+
+.wishlist-header {
+    max-width: 1280px;
+    margin: 0 auto 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wishlist-header h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.wishlist-header p {
+    margin: 0;
+    color: #5b6476;
+    font-size: 14px;
+}
+
+.wishlist-controls {
+    max-width: 1280px;
+    margin: 0 auto 24px;
+    display: grid;
+    gap: 16px;
+}
+
+.wishlist-controls-card {
+    max-width: 1280px;
+    margin: 0 auto 24px;
+    border-radius: 18px;
+    box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
+    background: #ffffff;
+}
+
+.wishlist-controls-card .ant-card-body {
+    padding: 20px 22px 24px;
+}
+
+.wishlist-search {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wishlist-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.wishlist-search .ant-input {
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.wishlist-filter-grid .ant-select {
+    width: 100%;
+}
+
+.wishlist-filter-grid .ant-select-selector {
+    border-radius: 10px !important;
+    min-height: 40px;
+    align-items: center;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wishlist-results {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.wishlist-results .ant-col {
+    display: flex;
+}
+
+.wishlist-results .ant-col .wishlist-card {
+    width: 100%;
+}
+
+.wishlist-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.wishlist-results-header h3 {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    color: #1f2a44;
+}
+
+.wishlist-results-header span {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.wishlist-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    height: 100%;
+}
+
+.wishlist-card .ant-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    height: 100%;
+}
+
+.wishlist-card-image {
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wishlist-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.wishlist-card-image-placeholder {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.wishlist-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.wishlist-card-title {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-family: "Montserrat", sans-serif;
+    color: #1f2a44 !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.wishlist-location {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.wishlist-rating {
+    font-size: 13px;
+    font-weight: 600;
+    color: #d97706;
+    background: #fff7ed;
+    padding: 4px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    height: fit-content;
+}
+
+.wishlist-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #5b6476;
+}
+
+.wishlist-badge {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #305797;
+    border: none;
+}
+
+.wishlist-badge.Available {
+    background: #ecfdf3;
+    color: #067647;
+}
+
+.wishlist-badge.Few-slots {
+    background: #fff7ed;
+    color: #b45309;
+}
+
+.wishlist-badge.Sold-out {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.wishlist-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.wishlist-card-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.wishlist-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2a44;
+}
+
+.wishlist-card-footer .ant-btn {
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 8px 16px rgba(48, 87, 151, 0.2);
+    background: #305797;
+    border-color: #305797;
+    color: #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.wishlist-card-footer .ant-btn:hover,
+.wishlist-card-footer .ant-btn:focus {
+    background: #f1f3f5 !important;
+    border-color: #305797 !important;
+    color: #1f2a44 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(48, 87, 151, 0.28);
+}
+
+.wishlist-card-footer .wishlist-remove-button {
+    background: #ffffff;
+    border-color: #cbd5f5;
+    color: #1f2a44;
+    box-shadow: none;
+}
+
+.wishlist-card-footer .wishlist-remove-button:hover,
+.wishlist-card-footer .wishlist-remove-button:focus {
+    background: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    color: #b91c1c !important;
+    box-shadow: 0 8px 16px rgba(185, 28, 28, 0.2);
+}
+
+.wishlist-empty {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px;
+    border: 1px dashed #cbd5f5;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .wishlist-page {
+        padding: 100px 20px 32px;
+    }
+
+    .wishlist-results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}

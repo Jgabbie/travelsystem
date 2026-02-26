@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+.customize-booking-modal .ant-modal-content {
+    border-radius: 16px;
+    padding: 28px 30px;
+}
+
+.customize-booking-modal .ant-modal-body {
+    padding: 12px 0 0;
+}
+
+.customize-booking-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.customize-booking-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.customize-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.customize-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.customize-card-header h3 {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #1f2a44;
+}
+
+.customize-card-header span {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.customize-card-subtext {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.customize-options {
+    display: grid;
+    gap: 10px;
+}
+
+.customize-option {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f9fafb;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.customize-option.is-selected {
+    border-color: #305797;
+    background: #eef2ff;
+    box-shadow: 0 6px 14px rgba(48, 87, 151, 0.2);
+}
+
+.customize-option-label {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #1f2a44;
+}
+
+.customize-option-rank {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #305797;
+}
+
+.customize-hotels {
+    display: grid;
+    gap: 14px;
+}
+
+.customize-hotel-group h4 {
+    margin: 0 0 8px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #1f2a44;
+}
+
+.customize-booking-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.customize-booking-proceed {
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.customize-booking-cancel {
+    background-color: #992a46 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+@media (max-width: 900px) {
+    .customize-booking-grid {
+        grid-template-columns: 1fr;
+    }
+}

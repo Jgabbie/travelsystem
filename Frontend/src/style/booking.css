@@ -1,0 +1,109 @@
+.page-header {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  width: 200px;
+}
+
+@media (max-width: 768px) {
+  .booking-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}
+
+.booking-actions .ant-input:hover,
+.booking-actions .ant-input:focus,
+.booking-actions .ant-input-focused,
+.booking-actions .ant-input-affix-wrapper:hover,
+.booking-actions .ant-input-affix-wrapper-focused,
+.booking-actions .ant-input-affix-wrapper:focus-within {
+  border-color: #305797 !important;
+}
+
+.booking-select:hover,
+.booking-select:focus-within {
+  border-color: #305797 !important;
+}
+
+
+.editbutton-bookingmanagement {
+  border-color: #305797;
+  background-color: #fff !important;
+  color: #305797 !important;
+}
+
+.editbutton-bookingmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.savebutton-bookingmanagement {
+  border-color: #1f8f3a;
+  background-color: #1f8f3a !important;
+  color: #fff !important;
+}
+
+.savebutton-bookingmanagement:hover {
+  background-color: #167a30 !important;
+  color: #fff !important;
+}
+
+.cancelbutton-bookingmanagement {
+  border-color: #d93025;
+  color: #d93025 !important;
+  background-color: #fff !important;
+}
+
+.cancelbutton-bookingmanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.deletebutton-bookingmanagement {
+  border-color: #d93025;
+  background-color: #fff !important;
+  color: #d93025 !important;
+}
+
+.deletebutton-bookingmanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.viewbutton-bookingmanagement {
+  border-color: #305797;
+  background-color: #fff !important;
+  color: #305797 !important;
+}
+
+.viewbutton-bookingmanagement:hover {
+  border-color: #305797;
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.exportbutton-bookingmanagement {
+  border-color: #305797;
+  color: #305797 !important;
+  background-color: #fff !important;
+}
+
+.exportbutton-bookingmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}

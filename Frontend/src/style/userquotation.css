@@ -1,0 +1,124 @@
+.user-quotation-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.user-quotation-container {
+    flex: 1;
+    padding: 120px 32px 40px;
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.user-quotation-header {
+    margin-bottom: 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.user-quotation-header h2 {
+    margin: 0 0 6px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 26px;
+    color: #305797;
+}
+
+.user-quotation-header p {
+    margin: 0;
+    color: #6b7280;
+    font-family: "Roboto", sans-serif;
+}
+
+.user-quotation-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    width: 240px;
+}
+
+.user-quotation-actions .ant-input:hover,
+.user-quotation-actions .ant-input:focus,
+.user-quotation-actions .ant-input-focused,
+.user-quotation-actions .ant-input-affix-wrapper:hover,
+.user-quotation-actions .ant-input-affix-wrapper-focused,
+.user-quotation-actions .ant-input-affix-wrapper:focus-within {
+    border-color: #305797 !important;
+}
+
+.user-quotation-select:hover,
+.user-quotation-select:focus-within {
+    border-color: #305797 !important;
+}
+
+.user-quotation-table {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.user-quotation-table .ant-table-thead>tr>th {
+    background: #eef2f7 !important;
+    color: #305797 !important;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+}
+
+.user-quotation-table .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    color: #2f3a4a;
+}
+
+.user-quotation-table .ant-tag {
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.user-quotation-action {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none !important;
+    padding: 0 14px;
+    height: 34px;
+    transition: background-color 0.2s ease;
+    box-shadow: none !important;
+}
+
+.user-quotation-action-primary {
+    background-color: #305797 !important;
+    color: #fff !important;
+}
+
+.user-quotation-action-primary:hover {
+    background-color: #e5e7eb !important;
+    color: #305797 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+    .user-quotation-container {
+        padding: 110px 16px 32px;
+    }
+
+    .user-quotation-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+}

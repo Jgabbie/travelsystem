@@ -6,16 +6,18 @@ const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     hashedPassword: { type: String, required: true },
     phone: { type: String, required: true },
+    profileImage: { type: String, default: '' },
+    homeAddress: { type: String, default: '' },
+    gender: { type: String, default: '' },
+    birthdate: { type: String, default: '' },
+    nationality: { type: String, default: '' },
     role: { type: String, default: '' },
     verifyOtp: { type: String, default: '' },
     verifyOtpExpireAt: { type: Number, default: 0 },
     isAccountVerified: { type: Boolean, default: false },
     resetOtp: { type: String, default: '' },
     resetOtpExpireAt: { type: Number, default: 0 },
-    resetToken: { type: String, default: '' },
-    resetTokenExpireAt: { type: Number, default: 0 },
-    verifyToken: { type: String, default: '' },
-    verifyTokenExpireAt: { type: Number, default: 0 },
+    refreshToken: { type: String, default: '' }
 });
 
 const UserModel = mongoose.model("users", UserSchema);
