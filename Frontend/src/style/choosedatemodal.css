@@ -10,10 +10,16 @@
     padding: 0;
 }
 
+.calendar-component {
+    height: 400px !important;
+}
+
 .choose-date-content {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
     gap: 18px;
+    height: 450px;
+    width: 700px;
 }
 
 .choose-date-left {
@@ -66,6 +72,42 @@
     padding: 0 16px;
 }
 
+.choose-date-modal .ant-picker-cell-disabled .ant-picker-cell-inner:hover {
+    background: none !important;
+    cursor: not-allowed;
+}
+
+/* Enabled dates hover */
+.choose-date-modal .ant-picker-cell-in-view:not(.ant-picker-cell-disabled) .ant-picker-cell-inner:hover {
+    background: #305797 !important;
+    color: #fff !important;
+}
+
+/* Disabled dates — no hover */
+.choose-date-modal .ant-picker-cell-disabled .ant-picker-cell-inner:hover,
+.choose-date-modal .ant-picker-cell-disabled:hover .ant-picker-cell-inner {
+    background: transparent !important;
+    color: #ccc !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+}
+
+/* .choose-date-modal .ant-picker-calendar {
+    font-size: 18px;
+}
+
+.choose-date-modal .ant-picker-calendar-date {
+    height: 120px;
+}
+
+.choose-date-modal .ant-picker-content th {
+    font-size: 16px;
+}
+
+.choose-date-modal .ant-picker-calendar-full .ant-picker-panel {
+    height: auto;
+} */
+
 
 .choose-date-proceed:disabled,
 .choose-date-proceed[disabled] {
@@ -82,14 +124,17 @@
     padding: 0 16px;
 }
 
-.choose-date-modal .ant-picker-calendar .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner,
-.choose-date-modal .ant-picker-calendar .ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner,
-.choose-date-modal .ant-picker-calendar .ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+
+.choose-date-modal .ant-picker-cell {
+    height: 60px !important;
+}
+
+.choose-date-modal .ant-picker-calendar .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
     background: #305797 !important;
     color: #fff !important;
 }
 
-.choose-date-modal .ant-picker-calendar .ant-picker-cell-in-view .ant-picker-cell-inner:hover {
+.choose-date-modal .ant-picker-calendar .ant-picker-cell-in-view:not(.ant-picker-cell-disabled) .ant-picker-cell-inner:hover {
     background: #305797 !important;
     color: #fff !important;
 }
@@ -167,22 +212,6 @@
 .choose-date-modal .ant-picker-calendar .ant-picker-cell-in-view.ant-picker-cell-in-range .ant-picker-cell-inner {
     background: rgba(48, 87, 151, 0.12) !important;
     color: #305797 !important;
-}
-
-.calendar-cell {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 60px;
-    /* adjust for modal */
-}
-
-.calendar-price {
-    margin-top: 4px;
-    font-size: 12px;
-    color: #1890ff;
-    font-weight: bold;
 }
 
 @media (max-width: 768px) {

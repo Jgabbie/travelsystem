@@ -114,7 +114,7 @@ export default function ChooseDateModal({
                         onSelect={handleDateChange}
                         validRange={[minSelectableDate, maxSelectableDate]}
                         disabledDate={(current) => current && current.isBefore(minSelectableDate, 'day')}
-                        dateRender={dateRender}   // ✅ the new official prop
+                        dateRender={dateRender}
                     />
                 </div>
                 <div className="choose-date-right">

@@ -360,7 +360,7 @@ export default function PackagePage() {
             setIsQuotationModalOpen(true)
             return
         }
-        setIsSoloGroupModalOpen(true)
+        handleOpenDateModal()
     }
 
     //submit quotation request and close quotation modal
