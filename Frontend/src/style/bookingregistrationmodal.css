@@ -1,0 +1,44 @@
+.booking-registration-modal .ant-modal-content {
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.booking-registration-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.booking-registration-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    color: #1f2a44;
+    margin: 0;
+    text-align: center;
+}
+
+.booking-registration-package {
+    background: #f9f9f9;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+.booking-registration-section {
+    padding: 16px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.booking-registration-checkbox {
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+.booking-registration-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}

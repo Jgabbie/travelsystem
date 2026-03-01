@@ -15,7 +15,7 @@ const PackageSchema = new mongoose.Schema({
     packageExclusions: { type: Array, default: [], required: true },
     packageTermsConditions: { type: Array, default: [], required: true },
     packageItineraries: { type: Object, default: {}, required: true },
-    image: { type: String, default: '' },
+    images: { type: Array, default: [] },
 
 });
 

@@ -146,6 +146,8 @@
     padding: 0 20px;
 }
 
+
+
 @media (max-width: 900px) {
     .booking-summary-grid {
         grid-template-columns: 1fr;

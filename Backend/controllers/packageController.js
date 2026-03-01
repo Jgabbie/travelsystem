@@ -2,7 +2,7 @@ const PackageModel = require("../models/package");
 const logAction = require("../utils/logger");
 
 const addPackage = async (req, res) => {
-    const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, addons, termsAndConditions, inclusions, exclusions, itineraries, image } = req.body;
+    const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, addons, termsAndConditions, inclusions, exclusions, itineraries, images } = req.body;
     try {
 
         if (name === null || code === null || pricePerPax === null || availableSlots === null || description === null || packageType === null || duration === null || hotels === null || airlines === null || addons === null || termsAndConditions === null || inclusions === null || exclusions === null || itineraries === null) {
@@ -28,7 +28,7 @@ const addPackage = async (req, res) => {
             packageInclusions: inclusions,
             packageExclusions: exclusions,
             packageItineraries: itineraries,
-            image: image || ''
+            images: images || []
         });
 
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -52,7 +52,7 @@ const addPackage = async (req, res) => {
                 inclusions: newPackage.packageInclusions,
                 exclusions: newPackage.packageExclusions,
                 itineraries: newPackage.packageItineraries,
-                image: newPackage.image || ''
+                images: newPackage.images || []
             },
             ip
         );
@@ -128,7 +128,7 @@ const updatePackage = async (req, res) => {
                 packageExclusions: req.body.exclusions,
                 packageTermsConditions: req.body.termsAndConditions,
                 packageItineraries: req.body.itineraries,
-                image: req.body.image || ''
+                images: req.body.images || []
             },
             { new: true }
         );

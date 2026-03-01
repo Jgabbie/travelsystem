@@ -1,0 +1,36 @@
+.upload-passport-modal .ant-modal-content {
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.upload-passport-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.upload-passport-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    color: #1f2a44;
+    margin: 0;
+    text-align: center;
+}
+
+.upload-passport-text {
+    text-align: center;
+    color: #555;
+}
+
+.upload-passport-uploader {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.upload-passport-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}

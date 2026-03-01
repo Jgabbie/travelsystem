@@ -36,7 +36,7 @@ export default function UserBookings() {
 
     const dataSource = useMemo(() => bookings.map((booking) => {
         const details = booking.bookingDetails || {}
-        const travelerCounts = details.travelers || {}
+        const travelerCounts = details.travelersCount || {}
         const travelersTotal = Object.values(travelerCounts)
             .reduce((sum, value) => sum + (Number(value) || 0), 0)
 
@@ -48,7 +48,7 @@ export default function UserBookings() {
             reference: booking.reference || booking._id,
             destination: details.packageName || 'Package',
             date: formattedDate,
-            travelers: travelersTotal || '--',
+            travelers: travelerCounts || '--',
             bookingType: details.packageType
                 ? `${details.packageType.charAt(0).toUpperCase()}${details.packageType.slice(1)}`
                 : '--',

@@ -18,7 +18,7 @@
 
 .package-left {
     background: #ffffff;
-    height: 540px;
+    height: 551px;
     width: 740px;
     border-radius: 16px;
     padding: 28px;
@@ -52,8 +52,8 @@
 
 .package-description p {
     margin: 0;
-    font-size: 15px;
-    line-height: 1.7;
+    font-size: 13px;
+    line-height: 1.5;
     color: #374151;
 }
 
@@ -202,6 +202,15 @@
     display: grid;
     gap: 16px;
 }
+
+.package-tab-content-scroll {
+    height: 260px;
+    /* or any height you prefer */
+    overflow-y: auto;
+    padding-right: 8px;
+    /* optional: prevents content from being hidden behind scrollbar */
+}
+
 
 .package-reviews-card {
     border-radius: 16px;

@@ -19,6 +19,7 @@ import Auditing from './components/Auditing';
 
 import AdminLayout from "./components/AdminLayout";
 import BookingManagement from "./pages/BookingManagement";
+import UploadBookingInvoice from "./pages/UploadBookingInvoice";
 import UserManagement from "./pages/UserManagement";
 import PackageManagement from "./pages/PackageManagement";
 import AddPackage from "./pages/AddPackage";
@@ -32,15 +33,12 @@ import CancellationRequests from "./pages/CancellationRequests";
 import QuotationManagement from "./pages/QuotationManagement";
 import QuotationRequest from "./pages/QuotationRequest";
 
-
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
-
-
 
 function App() {
   return (
@@ -51,6 +49,9 @@ function App() {
 
         <Route element={<GuestsUsersRoute />}>
           <Route path='/home' element={<LandingPage />} />
+          <Route path='/destinations-packages' element={<DestinationsPackages />} />
+          <Route path='/package' element={<PackagePage />} />
+          <Route path='/package/:id' element={<PackagePage />} />
         </Route>
 
         {/* public routes */}
@@ -64,6 +65,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="bookings" element={<BookingManagement />} />
+            <Route path="bookings/:id/invoice" element={<UploadBookingInvoice />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="transactions" element={<TransactionManagement />} />
             <Route path="packages" element={<PackageManagement />} />
@@ -84,14 +86,11 @@ function App() {
 
         {/* protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path='/package' element={<PackagePage />} />
-          <Route path='/package/:id' element={<PackagePage />} />
           <Route path='/profile' element={<ProfilePage />} />
           <Route path='/user-bookings' element={<UserBookings />} />
           <Route path='/user-transactions' element={<UserTransactions />} />
           <Route path='/passandvisa-service' element={<PassAndVisaService />} />
           <Route path='/wishlist' element={<Wishlist />} />
-          <Route path='/destinations-packages' element={<DestinationsPackages />} />
           <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
           <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
           <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />

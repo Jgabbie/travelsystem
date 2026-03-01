@@ -34,6 +34,7 @@ export default function SoloOrGrouped({
             width={900}
         >
             <div className="solo-group-content">
+                <h1 className='solo-group-heading'>Select Your Package Arrangement</h1>
                 <div className="solo-group-cards">
                     <button
                         type="button"

@@ -1,35 +1,41 @@
-import React from 'react'
-import { Table, Tag, Button, Space } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Table, Tag, Button, Space, message } from 'antd'
+import dayjs from 'dayjs'
 import TopNavUser from '../components/TopNavUser'
 import '../style/usertransactions.css'
+import axiosInstance from '../config/axiosConfig'
 
 export default function UserTransactions() {
-    const dataSource = [
-        {
-            key: 'TX-20451',
-            reference: 'TX-20451',
-            date: 'Feb 2, 2026',
-            method: 'GCash',
-            amount: '₱3,500',
-            status: 'Paid'
-        },
-        {
-            key: 'TX-20402',
-            reference: 'TX-20402',
-            date: 'Jan 20, 2026',
-            method: 'Card',
-            amount: '₱6,200',
-            status: 'Processing'
-        },
-        {
-            key: 'TX-20318',
-            reference: 'TX-20318',
-            date: 'Dec 30, 2025',
-            method: 'Bank Transfer',
-            amount: '₱2,400',
-            status: 'Refunded'
+    const [transactions, setTransactions] = useState([])
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            setLoading(true)
+            try {
+                const response = await axiosInstance.get('/transaction/user-transactions')
+                setTransactions(response.data || [])
+            } catch (error) {
+                message.error('Unable to load transactions')
+                setTransactions([])
+            } finally {
+                setLoading(false)
+            }
         }
-    ]
+
+        fetchTransactions()
+    }, [])
+
+    const dataSource = useMemo(() => transactions.map((transaction) => ({
+        key: transaction._id,
+        reference: transaction.reference || transaction._id,
+        date: transaction.createdAt
+            ? dayjs(transaction.createdAt).format('MMM D, YYYY')
+            : '--',
+        method: transaction.method || '--',
+        amount: `₱${Number(transaction.amount || 0).toLocaleString()}`,
+        status: transaction.status || '--'
+    })), [transactions])
 
     const columns = [
         {
@@ -87,6 +93,7 @@ export default function UserTransactions() {
                     <Table
                         columns={columns}
                         dataSource={dataSource}
+                        loading={loading}
                         pagination={{ pageSize: 5 }}
                         scroll={{ x: 'max-content' }}
                     />

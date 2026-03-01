@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Input, Select, Button, Table,
   Tag, Space, DatePicker, Row,
@@ -13,6 +14,7 @@ import {
 import dayjs from "dayjs";
 import axiosInstance from "../config/axiosConfig";
 import "../style/booking.css";
+import { ConfigProvider } from "antd";
 
 export default function BookingManagement() {
 
@@ -26,6 +28,7 @@ export default function BookingManagement() {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -38,7 +41,7 @@ export default function BookingManagement() {
           const travelersTotal = Object.values(travelerCounts) //convert object values to array then sum it all up by using reduce to get the total number of travelers
             .reduce((sum, value) => sum + (Number(value) || 0), 0);
 
-          const statusRaw = booking.status || "pending"; //get status
+          const statusRaw = booking.status || "Pending"; //get status
           const statusFormatted =
             statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1); //capitalize first letter of status
 
@@ -115,22 +118,23 @@ export default function BookingManagement() {
   //delete booking
   const handleDelete = (key) => {
     Modal.confirm({
-      className: "logout-confirm-modal",
+      className: "booking-manage-confirm-modal",
       icon: null,
       title: (
-        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+        <div className="booking-manage-confirm-title" style={{ textAlign: "center" }}>
           Confirm Delete
         </div>
       ),
       content: (
-        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-          <p className="logout-confirm-text">Are you sure you want to delete this booking?</p>
+        <div className="booking-manage-confirm-content" style={{ textAlign: "center" }}>
+          <p className="booking-manage-confirm-text">Are you sure you want to delete this booking?</p>
         </div>
       ),
       okText: "Delete",
       cancelText: "Cancel",
-      okButtonProps: { className: "logout-confirm-btn" },
-      cancelButtonProps: { className: "logout-cancel-btn" },
+      okButtonProps: { className: "booking-manage-confirm-btn" },
+      cancelButtonProps: { className: "booking-manage-cancel-btn" },
+      style: { top: 200 },
       onOk: async () => {
         try {
           await axiosInstance.delete(`/booking/${key}`);
@@ -147,7 +151,7 @@ export default function BookingManagement() {
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
-      console.log("Viewing booking details:", booking);
+      navigate(`/bookings/${key}/invoice`, { state: { booking } });
     }
   };
 
@@ -160,22 +164,23 @@ export default function BookingManagement() {
 
       if (index > -1) {
         Modal.confirm({
-          className: "logout-confirm-modal",
+          className: "booking-manage-confirm-modal",
           icon: null,
           title: (
-            <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+            <div className="booking-manage-confirm-title" style={{ textAlign: "center" }}>
               Confirm Changes
             </div>
           ),
           content: (
-            <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-              <p className="logout-confirm-text">Are you sure about these changes?</p>
+            <div className="booking-manage-confirm-content" style={{ textAlign: "center" }}>
+              <p className="booking-manage-confirm-text">Are you sure about these changes?</p>
             </div>
           ),
           okText: "Save",
           cancelText: "Cancel",
-          okButtonProps: { className: "logout-confirm-btn" },
-          cancelButtonProps: { className: "logout-cancel-btn" },
+          okButtonProps: { className: "booking-manage-confirm-btn" },
+          cancelButtonProps: { className: "booking-manage-cancel-btn" },
+          style: { top: 200 },
           onOk: async () => { //merge the new values to the existing row data
             const updatedRow = { ...newData[index], ...row };
             if (dayjs.isDayjs(updatedRow.travelDate)) { //check if dates are dayjs objects and convert them to string format
@@ -252,17 +257,13 @@ export default function BookingManagement() {
       title: "Status",
       dataIndex: "status",
       editable: true,
-      render: s => (
-        <Tag
-          color={
-            s === "Confirmed" ? "green" :
-              s === "Pending" ? "orange" :
-                "red"
-          }
-        >
-          {s}
-        </Tag>
-      )
+      render: s => {
+        const displayStatus = s === "Confirmed" ? "Successful" : s;
+        const color = displayStatus === "Successful" ? "green" :
+          displayStatus === "Pending" ? "orange" :
+            "red";
+        return <Tag color={color}>{displayStatus}</Tag>;
+      }
     },
     {
       title: "Actions",
@@ -351,7 +352,7 @@ export default function BookingManagement() {
       inputNode = (
         <Select
           options={[
-            { value: "Confirmed", label: "Confirmed" },
+            { value: "Successful", label: "Successful" },
             { value: "Pending", label: "Pending" },
             { value: "Cancelled", label: "Cancelled" }
           ]}
@@ -383,115 +384,124 @@ export default function BookingManagement() {
 
 
   const totalBookings = filteredData.length;
-  const totalConfirmed = filteredData.filter(b => b.status === "Confirmed").length;
+  const totalSuccessful = filteredData.filter(b => b.status === "Successful" || b.status === "Confirmed").length;
   const totalPending = filteredData.filter(b => b.status === "Pending").length;
   const totalCancelled = filteredData.filter(b => b.status === "Cancelled").length;
 
   return (
-    <div>
-      <h1 className="page-header">Booking Management</h1>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#305797"
+        }
+      }}
+    >
+      <div>
+        <h1 className="page-header">Booking Management</h1>
 
-      <Row gutter={16} style={{ marginBottom: 20 }}>
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Total"
-              value={totalBookings}
-              prefix={<CalendarOutlined />}
-            />
-          </Card>
-        </Col>
+        <Row gutter={16} style={{ marginBottom: 20 }}>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Total"
+                value={totalBookings}
+                prefix={<CalendarOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Pending"
-              value={totalPending}
-              prefix={<ClockCircleOutlined />}
-            />
-          </Card>
-        </Col>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Pending"
+                value={totalPending}
+                prefix={<ClockCircleOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Confirmed"
-              value={totalConfirmed}
-              prefix={<CheckCircleOutlined />}
-            />
-          </Card>
-        </Col>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Successful"
+                value={totalSuccessful}
+                prefix={<CheckCircleOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Cancelled"
-              value={totalCancelled}
-              prefix={<CloseCircleOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Cancelled"
+                value={totalCancelled}
+                prefix={<CloseCircleOutlined />}
+              />
+            </Card>
+          </Col>
+        </Row>
 
-      <div className="booking-actions">
-
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search reference, package or status..."
-          className="search-input"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          allowClear
-        />
-
-        <Select
-          className="booking-select"
-          placeholder="Status"
-          style={{ width: 140 }}
-          allowClear
-          value={statusFilter || undefined}
-          onChange={(v) => setStatusFilter(v || "")}
-          options={[
-            { value: "Confirmed", label: "Confirmed" },
-            { value: "Pending", label: "Pending" },
-            { value: "Cancelled", label: "Cancelled" }
-          ]}
-        />
-
-        <DatePicker
-          placeholder="Booking Date"
-          value={bookingDateFilter}
-          onChange={(d) => setBookingDateFilter(d)}
-          allowClear
-        />
-
-        <DatePicker
-          placeholder="Travel Date"
-          value={travelDateFilter}
-          onChange={(d) => setTravelDateFilter(d)}
-          allowClear
-        />
-
-        <Button className="exportbutton-bookingmanagement" type="primary">Export</Button>
-      </div>
-
-      <Card>
-        <Form form={form} component={false}>
-          <Table
-            components={{
-              body: {
-                cell: EditableCell
-              }
-            }}
-            columns={mergedColumns}
-            dataSource={filteredData}
-            loading={loading}
-            pagination={{ pageSize: 6 }}
-            rowClassName="editable-row"
-            scroll={{ x: "max-content" }}
+        <div className="booking-actions">
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search reference, package or status..."
+            className="search-input"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
           />
-        </Form>
-      </Card>
-    </div>
+
+          <Select
+            className="booking-select"
+            placeholder="Status"
+            style={{ width: 140 }}
+            allowClear
+            value={statusFilter || undefined}
+            onChange={(v) => setStatusFilter(v || "")}
+            options={[
+              { value: "Successful", label: "Successful" },
+              { value: "Pending", label: "Pending" },
+              { value: "Cancelled", label: "Cancelled" }
+            ]}
+          />
+
+          <DatePicker
+            className="booking-date-filter"
+            placeholder="Booking Date"
+            value={bookingDateFilter}
+            onChange={(d) => setBookingDateFilter(d)}
+            allowClear
+          />
+
+          <DatePicker
+            className="booking-date-filter"
+            placeholder="Travel Date"
+            value={travelDateFilter}
+            onChange={(d) => setTravelDateFilter(d)}
+            allowClear
+          />
+
+          <Button className="exportbutton-bookingmanagement" type="primary">Export</Button>
+        </div>
+
+        <Card>
+          <Form form={form} component={false}>
+            <Table
+              components={{
+                body: {
+                  cell: EditableCell
+                }
+              }}
+              columns={mergedColumns}
+              dataSource={filteredData}
+              loading={loading}
+              pagination={{ pageSize: 6 }}
+              rowClassName="editable-row"
+              scroll={{ x: "max-content" }}
+            />
+          </Form>
+        </Card>
+      </div>
+    </ConfigProvider>
   );
 }

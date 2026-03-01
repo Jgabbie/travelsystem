@@ -1,0 +1,100 @@
+.choose-date-int-modal .ant-modal-wrap {
+    align-items: flex-start;
+    padding-bottom: 10px;
+}
+
+.choose-date-int-modal .ant-modal-content {
+    border-radius: 16px;
+    padding: 0;
+}
+
+.choose-date-int-modal .ant-modal-body {
+    padding: 0;
+}
+
+.choose-date-int-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    height: 520px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 0 16px;
+}
+
+.choose-date-heading {
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    color: #1f2a44;
+    margin: 0;
+    text-align: center;
+}
+
+.budget-cards-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.budget-card {
+    padding: 28px 28px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f5f5f5;
+    font-size: 18px;
+    min-height: 120px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+}
+
+.budget-card:hover {
+    border-color: #305797;
+    background-color: #e6f0ff;
+}
+
+.budget-card.selected {
+    border-color: #305797;
+    background-color: #d6eaff;
+    font-weight: bold;
+}
+
+.range-price {
+    font-weight: 600;
+    color: #305797;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+
+/* buttons */
+.choose-date-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.choose-date-proceed {
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.choose-date-cancel {
+    background-color: #992A46 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    border: none !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}

@@ -34,7 +34,6 @@
    overflow-y: auto;
  }
 
-
  .add-package-header-container {
    display: flex;
    flex-direction: row;
@@ -92,14 +91,6 @@
  .add-package-error-message {
    margin-top: 0px;
    height: auto;
- }
-
-
- .add-package-inputs:hover,
- .add-package-inputs:focus,
- .add-package-input-textarea:hover,
- .add-package-input-textarea:focus {
-   border-color: #305797 !important;
  }
 
 
@@ -165,37 +156,6 @@
    color: #305797 !important;
  }
 
- .radio-button-add-package .ant-radio-inner {
-   border-color: #305797;
- }
-
- .radio-button-add-package .ant-radio-checked .ant-radio-inner {
-   border-color: #305797;
-   background-color: #305797;
- }
-
- .radio-button-add-package .ant-radio-wrapper:hover .ant-radio-inner {
-   border-color: #305797;
- }
-
- .ant-checkbox-inner {
-   border-color: #305797;
- }
-
- .ant-checkbox-checked .ant-checkbox-inner {
-   background-color: #305797;
-   border-color: #305797;
- }
-
- .ant-checkbox-wrapper:hover .ant-checkbox-inner {
-   border-color: #305797;
- }
-
- .add-package-container .ant-checkbox-wrapper:hover .ant-checkbox-inner {
-   border-color: #305797;
-   box-shadow: 0 0 0 3px rgba(48, 87, 151, 0.15);
- }
-
  .add-package-container .ant-checkbox-inner {
    transition: all 0.2s ease;
  }
@@ -253,4 +213,56 @@
    font-size: 12px;
    font-family: "Roboto", sans-serif;
    height: 10px;
+ }
+
+ .package-image-preview {
+   display: flex;
+   flex-direction: row;
+   gap: 40px;
+   margin-top: 12px;
+   flex-wrap: wrap;
+   justify-content: center;
+   width: 100%;
+   border-radius: 12px;
+   overflow: visible;
+   background: #f9fafb;
+   padding: 10px;
+ }
+
+ .package-image-preview>div {
+   width: 300px;
+   height: 200px;
+   border: 1px solid #ccc;
+   border-radius: 12px;
+   overflow: hidden;
+   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+   flex-shrink: 0;
+ }
+
+ .package-image-preview>div img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+ }
+
+ .package-image-preview>div button {
+   position: absolute;
+   top: 10px;
+   right: 10px;
+   width: 32px;
+   height: 32px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: 50%;
+   background: rgba(255, 255, 255, 0.9);
+   border: none;
+   padding: 0;
+   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+   z-index: 2;
+ }
+
+ .package-image-preview>div button:hover {
+   background: #d9534f;
+   color: #fff;
  }

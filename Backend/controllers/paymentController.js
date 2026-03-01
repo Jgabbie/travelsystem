@@ -63,28 +63,28 @@ const createCheckoutSession = async (req, res) => {
 
 
 const createCheckoutToken = async (req, res) => {
-    const { quotationId, travelers } = req.body;
+    // const { quotationId, travelers } = req.body;
     const userId = req.userId;
+    const { totalPrice } = req.body
 
-    // Validate quotation
-    const quotation = await QuotationModel.findById(quotationId);
-    if (!quotation) return res.status(404).json({ message: "Quotation not found" });
+    // const quotation = await QuotationModel.findById(quotationId);
+    // if (!quotation) return res.status(404).json({ message: "Quotation not found" });
 
-    console.log(quotation)
-    // Create temporary checkout token
-    const token = uuidv4(); // generate random token
+    // console.log(quotation)
+    const token = uuidv4();
 
-    // Store minimal booking data server-side
     await TokenCheckoutModel.create({
         token,
         userId,
-        quotationId,
-        travelers,
-        totalPrice: 29000, //temporary price
+        totalPrice: totalPrice || 29000,
         createdAt: new Date(),
     });
 
     res.status(201).json({ token });
 };
+
+
+
+
 
 module.exports = { createCheckoutSession, createCheckoutToken };

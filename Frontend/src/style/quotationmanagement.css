@@ -15,20 +15,6 @@
     width: 240px;
 }
 
-.quotation-management-actions .ant-input:hover,
-.quotation-management-actions .ant-input:focus,
-.quotation-management-actions .ant-input-focused,
-.quotation-management-actions .ant-input-affix-wrapper:hover,
-.quotation-management-actions .ant-input-affix-wrapper-focused,
-.quotation-management-actions .ant-input-affix-wrapper:focus-within {
-    border-color: #305797 !important;
-}
-
-.quotation-select:hover,
-.quotation-select:focus-within {
-    border-color: #305797 !important;
-}
-
 .quotation-view {
     border-color: #305797;
     background-color: #fff !important;
@@ -60,6 +46,33 @@
 .quotation-reject:hover {
     background-color: #d93025 !important;
     color: #fff !important;
+}
+
+.quotation-view,
+.quotation-approve,
+.quotation-reject {
+    box-shadow: none !important;
+}
+
+/* Remove hover shadow */
+.quotation-view:hover,
+.quotation-approve:hover,
+.quotation-reject:hover {
+    box-shadow: none !important;
+}
+
+/* Remove focus ring shadow */
+.quotation-view:focus,
+.quotation-approve:focus,
+.quotation-reject:focus {
+    box-shadow: none !important;
+}
+
+/* Remove active/click shadow */
+.quotation-view:active,
+.quotation-approve:active,
+.quotation-reject:active {
+    box-shadow: none !important;
 }
 
 @media (max-width: 768px) {

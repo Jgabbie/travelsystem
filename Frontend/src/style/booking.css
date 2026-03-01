@@ -15,6 +15,18 @@
   width: 200px;
 }
 
+.search-input,
+.booking-select,
+.booking-date-filter,
+.ant-select-selector {
+  height: 32px !important;
+  line-height: 32px !important;
+  padding: 0 8px !important;
+  font-size: 14px !important;
+  box-shadow: none !important;
+}
+
+
 @media (max-width: 768px) {
   .booking-actions {
     flex-direction: column;
@@ -25,21 +37,6 @@
     width: 100%;
   }
 }
-
-.booking-actions .ant-input:hover,
-.booking-actions .ant-input:focus,
-.booking-actions .ant-input-focused,
-.booking-actions .ant-input-affix-wrapper:hover,
-.booking-actions .ant-input-affix-wrapper-focused,
-.booking-actions .ant-input-affix-wrapper:focus-within {
-  border-color: #305797 !important;
-}
-
-.booking-select:hover,
-.booking-select:focus-within {
-  border-color: #305797 !important;
-}
-
 
 .editbutton-bookingmanagement {
   border-color: #305797;
@@ -106,4 +103,114 @@
 .exportbutton-bookingmanagement:hover {
   background-color: #305797 !important;
   color: #fff !important;
+}
+
+/* --- Booking Management Buttons --- */
+.editbutton-bookingmanagement,
+.savebutton-bookingmanagement,
+.cancelbutton-bookingmanagement,
+.deletebutton-bookingmanagement,
+.viewbutton-bookingmanagement,
+.exportbutton-bookingmanagement {
+  box-shadow: none !important;
+  /* remove button shadows */
+  outline: none;
+  /* remove focus outline */
+}
+
+/* Optional: keep hover colors as before */
+.editbutton-bookingmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+.savebutton-bookingmanagement:hover {
+  background-color: #167a30 !important;
+  color: #fff !important;
+}
+
+.cancelbutton-bookingmanagement:hover,
+.deletebutton-bookingmanagement:hover {
+  background-color: #d93025 !important;
+  color: #fff !important;
+}
+
+.viewbutton-bookingmanagement:hover,
+.exportbutton-bookingmanagement:hover {
+  background-color: #305797 !important;
+  color: #fff !important;
+}
+
+
+.booking-manage-confirm-modal .ant-modal-content {
+  border-radius: 16px;
+  padding: 24px;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  box-shadow: 0 18px 50px rgba(48, 87, 151, 0.18);
+}
+
+/* Modal content styling */
+.booking-manage-confirm-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.booking-manage-confirm-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #305797;
+  margin: 0;
+}
+
+.booking-manage-confirm-text {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0 0 4px;
+}
+
+.booking-manage-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* Cancel button */
+.booking-manage-cancel-btn {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 18px;
+}
+
+.booking-manage-cancel-btn:hover,
+.booking-manage-cancel-btn:focus-visible {
+  border-color: #305797 !important;
+  color: #305797 !important;
+  background-color: #f0f4ff !important;
+}
+
+/* Confirm button */
+.booking-manage-confirm-btn {
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 18px;
+  box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.booking-manage-confirm-btn:hover {
+  background-color: #e9e9e9 !important;
+  color: #305797 !important;
+  border-color: #305797 !important;
 }

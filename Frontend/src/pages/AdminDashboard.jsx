@@ -1,5 +1,11 @@
 import { Card, Row, Col, message } from "antd";
 import { useEffect, useRef, useState } from "react";
+import {
+  DollarCircleOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+  AppstoreOutlined
+} from "@ant-design/icons";
 import "../style/adminDashboard.css";
 import axiosInstance from "../config/axiosConfig";
 import { BarChart } from '@mui/x-charts/BarChart';
@@ -103,29 +109,49 @@ export default function AdminDashboard() {
       <Row gutter={20}>
         <Col span={6}>
           <Card className="dash-card">
-            <p>Total Transactions</p>
-            <h2>{loading ? "..." : stats.totalTransactions}</h2>
+            <div className="dash-card-content-vertical">
+              <p>Total Transactions</p>
+              <div className="dash-text">
+                <DollarCircleOutlined className="dash-icon" />
+                <h2>{loading ? "..." : stats.totalTransactions}</h2>
+              </div>
+            </div>
           </Card>
         </Col>
 
         <Col span={6}>
           <Card className="dash-card">
-            <p>Total Bookings</p>
-            <h2>{loading ? "..." : stats.totalBookings}</h2>
+            <div className="dash-card-content-vertical">
+              <p>Total Bookings</p>
+              <div className="dash-text">
+                <ShoppingCartOutlined className="dash-icon" />
+                <h2>{loading ? "..." : stats.totalBookings}</h2>
+              </div>
+            </div>
           </Card>
         </Col>
 
         <Col span={6}>
           <Card className="dash-card">
-            <p>Total Users</p>
-            <h2>{loading ? "..." : stats.totalUsers}</h2>
+            <div className="dash-card-content-vertical">
+              <p>Total Users</p>
+              <div className="dash-text">
+                <UserOutlined className="dash-icon" />
+                <h2>{loading ? "..." : stats.totalUsers}</h2>
+              </div>
+            </div>
           </Card>
         </Col>
 
         <Col span={6}>
           <Card className="dash-card">
-            <p>Total Packages</p>
-            <h2>{loading ? "..." : stats.totalPackages}</h2>
+            <div className="dash-card-content-vertical">
+              <p>Total Packages</p>
+              <div className="dash-text">
+                <AppstoreOutlined className="dash-icon" />
+                <h2>{loading ? "..." : stats.totalPackages}</h2>
+              </div>
+            </div>
           </Card>
         </Col>
       </Row>

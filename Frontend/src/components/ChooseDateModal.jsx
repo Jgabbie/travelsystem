@@ -3,6 +3,7 @@ import { Modal, Calendar, Button, Spin } from 'antd';
 import dayjs from 'dayjs';
 import '../style/choosedatemodal.css';
 import axiosInstance from '../config/axiosConfig';
+import { ConfigProvider } from "antd";
 
 
 //https://www.searchapi.io/api/v1/search?api_key=ADVN8SdRyVACYcrAVn7Vut41&arrival_id=CEB&departure_id=MNL&engine=google_flights_calendar&flight_type=one_way&outbound_date=2026-03-04&outbound_date_end=2026-03-27&outbound_date_start=2026-03-04
@@ -22,40 +23,6 @@ export default function ChooseDateModal({
     const maxSelectableDate = dayjs('2036-12-31');
 
     const calendarValue = selectedDate || minSelectableDate;
-
-    // Fetch prices for the package when modal opens
-    // useEffect(() => {
-    //     if (!open || !packageData) return;
-
-    //     const fetchPrices = async () => {
-    //         setLoading(true);
-    //         try {
-    //             // Example: call your backend API
-    //             const monthStr = calendarValue.format('YYYY-MM');
-    //             const res = await axiosInstance.get('/flights/calendar', {
-    //                 params: {
-    //                     origin: "MNL",
-    //                     destination: "CEB",
-    //                     month: monthStr
-    //                 }
-    //             });
-
-    //             // Convert API data into a map: { '2026-03-01': 2450, ... }
-    //             const priceMap = {};
-    //             res.data.forEach(item => {
-    //                 priceMap[item.date] = item.price;
-    //             });
-
-    //             setPrices(priceMap);
-    //         } catch (err) {
-    //             console.error('Error fetching prices:', err);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     fetchPrices();
-    // }, [open, packageData, calendarValue]);
 
     const handleDateChange = (value) => {
         if (value.isBefore(minSelectableDate, 'day')) return;
@@ -103,19 +70,27 @@ export default function ChooseDateModal({
             open={open}
             onCancel={handleCancel}
             footer={null}
-            className="choose-date-modal"
+            rootClassName="choose-date-modal"
             width={860}
         >
             <div className="choose-date-content">
                 <div className="choose-date-left">
-                    <Calendar
-                        fullscreen={false}
-                        value={calendarValue}
-                        onSelect={handleDateChange}
-                        validRange={[minSelectableDate, maxSelectableDate]}
-                        disabledDate={(current) => current && current.isBefore(minSelectableDate, 'day')}
-                        dateRender={dateRender}
-                    />
+                    <ConfigProvider
+                        theme={{
+                            token: {
+                                colorPrimary: "#305797",
+                            },
+                        }}
+                    >
+                        <Calendar
+                            fullscreen={false}
+                            value={calendarValue}
+                            onSelect={handleDateChange}
+                            validRange={[minSelectableDate, maxSelectableDate]}
+                            disabledDate={(current) => current && current.isBefore(minSelectableDate, 'day')}
+                            dateRender={dateRender}
+                        />
+                    </ConfigProvider>
                 </div>
                 <div className="choose-date-right">
                     <h3 className="choose-date-title">{packageData?.packageName || 'Package'}</h3>

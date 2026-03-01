@@ -15,6 +15,17 @@
   width: 200px;
 }
 
+.search-input,
+.transaction-select,
+.transaction-date-filter,
+.ant-select-selector {
+  height: 32px !important;
+  line-height: 32px !important;
+  padding: 0 8px !important;
+  font-size: 14px !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 768px) {
   .transaction-actions {
     flex-direction: column;
@@ -24,20 +35,6 @@
   .search-input {
     width: 100%;
   }
-}
-
-.transaction-actions .ant-input:hover,
-.transaction-actions .ant-input:focus,
-.transaction-actions .ant-input-focused,
-.transaction-actions .ant-input-affix-wrapper:hover,
-.transaction-actions .ant-input-affix-wrapper-focused,
-.transaction-actions .ant-input-affix-wrapper:focus-within {
-  border-color: #305797 !important;
-}
-
-.transaction-select:hover,
-.transaction-select:focus-within {
-  border-color: #305797 !important;
 }
 
 .editbutton-transactionmanagement {
@@ -93,4 +90,12 @@
 .exportbutton-transactionmanagement:hover {
   background-color: #305797 !important;
   color: #fff !important;
+}
+
+.editbutton-transactionmanagement,
+.savebutton-transactionmanagement,
+.cancelbutton-transactionmanagement,
+.deletebutton-transactionmanagement,
+.exportbutton-transactionmanagement {
+  box-shadow: none !important;
 }

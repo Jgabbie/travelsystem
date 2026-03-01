@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import '../style/landingpage.css'
-import { Button, Card, Input, Modal, Select, Slider } from 'antd';
+import { Button, Card, Input, Modal, Select, Slider, Image } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import TopNavUser from '../components/TopNavUser';
 import LoginModal from '../components/LoginModal';
@@ -416,7 +416,7 @@ export default function LandingPage() {
             />
 
             <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
-                Chatbot
+                <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
             </Button>
 
             <Modal

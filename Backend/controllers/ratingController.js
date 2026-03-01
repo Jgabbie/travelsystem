@@ -1,30 +1,82 @@
 const Rating = require('../models/rating')
 
 const submitRating = async (req, res) => {
-    const { packageId, rating, review } = req.body
-    const userId = req.userId
+    const { packageId, rating, review, fullName, email } = req.body;
+    const userId = req.userId;
+
+    console.log("submitRating called with:", { packageId, rating, review, fullName, email, userId });
+
     try {
-        if (!packageId || !rating || !userId) {
-            return res.status(400).json({ message: "Missing required fields" })
+        if (!packageId || !rating) {
+            return res.status(400).json({ message: "Missing required fields" });
         }
-        const existingRating = await Rating.findOne({ packageId, userId })
-        if (existingRating) {
-            existingRating.rating = rating
-            existingRating.review = review
-            await existingRating.save()
-            return res.status(200).json({ message: "Rating updated successfully", rating: existingRating })
+
+        //if authenticated user
+        if (userId) {
+            const existingRating = await Rating.findOne({ packageId, userId });
+
+            if (existingRating) {
+                existingRating.rating = rating;
+                existingRating.review = review;
+                await existingRating.save();
+
+                return res.status(200).json({
+                    message: "Rating updated successfully",
+                    rating: existingRating
+                });
+            }
+
+            const newRating = await Rating.create({
+                packageId,
+                userId,
+                rating,
+                review
+            });
+
+            return res.status(201).json({
+                message: "Rating submitted successfully",
+                rating: newRating
+            });
         }
-        const newRating = await Rating.create({
+
+        //if guest
+        if (!fullName || !email) {
+            return res.status(400).json({
+                message: "Guest must provide full name and email"
+            });
+        }
+
+        const existingGuestRating = await Rating.findOne({
             packageId,
-            userId,
+            guestEmail: email
+        });
+
+        if (existingGuestRating) {
+            return res.status(400).json({
+                message: "You have already submitted a review for this package"
+            });
+        }
+
+        const guestRating = await Rating.create({
+            packageId,
+            guestName: fullName,
+            guestEmail: email,
             rating,
             review
-        })
-        res.status(201).json({ message: "Rating submitted successfully", rating: newRating })
+        });
+
+        res.status(201).json({
+            message: "Guest review submitted successfully",
+            rating: guestRating
+        });
+
     } catch (error) {
-        res.status(500).json({ message: "Error submitting rating", error })
+        res.status(500).json({
+            message: "Error submitting rating",
+            error
+        });
     }
-}
+};
 
 const getPackageRatings = async (req, res) => {
     const { packageId } = req.params
@@ -61,8 +113,8 @@ const deleteRating = async (req, res) => {
         if (!rating) {
             return res.status(404).json({ message: "Rating not found" })
         }
-        if (rating.userId.toString() !== userId) {
-            return res.status(403).json({ message: "Forbidden" })
+        if (!rating.userId || rating.userId.toString() !== userId) {
+            return res.status(403).json({ message: "Forbidden" });
         }
 
         await rating.deleteOne()

@@ -31,6 +31,7 @@ import {
 import axios from 'axios';
 import AddUserModal from "../components/AddUserModal";
 import "../style/users.css";
+import { ConfigProvider } from "antd";
 
 export default function UserManagement() {
 
@@ -82,22 +83,23 @@ export default function UserManagement() {
 
   const handleDelete = async (id) => {
     Modal.confirm({
-      className: "logout-confirm-modal",
+      className: "users-manage-confirm-modal",
       icon: null,
       title: (
-        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+        <div className="users-manage-confirm-title" style={{ textAlign: "center" }}>
           Confirm Delete
         </div>
       ),
       content: (
-        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-          <p className="logout-confirm-text">Are you sure you want to delete this user?</p>
+        <div className="users-manage-confirm-content" style={{ textAlign: "center" }}>
+          <p className="users-manage-confirm-text">Are you sure you want to delete this user?</p>
         </div>
       ),
       okText: "Delete",
       cancelText: "Cancel",
-      okButtonProps: { className: "logout-confirm-btn" },
-      cancelButtonProps: { className: "logout-cancel-btn" },
+      okButtonProps: { className: "users-manage-confirm-btn" },
+      cancelButtonProps: { className: "users-manage-cancel-btn" },
+      style: { top: 200 },
       onOk: async () => {
         try {
           await axios.delete(
@@ -115,8 +117,6 @@ export default function UserManagement() {
       }
     });
   };
-
-  // ================= FILTERS =================
 
   const filteredUsers = users.filter(user => {
 
@@ -154,22 +154,23 @@ export default function UserManagement() {
 
       if (index > -1) {
         Modal.confirm({
-          className: "logout-confirm-modal",
+          className: "users-manage-confirm-modal",
           icon: null,
           title: (
-            <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+            <div className="users-manage-confirm-title" style={{ textAlign: "center" }}>
               Confirm Changes
             </div>
           ),
           content: (
-            <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-              <p className="logout-confirm-text">Are you sure about these changes?</p>
+            <div className="users-manage-confirm-content" style={{ textAlign: "center" }}>
+              <p className="users-manage-confirm-text">Are you sure about these changes?</p>
             </div>
           ),
           okText: "Save",
           cancelText: "Cancel",
-          okButtonProps: { className: "logout-confirm-btn" },
-          cancelButtonProps: { className: "logout-cancel-btn" },
+          okButtonProps: { className: "users-manage-confirm-btn" },
+          cancelButtonProps: { className: "users-manage-cancel-btn" },
+          style: { top: 200 },
           onOk: async () => {
             try {
               await axios.put(
@@ -316,103 +317,107 @@ export default function UserManagement() {
     );
   };
 
-
   const totalUsers = users.length;
   const verifiedUsers = users.filter(u => u.status === "Verified").length;
   const unverifiedUsers = users.filter(u => u.status === "Pending").length;
 
   return (
-    <div className="user-management-container">
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#305797"
+        }
+      }}
+    >
+      <div className="user-management-container">
 
-      <h1 className="page-header">User Management</h1>
+        <h1 className="page-header">User Management</h1>
 
-      <Row gutter={16} style={{ marginBottom: 20 }}>
-        <Col xs={24} sm={8}>
-          <Card>
-            <Statistic
-              title="Total Users"
-              value={totalUsers}
-              prefix={<UserOutlined />}
-            />
-          </Card>
-        </Col>
+        <Row gutter={16} style={{ marginBottom: 20 }}>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Statistic
+                title="Total Users"
+                value={totalUsers}
+                prefix={<UserOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={8}>
-          <Card>
-            <Statistic
-              title="Verified Users"
-              value={verifiedUsers}
-              prefix={<CheckCircleOutlined />}
-            />
-          </Card>
-        </Col>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Statistic
+                title="Verified Users"
+                value={verifiedUsers}
+                prefix={<CheckCircleOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={8}>
-          <Card>
-            <Statistic
-              title="Unverified Users"
-              value={unverifiedUsers}
-              prefix={<ExclamationCircleOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Statistic
+                title="Unverified Users"
+                value={unverifiedUsers}
+                prefix={<ExclamationCircleOutlined />}
+              />
+            </Card>
+          </Col>
+        </Row>
 
-      <div className="user-actions">
-
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search name, username or email..."
-          className="search-input"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          allowClear
-        />
-
-        <Select
-          className='user-select'
-          placeholder="Role"
-          style={{ width: 140 }}
-          allowClear
-          value={roleFilter || undefined}
-          onChange={(value) => setRoleFilter(value || "")}
-          options={[
-            { value: "Admin", label: "Admin" },
-            { value: "User", label: "User" }
-          ]}
-        />
-
-        <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>
-          Add User
-        </Button>
-
-
-      </div>
-
-      <Card style={{ marginTop: 20 }}>
-        <Form form={form} component={false}>
-          <Table
-            components={{
-              body: {
-                cell: EditableCell
-              }
-            }}
-            loading={loading}
-            columns={mergedColumns}
-            dataSource={filteredUsers}
-            pagination={{ pageSize: 6 }}
-            rowClassName="editable-row"
-            scroll={{ x: "max-content" }}
+        <div className="user-actions">
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search name, username or email..."
+            className="search-input"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
           />
-        </Form>
-      </Card>
 
-      <AddUserModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        roleToAdd={targetRole}
-        refreshData={getUsers}
-      />
-    </div>
+          <Select
+            className='user-select'
+            placeholder="Role"
+            style={{ width: 140 }}
+            allowClear
+            value={roleFilter || undefined}
+            onChange={(value) => setRoleFilter(value || "")}
+            options={[
+              { value: "Admin", label: "Admin" },
+              { value: "User", label: "User" }
+            ]}
+          />
+
+          <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>
+            Add User
+          </Button>
+        </div>
+
+        <Card style={{ marginTop: 20 }}>
+          <Form form={form} component={false}>
+            <Table
+              components={{
+                body: {
+                  cell: EditableCell
+                }
+              }}
+              loading={loading}
+              columns={mergedColumns}
+              dataSource={filteredUsers}
+              pagination={{ pageSize: 6 }}
+              rowClassName="editable-row"
+              scroll={{ x: "max-content" }}
+            />
+          </Form>
+        </Card>
+
+        <AddUserModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          roleToAdd={targetRole}
+          refreshData={getUsers}
+        />
+      </div>
+    </ConfigProvider>
   );
 }

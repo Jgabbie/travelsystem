@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import {
   Input, Select, Button, Table,
   Tag, Space, DatePicker, Row, Col,
-  Card, Statistic, Form, message, Modal
+  Card, Statistic, Form, message, Modal,
+  ConfigProvider
 } from "antd";
 import {
   SearchOutlined, EditOutlined,
@@ -202,7 +203,7 @@ export default function TransactionManagement() {
       render: s => (
         <Tag
           color={
-            s === "Paid" ? "green" :
+            s === "Successful" ? "green" :
               s === "Pending" ? "orange" :
                 "red"
           }
@@ -298,9 +299,9 @@ export default function TransactionManagement() {
       inputNode = (
         <Select
           options={[
-            { value: "Paid", label: "Paid" },
+            { value: "Successful", label: "Successful" },
             { value: "Pending", label: "Pending" },
-            { value: "Unpaid", label: "Unpaid" }
+            { value: "Failed", label: "Failed" }
           ]}
         />
       );
@@ -327,125 +328,132 @@ export default function TransactionManagement() {
     );
   };
 
-
-
   const totalTransactions = filteredData.length;
-  const totalSuccessful = filteredData.filter(t => t.status === "Paid").length;
+  const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
   const totalPending = filteredData.filter(t => t.status === "Pending").length;
-  const totalUnpaid = filteredData.filter(t => t.status === "Unpaid").length;
+  const totalFailed = filteredData.filter(t => t.status === "Failed").length;
 
   return (
-    <div>
-      <h1 className="page-header">Transaction Management</h1>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#305797"
+        }
+      }}
+    >
+      <div>
+        <h1 className="page-header">Transaction Management</h1>
 
 
-      <Row gutter={16} style={{ marginBottom: 20 }}>
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Total Transactions"
-              value={totalTransactions}
-              prefix={<SwapOutlined />}
-            />
-          </Card>
-        </Col>
+        <Row gutter={16} style={{ marginBottom: 20 }}>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Total Transactions"
+                value={totalTransactions}
+                prefix={<SwapOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Successful"
-              value={totalSuccessful}
-              prefix={<CheckCircleOutlined />}
-            />
-          </Card>
-        </Col>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Successful"
+                value={totalSuccessful}
+                prefix={<CheckCircleOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Pending"
-              value={totalPending}
-              prefix={<ClockCircleOutlined />}
-            />
-          </Card>
-        </Col>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Pending"
+                value={totalPending}
+                prefix={<ClockCircleOutlined />}
+              />
+            </Card>
+          </Col>
 
-        <Col xs={24} sm={6}>
-          <Card>
-            <Statistic
-              title="Unpaid"
-              value={totalUnpaid}
-              prefix={<CloseCircleOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
+          <Col xs={24} sm={6}>
+            <Card>
+              <Statistic
+                title="Failed"
+                value={totalFailed}
+                prefix={<CloseCircleOutlined />}
+              />
+            </Card>
+          </Col>
+        </Row>
 
-      <div className="transaction-actions">
+        <div className="transaction-actions">
 
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Search reference, package, method or status..."
-          className="search-input"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          allowClear
-        />
-
-        <Select
-          className="transaction-select"
-          placeholder="Method"
-          style={{ width: 160 }}
-          allowClear
-          value={methodFilter || undefined}
-          onChange={(v) => setMethodFilter(v || "")}
-          options={[
-            { value: "Bank Transfer", label: "Bank Transfer" },
-            { value: "GCash", label: "GCash" },
-            { value: "Credit Card", label: "Credit Card" }
-          ]}
-        />
-
-        <Select
-          className="transaction-select"
-          placeholder="Status"
-          style={{ width: 140 }}
-          allowClear
-          value={statusFilter || undefined}
-          onChange={(v) => setStatusFilter(v || "")}
-          options={[
-            { value: "Paid", label: "Paid" },
-            { value: "Pending", label: "Pending" },
-            { value: "Unpaid", label: "Unpaid" }
-          ]}
-        />
-
-        <DatePicker
-          placeholder="Payment Date"
-          value={paymentDateFilter}
-          onChange={(d) => setPaymentDateFilter(d)}
-          allowClear
-        />
-
-        <Button className="exportbutton-transactionmanagement" type="primary">Export</Button>
-      </div>
-
-      <Card>
-        <Form form={form} component={false}>
-          <Table
-            components={{
-              body: {
-                cell: EditableCell
-              }
-            }}
-            columns={mergedColumns}
-            dataSource={filteredData}
-            pagination={{ pageSize: 6 }}
-            rowClassName="editable-row"
-            scroll={{ x: "max-content" }}
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Search reference, package, method or status..."
+            className="search-input"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
           />
-        </Form>
-      </Card>
-    </div >
+
+          <Select
+            className="transaction-select"
+            placeholder="Method"
+            style={{ width: 160 }}
+            allowClear
+            value={methodFilter || undefined}
+            onChange={(v) => setMethodFilter(v || "")}
+            options={[
+              { value: "Bank Transfer", label: "Bank Transfer" },
+              { value: "GCash", label: "GCash" },
+              { value: "Credit Card", label: "Credit Card" }
+            ]}
+          />
+
+          <Select
+            className="transaction-select"
+            placeholder="Status"
+            style={{ width: 140 }}
+            allowClear
+            value={statusFilter || undefined}
+            onChange={(v) => setStatusFilter(v || "")}
+            options={[
+              { value: "Successful", label: "Successful" },
+              { value: "Pending", label: "Pending" },
+              { value: "Failed", label: "Failed" }
+            ]}
+          />
+
+          <DatePicker
+            className="transaction-date-filter"
+            placeholder="Payment Date"
+            value={paymentDateFilter}
+            onChange={(d) => setPaymentDateFilter(d)}
+            allowClear
+          />
+
+          <Button className="exportbutton-transactionmanagement" type="primary">Export</Button>
+        </div>
+
+        <Card>
+          <Form form={form} component={false}>
+            <Table
+              components={{
+                body: {
+                  cell: EditableCell
+                }
+              }}
+              columns={mergedColumns}
+              dataSource={filteredData}
+              pagination={{ pageSize: 6 }}
+              rowClassName="editable-row"
+              scroll={{ x: "max-content" }}
+            />
+          </Form>
+        </Card>
+      </div >
+    </ConfigProvider>
   );
 }

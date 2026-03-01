@@ -9,17 +9,6 @@
   margin-bottom: 24px;
 }
 
-.dash-card {
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-.dash-card p {
-  color: #666;
-  margin-bottom: 6px;
-}
-
 .dash-card h2 {
   font-size: 34px;
   color: #1e3a8a;
@@ -69,6 +58,53 @@
 
 .dashboard-chart-body.is-tall {
   min-height: 320px;
+}
+
+.dash-card-content-horizontal {
+  display: flex;
+  align-items: center;
+  /* vertically center everything */
+  justify-content: space-between;
+  /* push label and icon+number apart */
+}
+
+.dash-card {
+  border-radius: 16px;
+  text-align: left;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.dash-card p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.dash-card-content-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-icon {
+  font-size: 32px;
+  color: #305797;
+  margin-bottom: 15px;
+}
+
+.dash-text {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.dash-text-vertical h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #1e3a8a;
+  line-height: 1.1;
 }
 
 @media (max-width: 900px) {

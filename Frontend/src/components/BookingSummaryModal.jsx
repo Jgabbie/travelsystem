@@ -4,16 +4,6 @@ import { CheckCircleFilled } from '@ant-design/icons'
 import '../style/bookingsummarymodal.css'
 import axiosInstance from '../config/axiosConfig'
 
-const DEFAULT_SUMMARY = {
-    packageName: 'Baguio City Tour',
-    travelers: ['1x Child', '3x Adult', '1x Infant', '1x Senior'],
-    hotelOptions: ['Plaza Garden Hotel', 'Aura One Hotel', 'Ridgewood Hotel'],
-    airlineOptions: ['Cebu Pacific Air', 'Air Aisa', 'Philippine Airlines'],
-    addons: ['Flight Meals', 'Optional Tour', 'Easter Weaving Room'],
-    travelDate: 'May 18 - 20, 2025',
-    imageUrl: ''
-}
-
 //get display date
 const getDisplayDate = (value) => {
     if (!value) return ''
@@ -32,6 +22,8 @@ export default function BookingSummaryModal({
     open,
     onCancel,
     summary,
+    packageData,
+    onProceed,
     successUrl,
     cancelUrl,
     bookingPayload
@@ -39,10 +31,8 @@ export default function BookingSummaryModal({
 
 
     //paymongo checkout
-
-
     //get summary data or use default option to test booking
-    const data = summary ? { ...DEFAULT_SUMMARY, ...summary } : DEFAULT_SUMMARY
+    const data = summary
     const travelers = data.travelers?.length ? data.travelers : ['None selected']
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : ['None selected']
     const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : ['None selected']
@@ -57,6 +47,8 @@ export default function BookingSummaryModal({
     const packagePricePerPax = data.packagePricePerPax || 0
     const totalPrice = packagePricePerPax * travelersCount
     const packageName = data.packageName || 'Tour Package'
+    const packageType = data.packageType || 'fixed'
+    const packageId = data.packageId || null
 
     console.log("BookingSummaryModal data:", {
         data,
@@ -71,29 +63,46 @@ export default function BookingSummaryModal({
     })
 
     const handleCheckout = async () => {
-        try {
-            if (bookingPayload) {
-                localStorage.setItem('pendingBooking', JSON.stringify(bookingPayload));
-                sessionStorage.removeItem('bookingSaved');
-            }
 
+        // const checkoutDetails = {
+        //     packageName,
+        //     travelersCount,
+        //     totalPrice,
+        //     travelDate,
+        //     packageType
+        // }
 
-            const res = await axiosInstance.post("/payment/create-checkout-session", {
-                packageName,
-                travelersCount,
-                totalPrice,
-                successUrl,
-                cancelUrl
-            });
+        // localStorage.setItem('checkoutDetails', JSON.stringify(checkoutDetails))
 
-            const checkoutUrl = res.data.data.attributes.checkout_url;
+        // if (!bookingPayload) return
 
-            window.location.href = checkoutUrl;
-        } catch (err) {
-            console.error(err.response?.data || err.message);
-            alert("Checkout failed. Check server logs.");
-        }
+        // try {
+        //     const tokenRes = await axiosInstance.post("/payment/create-checkout-token", {
+        //         totalPrice,
+        //     });
+
+        //     const checkoutToken = tokenRes.data.token;
+
+        //     const res = await axiosInstance.post("/payment/create-checkout-session", {
+        //         checkoutToken,
+        //         totalPrice,
+        //         packageName,
+        //         successUrl: `${window.location.origin}/package/${packageId}?booking=success&checkoutToken=${checkoutToken}`,
+        //         cancelUrl: `${window.location.origin}/package/${packageId}?booking=cancelled`
+        //     });
+
+        //     const checkoutUrl = res.data.data.attributes.checkout_url;
+
+        //     window.location.href = checkoutUrl;
+        // } catch (err) {
+        //     console.error(err.response?.data || err.message);
+        //     alert("Checkout failed. Check server logs.");
+        // }
     };
+
+    const handleProceed = () => {
+        onProceed();
+    }
 
     return (
         <Modal
@@ -126,27 +135,22 @@ export default function BookingSummaryModal({
                                 ))}
                             </ul>
 
-                            <h4>Airline Options</h4>
+                            <h4>Airline</h4>
                             <ul>
-                                {airlineOptions.map((item, index) => (
-                                    <li key={`airline-${index}`}>{item}</li>
-                                ))}
+                                {packageData?.packageAirlines?.length
+                                    ? <li>{packageData.packageAirlines[0].name}</li>
+                                    : <li>None selected</li>
+                                }
                             </ul>
                         </div>
 
                         <div>
-                            <h4>Hotel Options</h4>
+                            <h4>Hotel</h4>
                             <ul>
-                                {hotelOptions.map((item, index) => (
-                                    <li key={`hotel-${index}`}>{item}</li>
-                                ))}
-                            </ul>
-
-                            <h4>Addons</h4>
-                            <ul>
-                                {addons.map((item, index) => (
-                                    <li key={`addon-${index}`}>{item}</li>
-                                ))}
+                                {packageData?.packageHotels?.length
+                                    ? <li>{packageData.packageHotels[0].name}</li>
+                                    : <li>None selected</li>
+                                }
                             </ul>
                         </div>
                     </div>
@@ -174,11 +178,11 @@ export default function BookingSummaryModal({
                 </div>
 
                 <div className="booking-summary-right">
-                    {data.imageUrl ? (
+                    {packageData?.images?.[0] ? (
                         <img
                             className="booking-summary-image"
-                            src={data.imageUrl}
-                            alt={data.packageName}
+                            src={packageData.images[0]}
+                            alt={packageData.packageName}
                             draggable={false}
                         />
                     ) : (
@@ -192,8 +196,8 @@ export default function BookingSummaryModal({
 
 
             <div className="booking-summary-actions">
-                <Button className="booking-summary-proceed" onClick={handleCheckout}>
-                    Proceed to Payment
+                <Button className="booking-summary-proceed" onClick={handleProceed}>
+                    Proceed
                 </Button>
                 <Button className="booking-summary-cancel" onClick={onCancel}>
                     Cancel

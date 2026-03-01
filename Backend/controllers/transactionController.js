@@ -17,6 +17,7 @@ const createTransaction = async (req, res) => {
         if (!bookingId || !amount || !method || !status || !packageName) {
             return res.status(400).json({ message: "Missing required fields" })
         }
+
         const newTransaction = await TransactionModel.create({
             bookingId,
             userId,

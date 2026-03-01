@@ -1,0 +1,129 @@
+.upload-invoice-page {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    font-size: 24px;
+    margin-bottom: 0;
+}
+
+.upload-invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.upload-invoice-subtitle {
+    display: block;
+    margin-top: 4px;
+    color: #6b7280;
+}
+
+.upload-invoice-loading {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+}
+
+.upload-invoice-card {
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.upload-invoice-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.upload-invoice-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.upload-invoice-divider {
+    margin: 16px 0;
+}
+
+.upload-invoice-summary {
+    margin-top: 8px;
+}
+
+.upload-invoice-stat {
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.upload-invoice-highlight {
+    background: linear-gradient(135deg, #e0f2fe 0%, #eff6ff 100%);
+}
+
+.upload-invoice-amount {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 4px;
+}
+
+.upload-invoice-body {
+    margin-top: 20px;
+}
+
+.upload-invoice-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 20px;
+    border: 1px dashed #305797;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.upload-invoice-hint {
+    display: block;
+}
+
+.upload-invoice-preview {
+    width: 100%;
+    height: 520px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.upload-invoice-empty {
+    height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #e5e7eb;
+    border-radius: 12px;
+    background: #f9fafb;
+}
+
+@media (max-width: 900px) {
+    .upload-invoice-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .upload-invoice-page {
+        padding: 16px;
+    }
+
+    .upload-invoice-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .upload-invoice-preview,
+    .upload-invoice-empty {
+        height: 360px;
+    }
+}

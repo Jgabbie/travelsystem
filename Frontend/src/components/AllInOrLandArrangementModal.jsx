@@ -45,6 +45,7 @@ export default function AllInOrLandArrangementModal({
             width={900}
         >
             <div className="arrangement-content">
+                <h1 className='arrangement-heading'>Select Your Package Arrangement</h1>
                 <div className="arrangement-cards">
                     <button
                         type="button"
@@ -65,10 +66,23 @@ export default function AllInOrLandArrangementModal({
                         onClick={() => handleSelect('land')}
                     >
                         <div className="arrangement-image land" aria-hidden="true" />
-                        <h3>Land Arrangement</h3>
+                        <h3>Customized All in Package</h3>
                         <p>
                             Focus on accommodations and tours while arranging your own
                             flights.
+                        </p>
+                    </button>
+
+                    {/* New selection option */}
+                    <button
+                        type="button"
+                        className={`arrangement-card${selection === 'custom' ? ' is-selected' : ''}`}
+                        onClick={() => handleSelect('custom')}
+                    >
+                        <div className="arrangement-image custom" aria-hidden="true" />
+                        <h3>Customized Land Arrangement</h3>
+                        <p>
+                            Build your own package by selecting flights, hotels, and activities individually.
                         </p>
                     </button>
                 </div>

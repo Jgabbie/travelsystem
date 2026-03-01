@@ -1,0 +1,129 @@
+.reviewratings-container {
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.page-header {
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.user-stats-row .ant-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
+.user-stats-row .ant-statistic-content {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.reviewratings-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input,
+.reviewratings-select,
+.reviewratings-date-filter,
+.ant-picker {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+    .reviewratings-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input,
+    .ant-picker {
+        width: 100%;
+    }
+}
+
+/* Buttons */
+.adduser-usermanagement,
+.editbutton-usermanagement,
+.savebutton-usermanagement,
+.cancelbutton-usermanagement,
+.deletebutton-usermanagement,
+.approve-cancellation,
+.reject-cancellation {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: none !important;
+}
+
+/* Approval/Reject buttons */
+.approve-cancellation {
+    border-color: #1f8f3a;
+    background-color: #1f8f3a !important;
+    color: #fff !important;
+}
+
+.approve-cancellation:hover {
+    background-color: #167a30 !important;
+    color: #fff !important;
+}
+
+.reject-cancellation {
+    border-color: #d93025;
+    background-color: #fff !important;
+    color: #d93025 !important;
+}
+
+.reject-cancellation:hover {
+    background-color: #d93025 !important;
+    color: #fff !important;
+}
+
+/* Table styling */
+.ant-table {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.ant-table-thead>tr>th {
+    background-color: #f0f4ff;
+    color: #305797;
+    font-weight: 600;
+}
+
+.ant-table-tbody>tr>td {
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.ant-table-tbody>tr:hover>td {
+    background-color: #f9faff;
+}
+
+/* Card for filters and table */
+.user-management-container .ant-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.08);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .ant-table {
+        font-size: 12px;
+    }
+
+    .reviewratings-actions {
+        gap: 8px;
+    }
+}

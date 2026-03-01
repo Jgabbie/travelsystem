@@ -12,7 +12,8 @@ import {
     Statistic,
     Form,
     message,
-    Modal
+    Modal,
+    ConfigProvider
 } from "antd";
 import {
     SearchOutlined,
@@ -102,15 +103,15 @@ export default function QuotationManagement() {
             icon: null,
             title: (
                 <div className="logout-confirm-title" style={{ textAlign: "center" }}>
-                    Confirm Delete
+                    Deny Quotation Request
                 </div>
             ),
             content: (
                 <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-                    <p className="logout-confirm-text">Are you sure you want to delete this booking?</p>
+                    <p className="logout-confirm-text">Are you sure you want to deny this quotation request?</p>
                 </div>
             ),
-            okText: "Delete",
+            okText: "Deny",
             cancelText: "Cancel",
             okButtonProps: { className: "logout-confirm-btn" },
             cancelButtonProps: { className: "logout-cancel-btn" },
@@ -118,10 +119,10 @@ export default function QuotationManagement() {
                 try {
                     await axiosInstance.delete(`/quotations/${key}`);
                     setData((prev) => prev.filter((item) => item.key !== key));
-                    message.success("Quotation deleted successfully");
+                    message.success("Quotation denied successfully");
                 } catch (error) {
-                    console.error("Error deleting quotation:", error);
-                    message.error("Failed to delete quotation");
+                    console.error("Error denying quotation:", error);
+                    message.error("Failed to deny quotation");
                 }
             }
         });
@@ -133,107 +134,6 @@ export default function QuotationManagement() {
             console.log("Viewing quotation:", quotation);
             console.log(key)
             navigate(`/quotation/${key}`);
-        }
-    }
-
-
-
-    //         ref: "QR-10021",
-    //         packageName: "Boracay 4D3N Getaway",
-    //         customerName: "Liam Santos",
-    //         travelers: 3,
-    //         status: "Pending"
-    //     },
-    //     {
-    //         key: 2,
-    //         ref: "QR-10022",
-    //         packageName: "Seoul City Explorer",
-    //         customerName: "Amara Cruz",
-    //         travelers: 2,
-    //         status: "Approved"
-    //     },
-    //     {
-    //         key: 3,
-    //         ref: "QR-10023",
-    //         packageName: "Baguio Highlands Tour",
-    //         customerName: "Noah Lim",
-    //         travelers: 4,
-    //         status: "Pending"
-    //     },
-    //     {
-    //         key: 4,
-    //         ref: "QR-10024",
-    //         packageName: "Kyoto Cultural Getaway",
-    //         customerName: "Mia Reyes",
-    //         travelers: 1,
-    //         status: "Rejected"
-    //     }
-    // ]);
-
-    const save = async (key) => {
-        try {
-            const row = await form.validateFields();
-            const newData = [...data];
-            const index = newData.findIndex((item) => key === item.key);
-            if (index > -1) {
-                Modal.confirm({
-                    className: "quotation-confirm-modal",
-                    icon: null,
-                    title:
-                        (<div className="confirmation-title">
-                            <h3>Confirm Update</h3>
-                        </div>)
-                    ,
-                    content: (
-                        <div className="confirmation-actions">
-                            <p>Are you sure you want to update the status of this quotation request?</p>
-                        </div>
-                    ),
-                    okText: "Save",
-                    cancelText: "Cancel",
-                    okButtonProsps: { className: "confirm-button" },
-                    cancelButtonProps: { className: "cancel-button" },
-                    onOk: async () => {
-                        const updatedRow = { ...newData[index], ...row };
-
-                        try {
-                            const statusValue = updatedRow.status //make status lowercase
-                                ? updatedRow.status.toLowerCase()
-                                : undefined;
-
-                            const payload = {
-                                status: statusValue,
-                                packageName: updatedRow.packageName,
-                                customerName: updatedRow.customerName,
-                                travelDetails: {
-                                    travelers: updatedRow.travelers,
-                                },
-                            }
-
-                            const response = await axiosInstance.put(`/quotations/${key}`, payload);
-                            const saved = response.data
-                            const statusRaw = saved.status || updatedRow.status || "pending";
-                            const statusFormatted =
-                                statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
-
-                            newData.splice(index, 1, {
-                                ...updatedRow,
-                                packageName: saved.packageName || updatedRow.packageName,
-                                customerName: saved.customerName || updatedRow.customerName,
-                                status: statusFormatted,
-                                travelers: saved.travelDetails?.travelers || updatedRow.travelers,
-                            });
-                            setData(newData);
-                            setEditingKey("");
-                            message.success("Quotation updated successfully");
-                        } catch (error) {
-                            message.error("Error updating quotation:", error);
-                        }
-                    }
-                });
-            }
-        } catch (error) {
-            console.log("Validate Failed:", error);
         }
     }
 
@@ -254,8 +154,11 @@ export default function QuotationManagement() {
 
     const totalRequests = filteredData.length;
     const totalPending = filteredData.filter((item) => item.status === "Pending").length;
-    const totalApproved = filteredData.filter((item) => item.status === "Approved").length;
-    const totalRejected = filteredData.filter((item) => item.status === "Rejected").length;
+    const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
+    const totalAccepted = filteredData.filter(item => item.status === "Accepted").length;
+    const totalExpired = filteredData.filter(item => item.status === "Expired").length;
+    const totalRevisionRequested = filteredData.filter(item => item.status === "Revision Requested").length;
+
 
     const columns = [
         { title: "Quotation Request No.", dataIndex: "ref" },
@@ -265,64 +168,37 @@ export default function QuotationManagement() {
         {
             title: "Status",
             dataIndex: "status",
-            render: (status) => (
-                <Tag
-                    color={
-                        status === "Approved" ? "green" :
-                            status === "Pending" ? "orange" :
-                                "red"
-                    }
-                >
-                    {status}
-                </Tag>
-            )
+            render: (status) => {
+                const color =
+                    status === "Accepted" ? "green" :
+                        status === "Pending" ? "orange" :
+                            status === "Under Review" ? "blue" :
+                                status === "Revision Requested" ? "purple" :
+                                    "red";
+
+                return <Tag color={color}>{status}</Tag>;
+            }
         },
         {
             title: "Actions",
             render: (text, record) => (
                 <Space>
-                    {isEditing(record) ? (
-                        <>
-                            <Button
-                                className="quotation-save"
-                                type="primary"
-                                onClick={() => save(record.key)}
-                            >
-                                Save
-                            </Button>
-                            <Button
-                                className="quotation-cancel"
-                                onClick={cancel}
-                            >
-                                Cancel
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button
-                                className="quotation-view"
-                                type="primary"
-                                icon={<EyeOutlined />}
-                                onClick={() => handleView(record.key)}
-                                disabled={editingKey !== ""}
-                            />
-                            <Button
-                                className="quotation-approve"
-                                type="primary"
-                                icon={<CheckCircleOutlined />}
-                                onClick={() => edit(record)}
-                                disabled={editingKey !== ""}
-                            />
-                            <Button
-                                className="quotation-reject"
-                                danger
-                                icon={<CloseCircleOutlined />}
-                                onClick={() => edit(record)}
-                                disabled={editingKey !== ""}
-                            />
-                        </>
-                    )}
-
+                    <>
+                        <Button
+                            className="quotation-view"
+                            type="primary"
+                            icon={<EyeOutlined />}
+                            onClick={() => handleView(record.key)}
+                            disabled={editingKey !== ""}
+                        />
+                        <Button
+                            className="quotation-reject"
+                            danger
+                            icon={<CloseCircleOutlined />}
+                            onClick={() => edit(record)}
+                            disabled={editingKey !== ""}
+                        />
+                    </>
                 </Space>
             )
         }
@@ -366,8 +242,10 @@ export default function QuotationManagement() {
                 <Select
                     options={[
                         { value: "Pending", label: "Pending" },
-                        { value: "Approved", label: "Approved" },
-                        { value: "Rejected", label: "Rejected" }
+                        { value: "Under Review", label: "Under Review" },
+                        { value: "Accepted", label: "Accepted" },
+                        { value: "Revision Requested", label: "Revision Requested" },
+                        { value: "Expired", label: "Expired" }
                     ]}
                 />
             );
@@ -396,93 +274,103 @@ export default function QuotationManagement() {
 
 
     return (
-        <div>
-            <h1 className="page-header">Quotation Management</h1>
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: "#305797"
+                }
+            }}
+        >
+            <div>
+                <h1 className="page-header">Quotation Management</h1>
 
-            <Row gutter={16} style={{ marginBottom: 20 }}>
-                <Col xs={24} sm={6}>
-                    <Card>
-                        <Statistic
-                            title="Total Requests"
-                            value={totalRequests}
-                            prefix={<FileTextOutlined />}
-                        />
-                    </Card>
-                </Col>
+                <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Col xs={24} sm={6}>
+                        <Card>
+                            <Statistic
+                                title="Total Requests"
+                                value={totalRequests}
+                                prefix={<FileTextOutlined />}
+                            />
+                        </Card>
+                    </Col>
 
-                <Col xs={24} sm={6}>
-                    <Card>
-                        <Statistic
-                            title="Pending"
-                            value={totalPending}
-                            prefix={<CloseCircleOutlined />}
-                        />
-                    </Card>
-                </Col>
+                    <Col xs={24} sm={6}>
+                        <Card>
+                            <Statistic
+                                title="Under Review"
+                                value={totalUnderReview}
+                                prefix={<FileTextOutlined />}
+                            />
+                        </Card>
+                    </Col>
 
-                <Col xs={24} sm={6}>
-                    <Card>
-                        <Statistic
-                            title="Approved"
-                            value={totalApproved}
-                            prefix={<CheckCircleOutlined />}
-                        />
-                    </Card>
-                </Col>
+                    <Col xs={24} sm={6}>
+                        <Card>
+                            <Statistic
+                                title="Accepted"
+                                value={totalAccepted}
+                                prefix={<CheckCircleOutlined />}
+                            />
+                        </Card>
+                    </Col>
 
-                <Col xs={24} sm={6}>
-                    <Card>
-                        <Statistic
-                            title="Rejected"
-                            value={totalRejected}
-                            prefix={<CloseCircleOutlined />}
-                        />
-                    </Card>
-                </Col>
-            </Row>
+                    <Col xs={24} sm={6}>
+                        <Card>
+                            <Statistic
+                                title="Expired"
+                                value={totalExpired}
+                                prefix={<CloseCircleOutlined />}
+                            />
+                        </Card>
+                    </Col>
+                </Row>
 
-            <div className="quotation-management-actions">
-                <Input
-                    prefix={<SearchOutlined />}
-                    placeholder="Search request, package, customer or status..."
-                    className="search-input"
-                    value={searchText}
-                    onChange={(event) => setSearchText(event.target.value)}
-                    allowClear
-                />
-
-                <Select
-                    className="quotation-select"
-                    placeholder="Status"
-                    style={{ width: 160 }}
-                    allowClear
-                    value={statusFilter || undefined}
-                    onChange={(value) => setStatusFilter(value || "")}
-                    options={[
-                        { value: "Pending", label: "Pending" },
-                        { value: "Approved", label: "Approved" },
-                        { value: "Rejected", label: "Rejected" }
-                    ]}
-                />
-            </div>
-
-            <Card>
-                <Form form={form} component={false}>
-                    <Table
-                        components={{
-                            body: {
-                                cell: EditableCell
-                            }
-                        }}
-                        columns={mergedColumns}
-                        dataSource={filteredData}
-                        loading={loading}
-                        pagination={{ pageSize: 6 }}
-                        rowClassName={"editable-row"}
-                        scroll={{ x: "max-content" }}
+                <div className="quotation-management-actions">
+                    <Input
+                        prefix={<SearchOutlined />}
+                        placeholder="Search request, package, customer or status..."
+                        className="search-input"
+                        value={searchText}
+                        onChange={(event) => setSearchText(event.target.value)}
+                        allowClear
                     />
-                </Form>
-            </Card>
-        </div >
+
+                    <Select
+                        className="quotation-select"
+                        placeholder="Status"
+                        style={{ width: 160 }}
+                        allowClear
+                        value={statusFilter || undefined}
+                        onChange={(value) => setStatusFilter(value || "")}
+                        options={[
+                            { value: "Pending", label: "Pending" },
+                            { value: "Under Review", label: "Under Review" },
+                            { value: "Accepted", label: "Accepted" },
+                            { value: "Revision Requested", label: "Revision Requested" },
+                            { value: "Expired", label: "Expired" }
+                        ]}
+                    />
+                </div>
+
+                <Card>
+                    <Form form={form} component={false}>
+                        <Table
+                            components={{
+                                body: {
+                                    cell: EditableCell
+                                }
+                            }}
+                            columns={mergedColumns}
+                            dataSource={filteredData}
+                            loading={loading}
+                            pagination={{ pageSize: 6 }}
+                            rowClassName={"editable-row"}
+                            scroll={{ x: "max-content" }}
+                        />
+                    </Form>
+                </Card>
+            </div >
+        </ConfigProvider>
     );
 }

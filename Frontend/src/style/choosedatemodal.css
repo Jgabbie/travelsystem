@@ -32,6 +32,7 @@
 .choose-date-right {
     display: flex;
     flex-direction: column;
+    width: 400px;
     gap: 12px;
 }
 
@@ -46,20 +47,25 @@
     margin: 0;
     font-family: "Roboto", sans-serif;
     font-size: 14px;
-    line-height: 1.6;
+    width: 400px;
+    line-height: 1.5;
     color: #4b5563;
+    text-align: justify;
 }
 
 .choose-date-selected {
     margin: 0;
-    font-size: 13px;
-    color: #6b7280;
+    font-size: 18px;
+    color: #000000;
+    font-weight: 500;
 }
 
 .choose-date-actions {
     display: flex;
+    justify-content: flex-end;
     gap: 12px;
     margin-top: auto;
+    margin-left: 200px;
 }
 
 .choose-date-proceed {
@@ -72,18 +78,33 @@
     padding: 0 16px;
 }
 
+.choose-date-modal .ant-picker-calendar-header .ant-select-selector {
+    border-color: #305797 !important;
+}
+
+/* Hover */
+.choose-date-modal .ant-picker-calendar-header .ant-select:hover .ant-select-selector {
+    border-color: #305797 !important;
+}
+
+/* Focus */
+.choose-date-modal .ant-picker-calendar-header .ant-select-focused .ant-select-selector {
+    border-color: #305797 !important;
+    box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.2) !important;
+}
+
+
+
 .choose-date-modal .ant-picker-cell-disabled .ant-picker-cell-inner:hover {
     background: none !important;
     cursor: not-allowed;
 }
 
-/* Enabled dates hover */
 .choose-date-modal .ant-picker-cell-in-view:not(.ant-picker-cell-disabled) .ant-picker-cell-inner:hover {
     background: #305797 !important;
     color: #fff !important;
 }
 
-/* Disabled dates — no hover */
 .choose-date-modal .ant-picker-cell-disabled .ant-picker-cell-inner:hover,
 .choose-date-modal .ant-picker-cell-disabled:hover .ant-picker-cell-inner {
     background: transparent !important;
@@ -91,23 +112,6 @@
     cursor: not-allowed;
     box-shadow: none !important;
 }
-
-/* .choose-date-modal .ant-picker-calendar {
-    font-size: 18px;
-}
-
-.choose-date-modal .ant-picker-calendar-date {
-    height: 120px;
-}
-
-.choose-date-modal .ant-picker-content th {
-    font-size: 16px;
-}
-
-.choose-date-modal .ant-picker-calendar-full .ant-picker-panel {
-    height: auto;
-} */
-
 
 .choose-date-proceed:disabled,
 .choose-date-proceed[disabled] {
@@ -123,7 +127,6 @@
     height: 40px;
     padding: 0 16px;
 }
-
 
 .choose-date-modal .ant-picker-cell {
     height: 60px !important;
@@ -141,6 +144,28 @@
 
 .choose-date-modal .ant-picker-calendar .ant-picker-cell-today .ant-picker-cell-inner::before {
     border-color: #305797 !important;
+}
+
+
+
+
+
+
+
+/* Disabled year/month cells: text never changes on hover */
+.choose-date-modal .ant-picker-panel .ant-picker-year-panel .ant-picker-cell.ant-picker-cell-disabled .ant-picker-cell-inner,
+.choose-date-modal .ant-picker-panel .ant-picker-month-panel .ant-picker-cell.ant-picker-cell-disabled .ant-picker-cell-inner {
+    color: #ccc !important;
+    /* gray text */
+    background: transparent !important;
+    cursor: not-allowed;
+}
+
+/* Ensure hover does nothing for disabled cells */
+.choose-date-modal .ant-picker-panel .ant-picker-year-panel .ant-picker-cell.ant-picker-cell-disabled .ant-picker-cell-inner:hover,
+.choose-date-modal .ant-picker-panel .ant-picker-month-panel .ant-picker-cell.ant-picker-cell-disabled .ant-picker-cell-inner:hover {
+    color: #ccc !important;
+    background: transparent !important;
 }
 
 .choose-date-modal .ant-picker-calendar .ant-picker-calendar-header .ant-picker-month-btn,

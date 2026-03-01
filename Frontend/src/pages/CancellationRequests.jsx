@@ -1,17 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Table, Button, Space, Row, Col, Statistic } from 'antd'
+import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider } from 'antd'
 import {
     CheckCircleOutlined,
     CloseCircleOutlined,
     CheckOutlined,
-    CloseOutlined
+    CloseOutlined,
+    SearchOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import axiosInstance from '../config/axiosConfig'
-import '../style/users.css'
+import '../style/cancellationrequests.css'
 
 export default function CancellationRequests() {
     const [requests, setRequests] = useState([])
+
+    const [searchText, setSearchText] = useState('')
+    const [dateFilter, setDateFilter] = useState(null)
 
     useEffect(() => {
         getCancellationRequests()
@@ -37,6 +41,7 @@ export default function CancellationRequests() {
                     packageName: booking.bookingDetails?.packageName || booking.reference || 'Package',
                     reason: item.cancellationReason || '--',
                     daysAfterBooking,
+                    cancellationDate: cancelDate,
                     status: item.status || 'pending'
                 }
             })
@@ -57,6 +62,24 @@ export default function CancellationRequests() {
     const totalRequests = requests.length
     const approvedRequests = requests.filter((item) => item.status === 'approved').length
     const disapprovedRequests = requests.filter((item) => item.status === 'disapproved').length
+
+    const filteredRequests = useMemo(() => {
+        return requests.filter(item => {
+
+            const matchesSearch =
+                item.username.toLowerCase().includes(searchText.toLowerCase()) ||
+                item.packageName.toLowerCase().includes(searchText.toLowerCase()) ||
+                item.reason.toLowerCase().includes(searchText.toLowerCase())
+
+            const matchesDate =
+                !dateFilter ||
+                (item.cancellationDate &&
+                    dayjs(item.cancellationDate).isSame(dateFilter, 'day'))
+
+            return matchesSearch && matchesDate
+        })
+    }, [requests, searchText, dateFilter])
+
 
     const columns = useMemo(() => [
         {
@@ -80,6 +103,12 @@ export default function CancellationRequests() {
             key: 'daysAfterBooking'
         },
         {
+            title: 'Cancellation Date',
+            dataIndex: 'cancellationDate',
+            key: 'cancellationDate',
+            render: (d) => d ? dayjs(d).format('MMM DD, YYYY') : '--'
+        },
+        {
             title: 'Actions',
             key: 'actions',
             render: (_, record) => (
@@ -100,48 +129,75 @@ export default function CancellationRequests() {
     ], [])
 
     return (
-        <div className="user-management-container">
-            <h1 className="page-header">Cancellation Requests</h1>
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: "#305797"
+                }
+            }}
+        >
+            <div className="cancellations-container">
+                <h1 className="page-header">Cancellation Requests</h1>
 
-            <Row gutter={16} style={{ marginBottom: 20 }}>
-                <Col xs={24} sm={8}>
-                    <Card>
-                        <Statistic
-                            title="Total Requests"
-                            value={totalRequests}
-                            prefix={<CheckCircleOutlined />}
-                        />
-                    </Card>
-                </Col>
+                <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Col xs={24} sm={8}>
+                        <Card>
+                            <Statistic
+                                title="Total Requests"
+                                value={totalRequests}
+                                prefix={<CheckCircleOutlined />}
+                            />
+                        </Card>
+                    </Col>
 
-                <Col xs={24} sm={8}>
-                    <Card>
-                        <Statistic
-                            title="Approved"
-                            value={approvedRequests}
-                            prefix={<CheckCircleOutlined />}
-                        />
-                    </Card>
-                </Col>
+                    <Col xs={24} sm={8}>
+                        <Card>
+                            <Statistic
+                                title="Approved"
+                                value={approvedRequests}
+                                prefix={<CheckCircleOutlined />}
+                            />
+                        </Card>
+                    </Col>
 
-                <Col xs={24} sm={8}>
-                    <Card>
-                        <Statistic
-                            title="Disapproved"
-                            value={disapprovedRequests}
-                            prefix={<CloseCircleOutlined />}
-                        />
-                    </Card>
-                </Col>
-            </Row>
+                    <Col xs={24} sm={8}>
+                        <Card>
+                            <Statistic
+                                title="Disapproved"
+                                value={disapprovedRequests}
+                                prefix={<CloseCircleOutlined />}
+                            />
+                        </Card>
+                    </Col>
+                </Row>
 
-            <Card style={{ marginTop: 20 }}>
-                <Table
-                    columns={columns}
-                    dataSource={requests}
-                    pagination={{ pageSize: 6 }}
-                />
-            </Card>
-        </div>
+                <div className="cancel-actions">
+                    <Input
+                        prefix={<SearchOutlined />}
+                        placeholder="Search username, package or reason..."
+                        className="search-input"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        allowClear
+                    />
+
+                    <DatePicker
+                        placeholder="Filter by date"
+                        value={dateFilter}
+                        onChange={(date) => setDateFilter(date)}
+                        allowClear
+                    />
+
+                </div>
+
+                <Card style={{ marginTop: 20 }}>
+                    <Table
+                        columns={columns}
+                        dataSource={filteredRequests}
+                        pagination={{ pageSize: 6 }}
+                    />
+                </Card>
+            </div>
+        </ConfigProvider>
     )
 }
