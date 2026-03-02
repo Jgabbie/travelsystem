@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Modal, Button } from 'antd'
-import '../style/soloorgroupedmodal.css'
+import '../style/components/modals/soloorgroupedmodal.css'
 
 export default function SoloOrGrouped({
     open,

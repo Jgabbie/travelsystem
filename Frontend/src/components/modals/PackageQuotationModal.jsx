@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Modal, Input, InputNumber, Slider, Button, message } from 'antd'
-import '../../style/packagequotationmodal.css'
+import '../../style/components/modals/packagequotationmodal.css'
 import axiosInstance from '../../config/axiosConfig'
 
 

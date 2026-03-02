@@ -1,37 +1,37 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import ResetPassword from './components/ResetPassword';
-import LandingPage from './pages/LandingPage';
+import LandingPage from "./pages/client/LandingPage";
 
-import PackagePage from './pages/PackagePage';
-import ProfilePage from "./pages/ProfilePage";
-import UserBookings from "./pages/UserBookings";
-import UserTransactions from "./pages/UserTransactions";
-import PassAndVisaService from "./pages/PassAndVisaService";
-import Wishlist from "./pages/Wishlist";
-import DestinationsPackages from "./pages/DestinationsPackages";
-import UserBookingInvoice from "./pages/UserBookingInvoice";
-import UserQuotationRequest from "./pages/UserQuotationRequest";
-import UserPackageQuotation from "./pages/UserPackageQuotation";
+import PackagePage from './pages/client/PackagePage';
+import ProfilePage from "./pages/client/ProfilePage";
+import UserBookings from "./pages/client/UserBookings";
+import UserTransactions from "./pages/client/UserTransactions";
+import PassAndVisaService from "./pages/client/PassAndVisaService";
+import Wishlist from "./pages/client/Wishlist";
+import DestinationsPackages from "./pages/client/DestinationsPackages";
+import UserBookingInvoice from "./pages/client/UserBookingInvoice";
+import UserQuotationRequest from "./pages/client/UserQuotationRequest";
+import UserPackageQuotation from "./pages/client/UserPackageQuotation";
 
-import Logging from './pages/Logging';
-import Auditing from './components/Auditing';
+import Logging from './pages/admin/Logging';
+import Auditing from './pages/admin/Auditing';
 
 import AdminLayout from "./components/AdminLayout";
-import BookingManagement from "./pages/BookingManagement";
-import UploadBookingInvoice from "./pages/UploadBookingInvoice";
-import UserManagement from "./pages/UserManagement";
-import PackageManagement from "./pages/PackageManagement";
-import AddPackage from "./pages/AddPackage";
-import AdminDashboard from "./pages/AdminDashboard";
-import TransactionManagement from "./pages/TransactionManagement";
-import ReviewRatings from "./pages/ReviewRatings";
-import VisaApplications from "./pages/VisaApplications";
-import PassportApplications from "./pages/PassportApplications";
-import AdminProfile from "./pages/AdminProfile";
-import CancellationRequests from "./pages/CancellationRequests";
-import QuotationManagement from "./pages/QuotationManagement";
-import QuotationRequest from "./pages/QuotationRequest";
+import BookingManagement from "./pages/admin/BookingManagement";
+import UploadBookingInvoice from "./pages/admin/UploadBookingInvoice";
+import UserManagement from "./pages/admin/UserManagement";
+import PackageManagement from "./pages/admin/PackageManagement";
+import AddPackage from "./pages/admin/AddPackage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import TransactionManagement from "./pages/admin/TransactionManagement";
+import ReviewRatings from "./pages/admin/ReviewRatings";
+import VisaApplications from "./pages/admin/VisaApplications";
+import PassportApplications from "./pages/admin/PassportApplications";
+import AdminProfile from "./pages/admin/AdminProfile";
+import CancellationRequests from "./pages/admin/CancellationRequests";
+import QuotationManagement from "./pages/admin/QuotationManagement";
+import QuotationRequest from "./pages/admin/QuotationRequest";
 
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -39,6 +39,7 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
+
 
 function App() {
   return (

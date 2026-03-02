@@ -1,10 +1,10 @@
 import { Layout, Space, Dropdown, Modal, Button } from "antd";
 import { DownOutlined, HomeOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useAuth } from "../hooks/useAuth";
-import "../style/topnav.css";
-import axiosInstance from "../config/axiosConfig";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../config/axiosConfig";
+import "../style/components/topnav.css";
 
 const { Header } = Layout;
 

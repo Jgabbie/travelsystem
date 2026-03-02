@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-import '../style/loadingscreen.css';
+import '../style/components/loadingscreen.css';
 
 export default function LoadingScreen({ isVisible, message = 'Loading...' }) {
 

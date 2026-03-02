@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Badge, Dropdown, Space, Button, Modal, List, Typography } from 'antd';
 import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined, BellOutlined } from '@ant-design/icons';
-import { useAuth } from '../hooks/useAuth';
-import '../style/topnavuser.css'
-import LoginModal from './LoginModal';
-import SignupModal from './SignupModal';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import axiosInstance from '../config/axiosConfig';
+import LoginModal from './modals/LoginModal';
+import SignupModal from './modals/SignupModal';
+import '../style/components/topnavuser.css'
 
 export default function TopNavUser() {
     const { auth, setAuth } = useAuth();

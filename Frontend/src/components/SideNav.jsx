@@ -1,9 +1,9 @@
 import { Layout, Modal } from "antd";
 import { NavLink } from "react-router-dom";
-import "../style/sidenav.css";
-import axiosInstance from "../config/axiosConfig";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
+import axiosInstance from "../config/axiosConfig";
+import "../style/components/sidenav.css";
 
 
 const { Sider } = Layout;

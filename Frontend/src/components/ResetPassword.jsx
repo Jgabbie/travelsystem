@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Input, Button, Modal } from 'antd';
-import '../style/resetpasswordpage.css'
-import '../style/newpasswordpage.css'
 import axiosInstance from '../config/axiosConfig';
 import LoadingScreen from './LoadingScreen';
+import '../style/components/resetpasswordpage.css'
+import '../style/components/newpasswordpage.css'
 
 
 export default function ResetPassword() {
