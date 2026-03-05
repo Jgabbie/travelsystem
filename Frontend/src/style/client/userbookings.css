@@ -119,6 +119,37 @@
     box-shadow: none !important;
 }
 
+.user-bookings-upload {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.user-bookings-comments {
+    margin-top: 12px;
+}
+
+.user-bookings-upload-btn {
+    border-radius: 8px;
+    height: 38px;
+    font-weight: 600;
+    color: #305797 !important;
+    border-color: #305797 !important;
+    background-color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+.user-bookings-upload-btn:hover {
+    background-color: #305797 !important;
+    color: #ffffff !important;
+}
+
+.user-bookings-upload-note {
+    font-size: 12px;
+    color: #6b7280;
+}
+
 @media (max-width: 768px) {
     .user-bookings-container {
         padding: 110px 16px 32px;
@@ -130,5 +161,9 @@
 
     .user-bookings-table {
         padding: 12px;
+    }
+
+    .user-bookings-upload-btn {
+        height: 40px;
     }
 }

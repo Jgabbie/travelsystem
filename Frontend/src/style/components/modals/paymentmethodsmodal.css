@@ -36,3 +36,43 @@
     justify-content: flex-end;
     margin-top: 20px;
 }
+
+.payment-methods-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.payment-card:hover {
+    border-color: #305797;
+}
+
+.payment-card.selected {
+    border-color: #305797;
+    background: #f4f7ff;
+}
+
+.payment-card h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.payment-card p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #666;
+}
+
+/* hide default radio circle */
+.payment-card .ant-radio {
+    display: none;
+}

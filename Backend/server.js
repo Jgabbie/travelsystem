@@ -17,8 +17,7 @@ const paymentRoutes = require("./routes/paymentRoute");
 const transactionRoute = require("./routes/transactionRoute");
 const quotationRoutes = require("./routes/quotationRoutes")
 const flightPriceRoutes = require("./routes/flightpriceRoutes")
-
-
+const passportRoutes = require("./routes/passportRoutes")
 
 const app = express()
 app.use(cors({
@@ -48,6 +47,7 @@ app.use('/api/transaction', transactionRoute);
 app.use('/api/quotation', quotationRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/flights", flightPriceRoutes);
+app.use("/api/passport", passportRoutes);
 
 
 app.listen(8000, () => {

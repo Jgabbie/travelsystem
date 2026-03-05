@@ -1,0 +1,202 @@
+.passport-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at top, #f4f7ff 0%, #e7edf7 45%, #d5deef 100%);
+}
+
+.passport-container {
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 120px 32px 48px;
+    width: 100%;
+}
+
+.passport-header {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px 28px;
+    box-shadow: 0 12px 28px rgba(48, 87, 151, 0.16);
+    margin-bottom: 24px;
+}
+
+.passport-header h2 {
+    margin: 0 0 6px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    color: #2f4c8a;
+}
+
+.passport-header p {
+    margin: 0;
+    color: #5b677a;
+    font-family: "Roboto", sans-serif;
+}
+
+.passport-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.passport-panel {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.passport-panel h3 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    color: #2f4c8a;
+    font-family: "Montserrat", sans-serif;
+}
+
+.passport-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+    color: #2f3a4a;
+    font-family: "Roboto", sans-serif;
+}
+
+.passport-list li {
+    background: #f7f9fc;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.passport-steps {
+    display: grid;
+    gap: 14px;
+}
+
+.passport-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.passport-step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #305797;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.passport-step h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    color: #1f2d4b;
+}
+
+.passport-step p {
+    margin: 0;
+    color: #5b677a;
+    font-size: 14px;
+}
+
+.renew-passport-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 24px 28px;
+    box-shadow: 0 12px 30px rgba(48, 87, 151, 0.18);
+}
+
+.renew-passport-card h3 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    color: #2f4c8a;
+    font-family: "Montserrat", sans-serif;
+}
+
+.passport-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
+}
+
+.passport-label {
+    grid-column: span 2;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    font-family: "Roboto", sans-serif;
+}
+
+.passport-select,
+.passport-input {
+    height: 40px;
+    border-radius: 10px;
+}
+
+.passport-input {
+    padding: 0 12px;
+    border: 1px solid #d6dce8;
+    font-family: "Roboto", sans-serif;
+}
+
+.passport-submit {
+    grid-column: span 2;
+    height: 42px;
+    border-radius: 10px;
+    background-color: #305797 !important;
+    border-color: #305797 !important;
+    font-weight: 600;
+    box-shadow: none !important;
+}
+
+.passport-submit:hover {
+    background-color: #2a4b80 !important;
+    border-color: #2a4b80 !important;
+}
+
+@media (max-width: 900px) {
+    .passport-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .passport-form {
+        grid-template-columns: 1fr;
+    }
+
+    .passport-label {
+        grid-column: span 1;
+    }
+
+    .passport-submit {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .passport-container {
+        padding: 110px 16px 40px;
+    }
+
+    .passport-header h2 {
+        font-size: 24px;
+    }
+
+    .passport-panel {
+        padding: 18px;
+    }
+
+    .renew-passport-card {
+        padding: 20px;
+    }
+}

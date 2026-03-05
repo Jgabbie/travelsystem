@@ -39,13 +39,28 @@ export default function PaymentMethodsModal({ open, onCancel, onProceed }) {
                     <Radio.Group
                         onChange={(e) => setMethod(e.target.value)}
                         value={method}
-                        className="payment-methods-radio"
+                        className="payment-methods-cards"
                     >
-                        <Radio value="card">Credit / Debit Card</Radio>
-                        <br />
-                        <Radio value="gcash">GCash</Radio>
-                        <br />
-                        <Radio value="bank">Bank Transfer</Radio>
+                        <Radio value="card" className={`payment-card ${method === "card" ? "selected" : ""}`}>
+                            <div>
+                                <h3>Credit / Debit Card</h3>
+                                <p>Pay securely using Visa, Mastercard, or other cards.</p>
+                            </div>
+                        </Radio>
+
+                        <Radio value="gcash" className={`payment-card ${method === "gcash" ? "selected" : ""}`}>
+                            <div>
+                                <h3>GCash</h3>
+                                <p>Pay instantly using your GCash wallet.</p>
+                            </div>
+                        </Radio>
+
+                        <Radio value="bank" className={`payment-card ${method === "bank" ? "selected" : ""}`}>
+                            <div>
+                                <h3>Bank Transfer</h3>
+                                <p>Transfer payment directly to our bank account.</p>
+                            </div>
+                        </Radio>
                     </Radio.Group>
 
                     <div className="payment-methods-actions">

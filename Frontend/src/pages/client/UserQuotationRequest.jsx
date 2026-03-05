@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet } from "@react-pdf/renderer";
-import { Modal, message, Button, Input, Card } from "antd"
+import { Modal, message, Button, Input, Card, ConfigProvider } from "antd"
 import { useLocation, useParams } from "react-router-dom";
 import axiosInstance from "../../config/axiosConfig";
 import '../../style/client/userquotationrequest.css'
@@ -191,110 +191,117 @@ export default function UserQuotationRequest() {
     }
 
     return (
-        <div style={{ padding: "20px" }}>
-            <h2>{quotation.packageName}</h2>
-            <p>
-                <strong>Reference:</strong> {quotation.reference} |{" "}
-                <strong>Status:</strong> {quotation.status}
-            </p>
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#305797',
+                }
+            }}
+        >
+            <div style={{ padding: "20px" }}>
+                <h2>{quotation.packageName}</h2>
+                <p>
+                    <strong>Reference:</strong> {quotation.reference} |{" "}
+                    <strong>Status:</strong> {quotation.status}
+                </p>
 
-            <div style={{ marginBottom: "20px" }}>
-                <Card title="Quotation Revision History">
-                    {quotation.pdfRevisions?.length === 0 ? (
-                        <p>No PDF revisions uploaded yet.</p>
+                <div style={{ marginBottom: "20px" }}>
+                    <Card title="Quotation Revision History">
+                        {quotation.pdfRevisions?.length === 0 ? (
+                            <p>No PDF revisions uploaded yet.</p>
+                        ) : (
+                            quotation.pdfRevisions.map((rev, index) => (
+                                <div key={index} style={{ marginBottom: "10px" }}>
+                                    <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
+                                    <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                                </div>
+                            ))
+                        )}
+                    </Card>
+                </div>
+
+                <h1>Latest Revision</h1>
+                <div
+                    style={{
+                        border: "1px solid #ccc",
+                        height: "600px",
+                        marginBottom: "20px",
+                    }}
+                >
+                    {quotation.pdfRevisions && quotation.pdfRevisions.length > 0 ? (
+                        <iframe
+                            src={quotation.pdfRevisions[quotation.pdfRevisions.length - 1].url}
+                            title="Quotation PDF"
+                            width="100%"
+                            height="100%"
+                            style={{ border: "none" }}
+                        />
                     ) : (
-                        quotation.pdfRevisions.map((rev, index) => (
-                            <div key={index} style={{ marginBottom: "10px" }}>
-                                <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
-                                <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                        <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
+                    )}
+                </div>
+
+                <Card title="Revision Notes History" style={{ marginBottom: 20 }}>
+                    {quotation.revisionComments.length === 0 ? (
+                        <p>No revision comments yet.</p>
+                    ) : (
+                        quotation.revisionComments.map((comment, index) => (
+                            <div key={index} style={{ marginBottom: 15 }}>
+                                <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
+                                <br />
+                                <small>{new Date(comment.createdAt).toLocaleString()}</small>
                             </div>
                         ))
                     )}
                 </Card>
-            </div>
 
-            <h1>Latest Revision</h1>
-            <div
-                style={{
-                    border: "1px solid #ccc",
-                    height: "600px",
-                    marginBottom: "20px",
-                }}
-            >
-                {quotation.pdfRevisions && quotation.pdfRevisions.length > 0 ? (
-                    <iframe
-                        src={quotation.pdfRevisions[quotation.pdfRevisions.length - 1].url}
-                        title="Quotation PDF"
-                        width="100%"
-                        height="100%"
-                        style={{ border: "none" }}
-                    />
-                ) : (
-                    <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
-                )}
-            </div>
-
-            <Card title="Revision Notes History" style={{ marginBottom: 20 }}>
-                {quotation.revisionComments.length === 0 ? (
-                    <p>No revision comments yet.</p>
-                ) : (
-                    quotation.revisionComments.map((comment, index) => (
-                        <div key={index} style={{ marginBottom: 15 }}>
-                            <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
-                            <br />
-                            <small>{new Date(comment.createdAt).toLocaleString()}</small>
-                        </div>
-                    ))
-                )}
-            </Card>
-
-            <Input.TextArea
-                maxLength={200}
-                rows={3}
-                placeholder={`Kindly provide any notes for revision (max 200 characters). Please be detailed as possible.`}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="quotation-input-request"
-                disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
-                required
-            />
-
-            <div className="buttons-container-userquotationrequest">
-                <Button
-                    className="acceptbutton-userquotationrequest"
-                    type="primary"
-                    onClick={handleAccept}
-                >
-                    Accept
-                </Button>
-                <Button
-                    className="revisebutton-userquotationrequest"
-                    onClick={handleRevise}
+                <Input.TextArea
+                    maxLength={200}
+                    rows={3}
+                    placeholder={`Kindly provide any notes for revision (max 200 characters). Please be detailed as possible.`}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="quotation-input-request"
                     disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
-                >
-                    Request Revision
-                </Button>
-            </div>
+                    required
+                />
 
-
-            {/* booking success modal */}
-            <Modal
-                className="package-wishlist-modal"
-                open={isBookingSuccessOpen}
-                footer={null}
-                onCancel={() => setIsBookingSuccessOpen(false)}
-            >
-                <h2 className="package-wishlist-title">Booking Successful</h2>
-                <p className="package-wishlist-text">Your booking has been confirmed.</p>
-                <div className="package-wishlist-actions">
-                    <Button className="package-action-secondary" onClick={() => {
-                        setIsBookingSuccessOpen(false)
-                    }}>
-                        OK
+                <div className="buttons-container-userquotationrequest">
+                    <Button
+                        className="acceptbutton-userquotationrequest"
+                        type="primary"
+                        onClick={handleAccept}
+                    >
+                        Accept
+                    </Button>
+                    <Button
+                        className="revisebutton-userquotationrequest"
+                        onClick={handleRevise}
+                        disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
+                    >
+                        Request Revision
                     </Button>
                 </div>
-            </Modal>
 
-        </div>
+
+                {/* booking success modal */}
+                <Modal
+                    className="package-wishlist-modal"
+                    open={isBookingSuccessOpen}
+                    footer={null}
+                    onCancel={() => setIsBookingSuccessOpen(false)}
+                >
+                    <h2 className="package-wishlist-title">Booking Successful</h2>
+                    <p className="package-wishlist-text">Your booking has been confirmed.</p>
+                    <div className="package-wishlist-actions">
+                        <Button className="package-action-secondary" onClick={() => {
+                            setIsBookingSuccessOpen(false)
+                        }}>
+                            OK
+                        </Button>
+                    </div>
+                </Modal>
+            </div>
+        </ConfigProvider>
     );
 }

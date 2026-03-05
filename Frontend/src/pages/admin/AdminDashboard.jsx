@@ -13,9 +13,8 @@ export default function AdminDashboard() {
   const monthlyRevenue = [120000, 98000, 135000, 160000, 142000, 175000, 190000, 210000, 195000, 220000, 205000, 240000];
   const bookingTrend = [80, 92, 110, 125, 118, 140, 150, 165, 158, 172, 168, 190];
   const paymentSplit = [
-    { id: 0, value: 48, label: "Online" },
-    { id: 1, value: 32, label: "Bank" },
-    { id: 2, value: 20, label: "GCash" }
+    { id: 0, value: 48, label: "Domestic" },
+    { id: 1, value: 32, label: "International" },
   ];
 
   const [stats, setStats] = useState({
@@ -146,7 +145,7 @@ export default function AdminDashboard() {
         <Card className="dashboard-chart-card">
           <div className="dashboard-chart-header">
             <h2>Revenue Overview</h2>
-            <p>Monthly revenue for the year (sample data)</p>
+            <p>Monthly revenue for the year</p>
           </div>
           <div className="dashboard-chart-body is-tall" ref={barRef}>
             {barWidth > 0 && (
@@ -169,8 +168,8 @@ export default function AdminDashboard() {
         <div className="dashboard-chart-row">
           <Card className="dashboard-chart-card">
             <div className="dashboard-chart-header">
-              <h2>Payment Mix</h2>
-              <p>Share by payment method (sample data)</p>
+              <h2>Booking Types</h2>
+              <p>Share by booking types (Domestic or International)</p>
             </div>
             <div className="dashboard-chart-body" ref={pieRef}>
               {pieWidth > 0 && (
@@ -203,7 +202,7 @@ export default function AdminDashboard() {
           <Card className="dashboard-chart-card">
             <div className="dashboard-chart-header">
               <h2>Booking Trend</h2>
-              <p>Monthly booking volume (sample data)</p>
+              <p>Monthly booking volume</p>
             </div>
 
             <div

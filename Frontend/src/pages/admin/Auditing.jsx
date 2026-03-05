@@ -1,12 +1,13 @@
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Tag, Table, Input, ConfigProvider } from 'antd';
+import { Tag, Table, Input, ConfigProvider, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 
 export default function Auditing() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
+    const [roleFilter, setRoleFilter] = useState('');
 
     //get audit logs from backend and map to state
     useEffect(() => {
@@ -36,11 +37,13 @@ export default function Auditing() {
     // Filter logic for Search Bar
     const filteredLogs = logs.filter(log => {
         const searchLower = searchText.toLowerCase();
-        return (
-            log.action?.toLowerCase().includes(searchLower) ||
+        const matchesSearch = log.action?.toLowerCase().includes(searchLower) ||
             log.performedBy?.username?.toLowerCase().includes(searchLower) ||
-            log.performedBy?.email?.toLowerCase().includes(searchLower)
-        );
+            log.performedBy?.email?.toLowerCase().includes(searchLower);
+
+        const matchesRole = roleFilter ? log.performedBy?.role === roleFilter : true;
+
+        return matchesSearch && matchesRole;
     });
 
     //columns for the audit logs table
@@ -124,7 +127,7 @@ export default function Auditing() {
                     placeholder="Search logs by action, username, or email..."
                     prefix={<SearchOutlined />}
                     className="logs-search-input"
-                    style={{ marginBottom: 20, width: 300 }}
+                    style={{ marginBottom: 20, width: 500 }}
                     onChange={(e) => setSearchText(e.target.value)}
                 />
 
@@ -133,7 +136,7 @@ export default function Auditing() {
                     dataSource={filteredLogs}
                     rowKey="_id"
                     loading={loading}
-                    pagination={{ pageSize: 8 }}
+                    pagination={{ pageSize: 8, showSizeChanger: false }}
                 />
             </div>
         </ConfigProvider>

@@ -15,8 +15,8 @@ const PackageSchema = new mongoose.Schema({
     packageExclusions: { type: Array, default: [], required: true },
     packageTermsConditions: { type: Array, default: [], required: true },
     packageItineraries: { type: Object, default: {}, required: true },
+    packageTags: { type: Array, default: [] },
     images: { type: Array, default: [] },
-
 });
 
 const PackageModel = mongoose.model("packages", PackageSchema);

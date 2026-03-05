@@ -2,10 +2,10 @@ const PackageModel = require("../models/package");
 const logAction = require("../utils/logger");
 
 const addPackage = async (req, res) => {
-    const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, addons, termsAndConditions, inclusions, exclusions, itineraries, images } = req.body;
+    const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags } = req.body;
     try {
 
-        if (name === null || code === null || pricePerPax === null || availableSlots === null || description === null || packageType === null || duration === null || hotels === null || airlines === null || addons === null || termsAndConditions === null || inclusions === null || exclusions === null || itineraries === null) {
+        if (name === null || code === null || pricePerPax === null || availableSlots === null || description === null || packageType === null || duration === null || hotels === null || airlines === null || termsAndConditions === null || inclusions === null || exclusions === null || itineraries === null || tags === null) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
@@ -17,17 +17,27 @@ const addPackage = async (req, res) => {
             packageDescription: description,
             packageType: packageType,
             packageDuration: Number(duration),
-            packageSpecificDate: (dateRanges || []).map(range => [
-                new Date(range[0]),
-                new Date(range[1])
-            ]),
+            packageSpecificDate: (dateRanges || []).map(range => ({
+                startdaterange: range.startdaterange
+                    ? new Date(range.startdaterange)
+                    : null,
+                enddaterange: range.enddaterange
+                    ? new Date(range.enddaterange)
+                    : null,
+                extrarate: range.extrarate
+                    ? Number(range.extrarate)
+                    : 0,
+                slots: range.slots
+                    ? Number(range.slots)
+                    : 0
+            })),
             packageHotels: hotels,
             packageAirlines: airlines,
-            packageAddons: addons,
             packageTermsConditions: termsAndConditions,
             packageInclusions: inclusions,
             packageExclusions: exclusions,
             packageItineraries: itineraries,
+            packageTags: tags,
             images: images || []
         });
 
@@ -47,11 +57,11 @@ const addPackage = async (req, res) => {
                 dateRanges: newPackage.packageSpecificDate,
                 hotels: newPackage.packageHotels,
                 airlines: newPackage.packageAirlines,
-                addons: newPackage.packageAddons,
                 termsAndConditions: newPackage.packageTermsConditions,
                 inclusions: newPackage.packageInclusions,
                 exclusions: newPackage.packageExclusions,
                 itineraries: newPackage.packageItineraries,
+                tags: newPackage.packageTags,
                 images: newPackage.images || []
             },
             ip
@@ -106,6 +116,7 @@ const getPackage = async (req, res) => {
 
 const updatePackage = async (req, res) => {
     const { id } = req.params;
+
     try {
         const updatedPackage = await PackageModel.findByIdAndUpdate(
             id,
@@ -117,17 +128,27 @@ const updatePackage = async (req, res) => {
                 packageDuration: Number(req.body.duration),
                 packageDescription: req.body.description,
                 packageType: req.body.packageType,
-                packageSpecificDate: (req.body.dateRanges || []).map(range => [
-                    new Date(range[0]),
-                    new Date(range[1])
-                ]),
+                packageSpecificDate: (req.body.dateRanges || []).map(range => ({
+                    startdaterange: range.startdaterange
+                        ? new Date(range.startdaterange)
+                        : null,
+                    enddaterange: range.enddaterange
+                        ? new Date(range.enddaterange)
+                        : null,
+                    extrarate: range.extrarate
+                        ? Number(range.extrarate)
+                        : 0,
+                    slots: range.slots
+                        ? Number(range.slots)
+                        : 0
+                })),
                 packageHotels: req.body.hotels,
                 packageAirlines: req.body.airlines,
-                packageAddons: req.body.addons,
                 packageInclusions: req.body.inclusions,
                 packageExclusions: req.body.exclusions,
                 packageTermsConditions: req.body.termsAndConditions,
                 packageItineraries: req.body.itineraries,
+                packageTags: req.body.tags,
                 images: req.body.images || []
             },
             { new: true }

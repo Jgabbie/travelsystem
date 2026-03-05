@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Table, Tag, Button, Space, message, Modal, Select, Input } from 'antd'
+import { Table, Tag, Button, Space, message, Modal, Select, Input, Upload, DatePicker, ConfigProvider } from 'antd'
+import { UploadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig'
 import TopNavUser from '../../components/TopNavUser'
@@ -14,6 +15,13 @@ export default function UserBookings() {
     const [cancelReason, setCancelReason] = useState('')
     const [cancelOtherReason, setCancelOtherReason] = useState('')
     const [cancelTargetKey, setCancelTargetKey] = useState(null)
+    const [cancelFiles, setCancelFiles] = useState([])
+    const [cancelComments, setCancelComments] = useState('')
+
+    const [searchText, setSearchText] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [bookingDateFilter, setBookingDateFilter] = useState(null);
+    const [travelDateFilter, setTravelDateFilter] = useState(null);
 
     const navigate = useNavigate()
 
@@ -42,19 +50,45 @@ export default function UserBookings() {
 
         const travelDate = details.travelDate
         const formattedDate = travelDate ? dayjs(travelDate).format('MMM D, YYYY') : '--'
+        const bookedDate = booking.createdAt
+        const formattedBookedDate = bookedDate ? dayjs(bookedDate).format('MMM D, YYYY') : '--'
+        const status = booking.status || 'Complete'
+
 
         return {
             key: booking._id,
             reference: booking.reference || booking._id,
             destination: details.packageName || 'Package',
             date: formattedDate,
+            bookedDate: formattedBookedDate,
             travelers: travelerCounts || '--',
             bookingType: details.packageType
                 ? `${details.packageType.charAt(0).toUpperCase()}${details.packageType.slice(1)}`
                 : '--',
-            status: booking.status || 'Complete'
+            status: status.charAt(0).toUpperCase() + status.slice(1)
         }
     }), [bookings])
+
+
+    const filteredData = useMemo(() => dataSource.filter(item => {
+        const matchesSearch =
+            item.reference.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.destination.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.status.toLowerCase().includes(searchText.toLowerCase());
+
+        const matchesStatus =
+            statusFilter === "" || item.status === statusFilter;
+
+        const matchesBookingDate =
+            !bookingDateFilter ||
+            dayjs(item.bookedDate, 'MMM D, YYYY').isSame(bookingDateFilter, "day");
+
+        const matchesTravelDate =
+            !travelDateFilter ||
+            dayjs(item.date, 'MMM D, YYYY').isSame(travelDateFilter, "day");
+
+        return matchesSearch && matchesStatus && matchesBookingDate && matchesTravelDate;
+    }), [dataSource, searchText, statusFilter, bookingDateFilter, travelDateFilter]);
 
     const viewBookingInvoice = () => {
         navigate('/user-booking-invoice')
@@ -64,6 +98,8 @@ export default function UserBookings() {
         setCancelTargetKey(key)
         setCancelReason('')
         setCancelOtherReason('')
+        setCancelFiles([])
+        setCancelComments('')
         setCancelModalOpen(true)
     }
 
@@ -72,6 +108,8 @@ export default function UserBookings() {
         setCancelTargetKey(null)
         setCancelReason('')
         setCancelOtherReason('')
+        setCancelFiles([])
+        setCancelComments('')
     }
 
     const confirmCancelBooking = async () => {
@@ -85,9 +123,25 @@ export default function UserBookings() {
             return
         }
 
+        if (!cancelFiles.length) {
+            message.warning('Please upload a supporting file')
+            return
+        }
+
         try {
             const finalReason = cancelReason === 'Other' ? cancelOtherReason.trim() : cancelReason
-            await axiosInstance.post(`/booking/cancel/${cancelTargetKey}`, { reason: finalReason })
+            const formData = new FormData()
+            formData.append('reason', finalReason)
+            if (cancelComments.trim()) {
+                formData.append('comments', cancelComments.trim())
+            }
+            cancelFiles.forEach((file) => {
+                formData.append('files', file.originFileObj || file)
+            })
+
+            await axiosInstance.post(`/booking/cancel/${cancelTargetKey}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
             setBookings((prev) => prev.filter((item) => item._id !== cancelTargetKey))
             message.success('Booking cancelled')
             closeCancelModal()
@@ -108,9 +162,14 @@ export default function UserBookings() {
             key: 'destination'
         },
         {
-            title: 'Date',
+            title: 'Travel Date',
             dataIndex: 'date',
             key: 'date'
+        },
+        {
+            title: 'Booked Date',
+            dataIndex: 'bookedDate',
+            key: 'bookedDate'
         },
         {
             title: 'Travelers',
@@ -128,7 +187,7 @@ export default function UserBookings() {
             key: 'status',
             render: (value) => {
                 let color = 'default'
-                if (value === 'Confirmed') color = 'green'
+                if (value === 'Successful') color = 'green'
                 if (value === 'Pending') color = 'gold'
                 if (value === 'Completed') color = 'blue'
                 return <Tag color={color}>{value}</Tag>
@@ -155,64 +214,141 @@ export default function UserBookings() {
     ]
 
     return (
-        <div className="user-bookings-page">
-            <TopNavUser />
-            <div className="user-bookings-container">
-                <div className="user-bookings-header">
-                    <h2>My Bookings</h2>
-                    <p>Track your latest reservations and payment status.</p>
-                </div>
-                <div className="user-bookings-table">
-                    <Table
-                        columns={columns}
-                        dataSource={dataSource}
-                        loading={loading}
-                        pagination={{ pageSize: 5 }}
-                        scroll={{ x: 'max-content' }}
-                    />
-                </div>
-            </div>
-            <Modal
-                className="logout-confirm-modal"
-                open={cancelModalOpen}
-                onCancel={closeCancelModal}
-                onOk={confirmCancelBooking}
-                okText="Cancel Booking"
-                cancelText="Keep Booking"
-                okButtonProps={{ className: 'logout-confirm-btn' }}
-                cancelButtonProps={{ className: 'logout-cancel-btn' }}
-                title={(
-                    <div className="logout-confirm-title" style={{ textAlign: 'center' }}>
-                        Confirm Cancellation
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#305797',
+                }
+            }}
+        >
+            <div className="user-bookings-page">
+                <TopNavUser />
+                <div className="user-bookings-container">
+                    <div className="user-bookings-header">
+                        <h2>My Bookings</h2>
+                        <p>Track your latest reservations and payment status.</p>
                     </div>
-                )}
-            >
-                <div className="logout-confirm-content" style={{ textAlign: 'center' }}>
-                    <p className="logout-confirm-text">Are you sure you want to cancel this booking?</p>
-                    <Select
-                        value={cancelReason || undefined}
-                        onChange={(value) => setCancelReason(value)}
-                        placeholder="Select a reason"
-                        style={{ width: '100%', marginTop: 12 }}
-                        options={[
-                            { value: 'Change of plans', label: 'Change of plans' },
-                            { value: 'Found a better price', label: 'Found a better price' },
-                            { value: 'Scheduling conflict', label: 'Scheduling conflict' },
-                            { value: 'Booking mistake', label: 'Booking mistake' },
-                            { value: 'Other', label: 'Other' }
-                        ]}
-                    />
-                    {cancelReason === 'Other' && (
-                        <Input
-                            value={cancelOtherReason}
-                            onChange={(event) => setCancelOtherReason(event.target.value)}
-                            placeholder="Please specify"
-                            style={{ width: '100%', marginTop: 12 }}
-                        />
-                    )}
-                </div>
-            </Modal>
-        </div>
 
+                    <div className="booking-actions">
+                        <Input
+                            prefix={<SearchOutlined />}
+                            placeholder="Search reference, package or status..."
+                            className="search-input"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            allowClear
+                        />
+
+                        <Select
+                            className="booking-select"
+                            placeholder="Status"
+                            style={{ width: 140 }}
+                            allowClear
+                            value={statusFilter || undefined}
+                            onChange={(v) => setStatusFilter(v || "")}
+                            options={[
+                                { value: "Successful", label: "Successful" },
+                                { value: "Pending", label: "Pending" },
+                                { value: "Cancelled", label: "Cancelled" }
+                            ]}
+                        />
+
+                        <DatePicker
+                            className="booking-date-filter"
+                            placeholder="Booking Date"
+                            value={bookingDateFilter}
+                            onChange={(d) => setBookingDateFilter(d)}
+                            allowClear
+                        />
+
+                        <DatePicker
+                            className="booking-date-filter"
+                            placeholder="Travel Date"
+                            value={travelDateFilter}
+                            onChange={(d) => setTravelDateFilter(d)}
+                            allowClear
+                        />
+
+                        <Button className="exportbutton-bookingmanagement" type="primary">Export</Button>
+                    </div>
+
+                    <div className="user-bookings-table">
+                        <Table
+                            columns={columns}
+                            dataSource={filteredData}
+                            loading={loading}
+                            pagination={{ pageSize: 5 }}
+                            scroll={{ x: 'max-content' }}
+                        />
+                    </div>
+                </div>
+                <Modal
+                    className="logout-confirm-modal"
+                    open={cancelModalOpen}
+                    onCancel={closeCancelModal}
+                    onOk={confirmCancelBooking}
+                    okText="Cancel Booking"
+                    cancelText="Keep Booking"
+                    okButtonProps={{ className: 'logout-confirm-btn' }}
+                    cancelButtonProps={{ className: 'logout-cancel-btn' }}
+                    title={(
+                        <div className="logout-confirm-title" style={{ textAlign: 'center' }}>
+                            Confirm Cancellation
+                        </div>
+                    )}
+                >
+                    <div className="logout-confirm-content" style={{ textAlign: 'center' }}>
+                        <p className="logout-confirm-text">Are you sure you want to cancel this booking?</p>
+                        <Select
+                            value={cancelReason || undefined}
+                            onChange={(value) => setCancelReason(value)}
+                            placeholder="Select a reason"
+                            style={{ width: '100%', marginTop: 12 }}
+                            options={[
+                                { value: 'Change of plans', label: 'Change of plans' },
+                                { value: 'Found a better price', label: 'Found a better price' },
+                                { value: 'Scheduling conflict', label: 'Scheduling conflict' },
+                                { value: 'Booking mistake', label: 'Booking mistake' },
+                                { value: 'Other', label: 'Other' }
+                            ]}
+                        />
+                        {cancelReason === 'Other' && (
+                            <Input
+                                value={cancelOtherReason}
+                                onChange={(event) => setCancelOtherReason(event.target.value)}
+                                placeholder="Please specify"
+                                style={{ width: '100%', marginTop: 12 }}
+                            />
+                        )}
+                        <Input.TextArea
+                            value={cancelComments}
+                            onChange={(event) => setCancelComments(event.target.value)}
+                            placeholder="Additional comments (optional)"
+                            autoSize={{ minRows: 3, maxRows: 5 }}
+                            className="user-bookings-comments"
+                        />
+                        <div className="user-bookings-upload">
+                            <Upload
+                                multiple
+                                fileList={cancelFiles}
+                                beforeUpload={() => false}
+                                onChange={({ fileList }) => setCancelFiles(fileList)}
+                            >
+                                <Button
+                                    className="user-bookings-upload-btn"
+                                    icon={<UploadOutlined />}
+                                    block
+                                >
+                                    Upload files
+                                </Button>
+                            </Upload>
+                            <div className="user-bookings-upload-note">
+                                Uploading at least one file is required.
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
+            </div>
+        </ConfigProvider>
     )
 }

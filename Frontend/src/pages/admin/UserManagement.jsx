@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Button, Form, Modal, Tag, Space, Dropdown, message, Row, Col, Statistic, Card, ConfigProvider } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, DownOutlined, UserAddOutlined, SafetyCertificateOutlined, UserOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { Table, Input, Select, Button, Form, Modal, Tag, Space, message, Row, Col, Statistic, Card, ConfigProvider, Avatar } from "antd";
+import { SearchOutlined, EditOutlined, DeleteOutlined, UserOutlined, CheckCircleOutlined, ExclamationCircleOutlined, EyeOutlined } from "@ant-design/icons";
 import axios from 'axios';
 import AddUserModal from "../../components/modals/AddUserModal";
 import "../../style/admin/users.css";
@@ -15,12 +15,13 @@ export default function UserManagement() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetRole, setTargetRole] = useState("User");
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [editingKey, setEditingKey] = useState("");
-
-  // ================= FETCH USERS =================
 
   const getUsers = async () => {
     setLoading(true);
@@ -37,7 +38,12 @@ export default function UserManagement() {
         username: user.username,
         email: user.email,
         role: user.role || "User",
-        status: user.isAccountVerified ? "Verified" : "Pending"
+        status: user.isAccountVerified ? "Verified" : "Pending",
+        avatar: user.profilePicture || user.avatar || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        createdAt: user.createdAt || "",
+        lastLogin: user.lastLogin || ""
       }));
 
       setUsers(formattedData);
@@ -51,8 +57,6 @@ export default function UserManagement() {
   useEffect(() => {
     getUsers();
   }, []);
-
-  // ================= DELETE =================
 
   const handleDelete = async (id) => {
     Modal.confirm({
@@ -101,7 +105,10 @@ export default function UserManagement() {
     const matchesRole =
       roleFilter === "" || user.role === roleFilter;
 
-    return matchesSearch && matchesRole;
+    const matchesStatus =
+      statusFilter === "" || user.status === statusFilter;
+
+    return matchesSearch && matchesRole && matchesStatus;
   });
 
   const isEditing = (record) => record.key === editingKey;
@@ -117,6 +124,11 @@ export default function UserManagement() {
 
   const cancel = () => {
     setEditingKey("");
+  };
+
+  const openViewModal = (record) => {
+    setSelectedUser(record);
+    setIsViewModalOpen(true);
   };
 
   const save = async (key) => {
@@ -171,8 +183,6 @@ export default function UserManagement() {
     }
   };
 
-  // ================= TABLE =================
-
   const columns = [
     { title: "Name", dataIndex: "name", editable: true },
     { title: "Username", dataIndex: "username", editable: true },
@@ -211,6 +221,12 @@ export default function UserManagement() {
             </>
           ) : (
             <>
+              <Button
+                className='viewbutton-usermanagement'
+                icon={<EyeOutlined />}
+                onClick={() => openViewModal(record)}
+                disabled={editingKey !== ""}
+              />
               <Button
                 className='editbutton-usermanagement'
                 type="primary"
@@ -361,6 +377,19 @@ export default function UserManagement() {
             ]}
           />
 
+          <Select
+            className='user-select'
+            placeholder="Status"
+            style={{ width: 140 }}
+            allowClear
+            value={statusFilter || undefined}
+            onChange={(value) => setStatusFilter(value || "")}
+            options={[
+              { value: "Verified", label: "Verified" },
+              { value: "Pending", label: "Pending" }
+            ]}
+          />
+
           <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>
             Add User
           </Button>
@@ -390,6 +419,72 @@ export default function UserManagement() {
           roleToAdd={targetRole}
           refreshData={getUsers}
         />
+
+
+        <Modal
+          open={isViewModalOpen}
+          onCancel={() => setIsViewModalOpen(false)}
+          footer={null}
+          className="users-view-modal"
+          width={720}
+          destroyOnClose
+        >
+          {selectedUser && (
+            <div className="users-view-content">
+              <div className="users-view-header">
+                <Avatar
+                  size={96}
+                  src={selectedUser.avatar || undefined}
+                  icon={!selectedUser.avatar ? <UserOutlined /> : undefined}
+                  className="users-view-avatar"
+                />
+                <div className="users-view-title">
+                  <h2 className="users-view-name">{selectedUser.name}</h2>
+                  <div className="users-view-subtitle">
+                    <span>{selectedUser.email}</span>
+                    <Tag color={selectedUser.role === "Admin" ? "purple" : "blue"}>
+                      {selectedUser.role}
+                    </Tag>
+                    <Tag color={selectedUser.status === "Verified" ? "green" : "orange"}>
+                      {selectedUser.status}
+                    </Tag>
+                  </div>
+                </div>
+              </div>
+
+              <div className="users-view-grid">
+                <div className="users-view-item">
+                  <span className="users-view-label">Username</span>
+                  <span className="users-view-value">{selectedUser.username}</span>
+                </div>
+                <div className="users-view-item">
+                  <span className="users-view-label">Email</span>
+                  <span className="users-view-value">{selectedUser.email}</span>
+                </div>
+                <div className="users-view-item">
+                  <span className="users-view-label">Phone</span>
+                  <span className="users-view-value">{("0" + selectedUser.phone || "Not provided")}</span>
+                </div>
+                <div className="users-view-item">
+                  <span className="users-view-label">Address</span>
+                  <span className="users-view-value">{selectedUser.address || "Not provided"}</span>
+                </div>
+                <div className="users-view-item">
+                  <span className="users-view-label">Created</span>
+                  <span className="users-view-value">
+                    {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : "Not available"}
+                  </span>
+                </div>
+                <div className="users-view-item">
+                  <span className="users-view-label">Last Login</span>
+                  <span className="users-view-value">
+                    {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "Not available"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
       </div>
     </ConfigProvider>
   );

@@ -36,6 +36,7 @@ export default function QuotationManagement() {
                     const quoteRef = quote.reference || "N/A";
                     const quotePackageName = quote.packageName || "N/A";
                     const quoteCustomerName = quote.userName || "N/A";
+                    const dateRequested = quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : "N/A";
 
                     return {
                         key: quote._id,
@@ -49,6 +50,7 @@ export default function QuotationManagement() {
                         status: quoteStatus,
                         customerName: quoteCustomerName,
                         packageName: quotePackageName,
+                        dateRequested: dateRequested
                     };
                 });
                 setData(rows);
@@ -143,6 +145,7 @@ export default function QuotationManagement() {
     const columns = [
         { title: "Quotation Request No.", dataIndex: "ref" },
         { title: "Package Name", dataIndex: "packageName" },
+        { title: "Date Requested", dataIndex: "dateRequested" },
         { title: "Customer Name", dataIndex: "customerName" },
         { title: "Travelers", dataIndex: "travelers" },
         {

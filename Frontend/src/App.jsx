@@ -13,6 +13,8 @@ import DestinationsPackages from "./pages/client/DestinationsPackages";
 import UserBookingInvoice from "./pages/client/UserBookingInvoice";
 import UserQuotationRequest from "./pages/client/UserQuotationRequest";
 import UserPackageQuotation from "./pages/client/UserPackageQuotation";
+import NewPassport from "./pages/client/NewPassport";
+import RenewPassport from "./pages/client/RenewPassport";
 
 import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
@@ -32,6 +34,7 @@ import AdminProfile from "./pages/admin/AdminProfile";
 import CancellationRequests from "./pages/admin/CancellationRequests";
 import QuotationManagement from "./pages/admin/QuotationManagement";
 import QuotationRequest from "./pages/admin/QuotationRequest";
+import VisaServices from "./pages/admin/VisaServices";
 
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -39,6 +42,8 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
+
+
 
 
 function App() {
@@ -60,7 +65,7 @@ function App() {
           <Route path='/reset-password' element={<ResetPassword />} />
         </Route>
 
-        {/* --- ADMIN ROUTES (SECURED) --- */}
+        {/* admin routes */}
         <Route element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
             <Route index element={<Navigate to="/dashboard" />} />
@@ -74,6 +79,7 @@ function App() {
             <Route path="/packages/edit/:id" element={<AddPackage />} />
             <Route path="ratings" element={<ReviewRatings />} />
             <Route path="visa-applications" element={<VisaApplications />} />
+            <Route path="visa-services" element={<VisaServices />} />
             <Route path="passport-applications" element={<PassportApplications />} />
             <Route path="cancellation-requests" element={<CancellationRequests />} />
             <Route path="adminprofile" element={<AdminProfile />} />
@@ -95,10 +101,9 @@ function App() {
           <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
           <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
           <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
-
+          <Route path='/new-passport' element={<NewPassport />} />
+          <Route path='/renew-passport' element={<RenewPassport />} />
         </Route>
-
-
 
         <Route path='*' element={<Navigate to="/home" replace />} />
       </Routes>

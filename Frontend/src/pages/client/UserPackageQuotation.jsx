@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react'
-import { Table, Tag, Button, Space, Input, Select, Row, Col, Card, Statistic } from 'antd'
-import { SearchOutlined, EyeOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { Table, Tag, Button, Space, Input, Select, ConfigProvider, DatePicker } from 'antd'
+import { SearchOutlined, EyeOutlined } from '@ant-design/icons'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
 import TopNavUser from '../../components/TopNavUser'
 import axiosInstance from '../../config/axiosConfig'
 import '../../style/client/userquotation.css'
@@ -12,8 +13,10 @@ import '../../style/client/userquotation.css'
 export default function UserPackageQuotation() {
     const [searchText, setSearchText] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
+
     const [quotations, setQuotations] = useState([])
     const [loading, setLoading] = useState(false)
+    const [quotationDateFilter, setQuotationDateFilter] = useState(null);
 
     const navigate = useNavigate()
 
@@ -48,28 +51,34 @@ export default function UserPackageQuotation() {
             reference: quotation.reference || quotation._id,
             packageName: quotation.packageName || "N/A",
             travelers: travelDetails.travelers || 0,
-            status: quotation.status || "Pending"
+            status: quotation.status || "Pending",
+            requestedDate: quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : '--'
         }
     }), [quotations])
 
-    const filteredData = useMemo(() => (
-        quotations.filter((item) => {
-            const matchesSearch =
-                item.reference.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.packageName.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.status.toLowerCase().includes(searchText.toLowerCase())
+    const filteredDataSource = useMemo(() =>
+        quotations
+            .filter(q => {
+                const matchesSearch =
+                    q.reference?.toLowerCase().includes(searchText.toLowerCase()) ||
+                    q.packageName?.toLowerCase().includes(searchText.toLowerCase()) ||
+                    q.status?.toLowerCase().includes(searchText.toLowerCase());
 
-            const matchesStatus =
-                statusFilter === '' || item.status === statusFilter
+                const matchesStatus = !statusFilter || q.status === statusFilter;
 
-            return matchesSearch && matchesStatus
-        })
-    ), [quotations, searchText, statusFilter])
+                const matchesDate = !quotationDateFilter || dayjs(q.createdAt).isSame(quotationDateFilter, 'day');
 
-    const totalRequests = filteredData.length
-    const totalPending = filteredData.filter((item) => item.status === 'Pending').length
-    const totalApproved = filteredData.filter((item) => item.status === 'Approved').length
-    const totalRejected = filteredData.filter((item) => item.status === 'Rejected').length
+                return matchesSearch && matchesStatus && matchesDate;
+            })
+            .map(q => ({
+                key: q._id,
+                reference: q.reference || q._id,
+                packageName: q.packageName || "N/A",
+                travelers: q.travelDetails?.travelers || 0,
+                requestedDate: q.createdAt ? dayjs(q.createdAt).format('MMM D, YYYY') : '--',
+                status: q.status || "Pending"
+            }))
+        , [quotations, searchText, statusFilter, quotationDateFilter]);
 
     const columns = [
         {
@@ -88,6 +97,11 @@ export default function UserPackageQuotation() {
             key: 'travelers'
         },
         {
+            title: 'Requested Date',
+            dataIndex: 'requestedDate',
+            key: 'requestedDate'
+        },
+        {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
@@ -96,6 +110,8 @@ export default function UserPackageQuotation() {
                 if (value === 'Approved') color = 'green'
                 if (value === 'Pending') color = 'gold'
                 if (value === 'Rejected') color = 'red'
+                if (value === 'Under Review') color = 'blue'
+                if (value === 'Revision Requested') color = 'purple'
                 return <Tag color={color}>{value}</Tag>
             }
         },
@@ -113,24 +129,70 @@ export default function UserPackageQuotation() {
     ]
 
     return (
-        <div className="user-quotation-page">
-            <TopNavUser />
-            <div className="user-quotation-container">
-                <div className="user-quotation-header">
-                    <h2>My Quotation Requests</h2>
-                    <p>Review your customized package quotation requests.</p>
-                </div>
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#305797',
+                }
+            }}
+        >
+            <div className="user-quotation-page">
+                <TopNavUser />
+                <div className="user-quotation-container">
+                    <div className="user-quotation-header">
+                        <h2>My Quotation Requests</h2>
+                        <p>Review your customized package quotation requests.</p>
+                    </div>
 
-                <div className="user-quotation-table">
-                    <Table
-                        columns={columns}
-                        dataSource={dataSource}
-                        loading={loading}
-                        pagination={{ pageSize: 5 }}
-                        scroll={{ x: 'max-content' }}
-                    />
+                    <div className="booking-actions">
+                        <Input
+                            prefix={<SearchOutlined />}
+                            placeholder="Search reference, package or status..."
+                            className="search-input"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            allowClear
+                        />
+
+                        <Select
+                            className="booking-select"
+                            placeholder="Status"
+                            style={{ width: 140 }}
+                            allowClear
+                            value={statusFilter || undefined}
+                            onChange={(v) => setStatusFilter(v || "")}
+                            options={[
+                                { value: "Successful", label: "Successful" },
+                                { value: "Pending", label: "Pending" },
+                                { value: "Cancelled", label: "Cancelled" },
+                                { value: "Approved", label: "Approved" },
+                                { value: "Rejected", label: "Rejected" },
+                                { value: "Under Review", label: "Under Review" },
+                                { value: "Revision Requested", label: "Revision Requested" }
+                            ]}
+                        />
+
+                        <DatePicker
+                            className="booking-date-filter"
+                            placeholder="Booking Date"
+                            value={quotationDateFilter}
+                            onChange={(d) => setQuotationDateFilter(d)}
+                            allowClear
+                        />
+
+                    </div>
+
+                    <div className="user-quotation-table">
+                        <Table
+                            columns={columns}
+                            dataSource={filteredDataSource}
+                            loading={loading}
+                            pagination={{ pageSize: 5 }}
+                            scroll={{ x: 'max-content' }}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </ConfigProvider>
     )
 }

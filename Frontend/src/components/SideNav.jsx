@@ -11,30 +11,6 @@ const { Sider } = Layout;
 export default function SideNav() {
   const { setAuth } = useAuth();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleOk = async () => {
-    setIsModalOpen(false);
-    await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
-    setAuth(null);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const logout = async () => {
-    try {
-      showModal()
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
-  };
-
   return (
     <>
       <Sider className="sidenav" width={220}>
@@ -47,7 +23,8 @@ export default function SideNav() {
           <NavLink to="/package-quotation" className="nav-item">Quotation Requests</NavLink>
           <NavLink to="/cancellation-requests" className="nav-item">Cancellation Requests</NavLink>
           <NavLink to="/packages" className="nav-item">Packages</NavLink>
-          <NavLink to="/ratings" className="nav-item">Review</NavLink>
+          <NavLink to="/ratings" className="nav-item">Review Ratings</NavLink>
+          <NavLink to="/visa-services" className="nav-item">Visa Services</NavLink>
           <NavLink to="/passport-applications" className="nav-item">Passport Applications</NavLink>
           <NavLink to="/visa-applications" className="nav-item">VISA Applications</NavLink>
 

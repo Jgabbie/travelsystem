@@ -107,13 +107,11 @@ export default function ReviewRatings() {
             key: "actions",
             render: (_, record) => (
                 <Button
-                    size="small"
+                    className='deletebutton-usermanagement'
                     danger
                     icon={<DeleteOutlined />}
                     onClick={() => handleDelete(record.id)}
-                >
-                    Delete
-                </Button>
+                />
             ),
         },
     ];

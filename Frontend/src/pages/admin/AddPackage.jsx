@@ -28,7 +28,6 @@ export default function AddPackage() {
     packageType: "",
     hotels: "",
     airlines: "",
-    addons: "",
     inclusions: "",
     exclusions: "",
     termsConditions: "",
@@ -46,17 +45,11 @@ export default function AddPackage() {
     packageType: null,
     hotels: [],
     airlines: [],
-    addons: {
-      luggage: false,
-      meals: false,
-      insurance: false,
-      optionalTours: false,
-      optionalToursDetail: null
-    },
     inclusions: [],
     exclusions: [],
     termsConditions: [],
     itineraries: {},
+    tags: [],
     images: []
   });
 
@@ -72,11 +65,11 @@ export default function AddPackage() {
       packageType: validate("packageType", updatedValues.packageType),
       hotels: validate("hotels", updatedValues.hotels),
       airlines: validate("airlines", updatedValues.airlines),
-      addons: validate("addons", updatedValues.addons),
       inclusions: validate("inclusions", updatedValues.inclusions),
       exclusions: validate("exclusions", updatedValues.exclusions),
       termsConditions: validate("termsConditions", updatedValues.termsConditions),
       itineraries: validate("itineraries", updatedValues.itineraries),
+      tags: validate("tags", updatedValues.tags),
       images: validate("images", updatedValues.images),
     };
     setErrors(newErrors);
@@ -102,12 +95,9 @@ export default function AddPackage() {
       } else {
         errorMsg = JSON.stringify(backEndErrors);
       }
-
       message.error(errorMsg);
     }
   }, [backEndErrors]);
-
-
 
 
   //validations
@@ -126,8 +116,20 @@ export default function AddPackage() {
     }
     if (field === "dateType") {
       if (!value) return "Date type is required.";
-      if (value === "specified" && values.dateRanges.length === 0) {
-        return "At least one date range is required.";
+      if (value === "specified") {
+        if (!values.dateRanges.length) {
+          return "At least one date range is required.";
+        }
+        const invalid = values.dateRanges.some(
+          (r) =>
+            !r.startdaterange ||
+            !r.enddaterange ||
+            !r.slots
+        );
+
+        if (invalid) {
+          return "All date ranges must have start date, end date and slots.";
+        }
       }
     }
     if (field === "duration") {
@@ -144,13 +146,7 @@ export default function AddPackage() {
     if (field === "airlines") {
       if (!value.length) return "Airlines are required.";
       const hasEmpty = value.some(a => !a.name || !a.type);
-      if (hasEmpty) return "All Airlines must have a type."
-    }
-    if (field === "addons") {
-      if (!value.luggage && !value.meals && !value.insurance && !value.optionalTours)
-        return "At least one add-on selection is required.";
-      if (value.optionalTours && !value.optionalToursDetail)
-        return "Optional tours details are required.";
+      if (hasEmpty) return "All Airlines must have a name and type.";
     }
     if (field === "inclusions") {
       if (!value.length) return "Inclusions are required.";
@@ -169,6 +165,9 @@ export default function AddPackage() {
       const hasEmptyDay = Object.values(value).some(dayActivities => !dayActivities.length || dayActivities.some(a => !a || !a.trim()));
       if (hasEmptyDay) return "All itinerary days must have at least one activity filled.";
     }
+    if (field === "tags") {
+      if (!value.length) return "At least one tag is required.";
+    }
     if (field === "images") {
       if (!value.length) return "At least one package image is required.";
     }
@@ -177,16 +176,24 @@ export default function AddPackage() {
 
   //date range functions
   const addDateRange = () => {
-    valueHandler("dateRanges", [...values.dateRanges, null]); // add empty placeholder
+    valueHandler("dateRanges", [
+      ...values.dateRanges,
+      {
+        startdaterange: null,
+        enddaterange: null,
+        extrarate: "",
+        slots: ""
+      }
+    ]);
   };
 
   const removeDateRange = (index) => {
     valueHandler("dateRanges", values.dateRanges.filter((_, i) => i !== index));
   };
 
-  const updateDateRange = (index, value) => {
+  const updateDateRange = (index, field, value) => {
     const updated = [...values.dateRanges];
-    updated[index] = value;
+    updated[index][field] = value;
     valueHandler("dateRanges", updated);
   };
 
@@ -207,24 +214,6 @@ export default function AddPackage() {
     valueHandler("airlines", updated);
   };
   const removeAirline = (index) => valueHandler("airlines", values.airlines.filter((_, i) => i !== index));
-
-  //addon functions
-  const handleAddonChange = (addon, checked) => {
-    const updatedValues = {
-      ...values,
-      addons: {
-        ...values.addons,
-        [addon]: checked,
-        optionalToursDetail:
-          addon === "optionalTours" && !checked
-            ? ""
-            : values.addons.optionalToursDetail
-      }
-    };
-
-    setValues(updatedValues);
-    validateAll(updatedValues);
-  };
 
   //inclusion/exclusion functions
   const addBullet = (type) => {
@@ -331,7 +320,6 @@ export default function AddPackage() {
   console.log("Duration:", values.duration);
   console.log("Hotels:", values.hotels);
   console.log("Airlines:", values.airlines);
-  console.log("Addons:", values.addons);
   console.log("Inclusions:", values.inclusions);
   console.log("Exclusions:", values.exclusions);
   console.log("Itineraries:", values.itineraries);
@@ -352,11 +340,11 @@ export default function AddPackage() {
       packageType: validate("packageType", values.packageType),
       hotels: validate("hotels", values.hotels),
       airlines: validate("airlines", values.airlines),
-      addons: validate("addons", values.addons),
       inclusions: validate("inclusions", values.inclusions),
       exclusions: validate("exclusions", values.exclusions),
       termsConditions: validate("termsConditions", values.termsConditions),
       itineraries: validate("itineraries", values.itineraries),
+      tags: validate("tags", values.tags),
       images: validate("images", values.images)
     };
 
@@ -380,15 +368,24 @@ export default function AddPackage() {
       availableSlots: values.availableSlots,
       description: values.description,
       packageType: values.packageType,
-      dateRanges: values.dateRanges,
+      dateRanges: values.dateRanges.map(r => ({
+        startdaterange: r.startdaterange
+          ? dayjs(r.startdaterange).toISOString()
+          : null,
+        enddaterange: r.enddaterange
+          ? dayjs(r.enddaterange).toISOString()
+          : null,
+        extrarate: r.extrarate || null,
+        slots: r.slots
+      })),
       duration: values.duration,
       hotels: values.hotels,
       airlines: values.airlines,
-      addons: values.addons,
       inclusions: values.inclusions,
       exclusions: values.exclusions,
       termsAndConditions: values.termsConditions,
       itineraries: values.itineraries,
+      tags: values.tags,
       images: values.images
     };
 
@@ -425,21 +422,20 @@ export default function AddPackage() {
           duration: pkg.packageDuration,
           hotels: pkg.packageHotels || [],
           airlines: pkg.packageAirlines || [],
-          addons: pkg.packageAddons || {
-            luggage: false,
-            meals: false,
-            insurance: false,
-            optionalTours: false,
-            optionalToursDetail: ""
-          },
           inclusions: pkg.packageInclusions || [],
           exclusions: pkg.packageExclusions || [],
           termsConditions: pkg.packageTermsConditions || [],
           itineraries: pkg.packageItineraries || {},
           dateType: pkg.packageSpecificDate?.length ? "specified" : "any",
           dateRanges: pkg.packageSpecificDate?.length
-            ? pkg.packageSpecificDate.map(range => [dayjs(range[0]), dayjs(range[1])])
+            ? pkg.packageSpecificDate.map(r => ({
+              startdaterange: r.startdaterange ? dayjs(r.startdaterange) : null,
+              enddaterange: r.enddaterange ? dayjs(r.enddaterange) : null,
+              extrarate: r.extrarate || "",
+              slots: r.slots || ""
+            }))
             : [],
+          tags: pkg.tags || [],
           images: pkg.images || []
         }));
 
@@ -600,6 +596,18 @@ export default function AddPackage() {
             />
             <p className="add-package-error-message">{errors.description}</p>
 
+            <label className="add-package-input-labels">Package Tags</label>
+            <Select
+              mode="tags"
+              style={{ width: "100%", marginBottom: 10 }}
+              placeholder="Type a tag and press Enter"
+              value={values.tags}
+              onChange={(value) => valueHandler("tags", value)}
+            // tokenSeparators={[","]}
+            // className={errors.tags ? "add-package-select-error" : ""}
+            />
+            <p className="add-package-error-message">{errors.tags}</p>
+
             <h2 className="section-headers">Date Availability, Tour Duration and Package Type</h2>
             {/* Date Availability */}
             <label className="add-package-input-labels">Date Availability</label>
@@ -618,19 +626,75 @@ export default function AddPackage() {
             {/* date type */}
             {values.dateType === "specified" && (
               <div className="startenddates-add-package">
-                <label className="add-package-input-labels" style={{ marginBottom: 8 }}>Start and End Dates</label>
+                <label className="add-package-input-labels" style={{ marginBottom: 8 }}>
+                  Start and End Dates
+                </label>
+
                 {values.dateRanges.map((range, index) => (
                   <Space key={index} style={{ marginBottom: 10, marginTop: 10 }}>
+
+                    {/* Date Range */}
                     <RangePicker
-                      value={range}
-                      onChange={(value) => updateDateRange(index, value)}
-                      style={{ width: 300 }}
+                      value={
+                        range.startdaterange && range.enddaterange
+                          ? [dayjs(range.startdaterange), dayjs(range.enddaterange)]
+                          : null
+                      }
+                      onChange={(dates) => {
+                        updateDateRange(index, "startdaterange", dates?.[0] || null);
+                        updateDateRange(index, "enddaterange", dates?.[1] || null);
+                      }}
+                      style={{ width: 260 }}
                     />
-                    <Button className="delete-add-package-button" danger onClick={() => removeDateRange(index)} icon={<DeleteOutlined />} />
+
+                    {/* Extra Rate */}
+                    <Input
+                      maxLength={7}
+                      placeholder="Extra rate"
+                      value={priceFormat(range.extrarate)}
+                      style={{ width: 140 }}
+                      addonBefore="₱"
+                      onKeyDown={(e) => {
+                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) => {
+                        const price = e.target.value.replace(/\s/g, "");
+                        updateDateRange(index, "extrarate", price);
+                      }}
+                    />
+
+                    {/* Slots */}
+                    <Input
+                      placeholder="Slots"
+                      value={range.slots}
+                      style={{ width: 100 }}
+                      onKeyDown={(e) => {
+                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                          e.preventDefault();
+                        }
+                      }}
+                      onChange={(e) =>
+                        updateDateRange(index, "slots", e.target.value)
+                      }
+                    />
+
+                    <Button
+                      className="delete-add-package-button"
+                      danger
+                      onClick={() => removeDateRange(index)}
+                      icon={<DeleteOutlined />}
+                    />
+
                   </Space>
                 ))}
-                <p className="add-package-error-message">{errors.dateRanges}</p>
-                <Button className="add-package-add-button" type="dashed" onClick={addDateRange}>
+
+                <Button
+                  className="add-package-add-button"
+                  type="dashed"
+                  onClick={addDateRange}
+                >
                   Add Date Range
                 </Button>
               </div>
@@ -671,7 +735,7 @@ export default function AddPackage() {
             </div>
             <p className="add-package-error-message">{errors.packageType}</p>
 
-            <h2 className="section-headers">Hotels, Airline, and Addons</h2>
+            <h2 className="section-headers">Hotels and Airlines</h2>
             {/* HOTELS */}
             <Card
               size="small"
@@ -768,48 +832,6 @@ export default function AddPackage() {
               <Button className="add-package-add-button" type="dashed" icon={<PlusOutlined />} block onClick={addAirline}>Add Airline</Button>
             </Card>
             <p className="add-package-error-message">{errors.airlines}</p>
-
-            {/* ADDONS */}
-            <Card
-              size="small"
-              title="Addons"
-              className={errors.addons ? "add-package-card-error" : ""}
-              style={{ marginTop: 20, marginBottom: 15 }}
-            >
-              <Checkbox className="checkbox-addons" checked={values.addons.luggage} onChange={(e) => handleAddonChange("luggage", e.target.checked)}>Luggage</Checkbox>
-              <Checkbox className="checkbox-addons" checked={values.addons.meals} onChange={(e) => handleAddonChange("meals", e.target.checked)}>Meals</Checkbox>
-              <Checkbox className="checkbox-addons" checked={values.addons.insurance} onChange={(e) => handleAddonChange("insurance", e.target.checked)}>Travel Insurance</Checkbox>
-              <Checkbox className="checkbox-addons" checked={values.addons.optionalTours} onChange={(e) => handleAddonChange("optionalTours", e.target.checked)}>Optional Tours</Checkbox>
-              {values.addons.optionalTours && (
-                <Input className="add-package-inputs" placeholder="Optional Tours Details" value={values.addons.optionalToursDetail}
-                  onKeyDown={(e) => {
-                    const allowedKeys = [
-                      "Backspace",
-                      "Delete",
-                      "ArrowLeft",
-                      "ArrowRight",
-                      "Tab",
-                      "-",
-                      " "
-                    ];
-                    if (!allowedKeys.includes(e.key) && !/^[A-Za-z0-9]$/.test(e.key)) {
-                      e.preventDefault()
-                    }
-                  }}
-                  onChange={(e) =>
-                    setValues(prev => ({
-                      ...prev,
-                      addons: {
-                        ...prev.addons,
-                        optionalToursDetail: e.target.value
-                      }
-                    }))
-                  } style={{ marginTop: 10 }}
-                />
-
-              )}
-            </Card>
-            <p className="add-package-error-message">{errors.addons}</p>
 
             <h2 className="section-headers">Inclusions, Exclusions, and Terms & Conditions</h2>
             {/* INCLUSIONS */}

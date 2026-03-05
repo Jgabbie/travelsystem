@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Upload, message, ConfigProvider } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
 import '../../style/components/modals/uploadpassportmodal.css';
 
 export default function UploadPassportModal({ open, onCancel, onProceed }) {
@@ -41,18 +41,21 @@ export default function UploadPassportModal({ open, onCancel, onProceed }) {
                         Please upload a clear image of your passport bio page.
                     </p>
 
-                    <Upload
+                    <Upload.Dragger
                         fileList={fileList}
                         beforeUpload={() => false}
                         onChange={({ fileList: nextList }) => setFileList(nextList)}
                         accept="image/*,application/pdf"
                         maxCount={1}
-                        className="upload-passport-uploader"
+                        className="upload-passport-dragger"
+                        showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
                     >
-                        <Button icon={<UploadOutlined />} type="dashed">
-                            Select File
-                        </Button>
-                    </Upload>
+                        <p className="ant-upload-drag-icon">
+                            <InboxOutlined />
+                        </p>
+                        <p className="ant-upload-text">Drag & drop your file here, or click to select</p>
+                        <p className="ant-upload-hint">Only 1 file is allowed.</p>
+                    </Upload.Dragger>
 
                     <div className="upload-passport-actions">
                         <Button

@@ -8,7 +8,6 @@ import '../../style/client/profilepage.css'
 
 export default function ProfilePage() {
     const [userData, setUserData] = useState(null)
-    const [loading, setLoading] = useState(true)
     const [editing, setEditing] = useState(false)
     const [saving, setSaving] = useState(false)
     const [profileImage, setProfileImage] = useState('')
@@ -100,7 +99,6 @@ export default function ProfilePage() {
 
     const fetchUserData = async () => {
         try {
-            setLoading(true)
             const response = await axiosInstance.get('/user/data', {
                 withCredentials: true
             })
@@ -132,9 +130,7 @@ export default function ProfilePage() {
             }
         } catch (error) {
             console.error('Error fetching user data:', error)
-            message.error('Error loading profile')
-        } finally {
-            setLoading(false)
+            message.error('Error fetching profile')
         }
     }
 
@@ -312,14 +308,6 @@ export default function ProfilePage() {
         } finally {
             setSaving(false)
         }
-    }
-
-    if (loading) {
-        return (
-            <div className="profile-container">
-                <Spin size="large" tip="Loading profile..." />
-            </div>
-        )
     }
 
     if (!userData) {
@@ -608,7 +596,6 @@ export default function ProfilePage() {
                                     type="primary"
                                     className="profile-action-button"
                                     icon={<SaveOutlined />}
-                                    loading={saving}
                                     onClick={handleSave}
                                 >
                                     Save Changes

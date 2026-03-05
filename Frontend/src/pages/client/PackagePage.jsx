@@ -6,9 +6,9 @@ import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
 import '../../style/client/packagepage.css'
 
-
 import TopNavUser from '../../components/TopNavUser'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
+import AllInOrLandDomesticModal from '../../components/modals/AllInOrLandDomesticModal';
 import SoloOrGrouped from '../../components/SoloOrGrouped'
 import TravelersModal from '../../components/modals/TravelersModal'
 import BookingSummaryModal from '../../components/modals/BookingSummaryModal'
@@ -19,8 +19,7 @@ import BookingRegistrationModal from '../../components/modals/BookingRegistratio
 import UploadPassportModal from '../../components/modals/UploadPassportModal';
 import DisplayInvoiceModal from '../../components/modals/DisplayInvoiceModal';
 import PaymentMethodsModal from '../../components/modals/PaymentMethodsModal';
-
-
+import DomesticQuotationModal from '../../components/modals/DomesticQuotationModal';
 
 
 export default function PackagePage() {
@@ -29,7 +28,6 @@ export default function PackagePage() {
     const fetchCalled = useRef(false);
     const { auth } = useAuth();
 
-
     //login state
     const [isLoginVisible, setIsLoginVisible] = useState(false);
 
@@ -37,6 +35,7 @@ export default function PackagePage() {
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
+    const [isArrangementDomModalOpen, setIsArrangementDomModalOpen] = useState(false)
     const [isSoloGroupModalOpen, setIsSoloGroupModalOpen] = useState(false)
     const [isTravelersModalOpen, setIsTravelersModalOpen] = useState(false)
     const [isBookingSummaryOpen, setIsBookingSummaryOpen] = useState(false)
@@ -46,6 +45,7 @@ export default function PackagePage() {
     const [isUploadPassportOpen, setIsUploadPassportOpen] = useState(false)
     const [isDisplayInvoiceOpen, setIsDisplayInvoiceOpen] = useState(false)
     const [isPaymentMethodsOpen, setIsPaymentMethodsOpen] = useState(false)
+    const [isDomesticQuotationOpen, setIsDomesticQuotationOpen] = useState(false)
 
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
@@ -55,7 +55,9 @@ export default function PackagePage() {
     const [selectedHotels, setSelectedHotels] = useState([])
     const [fixedCustomSelection, setFixedCustomSelection] = useState(null)
     const [arrangementSelection, setArrangementSelection] = useState(null)
+    const [arrangementSelectionDomestic, setArrangementSelectionDomestic] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
+
 
     //states for reviews
     const [showReviews, setShowReviews] = useState(false)
@@ -85,6 +87,7 @@ export default function PackagePage() {
 
         setIsDateModalOpen(false)
         setIsArrangementModalOpen(false)
+        setIsArrangementDomModalOpen(false)
         setIsSoloGroupModalOpen(false)
         setIsTravelersModalOpen(false)
         setIsBookingSummaryOpen(false)
@@ -94,6 +97,7 @@ export default function PackagePage() {
         setIsUploadPassportOpen(false)
         setIsDisplayInvoiceOpen(false)
         setIsPaymentMethodsOpen(false)
+        setIsDomesticQuotationOpen(false)
     }
 
     //fetch package details from backend using the id from the URL and handle loading and error states
@@ -282,7 +286,11 @@ export default function PackagePage() {
             return;
         }
 
-        setIsArrangementModalOpen(true);
+        if (packageData?.packageType === 'domestic') {
+            setIsArrangementDomModalOpen(true)
+        } else {
+            setIsArrangementModalOpen(true)
+        }
     };
 
     //proceed to next step and open arrangement modal
@@ -302,6 +310,14 @@ export default function PackagePage() {
         }
     }
 
+    const handleProceedArrangementDomestic = () => {
+        setIsArrangementDomModalOpen(false)
+        if (arrangementSelectionDomestic === 'all-in') {
+            setIsDomesticQuotationOpen(true)
+        } else {
+            setIsDomesticQuotationOpen(true)
+        }
+    }
 
     //submit quotation request and close quotation modal
     const handleSubmitQuotation = () => {
@@ -729,6 +745,13 @@ export default function PackagePage() {
                 onDateChange={setSelectedDate}
             />
 
+            <AllInOrLandDomesticModal
+                open={isArrangementDomModalOpen}
+                onCancel={resetBookingFlow}
+                onProceed={handleProceedArrangementDomestic}
+                onSelect={setArrangementSelectionDomestic}
+            />
+
             <AllInOrLandArrangementModal
                 open={isArrangementModalOpen}
                 onCancel={resetBookingFlow}
@@ -736,11 +759,28 @@ export default function PackagePage() {
                 onSelect={setArrangementSelection}
             />
 
+            <DomesticQuotationModal
+                open={isDomesticQuotationOpen}
+                onCancel={resetBookingFlow}
+                onSubmit={handleSubmitQuotation}
+                bookingPayload={bookingPayload}
+                hotels={packageData?.packageHotels || []}
+                airlines={packageData?.packageAirlines || []}
+                basePrice={packageData?.packagePricePerPax || 0}
+                days={packageData?.packageDuration || 1}
+                fixedItinerary={packageData?.packageItineraries || {}}
+                itinerary={Object.keys(packageData?.packageItineraries || {})
+                    .sort((a, b) => Number(a.replace('day', '')) - Number(b.replace('day', '')))
+                    .map((dayKey) => dayKey.replace('day', 'Day '))}
+            />
+
             <PackageQuotationModal
                 open={isQuotationModalOpen}
                 onCancel={resetBookingFlow}
                 onSubmit={handleSubmitQuotation}
                 bookingPayload={bookingPayload}
+                hotels={packageData?.packageHotels || []}
+                airlines={packageData?.packageAirlines || []}
                 basePrice={packageData?.packagePricePerPax || 0}
                 days={packageData?.packageDuration || 1}
                 fixedItinerary={packageData?.packageItineraries || {}}
@@ -805,7 +845,12 @@ export default function PackagePage() {
                 isCloseLogin={() => setIsLoginVisible(false)}
                 onLoginSuccess={() => {
                     setIsLoginVisible(false);
-                    setIsArrangementModalOpen(true); // auto continue after login
+
+                    if (packageData?.packageType === 'domestic') {
+                        setIsArrangementDomModalOpen(true);
+                    } else {
+                        setIsArrangementModalOpen(true);
+                    }
                 }}
             />
 
@@ -820,7 +865,6 @@ export default function PackagePage() {
                 <div className="package-wishlist-actions">
                     <Button className="package-action-secondary" onClick={() => {
                         resetBookingFlow()
-                        setIsBookingSuccessOpen(false)
                         window.history.replaceState({}, '', `/package/${id}`);;
                     }}>
                         OK
