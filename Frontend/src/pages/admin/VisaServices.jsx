@@ -1,46 +1,43 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, Tag, ConfigProvider } from "antd";
+import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import "../../style/admin/packages.css";
 import axiosInstance from "../../config/axiosConfig";
+import "../../style/admin/packages.css";
+
 
 
 export default function VisaServices() {
     const navigate = useNavigate();
 
-    const [packagesData, setPackagesData] = useState([]);
+    const [servicesData, setServicesData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchText, setSearchText] = useState("");
+    const [selectedService, setSelectedService] = useState(null);
 
-    const [filters, setFilters] = useState({
-        packageType: null, // "domestic" or "international"
-        availability: null, // "available" or "unavailable"
-    });
+    useEffect(() => {
+        try {
+            const getServices = async () => {
+                const response = await axiosInstance.get("/services/services");
+                setServicesData(response.data);
+                console.log("Fetched visa services:", response.data);
+            }
+            getServices();
+        } catch (error) {
+            console.error("Failed to fetch visa services:", error);
+        }
+    }, []);
 
-    const [pkg, setPkg] = useState({});
-
-    const packageTypeOptions = [
-        { label: "Domestic", value: "domestic" },
-        { label: "International", value: "international" },
-    ];
-
-    const availabilityOptions = [
-        { label: "Available", value: "available" },
-        { label: "Unavailable", value: "unavailable" },
-    ];
-
-
-    const showModal = (pkg) => {
-        setPkg(pkg);
+    const showModal = (service) => {
+        setSelectedService(service);
         setIsModalOpen(true);
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
-    }
+    };
 
-    const removePackage = async (id) => {
+    const removeService = (id) => {
         Modal.confirm({
             className: "logout-confirm-modal",
             icon: null,
@@ -51,7 +48,7 @@ export default function VisaServices() {
             ),
             content: (
                 <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-                    <p className="logout-confirm-text">Are you sure you want to delete this package?</p>
+                    <p className="logout-confirm-text">Are you sure you want to delete this visa service?</p>
                 </div>
             ),
             okText: "Delete",
@@ -60,52 +57,29 @@ export default function VisaServices() {
             cancelButtonProps: { className: "logout-cancel-btn" },
             onOk: async () => {
                 try {
-                    const response = await axiosInstance.delete(`/package/remove-package/${id}`);
-                    console.log("Package removed:", response.data);
-                    message.success("Package removed successfully");
-                    getPackages();
+                    await axiosInstance.delete(`/services/delete-service/${id}`);
+                    setServicesData(prevData => prevData.filter(service => service._id !== id));
+                    message.success("Visa service deleted successfully");
                 } catch (error) {
-                    console.error("Error removing package:", error);
-                    message.error("Package removed unsuccessfully");
+                    console.error("Failed to delete visa service:", error);
+                    message.error("Failed to delete visa service");
                 }
             }
         });
-    }
-
-    const getPackages = async () => {
-        try {
-            const response = await axiosInstance.get('/package/get-packages');
-            setPackagesData(response.data);
-        } catch (error) {
-            console.error("Error fetching packages:", error);
-        }
-    }
-
-    useEffect(() => {
-        getPackages()
-    }, []);
+    };
 
 
-
-    const filteredPackages = packagesData.filter((pkg) => {
-        const matchesType = filters.packageType ? pkg.packageType === filters.packageType : true;
-        const matchesAvailability = filters.availability
-            ? (filters.availability === "available" ? pkg.packageAvailableSlots > 0 : pkg.packageAvailableSlots === 0)
-            : true;
-
-        // safe search by name or code
+    const filteredServices = servicesData.filter((service) => {
+        const query = searchText.trim().toLowerCase();
         const matchesSearch =
-            (pkg.packageName?.toLowerCase().includes(searchText.toLowerCase()) ||
-                pkg.packageCode?.toLowerCase().includes(searchText.toLowerCase()));
+            !query ||
+            service.visaName?.toLowerCase().includes(query) ||
+            service.visaDescription?.toLowerCase().includes(query);
 
-        return matchesType && matchesAvailability && matchesSearch;
+        return matchesSearch;
     });
 
-
-    const totalPackages = packagesData.length;
-
-    //check if packagesData has data
-    console.log("Fetched Packages Data:", packagesData);
+    const totalServices = servicesData.length;
 
     return (
         <ConfigProvider
@@ -123,7 +97,7 @@ export default function VisaServices() {
                         <Card>
                             <Statistic
                                 title="Total Visa Services"
-                                value={totalPackages}
+                                value={totalServices}
                                 prefix={<AppstoreOutlined />}
                             />
                         </Card>
@@ -132,9 +106,8 @@ export default function VisaServices() {
                     <Col xs={24} sm={8}>
                         <Card>
                             <Statistic
-                                title="Available"
-                                value={filteredPackages.filter(pkg => pkg.packageAvailableSlots > 0).length}
-                                prefix={<CheckCircleOutlined />}
+                                title="Tourist Visas"
+                                value={servicesData.filter(service => service.visaType === "Tourist").length}
                             />
                         </Card>
                     </Col>
@@ -142,81 +115,69 @@ export default function VisaServices() {
                     <Col xs={24} sm={8}>
                         <Card>
                             <Statistic
-                                title="Unavailable"
-                                value={filteredPackages.filter(pkg => pkg.packageAvailableSlots === 0).length}
-                                prefix={<StopOutlined />}
+                                title="Express Processing"
+                                value={servicesData.filter(service => service.processing === "Express").length}
                             />
                         </Card>
                     </Col>
                 </Row>
 
                 <div className="package-actions">
-                    <Input className="search-input" prefix={<SearchOutlined />} placeholder="Search service..." onChange={(e) => setSearchText(e.target.value)} />
-
-                    <Select
-                        className="package-date-filter"
-                        placeholder="Availability"
-                        allowClear
-                        style={{ width: 150 }}
-                        value={filters.availability}
-                        onChange={(value) => setFilters({ ...filters, availability: value })}
-                        options={availabilityOptions}
+                    <Input
+                        className="search-input"
+                        prefix={<SearchOutlined />}
+                        placeholder="Search service..."
+                        onChange={(event) => setSearchText(event.target.value)}
                     />
 
                     <Button
                         className="add-package-button"
                         type="primary"
                         icon={<PlusOutlined />}
-                        onClick={() => navigate("/packages/add")}
+                        onClick={() => navigate("/visa-services/add")}
                     >
                         Add Service
                     </Button>
                 </div>
 
-                {/* {filteredPackages.length > 0 ? filteredPackages.map(pkg => (
-                    <Card key={pkg._id} className="package-card">
+                {filteredServices.length > 0 ? filteredServices.map(service => (
+                    <Card key={service._id} className="package-card">
                         <div className="package-container">
-                            <div className="package-media">
-                                {pkg.images && pkg.images.length > 0 ? (
-                                    <img className="package-image" src={pkg.images[0]} alt={pkg.packageName} />
-                                ) : (
-                                    <div className="package-image-placeholder">No Image</div>
-                                )}
-                            </div>
-
                             <div className="package-details">
                                 <div className="package-info">
-                                    <h3 className="package-name">{pkg.packageName}</h3>
-                                    <h3 className="package-code">{pkg.packageCode}</h3>
-                                    <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+                                    <h3 className="package-name">{service.visaName}</h3>
+                                    <h6 className="package-price">{service.visaPrice}</h6>
                                 </div>
-
-                                <p className="package-description">{pkg.packageDescription}</p>
-                                <h1 className="package-available-slots">Available Slots: {pkg.packageAvailableSlots}</h1>
+                                <p className="package-description">{service.visaDescription}</p>
                             </div>
-
                         </div>
 
                         <div className="package-actions">
-                            <Button className="viewdetails-package-button" type="primary" onClick={() => { showModal(pkg); }}>
+                            <Button
+                                className="viewdetails-package-button"
+                                type="primary"
+                                onClick={() => showModal(service)}
+                            >
                                 View Details
                             </Button>
-
-                            <Button className="edit-package-button" type="primary" icon={<EditOutlined />} onClick={() => navigate(`/packages/edit/${pkg._id}`)} />
-                            <Button className="delete-package-button" danger icon={<DeleteOutlined />} onClick={() => removePackage(pkg._id)} />
+                            <Button
+                                className="edit-package-button"
+                                type="primary"
+                                icon={<EditOutlined />}
+                                onClick={() => navigate(`/visa-services/edit/${service._id}`)}
+                            />
+                            <Button
+                                className="delete-package-button"
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => removeService(service._id)}
+                            />
                         </div>
                     </Card>
-                ))
-
-                    :
-
-                    <Empty description="No Packages" />
-                } */}
-
-                <Empty description="No Visa Services" />
+                )) : <Empty description="No Visa Services" />}
 
                 <Modal
-                    title="Package Details"
+                    title="Visa Service Details"
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     open={isModalOpen}
@@ -224,42 +185,56 @@ export default function VisaServices() {
                     className="package-details-modal"
                     width={820}
                 >
-                    <div className="package-details-modal-header">
+                    {selectedService && (
                         <div>
-                            <p className="package-details-code">{pkg.packageCode}</p>
-                            <h2 className="package-details-title">{pkg.packageName}</h2>
-                        </div>
-                        <div className="package-details-price">₱{pkg.packagePricePerPax} / pax</div>
-                    </div>
-
-                    <div className="package-details-body">
-                        <div className="package-details-media">
-                            {pkg.images && pkg.images.length > 0 ? (
-                                <img className="package-details-image" src={pkg.images[0]} alt={pkg.packageName} />
-                            ) : (
-                                <div className="package-details-image-placeholder">No Image</div>
-                            )}
-                        </div>
-
-                        <div className="package-details-content">
-                            <p className="package-details-description">{pkg.packageDescription}</p>
-
-                            <div className="package-details-stats">
-                                <div className="package-details-stat">
-                                    <span className="package-details-label">Available Slots</span>
-                                    <span className="package-details-value">{pkg.packageAvailableSlots}</span>
+                            <div className="package-details-modal-header">
+                                <div>
+                                    <p className="package-details-code">{selectedService.visaType}</p>
+                                    <h2 className="package-details-title">{selectedService.visaName}</h2>
                                 </div>
-                                <div className="package-details-stat">
-                                    <span className="package-details-label">Package Type</span>
-                                    <span className="package-details-value">{pkg.packageType?.toUpperCase()}</span>
-                                </div>
-                                <div className="package-details-stat">
-                                    <span className="package-details-label">Duration</span>
-                                    <span className="package-details-value">{pkg.packageDuration} days</span>
+                                <div className="package-details-price">{selectedService.processing}</div>
+                            </div>
+
+                            <div className="package-details-body">
+                                <div className="package-details-content">
+                                    <p className="package-details-description">{selectedService.visaDescription}</p>
+
+                                    <div className="package-details-stats">
+                                        <div className="package-details-stat">
+                                            <span className="package-details-label">Requirements</span>
+                                            <span className="package-details-value">
+                                                {selectedService.visaRequirements?.length || 0}
+                                            </span>
+                                        </div>
+                                        <div className="package-details-stat">
+                                            <span className="package-details-label">Process Steps</span>
+                                            <span className="package-details-value">
+                                                {selectedService.visaProcessSteps?.length || 0}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: 16 }}>
+                                        <h4>Requirements</h4>
+                                        <ul>
+                                            {selectedService.visaRequirements?.map((item, index) => (
+                                                <li key={`req-${index}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    <div style={{ marginTop: 16 }}>
+                                        <h4>Process</h4>
+                                        <ol>
+                                            {selectedService.visaProcessSteps?.map((item, index) => (
+                                                <li key={`step-${index}`}>{item}</li>
+                                            ))}
+                                        </ol>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </Modal>
             </div>
         </ConfigProvider>

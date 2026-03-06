@@ -1,6 +1,7 @@
 const upload = require('../middleware/upload')
 const QuotationModel = require('../models/quotations')
 const UserModel = require('../models/user')
+const NotificationModel = require('../models/notification')
 const logAction = require('../utils/logger')
 
 const generateQuotationReference = () => {
@@ -165,6 +166,19 @@ const uploadQuotationPDF = async (req, res) => {
         //     return res.status(404).json({ message: "Quotation not found" });
         // }
         await quotation.save();
+
+        try {
+            await NotificationModel.create({
+                userId: quotation.userId,
+                title: 'Quotation update available',
+                message: `Your quotation ${quotation.reference} has a new PDF update.`,
+                type: 'quotation',
+                link: '/user-package-quotation',
+                metadata: { quotationId: quotation._id }
+            })
+        } catch (notificationError) {
+            console.error('Failed to create notification:', notificationError)
+        }
 
         logAction('QUOTATION_PDF_UPLOADED', req.userId, { quotationId: id });
 

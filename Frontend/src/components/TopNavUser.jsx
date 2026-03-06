@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Badge, Dropdown, Space, Button, Modal, List, Typography } from 'antd';
-import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined, BellOutlined } from '@ant-design/icons';
+import { Dropdown, Space, Button, Modal } from 'antd';
+import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import axiosInstance from '../config/axiosConfig';
 import LoginModal from './modals/LoginModal';
 import SignupModal from './modals/SignupModal';
+import Notifications from './Notifications'
 import '../style/components/topnavuser.css'
 
 export default function TopNavUser() {
@@ -143,48 +144,6 @@ export default function TopNavUser() {
         { label: 'SERVICES', route: '/passandvisa-service' },
     ];
 
-    const notifications = [
-        {
-            key: 'notif-quotation',
-            title: 'Quotation update received',
-            meta: 'Your quotation status was updated.'
-        },
-        {
-            key: 'notif-booking',
-            title: 'Booking confirmed',
-            meta: 'Your booking was confirmed successfully.'
-        },
-        {
-            key: 'notif-transaction',
-            title: 'Transaction notice',
-            meta: 'Payment status was updated.'
-        }
-    ];
-
-    const unreadCount = notifications.length;
-
-    const notificationMenu = (
-        <div className="notification-panel">
-            <div className="notification-panel-header">
-                <Typography.Text className="notification-panel-title">Notifications</Typography.Text>
-                <Badge count={unreadCount} overflowCount={99} />
-            </div>
-            <List
-                className="notification-list"
-                dataSource={notifications}
-                locale={{ emptyText: 'No notifications yet' }}
-                renderItem={(item) => (
-                    <List.Item className="notification-item">
-                        <div className="notification-dot" />
-                        <div>
-                            <div className="notification-title">{item.title}</div>
-                            <div className="notification-meta">{item.meta}</div>
-                        </div>
-                    </List.Item>
-                )}
-            />
-        </div>
-    );
 
     return (
         <div>
@@ -234,18 +193,7 @@ export default function TopNavUser() {
                                 </Dropdown>
                             </div>
 
-                            <Dropdown
-                                dropdownRender={() => notificationMenu}
-                                placement="bottomRight"
-                                trigger={['click']}
-                                overlayClassName="notification-dropdown"
-                            >
-                                <Button className="notification-bell" type="text" aria-label="Notifications">
-                                    <Badge count={unreadCount} size="small">
-                                        <BellOutlined />
-                                    </Badge>
-                                </Button>
-                            </Dropdown>
+                            <Notifications />
                         </>
                     ) : (
                         <span className="regsignin">

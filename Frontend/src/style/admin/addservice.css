@@ -1,0 +1,148 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+.add-service-form.ant-card {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.add-service-form .ant-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.add-service-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.add-service-header-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.section-headers {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 18px 0 16px;
+}
+
+.add-service-input-labels {
+    color: #305797;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.add-service-inputs,
+.add-service-input-textarea,
+.add-service-select {
+    width: 100% !important;
+    max-width: 720px;
+    font-size: 16px !important;
+}
+
+.add-service-inputs-error,
+.add-service-input-textarea-error {
+    border-color: #d9534f !important;
+}
+
+.add-service-select-error .ant-select-selector {
+    border-color: #d9534f !important;
+}
+
+.add-service-input-textarea {
+    min-height: 90px !important;
+}
+
+.add-service-error-message {
+    color: #d9534f;
+    font-size: 12px;
+    font-family: "Roboto", sans-serif;
+    min-height: 14px;
+    margin: 2px 0 8px;
+}
+
+.add-service-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.add-service-bullet-row {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.add-service-card-error {
+    border: 1px solid #d9534f !important;
+}
+
+.delete-add-service-button {
+    background-color: #fff !important;
+    color: #d93025 !important;
+}
+
+.delete-add-service-button:hover {
+    background-color: #d93025 !important;
+    color: #fff !important;
+}
+
+.add-service-add-button:hover {
+    border-color: #305797 !important;
+    color: #305797 !important;
+}
+
+.back-add-service-button {
+    border-color: #305797 !important;
+    color: #305797 !important;
+}
+
+.back-add-service-button:hover {
+    background-color: #305797 !important;
+    color: #fff !important;
+}
+
+.footer-add-services {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+.save-service-button {
+    background-color: #305797 !important;
+    color: #fff !important;
+    width: 200px !important;
+}
+
+@media (max-width: 900px) {
+    .add-service-form.ant-card {
+        height: auto;
+    }
+
+    .add-service-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .add-service-header-container {
+        align-items: flex-start;
+    }
+
+    .save-service-button {
+        width: 100% !important;
+    }
+}

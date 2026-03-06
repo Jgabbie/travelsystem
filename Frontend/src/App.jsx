@@ -15,6 +15,7 @@ import UserQuotationRequest from "./pages/client/UserQuotationRequest";
 import UserPackageQuotation from "./pages/client/UserPackageQuotation";
 import NewPassport from "./pages/client/NewPassport";
 import RenewPassport from "./pages/client/RenewPassport";
+import ApplyVisa from "./pages/client/ApplyVisa";
 
 import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
@@ -35,6 +36,7 @@ import CancellationRequests from "./pages/admin/CancellationRequests";
 import QuotationManagement from "./pages/admin/QuotationManagement";
 import QuotationRequest from "./pages/admin/QuotationRequest";
 import VisaServices from "./pages/admin/VisaServices";
+import AddService from "./pages/admin/AddService";
 
 import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
@@ -56,6 +58,10 @@ function App() {
         <Route element={<GuestsUsersRoute />}>
           <Route path='/home' element={<LandingPage />} />
           <Route path='/destinations-packages' element={<DestinationsPackages />} />
+          <Route path='/passandvisa-service' element={<PassAndVisaService />} />
+          <Route path='/apply-visa' element={<ApplyVisa />} />
+          <Route path='/new-passport' element={<NewPassport />} />
+          <Route path='/renew-passport' element={<RenewPassport />} />
           <Route path='/package' element={<PackagePage />} />
           <Route path='/package/:id' element={<PackagePage />} />
         </Route>
@@ -80,6 +86,8 @@ function App() {
             <Route path="ratings" element={<ReviewRatings />} />
             <Route path="visa-applications" element={<VisaApplications />} />
             <Route path="visa-services" element={<VisaServices />} />
+            <Route path="visa-services/add" element={<AddService />} />
+            <Route path="visa-services/edit/:id" element={<AddService />} />
             <Route path="passport-applications" element={<PassportApplications />} />
             <Route path="cancellation-requests" element={<CancellationRequests />} />
             <Route path="adminprofile" element={<AdminProfile />} />
@@ -96,13 +104,10 @@ function App() {
           <Route path='/profile' element={<ProfilePage />} />
           <Route path='/user-bookings' element={<UserBookings />} />
           <Route path='/user-transactions' element={<UserTransactions />} />
-          <Route path='/passandvisa-service' element={<PassAndVisaService />} />
           <Route path='/wishlist' element={<Wishlist />} />
           <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
           <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
           <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
-          <Route path='/new-passport' element={<NewPassport />} />
-          <Route path='/renew-passport' element={<RenewPassport />} />
         </Route>
 
         <Route path='*' element={<Navigate to="/home" replace />} />

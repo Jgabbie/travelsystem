@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider } from 'antd'
+import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import TopNavUser from '../../components/TopNavUser'
 import axiosInstance from '../../config/axiosConfig'
@@ -57,7 +57,7 @@ export default function Wishlist() {
                 category: pkg.packageType || 'Other',
                 availability: availabilityLabel,
                 typeLabel: pkg.packageType || 'Package',
-                image: pkg.image || ''
+                image: pkg.images?.[0] || ''
             }
         })
     }, [wishlistItems])
@@ -109,6 +109,18 @@ export default function Wishlist() {
                 error?.response?.data?.message || 'Unable to remove wishlist item.'
             message.error(errorMessage)
         }
+    }
+
+    const confirmRemove = (pkg) => {
+        Modal.confirm({
+            title: 'Remove from wishlist',
+            content: `Remove ${pkg.title} from your wishlist?`,
+            okText: 'Remove',
+            cancelText: 'Cancel',
+            onOk: async () => {
+                await handleRemove(pkg.packageId)
+            }
+        })
     }
 
     return (
@@ -251,7 +263,7 @@ export default function Wishlist() {
                                                     </Button>
                                                     <Button
                                                         className="wishlist-remove-button"
-                                                        onClick={() => handleRemove(pkg.packageId)}
+                                                        onClick={() => confirmRemove(pkg)}
                                                     >
                                                         Remove
                                                     </Button>

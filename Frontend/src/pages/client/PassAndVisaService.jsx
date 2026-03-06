@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react'
-import { Button, Input, Select, Tag, Typography, ConfigProvider } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Button, Input, Select, Tag, Typography, ConfigProvider, Empty } from 'antd'
 import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
+import axiosInstance from '../../config/axiosConfig'
 
 
 
@@ -10,69 +11,48 @@ export default function PassAndVisaService() {
     const [search, setSearch] = useState('')
     const [visaType, setVisaType] = useState('All')
     const [processing, setProcessing] = useState('All')
+    const [services, setServices] = useState([])
     const { Title, Text } = Typography
     const navigate = useNavigate()
 
-    const VISA_OPTIONS = [
-        {
-            id: 1,
-            name: 'Japan Tourist Visa',
-            type: 'Tourist',
-            processing: 'Standard',
-            description: 'Single entry visa for tourism and leisure travel.',
-        },
-        {
-            id: 2,
-            name: 'South Korea Tourist Visa',
-            type: 'Tourist',
-            processing: 'Express',
-            description: 'Short-term tourist visa with priority processing.',
-        },
-        {
-            id: 3,
-            name: 'Schengen Visa',
-            type: 'Tourist',
-            processing: 'Standard',
-            description: 'Access to multiple European countries within Schengen.',
-        },
-        {
-            id: 4,
-            name: 'Australia Visitor Visa',
-            type: 'Tourist',
-            processing: 'Standard',
-            description: 'Visitor visa for holiday and family visits.',
-        },
-        {
-            id: 5,
-            name: 'Canada Student Visa',
-            type: 'Student',
-            processing: 'Standard',
-            description: 'Study permit processing for enrolled students.',
-        },
-        {
-            id: 6,
-            name: 'US B1/B2 Visa',
-            type: 'Business',
-            processing: 'Express',
-            description: 'Business and tourism combined visa application.',
-        },
-    ]
+    useEffect(() => {
+        const loadServices = async () => {
+            try {
+                const response = await axiosInstance.get('/services/services')
+                setServices(response.data || [])
+            } catch (error) {
+                console.error('Failed to fetch visa services:', error)
+            }
+        }
+
+        loadServices()
+    }, [])
+
+    const visaTypeOptions = useMemo(() => {
+        const types = services.map((service) => service.visaType).filter(Boolean)
+        return ['All', ...new Set(types)]
+    }, [services])
+
+    const processingOptions = useMemo(() => {
+        const types = services.map((service) => service.processing).filter(Boolean)
+        return ['All', ...new Set(types)]
+    }, [services])
 
     const filteredVisas = useMemo(() => {
         const query = search.trim().toLowerCase()
-        return VISA_OPTIONS.filter((visa) => {
+        return services.filter((visa) => {
             const matchesSearch =
                 query.length === 0 ||
-                visa.name.toLowerCase().includes(query) ||
-                visa.description.toLowerCase().includes(query)
+                visa.visaName?.toLowerCase().includes(query) ||
+                visa.visaDescription?.toLowerCase().includes(query)
 
-            const matchesType = visaType === 'All' || visa.type === visaType
+            const matchesType = visaType === 'All' || visa.visaType === visaType
             const matchesProcessing =
                 processing === 'All' || visa.processing === processing
 
             return matchesSearch && matchesType && matchesProcessing
         })
-    }, [search, visaType, processing])
+    }, [search, visaType, processing, services])
 
     return (
         <ConfigProvider
@@ -121,12 +101,10 @@ export default function PassAndVisaService() {
                                         <Select
                                             value={visaType}
                                             onChange={(value) => setVisaType(value)}
-                                            options={[
-                                                { value: 'All', label: 'All' },
-                                                { value: 'Tourist', label: 'Tourist' },
-                                                { value: 'Business', label: 'Business' },
-                                                { value: 'Student', label: 'Student' },
-                                            ]}
+                                            options={visaTypeOptions.map((type) => ({
+                                                value: type,
+                                                label: type
+                                            }))}
                                         />
                                     </div>
                                     <div className="filter-field">
@@ -134,40 +112,52 @@ export default function PassAndVisaService() {
                                         <Select
                                             value={processing}
                                             onChange={(value) => setProcessing(value)}
-                                            options={[
-                                                { value: 'All', label: 'All' },
-                                                { value: 'Standard', label: 'Standard' },
-                                                { value: 'Express', label: 'Express' },
-                                            ]}
+                                            options={processingOptions.map((option) => ({
+                                                value: option,
+                                                label: option
+                                            }))}
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="visa-list">
-                                {filteredVisas.map((visa) => (
-                                    <div className="visa-card" key={visa.id}>
-                                        <div>
-                                            <h4>{visa.name}</h4>
-                                            <p>{visa.description}</p>
-                                        </div>
-                                        <div className="visa-actions">
-                                            <div className="visa-tags">
-                                                <Tag>{visa.type}</Tag>
-                                                <Tag className={
-                                                    visa.processing === 'Express'
-                                                        ? 'tag-express'
-                                                        : 'tag-standard'
-                                                }>
-                                                    {visa.processing}
-                                                </Tag>
+                                {filteredVisas.length === 0 ? (
+                                    <Empty description="No visa services found" />
+                                ) : (
+                                    filteredVisas.map((visa) => (
+                                        <div className="visa-card" key={visa._id}>
+                                            <div>
+                                                <h4>{visa.visaName}</h4>
+                                                <p>{visa.visaDescription}</p>
+                                                {visa.visaPrice && (
+                                                    <p className="visa-price">{`Php ${visa.visaPrice}`}</p>
+                                                )}
                                             </div>
-                                            <Button type="primary" className="visa-apply-btn">
-                                                Apply
-                                            </Button>
+                                            <div className="visa-actions">
+                                                <div className="visa-tags">
+                                                    <Tag>{visa.visaType || 'Visa'}</Tag>
+                                                    <Tag className={
+                                                        visa.processing === 'Express'
+                                                            ? 'tag-express'
+                                                            : 'tag-standard'
+                                                    }>
+                                                        {visa.processing || 'Standard'}
+                                                    </Tag>
+                                                </div>
+                                                <Button
+                                                    type="primary"
+                                                    className="visa-apply-btn"
+                                                    onClick={() => navigate('/apply-visa', {
+                                                        state: { serviceId: visa._id }
+                                                    })}
+                                                >
+                                                    Apply
+                                                </Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </section>
 

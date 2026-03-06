@@ -16,8 +16,10 @@ const wishlistRoutes = require("./routes/wishlistRoutes");
 const paymentRoutes = require("./routes/paymentRoute");
 const transactionRoute = require("./routes/transactionRoute");
 const quotationRoutes = require("./routes/quotationRoutes")
-const flightPriceRoutes = require("./routes/flightpriceRoutes")
 const passportRoutes = require("./routes/passportRoutes")
+const serviceRoutes = require("./routes/serviceRoutes")
+const notificationRoutes = require("./routes/notificationRoutes")
+const visaRoutes = require("./routes/visaRoutes")
 
 const app = express()
 app.use(cors({
@@ -45,9 +47,13 @@ app.use('/api/wishlist', wishlistRoutes)
 app.use('/api/payment', paymentRoutes);
 app.use('/api/transaction', transactionRoute);
 app.use('/api/quotation', quotationRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/flights", flightPriceRoutes);
 app.use("/api/passport", passportRoutes);
+app.use("/api/services", serviceRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/visa", visaRoutes);
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 
 app.listen(8000, () => {

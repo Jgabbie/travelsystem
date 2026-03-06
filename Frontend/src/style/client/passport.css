@@ -165,6 +165,14 @@
     border-color: #2a4b80 !important;
 }
 
+.error-message {
+    color: #e53e3e;
+    font-size: 10px;
+    height: 10px;
+    margin-top: 0px;
+    font-family: "Roboto", sans-serif;
+}
+
 @media (max-width: 900px) {
     .passport-grid {
         grid-template-columns: 1fr;

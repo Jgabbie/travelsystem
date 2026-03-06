@@ -250,6 +250,10 @@
     flex-shrink: 0;
 }
 
+.notification-dot--read {
+    background: #d1d5db;
+}
+
 .notification-title {
     font-weight: 600;
     color: #1f2937;
@@ -259,6 +263,12 @@
     font-size: 12px;
     color: #6b7280;
     margin-top: 2px;
+}
+
+.notification-time {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 6px;
 }
 
 /* --- Logout Confirmation Modal --- */

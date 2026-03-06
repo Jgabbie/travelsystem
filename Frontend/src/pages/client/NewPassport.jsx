@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
-import { Select, Input, Button, ConfigProvider } from 'antd'
+import { Select, Input, Button, ConfigProvider, DatePicker, TimePicker } from 'antd'
+import { useAuth } from '../../hooks/useAuth'
+import dayjs from 'dayjs'
+import LoginModal from '../../components/modals/LoginModal'
 import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/passport.css'
 import axiosInstance from '../../config/axiosConfig'
+
 
 const dfaLocations = [
     'DFA Aseana (Paranaque)',
@@ -17,12 +21,51 @@ const dfaLocations = [
     'DFA Bacolod (SM City Bacolod)'
 ]
 
+
 export default function NewPassport() {
+    const [loginModalVisible, setLoginModalVisible] = useState(false);
     const [location, setLocation] = useState(undefined)
     const [preferredDate, setPreferredDate] = useState('')
     const [preferredTime, setPreferredTime] = useState('')
+    const { auth } = useAuth()
+
+    const [error, setError] = useState({
+        location: '',
+        preferredDate: '',
+        preferredTime: ''
+    });
 
     const submitRequest = async () => {
+
+        const newErrors = {
+            location: '',
+            preferredDate: '',
+            preferredTime: ''
+        }
+
+        if (!location) {
+            newErrors.location = 'Please select a DFA location';
+        }
+
+        if (!preferredDate) {
+            newErrors.preferredDate = 'Please select a preferred date';
+        }
+
+        if (!preferredTime) {
+            newErrors.preferredTime = 'Please select a preferred time';
+        }
+
+        setError(newErrors);
+
+        if (newErrors.location || newErrors.preferredDate || newErrors.preferredTime) {
+            return;
+        }
+
+        if (!auth || !auth?.id) {
+            setLoginModalVisible(true);
+            return;
+        }
+
         try {
             await axiosInstance.post('/passport/apply', {
                 dfaLocation: location,
@@ -36,6 +79,20 @@ export default function NewPassport() {
         }
     }
 
+    const disableDates = (current) => {
+        return current && current < dayjs().startOf('day') || current.day() === 0 || current.day() === 6;
+    }
+
+    const disabledHours = () => {
+        const hours = [];
+        for (let i = 0; i < 24; i++) {
+            if (i < 8 || i > 17) {
+                hours.push(i);
+            }
+        }
+        return hours;
+    }
+
     return (
         <ConfigProvider
             theme={{
@@ -44,6 +101,14 @@ export default function NewPassport() {
                 }
             }}
         >
+            <LoginModal
+                isOpenLogin={loginModalVisible}
+                isCloseLogin={() => setLoginModalVisible(false)}
+                onLoginSuccess={() => {
+                    setLoginModalVisible(false);
+                }}
+            />
+
             <div className="passport-page">
                 <TopNavUser />
                 <div className="passport-container">
@@ -118,22 +183,29 @@ export default function NewPassport() {
                                     </>
                                 )}
                             />
+                            {error.location && <div className="error-message">{error.location}</div>}
 
                             <label className="passport-label">Preferred date</label>
-                            <Input
-                                type="date"
-                                value={preferredDate}
-                                onChange={(event) => setPreferredDate(event.target.value)}
+                            <DatePicker
+                                disabledDate={disableDates}
+                                onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
                                 className="passport-input"
                             />
+                            {error.preferredDate && <div className="error-message">{error.preferredDate}</div>}
 
                             <label className="passport-label">Preferred time</label>
-                            <Input
-                                type="time"
-                                value={preferredTime}
-                                onChange={(event) => setPreferredTime(event.target.value)}
+                            <TimePicker
+                                format="h:mm A"
+                                use12Hours
+                                showNow={false}
+                                minuteStep={30}
+                                disabledTime={() => ({
+                                    disabledHours
+                                })}
+                                onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
                                 className="passport-input"
                             />
+                            {error.preferredTime && <div className="error-message">{error.preferredTime}</div>}
 
                             <Button className="passport-submit" type="primary" onClick={submitRequest}>
                                 Submit request
