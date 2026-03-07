@@ -1,5 +1,5 @@
 import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../../style/admin/packages.css";
@@ -120,7 +120,7 @@ export default function PackageManagement() {
 
         <Row gutter={16} style={{ marginBottom: 20 }}>
           <Col xs={24} sm={8}>
-            <Card>
+            <Card className="package-management-card">
               <Statistic
                 title="Total Packages"
                 value={totalPackages}
@@ -130,7 +130,7 @@ export default function PackageManagement() {
           </Col>
 
           <Col xs={24} sm={8}>
-            <Card>
+            <Card className="package-management-card">
               <Statistic
                 title="Available"
                 value={filteredPackages.filter(pkg => pkg.packageAvailableSlots > 0).length}
@@ -140,7 +140,7 @@ export default function PackageManagement() {
           </Col>
 
           <Col xs={24} sm={8}>
-            <Card>
+            <Card className="package-management-card">
               <Statistic
                 title="Unavailable"
                 value={filteredPackages.filter(pkg => pkg.packageAvailableSlots === 0).length}
@@ -208,12 +208,26 @@ export default function PackageManagement() {
             </div>
 
             <div className="package-actions">
-              <Button className="viewdetails-package-button" type="primary" onClick={() => { showModal(pkg); }}>
-                View Details
-              </Button>
+              <Button
+                className="viewdetails-package-button"
+                type="primary"
+                icon={<EyeOutlined />}
+                onClick={() => { showModal(pkg); }}
+              />
 
-              <Button className="edit-package-button" type="primary" icon={<EditOutlined />} onClick={() => navigate(`/packages/edit/${pkg._id}`)} />
-              <Button className="delete-package-button" danger icon={<DeleteOutlined />} onClick={() => removePackage(pkg._id)} />
+              <Button
+                className="edit-package-button"
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => navigate(`/packages/edit/${pkg._id}`)}
+              />
+
+              <Button
+                className="delete-package-button"
+                type="primary"
+                icon={<DeleteOutlined />}
+                onClick={() => removePackage(pkg._id)}
+              />
             </div>
           </Card>
         ))

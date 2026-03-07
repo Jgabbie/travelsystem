@@ -6,6 +6,29 @@
     margin-bottom: 10px
 }
 
+.quotation-header-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.quotation-backbutton {
+    border-color: #305797;
+    background-color: #fff !important;
+    color: #305797 !important;
+    margin-top: 30px;
+}
+
+.quotation-backbutton:hover {
+    border-color: #305797;
+    background-color: #305797 !important;
+    color: #fff !important;
+
+}
+
 .quotation-input-request:hover,
 .quotation-input-request:focus-within {
     border-color: #305797 !important;

@@ -50,7 +50,6 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
 
     const formatCurrency = (value) => `PHP ${value.toFixed(2)}`;
 
-
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>

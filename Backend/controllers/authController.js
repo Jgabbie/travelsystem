@@ -317,7 +317,7 @@ const sendResetOtp = async (req, res) => {
     try {
         const user = await UserModel.findOne({ email })
         if (!user) {
-            return res.status(200).json({ message: "OTP sent to your email" })
+            return res.status(409).json({ message: "Email is not registered" })
         }
 
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
@@ -347,7 +347,7 @@ const checkResetOtp = async (req, res) => {
 
     const user = await UserModel.findOne({ email })
     if (!user) {
-        return res.status(409).json({ message: "User not found" })
+        return res.status(409).json({ message: "Email is not registered" })
     }
 
     if (user.resetOtpExpireAt < Date.now()) {
@@ -363,6 +363,7 @@ const checkResetOtp = async (req, res) => {
 
     user.resetOtp = ''
     user.resetOtpExpireAt = ''
+
     await user.save
 
     return res.status(200).json({ message: "You can now reset your password", resetToken })

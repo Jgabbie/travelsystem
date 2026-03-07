@@ -50,17 +50,17 @@ export default function BookingSummaryModal({
     const packageType = data.packageType || 'fixed'
     const packageId = data.packageId || null
 
-    console.log("BookingSummaryModal data:", {
-        data,
-        travelers,
-        hotelOptions,
-        airlineOptions,
-        addons,
-        travelDate,
-        packagePricePerPax,
-        totalPrice,
-        travelersCount
-    })
+    // console.log("BookingSummaryModal data:", {
+    //     data,
+    //     travelers,
+    //     hotelOptions,
+    //     airlineOptions,
+    //     addons,
+    //     travelDate,
+    //     packagePricePerPax,
+    //     totalPrice,
+    //     travelersCount
+    // })
 
     const handleCheckout = async () => {
 

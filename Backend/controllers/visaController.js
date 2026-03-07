@@ -1,5 +1,14 @@
 const VisaModel = require('../models/visas')
+const ServiceModel = require('../models/service')
 const UserModel = require('../models/user')
+const logAction = require('../utils/logger')
+
+
+const generateApplicationNumber = () => {
+    const timestamp = Date.now().toString(36).toUpperCase()
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase()
+    return `APP-${timestamp}-${randomPart}`
+}
 
 const applyVisa = async (req, res) => {
     const { serviceId, preferredDate, purposeOfTravel } = req.body
@@ -11,21 +20,31 @@ const applyVisa = async (req, res) => {
 
     try {
         const user = await UserModel.findById(userId).select('firstname lastname username')
+        const serviceName = await ServiceModel.findById(serviceId).select('visaName')
+
+        if (!serviceName) {
+            return res.status(404).json({ message: 'Visa service not found' })
+        }
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' })
         }
-
         const applicantName = `${user.firstname} ${user.lastname}`.trim() || user.username
 
+
         const application = await VisaModel.create({
+            applicationNumber: generateApplicationNumber(),
             userId,
             serviceId,
+            serviceName: serviceName.visaName,
             applicantName,
             preferredDate,
             purposeOfTravel
         })
 
-        res.status(201).json(application)
+        logAction('APPLY_VISA', userId, { serviceId, preferredDate, purposeOfTravel });
+        res.status(201).json({ message: 'Visa application submitted successfully' })
+
     } catch (error) {
         res.status(500).json({ message: 'Error creating visa application', error: error.message })
     }

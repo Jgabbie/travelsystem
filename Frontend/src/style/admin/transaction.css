@@ -3,6 +3,11 @@
   margin-bottom: 16px;
 }
 
+.transaction-management-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
 .transaction-actions {
   display: flex;
   gap: 12px;
@@ -37,13 +42,15 @@
   }
 }
 
-.editbutton-transactionmanagement {
+.editbutton-transactionmanagement,
+.viewbutton-transactionmanagement {
   border-color: #305797;
   background-color: #fff !important;
   color: #305797 !important;
 }
 
-.editbutton-transactionmanagement:hover {
+.editbutton-transactionmanagement:hover,
+.viewbutton-transactionmanagement:hover {
   background-color: #305797 !important;
   color: #fff !important;
 }
@@ -92,10 +99,76 @@
   color: #fff !important;
 }
 
-.editbutton-transactionmanagement,
 .savebutton-transactionmanagement,
 .cancelbutton-transactionmanagement,
-.deletebutton-transactionmanagement,
 .exportbutton-transactionmanagement {
   box-shadow: none !important;
+}
+
+/* View modal */
+.transaction-view-modal .ant-modal-content {
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.transaction-view-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transaction-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.transaction-view-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2a44;
+}
+
+.transaction-view-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.transaction-view-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.transaction-view-item {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.transaction-view-label {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.transaction-view-value {
+  font-size: 14px;
+  color: #1f2a44;
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  .transaction-view-grid {
+    grid-template-columns: 1fr;
+  }
 }

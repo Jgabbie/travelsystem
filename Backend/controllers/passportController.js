@@ -9,18 +9,21 @@ const randomApplicationNumber = () => {
 
 const applyPassport = async (req, res) => {
     try {
-        const { userId } = req
+        const userId = req.userId
         const { dfaLocation, preferredDate, preferredTime, applicationType } = req.body
+
+        console.log("User:", userId);
 
         if (!dfaLocation || !preferredDate || !preferredTime || !applicationType) {
             return res.status(400).json({ message: "All fields are required" })
         }
 
-        const username = await UserModel.findById(userId).select('username');
+        const user = await UserModel.findById(userId)
+        const username = user.username;
 
         await PassportModel.create({
             userId,
-            username: username.username,
+            username: username,
             dfaLocation,
             preferredDate,
             preferredTime,
@@ -29,7 +32,7 @@ const applyPassport = async (req, res) => {
         })
 
 
-        logAction('applyPassport', userId, { dfaLocation, preferredDate, preferredTime, applicationType });
+        logAction('APPLY_PASSPORT', userId, { dfaLocation, preferredDate, preferredTime, applicationType });
         res.status(201).json({ message: "Passport application submitted successfully" });
 
 
@@ -41,7 +44,7 @@ const applyPassport = async (req, res) => {
 
 const getPassportApplications = async (req, res) => {
     try {
-        const { userId } = req
+        const userId = req.userId
         const applications = await PassportModel.find({ userId }).sort({ createdAt: -1 });
         res.status(200).json(applications);
     } catch (error) {

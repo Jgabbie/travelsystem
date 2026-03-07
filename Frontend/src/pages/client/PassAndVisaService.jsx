@@ -5,8 +5,6 @@ import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../../config/axiosConfig'
 
-
-
 export default function PassAndVisaService() {
     const [search, setSearch] = useState('')
     const [visaType, setVisaType] = useState('All')

@@ -124,6 +124,7 @@ const cancelBooking = async (req, res) => {
     const { id } = req.params
     const { reason } = req.body
     const userId = req.userId
+
     try {
         const booking = await BookingModel.findById(id)
         if (!booking) {
@@ -139,7 +140,8 @@ const cancelBooking = async (req, res) => {
         await CancellationModel.create({
             bookingId: id,
             userId,
-            cancellationReason: reason
+            cancellationReason: reason,
+            status: 'Pending'
         })
         logAction('BOOKING_CANCELLED', userId, { bookingId: id, reason })
         res.status(200).json({ message: 'Booking cancelled' })

@@ -1,11 +1,9 @@
 import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, Tag, ConfigProvider } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../config/axiosConfig";
-import "../../style/admin/packages.css";
-
-
+import "../../style/admin/visaservices.css";
 
 export default function VisaServices() {
     const navigate = useNavigate();
@@ -94,7 +92,7 @@ export default function VisaServices() {
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className="visaservice-management-card">
                             <Statistic
                                 title="Total Visa Services"
                                 value={totalServices}
@@ -104,7 +102,7 @@ export default function VisaServices() {
                     </Col>
 
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className="visaservice-management-card">
                             <Statistic
                                 title="Tourist Visas"
                                 value={servicesData.filter(service => service.visaType === "Tourist").length}
@@ -113,7 +111,7 @@ export default function VisaServices() {
                     </Col>
 
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className="visaservice-management-card">
                             <Statistic
                                 title="Express Processing"
                                 value={servicesData.filter(service => service.processing === "Express").length}
@@ -156,10 +154,9 @@ export default function VisaServices() {
                             <Button
                                 className="viewdetails-package-button"
                                 type="primary"
+                                icon={<EyeOutlined />}
                                 onClick={() => showModal(service)}
-                            >
-                                View Details
-                            </Button>
+                            />
                             <Button
                                 className="edit-package-button"
                                 type="primary"
@@ -168,7 +165,7 @@ export default function VisaServices() {
                             />
                             <Button
                                 className="delete-package-button"
-                                danger
+                                type="primary"
                                 icon={<DeleteOutlined />}
                                 onClick={() => removeService(service._id)}
                             />
@@ -182,7 +179,7 @@ export default function VisaServices() {
                     footer={null}
                     open={isModalOpen}
                     onCancel={() => { handleCancel() }}
-                    className="package-details-modal"
+                    className="package-details-modal visa-details-modal"
                     width={820}
                 >
                     {selectedService && (
@@ -192,7 +189,10 @@ export default function VisaServices() {
                                     <p className="package-details-code">{selectedService.visaType}</p>
                                     <h2 className="package-details-title">{selectedService.visaName}</h2>
                                 </div>
-                                <div className="package-details-price">{selectedService.processing}</div>
+                                <div className="visa-details-meta">
+                                    <div className="package-details-price">{selectedService.processing}</div>
+                                    <div className="visa-details-price">{selectedService.visaPrice || "--"}</div>
+                                </div>
                             </div>
 
                             <div className="package-details-body">
@@ -214,18 +214,18 @@ export default function VisaServices() {
                                         </div>
                                     </div>
 
-                                    <div style={{ marginTop: 16 }}>
+                                    <div className="visa-details-section">
                                         <h4>Requirements</h4>
-                                        <ul>
+                                        <ul className="visa-details-list">
                                             {selectedService.visaRequirements?.map((item, index) => (
                                                 <li key={`req-${index}`}>{item}</li>
                                             ))}
                                         </ul>
                                     </div>
 
-                                    <div style={{ marginTop: 16 }}>
+                                    <div className="visa-details-section">
                                         <h4>Process</h4>
-                                        <ol>
+                                        <ol className="visa-details-list">
                                             {selectedService.visaProcessSteps?.map((item, index) => (
                                                 <li key={`step-${index}`}>{item}</li>
                                             ))}

@@ -60,7 +60,7 @@ export default function RenewPassport() {
             return;
         }
 
-        if (!auth || !auth?.id) {
+        if (!auth || !auth?.username) {
             setLoginModalVisible(true);
             return;
         }

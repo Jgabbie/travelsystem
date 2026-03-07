@@ -223,6 +223,7 @@ export default function UserManagement() {
             <>
               <Button
                 className='viewbutton-usermanagement'
+                type='primary'
                 icon={<EyeOutlined />}
                 onClick={() => openViewModal(record)}
                 disabled={editingKey !== ""}
@@ -236,7 +237,7 @@ export default function UserManagement() {
               />
               <Button
                 className='deletebutton-usermanagement'
-                danger
+                type='primary'
                 icon={<DeleteOutlined />}
                 onClick={() => handleDelete(record.id)}
                 disabled={editingKey !== ""}

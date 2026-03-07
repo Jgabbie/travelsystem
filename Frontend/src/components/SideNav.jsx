@@ -5,11 +5,9 @@ import { useAuth } from "../hooks/useAuth";
 import axiosInstance from "../config/axiosConfig";
 import "../style/components/sidenav.css";
 
-
 const { Sider } = Layout;
 
 export default function SideNav() {
-  const { setAuth } = useAuth();
 
   return (
     <>

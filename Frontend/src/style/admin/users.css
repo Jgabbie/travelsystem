@@ -45,25 +45,15 @@
 }
 
 .adduser-usermanagement,
-.viewbutton-usermanagement,
-.editbutton-usermanagement,
 .savebutton-usermanagement,
-.cancelbutton-usermanagement,
-.deletebutton-usermanagement,
-.approve-cancellation,
-.reject-cancellation {
+.cancelbutton-usermanagement {
   box-shadow: none !important;
   padding: 0 12px;
 }
 
 .adduser-usermanagement:hover,
-.viewbutton-usermanagement:hover,
-.editbutton-usermanagement:hover,
 .savebutton-usermanagement:hover,
-.cancelbutton-usermanagement:hover,
-.deletebutton-usermanagement:hover,
-.approve-cancellation:hover,
-.reject-cancellation:hover {
+.cancelbutton-usermanagement:hover {
   box-shadow: none !important;
 }
 

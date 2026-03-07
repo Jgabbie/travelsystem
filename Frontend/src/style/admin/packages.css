@@ -9,6 +9,11 @@
   align-items: center;
 }
 
+.package-management-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
 .package-search-input {
   width: 795px;
 }
@@ -124,11 +129,12 @@
 .add-package-button:hover,
 .viewdetails-package-button:hover,
 .edit-package-button:hover {
-  background-color: #1c3f72 !important;
+  background-color: #305797 !important;
   color: #fff !important;
 }
 
 .delete-package-button {
+  border-color: #d93025 !important;
   background-color: #fff !important;
   color: #d93025 !important;
 }
@@ -183,6 +189,27 @@
   white-space: nowrap;
 }
 
+.visa-details-modal .package-details-body {
+  grid-template-columns: 1fr;
+}
+
+.visa-details-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.visa-details-price {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #1f2a44;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
 .package-details-body {
   display: grid;
   grid-template-columns: 240px 1fr;
@@ -224,6 +251,23 @@
   color: #374151;
 }
 
+.visa-details-section {
+  margin-top: 16px;
+}
+
+.visa-details-section h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: #1f2a44;
+}
+
+.visa-details-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
 .package-details-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -254,21 +298,13 @@
 }
 
 /* remove hover/focus shadow */
-.viewdetails-package-button,
-.edit-package-button,
-.add-package-button,
-.delete-package-button {
+.add-package-button {
   box-shadow: none !important;
 }
 
-.viewdetails-package-button:hover,
-.edit-package-button:hover,
+
 .add-package-button:hover,
-.delete-package-button:hover,
-.viewdetails-package-button:focus,
-.edit-package-button:focus,
-.add-package-button:focus,
-.delete-package-button:focus {
+.add-package-button:focus {
   box-shadow: none !important;
 }
 

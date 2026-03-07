@@ -16,10 +16,12 @@ export default function TopNavUser() {
     const [profileImage, setProfileImage] = useState('');
 
     const checkAuth = async () => {
+        setIsLoading(true); // start loading
         try {
             const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
             const { user } = response.data;
             setAuth({ username: user.username, role: user.role });
+
             const profileResponse = await axiosInstance.get('/user/data', { withCredentials: true });
             const profile = profileResponse?.data?.userData;
             setProfileImage(
@@ -35,7 +37,7 @@ export default function TopNavUser() {
             setAuth(null);
             setProfileImage('');
         } finally {
-            setIsLoading(false);
+            setIsLoading(false); // finished loading
         }
     };
 

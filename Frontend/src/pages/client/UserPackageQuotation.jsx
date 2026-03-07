@@ -8,8 +8,6 @@ import TopNavUser from '../../components/TopNavUser'
 import axiosInstance from '../../config/axiosConfig'
 import '../../style/client/userquotation.css'
 
-
-
 export default function UserPackageQuotation() {
     const [searchText, setSearchText] = useState('')
     const [statusFilter, setStatusFilter] = useState('')

@@ -3,6 +3,11 @@
   margin-bottom: 16px;
 }
 
+.booking-management-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
 .booking-actions {
   display: flex;
   gap: 12px;
@@ -105,20 +110,13 @@
   color: #fff !important;
 }
 
-/* --- Booking Management Buttons --- */
-.editbutton-bookingmanagement,
 .savebutton-bookingmanagement,
 .cancelbutton-bookingmanagement,
-.deletebutton-bookingmanagement,
-.viewbutton-bookingmanagement,
 .exportbutton-bookingmanagement {
   box-shadow: none !important;
-  /* remove button shadows */
   outline: none;
-  /* remove focus outline */
 }
 
-/* Optional: keep hover colors as before */
 .editbutton-bookingmanagement:hover {
   background-color: #305797 !important;
   color: #fff !important;
@@ -140,7 +138,6 @@
   background-color: #305797 !important;
   color: #fff !important;
 }
-
 
 .booking-manage-confirm-modal .ant-modal-content {
   border-radius: 16px;

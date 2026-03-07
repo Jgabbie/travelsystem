@@ -21,7 +21,6 @@ const dfaLocations = [
     'DFA Bacolod (SM City Bacolod)'
 ]
 
-
 export default function NewPassport() {
     const [loginModalVisible, setLoginModalVisible] = useState(false);
     const [location, setLocation] = useState(undefined)
@@ -61,7 +60,7 @@ export default function NewPassport() {
             return;
         }
 
-        if (!auth || !auth?.id) {
+        if (!auth || !auth?.username) {
             setLoginModalVisible(true);
             return;
         }

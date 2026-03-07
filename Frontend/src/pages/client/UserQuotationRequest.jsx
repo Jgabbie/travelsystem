@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-import { StyleSheet } from "@react-pdf/renderer";
 import { Modal, message, Button, Input, Card, ConfigProvider } from "antd"
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import BookingRegistrationModal from "../../components/modals/BookingRegistrationModal";
+import DisplayInvoiceModal from "../../components/modals/DisplayInvoiceModal";
+import PaymentMethodsModal from "../../components/modals/PaymentMethodsModal";
 import axiosInstance from "../../config/axiosConfig";
 import '../../style/client/userquotationrequest.css'
+
+
 
 export default function UserQuotationRequest() {
     const [notes, setNotes] = useState("");
@@ -11,9 +15,13 @@ export default function UserQuotationRequest() {
     const { id } = useParams();
     const fetchCalled = useRef(false);
 
+    const navigate = useNavigate();
     const location = useLocation();
-    const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false);
 
+    const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false);
+    const [isBookingRegistrationOpen, setIsBookingRegistrationOpen] = useState(false);
+    const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+    const [isPaymentMethodsOpen, setIsPaymentMethodsOpen] = useState(false);
     // console.log("Quotation ID from URL:", id);
 
     useEffect(() => {
@@ -142,7 +150,7 @@ export default function UserQuotationRequest() {
             cancelButtonProps: { className: "accept-cancel-btn" },
             onOk: async () => {
                 try {
-                    handleCheckout();
+                    setIsBookingRegistrationOpen(true);
                 } catch (error) {
                     message.error("Unable to accept quotation");
                 }
@@ -157,8 +165,6 @@ export default function UserQuotationRequest() {
         ? `${window.location.origin}/user-quotation-request/${id}?booking=cancel`
         : `${window.location.origin}/user-quotation-request?booking=return`;
 
-
-
     // console.log("Current quotation state:", quotation);
 
     const handleRevise = () => {
@@ -166,7 +172,6 @@ export default function UserQuotationRequest() {
             message.error("Please provide notes for revision.");
             return;
         }
-
         console.log("Revision requested with notes:", notes);
         axiosInstance.post(`/quotation/${id}/request-revision`, {
             notes
@@ -179,16 +184,25 @@ export default function UserQuotationRequest() {
         });
     };
 
-    const styles = StyleSheet.create({
-        page: { padding: 30 },
-        section: { marginBottom: 10 },
-        heading: { fontSize: 18, marginBottom: 10 },
-        text: { fontSize: 12 },
-    });
-
     if (!quotation) {
         return <p>Loading quotation details...</p>;
     }
+
+    const bookingRegistrationProceed = () => {
+        setIsBookingRegistrationOpen(false);
+        setIsInvoiceModalOpen(true);
+    }
+
+    const invoiceProceed = () => {
+        setIsInvoiceModalOpen(false);
+        setIsPaymentMethodsOpen(true);
+    }
+
+    const paymentProceed = () => {
+        setIsPaymentMethodsOpen(false);
+        handleCheckout();
+    }
+
 
     return (
         <ConfigProvider
@@ -199,11 +213,24 @@ export default function UserQuotationRequest() {
             }}
         >
             <div style={{ padding: "20px" }}>
-                <h2>{quotation.packageName}</h2>
-                <p>
-                    <strong>Reference:</strong> {quotation.reference} |{" "}
-                    <strong>Status:</strong> {quotation.status}
-                </p>
+                <div className="quotation-header-container">
+                    <div>
+                        <h2>{quotation.packageName}</h2>
+                        <p>
+                            <strong>Reference:</strong> {quotation.reference} |{" "}
+                            <strong>Status:</strong> {quotation.status}
+                        </p>
+                    </div>
+
+                    <Button
+                        className="quotation-backbutton"
+                        style={{ marginBottom: "15px" }}
+                        onClick={() => navigate("/user-package-quotation")}
+                    >
+                        Back
+                    </Button>
+                </div>
+
 
                 <div style={{ marginBottom: "20px" }}>
                     <Card title="Quotation Revision History">
@@ -302,6 +329,40 @@ export default function UserQuotationRequest() {
                     </div>
                 </Modal>
             </div>
+
+
+            {/* Booking Process when package is accepted */}
+
+            <BookingRegistrationModal
+                open={isBookingRegistrationOpen}
+                onCancel={() => setIsBookingRegistrationOpen(false)}
+                onProceed={bookingRegistrationProceed}
+                packageData={{
+                    packageName: quotation.packageName,
+                    packageDuration: quotation.travelDetails?.duration || "N/A",
+                    packagePricePerPax: quotation.travelDetails?.pricePerPax || 0
+                }}
+            />
+
+            <DisplayInvoiceModal
+                open={isInvoiceModalOpen}
+                onCancel={() => { setIsInvoiceModalOpen(false); }}
+                onProceed={invoiceProceed}
+                summary={{
+                    packageName: quotation.packageName,
+                    travelDetails: quotation.travelDetails,
+                    amount: 29000,
+                    method: "Online Payment",
+                    status: "Completed"
+                }}
+            />
+
+            <PaymentMethodsModal
+                open={isPaymentMethodsOpen}
+                onCancel={() => { setIsPaymentMethodsOpen(false); }}
+                onProceed={paymentProceed}
+            />
+
         </ConfigProvider>
     );
 }

@@ -1,0 +1,39 @@
+.passportapps-management-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
+.approve-passport-application {
+    border-color: #167a30;
+    background-color: #fff !important;
+    color: #167a30 !important;
+}
+
+.approve-passport-application:hover {
+    background-color: #167a30 !important;
+    border-color: #167a30 !important;
+    color: #fff !important;
+}
+
+.reject-passport-application {
+    border-color: #d93025 !important;
+    background-color: #fff !important;
+    color: #d93025 !important;
+}
+
+.reject-passport-application:hover {
+    background-color: #d93025 !important;
+    border-color: #d93025 !important;
+    color: #fff !important;
+}
+
+.viewbutton-passport-application {
+    border-color: #305797 !important;
+    background-color: #fff !important;
+    color: #305797 !important;
+}
+
+.viewbutton-passport-application:hover {
+    background-color: #305797 !important;
+    color: #fff !important;
+}

@@ -537,9 +537,9 @@ export default function AddPackage() {
                 }
               }}
               onChange={(e) => {
-
                 valueHandler("name", e.target.value)
-              }} />
+              }}
+            />
             <p className="add-package-error-message">{errors.name}</p>
 
             <label className="add-package-input-labels">Package Code</label>

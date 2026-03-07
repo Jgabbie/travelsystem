@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider } from "antd";
-import { FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import axiosInstance from "../../config/axiosConfig";
+import "../../style/admin/passportapplications.css";
 
 export default function PassportApplications() {
 
@@ -57,11 +58,18 @@ export default function PassportApplications() {
                 <>
                     <Space>
                         <Button
-                            className="approve-cancellation"
+                            className='viewbutton-passport-application'
+                            type="primary"
+                            icon={<EyeOutlined />}
+                        />
+                        <Button
+                            className="approve-passport-application"
+                            type="primary"
                             icon={<CheckOutlined />}
                         />
                         <Button
-                            className="reject-cancellation"
+                            className="reject-passport-application"
+                            type="primary"
                             icon={<CloseOutlined />}
                         />
                     </Space>
@@ -110,7 +118,7 @@ export default function PassportApplications() {
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="passportapps-management-card">
                             <Statistic
                                 title="Total Applications"
                                 value={passportApplications.length}
@@ -119,7 +127,7 @@ export default function PassportApplications() {
                         </Card>
                     </Col>
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="passportapps-management-card">
                             <Statistic
                                 title="Pending"
                                 value={passportApplications.filter(app => app.status === "Pending").length}
@@ -128,7 +136,7 @@ export default function PassportApplications() {
                         </Card>
                     </Col>
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="passportapps-management-card">
                             <Statistic
                                 title="Approved"
                                 value={passportApplications.filter(app => app.status === "Approved").length}
@@ -137,7 +145,7 @@ export default function PassportApplications() {
                         </Card>
                     </Col>
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="passportapps-management-card">
                             <Statistic
                                 title="Rejected"
                                 value={passportApplications.filter(app => app.status === "Rejected").length}

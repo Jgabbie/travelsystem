@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/transaction.css";
@@ -15,6 +15,8 @@ export default function TransactionManagement() {
 
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState("");
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const [data, setData] = useState([]);
 
@@ -83,6 +85,11 @@ export default function TransactionManagement() {
 
   const cancel = () => {
     setEditingKey("");
+  };
+
+  const openViewModal = (record) => {
+    setSelectedTransaction(record);
+    setIsViewModalOpen(true);
   };
 
   const handleDelete = (key) => {
@@ -223,6 +230,14 @@ export default function TransactionManagement() {
           ) : (
             <>
               <Button
+                className='viewbutton-transactionmanagement'
+                type="primary"
+                icon={<EyeOutlined />}
+                onClick={() => openViewModal(record)}
+                disabled={editingKey !== ""}
+
+              />
+              <Button
                 className="editbutton-transactionmanagement"
                 type="primary"
                 icon={<EditOutlined />}
@@ -231,7 +246,7 @@ export default function TransactionManagement() {
               />
               <Button
                 className="deletebutton-transactionmanagement"
-                danger
+                type="primary"
                 icon={<DeleteOutlined />}
                 disabled={editingKey !== ""}
                 onClick={() => handleDelete(record.key)}
@@ -338,7 +353,7 @@ export default function TransactionManagement() {
 
         <Row gutter={16} style={{ marginBottom: 20 }}>
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="transaction-management-card">
               <Statistic
                 title="Total Transactions"
                 value={totalTransactions}
@@ -348,7 +363,7 @@ export default function TransactionManagement() {
           </Col>
 
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="transaction-management-card">
               <Statistic
                 title="Successful"
                 value={totalSuccessful}
@@ -358,7 +373,7 @@ export default function TransactionManagement() {
           </Col>
 
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="transaction-management-card">
               <Statistic
                 title="Pending"
                 value={totalPending}
@@ -368,7 +383,7 @@ export default function TransactionManagement() {
           </Col>
 
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="transaction-management-card">
               <Statistic
                 title="Failed"
                 value={totalFailed}
@@ -444,6 +459,62 @@ export default function TransactionManagement() {
             />
           </Form>
         </Card>
+
+        <Modal
+          open={isViewModalOpen}
+          onCancel={() => setIsViewModalOpen(false)}
+          footer={null}
+          className="transaction-view-modal"
+          width={720}
+          destroyOnClose
+        >
+          {selectedTransaction && (
+            <div className="transaction-view-content">
+              <div className="transaction-view-header">
+                <div>
+                  <h2 className="transaction-view-title">Transaction Details</h2>
+                  <div className="transaction-view-subtitle">
+                    <span>{selectedTransaction.ref}</span>
+                    <Tag
+                      color={
+                        selectedTransaction.status === "Successful"
+                          ? "green"
+                          : selectedTransaction.status === "Pending"
+                            ? "orange"
+                            : "red"
+                      }
+                    >
+                      {selectedTransaction.status}
+                    </Tag>
+                  </div>
+                </div>
+              </div>
+
+              <div className="transaction-view-grid">
+                <div className="transaction-view-item">
+                  <span className="transaction-view-label">Package</span>
+                  <span className="transaction-view-value">{selectedTransaction.package}</span>
+                </div>
+                <div className="transaction-view-item">
+                  <span className="transaction-view-label">Payment Date</span>
+                  <span className="transaction-view-value">
+                    {selectedTransaction.date
+                      ? dayjs(selectedTransaction.date).format("MMM DD, YYYY hh:mm A")
+                      : "--"}
+                  </span>
+                </div>
+                <div className="transaction-view-item">
+                  <span className="transaction-view-label">Amount</span>
+                  <span className="transaction-view-value">{selectedTransaction.price}</span>
+                </div>
+                <div className="transaction-view-item">
+                  <span className="transaction-view-label">Method</span>
+                  <span className="transaction-view-value">{selectedTransaction.method}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
       </div >
     </ConfigProvider>
   );

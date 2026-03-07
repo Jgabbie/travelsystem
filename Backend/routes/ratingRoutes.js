@@ -22,5 +22,6 @@ router.get('/package/:packageId/ratings', ratingController.getPackageRatings)
 router.get('/my-ratings', userAuth, ratingController.getUserRatings)
 router.delete('/:id', userAuth, ratingController.deleteRating)
 router.get('/all-ratings', userAuth, adminOnly, ratingController.getAllRatings)
+router.put('/:id', userAuth, ratingController.updateRating)
 
 module.exports = router

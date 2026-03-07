@@ -275,6 +275,13 @@ export default function BookingManagement() {
           ) : (
             <>
               <Button
+                className='viewbutton-bookingmanagement'
+                type="primary"
+                icon={<EyeOutlined />}
+                onClick={() => handleView(record.key)}
+                disabled={editingKey !== ""}
+              />
+              <Button
                 className='editbutton-bookingmanagement'
                 type="primary"
                 icon={<EditOutlined />}
@@ -283,17 +290,10 @@ export default function BookingManagement() {
               />
               <Button
                 className='deletebutton-bookingmanagement'
-                danger
+                type="primary"
                 icon={<DeleteOutlined />}
                 disabled={editingKey !== ""}
                 onClick={() => handleDelete(record.key)}
-              />
-              <Button
-                className='viewbutton-bookingmanagement'
-                type="primary"
-                icon={<EyeOutlined />}
-                onClick={() => handleView(record.key)}
-                disabled={editingKey !== ""}
               />
             </>
           )}
@@ -386,12 +386,12 @@ export default function BookingManagement() {
         }
       }}
     >
-      <div>
+      <div className="booking-management-container">
         <h1 className="page-header">Booking Management</h1>
 
         <Row gutter={16} style={{ marginBottom: 20 }}>
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="booking-management-card">
               <Statistic
                 title="Total"
                 value={totalBookings}
@@ -401,7 +401,7 @@ export default function BookingManagement() {
           </Col>
 
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="booking-management-card">
               <Statistic
                 title="Pending"
                 value={totalPending}
@@ -411,7 +411,7 @@ export default function BookingManagement() {
           </Col>
 
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="booking-management-card">
               <Statistic
                 title="Successful"
                 value={totalSuccessful}
@@ -421,7 +421,7 @@ export default function BookingManagement() {
           </Col>
 
           <Col xs={24} sm={6}>
-            <Card>
+            <Card className="booking-management-card">
               <Statistic
                 title="Cancelled"
                 value={totalCancelled}

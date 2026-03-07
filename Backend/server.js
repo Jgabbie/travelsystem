@@ -20,6 +20,15 @@ const passportRoutes = require("./routes/passportRoutes")
 const serviceRoutes = require("./routes/serviceRoutes")
 const notificationRoutes = require("./routes/notificationRoutes")
 const visaRoutes = require("./routes/visaRoutes")
+const sendEmailRoutes = require("./routes/sendEmailRoutes")
+
+const rateLimit = require('express-rate-limit');
+
+const contactLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.'
+});
 
 const app = express()
 app.use(cors({
@@ -51,10 +60,11 @@ app.use("/api/passport", passportRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/visa", visaRoutes);
+app.use("/api/email", sendEmailRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-
+app.use('/api/contactlimit', contactLimiter);
 
 app.listen(8000, () => {
     console.log('Server is up and running');

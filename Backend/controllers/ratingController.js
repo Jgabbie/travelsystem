@@ -16,13 +16,8 @@ const submitRating = async (req, res) => {
             const existingRating = await Rating.findOne({ packageId, userId });
 
             if (existingRating) {
-                existingRating.rating = rating;
-                existingRating.review = review;
-                await existingRating.save();
-
-                return res.status(200).json({
-                    message: "Rating updated successfully",
-                    rating: existingRating
+                return res.status(400).json({
+                    message: "You have already submitted a review for this package"
                 });
             }
 
@@ -124,6 +119,27 @@ const deleteRating = async (req, res) => {
     }
 }
 
+const updateRating = async (req, res) => {
+    const { id } = req.params
+    const { rating, review } = req.body
+    const userId = req.userId
+    try {
+        const existingRating = await Rating.findById(id)
+        if (!existingRating) {
+            return res.status(404).json({ message: "Rating not found" })
+        }
+        if (!existingRating.userId || existingRating.userId.toString() !== userId) {
+            return res.status(403).json({ message: "Forbidden" });
+        }
+        existingRating.rating = rating
+        existingRating.review = review
+        await existingRating.save()
+        res.status(200).json({ message: "Rating updated successfully", rating: existingRating })
+    } catch (error) {
+        res.status(500).json({ message: "Error updating rating", error })
+    }
+}
+
 const getAllRatings = async (_req, res) => {
     try {
         const ratings = await Rating.find({})
@@ -136,4 +152,4 @@ const getAllRatings = async (_req, res) => {
     }
 }
 
-module.exports = { submitRating, getPackageRatings, deleteRating, getUserRatings, getAllRatings }
+module.exports = { submitRating, getPackageRatings, deleteRating, getUserRatings, getAllRatings, updateRating }

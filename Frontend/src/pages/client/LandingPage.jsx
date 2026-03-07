@@ -6,6 +6,7 @@ import { href, useNavigate } from 'react-router-dom';
 import TopNavUser from '../../components/TopNavUser';
 import LoginModal from '../../components/modals/LoginModal';
 import '../../style/client/landingpage.css'
+import axiosInstance from '../../config/axiosConfig';
 
 
 export default function LandingPage() {
@@ -25,6 +26,14 @@ export default function LandingPage() {
     const [isLoginVisible, setIsLoginVisible] = useState(false)
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
     const [chatMessage, setChatMessage] = useState('')
+
+    const [modal, contextHolder] = Modal.useModal();
+
+    const [contactValues, setContactValues] = useState({
+        name: '',
+        email: '',
+        message: '',
+    })
 
     const handleBrowsePackages = () => {
         if (auth) {
@@ -64,14 +73,41 @@ export default function LandingPage() {
         navigate(query ? `/destinations-packages?${query}` : '/destinations-packages');
     }
 
+    const sendMessage = async () => {
+        try {
+            await axiosInstance.post('/email/contact', contactValues)
+            modal.success({
+                title: 'Message Sent',
+                content: 'Your message has been sent successfully! We will get back to you soon.',
+            });
+            setContactValues({
+                name: '',
+                email: '',
+                message: '',
+            })
+        } catch (error) {
+            modal.error({
+                title: 'Failed to Send Message',
+                content: 'There was an error sending your message. Please try again later.',
+            });
+        }
+    }
+
     return (
         <ConfigProvider
             theme={{
                 token: {
                     colorPrimary: '#305797',
+                    colorInfo: '#305797',
+                    colorSuccess: '#4CAF50',
+                    colorError: '#F44336',
+                    colorWarning: '#FF9800',
+                    colorText: '#333',
+                    colorBgContainer: '#fff',
                 },
             }}
         >
+            {contextHolder}
             <div className="landing-container">
                 <TopNavUser />
 
@@ -450,10 +486,68 @@ export default function LandingPage() {
                             <div className='contactus-section-right'>
                                 <div className='contactus-section-right-card'>
                                     <label className='contact-label'>Send us a message:</label>
-                                    <Input placeholder="Your Name" className='contact-input' />
-                                    <Input placeholder="Your Email" className='contact-input' />
-                                    <Input.TextArea placeholder="Your Message" className='contact-textarea' rows={4} />
-                                    <Button type="primary" className='contact-submit-button'>Submit</Button>
+                                    <Input
+                                        placeholder="Your Name"
+                                        className='contact-input'
+                                        value={contactValues.name}
+                                        onChange={(e) => setContactValues(prev => ({ ...prev, name: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                            const value = e.target.value
+                                            if (e.key === " " && value.length === 0) {
+                                                e.preventDefault()
+                                                return
+                                            }
+
+                                            if (e.key === " " && value.endsWith(" ")) {
+                                                e.preventDefault()
+                                                return
+                                            }
+
+                                            if (!/^[a-zA-Z\s]*$/.test(e.key) &&
+                                                e.key !== "Backspace" &&
+                                                e.key !== "ArrowLeft" &&
+                                                e.key !== "ArrowRight") {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    <Input
+                                        placeholder="Your Email"
+                                        className='contact-input'
+                                        value={contactValues.email}
+                                        onChange={(e) => setContactValues(prev => ({ ...prev, email: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                            if (e.key === " ") {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    <Input.TextArea
+                                        placeholder="Your Message"
+                                        className='contact-textarea'
+                                        rows={4}
+                                        value={contactValues.message}
+                                        onChange={(e) => setContactValues(prev => ({ ...prev, message: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                            const value = e.target.value
+
+                                            if (e.key === " " && value.length === 0) {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    <Button
+                                        type="primary"
+                                        className='contact-submit-button'
+                                        disabled={
+                                            !contactValues.name.trim() ||
+                                            !contactValues.email.trim() ||
+                                            !contactValues.message.trim()
+                                        }
+                                        onClick={sendMessage}
+                                    >
+                                        Submit
+                                    </Button>
                                 </div>
                             </div>
 
@@ -503,22 +597,8 @@ export default function LandingPage() {
                             <hr className='footer-divider' />
                             <p className='footer-bottom-text'>© 2026 M&RC Travel and Tours. All rights reserved.</p>
                         </div>
-
-
-
                     </div>
                 </div>
-
-
-
-
-
-
-
-
-
-
-
 
                 <LoginModal
                     isOpenLogin={isLoginVisible}
@@ -529,8 +609,6 @@ export default function LandingPage() {
                 <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
                     <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
                 </Button>
-
-
 
                 <Modal
                     open={isChatbotOpen}

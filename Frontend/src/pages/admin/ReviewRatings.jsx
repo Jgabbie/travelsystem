@@ -108,7 +108,7 @@ export default function ReviewRatings() {
             render: (_, record) => (
                 <Button
                     className='deletebutton-usermanagement'
-                    danger
+                    type='primary'
                     icon={<DeleteOutlined />}
                     onClick={() => handleDelete(record.id)}
                 />
@@ -147,7 +147,7 @@ export default function ReviewRatings() {
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className="rating-management-card">
                             <Statistic
                                 title="Average Rating"
                                 value={averageRating ?? "—"}
@@ -156,7 +156,7 @@ export default function ReviewRatings() {
                         </Card>
                     </Col>
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className="rating-management-card">
                             <Statistic
                                 title="Total Reviews"
                                 value={ratings.length || "—"}
@@ -165,7 +165,7 @@ export default function ReviewRatings() {
                         </Card>
                     </Col>
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className="rating-management-card">
                             <Statistic
                                 title="Latest Review"
                                 value={latestReview}

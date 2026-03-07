@@ -3,6 +3,11 @@
     margin-bottom: 16px;
 }
 
+.quotation-management-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
 .quotation-management-actions {
     display: flex;
     gap: 12px;
@@ -48,32 +53,6 @@
     color: #fff !important;
 }
 
-.quotation-view,
-.quotation-approve,
-.quotation-reject {
-    box-shadow: none !important;
-}
-
-/* Remove hover shadow */
-.quotation-view:hover,
-.quotation-approve:hover,
-.quotation-reject:hover {
-    box-shadow: none !important;
-}
-
-/* Remove focus ring shadow */
-.quotation-view:focus,
-.quotation-approve:focus,
-.quotation-reject:focus {
-    box-shadow: none !important;
-}
-
-/* Remove active/click shadow */
-.quotation-view:active,
-.quotation-approve:active,
-.quotation-reject:active {
-    box-shadow: none !important;
-}
 
 @media (max-width: 768px) {
     .quotation-management-actions {

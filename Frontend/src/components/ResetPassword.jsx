@@ -38,6 +38,12 @@ export default function ResetPassword() {
     //reset password function
     const resetPassword = async (e) => {
         e.preventDefault()
+
+        const emailError = validateEmail(getEmail)
+        if (emailError) {
+            return setErrorEmail(emailError)
+        }
+
         setIsLoading(true);
         try {
             await axiosInstance.post('/auth/send-reset-otp', { email: getEmail })
@@ -56,7 +62,14 @@ export default function ResetPassword() {
     //submit OTP function
     const submitOTP = async (e) => {
         e.preventDefault()
+
+        const optError = validateOTP(getOTP)
+        if (optError) {
+            return setErrorOTP(optError)
+        }
+
         setIsLoading(true);
+
         try {
             const response = await axiosInstance.post('/auth/check-reset-otp', { email: getEmail, otp: getOTP })
             if (response.data.success || response.status === 200) {
@@ -97,11 +110,13 @@ export default function ResetPassword() {
         confirmPassword: ''
     })
     const [error, setError] = useState({
-        password: '',
-        confirmPassword: ''
+        password: [],
+        confirmPassword: []
     })
 
     const showModal = () => {
+        setErrorOTP("")
+        setOTP("")
         setIsModalOpen(true);
     };
 
@@ -124,35 +139,58 @@ export default function ResetPassword() {
         setIsSuccessModalOpen(false);
     };
 
+    const validateEmail = (value) => {
+        if (value === "") {
+            return "Email is required."
+        }
+        if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
+            return "Invalid email address."
+        }
+        return ""
+    }
+
+    const validateOTP = (value) => {
+        if (value === "") {
+            return "OTP is required."
+        }
+        if (!/^\d{6}$/.test(value)) {
+            return "OTP must be a 6-digit number."
+        }
+        return ""
+    }
+
     //password validations
     const validate = (field, value) => {
         if (field === "password") {
+            const errors = []
             if (value === "") {
-                return "Password is required."
+                errors.push("Password is required.")
             }
             if (value.length < 8) {
-                return "Password must be at least 8 characters."
+                errors.push("Password must be at least 8 characters.")
             }
             if (!/\d/.test(value)) {
-                return "Password must have at least one number."
+                errors.push("Password must have at least one number.")
             }
             if (!/[A-Z]/.test(value)) {
-                return "Password must have at least one uppercase character."
+                errors.push("Password must have at least one uppercase character.")
             }
             if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
-                return "Password must have at least contain one special character."
+                errors.push("Password must have at least contain one special character.")
             }
+            return errors
         }
 
         if (field === "confirmPassword") {
+            const errors = []
             if (value === "") {
-                return "Confirm Password is required."
+                errors.push("Confirm Password is required.")
             }
             if (value !== values.password) {
-                return "Password and Confirm password does not match"
+                errors.push("Password and Confirm password does not match")
             }
+            return errors
         }
-        return ""
     }
 
     const valueHandler = (field, value) => {
@@ -195,25 +233,29 @@ export default function ResetPassword() {
 
                             <div className='div-input-fields'>
                                 <label className='newpassword-labels' htmlFor="password">Password</label>
-                                <Input.Password value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                <Input.Password status={error.password.length ? "error" : ""} value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
                                 }} type="password" id="password" name="password" className='newpassword-input-fields' required />
                             </div>
 
-                            <p id='error-message'>{error.password}</p>
+                            {error.password.map((err, index) => (
+                                <p key={index} id='error-message'>{err}</p>
+                            ))}
 
                             <div className='div-input-fields'>
                                 <label className='newpassword-labels' htmlFor="confirmPassword">Confirm Password</label>
-                                <Input.Password value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                <Input.Password status={error.confirmPassword.length ? "error" : ""} value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
                                 }} type="password" id="confirmPassword" name="confirmPassword" className='newpassword-input-fields' required />
                             </div>
 
-                            <p id='error-message'>{error.confirmPassword}</p>
+                            {error.confirmPassword.map((err, index) => (
+                                <p key={index} id='error-message'>{err}</p>
+                            ))}
 
                             <div id='newpassword-links-container'>
                                 <Button className='newpassword-button-links' type='link' onClick={goToLogin}>Remembered your password? Go to Login</Button>
@@ -240,11 +282,21 @@ export default function ResetPassword() {
 
                             <div className='resetpassword-div-input-fields'>
                                 <label className='labels' htmlFor="email">Email</label>
-                                <Input status={errorEmail ? "error" : ""} value={getEmail} maxLength={40} onChange={(e) => setEmail(e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                    if (e.key === " " && e.key !== "Backspace") {
-                                        e.preventDefault()
-                                    }
-                                }} type="email" id="email" name="email" className='input-fields' required />
+                                <Input
+                                    status={errorEmail ? "error" : ""}
+                                    value={getEmail}
+                                    maxLength={40}
+                                    onChange={(e) => {
+                                        const value = e.target.value
+                                        setEmail(value)
+                                        setErrorEmail(validateEmail(value))
+                                    }}
+                                    autoComplete='off'
+                                    onKeyDown={(e) => {
+                                        if (e.key === " " && e.key !== "Backspace") {
+                                            e.preventDefault()
+                                        }
+                                    }} type="email" id="email" name="email" className='input-fields' required />
                             </div>
 
                             <p id='error-message'>{errorEmail}</p>
@@ -278,11 +330,19 @@ export default function ResetPassword() {
                     <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
                     <form onSubmit={submitOTP}>
-                        <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
-                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                e.preventDefault()
-                            }
-                        }} type="tel" id="enterOTP" name="enterOTP" className='input-fields-modal' required />
+                        <Input.OTP
+                            status={errorOTP ? "error" : ""}
+                            value={getOTP}
+                            maxLength={6}
+                            onChange={(value) => {
+                                setOTP(value)
+                                setErrorOTP(validateOTP(value))
+                            }}
+                            onKeyDown={(e) => {
+                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                    e.preventDefault()
+                                }
+                            }} type="tel" id="enterOTP" name="enterOTP" className='input-fields-modal' required />
 
                         <p id='error-message-modal'>{errorOTP}</p>
 

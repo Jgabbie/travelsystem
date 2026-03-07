@@ -176,7 +176,7 @@ export default function QuotationManagement() {
                         />
                         <Button
                             className="quotation-reject"
-                            danger
+                            type="primary"
                             icon={<CloseCircleOutlined />}
                             onClick={() => edit(record)}
                             disabled={editingKey !== ""}
@@ -269,7 +269,7 @@ export default function QuotationManagement() {
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="quotation-management-card">
                             <Statistic
                                 title="Total Requests"
                                 value={totalRequests}
@@ -279,7 +279,7 @@ export default function QuotationManagement() {
                     </Col>
 
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="quotation-management-card">
                             <Statistic
                                 title="Under Review"
                                 value={totalUnderReview}
@@ -289,7 +289,7 @@ export default function QuotationManagement() {
                     </Col>
 
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="quotation-management-card">
                             <Statistic
                                 title="Accepted"
                                 value={totalAccepted}
@@ -299,7 +299,7 @@ export default function QuotationManagement() {
                     </Col>
 
                     <Col xs={24} sm={6}>
-                        <Card>
+                        <Card className="quotation-management-card">
                             <Statistic
                                 title="Expired"
                                 value={totalExpired}

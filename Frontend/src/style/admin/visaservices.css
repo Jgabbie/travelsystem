@@ -9,6 +9,11 @@
     align-items: center;
 }
 
+.visaservice-management-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
 .package-search-input {
     width: 795px;
 }
@@ -254,21 +259,12 @@
 }
 
 /* remove hover/focus shadow */
-.viewdetails-package-button,
-.edit-package-button,
-.add-package-button,
-.delete-package-button {
+.add-package-button {
     box-shadow: none !important;
 }
 
-.viewdetails-package-button:hover,
-.edit-package-button:hover,
-.add-package-button:hover,
-.delete-package-button:hover,
-.viewdetails-package-button:focus,
-.edit-package-button:focus,
-.add-package-button:focus,
-.delete-package-button:focus {
+
+.add-package-button:focus {
     box-shadow: none !important;
 }
 

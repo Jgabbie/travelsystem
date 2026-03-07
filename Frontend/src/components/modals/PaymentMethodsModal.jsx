@@ -43,22 +43,15 @@ export default function PaymentMethodsModal({ open, onCancel, onProceed }) {
                     >
                         <Radio value="card" className={`payment-card ${method === "card" ? "selected" : ""}`}>
                             <div>
-                                <h3>Credit / Debit Card</h3>
-                                <p>Pay securely using Visa, Mastercard, or other cards.</p>
+                                <h3>Paymongo</h3>
+                                <p>Pay through using the Paymongo Gateway. Rates depends in the transaction method.</p>
                             </div>
                         </Radio>
 
                         <Radio value="gcash" className={`payment-card ${method === "gcash" ? "selected" : ""}`}>
                             <div>
-                                <h3>GCash</h3>
-                                <p>Pay instantly using your GCash wallet.</p>
-                            </div>
-                        </Radio>
-
-                        <Radio value="bank" className={`payment-card ${method === "bank" ? "selected" : ""}`}>
-                            <div>
-                                <h3>Bank Transfer</h3>
-                                <p>Transfer payment directly to our bank account.</p>
+                                <h3>Pay through Bank Account</h3>
+                                <p>Pay using bank transfer. Payment proof/receipt must be uploaded, payment transaction will be reviewed.</p>
                             </div>
                         </Radio>
                     </Radio.Group>

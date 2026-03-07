@@ -27,6 +27,8 @@ export default function ApplyVisa() {
     const [loginModalVisible, setLoginModalVisible] = useState(false)
     const [services, setServices] = useState([])
     const [selectedServiceId, setSelectedServiceId] = useState(undefined)
+    const [fullName, setFullName] = useState('')
+    const [email, setEmail] = useState('')
     const [preferredDate, setPreferredDate] = useState('')
     const [purpose, setPurpose] = useState('')
 
@@ -75,7 +77,7 @@ export default function ApplyVisa() {
         const newErrors = {
             selectedServiceId: '',
             preferredDate: '',
-            purpose: ''
+            purpose: '',
         }
 
         if (!selectedServiceId) {
@@ -96,7 +98,9 @@ export default function ApplyVisa() {
             return
         }
 
-        if (!auth || !auth?.id) {
+        console.log("User: ", auth)
+
+        if (!auth || !auth?.username) {
             setLoginModalVisible(true)
             return
         }
@@ -171,20 +175,6 @@ export default function ApplyVisa() {
                     <section className="renew-passport-card">
                         <h3>Application Details</h3>
                         <div className="passport-form">
-                            <label className="passport-label">Select visa service</label>
-                            <Select
-                                className="passport-select"
-                                placeholder="Choose a visa service"
-                                value={selectedServiceId}
-                                onChange={(value) => setSelectedServiceId(value)}
-                                options={services.map((service) => ({
-                                    value: service._id,
-                                    label: service.visaName
-                                }))}
-                            />
-                            {error.selectedServiceId && (
-                                <div className="error-message">{error.selectedServiceId}</div>
-                            )}
 
                             <label className="passport-label">Preferred submission date</label>
                             <DatePicker

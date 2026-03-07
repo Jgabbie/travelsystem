@@ -3,6 +3,11 @@
     min-height: 100vh;
 }
 
+.rating-management-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
 .page-header {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
@@ -53,12 +58,8 @@
 
 /* Buttons */
 .adduser-usermanagement,
-.editbutton-usermanagement,
 .savebutton-usermanagement,
-.cancelbutton-usermanagement,
-.deletebutton-usermanagement,
-.approve-cancellation,
-.reject-cancellation {
+.cancelbutton-usermanagement {
     height: 32px;
     padding: 0 12px;
     border-radius: 8px;

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider } from 'antd'
-import { CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined } from '@ant-design/icons'
+import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag } from 'antd'
+import { CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig'
 import '../../style/admin/cancellationrequests.css'
@@ -10,6 +10,8 @@ export default function CancellationRequests() {
 
     const [searchText, setSearchText] = useState('')
     const [dateFilter, setDateFilter] = useState(null)
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+    const [selectedRequest, setSelectedRequest] = useState(null)
 
     useEffect(() => {
         getCancellationRequests()
@@ -36,7 +38,7 @@ export default function CancellationRequests() {
                     reason: item.cancellationReason || '--',
                     daysAfterBooking,
                     cancellationDate: cancelDate,
-                    status: item.status || 'pending'
+                    status: item.status || 'Pending'
                 }
             })
 
@@ -53,9 +55,14 @@ export default function CancellationRequests() {
         )
     }
 
+    const openViewModal = (record) => {
+        setSelectedRequest(record)
+        setIsViewModalOpen(true)
+    }
+
     const totalRequests = requests.length
-    const approvedRequests = requests.filter((item) => item.status === 'approved').length
-    const disapprovedRequests = requests.filter((item) => item.status === 'disapproved').length
+    const approvedRequests = requests.filter((item) => item.status === 'Approved').length
+    const disapprovedRequests = requests.filter((item) => item.status === 'Disapproved').length
 
     const filteredRequests = useMemo(() => {
         return requests.filter(item => {
@@ -97,6 +104,21 @@ export default function CancellationRequests() {
             key: 'daysAfterBooking'
         },
         {
+            title: 'Status',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => {
+                let color = 'orange'
+                if (status === 'Approved') color = 'green'
+                else if (status === 'Disapproved') color = 'red'
+                return (
+                    <Tag color={color}>
+                        {status}
+                    </Tag>
+                )
+            }
+        },
+        {
             title: 'Cancellation Date',
             dataIndex: 'cancellationDate',
             key: 'cancellationDate',
@@ -108,14 +130,22 @@ export default function CancellationRequests() {
             render: (_, record) => (
                 <Space>
                     <Button
+                        className='viewbutton-cancellation'
+                        type="primary"
+                        icon={<EyeOutlined />}
+                        onClick={() => openViewModal(record)}
+                    />
+                    <Button
                         className="approve-cancellation"
+                        type="primary"
                         icon={<CheckOutlined />}
-                        onClick={() => handleAction(record.key, 'approved')}
+                        onClick={() => handleAction(record.key, 'Approved')}
                     />
                     <Button
                         className="reject-cancellation"
+                        type="primary"
                         icon={<CloseOutlined />}
-                        onClick={() => handleAction(record.key, 'disapproved')}
+                        onClick={() => handleAction(record.key, 'Disapproved')}
                     />
                 </Space>
             )
@@ -135,7 +165,7 @@ export default function CancellationRequests() {
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className='cancellation-management-card'>
                             <Statistic
                                 title="Total Requests"
                                 value={totalRequests}
@@ -145,7 +175,7 @@ export default function CancellationRequests() {
                     </Col>
 
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className='cancellation-management-card'>
                             <Statistic
                                 title="Approved"
                                 value={approvedRequests}
@@ -155,7 +185,7 @@ export default function CancellationRequests() {
                     </Col>
 
                     <Col xs={24} sm={8}>
-                        <Card>
+                        <Card className='cancellation-management-card'>
                             <Statistic
                                 title="Disapproved"
                                 value={disapprovedRequests}
@@ -191,6 +221,62 @@ export default function CancellationRequests() {
                         pagination={{ pageSize: 6 }}
                     />
                 </Card>
+
+                <Modal
+                    open={isViewModalOpen}
+                    onCancel={() => setIsViewModalOpen(false)}
+                    footer={null}
+                    className="cancellation-view-modal"
+                    width={680}
+                    destroyOnClose
+                >
+                    {selectedRequest && (
+                        <div className="cancellation-view-content">
+                            <div className="cancellation-view-header">
+                                <div>
+                                    <h2 className="cancellation-view-title">Cancellation Request</h2>
+                                    <div className="cancellation-view-subtitle">
+                                        <span>{selectedRequest.username}</span>
+                                        <Tag
+                                            color={
+                                                selectedRequest.status === 'Approved'
+                                                    ? 'green'
+                                                    : selectedRequest.status === 'Pending'
+                                                        ? 'orange'
+                                                        : 'red'
+                                            }
+                                        >
+                                            {selectedRequest.status}
+                                        </Tag>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="cancellation-view-grid">
+                                <div className="cancellation-view-item">
+                                    <span className="cancellation-view-label">Package</span>
+                                    <span className="cancellation-view-value">{selectedRequest.packageName}</span>
+                                </div>
+                                <div className="cancellation-view-item">
+                                    <span className="cancellation-view-label">Reason</span>
+                                    <span className="cancellation-view-value">{selectedRequest.reason}</span>
+                                </div>
+                                <div className="cancellation-view-item">
+                                    <span className="cancellation-view-label">Days After Booking</span>
+                                    <span className="cancellation-view-value">{selectedRequest.daysAfterBooking}</span>
+                                </div>
+                                <div className="cancellation-view-item">
+                                    <span className="cancellation-view-label">Cancellation Date</span>
+                                    <span className="cancellation-view-value">
+                                        {selectedRequest.cancellationDate
+                                            ? dayjs(selectedRequest.cancellationDate).format('MMM DD, YYYY')
+                                            : '--'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </Modal>
             </div>
         </ConfigProvider>
     )
