@@ -330,7 +330,7 @@ export default function PackagePage() {
 
     const handleProceedArrangementDomestic = () => {
         setIsArrangementDomModalOpen(false)
-        if (arrangementSelectionDomestic === 'all-in') {
+        if (arrangementSelectionDomestic === 'customallin') {
             setIsDomesticQuotationOpen(true)
         } else {
             setIsDomesticQuotationOpen(true)
@@ -822,6 +822,7 @@ export default function PackagePage() {
 
                 <DomesticQuotationModal
                     open={isDomesticQuotationOpen}
+                    selectedOption={arrangementSelectionDomestic}
                     onCancel={resetBookingFlow}
                     onSubmit={handleSubmitQuotation}
                     bookingPayload={bookingPayload}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Modal, Input, InputNumber, Slider, Button, message } from 'antd'
+import { Modal, Input, InputNumber, Slider, Button, message, Select } from 'antd'
 import '../../style/components/modals/packagequotationmodal.css'
 import axiosInstance from '../../config/axiosConfig'
 
@@ -14,6 +14,7 @@ const buildItineraryLabels = (itinerary, days) => {
 
 export default function DomesticQuotationModal({
     open,
+    selectedOption,
     onCancel,
     onSubmit,
     bookingPayload,
@@ -169,30 +170,37 @@ export default function DomesticQuotationModal({
                             <p className='package-quotation-error'>{error.travelers}</p>
                         </div>
 
-                        <div className="quotation-field">
-                            <label htmlFor="quotation-airlines">Preferred Airlines</label>
-                            <Input
-                                maxLength={40}
-                                id="quotation-airlines"
-                                placeholder="Provide airline preferences"
-                                value={preferredAirlines}
-                                onChange={(e) => setPreferredAirlines(e.target.value)}
-                                className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
-                                required
-                            />
-                            <p className='package-quotation-error'>{error.preferredAirlines}</p>
-                        </div>
+                        {selectedOption === 'customallin' ? (
+                            <div className="quotation-field">
+                                <label htmlFor="quotation-airlines">Preferred Airlines</label>
+                                <Select
+                                    id="quotation-airlines"
+                                    placeholder="Select preferred airline"
+                                    value={preferredAirlines || undefined}
+                                    onChange={(value) => setPreferredAirlines(value)}
+                                    className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
+                                    options={airlines?.map((airline) => ({
+                                        label: airline.name,
+                                        value: airline.name
+                                    }))}
+                                />
+                                <p className='package-quotation-error'>{error.preferredAirlines}</p>
+                            </div>)
+                            : null
+                        }
 
                         <div className="quotation-field">
                             <label htmlFor="quotation-hotels">Preferred Hotels</label>
-                            <Input
-                                maxLength={40}
+                            <Select
                                 id="quotation-hotels"
-                                placeholder="Provide hotel preferences"
-                                value={preferredHotels}
-                                onChange={(e) => setPreferredHotels(e.target.value)}
+                                placeholder="Select preferred hotel"
+                                value={preferredHotels || undefined}
+                                onChange={(value) => setPreferredHotels(value)}
                                 className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
-                                required
+                                options={hotels?.map((hotel) => ({
+                                    label: hotel.name,
+                                    value: hotel.name
+                                }))}
                             />
                             <p className='package-quotation-error'>{error.preferredHotels}</p>
                         </div>

@@ -50,8 +50,8 @@ export default function AllInOrLandDomesticModal({
 
                     <button
                         type="button"
-                        className={`arrangement-domestic-card${selection === 'land' ? ' is-selected' : ''}`}
-                        onClick={() => handleSelect('land')}
+                        className={`arrangement-domestic-card${selection === 'customallin' ? ' is-selected' : ''}`}
+                        onClick={() => handleSelect('customallin')}
                     >
                         <div className="arrangement-domestic-image land" aria-hidden="true" />
                         <h3>Customized All in Package</h3>
@@ -64,8 +64,8 @@ export default function AllInOrLandDomesticModal({
                     {/* New selection option */}
                     <button
                         type="button"
-                        className={`arrangement-domestic-card${selection === 'custom' ? ' is-selected' : ''}`}
-                        onClick={() => handleSelect('custom')}
+                        className={`arrangement-domestic-card${selection === 'customland' ? ' is-selected' : ''}`}
+                        onClick={() => handleSelect('customland')}
                     >
                         <div className="arrangement-domestic-image custom" aria-hidden="true" />
                         <h3>Customized Land Arrangement</h3>
