@@ -37,6 +37,36 @@
     margin-top: 20px;
 }
 
+.payment-methods-proceed {
+    background-color: #fff !important;
+    color: #305797 !important;
+    border-radius: 10px;
+    border: solid 1px #305797 !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.payment-methods-proceed:hover {
+    background-color: #305797 !important;
+    color: #fff !important;
+}
+
+.payment-methods-cancel {
+    background-color: #fff !important;
+    color: #992A46 !important;
+    border-radius: 10px;
+    border: solid 1px #992A46 !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.payment-methods-cancel:hover {
+    background-color: #992A46 !important;
+    color: #fff !important;
+}
+
 .payment-methods-cards {
     display: flex;
     flex-direction: column;

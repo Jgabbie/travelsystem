@@ -1,8 +1,8 @@
 import React from 'react'
 import { Modal, Button } from 'antd'
+import dayjs from 'dayjs';
 import { CheckCircleFilled } from '@ant-design/icons'
 import '../../style/components/modals/bookingsummarymodal.css'
-import axiosInstance from '../../config/axiosConfig'
 
 //get display date
 const getDisplayDate = (value) => {
@@ -104,6 +104,10 @@ export default function BookingSummaryModal({
         onProceed();
     }
 
+    const handleCancel = () => {
+        onCancel();
+    }
+
     return (
         <Modal
             open={open}
@@ -111,80 +115,23 @@ export default function BookingSummaryModal({
             footer={null}
             className="booking-summary-modal"
             width={1000}
+            style={{ top: 35 }}
         >
-            <div className="booking-summary-header">
-                <span className="booking-summary-icon">
-                    <CheckCircleFilled />
-                </span>
-                <h2>Booking Summary</h2>
-            </div>
+            <div className="booking-summary-wrapper">
+                <h2 className='booking-summary-title'>Booking Summary</h2>
 
-            <div className="booking-summary-grid">
-                <div className="booking-summary-left">
-                    <div className="booking-summary-row">
-                        <span className="booking-summary-label">Tour Package:</span>
-                        <span className="booking-summary-value">{data.packageName}</span>
-                    </div>
-
-                    <div className="booking-summary-columns">
-                        <div>
-                            <h4>Travelers</h4>
-                            <ul>
-                                {travelers.map((item, index) => (
-                                    <li key={`traveler-${index}`}>{item}</li>
-                                ))}
-                            </ul>
-
-                            <h4>Airline</h4>
-                            <ul>
-                                {packageData?.packageAirlines?.length
-                                    ? <li>{packageData.packageAirlines[0].name}</li>
-                                    : <li>None selected</li>
-                                }
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4>Hotel</h4>
-                            <ul>
-                                {packageData?.packageHotels?.length
-                                    ? <li>{packageData.packageHotels[0].name}</li>
-                                    : <li>None selected</li>
-                                }
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="booking-summary-divider" />
-
-                    <div className="booking-summary-row">
-                        <span className="booking-summary-label">Travel Date:</span>
-                        <span className="booking-summary-value">
-                            {travelDate || 'Not set'}
-                        </span>
-                    </div>
-                    <div className="booking-summary-row">
-                        <span className="booking-summary-label">Booking Type:</span>
-                        <span className="booking-summary-value">
-                            {data.groupType === 'solo' ? 'Solo booking' : 'Group booking'}
-                        </span>
-                    </div>
-                    <div className="booking-summary-row">
-                        <span className="booking-summary-label">Total Price:</span>
-                        <span className="booking-summary-value">
-                            ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="booking-summary-right">
-                    {packageData?.images?.[0] ? (
-                        <img
-                            className="booking-summary-image"
-                            src={packageData.images[0]}
-                            alt={packageData.packageName}
-                            draggable={false}
-                        />
+                {/* Images Row */}
+                <div className="booking-summary-images">
+                    {packageData?.images?.length ? (
+                        packageData.images.map((img, index) => (
+                            <img
+                                key={index}
+                                className="booking-summary-image"
+                                src={img}
+                                alt={`${packageData.packageName}-${index}`}
+                                draggable={false}
+                            />
+                        ))
                     ) : (
                         <div
                             className="booking-summary-image is-placeholder"
@@ -192,17 +139,97 @@ export default function BookingSummaryModal({
                         />
                     )}
                 </div>
-            </div>
+
+                {/* Booking Details */}
+                <div className="booking-summary-details">
 
 
-            <div className="booking-summary-actions">
-                <Button className="booking-summary-proceed" onClick={handleProceed}>
-                    Proceed
-                </Button>
-                <Button className="booking-summary-cancel" onClick={onCancel}>
-                    Cancel
-                </Button>
+                    <div className="booking-summary-card">
+
+                        <h2>Booking Details</h2>
+
+                        <div className="booking-summary-row">
+                            <span className="booking-summary-label">Tour Package</span>
+                            <span className="booking-summary-value">{data.packageName}</span>
+                        </div>
+
+                        <div className="booking-summary-row">
+                            <span className="booking-summary-label">Travel Date</span>
+                            <span className="booking-summary-value">
+                                {travelDate ? dayjs(travelDate).format('MMMM D, YYYY') : 'Not set'}
+                            </span>
+                        </div>
+
+                        <div className="booking-summary-row">
+                            <span className="booking-summary-label">Booking Type</span>
+                            <span className="booking-summary-value">
+                                {data.groupType === 'solo' ? 'Solo booking' : 'Group booking'}
+                            </span>
+                        </div>
+
+                        <div className="booking-summary-row">
+                            <span className="booking-summary-label">Total Price</span>
+                            <span className="booking-summary-value">
+                                ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                            </span>
+                        </div>
+
+                        <div className="booking-summary-row">
+                            <span className="booking-summary-label">Package Type</span>
+                            <span className="booking-summary-value">
+                                {packageType?.toUpperCase()}
+                            </span>
+                        </div>
+
+                        <div className='booking-summary-row'>
+                            <span className="booking-summary-label">Travelers</span>
+                            <span className="booking-summary-value">
+                                {travelers.map((item, index) => (
+                                    <li key={`traveler-${index}`}>{item}</li>
+                                ))}
+                            </span>
+                        </div>
+
+                        <div className='booking-summary-row'>
+                            <span className="booking-summary-label">Airline</span>
+                            <span className="booking-summary-value">
+                                {packageData?.packageAirlines?.length
+                                    ? <li>{packageData.packageAirlines[0].name}</li>
+                                    : <li>None selected</li>
+                                }
+                            </span>
+                        </div>
+
+                        <div className='booking-summary-row'>
+                            <span className="booking-summary-label">Hotel</span>
+                            <span className="booking-summary-value">
+                                {packageData?.packageHotels?.length
+                                    ? <li>{packageData.packageHotels[0].name}</li>
+                                    : <li>None selected</li>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div className="booking-summary-actions">
+                    <Button
+                        className='booking-summary-proceed'
+                        type="primary"
+                        onClick={handleProceed}
+                    >
+                        Proceed
+                    </Button>
+                    <Button
+                        className="booking-summary-cancel"
+                        danger
+                        onClick={handleCancel}
+                    >
+                        Cancel
+                    </Button>
+                </div>
             </div>
-        </Modal >
+        </Modal>
     )
 }

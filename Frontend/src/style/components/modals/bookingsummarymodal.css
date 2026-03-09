@@ -2,26 +2,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 .booking-summary-modal .ant-modal-content {
-    border-radius: 18px;
-    padding: 28px 30px 24px;
+    border-radius: 12px;
+    padding: 24px;
 }
 
 .booking-summary-modal .ant-modal-body {
-    padding: 10px 0 0;
+    padding: 20px
 }
 
-.booking-summary-header {
+.booking-summary-modal .ant-modal-close {
+    top: 12px;
+    right: 12px;
+}
+
+.booking-summary-wrapper {
+    max-height: 80vh;
+    overflow: auto;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 18px;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
 }
 
-.booking-summary-header h2 {
-    margin: 0;
+.booking-summary-title {
     font-family: "Montserrat", sans-serif;
-    font-size: 22px;
-    color: #2c2f3d;
+    font-size: 30px;
+    color: #1f2a44;
+    margin: 0;
+    text-align: center;
 }
 
 .booking-summary-icon {
@@ -32,63 +40,55 @@
     justify-content: center;
 }
 
-.booking-summary-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-    gap: 24px;
-    align-items: start;
+.booking-summary-images {
+    display: flex;
+    gap: 10px;
 }
 
-.booking-summary-left {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+.booking-summary-image {
+    width: 320px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+.booking-summary-card {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .booking-summary-row {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.booking-summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.booking-summary-columns {
+    display: flex;
+    gap: 40px;
+    margin-top: 10px;
 }
 
 .booking-summary-label {
     font-family: "Montserrat", sans-serif;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 600;
     color: #2b3140;
 }
 
 .booking-summary-value {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #3f4454;
-}
-
-.booking-summary-columns {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-}
-
-.booking-summary-columns h4 {
-    margin: 0 0 8px;
-    font-family: "Montserrat", sans-serif;
-    font-size: 16px;
-    color: #2b3140;
-}
-
-.booking-summary-columns ul {
-    margin: 0 0 14px;
-    padding: 0;
-    list-style: none;
-}
-
-.booking-summary-columns li {
-    font-family: "Roboto", sans-serif;
-    font-size: 14px;
-    color: #4a4f5f;
-    margin-bottom: 6px;
+    color: #484c58;
 }
 
 .booking-summary-divider {
@@ -97,21 +97,6 @@
     background: #2c2f3d;
     opacity: 0.7;
     width: 100%;
-}
-
-.booking-summary-right {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.booking-summary-image {
-    width: 100%;
-    max-width: 340px;
-    min-height: 260px;
-    border-radius: 18px;
-    object-fit: cover;
-    box-shadow: 0 12px 24px rgba(20, 30, 55, 0.18);
 }
 
 .booking-summary-image.is-placeholder {
@@ -127,23 +112,33 @@
 }
 
 .booking-summary-proceed {
-    background-color: #2f5597 !important;
-    color: #fff !important;
+    background-color: #fff !important;
+    color: #305797 !important;
     border-radius: 10px;
-    border: none !important;
+    border: solid 1px #305797 !important;
     font-weight: 600;
     height: 40px;
-    padding: 0 20px;
+    padding: 0 16px;
+}
+
+.booking-summary-proceed:hover {
+    background-color: #305797 !important;
+    color: #fff !important;
 }
 
 .booking-summary-cancel {
-    background-color: #992a46 !important;
-    color: #fff !important;
+    background-color: #fff !important;
+    color: #992A46 !important;
     border-radius: 10px;
-    border: none !important;
+    border: solid 1px #992A46 !important;
     font-weight: 600;
     height: 40px;
-    padding: 0 20px;
+    padding: 0 16px;
+}
+
+.booking-summary-cancel:hover {
+    background-color: #992A46 !important;
+    color: #fff !important;
 }
 
 

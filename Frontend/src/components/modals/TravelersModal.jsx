@@ -13,12 +13,13 @@ export default function TravelersModal({
     open,
     onCancel,
     onProceed,
-    defaultCounts
+    defaultCounts,
+    packageData
 }) {
     const [counts, setCounts] = useState(defaultCounts || INITIAL_COUNTS)
 
 
-    //if minus or pluse button is clicked, update the counts state accordingly and make sure adult count is at least 1 and child, infant, senior counts are at least 0
+    //if minus or plus button is clicked, update the counts state accordingly and make sure adult count is at least 1 and child, infant, senior counts are at least 0
     const increaseAdult = () =>
         setCounts(prev => ({ ...prev, adult: prev.adult + 1 }))
 
@@ -37,12 +38,7 @@ export default function TravelersModal({
     const decreaseInfant = () =>
         setCounts(prev => ({ ...prev, infant: Math.max(0, prev.infant - 1) }))
 
-    const increaseSenior = () =>
-        setCounts(prev => ({ ...prev, senior: prev.senior + 1 }))
-
-    const decreaseSenior = () =>
-        setCounts(prev => ({ ...prev, senior: Math.max(0, prev.senior - 1) }))
-
+    //proceed function
     const handleProceed = () => {
         if (counts.adult < 2) {
             message.error('At least 2 adults required')
@@ -52,10 +48,13 @@ export default function TravelersModal({
         setCounts(INITIAL_COUNTS)
     }
 
+    //cancel function
     const handleCancel = () => {
         setCounts(INITIAL_COUNTS)
         if (onCancel) onCancel()
     }
+
+    console.log(packageData)
 
     return (
         <Modal
@@ -67,7 +66,7 @@ export default function TravelersModal({
             width={980}
         >
             <div className="travelers-content">
-                <h3 className="travelers-title">Travelers</h3>
+                <h3 className="travelers-title">Number of Travelers</h3>
                 <div className="travelers-header">
                     <span>Passengers</span>
                     <span>Quantity</span>
@@ -75,7 +74,8 @@ export default function TravelersModal({
                 <div className="travelers-cards">
                     <div className="traveler-card">
                         <h3>Adult</h3>
-                        <p>Age 18+</p>
+                        <p>Age 18 and above years old</p>
+                        <p>Rate: ₱{packageData?.packagePricePerPax} / pax</p>
                         <div className="traveler-counter">
                             <button type="button" onClick={decreaseAdult}>-</button>
                             <span>{counts.adult}</span>
@@ -84,8 +84,9 @@ export default function TravelersModal({
                     </div>
 
                     <div className="traveler-card">
-                        <h3>Child</h3>
-                        <p>Age 3-17</p>
+                        <h3>Child without bed</h3>
+                        <p>Age 3-12 years old</p>
+                        <p>Rate: ₱{packageData?.packagePricePerPax} / pax</p>
                         <div className="traveler-counter">
                             <button type="button" onClick={decreaseChild}>-</button>
                             <span>{counts.child}</span>
@@ -95,21 +96,12 @@ export default function TravelersModal({
 
                     <div className="traveler-card">
                         <h3>Infant</h3>
-                        <p>Age 0-2</p>
+                        <p>Age 0-2 years old</p>
+                        <p>Rate: ₱{packageData?.packagePricePerPax} / pax</p>
                         <div className="traveler-counter">
                             <button type="button" onClick={decreaseInfant}>-</button>
                             <span>{counts.infant}</span>
                             <button type="button" onClick={increaseInfant}>+</button>
-                        </div>
-                    </div>
-
-                    <div className="traveler-card">
-                        <h3>Senior/PWD</h3>
-                        <p>60+ or PWD</p>
-                        <div className="traveler-counter">
-                            <button type="button" onClick={decreaseSenior}>-</button>
-                            <span>{counts.senior}</span>
-                            <button type="button" onClick={increaseSenior}>+</button>
                         </div>
                     </div>
                 </div>

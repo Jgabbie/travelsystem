@@ -12,7 +12,7 @@ export default function DestinationsPackages() {
     const [packages, setPackages] = useState([])
     const [search, setSearch] = useState('')
     const [budgetRange, setBudgetRange] = useState([0, 40000])
-    const [selectedActivities, setSelectedActivities] = useState([])
+    const [selectedTags, setSelectedTags] = useState([])
     const [tourType, setTourType] = useState('All')
     const [daysValue, setDaysValue] = useState(3)
 
@@ -23,8 +23,13 @@ export default function DestinationsPackages() {
         const fetchPackages = async () => {
             try {
                 const response = await axiosInstance.get('/package/get-packages')
-                const mapped = (response.data || []).map((pkg) => {
-                    const rating = Number((4.2 + Math.random() * 0.7).toFixed(1))
+
+                const mapped = (response.data || []).map(async (pkg) => {
+                    const ratingResponse = await axiosInstance.get(`/rating/average-rating/${pkg._id}`)
+                    const rating = ratingResponse.data?.averageRating || 0
+
+                    console.log(rating)
+
                     return {
                         id: pkg._id,
                         title: pkg.packageName,
@@ -32,14 +37,13 @@ export default function DestinationsPackages() {
                         type: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
                         budget: pkg.packagePricePerPax,
-                        activities: Array.isArray(pkg.packageInclusions) && pkg.packageInclusions.length
-                            ? pkg.packageInclusions.slice(0, 3)
-                            : ['Tour', 'Sightseeing'],
                         rating,
-                        images: pkg.images && pkg.images.length > 0 ? pkg.images[0] : ''
+                        images: pkg.images && pkg.images.length > 0 ? pkg.images[0] : '',
+                        tags: pkg.packageTags || []
                     }
                 })
-                setPackages(mapped)
+
+                setPackages(await Promise.all(mapped))
             } catch (error) {
                 console.error('Failed to load packages:', error)
                 setPackages([])
@@ -55,7 +59,7 @@ export default function DestinationsPackages() {
 
         const params = new URLSearchParams(location.search)
         const query = params.get('q')
-        const activity = params.get('activity')
+        const tag = params.get('tag')
         const tourTypeParam = params.get('tourType')
         const minBudget = Number(params.get('minBudget'))
         const maxBudget = Number(params.get('maxBudget'))
@@ -65,8 +69,8 @@ export default function DestinationsPackages() {
             setSearch(query)
         }
 
-        if (activity) {
-            setSelectedActivities([activity])
+        if (tag) {
+            setSelectedTags([tag])
         }
 
         if (tourTypeParam && ['All', 'Domestic', 'International'].includes(tourTypeParam)) {
@@ -88,13 +92,17 @@ export default function DestinationsPackages() {
         }
     }, [location.search])
 
-    const activityOptions = useMemo(() => {
+
+    const tagOptions = useMemo(() => {
         const unique = new Set()
+
         packages.forEach((pkg) => {
-            pkg.activities?.forEach((activity) => unique.add(activity))
+            pkg.tags?.forEach((tag) => unique.add(tag))
         })
+
         return Array.from(unique)
     }, [packages])
+
 
     const filteredPackages = useMemo(() => {
         const query = search.trim().toLowerCase()
@@ -107,10 +115,10 @@ export default function DestinationsPackages() {
             const matchesBudget =
                 pkg.budget >= budgetRange[0] && pkg.budget <= budgetRange[1]
 
-            const matchesActivities =
-                selectedActivities.length === 0 ||
-                selectedActivities.every((activity) =>
-                    pkg.activities.includes(activity)
+            const matchesTags =
+                selectedTags.length === 0 ||
+                selectedTags.every((tag) =>
+                    pkg.tags?.includes(tag)
                 )
 
             const matchesType = tourType === 'All' || pkg.type === tourType
@@ -121,12 +129,13 @@ export default function DestinationsPackages() {
             return (
                 matchesSearch &&
                 matchesBudget &&
-                matchesActivities &&
+                matchesTags &&
                 matchesType &&
                 matchesDays
             )
         })
-    }, [packages, search, budgetRange, selectedActivities, tourType, daysValue])
+    }, [packages, search, budgetRange, selectedTags, tourType, daysValue])
+
 
     return (
         <ConfigProvider
@@ -223,17 +232,17 @@ export default function DestinationsPackages() {
 
                             <Col xs={24} md={12} xl={6}>
                                 <div className="filter-field">
-                                    <Text className="destinations-label">Activities</Text>
+                                    <Text className="destinations-label">Tags</Text>
                                     <Select
                                         className='destinations-inputs'
                                         mode="multiple"
                                         allowClear
-                                        placeholder="Select activities"
-                                        value={selectedActivities}
-                                        onChange={(value) => setSelectedActivities(value)}
-                                        options={activityOptions.map((activity) => ({
-                                            value: activity,
-                                            label: activity,
+                                        placeholder="Select tags"
+                                        value={selectedTags}
+                                        onChange={(value) => setSelectedTags(value)}
+                                        options={tagOptions.map((tag) => ({
+                                            value: tag,
+                                            label: tag,
                                         }))}
                                     />
                                 </div>
@@ -324,8 +333,8 @@ export default function DestinationsPackages() {
                                             <Text type="secondary">{pkg.days} days</Text>
                                         </div>
                                         <div className="destinations-card-activities">
-                                            {pkg.activities.map((activity) => (
-                                                <Tag key={activity}>{activity}</Tag>
+                                            {pkg.tags?.map((tag) => (
+                                                <Tag key={tag}>{tag}</Tag>
                                             ))}
                                         </div>
                                         <div className="destinations-card-footer">

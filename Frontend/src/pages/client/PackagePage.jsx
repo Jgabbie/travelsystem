@@ -25,7 +25,7 @@ export default function PackagePage() {
     const { id } = useParams();
     const location = useLocation();
     const fetchCalled = useRef(false);
-    const { auth } = useAuth();
+    const { auth, authLoading } = useAuth();
 
     //login state
     const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -100,6 +100,8 @@ export default function PackagePage() {
         setIsDomesticQuotationOpen(false)
     }
 
+    console.log(auth)
+
     //fetch package details from backend using the id from the URL and handle loading and error states
     useEffect(() => {
         const fetchPackage = async () => {
@@ -122,6 +124,52 @@ export default function PackagePage() {
         }
         fetchPackage()
     }, [id])
+
+    // useEffect(() => {
+    //     if (!auth) return;
+    //     if (fetchCalled.current) return;
+    //     fetchCalled.current = true;
+    //     const searchParams = new URLSearchParams(location.search);
+    //     const checkoutToken = searchParams.get("checkoutToken");
+    //     const bookingStatus = searchParams.get("booking");
+
+    //     const checkoutDetails = localStorage.getItem('checkoutDetails');
+    //     const checkoutDetailsParsed = checkoutDetails ? JSON.parse(checkoutDetails) : null;
+
+    //     if (bookingStatus === "success" && checkoutToken) {
+    //         setIsBookingSuccessOpen(true);
+
+    //         axiosInstance.post("/booking/create-booking", {
+    //             bookingDetails: checkoutDetailsParsed,
+    //             checkoutToken
+    //         })
+    //             .then(res => {
+
+    //                 axiosInstance.post("/transaction/create-transaction", {
+    //                     bookingId: res.data._id,
+    //                     amount: checkoutDetailsParsed.totalPrice,
+    //                     method: "Online Payment",
+    //                     status: "Successful",
+    //                     packageName: checkoutDetailsParsed.packageName
+    //                 })
+    //                     .then(transactionRes => {
+    //                         console.log("Transaction created successfully:", transactionRes.data);
+    //                         localStorage.removeItem('checkoutDetails');
+    //                     })
+    //                     .catch(transactionErr => {
+    //                         console.error("Error creating transaction:", transactionErr.response?.data || transactionErr.message);
+    //                         message.error("Booking was successful, but there was an issue creating the transaction.");
+    //                     });
+
+    //             })
+    //             .catch(err => {
+    //                 console.error("Error creating booking:", err.response?.data || err.message);
+    //                 message.error("Booking was successful, but there was an issue finalizing it. Please contact support.");
+    //             });
+    //         window.history.replaceState({}, '', location.pathname); //can replace with a thank you page
+    //     }
+    // }, [auth, location.search, location.pathname]);
+
 
     //get ratings for this package and map to display format, also used in fetchRatings function after submitting review to refresh the reviews
     const fetchRatings = useCallback(async () => {
@@ -167,13 +215,6 @@ export default function PackagePage() {
     }, [reviews])
 
     //user has already rated
-    const hasUserRated = useMemo(() => {
-        if (!auth) return false
-
-        const currentUserId = auth?.id
-
-        return reviews.some(review => String(review.userId) === String(currentUserId))
-    }, [reviews, auth])
 
     const userReview = useMemo(() => {
         if (!auth) return null
@@ -321,9 +362,9 @@ export default function PackagePage() {
     const handleProceedArrangement = () => {
         setIsArrangementModalOpen(false)
 
-        if (arrangementSelection === 'all-in') {
+        if (arrangementSelection === 'fixed') {
             setIsDateModalOpen(true)
-        } else if (arrangementSelection === 'land') {
+        } else if (arrangementSelection === 'land' || arrangementSelection === 'all-in') {
             setIsQuotationModalOpen(true)
         }
     }
@@ -492,50 +533,6 @@ export default function PackagePage() {
             setIsSubmittingReview(false);
         }
     };
-
-    useEffect(() => {
-        if (fetchCalled.current) return;
-        fetchCalled.current = true;
-        const searchParams = new URLSearchParams(location.search);
-        const checkoutToken = searchParams.get("checkoutToken");
-        const bookingStatus = searchParams.get("booking");
-
-        const checkoutDetails = localStorage.getItem('checkoutDetails');
-        const checkoutDetailsParsed = checkoutDetails ? JSON.parse(checkoutDetails) : null;
-
-        if (bookingStatus === "success" && checkoutToken) {
-            setIsBookingSuccessOpen(true);
-
-            axiosInstance.post("/booking/create-booking", {
-                bookingDetails: checkoutDetailsParsed,
-                checkoutToken
-            })
-                .then(res => {
-
-                    axiosInstance.post("/transaction/create-transaction", {
-                        bookingId: res.data._id,
-                        amount: checkoutDetailsParsed.totalPrice,
-                        method: "Online Payment",
-                        status: "Successful",
-                        packageName: checkoutDetailsParsed.packageName
-                    })
-                        .then(transactionRes => {
-                            console.log("Transaction created successfully:", transactionRes.data);
-                            localStorage.removeItem('checkoutDetails');
-                        })
-                        .catch(transactionErr => {
-                            console.error("Error creating transaction:", transactionErr.response?.data || transactionErr.message);
-                            message.error("Booking was successful, but there was an issue creating the transaction.");
-                        });
-
-                })
-                .catch(err => {
-                    console.error("Error creating booking:", err.response?.data || err.message);
-                    message.error("Booking was successful, but there was an issue finalizing it. Please contact support.");
-                });
-            window.history.replaceState({}, '', location.pathname); //can replace with a thank you page
-        }
-    }, [location.search, location.pathname]);
 
     return (
         <ConfigProvider
@@ -825,7 +822,6 @@ export default function PackagePage() {
                     selectedOption={arrangementSelectionDomestic}
                     onCancel={resetBookingFlow}
                     onSubmit={handleSubmitQuotation}
-                    bookingPayload={bookingPayload}
                     hotels={packageData?.packageHotels || []}
                     airlines={packageData?.packageAirlines || []}
                     basePrice={packageData?.packagePricePerPax || 0}
@@ -838,9 +834,9 @@ export default function PackagePage() {
 
                 <PackageQuotationModal
                     open={isQuotationModalOpen}
+                    selectedOption={arrangementSelection}
                     onCancel={resetBookingFlow}
                     onSubmit={handleSubmitQuotation}
-                    bookingPayload={bookingPayload}
                     hotels={packageData?.packageHotels || []}
                     airlines={packageData?.packageAirlines || []}
                     basePrice={packageData?.packagePricePerPax || 0}
@@ -863,6 +859,7 @@ export default function PackagePage() {
                     open={isTravelersModalOpen}
                     onCancel={resetBookingFlow}
                     onProceed={handleProceedTravelers}
+                    packageData={packageData}
                 />
 
                 <BookingSummaryModal
@@ -886,6 +883,7 @@ export default function PackagePage() {
                     open={isUploadPassportOpen}
                     onCancel={resetBookingFlow}
                     onProceed={handleProceedUploadPassport}
+                    summary={summaryData}
                 />
 
                 <DisplayInvoiceModal

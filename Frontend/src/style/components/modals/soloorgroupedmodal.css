@@ -91,23 +91,33 @@
 }
 
 .solo-group-proceed {
-    background-color: #305797 !important;
-    color: #fff !important;
+    background-color: #fff !important;
+    color: #305797 !important;
     border-radius: 10px;
-    border: none !important;
+    border: solid 1px #305797 !important;
     font-weight: 600;
     height: 40px;
     padding: 0 16px;
 }
 
-.solo-group-cancel {
-    background-color: #992A46 !important;
+.solo-group-proceed:hover {
+    background-color: #305797 !important;
     color: #fff !important;
+}
+
+.solo-group-cancel {
+    background-color: #fff !important;
+    color: #992A46 !important;
     border-radius: 10px;
-    border: none !important;
+    border: solid 1px #992A46 !important;
     font-weight: 600;
     height: 40px;
     padding: 0 16px;
+}
+
+.solo-group-cancel:hover {
+    background-color: #992A46 !important;
+    color: #fff !important;
 }
 
 @media (max-width: 768px) {

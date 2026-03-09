@@ -15,11 +15,13 @@ export default function SoloOrGrouped({
         onSelect?.(value)
     }
 
+    //proceed function
     const handleProceed = () => {
         if (!selection) return
         onProceed?.(selection)
     }
 
+    //cancel function
     const handleCancel = () => {
         if (onSelect) onSelect(null)
         if (onCancel) onCancel()
@@ -32,6 +34,7 @@ export default function SoloOrGrouped({
             footer={null}
             className="solo-group-modal"
             width={900}
+            style={{ top: 70 }}
         >
             <div className="solo-group-content">
                 <h1 className='solo-group-heading'>Select Your Package Arrangement</h1>

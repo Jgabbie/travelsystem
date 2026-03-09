@@ -16,6 +16,7 @@ const buildItineraryLabels = (itinerary, days) => {
 
 export default function PackageQuotationModal({
     open,
+    selectedOption,
     onCancel,
     onSubmit,
     bookingPayload,
@@ -41,7 +42,7 @@ export default function PackageQuotationModal({
             }))
     }, [fixedItinerary])
 
-    const maxBudget = Math.max(60000, Number(basePrice) || 0)
+    const maxBudget = Math.max(120000, Number(basePrice) || 0)
     const minBudget = Number(basePrice) || 0
 
     const [error, setError] = useState({})
@@ -171,21 +172,26 @@ export default function PackageQuotationModal({
                             <p className='package-quotation-error'>{error.travelers}</p>
                         </div>
 
-                        <div className="quotation-field">
-                            <label htmlFor="quotation-airlines">Preferred Airlines</label>
-                            <Select
-                                id="quotation-airlines"
-                                placeholder="Select preferred airline"
-                                value={preferredAirlines || undefined}
-                                onChange={(value) => setPreferredAirlines(value)}
-                                className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
-                                options={airlines?.map((airline) => ({
-                                    label: airline.name,
-                                    value: airline.name
-                                }))}
-                            />
-                            <p className='package-quotation-error'>{error.preferredAirlines}</p>
-                        </div>
+                        {selectedOption === 'all-in' ? (
+                            <div className="quotation-field">
+                                <label htmlFor="quotation-airlines">Preferred Airlines</label>
+                                <Select
+                                    id="quotation-airlines"
+                                    placeholder="Select preferred airline"
+                                    value={preferredAirlines || undefined}
+                                    onChange={(value) => setPreferredAirlines(value)}
+                                    className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
+                                    options={airlines?.map((airline) => ({
+                                        label: airline.name,
+                                        value: airline.name
+                                    }))}
+                                />
+                                <p className='package-quotation-error'>{error.preferredAirlines}</p>
+                            </div>
+                        ) :
+                            null
+                        }
+
 
                         <div className="quotation-field">
                             <label htmlFor="quotation-hotels">Preferred Hotels</label>
