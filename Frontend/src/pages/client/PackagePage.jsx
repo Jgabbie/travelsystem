@@ -455,8 +455,8 @@ export default function PackagePage() {
         travelerCount: travelerCounts,
         totalPrice,
         groupType: soloGroupSelection,
-        hotelOptions: selectedHotels,
-        airlineOptions: selectedAirlines,
+        hotelOptions: packageData?.packageHotels,
+        airlineOptions: packageData?.packageAirlines,
         addons: selectedAddOns.map((key) => addOnLabelMap[key] || key),
         travelDate: selectedDate,
     }

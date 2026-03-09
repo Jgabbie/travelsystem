@@ -24,39 +24,6 @@ export default function TopNavUser() {
         return null;
     }
 
-    // const checkAuth = async () => {
-    //     setIsLoading(true); // start loading
-    //     try {
-    //         const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
-    //         const { user } = response.data;
-    //         setAuth({ id: user._id, username: user.username, role: user.role });
-
-    //         const profileResponse = await axiosInstance.get('/user/data', { withCredentials: true });
-    //         const profile = profileResponse?.data?.userData;
-    //         setProfileImage(
-    //             profile?.profileImageUrl ||
-    //             profile?.profileImage ||
-    //             profile?.avatarUrl ||
-    //             user?.profileImageUrl ||
-    //             user?.profileImage ||
-    //             user?.avatarUrl ||
-    //             ''
-    //         );
-    //     } catch (err) {
-    //         setAuth(null);
-    //         setProfileImage('');
-    //     } finally {
-    //         setIsLoading(false); // finished loading
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     checkAuth();
-    // }, []);
-
-
-    // const [isLoading, setIsLoading] = useState(true);
-
     const handleOk = async () => {
         setIsModalOpen(false);
         await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });

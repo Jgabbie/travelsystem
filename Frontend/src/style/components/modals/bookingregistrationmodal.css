@@ -1,6 +1,5 @@
 .booking-registration-modal .ant-modal-content {
     border-radius: 14px;
-    padding: 20px;
     background: #f6f7fb;
 }
 
@@ -17,11 +16,11 @@
 }
 
 .booking-registration-modal .ant-modal-body {
-    padding: 20px;
+    padding: 2px;
 }
 
 .booking-registration-wrapper {
-    max-height: 80vh;
+    max-height: 70vh;
     overflow: auto;
     display: flex;
     flex-direction: column;
@@ -34,6 +33,7 @@
     color: #1f2a44;
     margin: 0;
     text-align: center;
+    padding-bottom: 10px;
 }
 
 .booking-registration-package {

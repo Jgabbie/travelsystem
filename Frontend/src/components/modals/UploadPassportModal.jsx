@@ -47,12 +47,12 @@ export default function UploadPassportModal({ open, onCancel, onProceed, summary
                 open={open}
                 onCancel={handleCancel}
                 footer={null}
-                width={800}
+                width={1000}
                 centered
                 className="upload-passport-modal"
             >
+                <h2 className="upload-passport-title">Upload Passport</h2>
                 <div className="upload-passport-wrapper">
-                    <h2 className="upload-passport-title">Upload Passport</h2>
                     <p className="upload-passport-text">
                         Please upload a clear image of your passport bio page for each traveler.
                     </p>
@@ -95,25 +95,23 @@ export default function UploadPassportModal({ open, onCancel, onProceed, summary
 
                         </div>
                     ))}
-
-
-                    <div className="upload-passport-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                        <Button
-                            className='upload-passport-proceed'
-                            type="primary"
-                            onClick={handleProceed}
-                            disabled={fileLists.some(list => list.length === 0)}
-                        >
-                            Proceed
-                        </Button>
-                        <Button
-                            className='upload-passport-cancel'
-                            danger
-                            onClick={handleCancel}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
+                </div>
+                <div className="upload-passport-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <Button
+                        className='upload-passport-proceed'
+                        type="primary"
+                        onClick={handleProceed}
+                        disabled={fileLists.some(list => list.length === 0)}
+                    >
+                        Proceed
+                    </Button>
+                    <Button
+                        className='upload-passport-cancel'
+                        danger
+                        onClick={handleCancel}
+                    >
+                        Cancel
+                    </Button>
                 </div>
             </Modal>
         </ConfigProvider >

@@ -1,6 +1,6 @@
 .upload-passport-modal .ant-modal-content {
     border-radius: 12px;
-    padding: 24px;
+    padding: 2px;
 }
 
 .upload-passport-modal .ant-modal-close {
@@ -9,11 +9,11 @@
 }
 
 .upload-passport-modal .ant-modal-body {
-    padding: 20px;
+    padding: 2px;
 }
 
 .upload-passport-wrapper {
-    max-height: 80vh;
+    max-height: 70vh;
     overflow: auto;
     display: flex;
     flex-direction: column;
@@ -27,6 +27,7 @@
     color: #1f2a44;
     margin: 0;
     text-align: center;
+    padding-bottom: 10px;
 }
 
 .upload-passport-text {
@@ -36,7 +37,7 @@
 
 .upload-card {
     flex: 1 1 350px;
-    max-width: 800px;
+    max-width: 1000px;
     height: 350px;
     background: #fff;
     border: 1px solid #e0e0e0;

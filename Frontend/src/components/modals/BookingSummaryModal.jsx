@@ -115,11 +115,11 @@ export default function BookingSummaryModal({
             footer={null}
             className="booking-summary-modal"
             width={1000}
-            style={{ top: 35 }}
+            style={{ top: 25 }}
         >
-            <div className="booking-summary-wrapper">
-                <h2 className='booking-summary-title'>Booking Summary</h2>
+            <h2 className='booking-summary-title'>Booking Summary</h2>
 
+            <div className="booking-summary-wrapper">
                 {/* Images Row */}
                 <div className="booking-summary-images">
                     {packageData?.images?.length ? (
@@ -135,14 +135,12 @@ export default function BookingSummaryModal({
                     ) : (
                         <div
                             className="booking-summary-image is-placeholder"
-                            aria-hidden="true"
                         />
                     )}
                 </div>
 
                 {/* Booking Details */}
                 <div className="booking-summary-details">
-
 
                     <div className="booking-summary-card">
 
@@ -164,13 +162,6 @@ export default function BookingSummaryModal({
                             <span className="booking-summary-label">Booking Type</span>
                             <span className="booking-summary-value">
                                 {data.groupType === 'solo' ? 'Solo booking' : 'Group booking'}
-                            </span>
-                        </div>
-
-                        <div className="booking-summary-row">
-                            <span className="booking-summary-label">Total Price</span>
-                            <span className="booking-summary-value">
-                                ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </span>
                         </div>
 
@@ -209,26 +200,34 @@ export default function BookingSummaryModal({
                                 }
                             </span>
                         </div>
+
+                        <div className='booking-summary-divider'></div>
+
+                        <div className="booking-summary-row">
+                            <span className="booking-summary-label">Total Price</span>
+                            <span className="booking-summary-value">
+                                ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                            </span>
+                        </div>
                     </div>
 
                 </div>
-
-                <div className="booking-summary-actions">
-                    <Button
-                        className='booking-summary-proceed'
-                        type="primary"
-                        onClick={handleProceed}
-                    >
-                        Proceed
-                    </Button>
-                    <Button
-                        className="booking-summary-cancel"
-                        danger
-                        onClick={handleCancel}
-                    >
-                        Cancel
-                    </Button>
-                </div>
+            </div>
+            <div className="booking-summary-actions">
+                <Button
+                    className='booking-summary-proceed'
+                    type="primary"
+                    onClick={handleProceed}
+                >
+                    Proceed
+                </Button>
+                <Button
+                    className="booking-summary-cancel"
+                    danger
+                    onClick={handleCancel}
+                >
+                    Cancel
+                </Button>
             </div>
         </Modal>
     )

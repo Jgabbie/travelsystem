@@ -71,8 +71,8 @@ export default function BookingRegistrationModal({
                 centered
                 className="booking-registration-modal"
             >
+                <h2 className="booking-registration-title">Booking Registration</h2>
                 <div className="booking-registration-wrapper">
-                    <h2 className="booking-registration-title">Booking Registration</h2>
 
                     {/* Package Summary */}
                     {packageData && (
@@ -446,27 +446,24 @@ export default function BookingRegistrationModal({
                         </p>
 
                     </div>
-
-
-
-                    {/* Action Buttons */}
-                    <div className="booking-registration-actions">
-                        <Button
-                            className='booking-registration-proceed'
-                            type="primary"
-                            onClick={handleProceed}
-                            disabled={!allAgreed}
-                        >
-                            Proceed
-                        </Button>
-                        <Button
-                            className='booking-registration-cancel'
-                            onClick={handleCancel}
-                            danger
-                        >
-                            Cancel
-                        </Button>
-                    </div>
+                </div>
+                {/* Action Buttons */}
+                <div className="booking-registration-actions">
+                    <Button
+                        className='booking-registration-proceed'
+                        type="primary"
+                        onClick={handleProceed}
+                        disabled={!allAgreed}
+                    >
+                        Proceed
+                    </Button>
+                    <Button
+                        className='booking-registration-cancel'
+                        onClick={handleCancel}
+                        danger
+                    >
+                        Cancel
+                    </Button>
                 </div>
             </Modal >
         </ConfigProvider >

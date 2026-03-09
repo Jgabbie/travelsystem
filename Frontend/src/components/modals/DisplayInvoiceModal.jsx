@@ -16,6 +16,17 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
     const issueDate = dayjs().format("MMMM D, YYYY");
     const dueDate = dayjs().add(45, "day").format("MMMM D, YYYY");
 
+    const travelerCountAdult = summary?.travelerCount?.adult || 0;
+    const travelerCountChild = summary?.travelerCount?.child || 0;
+    const travelerCountInfant = summary?.travelerCount?.infant || 0;
+    const travelerTotal = travelerCountAdult + travelerCountChild + travelerCountInfant;
+
+    const hotel = summary?.hotelOptions?.[0]?.name || 'N/A';
+    const airline = summary?.airlineOptions?.[0]?.name || 'N/A';
+
+    const startTravelDate = dayjs(summary?.travelDate).format("MMM D, YYYY") || 'TBD';
+    const endTravelDate = dayjs(summary?.travelDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
+
 
     const Invoice = {
         company: {
@@ -39,13 +50,13 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
         },
         booking: {
             packageName: summary?.packageName || 'Tour Package',
-            travelDates: 'Apr 2, 2026 - Apr 5, 2026',
-            travelers: 2,
-            hotel: 'Deluxe Ocean View',
-            airlines: 'Panglao Airport (TAG)'
+            travelDates: `${startTravelDate} - ${endTravelDate}`,
+            travelers: travelerTotal,
+            hotel: hotel,
+            airlines: airline
         },
         items: [
-            { date: issueDate, activity: 'Tour Package', description: summary?.packageName || 'Tour Package', qty: 2, rate: 12950.0 },
+            { date: issueDate, activity: 'Tour Package', description: summary?.packageName || 'Tour Package', qty: travelerCountAdult, rate: summary?.packagePricePerPax },
         ],
         notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
@@ -105,8 +116,8 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
                         <Text style={styles.muted}>Reference: {Invoice.booking.reference}</Text>
                         <Text style={styles.muted}>Travel Dates: {Invoice.booking.travelDates}</Text>
                         <Text style={styles.muted}>Travelers: {Invoice.booking.travelers}</Text>
-                        <Text style={styles.muted}>Room: {Invoice.booking.roomType}</Text>
-                        <Text style={styles.muted}>Pickup: {Invoice.booking.pickup}</Text>
+                        <Text style={styles.muted}>Hotel: {Invoice.booking.hotel}</Text>
+                        <Text style={styles.muted}>Airlines: {Invoice.booking.airlines}</Text>
                     </View>
                 </View>
 
@@ -135,17 +146,17 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
 
                 <View style={styles.totals}>
                     <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Subtotal</Text>
+                        <Text style={styles.totalLabel}>Total Amount</Text>
                         <Text style={styles.totalValue}>{formatCurrency(totals.subtotal)}</Text>
                     </View>
-                    <View style={styles.totalRow}>
+                    {/* <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Tax (12%)</Text>
                         <Text style={styles.totalValue}>{formatCurrency(totals.tax)}</Text>
                     </View>
                     <View style={[styles.totalRow, styles.totalRowStrong]}>
                         <Text style={styles.totalLabel}>Total</Text>
                         <Text style={styles.totalValue}>{formatCurrency(totals.total)}</Text>
-                    </View>
+                    </View> */}
                 </View>
 
                 <View style={styles.footer}>
@@ -169,12 +180,13 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
                 open={open}
                 onCancel={onCancel}
                 footer={null}
-                width={800}
+                width={1000}
                 centered
                 className="display-invoice-modal"
             >
+                <h2 className="display-invoice-title">Booking Invoice</h2>
                 <div className="display-invoice-wrapper">
-                    <h2 className="display-invoice-title">Booking Invoice</h2>
+
                     <p className="display-invoice-subtitle">
                         Please review your booking invoice before proceeding to payment.
                     </p>
@@ -190,23 +202,22 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
                             <MyDocument />
                         </PDFViewer>
                     </div>
-
-                    <div className="display-invoice-actions">
-                        <Button
-                            className='display-invoice-proceed'
-                            onClick={onProceed}
-                        >
-                            Proceed to Payment
-                        </Button>
-                        <Button
-                            className='display-invoice-cancel'
-                            danger
-                            onClick={onCancel}
-                            style={{ marginLeft: 10 }}
-                        >
-                            Back
-                        </Button>
-                    </div>
+                </div>
+                <div className="display-invoice-actions">
+                    <Button
+                        className='display-invoice-proceed'
+                        onClick={onProceed}
+                    >
+                        Proceed to Payment
+                    </Button>
+                    <Button
+                        className='display-invoice-cancel'
+                        danger
+                        onClick={onCancel}
+                        style={{ marginLeft: 10 }}
+                    >
+                        Back
+                    </Button>
                 </div>
             </Modal>
         </ConfigProvider>

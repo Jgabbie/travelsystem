@@ -33,7 +33,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
         if (
             isCtrlOrCmd &&
-            ["c", "v", "x", "a"].includes(e.key.toLowerCase())
+            ["x", "a"].includes(e.key.toLowerCase())
         ) {
             e.preventDefault();
         }
