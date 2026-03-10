@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { use, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider } from 'antd';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
@@ -10,22 +10,16 @@ import TopNavUser from '../../components/TopNavUser'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
 import AllInOrLandDomesticModal from '../../components/modals/AllInOrLandDomesticModal';
 import SoloOrGrouped from '../../components/SoloOrGrouped'
-import TravelersModal from '../../components/modals/TravelersModal'
-import BookingSummaryModal from '../../components/modals/BookingSummaryModal'
 import PackageQuotationModal from '../../components/modals/PackageQuotationModal'
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
-import BookingRegistrationModal from '../../components/modals/BookingRegistrationModal';
-import UploadPassportModal from '../../components/modals/UploadPassportModal';
-import DisplayInvoiceModal from '../../components/modals/DisplayInvoiceModal';
-import PaymentMethodsModal from '../../components/modals/PaymentMethodsModal';
 import DomesticQuotationModal from '../../components/modals/DomesticQuotationModal';
 
 export default function PackagePage() {
     const { id } = useParams();
-    const location = useLocation();
-    const fetchCalled = useRef(false);
-    const { auth, authLoading } = useAuth();
+    const { auth } = useAuth();
+
+    const navigate = useNavigate();
 
     //login state
     const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -36,23 +30,15 @@ export default function PackagePage() {
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
     const [isArrangementDomModalOpen, setIsArrangementDomModalOpen] = useState(false)
     const [isSoloGroupModalOpen, setIsSoloGroupModalOpen] = useState(false)
-    const [isTravelersModalOpen, setIsTravelersModalOpen] = useState(false)
-    const [isBookingSummaryOpen, setIsBookingSummaryOpen] = useState(false)
+
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false)
     const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false)
-    const [isBookingRegistrationOpen, setIsBookingRegistrationOpen] = useState(false)
-    const [isUploadPassportOpen, setIsUploadPassportOpen] = useState(false)
-    const [isDisplayInvoiceOpen, setIsDisplayInvoiceOpen] = useState(false)
-    const [isPaymentMethodsOpen, setIsPaymentMethodsOpen] = useState(false)
     const [isDomesticQuotationOpen, setIsDomesticQuotationOpen] = useState(false)
 
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
     const [travelerCounts, setTravelerCounts] = useState(null)
     const [selectedAddOns, setSelectedAddOns] = useState([])
-    const [selectedAirlines, setSelectedAirlines] = useState([])
-    const [selectedHotels, setSelectedHotels] = useState([])
-    const [fixedCustomSelection, setFixedCustomSelection] = useState(null)
     const [arrangementSelection, setArrangementSelection] = useState(null)
     const [arrangementSelectionDomestic, setArrangementSelectionDomestic] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
@@ -79,9 +65,6 @@ export default function PackagePage() {
         setSelectedDate(null)
         setTravelerCounts(null)
         setSelectedAddOns([])
-        setSelectedAirlines([])
-        setSelectedHotels([])
-        setFixedCustomSelection(null)
         setArrangementSelection(null)
         setSoloGroupSelection(null)
 
@@ -89,18 +72,10 @@ export default function PackagePage() {
         setIsArrangementModalOpen(false)
         setIsArrangementDomModalOpen(false)
         setIsSoloGroupModalOpen(false)
-        setIsTravelersModalOpen(false)
-        setIsBookingSummaryOpen(false)
         setIsBookingSuccessOpen(false)
         setIsQuotationModalOpen(false)
-        setIsBookingRegistrationOpen(false)
-        setIsUploadPassportOpen(false)
-        setIsDisplayInvoiceOpen(false)
-        setIsPaymentMethodsOpen(false)
         setIsDomesticQuotationOpen(false)
     }
-
-    console.log(auth)
 
     //fetch package details from backend using the id from the URL and handle loading and error states
     useEffect(() => {
@@ -124,52 +99,6 @@ export default function PackagePage() {
         }
         fetchPackage()
     }, [id])
-
-    // useEffect(() => {
-    //     if (!auth) return;
-    //     if (fetchCalled.current) return;
-    //     fetchCalled.current = true;
-    //     const searchParams = new URLSearchParams(location.search);
-    //     const checkoutToken = searchParams.get("checkoutToken");
-    //     const bookingStatus = searchParams.get("booking");
-
-    //     const checkoutDetails = localStorage.getItem('checkoutDetails');
-    //     const checkoutDetailsParsed = checkoutDetails ? JSON.parse(checkoutDetails) : null;
-
-    //     if (bookingStatus === "success" && checkoutToken) {
-    //         setIsBookingSuccessOpen(true);
-
-    //         axiosInstance.post("/booking/create-booking", {
-    //             bookingDetails: checkoutDetailsParsed,
-    //             checkoutToken
-    //         })
-    //             .then(res => {
-
-    //                 axiosInstance.post("/transaction/create-transaction", {
-    //                     bookingId: res.data._id,
-    //                     amount: checkoutDetailsParsed.totalPrice,
-    //                     method: "Online Payment",
-    //                     status: "Successful",
-    //                     packageName: checkoutDetailsParsed.packageName
-    //                 })
-    //                     .then(transactionRes => {
-    //                         console.log("Transaction created successfully:", transactionRes.data);
-    //                         localStorage.removeItem('checkoutDetails');
-    //                     })
-    //                     .catch(transactionErr => {
-    //                         console.error("Error creating transaction:", transactionErr.response?.data || transactionErr.message);
-    //                         message.error("Booking was successful, but there was an issue creating the transaction.");
-    //                     });
-
-    //             })
-    //             .catch(err => {
-    //                 console.error("Error creating booking:", err.response?.data || err.message);
-    //                 message.error("Booking was successful, but there was an issue finalizing it. Please contact support.");
-    //             });
-    //         window.history.replaceState({}, '', location.pathname); //can replace with a thank you page
-    //     }
-    // }, [auth, location.search, location.pathname]);
-
 
     //get ratings for this package and map to display format, also used in fetchRatings function after submitting review to refresh the reviews
     const fetchRatings = useCallback(async () => {
@@ -215,7 +144,6 @@ export default function PackagePage() {
     }, [reviews])
 
     //user has already rated
-
     const userReview = useMemo(() => {
         if (!auth) return null
 
@@ -317,6 +245,7 @@ export default function PackagePage() {
         },
     ], [itineraryContent, inclusionsExclusionsContent, termsContent])
 
+
     // when wishlist button is clicked, add to wishlist and show confirmation modal
     const handleWishlistClick = async () => {
 
@@ -340,6 +269,90 @@ export default function PackagePage() {
             message.error(errorMessage)
         }
     }
+
+
+    const travelerSummary = [
+        ['adult', 'Adult'],
+        ['child', 'Child'],
+        ['infant', 'Infant'],
+        ['senior', 'Senior']
+    ]
+        .map(([key, label]) => {
+            const value = travelerCounts?.[key]
+            return value ? `${value}x ${label}` : null
+        })
+        .filter(Boolean)
+
+    const addOnLabelMap = {
+        'extra-baggage': 'Extra baggage',
+        'flight-meals': 'Flight meals',
+        'entertainment': 'Entertainment',
+        'optional-tours': 'Optional tours'
+    }
+    const totalTravelers = ['adult', 'child', 'infant', 'senior']
+        .reduce((sum, key) => sum + (travelerCounts?.[key] || 0), 0)
+
+    const totalPrice = (packageData?.packagePricePerPax || 0) * totalTravelers
+
+    const summaryData = {
+        packageId: packageData?._id || null,
+        packageName: packageData?.packageName || 'Package Details',
+        packagePricePerPax: packageData?.packagePricePerPax || 0,
+        packageType: packageData?.packageType || 'fixed',
+        travelers: travelerSummary,
+        travelerCount: travelerCounts,
+        totalPrice,
+        groupType: soloGroupSelection,
+        hotelOptions: packageData?.packageHotels,
+        airlineOptions: packageData?.packageAirlines,
+        addons: selectedAddOns.map((key) => addOnLabelMap[key] || key),
+        travelDate: selectedDate,
+    }
+
+    //submit review to backend and refresh reviews after successful submission
+    const handleSubmitReview = async () => {
+        if (!reviewForm.rating || !reviewForm.comment.trim()) {
+            message.warning("Please provide a rating and comment.");
+            return;
+        }
+
+        setIsSubmittingReview(true);
+
+        try {
+            if (isEditingReview) {
+                // UPDATE review
+                await axiosInstance.put(`/rating/${userReview.id}`, {
+                    rating: reviewForm.rating,
+                    review: reviewForm.comment.trim()
+                });
+                message.success("Review updated");
+            } else {
+                // CREATE review
+                await axiosInstance.post('/rating/submit-rating', {
+                    packageId: id,
+                    rating: reviewForm.rating,
+                    review: reviewForm.comment.trim(),
+                    fullName: !auth ? reviewForm.fullName : undefined,
+                    email: !auth ? reviewForm.email : undefined
+                });
+                message.success("Review submitted");
+            }
+
+            await fetchRatings();
+
+            setReviewForm({
+                rating: 0,
+                comment: '',
+                fullName: '',
+                email: ''
+            });
+            setIsEditingReview(false);
+        } catch (error) {
+            message.error("Unable to submit review");
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
 
     const handleBookingProcess = () => {
         if (!auth) {
@@ -388,151 +401,12 @@ export default function PackagePage() {
         setIsSoloGroupModalOpen(false)
         if (nextSelection === 'solo') {
             setTravelerCounts({ adult: 1, child: 0, infant: 0, senior: 0 })
-            setIsBookingSummaryOpen(true)
+            navigate('/booking-process', {
+                state: { summaryData: summaryData }
+            });
             return
         }
-        setIsTravelersModalOpen(true)
     }
-
-    const handleProceedTravelers = (counts) => {
-        setTravelerCounts(counts)
-        setIsTravelersModalOpen(false)
-        setIsBookingSummaryOpen(true)
-    }
-
-    const handleProceedSummary = () => {
-        setIsBookingSummaryOpen(false)
-        setIsBookingRegistrationOpen(true)
-    }
-
-    const handleProceedRegistration = () => {
-        setIsBookingRegistrationOpen(false)
-        setIsUploadPassportOpen(true)
-    }
-
-    const handleProceedUploadPassport = () => {
-        setIsUploadPassportOpen(false)
-        setIsDisplayInvoiceOpen(true)
-    }
-
-    const handleProceedDisplayInvoice = () => {
-        setIsDisplayInvoiceOpen(false)
-        setIsPaymentMethodsOpen(true)
-    }
-
-    const handleProceedPaymentMethods = () => {
-        setIsPaymentMethodsOpen(false)
-        setIsBookingSuccessOpen(true)
-    }
-
-    const travelerSummary = [
-        ['adult', 'Adult'],
-        ['child', 'Child'],
-        ['infant', 'Infant'],
-        ['senior', 'Senior']
-    ]
-        .map(([key, label]) => {
-            const value = travelerCounts?.[key]
-            return value ? `${value}x ${label}` : null
-        })
-        .filter(Boolean)
-    const addOnLabelMap = {
-        'extra-baggage': 'Extra baggage',
-        'flight-meals': 'Flight meals',
-        'entertainment': 'Entertainment',
-        'optional-tours': 'Optional tours'
-    }
-    const totalTravelers = ['adult', 'child', 'infant', 'senior']
-        .reduce((sum, key) => sum + (travelerCounts?.[key] || 0), 0)
-    const totalPrice = (packageData?.packagePricePerPax || 0) * totalTravelers
-
-    const summaryData = {
-        packageId: packageData?._id || null,
-        packageName: packageData?.packageName || 'Package Details',
-        packagePricePerPax: packageData?.packagePricePerPax || 0,
-        packageType: packageData?.packageType || 'fixed',
-        travelers: travelerSummary,
-        travelerCount: travelerCounts,
-        totalPrice,
-        groupType: soloGroupSelection,
-        hotelOptions: packageData?.packageHotels,
-        airlineOptions: packageData?.packageAirlines,
-        addons: selectedAddOns.map((key) => addOnLabelMap[key] || key),
-        travelDate: selectedDate,
-    }
-
-    //payload for booking creation to be stored in localStorage before redirecting to checkout and then retrieved in useEffect to submit booking after successful payment
-    const bookingPayload = packageData?._id
-        ? {
-            packageId: packageData._id,
-            bookingDetails: {
-                pricePerPax: packageData.packagePricePerPax || 0,
-                totalPrice,
-                travelDate: selectedDate,
-                arrangement: arrangementSelection,
-                packageType: fixedCustomSelection,
-                groupType: soloGroupSelection,
-                travelers: travelerCounts || {},
-                addOns: selectedAddOns,
-                airlines: selectedAirlines,
-                hotels: selectedHotels,
-                packageName: packageData?.packageName || ''
-            }
-        }
-        : null
-
-    //success and cancel URLs for payment checkout, passing the package id as query param for redirecting back to the same package page after payment
-    const successUrl = id
-        ? `${window.location.origin}/package/${id}?booking=success`
-        : `${window.location.origin}/package?booking=success`;
-    const cancelUrl = id
-        ? `${window.location.origin}/package/${id}?booking=return`
-        : `${window.location.origin}/package?booking=return`;
-
-    //submit review to backend and refresh reviews after successful submission
-    const handleSubmitReview = async () => {
-        if (!reviewForm.rating || !reviewForm.comment.trim()) {
-            message.warning("Please provide a rating and comment.");
-            return;
-        }
-
-        setIsSubmittingReview(true);
-
-        try {
-            if (isEditingReview) {
-                // UPDATE review
-                await axiosInstance.put(`/rating/${userReview.id}`, {
-                    rating: reviewForm.rating,
-                    review: reviewForm.comment.trim()
-                });
-                message.success("Review updated");
-            } else {
-                // CREATE review
-                await axiosInstance.post('/rating/submit-rating', {
-                    packageId: id,
-                    rating: reviewForm.rating,
-                    review: reviewForm.comment.trim(),
-                    fullName: !auth ? reviewForm.fullName : undefined,
-                    email: !auth ? reviewForm.email : undefined
-                });
-                message.success("Review submitted");
-            }
-
-            await fetchRatings();
-
-            setReviewForm({
-                rating: 0,
-                comment: '',
-                fullName: '',
-                email: ''
-            });
-            setIsEditingReview(false);
-        } catch (error) {
-            message.error("Unable to submit review");
-        } finally {
-            setIsSubmittingReview(false);
-        }
-    };
 
     return (
         <ConfigProvider
@@ -855,50 +729,6 @@ export default function PackagePage() {
                     selection={soloGroupSelection}
                 />
 
-                <TravelersModal
-                    open={isTravelersModalOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedTravelers}
-                    packageData={packageData}
-                />
-
-                <BookingSummaryModal
-                    open={isBookingSummaryOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedSummary}
-                    packageData={packageData}
-                    summary={summaryData}
-                    successUrl={successUrl}
-                    cancelUrl={cancelUrl}
-                    bookingPayload={bookingPayload}
-                />
-
-                <BookingRegistrationModal
-                    open={isBookingRegistrationOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedRegistration}
-                />
-
-                <UploadPassportModal
-                    open={isUploadPassportOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedUploadPassport}
-                    summary={summaryData}
-                />
-
-                <DisplayInvoiceModal
-                    open={isDisplayInvoiceOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedDisplayInvoice}
-                    summary={summaryData}
-                />
-
-                <PaymentMethodsModal
-                    open={isPaymentMethodsOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedPaymentMethods}
-                />
-
                 {/* login modal */}
                 <LoginModal
                     isOpenLogin={isLoginVisible}
@@ -914,23 +744,6 @@ export default function PackagePage() {
                     }}
                 />
 
-                <Modal
-                    className="package-wishlist-modal"
-                    open={isBookingSuccessOpen}
-                    footer={null}
-                    onCancel={resetBookingFlow}
-                >
-                    <h2 className="package-wishlist-title">Booking Successful</h2>
-                    <p className="package-wishlist-text">Your booking has been confirmed.</p>
-                    <div className="package-wishlist-actions">
-                        <Button className="package-action-secondary" onClick={() => {
-                            resetBookingFlow()
-                            window.history.replaceState({}, '', `/package/${id}`);;
-                        }}>
-                            OK
-                        </Button>
-                    </div>
-                </Modal>
             </div>
         </ConfigProvider>
     )

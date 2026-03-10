@@ -1,10 +1,8 @@
 import React from 'react'
 import { Modal, Button } from 'antd'
 import dayjs from 'dayjs';
-import { CheckCircleFilled } from '@ant-design/icons'
 import '../../style/components/modals/bookingsummarymodal.css'
 
-//get display date
 const getDisplayDate = (value) => {
     if (!value) return ''
     if (typeof value === 'string') return value
@@ -18,20 +16,11 @@ const getDisplayDate = (value) => {
     return String(value)
 }
 
-export default function BookingSummaryModal({
-    open,
-    onCancel,
+export default function BookingProcess({
     summary,
     packageData,
-    onProceed,
-    successUrl,
-    cancelUrl,
-    bookingPayload
 }) {
 
-
-    //paymongo checkout
-    //get summary data or use default option to test booking
     const data = summary
     const travelers = data.travelers?.length ? data.travelers : ['None selected']
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : ['None selected']
@@ -50,74 +39,8 @@ export default function BookingSummaryModal({
     const packageType = data.packageType || 'fixed'
     const packageId = data.packageId || null
 
-    // console.log("BookingSummaryModal data:", {
-    //     data,
-    //     travelers,
-    //     hotelOptions,
-    //     airlineOptions,
-    //     addons,
-    //     travelDate,
-    //     packagePricePerPax,
-    //     totalPrice,
-    //     travelersCount
-    // })
-
-    const handleCheckout = async () => {
-
-        // const checkoutDetails = {
-        //     packageName,
-        //     travelersCount,
-        //     totalPrice,
-        //     travelDate,
-        //     packageType
-        // }
-
-        // localStorage.setItem('checkoutDetails', JSON.stringify(checkoutDetails))
-
-        // if (!bookingPayload) return
-
-        // try {
-        //     const tokenRes = await axiosInstance.post("/payment/create-checkout-token", {
-        //         totalPrice,
-        //     });
-
-        //     const checkoutToken = tokenRes.data.token;
-
-        //     const res = await axiosInstance.post("/payment/create-checkout-session", {
-        //         checkoutToken,
-        //         totalPrice,
-        //         packageName,
-        //         successUrl: `${window.location.origin}/package/${packageId}?booking=success&checkoutToken=${checkoutToken}`,
-        //         cancelUrl: `${window.location.origin}/package/${packageId}?booking=cancelled`
-        //     });
-
-        //     const checkoutUrl = res.data.data.attributes.checkout_url;
-
-        //     window.location.href = checkoutUrl;
-        // } catch (err) {
-        //     console.error(err.response?.data || err.message);
-        //     alert("Checkout failed. Check server logs.");
-        // }
-    };
-
-    const handleProceed = () => {
-        onProceed();
-    }
-
-    const handleCancel = () => {
-        onCancel();
-    }
-
     return (
-        <Modal
-            open={open}
-            onCancel={onCancel}
-            footer={null}
-            className="booking-summary-modal"
-            width={1000}
-            style={{ top: 25 }}
-        >
-
+        <>
             <h2 className='booking-summary-title'>Booking Summary</h2>
             <div className="booking-summary-wrapper">
                 {/* Images Row */}
@@ -213,22 +136,6 @@ export default function BookingSummaryModal({
 
                 </div>
             </div>
-            <div className="booking-summary-actions">
-                <Button
-                    className='booking-summary-proceed'
-                    type="primary"
-                    onClick={handleProceed}
-                >
-                    Proceed
-                </Button>
-                <Button
-                    className="booking-summary-cancel"
-                    danger
-                    onClick={handleCancel}
-                >
-                    Cancel
-                </Button>
-            </div>
-        </Modal>
+        </>
     )
 }

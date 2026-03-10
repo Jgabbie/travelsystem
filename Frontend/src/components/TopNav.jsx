@@ -89,7 +89,7 @@ export default function TopNav() {
       <Header className="topnav">
         <div className="admin-logo-section">
           <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
-          <div className="brand">M&RC Travel and Tours</div>
+          <div className="brand">TRAVEX M&RC Travel and Tours</div>
         </div>
 
 

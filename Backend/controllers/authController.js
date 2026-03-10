@@ -45,7 +45,7 @@ const signupUser = async (req, res) => {
                     You can now log in to your account and start browsing our travel packages, tours, and exclusive offers.
                 </p>
 
-                <a href="http://localhost:5173/home"
+                <a href="http://localhost:3000/home"
                     style="
                         display:inline-block;
                         margin-top:25px;

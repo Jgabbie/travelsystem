@@ -16,6 +16,7 @@ import UserPackageQuotation from "./pages/client/UserPackageQuotation";
 import NewPassport from "./pages/client/NewPassport";
 import RenewPassport from "./pages/client/RenewPassport";
 import ApplyVisa from "./pages/client/ApplyVisa";
+import BookingProcess from "./pages/client/BookingProcess";
 
 import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
@@ -44,8 +45,6 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
 import "antd/dist/reset.css";
-
-
 
 
 function App() {
@@ -108,6 +107,7 @@ function App() {
           <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
           <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
           <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
+          <Route path='/booking-process' element={<BookingProcess />} />
         </Route>
 
         <Route path='*' element={<Navigate to="/home" replace />} />
