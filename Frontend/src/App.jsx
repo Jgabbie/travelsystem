@@ -44,74 +44,78 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 
+
 import "antd/dist/reset.css";
+import { BookingProvider } from "./context/BookingContext";
 
 
 function App() {
   return (
     <div>
-      <Routes>
+      <BookingProvider>
+        <Routes>
 
-        <Route path='/' element={<Navigate to="/home" replace />} />
+          <Route path='/' element={<Navigate to="/home" replace />} />
 
-        <Route element={<GuestsUsersRoute />}>
-          <Route path='/home' element={<LandingPage />} />
-          <Route path='/destinations-packages' element={<DestinationsPackages />} />
-          <Route path='/passandvisa-service' element={<PassAndVisaService />} />
-          <Route path='/apply-visa' element={<ApplyVisa />} />
-          <Route path='/new-passport' element={<NewPassport />} />
-          <Route path='/renew-passport' element={<RenewPassport />} />
-          <Route path='/package' element={<PackagePage />} />
-          <Route path='/package/:id' element={<PackagePage />} />
-        </Route>
-
-        {/* public routes */}
-        <Route element={<PublicRoute />}>
-          <Route path='/reset-password' element={<ResetPassword />} />
-        </Route>
-
-        {/* admin routes */}
-        <Route element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
-            <Route index element={<Navigate to="/dashboard" />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="bookings" element={<BookingManagement />} />
-            <Route path="bookings/:id/invoice" element={<UploadBookingInvoice />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="transactions" element={<TransactionManagement />} />
-            <Route path="packages" element={<PackageManagement />} />
-            <Route path="packages/add" element={<AddPackage />} />
-            <Route path="/packages/edit/:id" element={<AddPackage />} />
-            <Route path="ratings" element={<ReviewRatings />} />
-            <Route path="visa-applications" element={<VisaApplications />} />
-            <Route path="visa-services" element={<VisaServices />} />
-            <Route path="visa-services/add" element={<AddService />} />
-            <Route path="visa-services/edit/:id" element={<AddService />} />
-            <Route path="passport-applications" element={<PassportApplications />} />
-            <Route path="cancellation-requests" element={<CancellationRequests />} />
-            <Route path="adminprofile" element={<AdminProfile />} />
-            <Route path="package-quotation" element={<QuotationManagement />} />
-            <Route path="quotation/:id" element={<QuotationRequest />} />
-            {/* logging and auditing routes */}
-            <Route path="logging" element={<Logging />} />
-            <Route path="auditing" element={<Auditing />} />
+          <Route element={<GuestsUsersRoute />}>
+            <Route path='/home' element={<LandingPage />} />
+            <Route path='/destinations-packages' element={<DestinationsPackages />} />
+            <Route path='/passandvisa-service' element={<PassAndVisaService />} />
+            <Route path='/apply-visa' element={<ApplyVisa />} />
+            <Route path='/new-passport' element={<NewPassport />} />
+            <Route path='/renew-passport' element={<RenewPassport />} />
+            <Route path='/package' element={<PackagePage />} />
+            <Route path='/package/:id' element={<PackagePage />} />
           </Route>
-        </Route>
 
-        {/* protected routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path='/profile' element={<ProfilePage />} />
-          <Route path='/user-bookings' element={<UserBookings />} />
-          <Route path='/user-transactions' element={<UserTransactions />} />
-          <Route path='/wishlist' element={<Wishlist />} />
-          <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
-          <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
-          <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
-          <Route path='/booking-process' element={<BookingProcess />} />
-        </Route>
+          {/* public routes */}
+          <Route element={<PublicRoute />}>
+            <Route path='/reset-password' element={<ResetPassword />} />
+          </Route>
 
-        <Route path='*' element={<Navigate to="/home" replace />} />
-      </Routes>
+          {/* admin routes */}
+          <Route element={<AdminRoute />}>
+            <Route element={<AdminLayout />}>
+              <Route index element={<Navigate to="/dashboard" />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="bookings" element={<BookingManagement />} />
+              <Route path="bookings/:id/invoice" element={<UploadBookingInvoice />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="transactions" element={<TransactionManagement />} />
+              <Route path="packages" element={<PackageManagement />} />
+              <Route path="packages/add" element={<AddPackage />} />
+              <Route path="/packages/edit/:id" element={<AddPackage />} />
+              <Route path="ratings" element={<ReviewRatings />} />
+              <Route path="visa-applications" element={<VisaApplications />} />
+              <Route path="visa-services" element={<VisaServices />} />
+              <Route path="visa-services/add" element={<AddService />} />
+              <Route path="visa-services/edit/:id" element={<AddService />} />
+              <Route path="passport-applications" element={<PassportApplications />} />
+              <Route path="cancellation-requests" element={<CancellationRequests />} />
+              <Route path="adminprofile" element={<AdminProfile />} />
+              <Route path="package-quotation" element={<QuotationManagement />} />
+              <Route path="quotation/:id" element={<QuotationRequest />} />
+              {/* logging and auditing routes */}
+              <Route path="logging" element={<Logging />} />
+              <Route path="auditing" element={<Auditing />} />
+            </Route>
+          </Route>
+
+          {/* protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path='/profile' element={<ProfilePage />} />
+            <Route path='/user-bookings' element={<UserBookings />} />
+            <Route path='/user-transactions' element={<UserTransactions />} />
+            <Route path='/wishlist' element={<Wishlist />} />
+            <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
+            <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
+            <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
+            <Route path='/booking-process' element={<BookingProcess />} />
+          </Route>
+
+          <Route path='*' element={<Navigate to="/home" replace />} />
+        </Routes>
+      </BookingProvider>
     </div>
   );
 }

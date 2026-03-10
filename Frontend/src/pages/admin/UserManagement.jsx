@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Table, Input, Select, Button, Form, Modal, Tag, Space, message, Row, Col, Statistic, Card, ConfigProvider, Avatar } from "antd";
 import { SearchOutlined, EditOutlined, DeleteOutlined, UserOutlined, CheckCircleOutlined, ExclamationCircleOutlined, EyeOutlined } from "@ant-design/icons";
 import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import AddUserModal from "../../components/modals/AddUserModal";
 import "../../style/admin/users.css";
+
 
 
 export default function UserManagement() {

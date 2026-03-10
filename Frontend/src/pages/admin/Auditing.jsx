@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Tag, Table, Input, ConfigProvider, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+import axiosInstance from '../../config/axiosConfig';
 
 export default function Auditing() {
     const [logs, setLogs] = useState([]);

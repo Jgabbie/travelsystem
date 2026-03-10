@@ -1,5 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Modal, Button } from 'antd'
+import { useNavigate } from 'react-router-dom';
+import { useBooking } from '../../context/BookingContext';
 import dayjs from 'dayjs';
 import '../../style/components/modals/bookingsummarymodal.css'
 
@@ -16,16 +18,25 @@ const getDisplayDate = (value) => {
     return String(value)
 }
 
-export default function BookingProcess({
-    summary,
-    packageData,
-}) {
+export default function BookingProcess() {
+    const { bookingData } = useBooking();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!bookingData) {
+            navigate('/home', { replace: true });
+        }
+    }, [bookingData, navigate]);
+
+    if (!bookingData) return null;
+    const summary = bookingData || {}
+
+    console.log('Booking Summary Data:', summary);
 
     const data = summary
-    const travelers = data.travelers?.length ? data.travelers : ['None selected']
+    const travelers = data.travelerCount?.length ? data.travelers : ['None selected']
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : ['None selected']
     const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : ['None selected']
-    const addons = data.addons?.length ? data.addons : ['None selected']
     const travelDate = getDisplayDate(data.travelDate)
     const travelersCount = data.groupType === 'solo'
         ? 1
@@ -37,7 +48,7 @@ export default function BookingProcess({
     const totalPrice = packagePricePerPax * travelersCount
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
-    const packageId = data.packageId || null
+    const images = data.images || []
 
     return (
         <>
@@ -45,13 +56,13 @@ export default function BookingProcess({
             <div className="booking-summary-wrapper">
                 {/* Images Row */}
                 <div className="booking-summary-images">
-                    {packageData?.images?.length ? (
-                        packageData.images.map((img, index) => (
+                    {images.length ? (
+                        images.map((img, index) => (
                             <img
                                 key={index}
                                 className="booking-summary-image"
                                 src={img}
-                                alt={`${packageData.packageName}-${index}`}
+                                alt={`${packageName}-${index}`}
                                 draggable={false}
                             />
                         ))
@@ -107,8 +118,8 @@ export default function BookingProcess({
                         <div className='booking-summary-row'>
                             <span className="booking-summary-label">Airline</span>
                             <span className="booking-summary-value">
-                                {packageData?.packageAirlines?.length
-                                    ? <li>{packageData.packageAirlines[0].name}</li>
+                                {airlineOptions?.length
+                                    ? <li>{airlineOptions[0].name}</li>
                                     : <li>None selected</li>
                                 }
                             </span>
@@ -117,8 +128,8 @@ export default function BookingProcess({
                         <div className='booking-summary-row'>
                             <span className="booking-summary-label">Hotel</span>
                             <span className="booking-summary-value">
-                                {packageData?.packageHotels?.length
-                                    ? <li>{packageData.packageHotels[0].name}</li>
+                                {hotelOptions?.length
+                                    ? <li>{hotelOptions[0].name}</li>
                                     : <li>None selected</li>
                                 }
                             </span>

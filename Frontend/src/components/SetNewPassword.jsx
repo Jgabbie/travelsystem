@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Input, Button } from 'antd';
 import '../style/newpasswordpage.css'
+import axiosInstance from '../config/axiosConfig';
 
 export default function SetNewPassword() {
 

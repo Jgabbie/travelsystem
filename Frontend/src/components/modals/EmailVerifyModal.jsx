@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import '../../style/components/modals/emailverifymodal.css'
+
 
 export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, userEmail, userUsername, userPassword }) {
 

@@ -1,10 +1,12 @@
-import React, { use, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider } from 'antd';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
 import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
 import '../../style/client/packagepage.css'
+
 
 import TopNavUser from '../../components/TopNavUser'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
@@ -15,9 +17,11 @@ import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
 import DomesticQuotationModal from '../../components/modals/DomesticQuotationModal';
 
+
 export default function PackagePage() {
     const { id } = useParams();
     const { auth } = useAuth();
+    const { setBookingData } = useBooking();
 
     const navigate = useNavigate();
 
@@ -38,7 +42,6 @@ export default function PackagePage() {
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
     const [travelerCounts, setTravelerCounts] = useState(null)
-    const [selectedAddOns, setSelectedAddOns] = useState([])
     const [arrangementSelection, setArrangementSelection] = useState(null)
     const [arrangementSelectionDomestic, setArrangementSelectionDomestic] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
@@ -64,7 +67,6 @@ export default function PackagePage() {
     const resetBookingFlow = () => {
         setSelectedDate(null)
         setTravelerCounts(null)
-        setSelectedAddOns([])
         setArrangementSelection(null)
         setSoloGroupSelection(null)
 
@@ -305,8 +307,8 @@ export default function PackagePage() {
         groupType: soloGroupSelection,
         hotelOptions: packageData?.packageHotels,
         airlineOptions: packageData?.packageAirlines,
-        addons: selectedAddOns.map((key) => addOnLabelMap[key] || key),
         travelDate: selectedDate,
+        images: packageData?.images || []
     }
 
     //submit review to backend and refresh reviews after successful submission
@@ -400,10 +402,23 @@ export default function PackagePage() {
         setSoloGroupSelection(nextSelection)
         setIsSoloGroupModalOpen(false)
         if (nextSelection === 'solo') {
-            setTravelerCounts({ adult: 1, child: 0, infant: 0, senior: 0 })
-            navigate('/booking-process', {
-                state: { summaryData: summaryData }
-            });
+            const travelers = { adult: 1, child: 0, infant: 0, senior: 0 }
+
+            setTravelerCounts(travelers)
+
+            const bookingSummary = {
+                ...summaryData,
+                travelerCount: travelers
+            }
+
+            setBookingData(bookingSummary)
+            navigate('/booking-process')
+
+            return
+        } else {
+            setBookingData(summaryData)
+            navigate('/booking-process')
+
             return
         }
     }
