@@ -285,12 +285,6 @@ export default function PackagePage() {
         })
         .filter(Boolean)
 
-    const addOnLabelMap = {
-        'extra-baggage': 'Extra baggage',
-        'flight-meals': 'Flight meals',
-        'entertainment': 'Entertainment',
-        'optional-tours': 'Optional tours'
-    }
     const totalTravelers = ['adult', 'child', 'infant', 'senior']
         .reduce((sum, key) => sum + (travelerCounts?.[key] || 0), 0)
 
@@ -356,6 +350,13 @@ export default function PackagePage() {
         }
     };
 
+    const handleProceedDate = () => {
+        setIsDateModalOpen(false)
+
+        setBookingData(summaryData)
+        navigate("/booking-process")
+    }
+
     const handleBookingProcess = () => {
         if (!auth) {
             setIsLoginVisible(true);
@@ -368,11 +369,6 @@ export default function PackagePage() {
             setIsArrangementModalOpen(true)
         }
     };
-
-    const handleProceedDate = () => {
-        setIsDateModalOpen(false)
-        setIsSoloGroupModalOpen(true)
-    }
 
     const handleProceedArrangement = () => {
         setIsArrangementModalOpen(false)
@@ -395,32 +391,6 @@ export default function PackagePage() {
 
     const handleSubmitQuotation = () => {
         setIsQuotationModalOpen(false)
-    }
-
-    const handleProceedSoloGroup = (selection) => {
-        const nextSelection = selection || soloGroupSelection
-        setSoloGroupSelection(nextSelection)
-        setIsSoloGroupModalOpen(false)
-        if (nextSelection === 'solo') {
-            const travelers = { adult: 1, child: 0, infant: 0, senior: 0 }
-
-            setTravelerCounts(travelers)
-
-            const bookingSummary = {
-                ...summaryData,
-                travelerCount: travelers
-            }
-
-            setBookingData(bookingSummary)
-            navigate('/booking-process')
-
-            return
-        } else {
-            setBookingData(summaryData)
-            navigate('/booking-process')
-
-            return
-        }
     }
 
     return (
@@ -682,16 +652,6 @@ export default function PackagePage() {
                     </div>
                 </Modal>
 
-
-                <ChooseDateIntModal
-                    open={isDateModalOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedDate}
-                    packageData={packageData}
-                    selectedDate={selectedDate}
-                    onDateChange={setSelectedDate}
-                />
-
                 <AllInOrLandDomesticModal
                     open={isArrangementDomModalOpen}
                     onCancel={resetBookingFlow}
@@ -736,12 +696,13 @@ export default function PackagePage() {
                         .map((dayKey) => dayKey.replace('day', 'Day '))}
                 />
 
-                <SoloOrGrouped
-                    open={isSoloGroupModalOpen}
+                <ChooseDateIntModal
+                    open={isDateModalOpen}
                     onCancel={resetBookingFlow}
-                    onProceed={handleProceedSoloGroup}
-                    onSelect={setSoloGroupSelection}
-                    selection={soloGroupSelection}
+                    onProceed={handleProceedDate}
+                    packageData={packageData}
+                    selectedDate={selectedDate}
+                    onDateChange={setSelectedDate}
                 />
 
                 {/* login modal */}

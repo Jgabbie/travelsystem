@@ -17,8 +17,6 @@
 
 .booking-summary-wrapper {
     max-height: 70vh;
-    overflow: auto;
-    display: flex;
     flex-direction: column;
     gap: 20px;
     text-align: center;
@@ -36,11 +34,12 @@
 .booking-summary-images {
     display: flex;
     gap: 10px;
+    margin-bottom: 20px;
 }
 
 .booking-summary-image {
-    width: 320px;
-    height: 180px;
+    width: 480px;
+    height: 270px;
     object-fit: cover;
     border-radius: 2px;
 }

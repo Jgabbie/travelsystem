@@ -1,25 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Input, Select, Button, Form, Modal, Tag, Space, message, Row, Col, Statistic, Card, ConfigProvider, Avatar } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, UserOutlined, CheckCircleOutlined, ExclamationCircleOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  EyeOutlined,
+  FilePdfOutlined
+} from "@ant-design/icons";
 import axios from 'axios';
-import axiosInstance from '../../config/axiosConfig';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 import AddUserModal from "../../components/modals/AddUserModal";
 import "../../style/admin/users.css";
 
-
+// HELPER: Converts Logo.png to Base64
+const getBase64ImageFromURL = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.setAttribute("crossOrigin", "anonymous");
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = (error) => reject(error);
+    img.src = url;
+  });
+};
 
 export default function UserManagement() {
-
   const [form] = Form.useForm();
-
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetRole, setTargetRole] = useState("User");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -28,11 +51,7 @@ export default function UserManagement() {
   const getUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        "http://localhost:8000/api/user/getUsers",
-        { withCredentials: true }
-      );
-
+      const response = await axios.get("http://localhost:8000/api/user/getUsers", { withCredentials: true });
       const formattedData = response.data.map(user => ({
         key: user._id,
         id: user._id,
@@ -47,7 +66,6 @@ export default function UserManagement() {
         createdAt: user.createdAt || "",
         lastLogin: user.lastLogin || ""
       }));
-
       setUsers(formattedData);
     } catch {
       message.error("Failed to load users");
@@ -56,134 +74,110 @@ export default function UserManagement() {
     }
   };
 
-  useEffect(() => {
-    getUsers();
-  }, []);
+  useEffect(() => { getUsers(); }, []);
+
+  // PDF GENERATION WITH LOGO & HEADER
+  const generatePDF = async () => {
+    const doc = new jsPDF();
+    const tableColumn = ["Name", "Username", "Email", "Role", "Status"];
+    const tableRows = filteredUsers.map(user => [
+      user.name, user.username, user.email, user.role, user.status
+    ]);
+
+    try {
+      // 1. Add Logo
+      const imgData = await getBase64ImageFromURL("/images/Logo.png");
+      doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+    } catch (e) {
+      console.warn("Logo not found at /public/images/Logo.png");
+    }
+
+    // 2. Company Info Header
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+
+    // 3. Report Title & Search Input Display
+    doc.setDrawColor(48, 87, 151);
+    doc.line(14, 38, 196, 38);
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(48, 87, 151);
+    doc.text("USER MANAGEMENT REPORT", 14, 48);
+
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
+
+    // Display Search Value if any
+    let tableStartY = 62;
+    if (searchText) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Search Criteria: "${searchText}"`, 14, 62);
+      tableStartY = 68;
+    }
+
+    // 4. Generate Table
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: tableStartY,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [48, 87, 151] },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+    });
+
+    doc.save(`User_Report_${new Date().toLocaleDateString()}.pdf`);
+    message.success("Report exported to PDF successfully.");
+  };
 
   const handleDelete = async (id) => {
     Modal.confirm({
-      className: "users-manage-confirm-modal",
-      icon: null,
-      title: (
-        <div className="users-manage-confirm-title" style={{ textAlign: "center" }}>
-          Confirm Delete
-        </div>
-      ),
-      content: (
-        <div className="users-manage-confirm-content" style={{ textAlign: "center" }}>
-          <p className="users-manage-confirm-text">Are you sure you want to delete this user?</p>
-        </div>
-      ),
+      title: "Confirm Delete",
+      content: "Are you sure you want to delete this user?",
       okText: "Delete",
-      cancelText: "Cancel",
-      okButtonProps: { className: "users-manage-confirm-btn" },
-      cancelButtonProps: { className: "users-manage-cancel-btn" },
-      style: { top: 200 },
+      okType: "danger",
       onOk: async () => {
         try {
-          await axios.delete(
-            `http://localhost:8000/api/user/deleteUsers`,
-            {
-              data: { id },
-              withCredentials: true
-            }
-          );
+          await axios.delete(`http://localhost:8000/api/user/deleteUsers`, { data: { id }, withCredentials: true });
           message.success("User deleted");
           getUsers();
-        } catch {
-          message.error("Delete failed");
-        }
+        } catch { message.error("Delete failed"); }
       }
     });
   };
 
-  const filteredUsers = users.filter(user => {
-
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchText.toLowerCase());
-
-    const matchesRole =
-      roleFilter === "" || user.role === roleFilter;
-
-    const matchesStatus =
-      statusFilter === "" || user.status === statusFilter;
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
-
   const isEditing = (record) => record.key === editingKey;
-
   const edit = (record) => {
-    form.setFieldsValue({
-      name: record.name,
-      username: record.username,
-      role: record.role
-    });
+    form.setFieldsValue({ ...record });
     setEditingKey(record.key);
   };
-
-  const cancel = () => {
-    setEditingKey("");
-  };
-
-  const openViewModal = (record) => {
-    setSelectedUser(record);
-    setIsViewModalOpen(true);
-  };
-
   const save = async (key) => {
     try {
       const row = await form.validateFields();
-      const newData = [...users];
-      const index = newData.findIndex((item) => item.key === key);
-
-      if (index > -1) {
-        Modal.confirm({
-          className: "users-manage-confirm-modal",
-          icon: null,
-          title: (
-            <div className="users-manage-confirm-title" style={{ textAlign: "center" }}>
-              Confirm Changes
-            </div>
-          ),
-          content: (
-            <div className="users-manage-confirm-content" style={{ textAlign: "center" }}>
-              <p className="users-manage-confirm-text">Are you sure about these changes?</p>
-            </div>
-          ),
-          okText: "Save",
-          cancelText: "Cancel",
-          okButtonProps: { className: "users-manage-confirm-btn" },
-          cancelButtonProps: { className: "users-manage-cancel-btn" },
-          style: { top: 200 },
-          onOk: async () => {
-            try {
-              await axios.put(
-                `http://localhost:8000/api/admin/editUser/${key}`,
-                {
-                  username: row.username,
-                  name: row.name,
-                  role: row.role
-                },
-                { withCredentials: true }
-              );
-              const item = newData[index];
-              newData.splice(index, 1, { ...item, ...row });
-              setUsers(newData);
-              setEditingKey("");
-              message.success("User updated");
-            } catch (err) {
-              message.error(err?.response?.data?.message || "Update failed");
-            }
-          }
-        });
-      }
-    } catch {
-      message.error("Please fix validation errors");
-    }
+      await axios.put(`http://localhost:8000/api/admin/editUser/${key}`, row, { withCredentials: true });
+      setEditingKey("");
+      getUsers();
+      message.success("User updated");
+    } catch { message.error("Update failed"); }
   };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.username.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchText.toLowerCase());
+    const matchesRole = roleFilter === "" || user.role === roleFilter;
+    const matchesStatus = statusFilter === "" || user.status === statusFilter;
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   const columns = [
     { title: "Name", dataIndex: "name", editable: true },
@@ -193,16 +187,12 @@ export default function UserManagement() {
       title: "Role",
       dataIndex: "role",
       editable: true,
-      render: role => (
-        <Tag color={role === "Admin" ? "purple" : "blue"}>{role}</Tag>
-      )
+      render: role => <Tag color={role === "Admin" ? "purple" : "blue"}>{role}</Tag>
     },
     {
       title: "Status",
       dataIndex: "status",
-      render: status => (
-        <Tag color={status === "Verified" ? "green" : "orange"}>{status}</Tag>
-      )
+      render: status => <Tag color={status === "Verified" ? "green" : "orange"}>{status}</Tag>
     },
     {
       title: "Actions",
@@ -210,40 +200,16 @@ export default function UserManagement() {
         <Space>
           {isEditing(record) ? (
             <>
-              <Button
-                className='savebutton-usermanagement'
-                type="primary"
-                onClick={() => save(record.key)}
-              >
-                Save
-              </Button>
-              <Button className='cancelbutton-usermanagement' onClick={cancel}>
-                Cancel
-              </Button>
+              {/* RESTORED original classes */}
+              <Button className='savebutton-usermanagement' type="primary" onClick={() => save(record.key)}>Save</Button>
+              <Button className='cancelbutton-usermanagement' onClick={() => setEditingKey("")}>Cancel</Button>
             </>
           ) : (
             <>
-              <Button
-                className='viewbutton-usermanagement'
-                type='primary'
-                icon={<EyeOutlined />}
-                onClick={() => openViewModal(record)}
-                disabled={editingKey !== ""}
-              />
-              <Button
-                className='editbutton-usermanagement'
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => edit(record)}
-                disabled={editingKey !== ""}
-              />
-              <Button
-                className='deletebutton-usermanagement'
-                type='primary'
-                icon={<DeleteOutlined />}
-                onClick={() => handleDelete(record.id)}
-                disabled={editingKey !== ""}
-              />
+              {/* RESTORED original outline-style classes */}
+              <Button className='viewbutton-usermanagement' type='primary' icon={<EyeOutlined />} onClick={() => { setSelectedUser(record); setIsViewModalOpen(true); }} />
+              <Button className='editbutton-usermanagement' type="primary" icon={<EditOutlined />} onClick={() => edit(record)} />
+              <Button className='deletebutton-usermanagement' type='primary' icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)} />
             </>
           )}
         </Space>
@@ -252,17 +218,12 @@ export default function UserManagement() {
   ];
 
   const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-
-    const inputType = col.dataIndex === "role" ? "select" : "text";
-
+    if (!col.editable) return col;
     return {
       ...col,
       onCell: (record) => ({
         record,
-        inputType,
+        inputType: col.dataIndex === "role" ? "select" : "text",
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record)
@@ -270,142 +231,48 @@ export default function UserManagement() {
     };
   });
 
-  const EditableCell = ({
-    editing,
-    dataIndex,
-    inputType,
-    record,
-    children,
-    ...restProps
-  }) => {
-    let inputNode = <Input />;
-
-    if (inputType === "select") {
-      inputNode = (
-        <Select
-          className="user-edit-select"
-          options={[
-            { value: "Admin", label: "Admin" },
-            { value: "User", label: "User" }
-          ]}
-        />
-      );
-    }
-
+  const EditableCell = ({ editing, dataIndex, inputType, children, ...restProps }) => {
+    const inputNode = inputType === "select" ? (
+      <Select options={[{ value: "Admin", label: "Admin" }, { value: "User", label: "User" }]} />
+    ) : <Input />;
     return (
       <td {...restProps}>
         {editing ? (
-          <Form.Item
-            name={dataIndex}
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: `Please enter ${dataIndex}` }]}
-          >
+          <Form.Item name={dataIndex} style={{ margin: 0 }} rules={[{ required: true, message: `Please enter ${dataIndex}` }]}>
             {inputNode}
           </Form.Item>
-        ) : (
-          children
-        )}
+        ) : children}
       </td>
     );
   };
 
-  const totalUsers = users.length;
-  const verifiedUsers = users.filter(u => u.status === "Verified").length;
-  const unverifiedUsers = users.filter(u => u.status === "Pending").length;
-
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: "#305797"
-        }
-      }}
-    >
+    <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
       <div className="user-management-container">
-
         <h1 className="page-header">User Management</h1>
 
         <Row gutter={16} style={{ marginBottom: 20 }}>
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic
-                title="Total Users"
-                value={totalUsers}
-                prefix={<UserOutlined />}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic
-                title="Verified Users"
-                value={verifiedUsers}
-                prefix={<CheckCircleOutlined />}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={8}>
-            <Card>
-              <Statistic
-                title="Unverified Users"
-                value={unverifiedUsers}
-                prefix={<ExclamationCircleOutlined />}
-              />
-            </Card>
-          </Col>
+          <Col xs={24} sm={8}><Card><Statistic title="Total Users" value={users.length} prefix={<UserOutlined />} /></Card></Col>
+          <Col xs={24} sm={8}><Card><Statistic title="Verified Users" value={users.filter(u => u.status === "Verified").length} prefix={<CheckCircleOutlined />} /></Card></Col>
+          <Col xs={24} sm={8}><Card><Statistic title="Unverified Users" value={users.filter(u => u.status === "Pending").length} prefix={<ExclamationCircleOutlined />} /></Card></Col>
         </Row>
 
         <div className="user-actions">
-          <Input
-            prefix={<SearchOutlined />}
-            placeholder="Search name, username or email..."
-            className="search-input"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-          />
+          <Input prefix={<SearchOutlined />} placeholder="Search..." className="search-input" value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
+          <Select placeholder="Role" style={{ width: 140 }} allowClear onChange={(v) => setRoleFilter(v || "")} options={[{ value: "Admin", label: "Admin" }, { value: "User", label: "User" }]} />
+          <Select placeholder="Status" style={{ width: 140 }} allowClear onChange={(v) => setStatusFilter(v || "")} options={[{ value: "Verified", label: "Verified" }, { value: "Pending", label: "Pending" }]} />
 
-          <Select
-            className='user-select'
-            placeholder="Role"
-            style={{ width: 140 }}
-            allowClear
-            value={roleFilter || undefined}
-            onChange={(value) => setRoleFilter(value || "")}
-            options={[
-              { value: "Admin", label: "Admin" },
-              { value: "User", label: "User" }
-            ]}
-          />
-
-          <Select
-            className='user-select'
-            placeholder="Status"
-            style={{ width: 140 }}
-            allowClear
-            value={statusFilter || undefined}
-            onChange={(value) => setStatusFilter(value || "")}
-            options={[
-              { value: "Verified", label: "Verified" },
-              { value: "Pending", label: "Pending" }
-            ]}
-          />
-
-          <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>
-            Add User
-          </Button>
+          <Space style={{ marginLeft: 'auto' }}>
+            {/* RESTORED original classes */}
+            <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>Add User</Button>
+            <Button className='export-pdf-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+          </Space>
         </div>
 
         <Card style={{ marginTop: 20 }}>
           <Form form={form} component={false}>
             <Table
-              components={{
-                body: {
-                  cell: EditableCell
-                }
-              }}
+              components={{ body: { cell: EditableCell } }}
               loading={loading}
               columns={mergedColumns}
               dataSource={filteredUsers}
@@ -416,13 +283,7 @@ export default function UserManagement() {
           </Form>
         </Card>
 
-        <AddUserModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          roleToAdd={targetRole}
-          refreshData={getUsers}
-        />
-
+        <AddUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} roleToAdd={targetRole} refreshData={getUsers} />
 
         <Modal
           open={isViewModalOpen}
@@ -435,55 +296,21 @@ export default function UserManagement() {
           {selectedUser && (
             <div className="users-view-content">
               <div className="users-view-header">
-                <Avatar
-                  size={96}
-                  src={selectedUser.avatar || undefined}
-                  icon={!selectedUser.avatar ? <UserOutlined /> : undefined}
-                  className="users-view-avatar"
-                />
+                <Avatar size={96} src={selectedUser.avatar || undefined} icon={<UserOutlined />} className="users-view-avatar" />
                 <div className="users-view-title">
                   <h2 className="users-view-name">{selectedUser.name}</h2>
                   <div className="users-view-subtitle">
                     <span>{selectedUser.email}</span>
-                    <Tag color={selectedUser.role === "Admin" ? "purple" : "blue"}>
-                      {selectedUser.role}
-                    </Tag>
-                    <Tag color={selectedUser.status === "Verified" ? "green" : "orange"}>
-                      {selectedUser.status}
-                    </Tag>
+                    <Tag color={selectedUser.role === "Admin" ? "purple" : "blue"}>{selectedUser.role}</Tag>
+                    <Tag color={selectedUser.status === "Verified" ? "green" : "orange"}>{selectedUser.status}</Tag>
                   </div>
                 </div>
               </div>
-
               <div className="users-view-grid">
-                <div className="users-view-item">
-                  <span className="users-view-label">Username</span>
-                  <span className="users-view-value">{selectedUser.username}</span>
-                </div>
-                <div className="users-view-item">
-                  <span className="users-view-label">Email</span>
-                  <span className="users-view-value">{selectedUser.email}</span>
-                </div>
-                <div className="users-view-item">
-                  <span className="users-view-label">Phone</span>
-                  <span className="users-view-value">{("0" + selectedUser.phone || "Not provided")}</span>
-                </div>
-                <div className="users-view-item">
-                  <span className="users-view-label">Address</span>
-                  <span className="users-view-value">{selectedUser.address || "Not provided"}</span>
-                </div>
-                <div className="users-view-item">
-                  <span className="users-view-label">Created</span>
-                  <span className="users-view-value">
-                    {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : "Not available"}
-                  </span>
-                </div>
-                <div className="users-view-item">
-                  <span className="users-view-label">Last Login</span>
-                  <span className="users-view-value">
-                    {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "Not available"}
-                  </span>
-                </div>
+                <div className="users-view-item"><span className="users-view-label">Username</span><span className="users-view-value">{selectedUser.username}</span></div>
+                <div className="users-view-item"><span className="users-view-label">Phone</span><span className="users-view-value">{selectedUser.phone || "N/A"}</span></div>
+                <div className="users-view-item"><span className="users-view-label">Address</span><span className="users-view-value">{selectedUser.address || "N/A"}</span></div>
+                <div className="users-view-item"><span className="users-view-label">Last Login</span><span className="users-view-value">{selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "N/A"}</span></div>
               </div>
             </div>
           )}

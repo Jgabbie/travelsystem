@@ -1,10 +1,30 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/booking.css";
+
+
+const getBase64ImageFromURL = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.setAttribute("crossOrigin", "anonymous");
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = (error) => reject(error);
+    img.src = url;
+  });
+};
 
 export default function BookingManagement() {
 
@@ -84,6 +104,68 @@ export default function BookingManagement() {
       matchesTravelDate
     );
   }), [data, searchText, statusFilter, bookingDateFilter, travelDateFilter]);
+
+  const generatePDF = async () => {
+    const doc = new jsPDF();
+    const tableColumn = ["Name", "Username", "Email", "Role", "Status"];
+    const tableRows = filteredData.map(user => [
+      user.name, user.username, user.email, user.role, user.status
+    ]);
+
+    try {
+      // 1. Add Logo
+      const imgData = await getBase64ImageFromURL("/images/Logo.png");
+      doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+    } catch (e) {
+      console.warn("Logo not found at /public/images/Logo.png");
+    }
+
+    // 2. Company Info Header
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+
+    // 3. Report Title & Search Input Display
+    doc.setDrawColor(48, 87, 151);
+    doc.line(14, 38, 196, 38);
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(48, 87, 151);
+    doc.text("USER MANAGEMENT REPORT", 14, 48);
+
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
+
+    // Display Search Value if any
+    let tableStartY = 62;
+    if (searchText) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Search Criteria: "${searchText}"`, 14, 62);
+      tableStartY = 68;
+    }
+
+    // 4. Generate Table
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: tableStartY,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [48, 87, 151] },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+    });
+
+    doc.save(`User_Report_${new Date().toLocaleDateString()}.pdf`);
+    message.success("Report exported to PDF successfully.");
+  };
 
   // editing functions
   const isEditing = (record) => record.key === editingKey;
@@ -471,7 +553,10 @@ export default function BookingManagement() {
             allowClear
           />
 
-          <Button className="exportbutton-bookingmanagement" type="primary">Export</Button>
+          <Space style={{ marginLeft: 'auto' }}>
+            {/* RESTORED original classes */}
+            <Button className='export-pdf-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+          </Space>
         </div>
 
         <Card>
