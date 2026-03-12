@@ -241,7 +241,7 @@ export default function DestinationsPackages() {
                                 </div>
                             </Col>
 
-                            <Col xs={24} md={12} xl={6}>
+                            <Col xs={24} md={12} xl={5}>
                                 <div className="filter-field">
                                     <Text className="destinations-label">Tags</Text>
                                     <Select
@@ -259,7 +259,7 @@ export default function DestinationsPackages() {
                                 </div>
                             </Col>
 
-                            <Col xs={24} md={12} xl={6}>
+                            <Col xs={24} md={12} xl={4}>
                                 <div className="filter-field">
                                     <Text className="destinations-label">Tour Type</Text>
                                     <Select
@@ -275,7 +275,29 @@ export default function DestinationsPackages() {
                                 </div>
                             </Col>
 
-                            <Col xs={24} md={12} xl={6}>
+                            <Col xs={24} md={12} xl={4}>
+                                <div className="filter-field">
+                                    <Text className="destinations-label">Travelers</Text>
+                                    <InputNumber
+                                        className='destinations-inputs'
+                                        min={1}
+                                        max={100}
+                                        placeholder="How many travellers?"
+                                        value={travelersValue}
+                                        onChange={(value) => setTravelersValue(value ?? null)}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    <Text className="filter-hint">
+                                        Show packages with available slots for your group size
+                                    </Text>
+                                </div>
+                            </Col>
+
+                            <Col xs={24} md={12} xl={5}>
                                 <div className="filter-field">
                                     <Text className="destinations-label">Days of Tour</Text>
                                     <div className="filter-range-inputs">
@@ -307,27 +329,6 @@ export default function DestinationsPackages() {
                                 </div>
                             </Col>
 
-                            <Col xs={24} md={12} xl={6}>
-                                <div className="filter-field">
-                                    <Text className="destinations-label">Travelers</Text>
-                                    <InputNumber
-                                        className='destinations-inputs'
-                                        min={1}
-                                        max={100}
-                                        placeholder="How many travellers?"
-                                        value={travelersValue}
-                                        onChange={(value) => setTravelersValue(value ?? null)}
-                                        onKeyDown={(e) => {
-                                            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
-                                                e.preventDefault()
-                                            }
-                                        }}
-                                    />
-                                    <Text className="filter-hint">
-                                        Show packages with available slots for your group size
-                                    </Text>
-                                </div>
-                            </Col>
                         </Row>
                     </div>
 
