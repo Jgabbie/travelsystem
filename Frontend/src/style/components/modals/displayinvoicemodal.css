@@ -1,9 +1,11 @@
 .display-invoice-modal .ant-modal-content {
     border-radius: 12px;
-    padding: 24px;
+    padding: 2px;
 }
 
 .display-invoice-wrapper {
+    max-height: 70vh;
+    overflow: auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -16,6 +18,7 @@
     color: #1f2a44;
     margin: 0;
     text-align: center;
+    padding-bottom: 10px;
 }
 
 .display-invoice-subtitle {
@@ -35,4 +38,34 @@
     display: flex;
     justify-content: flex-end;
     margin-top: 20px;
+}
+
+.display-invoice-proceed {
+    background-color: #fff !important;
+    color: #305797 !important;
+    border-radius: 10px;
+    border: solid 1px #305797 !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.display-invoice-proceed:hover {
+    background-color: #305797 !important;
+    color: #fff !important;
+}
+
+.display-invoice-cancel {
+    background-color: #fff !important;
+    color: #992A46 !important;
+    border-radius: 10px;
+    border: solid 1px #992A46 !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.display-invoice-cancel:hover {
+    background-color: #992A46 !important;
+    color: #fff !important;
 }

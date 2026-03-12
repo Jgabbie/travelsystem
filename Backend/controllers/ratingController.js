@@ -1,4 +1,5 @@
 const Rating = require('../models/rating')
+const mongoose = require('mongoose')
 
 const submitRating = async (req, res) => {
     const { packageId, rating, review, fullName, email } = req.body;
@@ -152,4 +153,35 @@ const getAllRatings = async (_req, res) => {
     }
 }
 
-module.exports = { submitRating, getPackageRatings, deleteRating, getUserRatings, getAllRatings, updateRating }
+const getAverageRating = async (req, res) => {
+    try {
+        const { packageId } = req.params;
+
+        const result = await Rating.aggregate([
+            {
+                $match: {
+                    packageId: new mongoose.Types.ObjectId(packageId)
+                }
+            },
+            {
+                $group: {
+                    _id: "$packageId",
+                    averageRating: { $avg: "$rating" },
+                    totalRatings: { $sum: 1 }
+                }
+            }
+        ]);
+
+        if (result.length === 0) {
+            return res.json({ averageRating: 0, totalRatings: 0 });
+        }
+
+        res.json(result[0]);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { submitRating, getPackageRatings, deleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating }

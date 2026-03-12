@@ -16,12 +16,13 @@ export default function ChooseDateIntModal({
     // Sync local selection with parent (dayjs object) — only date
     useEffect(() => {
         if (selectedDate) {
-            const dateStr = dayjs(selectedDate).format('YYYY-MM-DD');
-            setSelectedStartDate(dateStr);
+            // Use the parent-provided selectedDate
+            setSelectedStartDate(dayjs(selectedDate).format('YYYY-MM-DD'));
         } else {
             setSelectedStartDate(null);
         }
-    }, [selectedDate]);
+    }, [selectedDate, packageData]);
+
 
     const handleProceed = () => {
         if (!selectedStartDate) return;
@@ -40,39 +41,61 @@ export default function ChooseDateIntModal({
             footer={null}
             rootClassName="choose-date-int-modal"
             width={860}
-            style={{ top: 90 }}
+            style={{ top: 30 }}
         >
             <div className="choose-date-int-content">
-                <h1 className="choose-date-heading">Select Date</h1>
+                <h1 className="choose-date-heading">Select Preferred Date</h1>
+                <h3 className='choose-date-secondheading'>Available Dates</h3>
 
                 <div className="budget-range-section">
                     <div className="budget-cards-container">
                         {packageData?.packageSpecificDate?.map((range) => {
-                            const startDateStr = dayjs(range[0]).format('YYYY-MM-DD'); // no time
-                            const endDateStr = dayjs(range[1]).format('YYYY-MM-DD');   // no time
-                            const label = `${dayjs(range[0]).format('MMM D')} - ${dayjs(range[1]).format('MMM D')}`;
-                            const price = packageData?.packagePricePerPax;
+                            const startDateStr = dayjs(range.startdaterange).format('YYYY-MM-DD');
+
+                            const label = `${dayjs(range.startdaterange).format('MMM D')} - ${dayjs(range.enddaterange).format('MMM D')}`;
+
+                            const price =
+                                (packageData?.packagePricePerPax || 0) + (range.extrarate || 0);
 
                             return (
                                 <div
                                     key={startDateStr}
-                                    className={`budget-card ${selectedStartDate === startDateStr ? 'selected' : ''}`}
+                                    className={`budget-card ${selectedStartDate === startDateStr ? 'selected' : ''
+                                        }`}
                                     onClick={() => {
                                         setSelectedStartDate(startDateStr);
                                         onDateChange?.(startDateStr);
                                     }}
                                 >
-                                    <span>{label}</span>
-                                    {price != null && (
-                                        <span className="range-price">
-                                            ₱{price.toLocaleString()} / pax
-                                        </span>
-                                    )}
+                                    <div className="budget-card-info">
+                                        <span className='budget-card-daterange'> <span className='budget-card-daterange-dates'>Dates:</span> {label}</span>
+
+                                        {price != null && (
+                                            <span className="range-price">
+                                                ₱{price.toLocaleString()} / pax
+                                            </span>
+                                        )}
+                                    </div>
+
+
+                                    <span className="range-slots">
+                                        {range.slots} slots left
+                                    </span>
                                 </div>
                             );
                         })}
+
+                        <div>
+                            <h3>
+                                You have selected: {selectedStartDate ? dayjs(selectedStartDate).format('MMMM D, YYYY') : 'None'}
+                            </h3>
+                        </div>
                     </div>
+
+
                 </div>
+
+
 
                 <div className="choose-date-actions">
                     <Button

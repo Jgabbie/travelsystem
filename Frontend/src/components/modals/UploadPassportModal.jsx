@@ -1,80 +1,119 @@
 import React, { useState } from 'react';
 import { Modal, Button, Upload, message, ConfigProvider } from 'antd';
-import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
 import '../../style/components/modals/uploadpassportmodal.css';
 
-export default function UploadPassportModal({ open, onCancel, onProceed }) {
-    const [fileList, setFileList] = useState([]);
+export default function UploadPassportModal({ open, onCancel, onProceed, summary }) {
+    const travelerCount = summary?.travelerCount?.adult + summary?.travelerCount?.child + summary?.travelerCount?.infant || 0;
+
+    const [fileLists, setFileLists] = useState(Array(travelerCount).fill([]));
+    const [previews, setPreviews] = useState(Array(travelerCount).fill(null));
 
     const handleProceed = () => {
-        if (!fileList.length) {
-            message.warning('Please upload a passport image before proceeding.');
+        const allUploaded = fileLists.every(list => list.length > 0);
+        if (!allUploaded) {
+            message.warning('Please upload passport images for all travelers before proceeding.');
             return;
         }
         onProceed?.();
     };
 
     const handleCancel = () => {
-        setFileList([]);
+        setFileLists(Array(travelerCount).fill([]));
+        setPreviews(Array(travelerCount).fill(null));
         onCancel?.();
+    };
+
+    const handleChange = (index) => ({ fileList: nextList }) => {
+        const newFileLists = [...fileLists];
+        newFileLists[index] = nextList;
+        setFileLists(newFileLists);
+
+        const newPreviews = [...previews];
+        if (nextList.length > 0) {
+            newPreviews[index] = URL.createObjectURL(nextList[0].originFileObj);
+        } else {
+            newPreviews[index] = null;
+        }
+        setPreviews(newPreviews);
     };
 
     return (
         <ConfigProvider
             theme={{
-                token: {
-                    colorPrimary: '#305797',
-                }
+                token: { colorPrimary: '#305797' }
             }}
         >
             <Modal
                 open={open}
                 onCancel={handleCancel}
                 footer={null}
-                width={800}
+                width={1000}
                 centered
                 className="upload-passport-modal"
             >
+                <h2 className="upload-passport-title">Upload Passport</h2>
                 <div className="upload-passport-wrapper">
-                    <h2 className="upload-passport-title">Upload Passport</h2>
                     <p className="upload-passport-text">
-                        Please upload a clear image of your passport bio page.
+                        Please upload a clear image of your passport bio page for each traveler.
                     </p>
 
-                    <Upload.Dragger
-                        fileList={fileList}
-                        beforeUpload={() => false}
-                        onChange={({ fileList: nextList }) => setFileList(nextList)}
-                        accept="image/*,application/pdf"
-                        maxCount={1}
-                        className="upload-passport-dragger"
-                        showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
-                    >
-                        <p className="ant-upload-drag-icon">
-                            <InboxOutlined />
-                        </p>
-                        <p className="ant-upload-text">Drag & drop your file here, or click to select</p>
-                        <p className="ant-upload-hint">Only 1 file is allowed.</p>
-                    </Upload.Dragger>
+                    {Array.from({ length: travelerCount }).map((_, index) => (
+                        <div key={index} className="upload-card">
 
-                    <div className="upload-passport-actions">
-                        <Button
-                            type="primary"
-                            onClick={handleProceed}
-                            disabled={!fileList.length}
-                        >
-                            Proceed
-                        </Button>
-                        <Button
-                            danger
-                            onClick={handleCancel}
-                            style={{ marginLeft: 10 }}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
+                            <div className='upload-passport-left'>
+                                <h4>Traveler {index + 1}</h4>
+                                <Upload
+                                    fileList={fileLists[index]}
+                                    beforeUpload={() => false}
+                                    onChange={handleChange(index)}
+                                    accept="image/*,application/pdf"
+                                    maxCount={1}
+                                    showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
+                                >
+                                    <Button type="default">
+                                        {fileLists[index]?.length > 0 ? 'Change File' : 'Upload File'}
+                                    </Button>
+                                </Upload>
+                            </div>
+
+
+
+                            <div className="upload-passport-right">
+                                {previews[index] && (
+                                    <div className="passport-preview" style={{ marginTop: '10px' }}>
+                                        <img
+                                            src={previews[index]}
+                                            alt={`Passport Preview ${index + 1}`}
+                                            className="passport-preview-image"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+
+
+
+                        </div>
+                    ))}
+                </div>
+                <div className="upload-passport-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <Button
+                        className='upload-passport-proceed'
+                        type="primary"
+                        onClick={handleProceed}
+                        disabled={fileLists.some(list => list.length === 0)}
+                    >
+                        Proceed
+                    </Button>
+                    <Button
+                        className='upload-passport-cancel'
+                        danger
+                        onClick={handleCancel}
+                    >
+                        Cancel
+                    </Button>
                 </div>
             </Modal>
-        </ConfigProvider>
+        </ConfigProvider >
     );
 }

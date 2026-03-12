@@ -76,6 +76,12 @@
     border: 1px solid #e5e7eb;
 }
 
+.arrangement-image.fixed {
+    background-image: url('/public/images/fixedallin.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
 .arrangement-image.all-in {
     background-image: url('/public/images/allinpackage.jpg');
     background-size: cover;
@@ -88,12 +94,6 @@
     background-position: center;
 }
 
-.arrangement-image.custom {
-    background-image: url('/public/images/landarrangement.jpg');
-    background-size: cover;
-    background-position: center;
-}
-
 .arrangement-actions {
     display: flex;
     justify-content: flex-end;
@@ -101,23 +101,33 @@
 }
 
 .arrangement-proceed {
-    background-color: #305797 !important;
-    color: #fff !important;
+    background-color: #fff !important;
+    color: #305797 !important;
     border-radius: 10px;
-    border: none !important;
+    border: solid 1px #305797 !important;
     font-weight: 600;
     height: 40px;
     padding: 0 16px;
 }
 
-.arrangement-cancel {
-    background-color: #992A46 !important;
+.arrangement-proceed:hover {
+    background-color: #305797 !important;
     color: #fff !important;
+}
+
+.arrangement-cancel {
+    background-color: #fff !important;
+    color: #992A46 !important;
     border-radius: 10px;
-    border: none !important;
+    border: solid 1px #992A46 !important;
     font-weight: 600;
     height: 40px;
     padding: 0 16px;
+}
+
+.arrangement-cancel:hover {
+    background-color: #992A46 !important;
+    color: #fff !important;
 }
 
 @media (max-width: 768px) {

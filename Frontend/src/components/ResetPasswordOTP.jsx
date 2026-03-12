@@ -1,6 +1,7 @@
 import axios from 'axios'
 import React, { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import axiosInstance from '../config/axiosConfig'
 
 export default function ResetPasswordOTP() {
 

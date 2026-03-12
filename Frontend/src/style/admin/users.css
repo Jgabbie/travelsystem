@@ -1,23 +1,32 @@
 .user-actions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
   align-items: center;
+  width: 100%;
 }
 
 .page-header {
   margin-bottom: 16px;
 }
 
+/* CHANGED: Added background-color and fixed the selector typo */
 .search-input,
-.user-select,
-.ant-select-selector {
+.user-select .ant-select-selector {
   height: 32px !important;
   line-height: 32px !important;
   padding: 0 8px !important;
   font-size: 14px !important;
   box-shadow: none !important;
+  background-color: #ffffff !important;
+  /* Forces background to white */
+  border: 1px solid #d9d9d9 !important;
+  /* Matches the search input border */
+}
+
+.search-input {
+  flex: 0 0 calc(33.33% - 11px) !important;
+  border-radius: 4px !important;
 }
 
 .search-input::placeholder {
@@ -40,7 +49,8 @@
 
   .search-input,
   .ant-select-selector {
-    width: 100%;
+    width: 100% !important;
+    flex: none !important;
   }
 }
 
@@ -61,6 +71,7 @@
   border-color: #305797;
   color: #305797 !important;
   background-color: #fff !important;
+  margin-left: auto;
 }
 
 .adduser-usermanagement:hover {
@@ -144,7 +155,6 @@
   background-color: #d93025 !important;
   color: #fff !important;
 }
-
 
 .users-manage-confirm-modal .ant-modal-content {
   border-radius: 16px;

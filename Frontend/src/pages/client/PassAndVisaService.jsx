@@ -93,30 +93,6 @@ export default function PassAndVisaService() {
                                         onChange={(event) => setSearch(event.target.value)}
                                     />
                                 </div>
-                                <div className="visa-filters">
-                                    <div className="filter-field">
-                                        <span className="field-label">Visa Type</span>
-                                        <Select
-                                            value={visaType}
-                                            onChange={(value) => setVisaType(value)}
-                                            options={visaTypeOptions.map((type) => ({
-                                                value: type,
-                                                label: type
-                                            }))}
-                                        />
-                                    </div>
-                                    <div className="filter-field">
-                                        <span className="field-label">Processing</span>
-                                        <Select
-                                            value={processing}
-                                            onChange={(value) => setProcessing(value)}
-                                            options={processingOptions.map((option) => ({
-                                                value: option,
-                                                label: option
-                                            }))}
-                                        />
-                                    </div>
-                                </div>
                             </div>
 
                             <div className="visa-list">
@@ -129,20 +105,10 @@ export default function PassAndVisaService() {
                                                 <h4>{visa.visaName}</h4>
                                                 <p>{visa.visaDescription}</p>
                                                 {visa.visaPrice && (
-                                                    <p className="visa-price">{`Php ${visa.visaPrice}`}</p>
+                                                    <p className="visa-price">{`₱ ${visa.visaPrice}`}</p>
                                                 )}
                                             </div>
                                             <div className="visa-actions">
-                                                <div className="visa-tags">
-                                                    <Tag>{visa.visaType || 'Visa'}</Tag>
-                                                    <Tag className={
-                                                        visa.processing === 'Express'
-                                                            ? 'tag-express'
-                                                            : 'tag-standard'
-                                                    }>
-                                                        {visa.processing || 'Standard'}
-                                                    </Tag>
-                                                </div>
                                                 <Button
                                                     type="primary"
                                                     className="visa-apply-btn"

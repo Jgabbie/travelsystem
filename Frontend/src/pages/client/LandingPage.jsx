@@ -125,7 +125,7 @@ export default function LandingPage() {
                             <input
                                 type="text"
                                 placeholder="Search here..."
-                                className="search-input"
+                                className="search-input-land"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onKeyDown={(e) => {

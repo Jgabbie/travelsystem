@@ -23,5 +23,6 @@ router.get('/my-ratings', userAuth, ratingController.getUserRatings)
 router.delete('/:id', userAuth, ratingController.deleteRating)
 router.get('/all-ratings', userAuth, adminOnly, ratingController.getAllRatings)
 router.put('/:id', userAuth, ratingController.updateRating)
+router.get('/average-rating/:packageId', ratingController.getAverageRating)
 
 module.exports = router

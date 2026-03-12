@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, message } from 'antd';
 import axios from 'axios';
 import '../../style/components/modals/addusermodal.css';
+import axiosInstance from '../../config/axiosConfig';
 
 export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }) {
     const [loading, setLoading] = useState(false);

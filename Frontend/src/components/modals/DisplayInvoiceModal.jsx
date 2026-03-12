@@ -1,22 +1,47 @@
 import React from 'react';
 import { Modal, Button, ConfigProvider } from 'antd';
 import { Page, Text, View, Document, StyleSheet, PDFViewer } from '@react-pdf/renderer';
+import dayjs from "dayjs";
 import '../../style/components/modals/displayinvoicemodal.css';
 
 export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary }) {
 
-    const fakeInvoice = {
+    const generateInvoiceNumber = () => {
+        const prefix = 'INV';
+        const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const randomPart = Math.floor(1000 + Math.random() * 9000);
+        return `${prefix}-${datePart}-${randomPart}`;
+    }
+
+    const issueDate = dayjs().format("MMMM D, YYYY");
+    const dueDate = dayjs().add(45, "day").format("MMMM D, YYYY");
+
+    const travelerCountAdult = summary?.travelerCount?.adult || 0;
+    const travelerCountChild = summary?.travelerCount?.child || 0;
+    const travelerCountInfant = summary?.travelerCount?.infant || 0;
+    const travelerTotal = travelerCountAdult + travelerCountChild + travelerCountInfant;
+
+    const hotel = summary?.hotelOptions?.[0]?.name || 'N/A';
+    const airline = summary?.airlineOptions?.[0]?.name || 'N/A';
+
+    const startTravelDate = dayjs(summary?.travelDate).format("MMM D, YYYY") || 'TBD';
+    const endTravelDate = dayjs(summary?.travelDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
+
+
+    const Invoice = {
         company: {
             name: 'M&RC Travel and Tours',
-            address: 'Paranaque City, Metro Manila, Philippines',
-            email: 'info@mrc-travel.com',
-            phone: '+63 2 555 1234'
+            address: '2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1',
+            city: 'Parañaque City, Philippines',
+            code: '1709 PHL',
+            phone: '+63 9690554806',
+            email: 'info1@mrctravels.com',
         },
         invoice: {
-            number: 'INV-2026-0248',
-            issueDate: 'Feb 24, 2026',
-            dueDate: 'Mar 10, 2026',
-            status: 'Paid'
+            number: generateInvoiceNumber(),
+            issueDate: issueDate,
+            dueDate: dueDate,
+            status: 'Pending'
         },
         customer: {
             name: 'Gabriel Lanuza',
@@ -24,17 +49,14 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
             phone: '+63 917 555 8877'
         },
         booking: {
-            reference: 'BK-TRVL-9912',
-            packageName: 'Bohol Island Escape (4D3N)',
-            travelDates: 'Apr 2, 2026 - Apr 5, 2026',
-            travelers: 2,
-            roomType: 'Deluxe Ocean View',
-            pickup: 'Panglao Airport (TAG)'
+            packageName: summary?.packageName || 'Tour Package',
+            travelDates: `${startTravelDate} - ${endTravelDate}`,
+            travelers: travelerTotal,
+            hotel: hotel,
+            airlines: airline
         },
         items: [
-            { description: 'Tour Package', qty: 2, rate: 12950.0 },
-            { description: 'Private Airport Transfer', qty: 1, rate: 1200.0 },
-            { description: 'Island Hopping Add-on', qty: 2, rate: 1800.0 }
+            { date: issueDate, activity: 'Tour Package', description: summary?.packageName || 'Tour Package', qty: travelerCountAdult, rate: summary?.packagePricePerPax },
         ],
         notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
@@ -46,7 +68,7 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
         return { subtotal, tax, total };
     };
 
-    const totals = calculateTotals(fakeInvoice.items);
+    const totals = calculateTotals(Invoice.items);
 
     const formatCurrency = (value) => `PHP ${value.toFixed(2)}`;
 
@@ -54,28 +76,29 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
         <Document>
             <Page size="A4" style={styles.page}>
                 <View style={styles.header}>
-                    <View>
-                        <Text style={styles.brand}>{fakeInvoice.company.name}</Text>
-                        <Text style={styles.muted}>{fakeInvoice.company.address}</Text>
-                        <Text style={styles.muted}>{fakeInvoice.company.email}</Text>
-                        <Text style={styles.muted}>{fakeInvoice.company.phone}</Text>
+                    <View style={styles.branding}>
+                        <Text style={styles.brand}>{Invoice.company.name}</Text>
+                        <Text style={styles.muted}>{Invoice.company.address}</Text>
+                        <Text style={styles.muted}>{Invoice.company.city}</Text>
+                        <Text style={styles.muted}>{Invoice.company.email}</Text>
+                        <Text style={styles.muted}>{Invoice.company.phone}</Text>
                     </View>
                     <View style={styles.invoiceMeta}>
                         <Text style={styles.title}>Booking Invoice</Text>
                         <View style={styles.metaRow}>
                             <Text style={styles.metaLabel}>Invoice #</Text>
-                            <Text>{fakeInvoice.invoice.number}</Text>
+                            <Text>{Invoice.invoice.number}</Text>
                         </View>
                         <View style={styles.metaRow}>
                             <Text style={styles.metaLabel}>Issue Date</Text>
-                            <Text>{fakeInvoice.invoice.issueDate}</Text>
+                            <Text>{Invoice.invoice.issueDate}</Text>
                         </View>
                         <View style={styles.metaRow}>
                             <Text style={styles.metaLabel}>Due Date</Text>
-                            <Text>{fakeInvoice.invoice.dueDate}</Text>
+                            <Text>{Invoice.invoice.dueDate}</Text>
                         </View>
                         <View style={styles.statusPill}>
-                            <Text style={styles.statusText}>{fakeInvoice.invoice.status}</Text>
+                            <Text style={styles.statusText}>{Invoice.invoice.status}</Text>
                         </View>
                     </View>
                 </View>
@@ -83,30 +106,34 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
                 <View style={styles.sectionRow}>
                     <View style={styles.sectionBox}>
                         <Text style={styles.sectionTitle}>Bill To</Text>
-                        <Text style={styles.sectionValue}>{fakeInvoice.customer.name}</Text>
-                        <Text style={styles.muted}>{fakeInvoice.customer.email}</Text>
-                        <Text style={styles.muted}>{fakeInvoice.customer.phone}</Text>
+                        <Text style={styles.sectionValue}>{Invoice.customer.name}</Text>
+                        <Text style={styles.muted}>{Invoice.customer.email}</Text>
+                        <Text style={styles.muted}>{Invoice.customer.phone}</Text>
                     </View>
                     <View style={styles.sectionBox}>
                         <Text style={styles.sectionTitle}>Booking Details</Text>
-                        <Text style={styles.sectionValue}>{fakeInvoice.booking.packageName}</Text>
-                        <Text style={styles.muted}>Reference: {fakeInvoice.booking.reference}</Text>
-                        <Text style={styles.muted}>Travel Dates: {fakeInvoice.booking.travelDates}</Text>
-                        <Text style={styles.muted}>Travelers: {fakeInvoice.booking.travelers}</Text>
-                        <Text style={styles.muted}>Room: {fakeInvoice.booking.roomType}</Text>
-                        <Text style={styles.muted}>Pickup: {fakeInvoice.booking.pickup}</Text>
+                        <Text style={styles.sectionValue}>{Invoice.booking.packageName}</Text>
+                        <Text style={styles.muted}>Reference: {Invoice.booking.reference}</Text>
+                        <Text style={styles.muted}>Travel Dates: {Invoice.booking.travelDates}</Text>
+                        <Text style={styles.muted}>Travelers: {Invoice.booking.travelers}</Text>
+                        <Text style={styles.muted}>Hotel: {Invoice.booking.hotel}</Text>
+                        <Text style={styles.muted}>Airlines: {Invoice.booking.airlines}</Text>
                     </View>
                 </View>
 
                 <View style={styles.table}>
                     <View style={[styles.tableRow, styles.tableHeader]}>
+                        <Text style={[styles.cell, styles.cellDesc]}>Date</Text>
+                        <Text style={[styles.cell, styles.cellDesc]}>Activity</Text>
                         <Text style={[styles.cell, styles.cellDesc]}>Description</Text>
                         <Text style={[styles.cell, styles.cellQty]}>Qty</Text>
                         <Text style={[styles.cell, styles.cellRate]}>Rate</Text>
                         <Text style={[styles.cell, styles.cellAmount]}>Amount</Text>
                     </View>
-                    {fakeInvoice.items.map((item, index) => (
+                    {Invoice.items.map((item, index) => (
                         <View key={`${item.description}-${index}`} style={styles.tableRow}>
+                            <Text style={[styles.cell, styles.cellDesc]}>{item.date}</Text>
+                            <Text style={[styles.cell, styles.cellDesc]}>{item.activity}</Text>
                             <Text style={[styles.cell, styles.cellDesc]}>{item.description}</Text>
                             <Text style={[styles.cell, styles.cellQty]}>{item.qty}</Text>
                             <Text style={[styles.cell, styles.cellRate]}>{formatCurrency(item.rate)}</Text>
@@ -119,22 +146,22 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
 
                 <View style={styles.totals}>
                     <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Subtotal</Text>
+                        <Text style={styles.totalLabel}>Total Amount</Text>
                         <Text style={styles.totalValue}>{formatCurrency(totals.subtotal)}</Text>
                     </View>
-                    <View style={styles.totalRow}>
+                    {/* <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Tax (12%)</Text>
                         <Text style={styles.totalValue}>{formatCurrency(totals.tax)}</Text>
                     </View>
                     <View style={[styles.totalRow, styles.totalRowStrong]}>
                         <Text style={styles.totalLabel}>Total</Text>
                         <Text style={styles.totalValue}>{formatCurrency(totals.total)}</Text>
-                    </View>
+                    </View> */}
                 </View>
 
                 <View style={styles.footer}>
                     <Text style={styles.sectionTitle}>Notes</Text>
-                    <Text style={styles.muted}>{fakeInvoice.notes}</Text>
+                    <Text style={styles.muted}>{Invoice.notes}</Text>
                 </View>
             </Page>
         </Document>
@@ -153,12 +180,13 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
                 open={open}
                 onCancel={onCancel}
                 footer={null}
-                width={800}
+                width={1000}
                 centered
                 className="display-invoice-modal"
             >
+                <h2 className="display-invoice-title">Booking Invoice</h2>
                 <div className="display-invoice-wrapper">
-                    <h2 className="display-invoice-title">Booking Invoice</h2>
+
                     <p className="display-invoice-subtitle">
                         Please review your booking invoice before proceeding to payment.
                     </p>
@@ -174,22 +202,22 @@ export default function DisplayInvoiceModal({ open, onCancel, onProceed, summary
                             <MyDocument />
                         </PDFViewer>
                     </div>
-
-                    <div className="display-invoice-actions">
-                        <Button
-                            type="primary"
-                            onClick={onProceed}
-                        >
-                            Proceed to Payment
-                        </Button>
-                        <Button
-                            danger
-                            onClick={onCancel}
-                            style={{ marginLeft: 10 }}
-                        >
-                            Back
-                        </Button>
-                    </div>
+                </div>
+                <div className="display-invoice-actions">
+                    <Button
+                        className='display-invoice-proceed'
+                        onClick={onProceed}
+                    >
+                        Proceed to Payment
+                    </Button>
+                    <Button
+                        className='display-invoice-cancel'
+                        danger
+                        onClick={onCancel}
+                        style={{ marginLeft: 10 }}
+                    >
+                        Back
+                    </Button>
                 </div>
             </Modal>
         </ConfigProvider>
@@ -211,7 +239,11 @@ const styles = StyleSheet.create({
     brand: {
         fontSize: 16,
         fontWeight: 700,
-        marginBottom: 6
+        marginBottom: 2
+    },
+    branding: {
+        flexDirection: 'column',
+        gap: 2
     },
     title: {
         fontSize: 18,

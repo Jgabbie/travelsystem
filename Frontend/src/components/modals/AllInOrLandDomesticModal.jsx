@@ -53,7 +53,7 @@ export default function AllInOrLandDomesticModal({
                         className={`arrangement-domestic-card${selection === 'customallin' ? ' is-selected' : ''}`}
                         onClick={() => handleSelect('customallin')}
                     >
-                        <div className="arrangement-domestic-image land" aria-hidden="true" />
+                        <div className="arrangement-domestic-image all-in" />
                         <h3>Customized All in Package</h3>
                         <p>
                             Focus on accommodations and tours while arranging your own
@@ -67,7 +67,7 @@ export default function AllInOrLandDomesticModal({
                         className={`arrangement-domestic-card${selection === 'customland' ? ' is-selected' : ''}`}
                         onClick={() => handleSelect('customland')}
                     >
-                        <div className="arrangement-domestic-image custom" aria-hidden="true" />
+                        <div className="arrangement-domestic-image land" />
                         <h3>Customized Land Arrangement</h3>
                         <p>
                             Build your own package by selecting flights, hotels, and activities individually.

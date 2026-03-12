@@ -12,10 +12,15 @@ export default function TopNav() {
 
   const navigate = useNavigate();
 
-  const { auth, setAuth } = useAuth();
+  const { auth, setAuth, checkAuth, authLoading } = useAuth();
   const [profileImage, setProfileImage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+
 
   const handleOk = async () => {
     setIsModalOpen(false);
@@ -30,34 +35,6 @@ export default function TopNav() {
   const showModal = () => {
     setIsModalOpen(true);
   };
-
-  const checkAuth = async () => {
-    try {
-      const response = await axiosInstance.get('/auth/is-auth', { withCredentials: true });
-      const { user } = response.data;
-      setAuth({ username: user.username, role: user.role });
-      const profileResponse = await axiosInstance.get('/user/data', { withCredentials: true });
-      const profile = profileResponse?.data?.userData;
-      setProfileImage(
-        profile?.profileImageUrl ||
-        profile?.profileImage ||
-        profile?.avatarUrl ||
-        user?.profileImageUrl ||
-        user?.profileImage ||
-        user?.avatarUrl ||
-        ''
-      );
-    } catch (err) {
-      setAuth(null);
-      setProfileImage('');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
 
   const getInitials = () => {
     const name = auth?.username?.trim() || '';
@@ -112,7 +89,7 @@ export default function TopNav() {
       <Header className="topnav">
         <div className="admin-logo-section">
           <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
-          <div className="brand">M&RC Travel and Tours</div>
+          <div className="brand">TRAVEX M&RC Travel and Tours</div>
         </div>
 
 

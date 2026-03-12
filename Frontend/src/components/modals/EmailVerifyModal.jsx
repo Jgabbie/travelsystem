@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import axiosInstance from '../../config/axiosConfig';
 import '../../style/components/modals/emailverifymodal.css'
 
-export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, userEmail }) {
+
+export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, userEmail, userUsername, userPassword }) {
 
     const navigate = useNavigate();
 
@@ -35,7 +37,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
     const submitOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/verify-account', { otp: getOTP, email: userEmail }, { withCredentials: true })
+            const response = await axios.post('http://localhost:8000/api/auth/verify-account', { otp: getOTP, email: userEmail, username: userUsername, password: userPassword }, { withCredentials: true })
 
             if (response.data.success || response.status === 200) {
                 setOTP("")

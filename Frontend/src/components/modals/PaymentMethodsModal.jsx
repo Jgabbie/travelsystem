@@ -58,12 +58,13 @@ export default function PaymentMethodsModal({ open, onCancel, onProceed }) {
 
                     <div className="payment-methods-actions">
                         <Button
-                            type="primary"
+                            className='payment-methods-proceed'
                             onClick={handleProceed}
                         >
                             Confirm Payment
                         </Button>
                         <Button
+                            className='payment-methods-cancel'
                             danger
                             onClick={handleCancel}
                             style={{ marginLeft: 10 }}

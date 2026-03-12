@@ -1,9 +1,20 @@
 .upload-passport-modal .ant-modal-content {
     border-radius: 12px;
-    padding: 24px;
+    padding: 2px;
+}
+
+.upload-passport-modal .ant-modal-close {
+    top: 10px;
+    right: 10px;
+}
+
+.upload-passport-modal .ant-modal-body {
+    padding: 2px;
 }
 
 .upload-passport-wrapper {
+    max-height: 70vh;
+    overflow: auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -11,15 +22,49 @@
 }
 
 .upload-passport-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #305797;
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    color: #1f2a44;
+    margin: 0;
+    text-align: center;
+    padding-bottom: 10px;
 }
 
 .upload-passport-text {
     font-size: 14px;
     color: #555;
 }
+
+.upload-card {
+    flex: 1 1 350px;
+    max-width: 1000px;
+    height: 350px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+}
+
+.upload-passport-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.upload-passport-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
 
 .upload-passport-dragger {
     border: 2px dashed #305797;
@@ -36,9 +81,42 @@
 
 .upload-passport-actions {
     display: flex;
-    justify-content: center;
-    gap: 10px;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
 }
+
+.upload-passport-proceed {
+    background-color: #fff !important;
+    color: #305797 !important;
+    border-radius: 10px;
+    border: solid 1px #305797 !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.upload-passport-proceed:hover {
+    background-color: #305797 !important;
+    color: #fff !important;
+}
+
+.upload-passport-cancel {
+    background-color: #fff !important;
+    color: #992A46 !important;
+    border-radius: 10px;
+    border: solid 1px #992A46 !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 16px;
+}
+
+.upload-passport-cancel:hover {
+    background-color: #992A46 !important;
+    color: #fff !important;
+}
+
+
 
 /* Customize the upload icon */
 .upload-passport-dragger .ant-upload-drag-icon {
@@ -54,4 +132,20 @@
 .upload-passport-dragger .ant-upload-hint {
     font-size: 12px;
     color: #666;
+}
+
+.passport-preview {
+    margin-top: 20px;
+    text-align: center;
+    height: 300px;
+    width: 300px;
+}
+
+.passport-preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 6px;
+    background: #fafafa;
 }
