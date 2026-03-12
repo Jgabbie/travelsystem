@@ -45,17 +45,17 @@ export default function BookingManagement() {
       setLoading(true);
       try {
         const response = await axiosInstance.get("/booking/all-bookings");
-        const rows = (response.data || []).map((booking) => { //make sure that rows is always an array
+        const rows = (response.data || []).map((booking) => { 
           const details = booking.bookingDetails || {};
           const travelerCounts = details.travelers || {};
-          const travelersTotal = Object.values(travelerCounts) //convert object values to array then sum it all up by using reduce to get the total number of travelers
+          const travelersTotal = Object.values(travelerCounts) 
             .reduce((sum, value) => sum + (Number(value) || 0), 0);
 
-          const statusRaw = booking.status || "Pending"; //get status
+          const statusRaw = booking.status || "Pending"; 
           const statusFormatted =
-            statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1); //capitalize first letter of status
+            statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1); 
 
-          return { // create a new object for the table row
+          return { 
             key: booking._id,
             ref: booking.reference || booking._id,
             pkg: details.packageName || "Package",
@@ -65,7 +65,7 @@ export default function BookingManagement() {
             status: statusFormatted
           };
         });
-        setData(rows); //insert rows to data state
+        setData(rows); 
       } catch (error) {
         message.error("Unable to load bookings");
         setData([]);
@@ -78,9 +78,7 @@ export default function BookingManagement() {
   }, []);
 
 
-  //filter data
   const filteredData = useMemo(() => data.filter(item => {
-
     const matchesSearch =
       item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
       item.pkg.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -106,21 +104,27 @@ export default function BookingManagement() {
   }), [data, searchText, statusFilter, bookingDateFilter, travelDateFilter]);
 
   const generatePDF = async () => {
-    const doc = new jsPDF();
-    const tableColumn = ["Name", "Username", "Email", "Role", "Status"];
-    const tableRows = filteredData.map(user => [
-      user.name, user.username, user.email, user.role, user.status
+    // Changed back to Portrait ('p') to match the size of Pic 1
+    const doc = new jsPDF('p', 'mm', 'a4'); 
+    
+    const tableColumn = ["Reference", "Package", "Travel Date", "Booking Date", "Travellers", "Status"];
+    
+    const tableRows = filteredData.map(item => [
+      item.ref, 
+      item.pkg, 
+      dayjs(item.travelDate).format("MMM DD, YYYY"), 
+      dayjs(item.bookingDate).format("MMM DD, YYYY"), 
+      item.qty, 
+      item.status
     ]);
 
     try {
-      // 1. Add Logo
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
       doc.addImage(imgData, "PNG", 14, 12, 22, 22);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
 
-    // 2. Company Info Header
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text("M&RC TRAVEL AND TOURS", 40, 18);
@@ -130,21 +134,19 @@ export default function BookingManagement() {
     doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
     doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
 
-    // 3. Report Title & Search Input Display
     doc.setDrawColor(48, 87, 151);
-    doc.line(14, 38, 196, 38);
+    doc.line(14, 38, 196, 38); // Line width reset for Portrait
 
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(48, 87, 151);
-    doc.text("USER MANAGEMENT REPORT", 14, 48);
+    doc.text("BOOKING MANAGEMENT REPORT", 14, 48);
 
     doc.setFontSize(9);
     doc.setTextColor(100);
     doc.setFont("helvetica", "normal");
     doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
 
-    // Display Search Value if any
     let tableStartY = 62;
     if (searchText) {
       doc.setFont("helvetica", "bold");
@@ -153,21 +155,20 @@ export default function BookingManagement() {
       tableStartY = 68;
     }
 
-    // 4. Generate Table
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: tableStartY,
-      styles: { fontSize: 8 },
+      styles: { fontSize: 7.5 }, // Slightly smaller font to fit 6 columns in Portrait
       headStyles: { fillColor: [48, 87, 151] },
       alternateRowStyles: { fillColor: [245, 247, 250] },
+      margin: { left: 14, right: 14 }
     });
 
-    doc.save(`User_Report_${new Date().toLocaleDateString()}.pdf`);
+    doc.save(`Booking_Report_${new Date().toLocaleDateString()}.pdf`);
     message.success("Report exported to PDF successfully.");
   };
 
-  // editing functions
   const isEditing = (record) => record.key === editingKey;
 
   const edit = (record) => {
@@ -181,13 +182,10 @@ export default function BookingManagement() {
     setEditingKey(record.key);
   };
 
-  //cancel editing
   const cancel = () => {
     setEditingKey("");
   };
 
-
-  //delete booking
   const handleDelete = (key) => {
     Modal.confirm({
       className: "booking-manage-confirm-modal",
@@ -219,7 +217,6 @@ export default function BookingManagement() {
     });
   };
 
-  //handle view booking details
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
@@ -227,7 +224,6 @@ export default function BookingManagement() {
     }
   };
 
-  //save edited booking
   const save = async (key) => {
     try {
       const row = await form.validateFields();
@@ -253,9 +249,9 @@ export default function BookingManagement() {
           okButtonProps: { className: "booking-manage-confirm-btn" },
           cancelButtonProps: { className: "booking-manage-cancel-btn" },
           style: { top: 200 },
-          onOk: async () => { //merge the new values to the existing row data
+          onOk: async () => { 
             const updatedRow = { ...newData[index], ...row };
-            if (dayjs.isDayjs(updatedRow.travelDate)) { //check if dates are dayjs objects and convert them to string format
+            if (dayjs.isDayjs(updatedRow.travelDate)) { 
               updatedRow.travelDate = updatedRow.travelDate.format("YYYY-MM-DD");
             }
             if (dayjs.isDayjs(updatedRow.bookingDate)) {
@@ -263,11 +259,11 @@ export default function BookingManagement() {
             }
 
             try {
-              const statusValue = updatedRow.status //make status lowercase
+              const statusValue = updatedRow.status 
                 ? updatedRow.status.toLowerCase()
                 : undefined;
 
-              const payload = { //object sent to the backend
+              const payload = { 
                 status: statusValue,
                 bookingDetails: {
                   packageName: updatedRow.pkg,
@@ -284,8 +280,6 @@ export default function BookingManagement() {
               const statusFormatted =
                 statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
 
-              //replace old row with the updated one and update the table data
-              //first parameter of splice is the index to start changing, second parameter is how many items to delete, third parameter is the new item to add
               newData.splice(index, 1, {
                 ...updatedRow,
                 pkg: savedDetails.packageName || updatedRow.pkg,
@@ -308,7 +302,6 @@ export default function BookingManagement() {
     }
   };
 
-  //header columns
   const columns = [
     { title: "Reference", dataIndex: "ref" },
     { title: "Package", dataIndex: "pkg", editable: true },
@@ -384,20 +377,14 @@ export default function BookingManagement() {
     }
   ];
 
-
-
-  //modify columns that can be editable
   const mergedColumns = columns.map((col) => {
     if (!col.editable) {
       return col;
     }
-
-    //determine input type
     let inputType = "text";
     if (col.dataIndex === "status") inputType = "select";
     if (col.dataIndex === "travelDate" || col.dataIndex === "bookingDate") inputType = "date";
 
-    //in every row, onCell is called to get current data(record), to determine inputType, and if the row is being edited
     return {
       ...col,
       onCell: (record) => ({
@@ -410,7 +397,6 @@ export default function BookingManagement() {
     };
   });
 
-  //editable cell components
   const EditableCell = ({
     editing,
     dataIndex,
@@ -419,7 +405,6 @@ export default function BookingManagement() {
     ...restProps
   }) => {
     let inputNode = <Input />;
-
     if (inputType === "select") {
       inputNode = (
         <Select
@@ -431,12 +416,9 @@ export default function BookingManagement() {
         />
       );
     }
-
     if (inputType === "date") {
       inputNode = <DatePicker format="YYYY-MM-DD" />;
     }
-
-    // if editing is true, render the input node, if not render the default cell value (children)
     return (
       <td {...restProps}>
         {editing ? (
@@ -454,7 +436,6 @@ export default function BookingManagement() {
     );
   };
 
-
   const totalBookings = filteredData.length;
   const totalSuccessful = filteredData.filter(b => b.status === "Successful" || b.status === "Confirmed").length;
   const totalPending = filteredData.filter(b => b.status === "Pending").length;
@@ -470,45 +451,25 @@ export default function BookingManagement() {
     >
       <div className="booking-management-container">
         <h1 className="page-header">Booking Management</h1>
-
         <Row gutter={16} style={{ marginBottom: 20 }}>
           <Col xs={24} sm={6}>
             <Card className="booking-management-card">
-              <Statistic
-                title="Total"
-                value={totalBookings}
-                prefix={<CalendarOutlined />}
-              />
+              <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />
             </Card>
           </Col>
-
           <Col xs={24} sm={6}>
             <Card className="booking-management-card">
-              <Statistic
-                title="Pending"
-                value={totalPending}
-                prefix={<ClockCircleOutlined />}
-              />
+              <Statistic title="Pending" value={totalPending} prefix={<ClockCircleOutlined />} />
             </Card>
           </Col>
-
           <Col xs={24} sm={6}>
             <Card className="booking-management-card">
-              <Statistic
-                title="Successful"
-                value={totalSuccessful}
-                prefix={<CheckCircleOutlined />}
-              />
+              <Statistic title="Successful" value={totalSuccessful} prefix={<CheckCircleOutlined />} />
             </Card>
           </Col>
-
           <Col xs={24} sm={6}>
             <Card className="booking-management-card">
-              <Statistic
-                title="Cancelled"
-                value={totalCancelled}
-                prefix={<CloseCircleOutlined />}
-              />
+              <Statistic title="Cancelled" value={totalCancelled} prefix={<CloseCircleOutlined />} />
             </Card>
           </Col>
         </Row>
@@ -522,7 +483,6 @@ export default function BookingManagement() {
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
           />
-
           <Select
             className="booking-select"
             placeholder="Status"
@@ -536,7 +496,6 @@ export default function BookingManagement() {
               { value: "Cancelled", label: "Cancelled" }
             ]}
           />
-
           <DatePicker
             className="booking-date-filter"
             placeholder="Booking Date"
@@ -544,7 +503,6 @@ export default function BookingManagement() {
             onChange={(d) => setBookingDateFilter(d)}
             allowClear
           />
-
           <DatePicker
             className="booking-date-filter"
             placeholder="Travel Date"
@@ -552,9 +510,7 @@ export default function BookingManagement() {
             onChange={(d) => setTravelDateFilter(d)}
             allowClear
           />
-
           <Space style={{ marginLeft: 'auto' }}>
-            {/* RESTORED original classes */}
             <Button className='export-pdf-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
           </Space>
         </div>
@@ -562,11 +518,7 @@ export default function BookingManagement() {
         <Card>
           <Form form={form} component={false}>
             <Table
-              components={{
-                body: {
-                  cell: EditableCell
-                }
-              }}
+              components={{ body: { cell: EditableCell } }}
               columns={mergedColumns}
               dataSource={filteredData}
               loading={loading}
