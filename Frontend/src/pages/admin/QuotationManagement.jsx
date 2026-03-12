@@ -1,11 +1,28 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
-import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined } from "@ant-design/icons";
+import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/quotationmanagement.css";
 
-
+const getBase64ImageFromURL = (url) => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.setAttribute("crossOrigin", "anonymous");
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = (error) => reject(error);
+        img.src = url;
+    });
+};
 
 export default function QuotationManagement() {
     const [searchText, setSearchText] = useState("");
@@ -114,7 +131,6 @@ export default function QuotationManagement() {
         const quotation = data.find((item) => item.key === key);
         if (quotation) {
             console.log("Viewing quotation:", quotation);
-            console.log(key)
             navigate(`/quotation/${key}`);
         }
     }
@@ -134,13 +150,84 @@ export default function QuotationManagement() {
         })
     ), [data, searchText, statusFilter]);
 
+    const generatePDF = async () => {
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // Headers updated to match your screenshot exactly
+        const tableColumn = [
+            "Quotation Request No.", 
+            "Package Name", 
+            "Date Requested", 
+            "Customer Name", 
+            "Travelers", 
+            "Status"
+        ];
+        
+        const tableRows = filteredData.map(item => [
+            item.ref,
+            item.packageName,
+            item.dateRequested,
+            item.customerName,
+            item.travelers,
+            item.status
+        ]);
+
+        try {
+            const imgData = await getBase64ImageFromURL("/images/Logo.png");
+            doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+        } catch (e) {
+            console.warn("Logo not found at /public/images/Logo.png");
+        }
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
+        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
+        doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+
+        doc.setDrawColor(48, 87, 151);
+        doc.line(14, 38, 196, 38);
+
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(48, 87, 151);
+        doc.text("QUOTATION MANAGEMENT REPORT", 14, 48);
+
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
+
+        let tableStartY = 62;
+        if (searchText) {
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Search Criteria: "${searchText}"`, 14, 62);
+            tableStartY = 68;
+        }
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: tableStartY,
+            styles: { fontSize: 7.5 },
+            headStyles: { fillColor: [48, 87, 151] },
+            alternateRowStyles: { fillColor: [245, 247, 250] },
+            margin: { left: 14, right: 14 }
+        });
+
+        doc.save(`Quotation_Report_${new Date().toLocaleDateString()}.pdf`);
+        message.success("Report exported to PDF successfully.");
+    };
+
     const totalRequests = filteredData.length;
     const totalPending = filteredData.filter((item) => item.status === "Pending").length;
     const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
     const totalAccepted = filteredData.filter(item => item.status === "Accepted").length;
     const totalExpired = filteredData.filter(item => item.status === "Expired").length;
-    const totalRevisionRequested = filteredData.filter(item => item.status === "Revision Requested").length;
-
 
     const columns = [
         { title: "Quotation Request No.", dataIndex: "ref" },
@@ -166,22 +253,20 @@ export default function QuotationManagement() {
             title: "Actions",
             render: (text, record) => (
                 <Space>
-                    <>
-                        <Button
-                            className="quotation-view"
-                            type="primary"
-                            icon={<EyeOutlined />}
-                            onClick={() => handleView(record.key)}
-                            disabled={editingKey !== ""}
-                        />
-                        <Button
-                            className="quotation-reject"
-                            type="primary"
-                            icon={<CloseCircleOutlined />}
-                            onClick={() => edit(record)}
-                            disabled={editingKey !== ""}
-                        />
-                    </>
+                    <Button
+                        className="quotation-view"
+                        type="primary"
+                        icon={<EyeOutlined />}
+                        onClick={() => handleView(record.key)}
+                        disabled={editingKey !== ""}
+                    />
+                    <Button
+                        className="quotation-reject"
+                        type="primary"
+                        icon={<CloseCircleOutlined />}
+                        onClick={() => edit(record)}
+                        disabled={editingKey !== ""}
+                    />
                 </Space>
             )
         }
@@ -191,20 +276,10 @@ export default function QuotationManagement() {
         if (!col.editable) {
             return col;
         }
-
-        let inputType = "text";
-        if (col.dataIndex === "status") {
-            inputType = "select";
-        }
-        if (col.dataIndex === "travelers") {
-            inputType = "number";
-        }
-
         return {
             ...col,
             onCell: (record) => ({
                 record,
-                inputType,
                 dataIndex: col.dataIndex,
                 title: col.title,
             })
@@ -214,30 +289,9 @@ export default function QuotationManagement() {
     const EditableCell = ({
         editing,
         dataIndex,
-        inputType,
         children,
         ...restProps
     }) => {
-        let inputNode = <Input />;
-
-        if (inputType === "select") {
-            inputNode = (
-                <Select
-                    options={[
-                        { value: "Pending", label: "Pending" },
-                        { value: "Under Review", label: "Under Review" },
-                        { value: "Accepted", label: "Accepted" },
-                        { value: "Revision Requested", label: "Revision Requested" },
-                        { value: "Expired", label: "Expired" }
-                    ]}
-                />
-            );
-        }
-
-        if (inputType === "number") {
-            inputNode = <Input type="number" />;
-        }
-
         return (
             <td {...restProps}>
                 {editing ? (
@@ -246,7 +300,7 @@ export default function QuotationManagement() {
                         style={{ margin: 0 }}
                         rules={[{ required: true, message: `Please enter ${dataIndex}` }]}
                     >
-                        {inputNode}
+                        <Input />
                     </Form.Item>
                 ) : (
                     children
@@ -254,7 +308,6 @@ export default function QuotationManagement() {
             </td>
         );
     }
-
 
     return (
         <ConfigProvider
@@ -264,7 +317,7 @@ export default function QuotationManagement() {
                 }
             }}
         >
-            <div>
+            <div className="quotation-management-container">
                 <h1 className="page-header">Quotation Management</h1>
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
@@ -277,7 +330,6 @@ export default function QuotationManagement() {
                             />
                         </Card>
                     </Col>
-
                     <Col xs={24} sm={6}>
                         <Card className="quotation-management-card">
                             <Statistic
@@ -287,7 +339,6 @@ export default function QuotationManagement() {
                             />
                         </Card>
                     </Col>
-
                     <Col xs={24} sm={6}>
                         <Card className="quotation-management-card">
                             <Statistic
@@ -297,7 +348,6 @@ export default function QuotationManagement() {
                             />
                         </Card>
                     </Col>
-
                     <Col xs={24} sm={6}>
                         <Card className="quotation-management-card">
                             <Statistic
@@ -334,6 +384,17 @@ export default function QuotationManagement() {
                             { value: "Expired", label: "Expired" }
                         ]}
                     />
+
+                    <Space style={{ marginLeft: 'auto' }}>
+                        <Button
+                            className='export-pdf-button'
+                            type="primary"
+                            icon={<FilePdfOutlined />}
+                            onClick={generatePDF}
+                        >
+                            Export to PDF
+                        </Button>
+                    </Space>
                 </div>
 
                 <Card>
