@@ -11,9 +11,11 @@
     "express-rate-limit": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
-    "multer": "^2.0.2",
+    "muller": "^1.1.0",
+    "multer": "^2.1.1",
     "nodemailer": "^7.0.13",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "uuid": "^13.0.0"
   }
 }
