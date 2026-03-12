@@ -1,10 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/transaction.css";
 
+const getBase64ImageFromURL = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.setAttribute("crossOrigin", "anonymous");
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = (error) => reject(error);
+    img.src = url;
+  });
+};
 
 export default function TransactionManagement() {
 
@@ -67,6 +85,69 @@ export default function TransactionManagement() {
       matchesPaymentDate
     );
   });
+
+  const generatePDF = async () => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const tableColumn = ["Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
+    const tableRows = filteredData.map(item => [
+      item.ref,
+      item.package,
+      dayjs(item.date).format("MMM DD, YYYY hh:mm A"),
+      item.price,
+      item.method,
+      item.status
+    ]);
+
+    try {
+      const imgData = await getBase64ImageFromURL("/images/Logo.png");
+      doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+    } catch (e) {
+      console.warn("Logo not found at /public/images/Logo.png");
+    }
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+
+    doc.setDrawColor(48, 87, 151);
+    doc.line(14, 38, 196, 38);
+
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(48, 87, 151);
+    doc.text("TRANSACTION MANAGEMENT REPORT", 14, 48);
+
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
+
+    let tableStartY = 62;
+    if (searchText) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Search Criteria: "${searchText}"`, 14, 62);
+      tableStartY = 68;
+    }
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: tableStartY,
+      styles: { fontSize: 7.5 },
+      headStyles: { fillColor: [48, 87, 151] },
+      alternateRowStyles: { fillColor: [245, 247, 250] },
+      margin: { left: 14, right: 14 }
+    });
+
+    doc.save(`Transaction_Report_${new Date().toLocaleDateString()}.pdf`);
+    message.success("Report exported to PDF successfully.");
+  };
 
   // ================= TABLE =================
 
@@ -347,7 +428,7 @@ export default function TransactionManagement() {
         }
       }}
     >
-      <div>
+      <div className="transaction-management-container">
         <h1 className="page-header">Transaction Management</h1>
 
 
@@ -439,8 +520,17 @@ export default function TransactionManagement() {
             onChange={(d) => setPaymentDateFilter(d)}
             allowClear
           />
-
-          <Button className="exportbutton-transactionmanagement" type="primary">Export</Button>
+          
+          <Space style={{ marginLeft: 'auto' }}>
+            <Button 
+              className='export-pdf-button' 
+              type="primary" 
+              icon={<FilePdfOutlined />} 
+              onClick={generatePDF}
+            >
+              Export to PDF
+            </Button>
+          </Space>
         </div>
 
         <Card>
