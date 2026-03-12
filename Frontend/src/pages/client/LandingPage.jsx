@@ -21,7 +21,7 @@ export default function LandingPage() {
     const [activity, setActivity] = useState('Adventure Type');
     const [type, setType] = useState('Tour Type');
     const [duration, setDuration] = useState('Length of Stay');
-    const [pax, setPax] = useState('Number of Travelers');
+    const [pax, setPax] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoginVisible, setIsLoginVisible] = useState(false)
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
@@ -64,6 +64,13 @@ export default function LandingPage() {
 
         if (type && type !== 'Tour Type') {
             params.set('tourType', type);
+        }
+
+        if (pax) {
+            const parsedTravelers = Number.parseInt(pax, 10);
+            if (Number.isFinite(parsedTravelers)) {
+                params.set('travelers', String(parsedTravelers));
+            }
         }
 
         params.set('minBudget', String(budgetRange[0]));
@@ -190,6 +197,21 @@ export default function LandingPage() {
                                         { value: 'Domestic', label: 'Domestic' },
                                         { value: 'International', label: 'International' },
                                     ]}
+                                />
+                            </div>
+
+
+                            <div className="filter-group">
+                                <label>TRAVELERS</label>
+                                <Input
+                                    className="landing-filter-input"
+                                    value={pax}
+                                    placeholder="How many travellers?"
+                                    inputMode="numeric"
+                                    onChange={(e) => {
+                                        const nextValue = e.target.value.replace(/[^0-9]/g, '');
+                                        setPax(nextValue);
+                                    }}
                                 />
                             </div>
 

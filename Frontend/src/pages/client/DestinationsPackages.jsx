@@ -15,6 +15,7 @@ export default function DestinationsPackages() {
     const [selectedTags, setSelectedTags] = useState([])
     const [tourType, setTourType] = useState('All')
     const [daysValue, setDaysValue] = useState(3)
+    const [travelersValue, setTravelersValue] = useState(null)
 
     const { Title, Text } = Typography
 
@@ -37,6 +38,7 @@ export default function DestinationsPackages() {
                         type: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
                         budget: pkg.packagePricePerPax,
+                        availableSlots: pkg.packageAvailableSlots || 0,
                         rating,
                         images: pkg.images && pkg.images.length > 0 ? pkg.images[0] : '',
                         tags: pkg.packageTags || []
@@ -64,6 +66,7 @@ export default function DestinationsPackages() {
         const minBudget = Number(params.get('minBudget'))
         const maxBudget = Number(params.get('maxBudget'))
         const maxDays = Number(params.get('maxDays'))
+        const travelers = Number(params.get('travelers'))
 
         if (query !== null) {
             setSearch(query)
@@ -89,6 +92,10 @@ export default function DestinationsPackages() {
         // same as the budget range, check if the max days is an integer then set the days value
         if (Number.isFinite(maxDays)) {
             setDaysValue(maxDays)
+        }
+
+        if (Number.isFinite(travelers) && travelers > 0) {
+            setTravelersValue(travelers)
         }
     }, [location.search])
 
@@ -126,15 +133,19 @@ export default function DestinationsPackages() {
             const matchesDays =
                 pkg.days >= 1 && pkg.days <= daysValue
 
+            const matchesTravelers =
+                !Number.isFinite(travelersValue) || travelersValue <= 0 || pkg.availableSlots >= travelersValue
+
             return (
                 matchesSearch &&
                 matchesBudget &&
                 matchesTags &&
                 matchesType &&
-                matchesDays
+                matchesDays &&
+                matchesTravelers
             )
         })
-    }, [packages, search, budgetRange, selectedTags, tourType, daysValue])
+    }, [packages, search, budgetRange, selectedTags, tourType, daysValue, travelersValue])
 
 
     return (
@@ -295,6 +306,28 @@ export default function DestinationsPackages() {
                                     </Text>
                                 </div>
                             </Col>
+
+                            <Col xs={24} md={12} xl={6}>
+                                <div className="filter-field">
+                                    <Text className="destinations-label">Travelers</Text>
+                                    <InputNumber
+                                        className='destinations-inputs'
+                                        min={1}
+                                        max={100}
+                                        placeholder="How many travellers?"
+                                        value={travelersValue}
+                                        onChange={(value) => setTravelersValue(value ?? null)}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    <Text className="filter-hint">
+                                        Show packages with available slots for your group size
+                                    </Text>
+                                </div>
+                            </Col>
                         </Row>
                     </div>
 
@@ -339,9 +372,18 @@ export default function DestinationsPackages() {
                                         </div>
                                         <div className="destinations-card-footer">
                                             <Text className="destinations-price">
-                                                ₱{pkg.budget.toLocaleString()}
+                                                ₱{(
+                                                    Number.isFinite(travelersValue) && travelersValue > 0
+                                                        ? pkg.budget * travelersValue
+                                                        : pkg.budget
+                                                ).toLocaleString()}
+                                                {Number.isFinite(travelersValue) && travelersValue > 0
+                                                    ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
+                                                    : ''}
                                             </Text>
-                                            <Text className="destinations-budget">Budget</Text>
+                                            <Text className="destinations-budget">
+                                                {Number.isFinite(travelersValue) && travelersValue > 0 ? 'Total Budget' : 'Budget / Pax'}
+                                            </Text>
                                         </div>
                                     </Card>
                                 </Col>
