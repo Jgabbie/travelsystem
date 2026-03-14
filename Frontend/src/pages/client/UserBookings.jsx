@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Table, Tag, Button, Space, message, Modal, Select, Input, Upload, DatePicker, ConfigProvider } from 'antd'
 import { UploadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -15,7 +15,7 @@ export default function UserBookings() {
     const [cancelReason, setCancelReason] = useState('')
     const [cancelOtherReason, setCancelOtherReason] = useState('')
     const [cancelTargetKey, setCancelTargetKey] = useState(null)
-    const [cancelFiles, setCancelFiles] = useState([])
+    const [cancelImages, setCancelImages] = useState([])
     const [cancelComments, setCancelComments] = useState('')
 
     const [searchText, setSearchText] = useState("");
@@ -24,6 +24,7 @@ export default function UserBookings() {
     const [travelDateFilter, setTravelDateFilter] = useState(null);
 
     const navigate = useNavigate()
+    const fileInputRef = useRef()
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -38,7 +39,6 @@ export default function UserBookings() {
                 setLoading(false)
             }
         }
-
         fetchBookings()
     }, [])
 
@@ -98,7 +98,7 @@ export default function UserBookings() {
         setCancelTargetKey(key)
         setCancelReason('')
         setCancelOtherReason('')
-        setCancelFiles([])
+        setCancelImages([])
         setCancelComments('')
         setCancelModalOpen(true)
     }
@@ -108,9 +108,26 @@ export default function UserBookings() {
         setCancelTargetKey(null)
         setCancelReason('')
         setCancelOtherReason('')
-        setCancelFiles([])
+        setCancelImages([])
         setCancelComments('')
     }
+
+    const handleImageChange = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validation logic
+        if (!file.type.startsWith("image/")) {
+            message.error("Please select a valid image file.");
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            message.error("Image must be 2MB or less.");
+            return;
+        }
+
+        setCancelImages([{ file, name: file.name }]);
+    };
 
     const confirmCancelBooking = async () => {
         if (!cancelReason) {
@@ -123,21 +140,20 @@ export default function UserBookings() {
             return
         }
 
-        if (!cancelFiles.length) {
+        if (!cancelImages.length) {
             message.warning('Please upload a supporting file')
             return
         }
 
         try {
-            const finalReason = cancelReason === 'Other' ? cancelOtherReason.trim() : cancelReason
-            const formData = new FormData()
-            formData.append('reason', finalReason)
-            if (cancelComments.trim()) {
-                formData.append('comments', cancelComments.trim())
-            }
-            cancelFiles.forEach((file) => {
-                formData.append('files', file.originFileObj || file)
-            })
+            const formData = new FormData();
+            formData.append('reason', cancelReason === 'Other' ? cancelOtherReason : cancelReason);
+            formData.append('comments', cancelComments || '');
+            cancelImages.forEach((item) => {
+                if (item?.file) {
+                    formData.append('files', item.file);
+                }
+            });
 
             await axiosInstance.post(`/booking/cancel/${cancelTargetKey}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -328,20 +344,22 @@ export default function UserBookings() {
                             className="user-bookings-comments"
                         />
                         <div className="user-bookings-upload">
-                            <Upload
-                                multiple
-                                fileList={cancelFiles}
-                                beforeUpload={() => false}
-                                onChange={({ fileList }) => setCancelFiles(fileList)}
+                            <input
+                                ref={fileInputRef}
+                                className="package-image-input"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                style={{ display: "none" }}
+                            />
+                            <Button
+                                className="user-bookings-upload-btn"
+                                onClick={() => fileInputRef.current.click()}
+                                icon={<UploadOutlined />}
+                                block
                             >
-                                <Button
-                                    className="user-bookings-upload-btn"
-                                    icon={<UploadOutlined />}
-                                    block
-                                >
-                                    Upload files
-                                </Button>
-                            </Upload>
+                                Upload file
+                            </Button>
                             <div className="user-bookings-upload-note">
                                 Uploading at least one file is required.
                             </div>

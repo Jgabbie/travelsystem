@@ -25,6 +25,7 @@ import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
 
 import AdminLayout from "./components/AdminLayout";
+import EmployeeLayout from "./components/EmployeeLayout";
 import BookingManagement from "./pages/admin/BookingManagement";
 import UploadBookingInvoice from "./pages/admin/UploadBookingInvoice";
 import UserManagement from "./pages/admin/UserManagement";
@@ -46,6 +47,7 @@ import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
+import EmployeeRoute from "./routes/EmployeeRoute";
 
 
 import "antd/dist/reset.css";
@@ -104,6 +106,24 @@ function App() {
               {/* logging and auditing routes */}
               <Route path="logging" element={<Logging />} />
               <Route path="auditing" element={<Auditing />} />
+            </Route>
+          </Route>
+
+          {/* employee routes */}
+          <Route element={<EmployeeRoute />}>
+            <Route path="/employee" element={<EmployeeLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="bookings" element={<BookingManagement />} />
+              <Route path="transactions" element={<TransactionManagement />} />
+              <Route path="packages" element={<PackageManagement />} />
+              <Route path="package-quotation" element={<QuotationManagement />} />
+              <Route path="quotation/:id" element={<QuotationRequest />} />
+              <Route path="ratings" element={<ReviewRatings />} />
+              <Route path="visa-applications" element={<VisaApplications />} />
+              <Route path="visa-services" element={<VisaServices />} />
+              <Route path="passport-applications" element={<PassportApplications />} />
+              <Route path="cancellation-requests" element={<CancellationRequests />} />
             </Route>
           </Route>
 

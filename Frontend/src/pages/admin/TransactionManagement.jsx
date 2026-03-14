@@ -41,16 +41,19 @@ export default function TransactionManagement() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axiosInstance.get("/transaction/user-transactions");
+        const response = await axiosInstance.get("/transaction/all-transactions");
+
         const transactions = response.data.map((t) => ({
           key: t._id,
           ref: t.reference,
+          username: t.userId?.username || "Unknown User",
           package: t.packageName || "",
           date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
           price: `₱${Number(t.amount || 0).toLocaleString()}`,
           method: t.method || "",
           status: t.status || ""
         }));
+
         setData(transactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -267,6 +270,7 @@ export default function TransactionManagement() {
   const columns = [
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Travel Package", dataIndex: "package", editable: true },
+    { title: "Customer Name", dataIndex: "username", editable: true },
     {
       title: "Payment Date & Time",
       dataIndex: "date",
@@ -520,12 +524,12 @@ export default function TransactionManagement() {
             onChange={(d) => setPaymentDateFilter(d)}
             allowClear
           />
-          
+
           <Space style={{ marginLeft: 'auto' }}>
-            <Button 
-              className='export-pdf-button' 
-              type="primary" 
-              icon={<FilePdfOutlined />} 
+            <Button
+              className='export-pdf-button'
+              type="primary"
+              icon={<FilePdfOutlined />}
               onClick={generatePDF}
             >
               Export to PDF
@@ -556,51 +560,78 @@ export default function TransactionManagement() {
           footer={null}
           className="transaction-view-modal"
           width={720}
-          destroyOnClose
+          style={{ top: 10 }}
         >
           {selectedTransaction && (
-            <div className="transaction-view-content">
-              <div className="transaction-view-header">
-                <div>
-                  <h2 className="transaction-view-title">Transaction Details</h2>
-                  <div className="transaction-view-subtitle">
+            <div className="receipt-container">
+              {/* Header Section */}
+              <div className="receipt-header">
+                <div className="company-info">
+                  <h2 className="brand-name">M&RC Travel and Tours</h2>
+                  <p>1234 Company St,</p>
+                  <p>Company Town, ST 12345</p>
+                </div>
+                <div className="receipt-title-box">
+                  <h1 className="receipt-title">RECEIPT</h1>
+                </div>
+              </div>
+
+              {/* Billing & Meta Section */}
+              <div className="receipt-meta">
+                <div className="billed-to">
+                  <span className="label-blue">Billed To</span>
+                  <h3 className="customer-name">{selectedTransaction.username || "Customer Name"}</h3>
+                  <p>{selectedTransaction.customerAddress || "098237823"}</p>
+                </div>
+                <div className="receipt-details">
+                  <div className="detail-item">
+                    <span className="label-blue">Receipt #</span>
                     <span>{selectedTransaction.ref}</span>
-                    <Tag
-                      color={
-                        selectedTransaction.status === "Successful"
-                          ? "green"
-                          : selectedTransaction.status === "Pending"
-                            ? "orange"
-                            : "red"
-                      }
-                    >
-                      {selectedTransaction.status}
-                    </Tag>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label-blue">Receipt date</span>
+                    <span>{selectedTransaction.date ? dayjs(selectedTransaction.date).format("DD-MM-YYYY") : "--"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="transaction-view-grid">
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Package</span>
-                  <span className="transaction-view-value">{selectedTransaction.package}</span>
+              {/* Items Table */}
+              <table className="receipt-table">
+                <thead>
+                  <tr>
+                    <th>QTY</th>
+                    <th>Description</th>
+                    <th className="text-right">Unit Price</th>
+                    <th className="text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>{selectedTransaction.package}</td>
+                    <td className="text-right">{selectedTransaction.price}</td>
+                    <td className="text-right">{selectedTransaction.price}</td>
+                  </tr>
+                  {/* Add more rows here if your transaction data has multiple items */}
+                </tbody>
+              </table>
+
+              {/* Calculation Section */}
+              <div className="receipt-summary">
+                <div className="summary-row">
+                  <span>Subtotal</span>
+                  <span>{selectedTransaction.price}</span>
                 </div>
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Payment Date</span>
-                  <span className="transaction-view-value">
-                    {selectedTransaction.date
-                      ? dayjs(selectedTransaction.date).format("MMM DD, YYYY hh:mm A")
-                      : "--"}
-                  </span>
+                <div className="summary-row total-row">
+                  <span className="label-blue">Total</span>
+                  <span className="total-amount">{selectedTransaction.price}</span>
                 </div>
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Amount</span>
-                  <span className="transaction-view-value">{selectedTransaction.price}</span>
-                </div>
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Method</span>
-                  <span className="transaction-view-value">{selectedTransaction.method}</span>
-                </div>
+              </div>
+
+              {/* Footer Notes */}
+              <div className="receipt-footer">
+                <p>Thank you for your purchase!</p>
+                <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
               </div>
             </div>
           )}

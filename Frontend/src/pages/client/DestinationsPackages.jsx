@@ -280,8 +280,9 @@ export default function DestinationsPackages() {
                                     <Text className="destinations-label">Travelers</Text>
                                     <InputNumber
                                         className='destinations-inputs'
+                                        maxLength={2}
                                         min={1}
-                                        max={100}
+                                        max={50}
                                         placeholder="How many travellers?"
                                         value={travelersValue}
                                         onChange={(value) => setTravelersValue(value ?? null)}

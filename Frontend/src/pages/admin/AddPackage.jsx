@@ -982,6 +982,9 @@ export default function AddPackage() {
             </Card>
             <p className="add-package-error-message">{errors.itineraries}</p>
 
+
+
+
             <h2 className="section-headers">Package Image</h2>
             {/* PACKAGE IMAGE UPLOAD */}
 

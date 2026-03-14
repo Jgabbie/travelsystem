@@ -8,8 +8,8 @@ const UserModel = require('../models/user')
 const adminOnly = async (req, res, next) => {
     try {
         const user = await UserModel.findById(req.userId).lean()
-        if (!user || user.role !== 'Admin') {
-            return res.status(403).json({ message: 'Forbidden: Admins only' })
+        if (!user || (user.role !== 'Admin' && user.role !== 'Employee')) {
+            return res.status(403).json({ message: 'Forbidden: Admins and Employees only' })
         }
         next()
     } catch (err) {

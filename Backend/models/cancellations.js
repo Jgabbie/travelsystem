@@ -4,6 +4,8 @@ const CancellationSchema = new mongoose.Schema({
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'bookings', required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
     cancellationReason: { type: String, required: true },
+    cancellationComments: { type: String, default: '' },
+    supportingFiles: { type: [String], default: [] },
     cancellationDate: { type: Date, default: Date.now },
     status: { type: String, enum: ['Pending', 'Approved', 'Disapproved'], default: 'Pending' }
 });

@@ -45,27 +45,42 @@ export default function BookingManagement() {
       setLoading(true);
       try {
         const response = await axiosInstance.get("/booking/all-bookings");
-        const rows = (response.data || []).map((booking) => { 
-          const details = booking.bookingDetails || {};
-          const travelerCounts = details.travelers || {};
-          const travelersTotal = Object.values(travelerCounts) 
-            .reduce((sum, value) => sum + (Number(value) || 0), 0);
 
-          const statusRaw = booking.status || "Pending"; 
-          const statusFormatted =
-            statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1); 
+        const bookings = response.data.map((b) => ({
+          key: b._id,
+          ref: b.reference || b._id,
+          username: b.userId?.username || "Customer Name",
+          pkg: b.bookingDetails?.packageName || "Package",
+          travelDate: b.bookingDetails?.travelDate || b.createdAt,
+          bookingDate: b.createdAt,
+          qty: b.bookingDetails?.travelers?.total || 0,
+          status: b.status?.charAt(0)?.toUpperCase() + b.status?.slice(1) || "Pending",
+          bookingDetails: b.bookingDetails || {}
+        }));
 
-          return { 
-            key: booking._id,
-            ref: booking.reference || booking._id,
-            pkg: details.packageName || "Package",
-            travelDate: details.travelDate || booking.createdAt,
-            bookingDate: booking.createdAt,
-            qty: travelersTotal || 0,
-            status: statusFormatted
-          };
-        });
-        setData(rows); 
+        setData(bookings);
+
+        // const rows = (response.data || []).map((booking) => {
+        //   const details = booking.bookingDetails || {};
+        //   const travelerCounts = details.travelers || {};
+        //   const travelersTotal = Object.values(travelerCounts)
+        //     .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+        //   const statusRaw = booking.status || "Pending";
+        //   const statusFormatted =
+        //     statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
+
+        //   return {
+        //     key: booking._id,
+        //     ref: booking.reference || booking._id,
+        //     pkg: details.packageName || "Package",
+        //     travelDate: details.travelDate || booking.createdAt,
+        //     bookingDate: booking.createdAt,
+        //     qty: travelersTotal || 0,
+        //     status: statusFormatted
+        //   };
+        // });
+        // setData(rows);
       } catch (error) {
         message.error("Unable to load bookings");
         setData([]);
@@ -105,16 +120,16 @@ export default function BookingManagement() {
 
   const generatePDF = async () => {
     // Changed back to Portrait ('p') to match the size of Pic 1
-    const doc = new jsPDF('p', 'mm', 'a4'); 
-    
+    const doc = new jsPDF('p', 'mm', 'a4');
+
     const tableColumn = ["Reference", "Package", "Travel Date", "Booking Date", "Travellers", "Status"];
-    
+
     const tableRows = filteredData.map(item => [
-      item.ref, 
-      item.pkg, 
-      dayjs(item.travelDate).format("MMM DD, YYYY"), 
-      dayjs(item.bookingDate).format("MMM DD, YYYY"), 
-      item.qty, 
+      item.ref,
+      item.pkg,
+      dayjs(item.travelDate).format("MMM DD, YYYY"),
+      dayjs(item.bookingDate).format("MMM DD, YYYY"),
+      item.qty,
       item.status
     ]);
 
@@ -249,9 +264,9 @@ export default function BookingManagement() {
           okButtonProps: { className: "booking-manage-confirm-btn" },
           cancelButtonProps: { className: "booking-manage-cancel-btn" },
           style: { top: 200 },
-          onOk: async () => { 
+          onOk: async () => {
             const updatedRow = { ...newData[index], ...row };
-            if (dayjs.isDayjs(updatedRow.travelDate)) { 
+            if (dayjs.isDayjs(updatedRow.travelDate)) {
               updatedRow.travelDate = updatedRow.travelDate.format("YYYY-MM-DD");
             }
             if (dayjs.isDayjs(updatedRow.bookingDate)) {
@@ -259,11 +274,11 @@ export default function BookingManagement() {
             }
 
             try {
-              const statusValue = updatedRow.status 
+              const statusValue = updatedRow.status
                 ? updatedRow.status.toLowerCase()
                 : undefined;
 
-              const payload = { 
+              const payload = {
                 status: statusValue,
                 bookingDetails: {
                   packageName: updatedRow.pkg,
@@ -303,8 +318,9 @@ export default function BookingManagement() {
   };
 
   const columns = [
-    { title: "Reference", dataIndex: "ref" },
-    { title: "Package", dataIndex: "pkg", editable: true },
+    { title: "Booking Reference", dataIndex: "ref" },
+    { title: "Travel Package", dataIndex: "pkg", editable: true },
+    { title: "Customer Name", dataIndex: "username", editable: true },
     {
       title: "Travel Date",
       dataIndex: "travelDate",
@@ -317,7 +333,7 @@ export default function BookingManagement() {
       editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY")
     },
-    { title: "Travellers", dataIndex: "qty", editable: true },
+    { title: "Travelers", dataIndex: "qty", editable: true },
     {
       title: "Status",
       dataIndex: "status",

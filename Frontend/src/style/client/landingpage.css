@@ -20,116 +20,7 @@ body {
     position: relative;
 }
 
-.navbar {
-    position: fixed;
-    z-index: 1000;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 50px;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.logo-section {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    font-size: 20px;
-    color: #555;
-}
-
-.logo-img {
-    height: 50px;
-    width: 50px;
-    margin-right: 25px;
-    margin-bottom: 5px;
-}
-
-.logo-section span {
-    font-family: "Montserrat", sans-serif;
-    font-weight: 600;
-    font-size: 24px;
-}
-
-.nav-links Button {
-    background: none;
-    border: none;
-    font-weight: bold;
-    color: #0056b3;
-    cursor: pointer;
-    margin-left: 20px;
-    font-size: 16px;
-}
-
-.landing-label-links {
-    font-size: 18px;
-    font-weight: 600;
-    color: #305797;
-    margin-top: 3px;
-}
-
-.landing-button-links {
-    font-size: 18px;
-    font-weight: 600;
-    color: #992A46;
-    margin-left: 0px;
-    padding-left: 0px;
-    padding-right: 22px;
-}
-
-.landing-button-links:hover {
-    text-decoration: underline;
-    color: #992A46 !important;
-    border-width: 0px !important;
-}
-
-.user-name-link {
-    font-size: 18px;
-    font-weight: 600;
-    color: #305797;
-}
-
-.user-name-link:hover {
-    text-decoration: underline;
-    color: #992A46 !important;
-    border-width: 0px !important;
-}
-
-.ant-dropdown {
-    height: 30px;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-}
-
-.dropdown-space {
-    margin-top: 10px !important;
-    margin-bottom: 0px !important;
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
-}
-
-.user-dropdown-icon {
-    margin-bottom: 10px !important;
-}
-
-.username-text {
-    font-family: "Montserrat", sans-serif;
-    font-weight: 600;
-}
-
-.username-dropdown {
-    font-family: "Montserrat", sans-serif;
-    color: #305797;
-    margin-left: 5px;
-}
-
-.user-dropdown-button {
-    margin-left: 30px;
-}
+/* first section of landing page */
 
 .hero-section {
     position: relative;
@@ -175,6 +66,8 @@ body {
     margin: 0 auto;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
+
+/* search section */
 
 .search-widget {
     position: absolute;
@@ -222,6 +115,10 @@ body {
     font-size: 20px;
 }
 
+
+
+/* filter section */
+
 .filter-row {
     display: flex;
     justify-content: space-between;
@@ -251,7 +148,7 @@ body {
 .landing-select .ant-select-selector {
     border: none !important;
     background: transparent !important;
-    font-size: 16px;
+    font-size: 10px;
     font-weight: 700;
     color: #333;
     padding: 0 !important;
@@ -267,18 +164,14 @@ body {
     color: #666;
 }
 
-.landing-select:hover,
-.landing-select:focus-within {
-    border-color: #305797 !important;
-}
-
-.landing-filter-input.ant-input {
+.landing-filter-input {
     border: 1px solid #d9d9d9 !important;
     background: #fff !important;
     box-shadow: none !important;
     border-radius: 6px;
     padding: 6px 11px !important;
-    height: 36px !important;
+    height: 31px !important;
+    width: 100% !important;
     font-size: 16px;
     font-weight: 500;
     color: #333;
@@ -288,12 +181,6 @@ body {
     color: #999;
     opacity: 1;
     font-weight: 400;
-}
-
-.landing-filter-input.ant-input:focus,
-.landing-filter-input.ant-input-focused {
-    box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.15) !important;
-    border: 1px solid #305797 !important;
 }
 
 .budget-control {
@@ -316,10 +203,6 @@ body {
     cursor: pointer;
 }
 
-.budget-slider .ant-slider-track {
-    background-color: #305797;
-}
-
 .budget-slider .ant-slider-handle::after {
     background-color: #305797;
     box-shadow: 0 0 0 2px #305797;
@@ -329,6 +212,10 @@ body {
 .budget-slider .ant-slider-handle:focus-visible::after {
     box-shadow: 0 0 0 4px rgba(48, 87, 151, 0.3);
 }
+
+
+
+/* page links */
 
 .page-link-buttons-container {
     display: flex;
@@ -356,6 +243,8 @@ body {
     text-decoration: underline;
 }
 
+
+/* packages */
 
 .hero-section-packages {
     position: relative;
@@ -437,6 +326,10 @@ body {
     gap: 30px;
     margin: 40px;
 }
+
+
+
+/* explore */
 
 .explore-container {
     display: flex;
@@ -523,6 +416,10 @@ body {
 }
 
 
+
+
+/* aboutus */
+
 .hero-section-aboutus {
     position: relative;
     height: 600px;
@@ -606,6 +503,8 @@ body {
 }
 
 
+
+/* contactus */
 
 .contactus-container {
     display: flex;
@@ -695,6 +594,10 @@ body {
     color: white;
     margin-top: 10px;
 }
+
+
+
+/* footer */
 
 .footer-section {
     display: flex;

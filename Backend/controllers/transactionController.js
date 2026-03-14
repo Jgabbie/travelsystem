@@ -49,7 +49,10 @@ const getUserTransactions = async (req, res) => {
 
 const getAllTransactions = async (_req, res) => {
     try {
-        const transactions = await TransactionModel.find({}).sort({ createdAt: -1 })
+        const transactions = await TransactionModel.find({})
+            .populate('userId', 'username')
+            .sort({ createdAt: -1 });
+
         res.status(200).json(transactions)
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
@@ -59,7 +62,6 @@ const getAllTransactions = async (_req, res) => {
 const updateTransaction = async (req, res) => {
     const { id } = req.params
     const { status, method, amount, packageName } = req.body
-
     try {
         const updateFields = {
             ...(status ? { status } : {}),
@@ -67,17 +69,14 @@ const updateTransaction = async (req, res) => {
             ...(typeof amount === 'number' ? { amount } : {}),
             ...(packageName ? { packageName } : {})
         }
-
         const updatedTransaction = await TransactionModel.findByIdAndUpdate(
             id,
             updateFields,
             { new: true }
         )
-
         if (!updatedTransaction) {
             return res.status(404).json({ message: "Transaction not found" })
         }
-
         logAction('TRANSACTION_UPDATED', req.userId, {
             transactionId: id,
             status,
@@ -98,7 +97,6 @@ const deleteTransaction = async (req, res) => {
 
     try {
         const deletedTransaction = await TransactionModel.findByIdAndDelete(id)
-
         if (!deletedTransaction) {
             return res.status(404).json({ message: "Transaction not found" })
         }

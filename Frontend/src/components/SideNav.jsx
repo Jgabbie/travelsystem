@@ -1,13 +1,12 @@
-import { Layout, Modal } from "antd";
+import { Layout } from "antd";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
-import axiosInstance from "../config/axiosConfig";
 import "../style/components/sidenav.css";
+
 
 const { Sider } = Layout;
 
 export default function SideNav() {
+
 
   return (
     <>
@@ -25,8 +24,6 @@ export default function SideNav() {
           <NavLink to="/visa-services" className="nav-item">Visa Services</NavLink>
           <NavLink to="/passport-applications" className="nav-item">Passport Applications</NavLink>
           <NavLink to="/visa-applications" className="nav-item">VISA Applications</NavLink>
-
-
 
           <div style={{ margin: "10px 0", borderTop: "1px solid rgba(255,255,255,0.2)" }}></div>
           <NavLink to="/logging" className="nav-item">Logging</NavLink>

@@ -70,17 +70,17 @@ export default function CancellationRequests() {
 
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
-        
+
         // Column headers matching your screenshot table
         const tableColumn = [
-            "Username", 
-            "Package", 
-            "Reason", 
-            "Days after booking", 
-            "Status", 
+            "Username",
+            "Package",
+            "Reason",
+            "Days after booking",
+            "Status",
             "Cancellation Date"
         ];
-        
+
         const tableRows = filteredRequests.map(item => [
             item.username,
             item.packageName,
@@ -176,12 +176,12 @@ export default function CancellationRequests() {
 
     const columns = useMemo(() => [
         {
-            title: 'Username',
+            title: 'Customer Name',
             dataIndex: 'username',
             key: 'username'
         },
         {
-            title: 'Package',
+            title: 'Travel Package',
             dataIndex: 'packageName',
             key: 'packageName'
         },
@@ -194,6 +194,12 @@ export default function CancellationRequests() {
             title: 'Days after booking date',
             dataIndex: 'daysAfterBooking',
             key: 'daysAfterBooking'
+        },
+        {
+            title: 'Cancellation Date',
+            dataIndex: 'cancellationDate',
+            key: 'cancellationDate',
+            render: (d) => d ? dayjs(d).format('MMM DD, YYYY') : '--'
         },
         {
             title: 'Status',
@@ -209,12 +215,6 @@ export default function CancellationRequests() {
                     </Tag>
                 )
             }
-        },
-        {
-            title: 'Cancellation Date',
-            dataIndex: 'cancellationDate',
-            key: 'cancellationDate',
-            render: (d) => d ? dayjs(d).format('MMM DD, YYYY') : '--'
         },
         {
             title: 'Actions',
@@ -305,10 +305,10 @@ export default function CancellationRequests() {
                     />
 
                     <Space style={{ marginLeft: 'auto' }}>
-                        <Button 
-                            className='export-pdf-button' 
-                            type="primary" 
-                            icon={<FilePdfOutlined />} 
+                        <Button
+                            className='export-pdf-button'
+                            type="primary"
+                            icon={<FilePdfOutlined />}
                             onClick={generatePDF}
                         >
                             Export to PDF

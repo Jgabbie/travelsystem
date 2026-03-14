@@ -12,7 +12,7 @@ export default function TopNav() {
 
   const navigate = useNavigate();
 
-  const { auth, setAuth, checkAuth, authLoading } = useAuth();
+  const { auth, setAuth, checkAuth } = useAuth();
   const [profileImage, setProfileImage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 

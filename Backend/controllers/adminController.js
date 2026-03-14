@@ -101,8 +101,8 @@ const editUser = async (req, res) => {
 const getDashboardStats = async (req, res) => {
     try {
         const requester = await UserModel.findById(req.userId).lean();
-        if (!requester || requester.role !== "Admin") {
-            return res.status(403).json({ message: "Forbidden: Admins only" });
+        if (!requester || (requester.role !== "Admin" && requester.role !== "Employee")) {
+            return res.status(403).json({ message: "Forbidden: Admins and Employees only" });
         }
 
         const [totalTransactions, totalBookings, totalUsers, totalPackages] = await Promise.all([

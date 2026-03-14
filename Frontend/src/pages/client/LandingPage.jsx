@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider } from 'antd';
+import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
-import { href, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import TopNavUser from '../../components/TopNavUser';
 import LoginModal from '../../components/modals/LoginModal';
 import '../../style/client/landingpage.css'
@@ -185,7 +185,6 @@ export default function LandingPage() {
                                 />
                             </div>
 
-
                             <div className="filter-group">
                                 <label>TOUR TYPE</label>
                                 <Select
@@ -200,21 +199,30 @@ export default function LandingPage() {
                                 />
                             </div>
 
-
                             <div className="filter-group">
                                 <label>TRAVELERS</label>
-                                <Input
+                                <InputNumber
                                     className="landing-filter-input"
+                                    maxLength={2}
                                     value={pax}
-                                    placeholder="How many travellers?"
-                                    inputMode="numeric"
-                                    onChange={(e) => {
-                                        const nextValue = e.target.value.replace(/[^0-9]/g, '');
-                                        setPax(nextValue);
+                                    placeholder="Travelers"
+                                    min={1}
+                                    max={50}
+                                    onChange={(val) => {
+                                        setPax(val);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = [
+                                            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
+                                            'Tab', 'Enter', 'Escape'
+                                        ];
+
+                                        if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                        }
                                     }}
                                 />
                             </div>
-
 
                             <div className="filter-group" style={{ minWidth: '200px' }}>
                                 <label>BUDGET</label>
@@ -225,7 +233,7 @@ export default function LandingPage() {
                                 <Slider
                                     range
                                     min={0}
-                                    max={50000}
+                                    max={100000}
                                     step={1000}
                                     value={budgetRange}
                                     onChange={setBudgetRange}

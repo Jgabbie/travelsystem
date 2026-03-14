@@ -8,9 +8,15 @@ const PublicRoute = () => {
     // const isAuthenticated = !!auth?.username; //if authenticated
     // const isAdmin = auth?.role === 'Admin'; //if authenticated user is admin
 
-    // If user is authenticated, redirect to home (or admin if admin)
+    // If user is authenticated, redirect by role
     if (auth) {
-        return <Navigate to={auth.role === 'Admin' ? '/dashboard' : '/home'} replace />;
+        if (auth.role === 'Admin') {
+            return <Navigate to="/dashboard" replace />;
+        }
+        if (auth.role === 'Employee') {
+            return <Navigate to="/employee/dashboard" replace />;
+        }
+        return <Navigate to="/home" replace />;
     }
 
     return <Outlet />;

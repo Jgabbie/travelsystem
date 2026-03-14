@@ -152,17 +152,17 @@ export default function QuotationManagement() {
 
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
-        
+
         // Headers updated to match your screenshot exactly
         const tableColumn = [
-            "Quotation Request No.", 
-            "Package Name", 
-            "Date Requested", 
-            "Customer Name", 
-            "Travelers", 
+            "Quotation Request No.",
+            "Package Name",
+            "Date Requested",
+            "Customer Name",
+            "Travelers",
             "Status"
         ];
-        
+
         const tableRows = filteredData.map(item => [
             item.ref,
             item.packageName,
@@ -232,8 +232,8 @@ export default function QuotationManagement() {
     const columns = [
         { title: "Quotation Request No.", dataIndex: "ref" },
         { title: "Package Name", dataIndex: "packageName" },
-        { title: "Date Requested", dataIndex: "dateRequested" },
         { title: "Customer Name", dataIndex: "customerName" },
+        { title: "Date Requested", dataIndex: "dateRequested" },
         { title: "Travelers", dataIndex: "travelers" },
         {
             title: "Status",
