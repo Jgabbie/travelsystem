@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/booking.css";
+import { useAuth } from "../../hooks/useAuth";
 
 
 const getBase64ImageFromURL = (url) => {
@@ -39,6 +40,9 @@ export default function BookingManagement() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { auth } = useAuth();
+  const isEmployee = auth?.role === 'Employee';
+  const basePath = isEmployee ? '/employee' : '';
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -51,36 +55,14 @@ export default function BookingManagement() {
           ref: b.reference || b._id,
           username: b.userId?.username || "Customer Name",
           pkg: b.bookingDetails?.packageName || "Package",
-          travelDate: b.bookingDetails?.travelDate || b.createdAt,
-          bookingDate: b.createdAt,
+          travelDate: b.bookingDetails?.travelDate ? dayjs(b.bookingDetails.travelDate).format('MMM DD, YYYY') : dayjs(b.createdAt).format('MMM DD, YYYY'),
+          bookingDate: dayjs(b.createdAt).format('MMM DD, YYYY'),
           qty: b.bookingDetails?.travelers?.total || 0,
           status: b.status?.charAt(0)?.toUpperCase() + b.status?.slice(1) || "Pending",
           bookingDetails: b.bookingDetails || {}
         }));
 
         setData(bookings);
-
-        // const rows = (response.data || []).map((booking) => {
-        //   const details = booking.bookingDetails || {};
-        //   const travelerCounts = details.travelers || {};
-        //   const travelersTotal = Object.values(travelerCounts)
-        //     .reduce((sum, value) => sum + (Number(value) || 0), 0);
-
-        //   const statusRaw = booking.status || "Pending";
-        //   const statusFormatted =
-        //     statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
-
-        //   return {
-        //     key: booking._id,
-        //     ref: booking.reference || booking._id,
-        //     pkg: details.packageName || "Package",
-        //     travelDate: details.travelDate || booking.createdAt,
-        //     bookingDate: booking.createdAt,
-        //     qty: travelersTotal || 0,
-        //     status: statusFormatted
-        //   };
-        // });
-        // setData(rows);
       } catch (error) {
         message.error("Unable to load bookings");
         setData([]);
@@ -93,11 +75,15 @@ export default function BookingManagement() {
   }, []);
 
 
-  const filteredData = useMemo(() => data.filter(item => {
+  const filteredData = data.filter(item => {
     const matchesSearch =
-      item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.pkg.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.status.toLowerCase().includes(searchText.toLowerCase());
+      (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
+      (dayjs(item.travelDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+      (dayjs(item.bookingDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.qty.toString().toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.ref.toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.pkg.toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.status.toLowerCase().includes(searchText.toLowerCase()));
 
     const matchesStatus =
       statusFilter === "" || item.status === statusFilter;
@@ -115,11 +101,11 @@ export default function BookingManagement() {
       matchesStatus &&
       matchesBookingDate &&
       matchesTravelDate
-    );
-  }), [data, searchText, statusFilter, bookingDateFilter, travelDateFilter]);
+    )
+  })
+
 
   const generatePDF = async () => {
-    // Changed back to Portrait ('p') to match the size of Pic 1
     const doc = new jsPDF('p', 'mm', 'a4');
 
     const tableColumn = ["Reference", "Package", "Travel Date", "Booking Date", "Travellers", "Status"];
@@ -235,7 +221,7 @@ export default function BookingManagement() {
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
-      navigate(`/bookings/${key}/invoice`, { state: { booking } });
+      navigate(`${basePath}/bookings/${key}/invoice`, { state: { booking } });
     }
   };
 

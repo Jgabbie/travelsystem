@@ -7,6 +7,7 @@ const CancellationSchema = new mongoose.Schema({
     cancellationComments: { type: String, default: '' },
     supportingFiles: { type: [String], default: [] },
     cancellationDate: { type: Date, default: Date.now },
+    reference: { type: String, required: true, unique: true },
     status: { type: String, enum: ['Pending', 'Approved', 'Disapproved'], default: 'Pending' }
 });
 

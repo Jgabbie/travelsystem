@@ -1,12 +1,16 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, Tag, ConfigProvider } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, Tag, ConfigProvider, Space } from "antd";
 import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/visaservices.css";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function VisaServices() {
     const navigate = useNavigate();
+    const { auth } = useAuth();
+    const isEmployee = auth?.role === 'Employee';
+    const basePath = isEmployee ? '/employee' : '';
 
     const [servicesData, setServicesData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -128,14 +132,16 @@ export default function VisaServices() {
                         onChange={(event) => setSearchText(event.target.value)}
                     />
 
-                    <Button
-                        className="add-package-button"
-                        type="primary"
-                        icon={<PlusOutlined />}
-                        onClick={() => navigate("/visa-services/add")}
-                    >
-                        Add Service
-                    </Button>
+                    <Space style={{ marginLeft: 'auto' }}>
+                        <Button
+                            className="add-package-button"
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={() => navigate(`${basePath}/visa-services/add`)}
+                        >
+                            Add Service
+                        </Button>
+                    </Space>
                 </div>
 
                 {filteredServices.length > 0 ? filteredServices.map(service => (
@@ -161,7 +167,7 @@ export default function VisaServices() {
                                 className="edit-package-button"
                                 type="primary"
                                 icon={<EditOutlined />}
-                                onClick={() => navigate(`/visa-services/edit/${service._id}`)}
+                                onClick={() => navigate(`${basePath}/visa-services/edit/${service._id}`)}
                             />
                             <Button
                                 className="delete-package-button"

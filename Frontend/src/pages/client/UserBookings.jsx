@@ -17,6 +17,7 @@ export default function UserBookings() {
     const [cancelTargetKey, setCancelTargetKey] = useState(null)
     const [cancelImages, setCancelImages] = useState([])
     const [cancelComments, setCancelComments] = useState('')
+    const [previewImage, setPreviewImage] = useState(null)
 
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -106,6 +107,7 @@ export default function UserBookings() {
     const closeCancelModal = () => {
         setCancelModalOpen(false)
         setCancelTargetKey(null)
+        setPreviewImage(null);
         setCancelReason('')
         setCancelOtherReason('')
         setCancelImages([])
@@ -116,7 +118,6 @@ export default function UserBookings() {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validation logic
         if (!file.type.startsWith("image/")) {
             message.error("Please select a valid image file.");
             return;
@@ -127,7 +128,13 @@ export default function UserBookings() {
         }
 
         setCancelImages([{ file, name: file.name }]);
+
+
+        const reader = new FileReader();
+        reader.onload = () => setPreviewImage(reader.result);
+        reader.readAsDataURL(file);
     };
+
 
     const confirmCancelBooking = async () => {
         if (!cancelReason) {
@@ -158,7 +165,6 @@ export default function UserBookings() {
             await axiosInstance.post(`/booking/cancel/${cancelTargetKey}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             })
-            setBookings((prev) => prev.filter((item) => item._id !== cancelTargetKey))
             message.success('Booking cancelled')
             closeCancelModal()
         } catch (error) {
@@ -284,8 +290,6 @@ export default function UserBookings() {
                             onChange={(d) => setTravelDateFilter(d)}
                             allowClear
                         />
-
-                        <Button className="exportbutton-bookingmanagement" type="primary">Export</Button>
                     </div>
 
                     <div className="user-bookings-table">
@@ -360,6 +364,26 @@ export default function UserBookings() {
                             >
                                 Upload file
                             </Button>
+
+                            {previewImage && (
+                                <div style={{ marginTop: 12, textAlign: 'center' }}>
+                                    <img
+                                        src={previewImage}
+                                        alt="Preview"
+                                        style={{
+                                            maxWidth: '100%',
+                                            maxHeight: '150px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #d9d9d9',
+                                            padding: '4px'
+                                        }}
+                                    />
+                                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                                        {cancelImages[0]?.name}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="user-bookings-upload-note">
                                 Uploading at least one file is required.
                             </div>

@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
+import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, DatePicker } from "antd";
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
+import dayjs from "dayjs";
 import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/quotationmanagement.css";
+import { useAuth } from "../../hooks/useAuth";
 
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
@@ -27,6 +29,7 @@ const getBase64ImageFromURL = (url) => {
 export default function QuotationManagement() {
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [dateFilter, setDateFilter] = useState(null)
 
     const [editingKey, setEditingKey] = useState("");
     const [form] = Form.useForm();
@@ -35,42 +38,25 @@ export default function QuotationManagement() {
     const [data, setData] = useState([]);
 
     const navigate = useNavigate()
+    const { auth } = useAuth()
+    const isEmployee = auth?.role === 'Employee'
+    const basePath = isEmployee ? '/employee' : ''
 
     useEffect(() => {
         const fetchQuotations = async () => {
             setLoading(true);
             try {
                 const response = await axiosInstance.get("/quotation/all-quotations")
-                const rows = (response.data || []).map((quote) => {
-                    const details = quote.travelDetails || {};
-                    const travelers = details.travelers || 0;
-                    const preferredAirlines = details.preferredAirlines || "N/A";
-                    const preferredHotels = details.preferredHotels || "N/A";
-                    const budgetRange = details.budgetRange || "N/A";
-                    const itineraryNotes = details.itineraryNotes || "N/A";
-                    const additionalComments = details.additionalComments || "N/A";
-                    const quoteStatus = quote.status || "Pending";
-                    const quoteRef = quote.reference || "N/A";
-                    const quotePackageName = quote.packageName || "N/A";
-                    const quoteCustomerName = quote.userName || "N/A";
-                    const dateRequested = quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : "N/A";
-
-                    return {
-                        key: quote._id,
-                        ref: quoteRef,
-                        travelers: travelers,
-                        preferredAirlines: preferredAirlines,
-                        preferredHotels: preferredHotels,
-                        budgetRange: budgetRange,
-                        itineraryNotes: itineraryNotes,
-                        additionalComments: additionalComments,
-                        status: quoteStatus,
-                        customerName: quoteCustomerName,
-                        packageName: quotePackageName,
-                        dateRequested: dateRequested
-                    };
-                });
-                setData(rows);
+                const quotations = response.data.map((q) => ({
+                    key: q._id,
+                    ref: q.reference,
+                    packageName: q.packageName,
+                    customerName: q.userName,
+                    dateRequested: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
+                    travelers: q.travelDetails.travelers,
+                    status: q.status
+                }))
+                setData(quotations);
             } catch (error) {
                 console.error("Error fetching quotations:", error);
             } finally {
@@ -81,74 +67,27 @@ export default function QuotationManagement() {
         fetchQuotations();
     }, []);
 
-    const isEditing = (record) => record.key === editingKey;
+    const filteredData = data.filter(item => {
+        const matchesSearch =
+            (item.ref?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.customerName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.packageName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.status?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.travelers?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            dayjs(item.dateRequested).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase());
 
-    const edit = (record) => {
-        form.setFieldsValue({
-            pkgName: record.packageName,
-            custName: record.customerName,
-            travelers: record.travelers,
-            status: record.status,
-        })
-    }
+        const matchesStatus = statusFilter === "" || item.status === statusFilter;
 
-    const cancel = () => {
-        setEditingKey("");
-    }
+        const matchesDate = !dateFilter ||
+            (item.dateRequested && dayjs(item.dateRequested).isSame(dateFilter, "day"));
 
-    const handleDeleted = (key) => {
-        Modal.confirm({
-            className: "logout-confirm-modal",
-            icon: null,
-            title: (
-                <div className="logout-confirm-title" style={{ textAlign: "center" }}>
-                    Deny Quotation Request
-                </div>
-            ),
-            content: (
-                <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-                    <p className="logout-confirm-text">Are you sure you want to deny this quotation request?</p>
-                </div>
-            ),
-            okText: "Deny",
-            cancelText: "Cancel",
-            okButtonProps: { className: "logout-confirm-btn" },
-            cancelButtonProps: { className: "logout-cancel-btn" },
-            onOk: async () => {
-                try {
-                    await axiosInstance.delete(`/quotations/${key}`);
-                    setData((prev) => prev.filter((item) => item.key !== key));
-                    message.success("Quotation denied successfully");
-                } catch (error) {
-                    console.error("Error denying quotation:", error);
-                    message.error("Failed to deny quotation");
-                }
-            }
-        });
-    }
+        return matchesSearch && matchesStatus && matchesDate;
+    });
 
-    const handleView = (key) => {
-        const quotation = data.find((item) => item.key === key);
-        if (quotation) {
-            console.log("Viewing quotation:", quotation);
-            navigate(`/quotation/${key}`);
-        }
-    }
-
-    const filteredData = useMemo(() => (
-        data.filter((item) => {
-            const matchesSearch =
-                item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.packageName.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.status.toLowerCase().includes(searchText.toLowerCase());
-
-            const matchesStatus =
-                statusFilter === "" || item.status === statusFilter;
-
-            return matchesSearch && matchesStatus;
-        })
-    ), [data, searchText, statusFilter]);
+    const totals = data.length
+    const pending = data.filter((item) => item.status === 'Pending').length
+    const approved = data.filter((item) => item.status === 'Approved').length
+    const rejected = data.filter((item) => item.status === 'Rejected').length
 
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -223,18 +162,32 @@ export default function QuotationManagement() {
         message.success("Report exported to PDF successfully.");
     };
 
-    const totalRequests = filteredData.length;
-    const totalPending = filteredData.filter((item) => item.status === "Pending").length;
-    const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
-    const totalAccepted = filteredData.filter(item => item.status === "Accepted").length;
-    const totalExpired = filteredData.filter(item => item.status === "Expired").length;
-
     const columns = [
-        { title: "Quotation Request No.", dataIndex: "ref" },
-        { title: "Package Name", dataIndex: "packageName" },
-        { title: "Customer Name", dataIndex: "customerName" },
-        { title: "Date Requested", dataIndex: "dateRequested" },
-        { title: "Travelers", dataIndex: "travelers" },
+        {
+            title: "Quotation Request No.",
+            dataIndex: "ref",
+            key: "ref"
+        },
+        {
+            title: "Package Name",
+            dataIndex: "packageName",
+            key: "packageName"
+        },
+        {
+            title: "Customer Name",
+            dataIndex: "customerName",
+            key: "customerName"
+        },
+        {
+            title: "Date Requested",
+            dataIndex: "dateRequested",
+            key: "dateRequested"
+        },
+        {
+            title: "Travelers",
+            dataIndex: "travelers",
+            key: "travelers"
+        },
         {
             title: "Status",
             dataIndex: "status",
@@ -271,6 +224,66 @@ export default function QuotationManagement() {
             )
         }
     ];
+
+    const isEditing = (record) => record.key === editingKey;
+
+    const edit = (record) => {
+        form.setFieldsValue({
+            pkgName: record.packageName,
+            custName: record.customerName,
+            travelers: record.travelers,
+            status: record.status,
+        })
+    }
+
+    const cancel = () => {
+        setEditingKey("");
+    }
+
+    const handleDeleted = (key) => {
+        Modal.confirm({
+            className: "logout-confirm-modal",
+            icon: null,
+            title: (
+                <div className="logout-confirm-title" style={{ textAlign: "center" }}>
+                    Deny Quotation Request
+                </div>
+            ),
+            content: (
+                <div className="logout-confirm-content" style={{ textAlign: "center" }}>
+                    <p className="logout-confirm-text">Are you sure you want to deny this quotation request?</p>
+                </div>
+            ),
+            okText: "Deny",
+            cancelText: "Cancel",
+            okButtonProps: { className: "logout-confirm-btn" },
+            cancelButtonProps: { className: "logout-cancel-btn" },
+            onOk: async () => {
+                try {
+                    await axiosInstance.delete(`/quotations/${key}`);
+                    setData((prev) => prev.filter((item) => item.key !== key));
+                    message.success("Quotation denied successfully");
+                } catch (error) {
+                    console.error("Error denying quotation:", error);
+                    message.error("Failed to deny quotation");
+                }
+            }
+        });
+    }
+
+    const handleView = (key) => {
+        const quotation = data.find((item) => item.key === key);
+        if (quotation) {
+            console.log("Viewing quotation:", quotation);
+            navigate(`${basePath}/quotation/${key}`);
+        }
+    }
+
+    const totalRequests = filteredData.length;
+    const totalPending = filteredData.filter((item) => item.status === "Pending").length;
+    const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
+    const totalAccepted = filteredData.filter(item => item.status === "Accepted").length;
+    const totalExpired = filteredData.filter(item => item.status === "Expired").length;
 
     const mergedColumns = columns.map((col) => {
         if (!col.editable) {
@@ -385,6 +398,13 @@ export default function QuotationManagement() {
                         ]}
                     />
 
+                    <DatePicker
+                        placeholder="Request Date"
+                        value={dateFilter}
+                        onChange={(date) => setDateFilter(date)}
+                        allowClear
+                    />
+
                     <Space style={{ marginLeft: 'auto' }}>
                         <Button
                             className='export-pdf-button'
@@ -405,10 +425,10 @@ export default function QuotationManagement() {
                                     cell: EditableCell
                                 }
                             }}
-                            columns={mergedColumns}
+                            columns={columns}
                             dataSource={filteredData}
                             loading={loading}
-                            pagination={{ pageSize: 6 }}
+                            pagination={{ pageSize: 10 }}
                             rowClassName={"editable-row"}
                             scroll={{ x: "max-content" }}
                         />

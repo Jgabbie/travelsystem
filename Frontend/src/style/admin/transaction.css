@@ -77,20 +77,8 @@
   color: #fff !important;
 }
 
-.exportbutton-transactionmanagement {
-  border-color: #305797;
-  color: #305797 !important;
-  background-color: #fff !important;
-}
-
-.exportbutton-transactionmanagement:hover {
-  background-color: #305797 !important;
-  color: #fff !important;
-}
-
 .savebutton-transactionmanagement,
-.cancelbutton-transactionmanagement,
-.exportbutton-transactionmanagement {
+.cancelbutton-transactionmanagement {
   box-shadow: none !important;
 }
 

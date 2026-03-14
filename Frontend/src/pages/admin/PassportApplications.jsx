@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, message } from "antd";
-import { FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, message, Input, Select, DatePicker } from "antd";
+import { FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
@@ -27,93 +28,28 @@ export default function PassportApplications() {
 
     const [passportApplications, setPassportApplications] = useState([]);
 
-    const columns = [
-        {
-            title: "Application ID",
-            dataIndex: "applicationId",
-            key: "applicationId",
-        },
-        {
-            title: "Applicant Name",
-            dataIndex: "username",
-            key: "username",
-        },
-        {
-            title: "Passport Type",
-            dataIndex: "applicationType",
-            key: "applicationType",
-            render: (type) => (
-                <Tag color="blue">{type || "N/A"}</Tag>
-            ),
-        },
-        {
-            title: "Submission Date",
-            dataIndex: "createdAt",
-            key: "createdAt",
-        },
-        {
-            title: "Status",
-            dataIndex: "status",
-            key: "status",
-            render: (status) => {
-                const colorMap = {
-                    Pending: "orange",
-                    Approved: "green",
-                    Rejected: "red",
-                    Processing: "blue",
-                };
+    const [searchText, setSearchText] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [submissionDateFilter, setSubmissionDateFilter] = useState(null);
 
-                return (
-                    <Tag color={colorMap[status] || "default"}>
-                        {status || "Unknown"}
-                    </Tag>
-                );
-            },
-        },
-        {
-            title: "Actions",
-            key: "actions",
-            render: (text, record) => (
-                <>
-                    <Space>
-                        <Button
-                            className='viewbutton-passport-application'
-                            type="primary"
-                            icon={<EyeOutlined />}
-                        />
-                        <Button
-                            className="approve-passport-application"
-                            type="primary"
-                            icon={<CheckOutlined />}
-                        />
-                        <Button
-                            className="reject-passport-application"
-                            type="primary"
-                            icon={<CloseOutlined />}
-                        />
-                    </Space>
-                </>
-            ),
-        },
-    ];
 
     useEffect(() => {
         const getPassportApplications = async () => {
             try {
                 const response = await axiosInstance.get('/passport/applications');
-                console.log('Fetched passport applications:', response.data);
 
-                const formattedApplications = response.data.map((data) => ({
-                    applicationId: data.applicationId,
-                    username: data.username,
-                    applicationType: data.applicationType,
-                    createdAt: new Date(data.createdAt).toLocaleDateString(),
-                    status: data.status,
+                const applications = response.data.map((a) => ({
+                    key: a._id,
+                    applicationNumber: a.applicationId,
+                    applicantName: a.username,
+                    dfaLocation: a.dfaLocation,
+                    preferredDate: a.preferredDate ? dayjs(a.preferredDate).format("MMM DD, YYYY") : "Not Set",
+                    preferredTime: a.preferredTime || "Not Set",
+                    applicationType: a.applicationType,
+                    status: a.status,
                 }));
 
-                console.log('Formatted passport applications:', formattedApplications);
-
-                setPassportApplications(formattedApplications);
+                setPassportApplications(applications);
 
             } catch (error) {
                 console.error("Error fetching passport applications:", error);
@@ -122,14 +58,37 @@ export default function PassportApplications() {
         getPassportApplications();
     }, []);
 
+    const filteredData = passportApplications.filter(item => {
+        const matchesSearch =
+            (item.applicationNumber?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.applicantName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.applicationType?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (dayjs(item.preferredDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.status?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.dfaLocation?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.preferredTime?.toLowerCase() || "").includes(searchText.toLowerCase());
+
+        const matchesStatus = statusFilter === "" || item.status === statusFilter;
+
+        const matchesDate = !submissionDateFilter ||
+            (item.preferredDate && dayjs(item.preferredDate).isSame(submissionDateFilter, "day"));
+
+        return matchesSearch && matchesStatus && matchesDate;
+    });
+
+    const totals = passportApplications.length
+    const pending = passportApplications.filter((item) => item.status === 'Pending').length
+    const approved = passportApplications.filter((item) => item.status === 'Approved').length
+    const rejected = passportApplications.filter((item) => item.status === 'Rejected').length
+
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
-        const tableColumn = ["Application ID", "Applicant Name", "Passport Type", "Submission Date", "Status"];
-        const tableRows = passportApplications.map(item => [
-            item.applicationId,
-            item.username,
+        const tableColumn = ["Application Number", "Applicant Name", "Passport Type", "Submission Date", "Status"];
+        const tableRows = filteredData.map(item => [
+            item.applicationNumber,
+            item.applicantName,
             item.applicationType,
-            item.createdAt,
+            item.preferredDate,
             item.status
         ]);
 
@@ -177,6 +136,89 @@ export default function PassportApplications() {
     };
 
 
+    const columns = [
+        {
+            title: "Application Number",
+            dataIndex: "applicationNumber",
+            key: "applicationNumber",
+        },
+        {
+            title: "Applicant Name",
+            dataIndex: "applicantName",
+            key: "applicantName",
+        },
+        {
+            title: "Passport Type",
+            dataIndex: "applicationType",
+            key: "applicationType",
+            render: (type) => (
+                <Tag color="blue">{type || "N/A"}</Tag>
+            ),
+        },
+        {
+            title: "DFA Location",
+            dataIndex: "dfaLocation",
+            key: "dfaLocation",
+        },
+        {
+            title: "Preferred Date",
+            dataIndex: "preferredDate",
+            key: "preferredDate",
+        },
+        {
+            title: "Preferred Time",
+            dataIndex: "preferredTime",
+            key: "preferredTime",
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: (status) => {
+                const colorMap = {
+                    Pending: "orange",
+                    Approved: "green",
+                    Rejected: "red",
+                    Processing: "blue",
+                };
+
+                return (
+                    <Tag color={colorMap[status] || "default"}>
+                        {status || "Unknown"}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: "Actions",
+            key: "actions",
+            render: (text, record) => (
+                <>
+                    <Space>
+                        <Button
+                            className='viewbutton-passport-application'
+                            type="primary"
+                            icon={<EyeOutlined />}
+                        />
+                        <Button
+                            className="approve-passport-application"
+                            type="primary"
+                            icon={<CheckOutlined />}
+                        />
+                        <Button
+                            className="reject-passport-application"
+                            type="primary"
+                            icon={<CloseOutlined />}
+                        />
+                    </Space>
+                </>
+            ),
+        },
+    ];
+
+
+
+
     return (
         <ConfigProvider
             theme={{
@@ -194,7 +236,7 @@ export default function PassportApplications() {
                         <Card className="passportapps-management-card">
                             <Statistic
                                 title="Total Applications"
-                                value={passportApplications.length}
+                                value={totals}
                                 prefix={<FileTextOutlined />}
                             />
                         </Card>
@@ -203,7 +245,7 @@ export default function PassportApplications() {
                         <Card className="passportapps-management-card">
                             <Statistic
                                 title="Pending"
-                                value={passportApplications.filter(app => app.status === "Pending").length}
+                                value={pending}
                                 prefix={<ClockCircleOutlined />}
                             />
                         </Card>
@@ -212,7 +254,7 @@ export default function PassportApplications() {
                         <Card className="passportapps-management-card">
                             <Statistic
                                 title="Approved"
-                                value={passportApplications.filter(app => app.status === "Approved").length}
+                                value={approved}
                                 prefix={<CheckCircleOutlined />}
                             />
                         </Card>
@@ -221,19 +263,51 @@ export default function PassportApplications() {
                         <Card className="passportapps-management-card">
                             <Statistic
                                 title="Rejected"
-                                value={passportApplications.filter(app => app.status === "Rejected").length}
+                                value={rejected}
                                 prefix={<CloseCircleOutlined />}
                             />
                         </Card>
                     </Col>
                 </Row>
 
-                <div className="passport-actions" style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
-                    <Space>
-                        <Button 
-                            className='export-pdf-button' 
-                            type="primary" 
-                            icon={<FilePdfOutlined />} 
+                <div className="passportapplications-actions">
+                    <Input
+                        prefix={<SearchOutlined />}
+                        placeholder="Search reference, package, method or status..."
+                        className="search-input"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        allowClear
+                    />
+
+                    <Select
+                        className="transaction-select"
+                        placeholder="Status"
+                        style={{ width: 140 }}
+                        allowClear
+                        value={statusFilter || undefined}
+                        onChange={(v) => setStatusFilter(v || "")}
+                        options={[
+                            { value: "Successful", label: "Successful" },
+                            { value: "Pending", label: "Pending" },
+                            { value: "Failed", label: "Failed" }
+                        ]}
+                    />
+
+                    <DatePicker
+                        className="transaction-date-filter"
+                        placeholder="Preferred Date"
+                        value={submissionDateFilter}
+                        onChange={(d) => setSubmissionDateFilter(d)}
+                        allowClear
+                        showToday={false}
+                    />
+
+                    <Space style={{ marginLeft: "auto" }}>
+                        <Button
+                            className='export-pdf-button'
+                            type="primary"
+                            icon={<FilePdfOutlined />}
                             onClick={generatePDF}
                         >
                             Export to PDF
@@ -244,8 +318,8 @@ export default function PassportApplications() {
                 <Card>
                     <Table
                         columns={columns}
-                        dataSource={passportApplications}
-                        rowKey="applicationId"
+                        dataSource={filteredData}
+                        rowKey="key"
                         pagination={{ pageSize: 10 }}
                         locale={{
                             emptyText: (

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, message, ConfigProvider, Space } from "antd";
-import { FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, message, ConfigProvider, Space, Select, Input, DatePicker } from "antd";
+import { FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
@@ -26,11 +27,25 @@ const getBase64ImageFromURL = (url) => {
 export default function VisaApplications() {
     const [applications, setApplications] = useState([])
 
+    const [searchText, setSearchText] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [submissionDateFilter, setSubmissionDateFilter] = useState(null);
+
     useEffect(() => {
         const loadApplications = async () => {
             try {
                 const response = await axiosInstance.get('/visa/applications')
-                setApplications(response.data || [])
+
+                const applications = response.data.map((a) => ({
+                    key: a._id,
+                    applicationNumber: a.applicationNumber,
+                    applicantName: a.applicantName,
+                    serviceName: a.serviceName,
+                    preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
+                    status: a.status,
+                }))
+
+                setApplications(applications)
             } catch (error) {
                 const errorMessage = error?.response?.data?.message || 'Unable to load visa applications.'
                 message.error(errorMessage)
@@ -40,30 +55,38 @@ export default function VisaApplications() {
         loadApplications()
     }, [])
 
-    const tableData = useMemo(() => applications.map((item) => ({
-        key: item._id,
-        applicationNumber: item.applicationNumber || 'N/A',
-        name: item.applicantName || `${item.userId?.firstname || ''} ${item.userId?.lastname || ''}`.trim() || item.userId?.username || 'N/A',
-        visaType: item.serviceId?.visaName || 'Visa',
-        submittedAt: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
-        status: item.status || 'Pending'
-    })), [applications])
 
-    const totals = useMemo(() => ({
-        total: applications.length,
-        pending: applications.filter((item) => item.status === 'Pending').length,
-        approved: applications.filter((item) => item.status === 'Approved').length,
-        rejected: applications.filter((item) => item.status === 'Rejected').length
-    }), [applications])
+    const filteredData = applications.filter(item => {
+        const matchesSearch =
+            (item.applicationNumber?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.applicantName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.serviceName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (dayjs(item.preferredDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.status?.toLowerCase() || "").includes(searchText.toLowerCase());
+
+
+        const matchesStatus = statusFilter === "" || item.status === statusFilter;
+
+        const matchesDate = !submissionDateFilter ||
+            (item.preferredDate && dayjs(item.preferredDate).isSame(submissionDateFilter, "day"));
+
+        return matchesSearch && matchesStatus && matchesDate;
+    });
+
+    const totals = applications.length
+    const pending = applications.filter((item) => item.status === 'Pending').length
+    const approved = applications.filter((item) => item.status === 'Approved').length
+    const rejected = applications.filter((item) => item.status === 'Rejected').length
+
 
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["Application Number", "Applicant Name", "Visa Type", "Submission Date", "Status"];
-        const tableRows = tableData.map(item => [
+        const tableRows = filteredData.map(item => [
             item.applicationNumber,
-            item.name,
-            item.visaType,
-            item.submittedAt,
+            item.applicantName,
+            item.serviceName,
+            item.preferredDate,
             item.status
         ]);
 
@@ -118,19 +141,19 @@ export default function VisaApplications() {
         },
         {
             title: "Applicant Name",
-            dataIndex: "name",
-            key: "name",
+            dataIndex: "applicantName",
+            key: "applicantName",
         },
         {
             title: "Visa Type",
-            dataIndex: "visaType",
-            key: "visaType",
+            dataIndex: "serviceName",
+            key: "serviceName",
             render: (type) => <Tag color="blue">{type || "N/A"}</Tag>,
         },
         {
-            title: "Submission Date",
-            dataIndex: "submittedAt",
-            key: "submittedAt",
+            title: "Preferred Date",
+            dataIndex: "preferredDate",
+            key: "preferredDate",
         },
         {
             title: "Status",
@@ -194,7 +217,7 @@ export default function VisaApplications() {
                         <Card className="visaapps-management-card">
                             <Statistic
                                 title="Total Applications"
-                                value={totals.total}
+                                value={totals}
                                 prefix={<FileTextOutlined />}
                             />
                         </Card>
@@ -203,7 +226,7 @@ export default function VisaApplications() {
                         <Card className="visaapps-management-card">
                             <Statistic
                                 title="Pending"
-                                value={totals.pending}
+                                value={pending}
                                 prefix={<ClockCircleOutlined />}
                             />
                         </Card>
@@ -212,7 +235,7 @@ export default function VisaApplications() {
                         <Card className="visaapps-management-card">
                             <Statistic
                                 title="Approved"
-                                value={totals.approved}
+                                value={approved}
                                 prefix={<CheckCircleOutlined />}
                             />
                         </Card>
@@ -221,19 +244,51 @@ export default function VisaApplications() {
                         <Card className="visaapps-management-card">
                             <Statistic
                                 title="Rejected"
-                                value={totals.rejected}
+                                value={rejected}
                                 prefix={<CloseCircleOutlined />}
                             />
                         </Card>
                     </Col>
                 </Row>
 
-                <div className="visa-actions" style={{ marginBottom: 20, display: 'flex', justifyContent: 'flex-end' }}>
-                    <Space>
-                        <Button 
-                            className='export-pdf-button' 
-                            type="primary" 
-                            icon={<FilePdfOutlined />} 
+                <div className="visaapplications-actions">
+                    <Input
+                        prefix={<SearchOutlined />}
+                        placeholder="Search reference, package, method or status..."
+                        className="search-input"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        allowClear
+                    />
+
+                    <Select
+                        className="transaction-select"
+                        placeholder="Status"
+                        style={{ width: 140 }}
+                        allowClear
+                        value={statusFilter || undefined}
+                        onChange={(v) => setStatusFilter(v || "")}
+                        options={[
+                            { value: "Successful", label: "Successful" },
+                            { value: "Pending", label: "Pending" },
+                            { value: "Failed", label: "Failed" }
+                        ]}
+                    />
+
+                    <DatePicker
+                        className="transaction-date-filter"
+                        placeholder="Submission Date"
+                        value={submissionDateFilter}
+                        onChange={(d) => setSubmissionDateFilter(d)}
+                        allowClear
+                        showToday={false}
+                    />
+
+                    <Space style={{ marginLeft: "auto" }}>
+                        <Button
+                            className='export-pdf-button'
+                            type="primary"
+                            icon={<FilePdfOutlined />}
                             onClick={generatePDF}
                         >
                             Export to PDF
@@ -244,7 +299,7 @@ export default function VisaApplications() {
                 <Card>
                     <Table
                         columns={columns}
-                        dataSource={tableData}
+                        dataSource={filteredData}
                         rowKey="applicationNumber"
                         pagination={{ pageSize: 10 }}
                         locale={{
@@ -252,6 +307,7 @@ export default function VisaApplications() {
                                 <Empty description="No visa applications found" />
                             ),
                         }}
+
                     />
                 </Card>
             </div>

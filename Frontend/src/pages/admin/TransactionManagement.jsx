@@ -89,6 +89,11 @@ export default function TransactionManagement() {
     );
   });
 
+  const totalTransactions = filteredData.length;
+  const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
+  const totalPending = filteredData.filter(t => t.status === "Pending").length;
+  const totalFailed = filteredData.filter(t => t.status === "Failed").length;
+
   const generatePDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const tableColumn = ["Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
@@ -152,7 +157,7 @@ export default function TransactionManagement() {
     message.success("Report exported to PDF successfully.");
   };
 
-  // ================= TABLE =================
+
 
   const isEditing = (record) => record.key === editingKey;
 
@@ -267,6 +272,7 @@ export default function TransactionManagement() {
     }
   };
 
+  // ================= TABLE =================
   const columns = [
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Travel Package", dataIndex: "package", editable: true },
@@ -419,10 +425,7 @@ export default function TransactionManagement() {
     );
   };
 
-  const totalTransactions = filteredData.length;
-  const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
-  const totalPending = filteredData.filter(t => t.status === "Pending").length;
-  const totalFailed = filteredData.filter(t => t.status === "Failed").length;
+
 
   return (
     <ConfigProvider
@@ -479,7 +482,6 @@ export default function TransactionManagement() {
         </Row>
 
         <div className="transaction-actions">
-
           <Input
             prefix={<SearchOutlined />}
             placeholder="Search reference, package, method or status..."

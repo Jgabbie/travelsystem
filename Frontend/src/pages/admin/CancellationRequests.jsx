@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, message } from 'antd'
+import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, message, Select } from 'antd'
 import { CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined, FilePdfOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf'
@@ -27,6 +27,7 @@ const getBase64ImageFromURL = (url) => {
 export default function CancellationRequests() {
     const [requests, setRequests] = useState([])
 
+    const [statusFilter, setStatusFilter] = useState("");
     const [searchText, setSearchText] = useState('')
     const [dateFilter, setDateFilter] = useState(null)
     const [isViewModalOpen, setIsViewModalOpen] = useState(false)
@@ -39,51 +40,66 @@ export default function CancellationRequests() {
     const getCancellationRequests = async () => {
         try {
             const response = await axiosInstance.get('/booking/cancellations')
-            const cancellations = response.data || []
+            const cancellations = response.data.map((c) => ({
+                key: c._id,
+                ref: c.reference,
+                username: c.userId?.username || c.userId?.email || 'Unknown',
+                package: c.bookingId?.bookingDetails?.packageName || 'Package',
+                daysAfterBooking: c.bookingId?.createdAt && c.cancellationDate
+                    ? dayjs(c.cancellationDate).diff(dayjs(c.bookingId?.createdAt), 'day')
+                    : '--',
+                reason: c.cancellationReason || '--',
+                cancellationDate: c.cancellationDate,
+                status: c.status || 'Pending'
+            }))
 
-            const mapped = cancellations.map((item) => {
-                const booking = item.bookingId || {}
-                const user = item.userId || {}
-                const bookingDate = booking.createdAt || null
-                const cancelDate = item.cancellationDate || null
-                const daysAfterBooking = bookingDate && cancelDate
-                    ? dayjs(cancelDate).diff(dayjs(bookingDate), 'day')
-                    : '--'
-
-                return {
-                    key: item._id,
-                    username: user.username || user.email || 'Unknown',
-                    packageName: booking.bookingDetails?.packageName || booking.reference || 'Package',
-                    reason: item.cancellationReason || '--',
-                    daysAfterBooking,
-                    cancellationDate: cancelDate,
-                    status: item.status || 'Pending'
-                }
-            })
-
-            setRequests(mapped)
+            setRequests(cancellations)
         } catch (err) {
             console.error('Error fetching cancellation requests:', err)
         }
         return []
     }
 
+    const filteredData = requests.filter(item => {
+        const matchesSearch =
+            (item.ref.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.package.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.reason.toLowerCase().includes(searchText.toLowerCase())) ||
+            (dayjs(item.cancellationDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.status.toLowerCase().includes(searchText.toLowerCase()))
+
+        const matchesStatus = statusFilter === "" || item.status === statusFilter
+
+        const matchesDate = !dateFilter ||
+            (item.cancellationDate && dayjs(item.cancellationDate).isSame(dateFilter, 'day'))
+
+        return matchesSearch && matchesStatus && matchesDate
+    })
+
+    const totalRequests = requests.length
+    const approvedRequests = requests.filter((item) => item.status === 'Approved').length
+    const disapprovedRequests = requests.filter((item) => item.status === 'Disapproved').length
+
+
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
 
         // Column headers matching your screenshot table
         const tableColumn = [
-            "Username",
-            "Package",
+            "Cancellation Request No.",
+            "Customer Name",
+            "Travel Package",
             "Reason",
             "Days after booking",
             "Status",
             "Cancellation Date"
         ];
 
-        const tableRows = filteredRequests.map(item => [
+        const tableRows = filteredData.map(item => [
+            item.ref,
             item.username,
-            item.packageName,
+            item.package,
             item.reason,
             item.daysAfterBooking,
             item.status,
@@ -152,29 +168,12 @@ export default function CancellationRequests() {
         setIsViewModalOpen(true)
     }
 
-    const totalRequests = requests.length
-    const approvedRequests = requests.filter((item) => item.status === 'Approved').length
-    const disapprovedRequests = requests.filter((item) => item.status === 'Disapproved').length
-
-    const filteredRequests = useMemo(() => {
-        return requests.filter(item => {
-
-            const matchesSearch =
-                item.username.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.packageName.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.reason.toLowerCase().includes(searchText.toLowerCase())
-
-            const matchesDate =
-                !dateFilter ||
-                (item.cancellationDate &&
-                    dayjs(item.cancellationDate).isSame(dateFilter, 'day'))
-
-            return matchesSearch && matchesDate
-        })
-    }, [requests, searchText, dateFilter])
-
-
     const columns = useMemo(() => [
+        {
+            title: 'Cancellation Request No.',
+            dataIndex: 'ref',
+            key: 'ref'
+        },
         {
             title: 'Customer Name',
             dataIndex: 'username',
@@ -182,8 +181,8 @@ export default function CancellationRequests() {
         },
         {
             title: 'Travel Package',
-            dataIndex: 'packageName',
-            key: 'packageName'
+            dataIndex: 'package',
+            key: 'package'
         },
         {
             title: 'Reason',
@@ -297,8 +296,22 @@ export default function CancellationRequests() {
                         allowClear
                     />
 
+                    <Select
+                        className="quotation-select"
+                        placeholder="Status"
+                        style={{ width: 160 }}
+                        allowClear
+                        value={statusFilter || undefined}
+                        onChange={(value) => setStatusFilter(value || "")}
+                        options={[
+                            { value: "Pending", label: "Pending" },
+                            { value: "Approved", label: "Approved" },
+                            { value: "Disapproved", label: "Disapproved" },
+                        ]}
+                    />
+
                     <DatePicker
-                        placeholder="Filter by date"
+                        placeholder="Cancellation Date"
                         value={dateFilter}
                         onChange={(date) => setDateFilter(date)}
                         allowClear
@@ -319,7 +332,7 @@ export default function CancellationRequests() {
                 <Card style={{ marginTop: 20 }}>
                     <Table
                         columns={columns}
-                        dataSource={filteredRequests}
+                        dataSource={filteredData}
                         pagination={{ pageSize: 6 }}
                     />
                 </Card>
@@ -356,7 +369,7 @@ export default function CancellationRequests() {
 
                             <div className="cancellation-view-grid">
                                 <div className="cancellation-view-item">
-                                    <span className="cancellation-view-label">Package</span>
+                                    <span className="cancellation-view-label">Travel Package</span>
                                     <span className="cancellation-view-value">{selectedRequest.packageName}</span>
                                 </div>
                                 <div className="cancellation-view-item">

@@ -1,13 +1,17 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Space } from "antd";
 import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../../style/admin/packages.css";
 import axiosInstance from "../../config/axiosConfig";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export default function PackageManagement() {
   const navigate = useNavigate();
+  const { auth } = useAuth();
+  const isEmployee = auth?.role === 'Employee';
+  const basePath = isEmployee ? '/employee' : '';
 
   const [packagesData, setPackagesData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -173,14 +177,16 @@ export default function PackageManagement() {
             options={availabilityOptions}
           />
 
-          <Button
-            className="add-package-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/packages/add")}
-          >
-            Add Package
-          </Button>
+          <Space style={{ marginLeft: 'auto' }}>
+            <Button
+              className="add-package-button"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate(`${basePath}/packages/add`)}
+            >
+              Add Package
+            </Button>
+          </Space>
         </div>
 
         {filteredPackages.length > 0 ? filteredPackages.map(pkg => (
@@ -219,7 +225,7 @@ export default function PackageManagement() {
                 className="edit-package-button"
                 type="primary"
                 icon={<EditOutlined />}
-                onClick={() => navigate(`/packages/edit/${pkg._id}`)}
+                onClick={() => navigate(`${basePath}/packages/edit/${pkg._id}`)}
               />
 
               <Button
