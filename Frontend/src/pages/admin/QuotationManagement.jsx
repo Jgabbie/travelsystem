@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
+import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, Tabs } from "antd";
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
@@ -27,6 +27,7 @@ const getBase64ImageFromURL = (url) => {
 export default function QuotationManagement() {
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [activeTab, setActiveTab] = useState("all");
 
     const [editingKey, setEditingKey] = useState("");
     const [form] = Form.useForm();
@@ -67,7 +68,8 @@ export default function QuotationManagement() {
                         status: quoteStatus,
                         customerName: quoteCustomerName,
                         packageName: quotePackageName,
-                        dateRequested: dateRequested
+                        dateRequested: dateRequested,
+                        packageType: quote.packageType || ""
                     };
                 });
                 setData(rows);
@@ -146,9 +148,13 @@ export default function QuotationManagement() {
             const matchesStatus =
                 statusFilter === "" || item.status === statusFilter;
 
-            return matchesSearch && matchesStatus;
+            const matchesTab =
+                activeTab === "all" ||
+                item.packageType.toLowerCase() === activeTab;
+
+            return matchesSearch && matchesStatus && matchesTab;
         })
-    ), [data, searchText, statusFilter]);
+    ), [data, searchText, statusFilter, activeTab]);
 
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -319,6 +325,17 @@ export default function QuotationManagement() {
         >
             <div className="quotation-management-container">
                 <h1 className="page-header">Quotation Management</h1>
+
+                <Tabs
+                    activeKey={activeTab}
+                    onChange={setActiveTab}
+                    style={{ marginBottom: 16 }}
+                    items={[
+                        { key: "all", label: "All Requests" },
+                        { key: "domestic", label: "Domestic" },
+                        { key: "international", label: "International" },
+                    ]}
+                />
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={6}>

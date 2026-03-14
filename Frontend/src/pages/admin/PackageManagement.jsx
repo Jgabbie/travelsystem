@@ -1,5 +1,5 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Dropdown } from "antd";
+import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, DownOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../../style/admin/packages.css";
@@ -173,14 +173,26 @@ export default function PackageManagement() {
             options={availabilityOptions}
           />
 
-          <Button
-            className="add-package-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => navigate("/packages/add")}
+          <Dropdown
+            menu={{
+              items: [
+                { key: "domestic", label: "Domestic Package" },
+                { key: "international", label: "International Package" },
+              ],
+              onClick: ({ key }) => {
+                if (key === "domestic") navigate("/packages/add/domestic");
+                else navigate("/packages/add/international");
+              },
+            }}
           >
-            Add Package
-          </Button>
+            <Button
+              className="add-package-button"
+              type="primary"
+              icon={<PlusOutlined />}
+            >
+              Add Package <DownOutlined />
+            </Button>
+          </Dropdown>
         </div>
 
         {filteredPackages.length > 0 ? filteredPackages.map(pkg => (
@@ -219,7 +231,11 @@ export default function PackageManagement() {
                 className="edit-package-button"
                 type="primary"
                 icon={<EditOutlined />}
-                onClick={() => navigate(`/packages/edit/${pkg._id}`)}
+                onClick={() =>
+                  pkg.packageType === "international"
+                    ? navigate(`/packages/edit/international/${pkg._id}`)
+                    : navigate(`/packages/edit/domestic/${pkg._id}`)
+                }
               />
 
               <Button
