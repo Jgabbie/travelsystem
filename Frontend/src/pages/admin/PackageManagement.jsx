@@ -1,5 +1,5 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Space } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Dropdown, Space } from "antd";
+import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, DownOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../../style/admin/packages.css";
@@ -178,74 +178,88 @@ export default function PackageManagement() {
           />
 
           <Space style={{ marginLeft: 'auto' }}>
-            <Button
-              className="add-package-button"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => navigate(`${basePath}/packages/add`)}
+            <Dropdown
+              menu={{
+                items: [
+                  { key: "domestic", label: "Domestic Package" },
+                  { key: "international", label: "International Package" },
+                ],
+                onClick: ({ key }) => {
+                  if (key === "domestic") navigate("/packages/add/domestic");
+                  else navigate("/packages/add/international");
+                },
+              }}
             >
-              Add Package
-            </Button>
+              <Button type="primary" icon={<PlusOutlined />}>
+                Add Package <DownOutlined />
+              </Button>
+            </Dropdown>
           </Space>
-        </div>
+        </div >
 
-        {filteredPackages.length > 0 ? filteredPackages.map(pkg => (
-          <Card key={pkg._id} className="package-card">
-            <div className="package-container">
-              <div className="package-media">
-                {pkg.images && pkg.images.length > 0 ? (
-                  <img className="package-image" src={pkg.images[0]} alt={pkg.packageName} />
-                ) : (
-                  <div className="package-image-placeholder">No Image</div>
-                )}
-              </div>
-
-              <div className="package-details">
-                <div className="package-info">
-                  <h3 className="package-name">{pkg.packageName}</h3>
-                  <h3 className="package-code">{pkg.packageCode}</h3>
-                  <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+        {
+          filteredPackages.length > 0 ? filteredPackages.map(pkg => (
+            <Card key={pkg._id} className="package-card">
+              <div className="package-container">
+                <div className="package-media">
+                  {pkg.images && pkg.images.length > 0 ? (
+                    <img className="package-image" src={pkg.images[0]} alt={pkg.packageName} />
+                  ) : (
+                    <div className="package-image-placeholder">No Image</div>
+                  )}
                 </div>
 
-                <p className="package-description">{pkg.packageDescription}</p>
-                <h1 className="package-available-slots">Available Slots: {pkg.packageAvailableSlots}</h1>
+                <div className="package-details">
+                  <div className="package-info">
+                    <h3 className="package-name">{pkg.packageName}</h3>
+                    <h3 className="package-code">{pkg.packageCode}</h3>
+                    <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+                  </div>
+
+                  <p className="package-description">{pkg.packageDescription}</p>
+                  <h1 className="package-available-slots">Available Slots: {pkg.packageAvailableSlots}</h1>
+                </div>
+
               </div>
 
-            </div>
+              <div className="package-actions">
+                <Button
+                  className="viewdetails-package-button"
+                  type="primary"
+                  icon={<EyeOutlined />}
+                  onClick={() => { showModal(pkg); }}
+                />
 
-            <div className="package-actions">
-              <Button
-                className="viewdetails-package-button"
-                type="primary"
-                icon={<EyeOutlined />}
-                onClick={() => { showModal(pkg); }}
-              />
+                <Button
+                  className="edit-package-button"
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={() =>
+                    pkg.packageType === "international"
+                      ? navigate(`/packages/edit/international/${pkg._id}`)
+                      : navigate(`/packages/edit/domestic/${pkg._id}`)
+                  }
+                />
 
-              <Button
-                className="edit-package-button"
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => navigate(`${basePath}/packages/edit/${pkg._id}`)}
-              />
+                <Button
+                  className="delete-package-button"
+                  type="primary"
+                  icon={<DeleteOutlined />}
+                  onClick={() => removePackage(pkg._id)}
+                />
+              </div>
+            </Card>
+          ))
 
-              <Button
-                className="delete-package-button"
-                type="primary"
-                icon={<DeleteOutlined />}
-                onClick={() => removePackage(pkg._id)}
-              />
-            </div>
-          </Card>
-        ))
+            :
 
-          :
-
-          <Empty description="No Packages" />
+            <Empty description="No Packages" />
         }
 
-        <Modal
+        < Modal
           title="Package Details"
-          closable={{ 'aria-label': 'Custom Close Button' }}
+          closable={{ 'aria-label': 'Custom Close Button' }
+          }
           footer={null}
           open={isModalOpen}
           onCancel={() => { handleCancel() }}
@@ -288,8 +302,8 @@ export default function PackageManagement() {
               </div>
             </div>
           </div>
-        </Modal>
-      </div>
-    </ConfigProvider>
+        </Modal >
+      </div >
+    </ConfigProvider >
   );
 }

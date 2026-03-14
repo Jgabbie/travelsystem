@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, DatePicker } from "antd";
+import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, DatePicker, Tabs } from "antd";
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
@@ -30,6 +30,7 @@ export default function QuotationManagement() {
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [dateFilter, setDateFilter] = useState(null)
+    const [activeTab, setActiveTab] = useState("all");
 
     const [editingKey, setEditingKey] = useState("");
     const [form] = Form.useForm();
@@ -332,6 +333,17 @@ export default function QuotationManagement() {
         >
             <div className="quotation-management-container">
                 <h1 className="page-header">Quotation Management</h1>
+
+                <Tabs
+                    activeKey={activeTab}
+                    onChange={setActiveTab}
+                    style={{ marginBottom: 16 }}
+                    items={[
+                        { key: "all", label: "All Requests" },
+                        { key: "domestic", label: "Domestic" },
+                        { key: "international", label: "International" },
+                    ]}
+                />
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={6}>

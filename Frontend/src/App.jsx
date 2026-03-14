@@ -31,6 +31,8 @@ import UploadBookingInvoice from "./pages/admin/UploadBookingInvoice";
 import UserManagement from "./pages/admin/UserManagement";
 import PackageManagement from "./pages/admin/PackageManagement";
 import AddPackage from "./pages/admin/AddPackage";
+import AddPackageDomestic from "./pages/admin/AddPackageDomestic";
+import AddPackageInternational from "./pages/admin/AddPackageInternational";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import TransactionManagement from "./pages/admin/TransactionManagement";
 import ReviewRatings from "./pages/admin/ReviewRatings";
@@ -92,7 +94,11 @@ function App() {
               <Route path="transactions" element={<TransactionManagement />} />
               <Route path="packages" element={<PackageManagement />} />
               <Route path="packages/add" element={<AddPackage />} />
+              <Route path="packages/add/domestic" element={<AddPackageDomestic />} />
+              <Route path="packages/add/international" element={<AddPackageInternational />} />
               <Route path="/packages/edit/:id" element={<AddPackage />} />
+              <Route path="/packages/edit/domestic/:id" element={<AddPackageDomestic />} />
+              <Route path="/packages/edit/international/:id" element={<AddPackageInternational />} />
               <Route path="ratings" element={<ReviewRatings />} />
               <Route path="visa-applications" element={<VisaApplications />} />
               <Route path="visa-services" element={<VisaServices />} />
