@@ -185,8 +185,8 @@ export default function PackageManagement() {
                   { key: "international", label: "International Package" },
                 ],
                 onClick: ({ key }) => {
-                  if (key === "domestic") navigate("/packages/add/domestic");
-                  else navigate("/packages/add/international");
+                  if (key === "domestic") navigate(`${basePath}/packages/add/domestic`);
+                  else navigate(`${basePath}/packages/add/international`);
                 },
               }}
             >
@@ -236,8 +236,8 @@ export default function PackageManagement() {
                   icon={<EditOutlined />}
                   onClick={() =>
                     pkg.packageType === "international"
-                      ? navigate(`/packages/edit/international/${pkg._id}`)
-                      : navigate(`/packages/edit/domestic/${pkg._id}`)
+                      ? navigate(`${basePath}/packages/edit/international/${pkg._id}`)
+                      : navigate(`${basePath}/packages/edit/domestic/${pkg._id}`)
                   }
                 />
 

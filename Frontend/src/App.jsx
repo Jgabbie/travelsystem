@@ -126,6 +126,10 @@ function App() {
               <Route path="packages" element={<PackageManagement />} />
               <Route path="packages/add" element={<AddPackage />} />
               <Route path="packages/edit/:id" element={<AddPackage />} />
+              <Route path="packages/add/domestic" element={<AddPackageDomestic />} />
+              <Route path="packages/add/international" element={<AddPackageInternational />} />
+              <Route path="packages/edit/domestic/:id" element={<AddPackageDomestic />} />
+              <Route path="packages/edit/international/:id" element={<AddPackageInternational />} />
               <Route path="ratings" element={<ReviewRatings />} />
               <Route path="package-quotation" element={<QuotationManagement />} />
               <Route path="quotation/:id" element={<QuotationRequest />} />

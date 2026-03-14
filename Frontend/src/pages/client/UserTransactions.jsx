@@ -19,7 +19,15 @@ export default function UserTransactions() {
             setLoading(true)
             try {
                 const response = await axiosInstance.get('/transaction/user-transactions')
-                setTransactions(response.data || [])
+                const transactions = response.data.map(t => ({
+                    key: t.id,
+                    reference: t.reference,
+                    date: t.createdAt ? dayjs(t.createdAt).format('MMM D, YYYY h:mm A') : '--',
+                    method: t.method || '--',
+                    amount: `₱${Number(t.amount || 0).toLocaleString()}`,
+                    status: t.status || '--'
+                }));
+                setTransactions(transactions)
             } catch (error) {
                 message.error('Unable to load transactions')
                 setTransactions([])
@@ -31,30 +39,21 @@ export default function UserTransactions() {
         fetchTransactions()
     }, [])
 
-    const dataSource = useMemo(() => transactions.map((transaction) => ({
-        key: transaction._id,
-        reference: transaction.reference || transaction._id,
-        date: transaction.createdAt
-            ? dayjs(transaction.createdAt).format('MMM D, YYYY h:mm A')
-            : '--',
-        method: transaction.method || '--',
-        amount: `₱${Number(transaction.amount || 0).toLocaleString()}`,
-        status: transaction.status || '--'
-    })), [transactions])
-
-    const filteredData = useMemo(() => dataSource.filter(tx => {
+    const filteredData = transactions.filter(item => {
         const matchesSearch =
-            tx.reference?.toLowerCase().includes(searchText.toLowerCase()) ||
-            tx.method?.toLowerCase().includes(searchText.toLowerCase()) ||
-            tx.status?.toLowerCase().includes(searchText.toLowerCase());
+            (item.reference?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.method?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.status?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.amount?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (dayjs(item.date, 'MMM D, YYYY h:mm A').format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase()));
 
-        const matchesStatus = !statusFilter || tx.status === statusFilter;
+        const matchesStatus = !statusFilter || item.status === statusFilter;
 
         const matchesDate = !transactionDateFilter ||
-            dayjs(tx.createdAt).isSame(transactionDateFilter, 'day');
+            dayjs(item.createdAt).isSame(transactionDateFilter, 'day');
 
         return matchesSearch && matchesStatus && matchesDate;
-    }), [dataSource, searchText, statusFilter, transactionDateFilter]);
+    })
 
     const columns = [
         {

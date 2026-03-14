@@ -125,7 +125,7 @@ export default function TopNavUser() {
         <div>
             <nav className="navbar">
                 <div className="logo-section">
-                    <img src={"/images/Logo.png"} alt="Logo" className="admin-logo-img" onClick={() => { navigate("/home") }} />
+                    <img src={"/images/Logo.png"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
                     <span>TRAVEX: M&RC Travel and Tours</span>
                 </div>
 

@@ -7,20 +7,25 @@ const { Option } = Select;
 
 export default function BookingRegistrationTravelers({ form, onValuesChange, summary, totalCount }) {
 
-    // Sync table rows with the traveler counters
+    const boxStyle = { borderRadius: 0, border: '1px solid #000' };
+
     useEffect(() => {
         const currentTravelers = form.getFieldValue('travelers') || [];
         if (currentTravelers.length < totalCount) {
-            // Add rows if count increased
             const diff = totalCount - currentTravelers.length;
             const newRows = [...currentTravelers, ...Array(diff).fill({})];
             form.setFieldsValue({ travelers: newRows });
         } else if (currentTravelers.length > totalCount) {
-            // Remove rows from the end if count decreased
             const newRows = currentTravelers.slice(0, totalCount);
             form.setFieldsValue({ travelers: newRows });
         }
     }, [totalCount, form]);
+
+    useEffect(() => {
+        form.setFieldsValue({
+            travelersDate: dayjs().format('MMMM DD, YYYY')
+        });
+    }, [form]);
 
     return (
         <ConfigProvider
@@ -29,41 +34,12 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
             }}
         >
             <div className="mrc-overlay-wrapper">
-                <div className="mrc-form-page">
+                <div className="mrc-form-page" style={{ padding: '20px', backgroundColor: '#fff' }}>
                     <div className="mrc-form-header" style={{ textAlign: 'center', marginBottom: '10px' }}>
-                        <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" style={{ height: '200px', marginBottom: '30px' }} />
+                        <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" style={{ height: '80px', marginBottom: '10px' }} />
                         <div className="mrc-booking-section-header">
                             BOOKING REGISTRATION FORM
                         </div>
-                    </div>
-
-                    {/* 2. Registration & Package Details */}
-                    <div className="mrc-tour-details" style={{ marginBottom: '15px' }}>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="dateOfRegistration" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>DATE OF REGISTRATION</span>}>
-                                    <Input size="small" className='mrc-tour-details-input' />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="packageTravelDate" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>PACKAGE TRAVEL DATE</span>} style={{ marginBottom: '4px' }}>
-                                    <Input size="small" className='mrc-tour-details-input' />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="tourPackageTitle" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>TOUR PACKAGE TITLE</span>} style={{ marginBottom: '4px' }}>
-                                    <Input size="small" className='mrc-tour-details-input' />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="tourPackageVia" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>TOUR PACKAGE VIA</span>} style={{ marginBottom: '4px' }}>
-                                    <Input size="small" className='mrc-tour-details-input' />
-                                </Form.Item>
-                            </Col>
-                        </Row>
                     </div>
 
                     <Form
@@ -72,6 +48,36 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                         onValuesChange={onValuesChange}
                         initialValues={{ travelers: Array(totalCount).fill({}) }}
                     >
+
+                        {/* 2. Registration & Package Details */}
+                        <div className="mrc-tour-details" style={{ marginBottom: '15px' }}>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item name="dateOfRegistration" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>DATE OF REGISTRATION</span>}>
+                                        <Input size="small" className='mrc-tour-details-input' />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item name="packageTravelDate" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>PACKAGE TRAVEL DATE</span>} style={{ marginBottom: '4px' }}>
+                                        <Input size="small" className='mrc-tour-details-input' />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item name="tourPackageTitle" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>TOUR PACKAGE TITLE</span>} style={{ marginBottom: '4px' }}>
+                                        <Input size="small" className='mrc-tour-details-input' />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item name="tourPackageVia" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>TOUR PACKAGE VIA</span>} style={{ marginBottom: '4px' }}>
+                                        <Input size="small" className='mrc-tour-details-input' />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </div>
+
                         {/* LEAD GUEST SECTION */}
                         <div className="mrc-lead-guest-section">
                             {/* Section Header */}
@@ -280,6 +286,24 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                         By signing this form, I allow M&RC Travel and Tours to keep all my and our group's data on file and access
                                         details which are necessary for this trip/travel and authorized by me.
                                     </p>
+                                </Col>
+                            </Row>
+                        </div>
+
+                        {/* Signature Area */}
+                        <div style={{ marginTop: '30px' }}>
+                            <Row gutter={40}>
+                                <Col span={12}>
+                                    <Form.Item name="travelersSignature" style={{ marginBottom: 0 }}>
+                                        <Input style={{ ...boxStyle, height: '40px' }} />
+                                    </Form.Item>
+                                    <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your fullname</div>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item name="travelersDate" style={{ marginBottom: 0 }}>
+                                        <Input style={{ ...boxStyle, height: '40px' }} readOnly />
+                                    </Form.Item>
+                                    <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Date</div>
                                 </Col>
                             </Row>
                         </div>

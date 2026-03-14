@@ -114,19 +114,19 @@ export default function QuotationManagement() {
 
         try {
             const imgData = await getBase64ImageFromURL("/images/Logo.png");
-            doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+            doc.addImage(imgData, "PNG", 14, 12, 30, 22);
         } catch (e) {
             console.warn("Logo not found at /public/images/Logo.png");
         }
 
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+        doc.text("M&RC TRAVEL AND TOURS", 50, 18);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
-        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
-        doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
+        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
+        doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
 
         doc.setDrawColor(48, 87, 151);
         doc.line(14, 38, 196, 38);

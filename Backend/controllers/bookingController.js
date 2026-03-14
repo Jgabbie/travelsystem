@@ -16,49 +16,39 @@ const generateCancellationReference = () => {
 }
 
 const createBooking = async (req, res) => {
-    const { packageId, bookingDetails, checkoutToken } = req.body
+    const { bookingPayload } = req.body
     const userId = req.userId
-    const { packageName } = bookingDetails || {}
 
-    console.log(bookingDetails)
+    console.log("Creating booking with data:", bookingPayload)
+
+    const packageId = bookingPayload.packageId
+    const travelDate = bookingPayload.travelDate
+    const bookingDate = bookingPayload.bookingDate
 
     //find package by name to get its id, then create booking with that package id
     try {
 
-        let finalPackageId = packageId;
-
-        if (!userId || !bookingDetails || !checkoutToken) {
+        if (!userId || !bookingPayload) {
             return res.status(400).json({ message: "Missing required fields" })
         }
 
-        const existingBooking = await BookingModel.findOne({ checkoutToken });
-        if (existingBooking) {
-            return res.status(200).json(existingBooking); // return existing booking
-        }
-
-        if (!finalPackageId && packageName) {
-            const pkg = await PackageModel.findOne({ packageName });
-            if (!pkg) {
-                return res.status(404).json({ message: "Package not found" });
-            }
-            finalPackageId = pkg._id;
-        }
-
-        if (!finalPackageId) {
-            return res.status(400).json({ message: "Package ID is required" });
-        }
+        // const existingBooking = await BookingModel.findOne({ checkoutToken });
+        // if (existingBooking) {
+        //     return res.status(200).json(existingBooking); // return existing booking
+        // }
 
         const newBooking = await BookingModel.create({
-            packageId: finalPackageId,
+            packageId,
             userId,
-            bookingDetails,
-            checkoutToken,
+            travelDate,
+            bookingDate,
             reference: generateBookingReference(),
             status: 'Successful'
         })
+
         logAction('BOOKING_CREATED', userId, {
             bookingId: newBooking._id,
-            packageId: finalPackageId
+            packageId: packageId
         })
         res.status(201).json(newBooking)
     } catch (error) {

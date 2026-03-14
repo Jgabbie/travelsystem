@@ -8,25 +8,26 @@ const generateTransactionReference = () => {
 }
 
 const createTransaction = async (req, res) => {
-    const { bookingId, amount, method, status, packageName } = req.body
+    const { transactionPayload } = req.body
     const userId = req.userId
 
-    console.log("Creating transaction with data:", { bookingId, amount, method, status, userId, packageName })
+    console.log("Creating transaction with data:", { transactionPayload, userId })
 
     try {
-        if (!bookingId || !amount || !method || !status || !packageName) {
+        if (!transactionPayload.bookingId || !transactionPayload.packageId || !transactionPayload.amount || !transactionPayload.method || !transactionPayload.status) {
             return res.status(400).json({ message: "Missing required fields" })
         }
 
         const newTransaction = await TransactionModel.create({
-            bookingId,
+            bookingId: transactionPayload.bookingId,
+            packageId: transactionPayload.packageId,
             userId,
             reference: generateTransactionReference(),
-            amount,
-            method,
-            status,
-            packageName
+            amount: transactionPayload.amount,
+            method: transactionPayload.method,
+            status: transactionPayload.status,
         })
+
         logAction('TRANSACTION_CREATED', userId, {
             transactionId: newTransaction._id
         })
@@ -51,6 +52,7 @@ const getAllTransactions = async (_req, res) => {
     try {
         const transactions = await TransactionModel.find({})
             .populate('userId', 'username')
+            .populate('packageId', 'packageName')
             .sort({ createdAt: -1 });
 
         res.status(200).json(transactions)

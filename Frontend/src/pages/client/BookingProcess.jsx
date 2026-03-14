@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Modal, Button, message, Upload, Form, Steps, ConfigProvider } from 'antd'
+import { Modal, Button, message, Upload, Form, Steps, ConfigProvider, Space } from 'antd'
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import dayjs from 'dayjs';
 import '../../style/components/modals/bookingsummarymodal.css'
 import '../../style/components/modals/uploadpassportmodal.css'
 import '../../style/components/modals/travelersmodal.css'
+import '../../style/components/modals/soloorgroupedmodal.css'
 import '../../style/client/bookingprocess.css'
 import BookingRegistrationDiet from '../../components/form/BookingRegistrationDiet';
 import BookingRegistrationTravelers from '../../components/form/BookingRegistrationTravelers';
@@ -33,10 +34,13 @@ const INITIAL_COUNTS = {
 
 export default function BookingProcess() {
     const [form] = Form.useForm();
-    const { bookingData } = useBooking();
+    const { bookingData, setBookingData } = useBooking();
     const navigate = useNavigate();
 
-    const [selectedSoloGrouped, setSelectedSoloGrouped] = useState(null)
+    const [selectedSoloGrouped, setSelectedSoloGrouped] = useState("solo")
+
+
+
     const [counts, setCounts] = useState(INITIAL_COUNTS)
 
     const summary = bookingData || {}
@@ -55,30 +59,97 @@ export default function BookingProcess() {
     const packageType = data.packageType || 'fixed'
     const images = data.images || []
 
-
-    const [fileLists, setFileLists] = useState(Array(travelers).fill([]));
-    const [previews, setPreviews] = useState(Array(travelers).fill(null));
+    const [fileLists, setFileLists] = useState(Array(travelers.length || 1).fill([]));
+    const [previews, setPreviews] = useState(Array(travelers.length || 1).fill(null));
 
     const [currentStep, setCurrentStep] = useState(0);
 
     const next = async () => {
         try {
-            // Only validates fields present in the current view
             await form.validateFields();
+
+            const currentFormValues = form.getFieldsValue();
+
+            setBookingData(prev => ({
+                ...prev,
+                ...currentFormValues,
+                groupType: selectedSoloGrouped,
+                travelerCounts: counts,
+                totalPrice: totalPrice,
+                passportFiles: fileLists
+            }));
+
             setCurrentStep(currentStep + 1);
+
+            console.log('Current Form Values on Next:', currentFormValues);
+            console.log('Updated Booking Data on Next:', {
+                ...bookingData,
+                ...currentFormValues,
+                groupType: selectedSoloGrouped,
+                travelerCounts: counts,
+                totalPrice: totalPrice,
+                passportFiles: fileLists
+            });
+            console.log('Save Successful, moving to next step');
         } catch (error) {
             message.error("Please complete all required fields before proceeding.");
         }
     };
+
     const prev = () => setCurrentStep(currentStep - 1);
 
-    const handleValuesChange = (changedValues, allValues) => {
-        console.log('Form values changed:', changedValues, allValues);
+    const handleFinalSubmit = async () => {
+        try {
+            await form.validateFields();
+            const finalFormValues = form.getFieldsValue();
+
+            // Final save to context before navigating
+            setBookingData(prev => ({
+                ...prev,
+                ...finalFormValues,
+                status: 'pending_payment',
+                submittedAt: new Date().toISOString()
+            }));
+
+            message.success("Registration details saved. Proceeding to payment...");
+            navigate('/booking-payment');
+        } catch (error) {
+            message.error("Please review the terms and conditions.");
+        }
     };
 
-    const handleChange = () => {
-        console.log('File list changed:', fileLists);
-    }
+    const handleValuesChange = (changedValues, allValues) => {
+        console.log('Form values changed:', changedValues);
+        console.log('All current form values:', allValues);
+        console.log("Current Form Data:", allValues.travelers);
+    };
+
+    const handleChange = (info, index) => {
+        const newFileLists = [...fileLists];
+        newFileLists[index] = info.fileList;
+        setFileLists(newFileLists);
+
+        const file = info.file;
+        const newPreviews = [...previews];
+
+        if (file.status === 'removed') {
+            newPreviews[index] = null;
+        } else {
+            if (file instanceof File || (file.originFileObj instanceof File)) {
+                const previewUrl = URL.createObjectURL(file.originFileObj || file);
+                newPreviews[index] = previewUrl;
+            }
+        }
+        setPreviews(newPreviews);
+    };
+
+    useEffect(() => {
+        return () => {
+            previews.forEach(url => {
+                if (url) URL.revokeObjectURL(url);
+            });
+        };
+    }, [previews]);
 
     const increaseAdult = () => setCounts(prev => ({ ...prev, adult: prev.adult + 1 }))
     const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(1, prev.adult - 1) }))
@@ -110,18 +181,26 @@ export default function BookingProcess() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '15px',
-                            marginBottom: '20px'
                         }}>
-                            <Button
-                                onClick={() => navigate(-1)}
-                                style={{ display: 'flex', alignItems: 'center' }}
-                            >
-                                Back
-                            </Button>
 
-                            <h1 className='solo-group-heading' style={{ margin: 0 }}>
-                                Select Your Package Arrangement
-                            </h1>
+                            <div>
+                                <h1 className='solo-group-heading' style={{ textAlign: "left" }}>
+                                    Select Your Package Arrangement
+                                </h1>
+                                <p className="upload-passport-text" style={{ marginTop: 10, textAlign: "left" }}>
+                                    Kindly select if you are traveling alone or with a group.
+                                </p>
+                            </div>
+
+
+                            <Space style={{ marginLeft: "auto" }}>
+                                <Button
+                                    onClick={() => navigate(-1)}
+                                    style={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                    Back
+                                </Button>
+                            </Space>
                         </div>
                         <div className="solo-group-cards">
                             <button
@@ -151,7 +230,12 @@ export default function BookingProcess() {
                 {selectedSoloGrouped === 'group' && (
                     <div className='travelers-container'>
                         <div className="travelers-content">
-                            <h3 className="travelers-title">Number of Travelers</h3>
+                            <h3 className="travelers-title" style={{ textAlign: "left" }}>
+                                Number of Travelers
+                            </h3>
+                            <p className="upload-passport-text" style={{ textAlign: "left" }}>
+                                Kindly indicate the number of travelers in each category.
+                            </p>
                             <div className="travelers-cards">
                                 <div className="traveler-card">
                                     <h3>Adult</h3>
@@ -184,9 +268,9 @@ export default function BookingProcess() {
 
                 {/* booking summary section */}
                 <div className="booking-summary-container">
-                    <h2 className='booking-summary-title'>Booking Summary</h2>
+                    <h2 className='booking-summary-title' style={{ textAlign: "left" }}>Booking Summary</h2>
                     <div className="booking-summary-wrapper">
-                        <p className="upload-passport-text" style={{ textAlign: 'center', marginBottom: '20px' }}>
+                        <p className="upload-passport-text" style={{ textAlign: 'left', marginBottom: '20px' }}>
                             Kindly check the details of your booking before proceeding.
                         </p>
 
@@ -220,7 +304,7 @@ export default function BookingProcess() {
                                 <div className="booking-summary-row">
                                     <span className="booking-summary-label">Booking Type</span>
                                     <span className="booking-summary-value">
-                                        {packageType === 'solo' ? 'Solo booking' : 'Group booking'}
+                                        {selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'}
                                     </span>
                                 </div>
 
@@ -268,8 +352,8 @@ export default function BookingProcess() {
 
                 {/* upload passport section */}
                 <div className='upload-passport-container'>
-                    <h2 className="upload-passport-title">Upload Passport</h2>
-                    <p className="upload-passport-text">
+                    <h2 className="upload-passport-title" style={{ textAlign: "left" }}>Upload Passport</h2>
+                    <p className="upload-passport-text" style={{ textAlign: "left" }}>
                         Please upload a clear image of your passport bio page for each traveler.
                     </p>
                     <div className="upload-passport-wrapper">
@@ -281,7 +365,7 @@ export default function BookingProcess() {
                                     <Upload
                                         fileList={fileLists[index]}
                                         beforeUpload={() => false}
-                                        onChange={handleChange}
+                                        onChange={(info) => handleChange(info, index)}
                                         accept="image/*,application/pdf"
                                         maxCount={1}
                                         showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
@@ -310,8 +394,8 @@ export default function BookingProcess() {
 
                 {/* booking registration section */}
                 <div className="booking-form-stepper-container">
-                    <h2 className="booking-form-stepper-title">Booking Registration</h2>
-                    <p className="booking-form-stepper-text">
+                    <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                    <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
                         Please upload a clear image of your passport bio page for each traveler.
                     </p>
                     <Steps
@@ -372,9 +456,7 @@ export default function BookingProcess() {
                                 Next Step
                             </Button>
                         ) : (
-                            <Button type="primary" onClick={() => {
-                                navigate('/booking-payment');
-                            }}>
+                            <Button type="primary" onClick={handleFinalSubmit}>
                                 Submit Final Booking
                             </Button>
                         )}

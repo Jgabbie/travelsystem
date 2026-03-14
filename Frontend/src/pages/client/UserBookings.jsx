@@ -71,11 +71,15 @@ export default function UserBookings() {
     }), [bookings])
 
 
-    const filteredData = useMemo(() => dataSource.filter(item => {
+    const filteredData = dataSource.filter(item => {
         const matchesSearch =
-            item.reference.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.destination.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.status.toLowerCase().includes(searchText.toLowerCase());
+            (item.reference.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.destination.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.status.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.bookingType.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.travelers && item.travelers.toString().includes(searchText)) ||
+            (dayjs(item.date).format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+            (dayjs(item.bookedDate).format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase()));
 
         const matchesStatus =
             statusFilter === "" || item.status === statusFilter;
@@ -89,7 +93,7 @@ export default function UserBookings() {
             dayjs(item.date, 'MMM D, YYYY').isSame(travelDateFilter, "day");
 
         return matchesSearch && matchesStatus && matchesBookingDate && matchesTravelDate;
-    }), [dataSource, searchText, statusFilter, bookingDateFilter, travelDateFilter]);
+    });
 
     const viewBookingInvoice = () => {
         navigate('/user-booking-invoice')

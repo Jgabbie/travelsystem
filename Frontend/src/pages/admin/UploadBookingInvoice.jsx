@@ -160,21 +160,7 @@ export default function UploadBookingInvoice() {
                         </Card>
 
                         <Row gutter={[20, 20]} className="upload-invoice-body">
-                            <Col xs={24} lg={10}>
-                                <Card className="upload-invoice-card" title="Invoice Upload">
-                                    <div className="upload-invoice-upload">
-                                        <Upload {...uploadProps}>
-                                            <Button icon={<UploadOutlined />} type="primary">
-                                                Select PDF invoice
-                                            </Button>
-                                        </Upload>
-                                        <Text type="secondary" className="upload-invoice-hint">
-                                            Upload the final invoice PDF so the customer can confirm payment.
-                                        </Text>
-                                    </div>
-                                </Card>
-                            </Col>
-                            <Col xs={24} lg={14}>
+                            <Col xs={24} lg={40}>
                                 <Card className="upload-invoice-card" title="Invoice Preview">
                                     {previewUrl ? (
                                         <iframe
