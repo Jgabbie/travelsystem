@@ -72,13 +72,13 @@ export default function BookingRegistrationTermsPart2({ form, onValuesChange }) 
                     <Form form={form} onValuesChange={onValuesChange}>
                         <Row gutter={40}>
                             <Col span={12}>
-                                <Form.Item name="waiverSignature">
+                                <Form.Item name="waiverSignature" style={{ marginBottom: 0 }}>
                                     <Input style={{ ...boxStyle, height: '45px' }} />
                                 </Form.Item>
-                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Signature over printed name:</div>
+                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your full name</div>
                             </Col>
                             <Col span={12}>
-                                <Form.Item name="waiverDate">
+                                <Form.Item name="waiverDate" style={{ marginBottom: 0 }}>
                                     <Input style={{ ...boxStyle, height: '45px' }} />
                                 </Form.Item>
                                 <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Date</div>

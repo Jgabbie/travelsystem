@@ -78,13 +78,13 @@ export default function BookingRegistrationTermsPart1({ form, onValuesChange }) 
                     <Form form={form} onValuesChange={onValuesChange}>
                         <Row gutter={40}>
                             <Col span={12}>
-                                <Form.Item name="termsSignature">
+                                <Form.Item name="termsSignature" style={{ marginBottom: 0 }}>
                                     <Input style={{ ...boxStyle, height: '45px' }} />
                                 </Form.Item>
-                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your full name:</div>
+                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your full name</div>
                             </Col>
                             <Col span={12}>
-                                <Form.Item name="termsDate">
+                                <Form.Item name="termsDate" style={{ marginBottom: 0 }}>
                                     <Input style={{ ...boxStyle, height: '45px' }} />
                                 </Form.Item>
                                 <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Date</div>

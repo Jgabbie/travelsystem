@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Modal, Input, InputNumber, Slider, Button, message, Select } from 'antd'
+import { Modal, Input, InputNumber, Slider, Button, message, Select, ConfigProvider, DatePicker } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/components/modals/packagequotationmodal.css'
 import axiosInstance from '../../config/axiosConfig'
+
 
 const buildItineraryLabels = (itinerary, days) => {
     if (Array.isArray(itinerary) && itinerary.length) {
@@ -12,22 +15,57 @@ const buildItineraryLabels = (itinerary, days) => {
     return Array.from({ length: safeDays }, (_, index) => `Day ${index + 1}`)
 }
 
-export default function PackageQuotationModal({
-    open,
-    selectedOption,
-    onCancel,
-    onSubmit,
-    bookingPayload,
-    hotels,
-    airlines,
-    basePrice = 0,
-    days = 1,
-    itinerary = [],
-    fixedItinerary = {}
-}) {
+export default function PackageDomesticQuotation() {
+
+    const navigate = useNavigate()
+    const location = useLocation()
+    const packageId = location.state?.packageId
+
+    const [packageData, setPackageData] = useState(null)
+
+    useEffect(() => {
+        if (!packageId) {
+            message.error('No package selected for quotation.')
+            return
+        }
+
+        try {
+            axiosInstance.get(`/package/get-package/${packageId}`)
+                .then((response) => {
+                    setPackageData(response.data)
+                })
+                .catch((error) => {
+                    console.error('Failed to fetch package data:', error)
+                    message.error('Failed to load package details. Please try again later.')
+                })
+        }
+        catch (error) {
+            console.error('An unexpected error occurred while fetching package data:', error)
+            message.error('An unexpected error occurred. Please try again later.')
+        }
+    }, [packageId])
+
+    const { hotels, airlines, fixedItinerary, days, basePrice } = useMemo(() => ({
+        hotels: packageData?.packageHotels || [],
+        airlines: packageData?.packageAirlines || [],
+        fixedItinerary: packageData?.packageItineraries || [],
+        days: packageData?.packageDuration || 0,
+        basePrice: Number(packageData?.packagePricePerPax) || 0
+    }), [packageData]);
+
+    // const hotels = packageData?.packageHotels || []
+    // const airlines = packageData?.packageAirlines || []
+    // const fixedItinerary = packageData?.packageItineraries || []
+    // const days = packageData?.packageDuration || 0
+    // const basePrice = Number(packageData?.packagePricePerPax) || 0
+
+    const packageName = packageData?.packageName || 'the selected package'
+    const packageType = packageData?.packageType || 'international'
+    const packageDescription = packageData?.packageDescription || 'No description available for this package.'
+
     const itineraryLabels = useMemo(
-        () => buildItineraryLabels(itinerary, days),
-        [itinerary, days]
+        () => buildItineraryLabels(fixedItinerary, days),
+        [fixedItinerary, days]
     )
 
     const fixedItineraryEntries = useMemo(() => {
@@ -43,37 +81,26 @@ export default function PackageQuotationModal({
     const maxBudget = Math.max(120000, Number(basePrice) || 0)
     const minBudget = Number(basePrice) || 0
 
-    const [error, setError] = useState({})
+    useEffect(() => {
+        if (packageData) {
+            setBudgetRange([basePrice, maxBudget]);
+            setItineraryNotes(itineraryLabels.map(() => ''));
+        }
+    }, [packageData, basePrice, maxBudget, itineraryLabels]);
 
+    const [error, setError] = useState({})
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false)
 
-    const resetBookingFlow = () => {
-        setIsBookingSuccessOpen(false)
-        if (onCancel) onCancel()
-    }
-
+    const [packageCategory, setPackageCategory] = useState('All in Package')
     const [travelers, setTravelers] = useState(1)
     const [preferredAirlines, setPreferredAirlines] = useState('')
     const [preferredHotels, setPreferredHotels] = useState('')
+    const [prefferedDate, setPrefferedDate] = useState(null)
     const [budgetRange, setBudgetRange] = useState([minBudget, maxBudget])
     const [itineraryNotes, setItineraryNotes] = useState(
         itineraryLabels.map(() => '')
     )
     const [additionalComments, setAdditionalComments] = useState('')
-
-    useEffect(() => {
-        if (!open) return
-        setTravelers(1)
-        setPreferredAirlines('')
-        setPreferredHotels('')
-        setBudgetRange([minBudget, maxBudget])
-        setItineraryNotes(itineraryLabels.map(() => ''))
-        setAdditionalComments('')
-    }, [open, minBudget, maxBudget, itineraryLabels])
-
-    const handleCancel = () => {
-        if (onCancel) onCancel()
-    }
 
     const handleSubmit = () => {
         const missingItineraryNote = itineraryNotes.some((note) => !note.trim())
@@ -88,6 +115,9 @@ export default function PackageQuotationModal({
         if (!preferredHotels.trim()) {
             newErrors.preferredHotels = 'Please provide your preferred hotels'
         }
+        if (!prefferedDate) {
+            newErrors.prefferedDate = 'Please select your preferred date'
+        }
         if (!Array.isArray(budgetRange) || budgetRange.length !== 2) {
             newErrors.budgetRange = 'Please set your budget range.'
         }
@@ -96,23 +126,13 @@ export default function PackageQuotationModal({
         }
 
         setError(newErrors)
-
         if (Object.keys(newErrors).length > 0) return //converts the keys of a key value pair in the error state, then check if its empty, if empty then no more errors 
 
-        if (onSubmit) {
-            onSubmit({
-                travelers,
-                preferredAirlines,
-                preferredHotels,
-                budgetRange,
-                itineraryNotes,
-                additionalComments
-            })
-            setIsBookingSuccessOpen(true)
 
+        try {
             axiosInstance.post('/quotation/create-quotation', {
-                packageId: bookingPayload.packageId,
-                packageName: bookingPayload.bookingDetails.packageName,
+                packageId: packageId,
+                packageName: packageName,
                 travelDetails: {
                     travelers,
                     preferredAirlines,
@@ -122,32 +142,71 @@ export default function PackageQuotationModal({
                     additionalComments
                 }
             })
-                .then((response) => {
-                    console.log('Quotation request submitted successfully!' + (response.data?.message || ''))
-                })
-                .catch((error) => {
-                    console.log('Failed to submit quotation request. Please try again.' + (error.response?.data?.message || ''))
-                })
+        } catch (error) {
+            message.error('Failed to submit quotation request. Please try again later.')
+            return
         }
 
-        //test values
-        console.log("Booking Payload: ", bookingPayload)
     }
 
     return (
-        <div>
-            <Modal
-                open={open}
-                onCancel={handleCancel}
-                footer={null}
-                centered
-                className="quotation-modal"
-                width={900}
-            >
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: "#305797"
+                }
+            }}
+        >
+            <div>
                 <div className="quotation-container">
                     <div className="quotation-header">
-                        <h2>Package Quotation</h2>
-                        <p>Kindly input your preferrences and requests so that we can tailor your customized package.</p>
+                        <div className="header-top-row">
+                            <div className="header-text">
+                                <h2>Package Quotation</h2>
+                                <p>Kindly input your preferrences and requests so that we can tailor your customized package.</p>
+                            </div>
+
+                            <Button
+                                icon={<ArrowLeftOutlined />}
+                                onClick={() => navigate(-1)}
+                                className="back-button"
+                            >
+                                Back
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="package-info-display">
+                        <div className="info-main">
+                            <span className="info-tag">{packageType.toUpperCase()}</span>
+                            <h3>{packageName}</h3>
+                        </div>
+                        <p className="info-description">{packageDescription}</p>
+                    </div>
+
+                    <div className="package-type-selector">
+                        <label className="section-label">Select Arrangement Type</label>
+                        <div className="selection-cards">
+                            <div
+                                className={`selection-card ${packageCategory === 'All in Package' ? 'active' : ''}`}
+                                onClick={() => setPackageCategory('All in Package')}
+                            >
+                                <div className="card-content">
+                                    <span className="card-title">All-in Package</span>
+                                    <p className="card-desc">Includes flights, hotel, and tours.</p>
+                                </div>
+                            </div>
+
+                            <div
+                                className={`selection-card ${packageCategory === 'Land Arrangement' ? 'active' : ''}`}
+                                onClick={() => setPackageCategory('Land Arrangement')}
+                            >
+                                <div className="card-content">
+                                    <span className="card-title">Land Arrangement</span>
+                                    <p className="card-desc">Excludes flights. Best if you have your own tickets.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="quotation-grid">
@@ -170,7 +229,7 @@ export default function PackageQuotationModal({
                             <p className='package-quotation-error'>{error.travelers}</p>
                         </div>
 
-                        {selectedOption === 'all-in' ? (
+                        {packageCategory !== 'Land Arrangement' && (
                             <div className="quotation-field">
                                 <label htmlFor="quotation-airlines">Preferred Airlines</label>
                                 <Select
@@ -186,9 +245,7 @@ export default function PackageQuotationModal({
                                 />
                                 <p className='package-quotation-error'>{error.preferredAirlines}</p>
                             </div>
-                        ) :
-                            null
-                        }
+                        )}
 
 
                         <div className="quotation-field">
@@ -205,6 +262,18 @@ export default function PackageQuotationModal({
                                 }))}
                             />
                             <p className='package-quotation-error'>{error.preferredHotels}</p>
+                        </div>
+
+                        <div className="quotation-field">
+                            <label htmlFor="quotation-prefferedDate">Preferred Date</label>
+                            <DatePicker
+                                id="quotation-prefferedDate"
+                                placeholder="Select preferred date"
+                                value={prefferedDate || undefined}
+                                onChange={(value) => setPrefferedDate(value)}
+                                className={`quotation-input ${error.prefferedDate ? 'input-error' : ''}`}
+                            />
+                            <p className='package-quotation-error'>{error.prefferedDate}</p>
                         </div>
 
                         <div className="quotation-field quotation-budget">
@@ -285,7 +354,7 @@ export default function PackageQuotationModal({
                     </div>
 
                     <div className="quotation-actions">
-                        <Button className="quotation-cancel" onClick={handleCancel}>
+                        <Button className="quotation-cancel">
                             Cancel
                         </Button>
                         <Button type="primary" className="quotation-submit" onClick={handleSubmit}>
@@ -293,22 +362,23 @@ export default function PackageQuotationModal({
                         </Button>
                     </div>
                 </div>
-            </Modal>
 
-            <Modal
-                className="quotation-modal"
-                open={isBookingSuccessOpen}
-                footer={null}
-                onCancel={resetBookingFlow}
-            >
-                <h2 className="quotation-modal-title">Package Quotation Submitted</h2>
-                <p className="quotation-modal-text">Your package quotation request has been submitted successfully. Please wait for your quotation to be generated.</p>
-                <div className="quotation-modal-actions">
-                    <Button className="quotation-modal-button" onClick={resetBookingFlow}>
-                        OK
-                    </Button>
-                </div>
-            </Modal>
-        </div>
+
+                <Modal
+                    className="quotation-modal"
+                    open={isBookingSuccessOpen}
+                    footer={null}
+                    onCancel={null}
+                >
+                    <h2 className="quotation-modal-title">Package Quotation Submitted</h2>
+                    <p className="quotation-modal-text">Your package quotation request has been submitted successfully. Please wait for your quotation to be generated.</p>
+                    <div className="quotation-modal-actions">
+                        <Button className="quotation-modal-button">
+                            OK
+                        </Button>
+                    </div>
+                </Modal>
+            </div>
+        </ConfigProvider>
     )
 }

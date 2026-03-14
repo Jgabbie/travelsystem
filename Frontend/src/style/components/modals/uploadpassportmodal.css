@@ -12,6 +12,12 @@
     padding: 2px;
 }
 
+.upload-passport-container {
+    padding: 40px;
+    margin-top: 20px;
+    align-items: center;
+}
+
 .upload-passport-wrapper {
     max-height: 70vh;
     overflow: auto;
@@ -33,11 +39,12 @@
 .upload-passport-text {
     font-size: 14px;
     color: #555;
+    text-align: center;
 }
 
 .upload-card {
     flex: 1 1 350px;
-    max-width: 1000px;
+    width: 100%;
     height: 350px;
     background: #fff;
     border: 1px solid #e0e0e0;
@@ -64,7 +71,6 @@
     align-items: flex-end;
     gap: 12px;
 }
-
 
 .upload-passport-dragger {
     border: 2px dashed #305797;

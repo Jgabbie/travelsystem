@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { Modal, Button, message, Upload, Form, Steps, ConfigProvider } from 'antd'
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
-import { PDFDocument, rgb } from 'pdf-lib';
 import dayjs from 'dayjs';
 import '../../style/components/modals/bookingsummarymodal.css'
+import '../../style/components/modals/uploadpassportmodal.css'
 import '../../style/components/modals/travelersmodal.css'
 import '../../style/client/bookingprocess.css'
 import BookingRegistrationDiet from '../../components/form/BookingRegistrationDiet';
@@ -55,9 +55,9 @@ export default function BookingProcess() {
     const packageType = data.packageType || 'fixed'
     const images = data.images || []
 
+
     const [fileLists, setFileLists] = useState(Array(travelers).fill([]));
     const [previews, setPreviews] = useState(Array(travelers).fill(null));
-    const [pdfUrl, setPdfUrl] = useState(null);
 
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -102,10 +102,27 @@ export default function BookingProcess() {
             }}
         >
             <div className='bookingprocess-container'>
+
                 {/* Solo/Group Selection */}
                 <div className='bookingprocess-sologroup-container'>
                     <div className="solo-group-content">
-                        <h1 className='solo-group-heading'>Select Your Package Arrangement</h1>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px',
+                            marginBottom: '20px'
+                        }}>
+                            <Button
+                                onClick={() => navigate(-1)}
+                                style={{ display: 'flex', alignItems: 'center' }}
+                            >
+                                Back
+                            </Button>
+
+                            <h1 className='solo-group-heading' style={{ margin: 0 }}>
+                                Select Your Package Arrangement
+                            </h1>
+                        </div>
                         <div className="solo-group-cards">
                             <button
                                 type="button"
@@ -132,100 +149,171 @@ export default function BookingProcess() {
 
                 {/* Traveler Counters (conditionally rendered) */}
                 {selectedSoloGrouped === 'group' && (
-                    <div className="travelers-content">
-                        <h3 className="travelers-title">Number of Travelers</h3>
-                        <div className="travelers-cards">
-                            <div className="traveler-card">
-                                <h3>Adult</h3>
-                                <div className="traveler-counter">
-                                    <button type="button" onClick={decreaseAdult}>-</button>
-                                    <span>{counts.adult}</span>
-                                    <button type="button" onClick={increaseAdult}>+</button>
+                    <div className='travelers-container'>
+                        <div className="travelers-content">
+                            <h3 className="travelers-title">Number of Travelers</h3>
+                            <div className="travelers-cards">
+                                <div className="traveler-card">
+                                    <h3>Adult</h3>
+                                    <div className="traveler-counter">
+                                        <button type="button" onClick={decreaseAdult}>-</button>
+                                        <span>{counts.adult}</span>
+                                        <button type="button" onClick={increaseAdult}>+</button>
+                                    </div>
+                                </div>
+                                <div className="traveler-card">
+                                    <h3>Child</h3>
+                                    <div className="traveler-counter">
+                                        <button type="button" onClick={decreaseChild}>-</button>
+                                        <span>{counts.child}</span>
+                                        <button type="button" onClick={increaseChild}>+</button>
+                                    </div>
+                                </div>
+                                <div className="traveler-card">
+                                    <h3>Infant</h3>
+                                    <div className="traveler-counter">
+                                        <button type="button" onClick={decreaseInfant}>-</button>
+                                        <span>{counts.infant}</span>
+                                        <button type="button" onClick={increaseInfant}>+</button>
+                                    </div>
                                 </div>
                             </div>
-                            {/* Repeat for Child/Infant as needed */}
                         </div>
                     </div>
                 )}
 
-                <h2 className='booking-summary-title'>Booking Summary</h2>
-                <div className="booking-summary-wrapper">
-                    <div className="booking-summary-images">
-                        {images.map((img, index) => (
-                            <img key={index} className="booking-summary-image" src={img} alt="tour" />
-                        ))}
-                    </div>
+                {/* booking summary section */}
+                <div className="booking-summary-container">
+                    <h2 className='booking-summary-title'>Booking Summary</h2>
+                    <div className="booking-summary-wrapper">
+                        <p className="upload-passport-text" style={{ textAlign: 'center', marginBottom: '20px' }}>
+                            Kindly check the details of your booking before proceeding.
+                        </p>
 
-                    <div className="booking-summary-details">
-                        <div className="booking-summary-card">
-                            <h2>Booking Details</h2>
-
-                            <div className="booking-summary-row">
-                                <span className="booking-summary-label">Tour Package</span>
-                                <span className="booking-summary-value">{packageName}</span>
-                            </div>
-
-                            <div className="booking-summary-row">
-                                <span className="booking-summary-label">Travel Date</span>
-                                <span className="booking-summary-value">
-                                    {travelDate ? dayjs(travelDate).format('MMMM D, YYYY') : 'Not set'}
-                                </span>
-                            </div>
-
-                            <div className="booking-summary-row">
-                                <span className="booking-summary-label">Total Price</span>
-                                <span className="booking-summary-value">
-                                    ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className='upload-passport-container'>
-                        <h2 className="upload-passport-title">Upload Passport</h2>
-                        <div className="upload-passport-wrapper">
-                            <p className="upload-passport-text">
-                                Please upload a clear image of your passport bio page for each traveler.
-                            </p>
-
-                            {Array.from({ length: travelers }).map((_, index) => (
-                                <div key={index} className="upload-card">
-
-                                    <div className='upload-passport-left'>
-                                        <h4>Traveler {index + 1}</h4>
-                                        <Upload
-                                            fileList={fileLists[index]}
-                                            beforeUpload={() => false}
-                                            onChange={handleChange}
-                                            accept="image/*,application/pdf"
-                                            maxCount={1}
-                                            showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
-                                        >
-                                            <Button type="default">
-                                                {fileLists[index]?.length > 0 ? 'Change File' : 'Upload File'}
-                                            </Button>
-                                        </Upload>
-                                    </div>
-
-                                    <div className="upload-passport-right">
-                                        {previews[index] && (
-                                            <div className="passport-preview" style={{ marginTop: '10px' }}>
-                                                <img
-                                                    src={previews[index]}
-                                                    alt={`Passport Preview ${index + 1}`}
-                                                    className="passport-preview-image"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                        {/* Images Row */}
+                        <div className="booking-summary-images">
+                            {images.map((img, index) => (
+                                <img key={index} className="booking-summary-image" src={img} alt="tour" />
                             ))}
+                        </div>
+
+                        {/* New Split Content Grid */}
+                        <div className="booking-summary-content-grid" style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 350px',
+                            gap: '24px',
+                            marginTop: '24px',
+                            alignItems: 'start'
+                        }}>
+
+                            {/* Left Column: Detailed Info */}
+                            <div className="booking-summary-card" style={{ margin: 0 }}>
+                                <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
+                                    Booking Details
+                                </h3>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Tour Package</span>
+                                    <span className="booking-summary-value"><strong>{packageName}</strong></span>
+                                </div>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Booking Type</span>
+                                    <span className="booking-summary-value">
+                                        {packageType === 'solo' ? 'Solo booking' : 'Group booking'}
+                                    </span>
+                                </div>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Travel Date</span>
+                                    <span className="booking-summary-value">
+                                        {travelDate ? dayjs(travelDate).format('MMMM D, YYYY') : 'Not set'}
+                                    </span>
+                                </div>
+
+                                <div className='booking-summary-row'>
+                                    <span className="booking-summary-label">Airline / Hotel</span>
+                                    <span className="booking-summary-value">
+                                        {airlineOptions[0]?.name || 'N/A'} • {hotelOptions[0]?.name || 'N/A'}
+                                    </span>
+                                </div>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Travelers</span>
+                                    <span className="booking-summary-value">{travelersCount} Person(s)</span>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Pricing Summary Card */}
+                            <div className="booking-summary-card price-highlight-card" >
+                                <span className='booking-summary-total-amount-label'>
+                                    Total Amount
+                                </span>
+                                <h2 className='booking-summary-total-amount-value'>
+                                    ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                </h2>
+                                <div className='booking-summary-total-amount-note'>
+                                    *All inclusions fees are already factored in the total price.
+                                </div>
+
+                                <div className='booking-summary-package-type-card' >
+                                    <span style={{ fontSize: '13px' }}>Package Type:</span><br />
+                                    <strong style={{ color: '#305797' }}>{packageType?.toUpperCase()}</strong>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
 
+                {/* upload passport section */}
+                <div className='upload-passport-container'>
+                    <h2 className="upload-passport-title">Upload Passport</h2>
+                    <p className="upload-passport-text">
+                        Please upload a clear image of your passport bio page for each traveler.
+                    </p>
+                    <div className="upload-passport-wrapper">
+                        {Array.from({ length: travelersCount }).map((_, index) => (
+                            <div key={index} className="upload-card">
 
+                                <div className='upload-passport-left'>
+                                    <h4>Traveler {index + 1}</h4>
+                                    <Upload
+                                        fileList={fileLists[index]}
+                                        beforeUpload={() => false}
+                                        onChange={handleChange}
+                                        accept="image/*,application/pdf"
+                                        maxCount={1}
+                                        showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
+                                    >
+                                        <Button type="default">
+                                            {fileLists[index]?.length > 0 ? 'Change File' : 'Upload File'}
+                                        </Button>
+                                    </Upload>
+                                </div>
+
+                                <div className="upload-passport-right">
+                                    {previews[index] && (
+                                        <div className="passport-preview" style={{ marginTop: '10px' }}>
+                                            <img
+                                                src={previews[index]}
+                                                alt={`Passport Preview ${index + 1}`}
+                                                className="passport-preview-image"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* booking registration section */}
                 <div className="booking-form-stepper-container">
+                    <h2 className="booking-form-stepper-title">Booking Registration</h2>
+                    <p className="booking-form-stepper-text">
+                        Please upload a clear image of your passport bio page for each traveler.
+                    </p>
                     <Steps
                         current={currentStep}
                         items={[
@@ -284,7 +372,9 @@ export default function BookingProcess() {
                                 Next Step
                             </Button>
                         ) : (
-                            <Button type="primary" onClick={() => form.submit()}>
+                            <Button type="primary" onClick={() => {
+                                navigate('/booking-payment');
+                            }}>
                                 Submit Final Booking
                             </Button>
                         )}

@@ -149,13 +149,13 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                 <Form.Item name="signature" style={{ marginBottom: 0 }}>
                                     <Input style={{ ...boxStyle, height: '40px' }} />
                                 </Form.Item>
-                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px' }}>Signature over printed name:</div>
+                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your fullname</div>
                             </Col>
                             <Col span={12}>
                                 <Form.Item name="signatureDate" style={{ marginBottom: 0 }}>
                                     <Input style={{ ...boxStyle, height: '40px' }} />
                                 </Form.Item>
-                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px' }}>Date</div>
+                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Date</div>
                             </Col>
                         </Row>
                     </div>

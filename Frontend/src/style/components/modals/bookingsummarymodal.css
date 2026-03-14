@@ -15,6 +15,11 @@
     right: 12px;
 }
 
+.booking-summary-container {
+    padding: 40px;
+    margin-bottom: 20px;
+}
+
 .booking-summary-wrapper {
     max-height: 70vh;
     flex-direction: column;
@@ -44,12 +49,21 @@
     border-radius: 2px;
 }
 
+.booking-summary-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 24px;
+    margin-top: 24px;
+    align-items: start;
+}
+
 .booking-summary-card {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
     border-radius: 2px;
-    padding: 20px;
+    padding: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: 100%;
 }
 
 .booking-summary-row {
@@ -92,6 +106,35 @@
     opacity: 0.7;
     width: 100%;
 }
+
+.booking-summary-total-amount-label {
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.booking-summary-total-amount-value {
+    color: #305797;
+    font-size: 2rem;
+    margin: 12px 0;
+    font-weight: 700;
+}
+
+.booking-summary-total-amount-note {
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+}
+
+.booking-summary-package-type-card {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px dashed #ccc;
+}
+
 
 .booking-summary-image.is-placeholder {
     background: linear-gradient(135deg, #e0e7ff, #f9fafb);

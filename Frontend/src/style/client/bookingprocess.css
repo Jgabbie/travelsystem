@@ -1,10 +1,29 @@
 .bookingprocess-container {
     padding: 40px;
-
 }
 
 .bookingprocess-sologroup-container {
-    margin-bottom: 50px;
-    padding-right: 120px;
-    padding-left: 120px;
+    margin-bottom: 30px;
+    padding-right: 40px;
+    padding-left: 40px;
+}
+
+.booking-form-stepper-container {
+    padding: 40px;
+    clear: both;
+}
+
+.booking-form-stepper-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    color: #1f2a44;
+    margin: 0;
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+.booking-form-stepper-text {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
 }

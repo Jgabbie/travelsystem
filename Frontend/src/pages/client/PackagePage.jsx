@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
@@ -7,15 +7,10 @@ import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
 import '../../style/client/packagepage.css'
 
-
 import TopNavUser from '../../components/TopNavUser'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
-import AllInOrLandDomesticModal from '../../components/modals/AllInOrLandDomesticModal';
-import SoloOrGrouped from '../../components/SoloOrGrouped'
-import PackageQuotationModal from '../../components/modals/PackageQuotationModal'
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
-import DomesticQuotationModal from '../../components/modals/DomesticQuotationModal';
 
 
 export default function PackagePage() {
@@ -32,18 +27,13 @@ export default function PackagePage() {
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
-    const [isArrangementDomModalOpen, setIsArrangementDomModalOpen] = useState(false)
-    const [isSoloGroupModalOpen, setIsSoloGroupModalOpen] = useState(false)
 
-    const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false)
-    const [isQuotationModalOpen, setIsQuotationModalOpen] = useState(false)
-    const [isDomesticQuotationOpen, setIsDomesticQuotationOpen] = useState(false)
+
 
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
     const [travelerCounts, setTravelerCounts] = useState(null)
     const [arrangementSelection, setArrangementSelection] = useState(null)
-    const [arrangementSelectionDomestic, setArrangementSelectionDomestic] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
 
     //states for reviews
@@ -72,11 +62,6 @@ export default function PackagePage() {
 
         setIsDateModalOpen(false)
         setIsArrangementModalOpen(false)
-        setIsArrangementDomModalOpen(false)
-        setIsSoloGroupModalOpen(false)
-        setIsBookingSuccessOpen(false)
-        setIsQuotationModalOpen(false)
-        setIsDomesticQuotationOpen(false)
     }
 
     //fetch package details from backend using the id from the URL and handle loading and error states
@@ -364,7 +349,7 @@ export default function PackagePage() {
         }
 
         if (packageData?.packageType === 'domestic') {
-            setIsArrangementDomModalOpen(true)
+            navigate('/domestic-quotation', { state: { packageId: packageData?._id } })
         } else {
             setIsArrangementModalOpen(true)
         }
@@ -376,21 +361,8 @@ export default function PackagePage() {
         if (arrangementSelection === 'fixed') {
             setIsDateModalOpen(true)
         } else if (arrangementSelection === 'land' || arrangementSelection === 'all-in') {
-            setIsQuotationModalOpen(true)
+            navigate('/international-quotation', { state: { packageId: packageData?._id } })
         }
-    }
-
-    const handleProceedArrangementDomestic = () => {
-        setIsArrangementDomModalOpen(false)
-        if (arrangementSelectionDomestic === 'customallin') {
-            setIsDomesticQuotationOpen(true)
-        } else {
-            setIsDomesticQuotationOpen(true)
-        }
-    }
-
-    const handleSubmitQuotation = () => {
-        setIsQuotationModalOpen(false)
     }
 
     return (
@@ -621,7 +593,7 @@ export default function PackagePage() {
                                             ₱{packageData?.packagePricePerPax?.toLocaleString() || '--'}
                                         </div>
                                         <Button className="package-availability-button" onClick={handleBookingProcess}>
-                                            Check Availability
+                                            {packageData?.packageType === "domestic" ? "Get Quotation" : "Check Availability"}
                                         </Button>
                                     </div>
 
@@ -652,13 +624,6 @@ export default function PackagePage() {
                     </div>
                 </Modal>
 
-                <AllInOrLandDomesticModal
-                    open={isArrangementDomModalOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedArrangementDomestic}
-                    onSelect={setArrangementSelectionDomestic}
-                />
-
                 <AllInOrLandArrangementModal
                     open={isArrangementModalOpen}
                     onCancel={resetBookingFlow}
@@ -666,36 +631,7 @@ export default function PackagePage() {
                     onSelect={setArrangementSelection}
                 />
 
-                <DomesticQuotationModal
-                    open={isDomesticQuotationOpen}
-                    selectedOption={arrangementSelectionDomestic}
-                    onCancel={resetBookingFlow}
-                    onSubmit={handleSubmitQuotation}
-                    hotels={packageData?.packageHotels || []}
-                    airlines={packageData?.packageAirlines || []}
-                    basePrice={packageData?.packagePricePerPax || 0}
-                    days={packageData?.packageDuration || 1}
-                    fixedItinerary={packageData?.packageItineraries || {}}
-                    itinerary={Object.keys(packageData?.packageItineraries || {})
-                        .sort((a, b) => Number(a.replace('day', '')) - Number(b.replace('day', '')))
-                        .map((dayKey) => dayKey.replace('day', 'Day '))}
-                />
-
-                <PackageQuotationModal
-                    open={isQuotationModalOpen}
-                    selectedOption={arrangementSelection}
-                    onCancel={resetBookingFlow}
-                    onSubmit={handleSubmitQuotation}
-                    hotels={packageData?.packageHotels || []}
-                    airlines={packageData?.packageAirlines || []}
-                    basePrice={packageData?.packagePricePerPax || 0}
-                    days={packageData?.packageDuration || 1}
-                    fixedItinerary={packageData?.packageItineraries || {}}
-                    itinerary={Object.keys(packageData?.packageItineraries || {})
-                        .sort((a, b) => Number(a.replace('day', '')) - Number(b.replace('day', '')))
-                        .map((dayKey) => dayKey.replace('day', 'Day '))}
-                />
-
+                {/* choose date */}
                 <ChooseDateIntModal
                     open={isDateModalOpen}
                     onCancel={resetBookingFlow}
@@ -711,12 +647,6 @@ export default function PackagePage() {
                     isCloseLogin={() => setIsLoginVisible(false)}
                     onLoginSuccess={() => {
                         setIsLoginVisible(false);
-
-                        if (packageData?.packageType === 'domestic') {
-                            setIsArrangementDomModalOpen(true);
-                        } else {
-                            setIsArrangementModalOpen(true);
-                        }
                     }}
                 />
 

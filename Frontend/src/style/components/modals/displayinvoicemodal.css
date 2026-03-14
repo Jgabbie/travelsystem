@@ -3,9 +3,15 @@
     padding: 2px;
 }
 
+.display-invoice-container {
+    padding: 40px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .display-invoice-wrapper {
-    max-height: 70vh;
-    overflow: auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -18,7 +24,6 @@
     color: #1f2a44;
     margin: 0;
     text-align: center;
-    padding-bottom: 10px;
 }
 
 .display-invoice-subtitle {

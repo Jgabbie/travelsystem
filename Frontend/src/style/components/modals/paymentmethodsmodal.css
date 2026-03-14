@@ -3,6 +3,13 @@
     padding: 24px;
 }
 
+.payment-methods-container {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .payment-methods-wrapper {
     display: flex;
     flex-direction: column;
@@ -75,6 +82,7 @@
 
 .payment-card {
     border: 2px solid #e5e7eb;
+    background-color: #fff;
     border-radius: 10px;
     padding: 16px;
     cursor: pointer;
@@ -88,7 +96,7 @@
 
 .payment-card.selected {
     border-color: #305797;
-    background: #f4f7ff;
+    background: #fff;
 }
 
 .payment-card h3 {
