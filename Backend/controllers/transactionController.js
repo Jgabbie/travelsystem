@@ -42,6 +42,7 @@ const getUserTransactions = async (req, res) => {
     const userId = req.userId
     try {
         const transactions = await TransactionModel.find({ userId }).sort({ createdAt: -1 })
+            .populate('packageId', 'packageName')
         res.status(200).json(transactions)
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })

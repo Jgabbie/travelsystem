@@ -54,12 +54,13 @@ export default function BookingManagement() {
           key: b._id,
           ref: b.reference || b._id,
           username: b.userId?.username || "Customer Name",
-          pkg: b.bookingDetails?.packageName || "Package",
-          travelDate: b.bookingDetails?.travelDate ? dayjs(b.bookingDetails.travelDate).format('MMM DD, YYYY') : dayjs(b.createdAt).format('MMM DD, YYYY'),
+          pkg: b.packageId?.packageName || "Package",
+          travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM DD, YYYY') : dayjs(b.travelDate).format('MMM DD, YYYY'), //get start date
           bookingDate: dayjs(b.createdAt).format('MMM DD, YYYY'),
-          qty: b.bookingDetails?.travelers?.total || 0,
+          qty: b.travelers || 0,
           status: b.status?.charAt(0)?.toUpperCase() + b.status?.slice(1) || "Pending",
-          bookingDetails: b.bookingDetails || {}
+
+          bookingDetails: b.bookingDetails || {} //no booking details for now
         }));
 
         setData(bookings);

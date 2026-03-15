@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Table, Tag, Button, Space, message, Modal, Select, Input, Upload, DatePicker, ConfigProvider } from 'antd'
+import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, ConfigProvider } from 'antd'
 import { UploadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig'
@@ -32,7 +32,18 @@ export default function UserBookings() {
             setLoading(true)
             try {
                 const response = await axiosInstance.get('/booking/my-bookings')
-                setBookings(response.data || [])
+                const bookings = response.data.map((b) => ({
+                    key: b._id,
+                    ref: b.reference || b._id,
+                    packageName: b.packageId?.packageName || 'Tour Package',
+                    packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
+                    travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM D, YYYY') : dayjs(b.travelDate).format('MMM D, YYYY'),
+                    bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
+                    travelersCount: b.travelers || {},
+                    status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
+                }))
+
+                setBookings(bookings)
             } catch (error) {
                 message.error('Unable to load bookings')
                 setBookings([])
@@ -43,54 +54,26 @@ export default function UserBookings() {
         fetchBookings()
     }, [])
 
-    const dataSource = useMemo(() => bookings.map((booking) => {
-        const details = booking.bookingDetails || {}
-        const travelerCounts = details.travelersCount || {}
-        const travelersTotal = Object.values(travelerCounts)
-            .reduce((sum, value) => sum + (Number(value) || 0), 0)
-
-        const travelDate = details.travelDate
-        const formattedDate = travelDate ? dayjs(travelDate).format('MMM D, YYYY') : '--'
-        const bookedDate = booking.createdAt
-        const formattedBookedDate = bookedDate ? dayjs(bookedDate).format('MMM D, YYYY') : '--'
-        const status = booking.status || 'Complete'
-
-
-        return {
-            key: booking._id,
-            reference: booking.reference || booking._id,
-            destination: details.packageName || 'Package',
-            date: formattedDate,
-            bookedDate: formattedBookedDate,
-            travelers: travelerCounts || '--',
-            bookingType: details.packageType
-                ? `${details.packageType.charAt(0).toUpperCase()}${details.packageType.slice(1)}`
-                : '--',
-            status: status.charAt(0).toUpperCase() + status.slice(1)
-        }
-    }), [bookings])
-
-
-    const filteredData = dataSource.filter(item => {
+    const filteredData = bookings.filter(item => {
         const matchesSearch =
-            (item.reference.toLowerCase().includes(searchText.toLowerCase())) ||
-            (item.destination.toLowerCase().includes(searchText.toLowerCase())) ||
-            (item.status.toLowerCase().includes(searchText.toLowerCase())) ||
-            (item.bookingType.toLowerCase().includes(searchText.toLowerCase())) ||
-            (item.travelers && item.travelers.toString().includes(searchText)) ||
-            (dayjs(item.date).format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
-            (dayjs(item.bookedDate).format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase()));
+            (item.reference?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.packageType?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.packageName?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.status?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.travelersCount && item.travelersCount.toString().includes(searchText)) ||
+            (dayjs(item.travelDate).format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+            (dayjs(item.bookingDate).format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase()));
 
         const matchesStatus =
             statusFilter === "" || item.status === statusFilter;
 
         const matchesBookingDate =
             !bookingDateFilter ||
-            dayjs(item.bookedDate, 'MMM D, YYYY').isSame(bookingDateFilter, "day");
+            dayjs(item.bookingDate, 'MMM D, YYYY').isSame(bookingDateFilter, "day");
 
         const matchesTravelDate =
             !travelDateFilter ||
-            dayjs(item.date, 'MMM D, YYYY').isSame(travelDateFilter, "day");
+            dayjs(item.travelDate, 'MMM D, YYYY').isSame(travelDateFilter, "day");
 
         return matchesSearch && matchesStatus && matchesBookingDate && matchesTravelDate;
     });
@@ -179,33 +162,33 @@ export default function UserBookings() {
     const columns = [
         {
             title: 'Reference',
-            dataIndex: 'reference',
-            key: 'reference'
+            dataIndex: 'ref',
+            key: 'ref'
         },
         {
-            title: 'Destination',
-            dataIndex: 'destination',
-            key: 'destination'
+            title: 'Travel Package',
+            dataIndex: 'packageName',
+            key: 'packageName'
         },
         {
             title: 'Travel Date',
-            dataIndex: 'date',
-            key: 'date'
+            dataIndex: 'travelDate',
+            key: 'travelDate'
         },
         {
-            title: 'Booked Date',
-            dataIndex: 'bookedDate',
-            key: 'bookedDate'
+            title: 'Booking Date',
+            dataIndex: 'bookingDate',
+            key: 'bookingDate'
         },
         {
             title: 'Travelers',
-            dataIndex: 'travelers',
-            key: 'travelers'
+            dataIndex: 'travelersCount',
+            key: 'travelersCount'
         },
         {
-            title: 'Booking Type',
-            dataIndex: 'bookingType',
-            key: 'bookingType'
+            title: 'Package Type',
+            dataIndex: 'packageType',
+            key: 'packageType'
         },
         {
             title: 'Status',

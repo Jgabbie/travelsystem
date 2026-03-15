@@ -2,24 +2,36 @@ import React, { useEffect, useState } from 'react'
 import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import dayjs from "dayjs";
 import '../../style/components/modals/displayinvoicemodal.css';
 import '../../style/client/paymentprocees.css';
 import axiosInstance from '../../config/axiosConfig';
 
+const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
+
 
 export default function PaymentProcess() {
     const { bookingData } = useBooking();
     const navigate = useNavigate();
-
-    const [successModalOpen, setSuccessModalOpen] = useState(false);
+    const [searchParams] = useSearchParams();
 
     const [paymentType, setPaymentType] = useState(null); // 'deposit' or 'full'
     const [frequency, setFrequency] = useState('Every 2 weeks');
     const [method, setMethod] = useState(null);
     const [fileList, setFileList] = useState([]);
+
+    useEffect(() => {
+        if (!bookingData) {
+            navigate('/home', { replace: true });
+        }
+        if (searchParams.get('status') === 'cancel') {
+            localStorage.removeItem(SUCCESS_TOKEN_KEY);
+        }
+    }, [bookingData, navigate, searchParams]);
+
+
 
     const handleUploadChange = ({ fileList: newFileList }) => setFileList(newFileList);
 
@@ -55,38 +67,45 @@ export default function PaymentProcess() {
     const email = bookingData?.leadEmail || 'Email'
     const phone = bookingData?.leadContact || 'Phone Number';
 
-
     const proceedBooking = async () => {
-
-        const bookingPayload = {
-            packageId: packageId,
-            travelDate: travelDate,
-            bookingDate: new Date(),
-            travelers: travelerTotal,
-        }
-
         try {
-            const response = await axiosInstance.post('/booking/create-booking', {
-                bookingPayload
-            });
+            const successToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+            localStorage.setItem(SUCCESS_TOKEN_KEY, successToken);
 
-            const bookingId = response.data._id;
-            console.log("Booking created with ID:", bookingId);
+            const paymentPayload = {
+                packageId,
+                totalPrice: totalAmount,
+                travelDate,
+                travelerTotal,
+                leadEmail: bookingData.leadEmail,
+                leadContact: bookingData.leadContact,
+                successUrl: `${window.location.origin}/booking-payment/success?token=${successToken}`,
+                cancelUrl: `${window.location.origin}/booking-payment?status=cancel`,
+            };
 
-            const transactionPayload = {
-                packageId: packageId,
-                bookingId,
-                amount: totalAmount,
-                method,
-                status: 'Pending',
+            const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session', { paymentPayload });
+            const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+
+            if (checkoutUrl) {
+                window.location.href = checkoutUrl;
+            } else {
+                console.error("PayMongo Response Structure:", paymongoResponse.data);
+                throw new Error("Failed to create PayMongo checkout session - URL missing");
             }
 
-            await axiosInstance.post('/transaction/create-transaction', {
-                transactionPayload
-            });
+            // const hitpayResponse = await axiosInstance.post('/payment/hitpay', {
+            //     totalPrice: totalAmount,
+            //     orderId: "ORREF-83271836", // Link HitPay to your booking reference
+            //     email: "tukiiiiimukiiiii@gmail.com", // Customer's email for HitPay receipt
+            //     packageName: packageName
+            // });
 
-            console.log("Booking and transaction created successfully");
-            setSuccessModalOpen(true);
+            // if (hitpayResponse.data.url) {
+            //     // 4. Redirect the user to HitPay Checkout
+            //     window.location.href = hitpayResponse.data.url;
+            // } else {
+            //     throw new Error("Failed to generate payment link");
+            // }
 
         } catch (error) {
             console.error('Booking failed:', error);
@@ -98,13 +117,13 @@ export default function PaymentProcess() {
     }
 
 
-    useEffect(() => {
-        if (!bookingData) {
-            navigate('/home', { replace: true });
-        }
-    }, [bookingData, navigate]);
+    // useEffect(() => {
+    //     if (!bookingData) {
+    //         navigate('/home', { replace: true });
+    //     }
+    // }, [bookingData, navigate]);
 
-    if (!bookingData) return null;
+    // if (!bookingData) return null;
 
 
     const Invoice = {
@@ -472,27 +491,6 @@ export default function PaymentProcess() {
                     </div>
                 </div>
 
-                <Modal
-                    open={successModalOpen}
-                    className='emailverify-success-modal'
-                    footer={null}
-                    closable={false}
-                    style={{ top: 240 }}
-                >
-                    <div className='emailverify-container-modal'>
-                        <h1 className='emailverify-heading-modal'>Booking Successful</h1>
-                        <p className='emailverify-secondary-heading-modal'>Your booking has been confirmed.</p>
-                        <Button
-                            id='emailverify-success-button'
-                            onClick={() => {
-                                setSuccessModalOpen(false)
-                                navigate('/home')
-                            }}
-                        >
-                            Continue
-                        </Button>
-                    </div>
-                </Modal>
             </ConfigProvider>
         </div>
     )

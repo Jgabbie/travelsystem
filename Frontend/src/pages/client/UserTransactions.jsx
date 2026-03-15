@@ -22,6 +22,7 @@ export default function UserTransactions() {
                 const transactions = response.data.map(t => ({
                     key: t.id,
                     reference: t.reference,
+                    packageName: t.packageId?.packageName || 'Tour Package',
                     date: t.createdAt ? dayjs(t.createdAt).format('MMM D, YYYY h:mm A') : '--',
                     method: t.method || '--',
                     amount: `₱${Number(t.amount || 0).toLocaleString()}`,
@@ -41,6 +42,7 @@ export default function UserTransactions() {
 
     const filteredData = transactions.filter(item => {
         const matchesSearch =
+            (item.packageName?.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.reference?.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.method?.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.status?.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -60,6 +62,11 @@ export default function UserTransactions() {
             title: 'Reference',
             dataIndex: 'reference',
             key: 'reference'
+        },
+        {
+            title: 'Tour Package',
+            dataIndex: 'packageName',
+            key: 'packageName'
         },
         {
             title: 'Date and Time',

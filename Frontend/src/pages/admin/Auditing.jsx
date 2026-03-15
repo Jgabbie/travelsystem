@@ -14,7 +14,7 @@ export default function Auditing() {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/logs/get-audits', {
+                const response = await axiosInstance.get('/logs/get-audits', {
                     withCredentials: true
                 });
 

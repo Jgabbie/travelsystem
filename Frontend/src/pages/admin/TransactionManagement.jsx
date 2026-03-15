@@ -47,11 +47,11 @@ export default function TransactionManagement() {
           key: t._id,
           ref: t.reference,
           username: t.userId?.username || "Unknown User",
-          package: t.packageName || "",
+          package: t.packageId?.packageName || "No Package",
           date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
           price: `₱${Number(t.amount || 0).toLocaleString()}`,
-          method: t.method || "",
-          status: t.status || ""
+          method: t.method.charAt(0)?.toUpperCase() + t.method.slice(1) || "No Method",
+          status: t.status || "No Status"
         }));
 
         setData(transactions);
@@ -156,8 +156,6 @@ export default function TransactionManagement() {
     doc.save(`Transaction_Report_${new Date().toLocaleDateString()}.pdf`);
     message.success("Report exported to PDF successfully.");
   };
-
-
 
   const isEditing = (record) => record.key === editingKey;
 
@@ -562,19 +560,31 @@ export default function TransactionManagement() {
           footer={null}
           className="transaction-view-modal"
           width={720}
-          style={{ top: 10 }}
+          style={{ top: 60 }}
         >
           {selectedTransaction && (
             <div className="receipt-container">
               {/* Header Section */}
               <div className="receipt-header">
                 <div className="company-info">
-                  <h2 className="brand-name">M&RC Travel and Tours</h2>
-                  <p>1234 Company St,</p>
-                  <p>Company Town, ST 12345</p>
+
+                  <div className="header-flex-container">
+                    <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+
+                    <div className="address-details">
+                      <h2 className="brand-name">M&RC Travel and Tours</h2>
+                      <p className="sub-info">2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1</p>
+                      <p className="sub-info">Parañaque City, Philippines</p>
+                      <p className="sub-info">1709 PHL</p>
+                      <p className="sub-info">+63 969 055 4806</p>
+                      <p className="sub-info">info1@mrctravels.com</p>
+                    </div>
+                  </div>
+
+
                 </div>
                 <div className="receipt-title-box">
-                  <h1 className="receipt-title">RECEIPT</h1>
+                  <h1 className="receipt-title">Receipt</h1>
                 </div>
               </div>
 
@@ -582,8 +592,7 @@ export default function TransactionManagement() {
               <div className="receipt-meta">
                 <div className="billed-to">
                   <span className="label-blue">Billed To</span>
-                  <h3 className="customer-name">{selectedTransaction.username || "Customer Name"}</h3>
-                  <p>{selectedTransaction.customerAddress || "098237823"}</p>
+                  <h3 className="customer-name" style={{ margin: 0 }}>{selectedTransaction.username || "Customer Name"}</h3>
                 </div>
                 <div className="receipt-details">
                   <div className="detail-item">
@@ -632,7 +641,7 @@ export default function TransactionManagement() {
 
               {/* Footer Notes */}
               <div className="receipt-footer">
-                <p>Thank you for your purchase!</p>
+                <p className="support-text">Thank you for your purchase!</p>
                 <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
               </div>
             </div>

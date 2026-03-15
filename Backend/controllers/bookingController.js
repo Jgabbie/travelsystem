@@ -24,6 +24,7 @@ const createBooking = async (req, res) => {
     const packageId = bookingPayload.packageId
     const travelDate = bookingPayload.travelDate
     const bookingDate = bookingPayload.bookingDate
+    const travelers = bookingPayload.travelers
 
     //find package by name to get its id, then create booking with that package id
     try {
@@ -42,6 +43,7 @@ const createBooking = async (req, res) => {
             userId,
             travelDate,
             bookingDate,
+            travelers,
             reference: generateBookingReference(),
             status: 'Successful'
         })
@@ -60,6 +62,8 @@ const getUserBookings = async (req, res) => {
     const userId = req.userId
     try {
         const bookings = await BookingModel.find({ userId }).sort({ createdAt: -1 })
+            .populate('userId', 'username')
+            .populate('packageId', 'packageName packageType')
         res.status(200).json(bookings)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching bookings', error })
@@ -70,6 +74,8 @@ const getAllBookings = async (_req, res) => {
     try {
         const bookings = await BookingModel.find({}).sort({ createdAt: -1 })
             .populate('userId', 'username')
+            .populate('packageId', 'packageName packageType')
+
             .sort({ createdAt: -1 });
 
         res.status(200).json(bookings)

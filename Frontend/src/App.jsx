@@ -18,6 +18,7 @@ import RenewPassport from "./pages/client/RenewPassport";
 import ApplyVisa from "./pages/client/ApplyVisa";
 import BookingProcess from "./pages/client/BookingProcess";
 import PaymentProcess from "./pages/client/PaymentProcess";
+import SuccessfulBooking from "./pages/client/SuccessfulBooking";
 import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
 import PackageInternationalQuotation from "./pages/client/PackageInternationalQuotation";
 
@@ -54,9 +55,6 @@ import EmployeeRoute from "./routes/EmployeeRoute";
 
 import "antd/dist/reset.css";
 import { BookingProvider } from "./context/BookingContext";
-
-
-
 
 
 function App() {
@@ -154,6 +152,7 @@ function App() {
             <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
             <Route path='/booking-process' element={<BookingProcess />} />
             <Route path='/booking-payment' element={<PaymentProcess />} />
+            <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
             <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
             <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
           </Route>
