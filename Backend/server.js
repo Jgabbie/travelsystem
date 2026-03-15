@@ -87,3 +87,5 @@ if (process.env.NODE_ENV !== 'production') {
         console.log('Server is up and running');
     });
 }
+
+module.exports = app;
