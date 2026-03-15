@@ -41,20 +41,23 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
             return callback(null, true);
         }
         return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
 }));
+
 app.use(cookieParser())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 app.get('/', (req, res) => res.send("API Working"))
 
-mongoose.connect("mongodb://localhost:27017/travelsystem")
+const DBuri = process.env.MONGODB_URI || 'mongodb://localhost:27017/travelsystem';
+
+mongoose.connect(DBuri)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err))
 
@@ -79,6 +82,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use('/api/contactlimit', contactLimiter);
 
-app.listen(8000, () => {
-    console.log('Server is up and running');
-})
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(8000, () => {
+        console.log('Server is up and running');
+    });
+}
