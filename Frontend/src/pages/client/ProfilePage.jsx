@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Input, Button, message, Spin, Card, Space, Rate, DatePicker, Select } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import LoadingScreen from '../../components/LoadingScreen';
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
 import '../../style/client/profilepage.css'
+
 
 export default function ProfilePage() {
     const [userData, setUserData] = useState(null)
@@ -32,6 +34,7 @@ export default function ProfilePage() {
 
     const [recentReviews, setRecentReviews] = useState([])
     const [recentBookings, setRecentBookings] = useState([])
+    const [isLoading, setIsLoading] = useState(false);
 
     //proper case function
     const toProperCase = (value) =>
@@ -310,50 +313,23 @@ export default function ProfilePage() {
         }
     }
 
-    if (!userData) {
-        return (
-            <div className="profile-container">
-                <Card className="profile-card">
-                    <p>Unable to load profile. Please try again.</p>
-                </Card>
-            </div>
-        )
-    }
+    // if (!userData) {
+    //     return (
+    //         <div className="profile-container">
+    //             <Card className="profile-card">
+    //                 <p>Unable to load profile. Please try again.</p>
+    //             </Card>
+    //         </div>
+    //     )
+    // }
 
     return (
         <div className="profile-page">
             <TopNavUser />
 
+            {/* profile */}
             <div className="profile-container">
                 <div className="profile-content">
-                    <div className="profile-side-column">
-                        <Card
-                            className="profile-side-card"
-                            title={<h3>My Recent Bookings</h3>}
-                        >
-                            {recentBookings.length === 0 ? (
-                                <p className="profile-empty-text">No bookings yet.</p>
-                            ) : (
-                                <div className="profile-booking-list">
-                                    {recentBookings.map((booking, index) => (
-                                        <div className="profile-booking-item" key={booking?._id || index}>
-                                            <div className="profile-booking-header">
-                                                <div>
-                                                    <p className="profile-booking-title">{booking?.title || 'Untitled Booking'}</p>
-                                                    <p className="profile-booking-meta">{booking?.date || 'Recently'}</p>
-                                                </div>
-                                                <span className={`profile-booking-status profile-booking-${(booking?.status || 'Pending').toLowerCase()}`}>
-                                                    {booking?.status || 'Pending'}
-                                                </span>
-                                            </div>
-                                            <p className="profile-booking-details">Ref: {booking?.reference || 'BK-00000'} • {booking?.packageType} Booking</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Card>
-                    </div>
-
                     <Card
                         className="profile-card"
                         title={
@@ -611,30 +587,58 @@ export default function ProfilePage() {
                             </Space>
                         )}
                     </Card>
+                </div>
 
-                    <div className="profile-side-column">
-                        <Card
-                            className="profile-side-card"
-                            title={<h3>My Recent Reviews</h3>}
-                        >
-                            {recentReviews.length === 0 ? (
-                                <p className="profile-empty-text">No reviews yet.</p>
-                            ) : (
-                                <div className="profile-review-list">
-                                    {recentReviews.map((review, index) => (
-                                        <div className="profile-review-item" key={review?._id || index}>
-                                            <div>
-                                                <p className="profile-review-title">{review?.title || 'Untitled Review'}</p>
-                                                <p className="profile-review-meta">{review?.date || 'Recently'}</p>
-                                                <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
-                                            </div>
-                                            <p className="profile-review-snippet">{review?.snippet || review?.comment || 'View review details.'}</p>
+
+                {/* recent bookings and reviews */}
+                <div className="profile-side-column">
+                    <Card
+                        className="profile-side-card"
+                        title={<h3>My Recent Reviews</h3>}
+                    >
+                        {recentReviews.length === 0 ? (
+                            <p className="profile-empty-text">No reviews yet.</p>
+                        ) : (
+                            <div className="profile-review-list">
+                                {recentReviews.map((review, index) => (
+                                    <div className="profile-review-item" key={review?._id || index}>
+                                        <div>
+                                            <p className="profile-review-title">{review?.title || 'Untitled Review'}</p>
+                                            <p className="profile-review-meta">{review?.date || 'Recently'}</p>
+                                            <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Card>
-                    </div>
+                                        <p className="profile-review-snippet">{review?.snippet || review?.comment || 'View review details.'}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </Card>
+
+                    <Card
+                        className="profile-side-card"
+                        title={<h3>My Recent Bookings</h3>}
+                    >
+                        {recentBookings.length === 0 ? (
+                            <p className="profile-empty-text">No bookings yet.</p>
+                        ) : (
+                            <div className="profile-booking-list">
+                                {recentBookings.map((booking, index) => (
+                                    <div className="profile-booking-item" key={booking?._id || index}>
+                                        <div className="profile-booking-header">
+                                            <div>
+                                                <p className="profile-booking-title">{booking?.title || 'Untitled Booking'}</p>
+                                                <p className="profile-booking-meta">{booking?.date || 'Recently'}</p>
+                                            </div>
+                                            <span className={`profile-booking-status profile-booking-${(booking?.status || 'Pending').toLowerCase()}`}>
+                                                {booking?.status || 'Pending'}
+                                            </span>
+                                        </div>
+                                        <p className="profile-booking-details">Ref: {booking?.reference || 'BK-00000'} • {booking?.packageType} Booking</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </Card>
                 </div>
             </div>
         </div >

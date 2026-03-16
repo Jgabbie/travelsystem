@@ -49,22 +49,6 @@ body {
     font-family: "Montserrat", sans-serif;
 }
 
-.signup-input-fields-modal:hover,
-.signup-input-fields-modal-group:hover,
-.signup-input-fields-modal:focus-within,
-.signup-input-fields-modal-group:focus-within,
-.ant-input-group-wrapper:hover .ant-input-group .ant-input,
-.ant-input-group-wrapper:focus-within .ant-input-group .ant-input {
-    border-color: #305797 !important;
-    border-width: 1px !important;
-}
-
-.ant-input-group-wrapper:hover .ant-input-group-addon,
-.ant-input-group-wrapper:focus-within .ant-input-group-addon {
-    border-color: #305797 !important;
-    border-width: 1px !important;
-}
-
 .ant-input-password input {
     width: 500px;
     font-size: 14px;
@@ -151,10 +135,20 @@ body {
 }
 
 .signup-error-message-modal {
-    height: 10px;
+    height: 12px;
     font-size: 10px;
     color: #ff0000 !important;
     text-align: left;
+}
+
+/* single error slot */
+.signup-error-slot {
+    min-height: 14px;
+}
+
+/* multi error slot */
+.signup-error-slot--multi {
+    min-height: 110px;
 }
 
 .signup-input-row-modal {
@@ -165,11 +159,6 @@ body {
 .signup-input-group-modal {
     margin-right: 7px;
     margin-top: 12px;
-}
-
-.signup-input-row-modal .signup-input-group-modal {
-    flex: 1;
-    margin-bottom: 0;
 }
 
 .signup-button-row-modal {

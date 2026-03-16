@@ -88,6 +88,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 clearForm()
             }
 
+            setIsLoading(false);
+
         } catch (err) {
 
             const status = err.response?.status;
@@ -105,11 +107,14 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     const errorMsg = error.response?.data?.message || "Verification failed"
                     console.error("Error: ", errorMsg)
                     setError(errorMsg)
+                    setIsLoading(false);
+                    return
                 }
             }
             const errorMsg = err.response?.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
+            setIsLoading(false);
         }
     }
 
@@ -184,7 +189,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     return (
         <div>
             <LoadingScreen isVisible={isLoading} message="Logging in..." onComplete={() => console.log("Loading complete")} />
-
 
             <Modal
                 open={isOpenLogin}

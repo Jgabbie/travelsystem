@@ -1,6 +1,7 @@
 const UserModel = require('../models/user');
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const path = require("path")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
 
@@ -21,6 +22,8 @@ const signupUser = async (req, res) => {
         user.role = "User" //set the role of the new registered user
         await user.save() //save new user to database
 
+
+        //in order to send email with Logo, use hosted url
         const mailOptions = {
             from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
             to: user.email,
@@ -28,7 +31,7 @@ const signupUser = async (req, res) => {
             html: `
             <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
             <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                
+
                 <h2 style="color:#305797; margin-bottom:10px;">
                     Welcome to M&RC Travel and Tours
                 </h2>
@@ -38,11 +41,11 @@ const signupUser = async (req, res) => {
                 </p>
 
                 <p style="color:#555; font-size:15px; line-height:1.6;">
-                    Your account has been successfully created! We're excited to help you explore amazing destinations and create unforgettable travel experiences.
+                    Your account has been successfully created!
                 </p>
 
                 <p style="color:#555; font-size:15px; line-height:1.6;">
-                    You can now log in to your account and start browsing our travel packages, tours, and exclusive offers.
+                    Kindly log in to verify your account and start browsing our travel packages, tours, and exclusive offers.
                 </p>
 
                 <a href="http://localhost:3000/home"
@@ -57,7 +60,7 @@ const signupUser = async (req, res) => {
                         font-weight:bold;
                         font-size:14px;
                     ">
-                    Explore Tours
+                    Log In to Your Account
                 </a>
 
                 <p style="color:#777; font-size:13px; margin-top:30px;">

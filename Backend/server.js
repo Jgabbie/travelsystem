@@ -39,31 +39,31 @@ const allowedOrigins = [
     "https://mrctraveltoursapi.vercel.app"
 ];
 
-// app.use(cors({
-//     origin: (origin, callback) => {
-//         if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-//             return callback(null, true);
-//         }
-//         return callback(new Error("Not allowed by CORS"));
-//     },
-//     credentials: true,
-// }));
-
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin ||
-            allowedOrigins.includes(origin) ||
-            origin.endsWith(".vercel.app")
-        ) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+            return callback(null, true);
         }
+        return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// app.use(cors({
+//     origin: (origin, callback) => {
+//         if (!origin ||
+//             allowedOrigins.includes(origin) ||
+//             origin.endsWith(".vercel.app")
+//         ) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error("Not allowed by CORS"));
+//         }
+//     },
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization']
+// }));
 
 app.use(cookieParser())
 app.use(express.json({ limit: '10mb' }))
@@ -73,7 +73,7 @@ app.get('/', (req, res) => res.send("API Working"))
 
 const DBuri = process.env.MONGODB_URI || 'mongodb://localhost:27017/travelsystem';
 
-mongoose.connect(DBuri)
+mongoose.connect('mongodb://localhost:27017/travelsystem')
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err))
 
