@@ -14,11 +14,11 @@ const app = express();
 
 // Middleware
 
-app.use(cors({
+const corsOptions = {
     origin: "https://mrctraveltours.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true
-}));
+};
 
 app.use('/api', cors(corsOptions));
 app.options('/api/*', cors(corsOptions));
