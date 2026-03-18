@@ -41,9 +41,16 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true,
-    optionsSuccessStatus: 200
+    origin: (origin, callback) => {
+        // allow requests with no origin (like curl or Postman)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,        // allow cookies
+    optionsSuccessStatus: 200 // some legacy browsers need this
 }));
 
 app.use(cookieParser());
