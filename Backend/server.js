@@ -94,9 +94,11 @@ require('dotenv').config();
 const express = require('express');
 const serverless = require('serverless-http');
 
+const authRoutes = require('./routes/authRoutes'); // your existing route file
+
 const app = express();
 
-// ---- CORS for Vercel + credentials ----
+// --- CORS middleware ---
 const allowedOrigins = [
     'http://localhost:3000',
     'https://mrctraveltours.vercel.app'
@@ -111,17 +113,16 @@ app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     }
 
-    if (req.method === 'OPTIONS') return res.status(200).end();
+    if (req.method === 'OPTIONS') return res.status(200).end(); // preflight
     next();
 });
 
-// JSON parser
+// --- Body parsing ---
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ---- Simple test route ----
-app.get('/api/auth/is-auth', (req, res) => {
-    res.json({ success: true, message: 'Auth check passed' });
-});
+// --- Routes ---
+app.use('/api/auth', authRoutes);
 
-// Export for Vercel
+// --- Serverless export ---
 module.exports = serverless(app);
