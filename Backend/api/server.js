@@ -74,4 +74,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get('/', (req, res) => res.send("API Working"));
 
+app.all('/api/*', (req, res) => {
+    res.status(404).json({ message: 'API route not found' });
+});
+
 module.exports = app;
