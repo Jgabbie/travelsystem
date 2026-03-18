@@ -56,13 +56,13 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.options("(.*)", cors(corsOptions));
 
 app.use(cookieParser())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
-app.get('/', (req, res) => res.send("API Working"))
+app.get('(.*)', (req, res) => res.send("API Working"))
 
 const DBuri = process.env.MONGODB_URI || 'mongodb://localhost:27017/travelsystem';
 
