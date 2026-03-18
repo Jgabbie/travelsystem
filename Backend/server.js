@@ -10,6 +10,19 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 
 
+const app = express();
+
+// Middleware
+
+app.use(cors({
+    origin: "https://mrctraveltours.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true
+}));
+
+app.use('/api', cors(corsOptions));
+app.options('/api/*', cors(corsOptions));
+
 // Connect to MongoDB
 let cached = global.mongoose;
 if (!cached) {
@@ -25,16 +38,6 @@ async function connectToDatabase() {
     cached.conn = await cached.promise;
     return cached.conn;
 }
-
-
-const app = express();
-
-// Middleware
-
-app.use(cors({
-    origin: "https://mrctraveltours.vercel.app",
-    credentials: true
-}));
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
