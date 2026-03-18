@@ -4,7 +4,6 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const path = require('path')
 const cookieParser = require('cookie-parser')
-const serverless = require('serverless-http');
 
 const userRoutes = require("../routes/userRoutes")
 const authRoutes = require("../routes/authRoutes")
@@ -35,23 +34,20 @@ const app = express()
 
 const allowedOrigins = [
     "http://localhost:3000",
-    "http://localhost:8081",
-    "http://localhost:8082",
-    "http://localhost:19006",
     "https://mrctraveltoursapi.vercel.app",
     "https://mrctraveltours.vercel.app",
 ];
 
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        // allow requests with no origin (like Postman or server-to-server)
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
 
-        if (allowedOrigins.includes(origin)) {
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
             callback(null, true);
         } else {
-            callback(new Error(`CORS error: ${origin} not allowed`));
+            callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
@@ -106,4 +102,4 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api/contactlimit', contactLimiter);
 
 
-module.exports = serverless(app);
+module.exports = app;
