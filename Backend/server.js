@@ -41,11 +41,6 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: allowedOrigins, // simple array, no callback needed
-    credentials: true
-}));
-
-app.options('*', cors({
     origin: allowedOrigins,
     credentials: true,
     optionsSuccessStatus: 200
@@ -74,7 +69,7 @@ app.use('/api/auth', authRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Catch-all for API routes
-app.use('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
     res.status(404).json({ message: 'API route not found' });
 });
 
