@@ -30,26 +30,11 @@ async function connectToDatabase() {
 const app = express();
 
 // Middleware
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
-});
 
-const allowedOrigins = [
-    "http://localhost:3000",
-    "https://mrctraveltours.vercel.app"
-];
-
-app.cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+app.use(cors({
+    origin: "https://mrctraveltours.vercel.app",
     credentials: true
-});
+}));
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
