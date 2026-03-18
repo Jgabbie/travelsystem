@@ -50,7 +50,6 @@ const corsOptions = {
 
 // --- FIX 1: Use Regex Literals (No quotes) to avoid PathError ---
 app.use(cors(corsOptions));
-app.options(/^(.*)$/, cors(corsOptions));
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
@@ -66,7 +65,6 @@ mongoose.connect(DBuri, {
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.error("MongoDB Connection Error:", err));
 
-// Remove the app.use(async (req, res, next) => { await connectDB(); ... }) block entirely.
 
 // --- YOUR ROUTES ---
 app.use('/api/user', userRoutes);
@@ -75,8 +73,8 @@ app.use('/api/auth', authRoutes);
 
 // --- FIX 3: Catch-all for "API Working" should be at the BOTTOM ---
 // If this is at the top, it will intercept all your /api requests and return "API Working" instead of hitting your routes.
-app.get('/', (req, res) => res.send("API Working"));
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.get('/', (req, res) => res.send("API Working"));
 
 module.exports = app;
