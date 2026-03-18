@@ -28,6 +28,11 @@ const sendEmailRoutes = require("../routes/sendEmailRoutes")
 
 const app = express();
 
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
 const allowedOrigins = [
     "http://localhost:3000",
     "https://mrctraveltours.vercel.app"
