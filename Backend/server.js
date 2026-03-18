@@ -8,6 +8,12 @@ const serverless = require('serverless-http');
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const packageRoutes = require("./routes/packageRoutes");
+
+
+const logRoutes = require("./routes/logRoutes");
 
 
 const app = express();
@@ -55,6 +61,10 @@ app.use(async (req, res, next) => {
 
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/booking', bookingRoutes);
+app.use('/api/notification', notificationRoutes);
+app.use('/api/package', packageRoutes);
+app.use('/api/logs', logRoutes);
 
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
