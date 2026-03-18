@@ -41,13 +41,12 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: allowedOrigins, // simple array, no callback needed
+    credentials: true
+}));
+
+app.options('*', cors({
+    origin: allowedOrigins,
     credentials: true,
     optionsSuccessStatus: 200
 }));
