@@ -119,14 +119,14 @@ const loginUser = async (req, res) => {
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
             maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
@@ -169,7 +169,7 @@ const refreshToken = async (req, res) => {
 
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
             maxAge: 2 * 60 * 60 * 1000
         });
@@ -212,8 +212,8 @@ const logoutUser = async (req, res) => {
         const { refreshToken } = req.cookies;
 
         if (!refreshToken) {
-            res.clearCookie('accessToken')
-            res.clearCookie('refreshToken')
+            res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
+            res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
             return res.status(200).json({ message: "Logged Out" })
         }
 
@@ -223,9 +223,9 @@ const logoutUser = async (req, res) => {
             await user.save()
         }
 
-        res.clearCookie('accessToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
-        res.clearCookie('refreshToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
-        res.clearCookie('token', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
+        res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
+        res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
+        res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'lax', path: '/' })
 
 
         // Determine action based on the user found (if any)
@@ -363,14 +363,14 @@ const verifyEmail = async (req, res) => {
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
             maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
