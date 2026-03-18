@@ -6,6 +6,9 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const serverless = require('serverless-http');
 
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+
 const app = express();
 
 // Middleware
@@ -38,8 +41,8 @@ mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
     .catch(err => console.error("MongoDB Connection Error:", err));
 
 // Routes
-app.use('/api/user', require("../routes/userRoutes"));
-app.use('/api/auth', require("../routes/authRoutes"));
+app.use('/api/user', userRoutes);
+app.use('/api/auth', authRoutes);
 // …all other app.use routes here…
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
