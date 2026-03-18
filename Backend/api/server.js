@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 const path = require('path')
 const cookieParser = require('cookie-parser')
+const serverless = require('serverless-http');
 
 const userRoutes = require("../routes/userRoutes")
 const authRoutes = require("../routes/authRoutes")
@@ -105,4 +106,4 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use('/api/contactlimit', contactLimiter);
 
 
-module.exports = app;
+module.exports = serverless(app);
