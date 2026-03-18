@@ -50,6 +50,7 @@ const corsOptions = {
 
 // --- FIX 1: Use Regex Literals (No quotes) to avoid PathError ---
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
