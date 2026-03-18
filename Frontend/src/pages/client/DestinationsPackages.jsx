@@ -24,28 +24,27 @@ export default function DestinationsPackages() {
         const fetchPackages = async () => {
             try {
                 const response = await axiosInstance.get('/package/get-packages')
+                const ratingResponse = await axiosInstance.get('/rating/average-ratings')
+                const rating = ratingResponse.data?.averageRatings || 0
 
-                const mapped = (response.data || []).map(async (pkg) => {
-                    const ratingResponse = await axiosInstance.get(`/rating/average-rating/${pkg._id}`)
-                    const rating = ratingResponse.data?.averageRating || 0
 
-                    console.log(rating)
+                const packages = response.data.map((pkg) => {
+                    const rating = ratingResponse.data?.averageRatings || 0
 
                     return {
                         id: pkg._id,
                         title: pkg.packageName,
-                        location: pkg.packageType === 'international' ? 'International' : 'Philippines',
                         type: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
                         budget: pkg.packagePricePerPax,
                         availableSlots: pkg.packageAvailableSlots || 0,
-                        rating,
                         images: pkg.images && pkg.images.length > 0 ? pkg.images[0] : '',
-                        tags: pkg.packageTags || []
-                    }
-                })
+                        tags: pkg.packageTags || [],
+                        rating
+                    };
+                });
 
-                setPackages(await Promise.all(mapped))
+                setPackages(packages)
             } catch (error) {
                 console.error('Failed to load packages:', error)
                 setPackages([])
@@ -80,7 +79,6 @@ export default function DestinationsPackages() {
             setTourType(tourTypeParam)
         }
 
-
         // it checks first if the min and max budget values are integers or values then , set the budget range
         if (Number.isFinite(minBudget) && Number.isFinite(maxBudget)) {
             setBudgetRange([
@@ -111,41 +109,35 @@ export default function DestinationsPackages() {
     }, [packages])
 
 
-    const filteredPackages = useMemo(() => {
-        const query = search.trim().toLowerCase()
-        return packages.filter((pkg) => {
-            const matchesSearch =
-                query.length === 0 ||
-                pkg.title.toLowerCase().includes(query) ||
-                pkg.location.toLowerCase().includes(query)
+    const filteredPackages = packages.filter((item) => {
+        const matchesSearch =
+            (item.id.toLowerCase().includes(search.toLowerCase())) ||
+            (item.title.toLowerCase().includes(search.toLowerCase())) ||
+            (item.type.toLowerCase().includes(search.toLowerCase())) ||
+            (item.days.toLowerCase().includes(search.toLowerCase())) ||
+            (item.budget.toString().toLowerCase().includes(search.toLowerCase())) ||
+            (item.availableSlots.toString().toLowerCase().includes(search.toLowerCase())) ||
+            (item.tags?.some((tag) => tag.toLowerCase().includes(search.toLowerCase())))
 
-            const matchesBudget =
-                pkg.budget >= budgetRange[0] && pkg.budget <= budgetRange[1]
+        const matchesBudget =
+            item.budget >= budgetRange[0] && item.budget <= budgetRange[1]
 
-            const matchesTags =
-                selectedTags.length === 0 ||
-                selectedTags.every((tag) =>
-                    pkg.tags?.includes(tag)
-                )
-
-            const matchesType = tourType === 'All' || pkg.type === tourType
-
-            const matchesDays =
-                pkg.days >= 1 && pkg.days <= daysValue
-
-            const matchesTravelers =
-                !Number.isFinite(travelersValue) || travelersValue <= 0 || pkg.availableSlots >= travelersValue
-
-            return (
-                matchesSearch &&
-                matchesBudget &&
-                matchesTags &&
-                matchesType &&
-                matchesDays &&
-                matchesTravelers
+        const matchesTags =
+            selectedTags.length === 0 ||
+            selectedTags.every((tag) =>
+                item.tags?.includes(tag)
             )
-        })
-    }, [packages, search, budgetRange, selectedTags, tourType, daysValue, travelersValue])
+
+        const matchesType = tourType === 'All' || item.type === tourType
+
+        const matchesDays =
+            item.days >= 1 && item.days <= daysValue
+
+        const matchesTravelers =
+            !Number.isFinite(travelersValue) || travelersValue <= 0 || item.availableSlots >= travelersValue
+
+        return matchesSearch && matchesBudget && matchesTags && matchesType && matchesDays && matchesTravelers
+    })
 
 
     return (
@@ -359,7 +351,7 @@ export default function DestinationsPackages() {
                                                 <Title level={5} className="destinations-card-title">
                                                     {pkg.title}
                                                 </Title>
-                                                <Text type="secondary">{pkg.location}</Text>
+                                                <Text type="secondary">{pkg.type}</Text>
                                             </div>
                                             <Tag className="destinations-rating">⭐ {pkg.rating}</Tag>
                                         </div>

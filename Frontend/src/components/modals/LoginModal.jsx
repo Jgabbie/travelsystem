@@ -228,8 +228,12 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             <div className='login-div-input-fields-modal'>
                                 <label className='login-labels-modal' htmlFor="username">Username</label>
                                 <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                    if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
-                                        e.preventDefault()
+                                    if (e.key === " " || e.key === "Backspace") {
+                                        return;
+                                    }
+
+                                    if (!/^[A-Za-z0-9]+$/.test(e.key)) {
+                                        e.preventDefault();
                                     }
                                 }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
                             </div>
