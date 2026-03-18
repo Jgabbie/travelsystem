@@ -20,8 +20,8 @@ const corsOptions = {
     credentials: true
 };
 
-app.use('/api', cors(corsOptions));
-app.options('/api/*', cors(corsOptions));
+app.use(cors(corsOptions));
+
 
 // Connect to MongoDB
 let cached = global.mongoose;
