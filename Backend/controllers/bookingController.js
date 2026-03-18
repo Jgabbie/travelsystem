@@ -1,5 +1,4 @@
 const BookingModel = require('../models/booking')
-const PackageModel = require('../models/package')
 const CancellationModel = require('../models/cancellations')
 const logAction = require('../utils/logger')
 

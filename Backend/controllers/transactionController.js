@@ -28,12 +28,11 @@ const createTransaction = async (req, res) => {
             status: transactionPayload.status,
         })
 
-        logAction('TRANSACTION_CREATED', userId, {
-            transactionId: newTransaction._id
-        })
+        logAction('TRANSACTION_CREATED', userId, { transactionId: newTransaction._id })
+
         res.status(201).json(newTransaction)
     } catch (error) {
-        logAction('createTransactionError', userId, { error: error.message })
+        logAction('CREATE_TRANSACTION_ERROR', userId, { error: error.message })
         res.status(500).json({ message: "Failed to create transaction", error: error.message })
     }
 }
@@ -45,6 +44,7 @@ const getUserTransactions = async (req, res) => {
             .populate('packageId', 'packageName')
         res.status(200).json(transactions)
     } catch (error) {
+        logAction('GET_USER_TRANSACTIONS_ERROR', userId, { error: error.message })
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
     }
 }
@@ -58,6 +58,7 @@ const getAllTransactions = async (_req, res) => {
 
         res.status(200).json(transactions)
     } catch (error) {
+        logAction('GET_ALL_TRANSACTIONS_ERROR', _req.userId, { error: error.message })
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
     }
 }
@@ -80,6 +81,7 @@ const updateTransaction = async (req, res) => {
         if (!updatedTransaction) {
             return res.status(404).json({ message: "Transaction not found" })
         }
+
         logAction('TRANSACTION_UPDATED', req.userId, {
             transactionId: id,
             status,
@@ -87,10 +89,11 @@ const updateTransaction = async (req, res) => {
             amount,
             packageName
         })
+
         res.status(200).json(updatedTransaction)
     }
     catch (error) {
-        logAction('updateTransactionError', req.userId, { error: error.message })
+        logAction('UPDATE_TRANSACTION_ERROR', req.userId, { error: error.message })
         res.status(500).json({ message: "Failed to update transaction", error: error.message })
     }
 }
@@ -107,7 +110,7 @@ const deleteTransaction = async (req, res) => {
         logAction('TRANSACTION_DELETED', req.userId, { transactionId: id })
         res.status(200).json({ message: "Transaction deleted successfully" })
     } catch (error) {
-        logAction('deleteTransactionError', req.userId, { error: error.message })
+        logAction('DELETE_TRANSACTION_ERROR', req.userId, { error: error.message })
         res.status(500).json({ message: "Failed to delete transaction", error: error.message })
     }
 }

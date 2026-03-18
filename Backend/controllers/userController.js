@@ -132,7 +132,6 @@ const updateUserData = async (req, res) => {
         await user.save()
 
         if (changes.length > 0) {
-            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
             await logAction(
                 'USER_PROFILE_UPDATED',
                 userId,
@@ -140,7 +139,6 @@ const updateUserData = async (req, res) => {
                     updatedFields,
                     changedFieldCount: changes.length,
                 },
-                ip
             )
         }
 
@@ -207,8 +205,6 @@ const createUsers = async (req, res) => {
             isAccountVerified: true
         });
 
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
         const actionName = role === "Admin" ? "ADMIN_CREATED_ADMIN" : "ADMIN_CREATED_USER";
 
         await logAction(
@@ -218,9 +214,7 @@ const createUsers = async (req, res) => {
                 new_user_id: newUser._id,
                 new_user_role: newUser.role,
                 new_username: newUser.username
-            },
-            ip
-        );
+            });
 
         res.status(201).json({ message: "User created successfully", user: newUser });
 
@@ -259,16 +253,13 @@ const delUsers = async (req, res) => {
 
         await UserModel.findByIdAndDelete(id);
 
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         await logAction(
             "ADMIN_DELETED_USER",
             req.userId || null,
             {
                 deletedUserId: user._id,
                 deletedUsername: user.username
-            },
-            ip
-        );
+            });
 
         res.json({ message: "User archived and deleted", userId: user._id });
     } catch (err) {

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, Spin } from 'antd';
+import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
-import EmailVerifyModal from './EmailVerifyModal';
 import LoadingScreen from '../LoadingScreen';
 import { useAuth } from '../../hooks/useAuth';
 import axiosInstance from '../../config/axiosConfig';
@@ -29,7 +28,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const [errorOTP, setErrorOTP] = useState("")
     const [getOTP, setOTP] = useState("")
     const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
-
 
     //start timer when OTP modal opens
     useEffect(() => {
@@ -142,7 +140,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axiosInstance.post('auth/send-verify-otp', { email: email })
+            await axiosInstance.post('auth/send-verify-otp', { email: email })
             alert("OTP sent!")
             setTimer(60)
         } catch (err) {
@@ -279,16 +277,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     </Button>
                 </div>
             </Modal>
-
-
-            {/* <EmailVerifyModal
-                isOpenOTPModal={isOTPModalVisible}
-                isCloseOTPModal={() => setIsOTPModalVisible(false)}
-                userEmail={email}
-                userUsername={values.username}
-                userPassword={values.password}
-            />
- */}
 
         </div >
     )

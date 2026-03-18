@@ -27,7 +27,9 @@ export default function LandingPage() {
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
     const [chatMessage, setChatMessage] = useState('')
 
-    const [modal, contextHolder] = Modal.useModal();
+    const [openModalSuccess, setOpenModalSuccess] = useState(false)
+    const [openModalError, setOpenModalError] = useState(false)
+
 
     const [contactValues, setContactValues] = useState({
         name: '',
@@ -83,20 +85,14 @@ export default function LandingPage() {
     const sendMessage = async () => {
         try {
             await axiosInstance.post('/email/contact', contactValues)
-            modal.success({
-                title: 'Message Sent',
-                content: 'Your message has been sent successfully! We will get back to you soon.',
-            });
+            setOpenModalSuccess(true)
             setContactValues({
                 name: '',
                 email: '',
                 message: '',
             })
         } catch (error) {
-            modal.error({
-                title: 'Failed to Send Message',
-                content: 'There was an error sending your message. Please try again later.',
-            });
+            setOpenModalError(true)
         }
     }
 
@@ -114,7 +110,6 @@ export default function LandingPage() {
                 },
             }}
         >
-            {contextHolder}
             <div className="landing-container">
                 <TopNavUser />
 
@@ -668,6 +663,59 @@ export default function LandingPage() {
                     </div>
                 </Modal>
             </div>
+
+            {/* success modal */}
+            <Modal
+                open={openModalSuccess}
+                className='emailverify-success-modal'
+                footer={null}
+                closable={false}
+                style={{ top: 230 }}
+            >
+                <div className='emailverify-container-modal'>
+                    <h1 className='emailverify-heading-modal'>Your message has been sent</h1>
+                    <p className='emailverify-secondary-heading-modal'>Kindly check your email for responses.</p>
+                    <Button
+                        id='emailverify-success-button'
+                        onClick={() => {
+                            setOpenModalSuccess(false)
+                            navigate('/home')
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </div>
+            </Modal>
+
+            {/* fail modal */}
+            <Modal
+                open={openModalError}
+                className='emailverify-fail-modal'
+                footer={null}
+                closable={false}
+                style={{ top: 230 }}
+            >
+                <div className='emailverify-container-modal'>
+                    <h1 className='emailverify-heading-modal'>Failed to Send Message</h1>
+                    <p className='emailverify-secondary-heading-modal'>There was an error sending your message. Please try again later.</p>
+                    <Button
+                        id='emailverify-success-button'
+                        onClick={() => {
+                            setOpenModalError(false)
+                            navigate('/home')
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </div>
+            </Modal>
+
+
+
+
+
+
+
         </ConfigProvider>
     );
 }

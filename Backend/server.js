@@ -73,7 +73,7 @@ app.get('/', (req, res) => res.send("API Working"))
 
 const DBuri = process.env.MONGODB_URI || 'mongodb://localhost:27017/travelsystem';
 
-mongoose.connect('mongodb://localhost:27017/travelsystem')
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err))
 

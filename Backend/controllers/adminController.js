@@ -68,7 +68,6 @@ const editUser = async (req, res) => {
         await user.save();
 
         if (changes.length > 0) {
-            const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
             await logAction(
                 "ADMIN_UPDATED_USER",
                 req.userId || null,
@@ -77,9 +76,7 @@ const editUser = async (req, res) => {
                     changedFieldCount: changes.length,
                     targetUserId: user._id,
                     targetUsername: user.username
-                },
-                ip
-            );
+                })
         }
 
         res.status(200).json({
