@@ -5,22 +5,22 @@ const cors = require('cors')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 
-const userRoutes = require("./routes/userRoutes")
-const authRoutes = require("./routes/authRoutes")
-const logRoutes = require("./routes/logRoutes");
-const packageRoutes = require("./routes/packageRoutes");
-const adminRoutes = require("./routes/adminRoute");
-const bookingRoutes = require("./routes/bookingRoutes");
-const ratingRoutes = require("./routes/ratingRoutes");
-const wishlistRoutes = require("./routes/wishlistRoutes");
-const paymentRoutes = require("./routes/paymentRoute");
-const transactionRoute = require("./routes/transactionRoute");
-const quotationRoutes = require("./routes/quotationRoutes")
-const passportRoutes = require("./routes/passportRoutes")
-const serviceRoutes = require("./routes/serviceRoutes")
-const notificationRoutes = require("./routes/notificationRoutes")
-const visaRoutes = require("./routes/visaRoutes")
-const sendEmailRoutes = require("./routes/sendEmailRoutes")
+const userRoutes = require("../routes/userRoutes")
+const authRoutes = require("../routes/authRoutes")
+const logRoutes = require("../routes/logRoutes");
+const packageRoutes = require("../routes/packageRoutes");
+const adminRoutes = require("../routes/adminRoute");
+const bookingRoutes = require("../routes/bookingRoutes");
+const ratingRoutes = require("../routes/ratingRoutes");
+const wishlistRoutes = require("../routes/wishlistRoutes");
+const paymentRoutes = require("../routes/paymentRoute");
+const transactionRoute = require("../routes/transactionRoute");
+const quotationRoutes = require("../routes/quotationRoutes")
+const passportRoutes = require("../routes/passportRoutes")
+const serviceRoutes = require("../routes/serviceRoutes")
+const notificationRoutes = require("../routes/notificationRoutes")
+const visaRoutes = require("../routes/visaRoutes")
+const sendEmailRoutes = require("../routes/sendEmailRoutes")
 
 const rateLimit = require('express-rate-limit');
 
@@ -69,9 +69,19 @@ app.get('/', (req, res) => res.send("API Working"))
 
 const DBuri = process.env.MONGODB_URI || 'mongodb://localhost:27017/travelsystem';
 
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err))
+let isConnected = false;
+
+const connectDB = async () => {
+    if (isConnected) return;
+
+    const db = await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = db.connections[0].readyState;
+};
+
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 app.use('/api/user', userRoutes)
 app.use('/api/auth', authRoutes)
@@ -94,10 +104,5 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use('/api/contactlimit', contactLimiter);
 
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(8000, () => {
-        console.log('Server is up and running');
-    });
-}
 
 module.exports = app;
