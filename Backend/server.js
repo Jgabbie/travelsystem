@@ -9,6 +9,26 @@ const serverless = require('serverless-http');
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 
+
+// Connect to MongoDB
+let cached = global.mongoose;
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectToDatabase() {
+    if (cached.conn) return cached.conn;
+    if (!cached.promise) {
+        cached.promise = mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        }).then((mongoose) => mongoose);
+    }
+    cached.conn = await cached.promise;
+    return cached.conn;
+}
+
+
 const app = express();
 
 // Middleware
@@ -35,10 +55,16 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
-    .then(() => console.log("MongoDB Connected"))
-    .catch(err => console.error("MongoDB Connection Error:", err));
+
+app.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next(); // proceed to the next middleware / route
+    } catch (err) {
+        console.error("DB connection failed:", err);
+        res.status(500).json({ message: "Database connection error" });
+    }
+});
 
 // Routes
 app.use('/api/user', userRoutes);
