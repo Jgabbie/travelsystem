@@ -12,7 +12,6 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-// Middleware
 
 const corsOptions = {
     origin: "https://mrctraveltours.vercel.app",
@@ -23,7 +22,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-// Connect to MongoDB
 let cached = global.mongoose;
 if (!cached) {
     cached = global.mongoose = { conn: null, promise: null };
@@ -54,20 +52,28 @@ app.use(async (req, res, next) => {
     }
 });
 
-// Routes
+
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
-// …all other app.use routes here…
+
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Catch-all for API routes
+
 app.use('/api', (req, res) => {
     res.status(404).json({ message: 'API route not found' });
 });
 
-// Optional root route
+
 app.get('/', (req, res) => res.send("API Working"));
 
-// Export wrapped in serverless for Vercel
+
 module.exports = serverless(app);
+
+
+// require('dotenv').config();
+// const express = require('express');
+// const mongoose = require('mongoose');
+// const cors = require('cors');
+// const cookieParser = require('cookie-parser');
+// const path = require('path');
