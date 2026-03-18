@@ -8,6 +8,24 @@ const rateLimit = require('express-rate-limit');
 
 // ... (Your route imports remain the same) ...
 
+// --- ADD THESE BACK TO THE TOP ---
+const userRoutes = require("../routes/userRoutes")
+const authRoutes = require("../routes/authRoutes")
+const logRoutes = require("../routes/logRoutes");
+const packageRoutes = require("../routes/packageRoutes");
+const adminRoutes = require("../routes/adminRoute");
+const bookingRoutes = require("../routes/bookingRoutes");
+const ratingRoutes = require("../routes/ratingRoutes");
+const wishlistRoutes = require("../routes/wishlistRoutes");
+const paymentRoutes = require("../routes/paymentRoute");
+const transactionRoute = require("../routes/transactionRoute");
+const quotationRoutes = require("../routes/quotationRoutes")
+const passportRoutes = require("../routes/passportRoutes")
+const serviceRoutes = require("../routes/serviceRoutes")
+const notificationRoutes = require("../routes/notificationRoutes")
+const visaRoutes = require("../routes/visaRoutes")
+const sendEmailRoutes = require("../routes/sendEmailRoutes")
+
 const app = express();
 
 const allowedOrigins = [
