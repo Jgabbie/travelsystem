@@ -3,7 +3,11 @@
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/api/server.js"
+            "destination": "Backend/api/server.js"
+        },
+        {
+            "source": "/",
+            "destination": "Backend/api/server.js"
         }
     ],
     "headers": [
