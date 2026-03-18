@@ -28,33 +28,25 @@ const sendEmailRoutes = require("../routes/sendEmailRoutes")
 
 const app = express();
 
-// const allowedOrigins = [
-//     "http://localhost:3000",
-//     "https://mrctraveltoursapi.vercel.app",
-//     "https://mrctraveltours.vercel.app",
-// ];
-
-// const corsOptions = {
-//     origin: function (origin, callback) {
-//         if (!origin) return callback(null, true);
-//         if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
-//             callback(null, true);
-//         } else {
-//             callback(new Error('Not allowed by CORS'));
-//         }
-//     },
-//     credentials: true,
-//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//     allowedHeaders: ["Content-Type", "Authorization"]
-// };
-
-// app.use(cors(corsOptions));
-// app.options('*', cors(corsOptions));
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://mrctraveltours.vercel.app"
+];
 
 app.use(cors({
-    origin: true,
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
 }));
+
+// MUST handle the OPTIONS preflight globally
+app.options('*', cors());
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
