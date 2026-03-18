@@ -41,28 +41,26 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: (origin, callback) => {
-        // allow requests with no origin (like curl or Postman)
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
+    origin: function (origin, callback) {
+        // allow requests with no origin (like Postman or server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error('Not allowed by CORS'));
     },
-    credentials: true,        // allow cookies
-    optionsSuccessStatus: 200 // some legacy browsers need this
+    credentials: true,
+    optionsSuccessStatus: 200
 }));
 
-app.use((req, res, next) => {
-    if (req.method === 'OPTIONS') {
-        res.header('Access-Control-Allow-Origin', allowedOrigins.join(','));
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        return res.sendStatus(200);
-    }
-    next();
-});
+// Handle OPTIONS preflight
+app.options('*', cors({
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
