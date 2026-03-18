@@ -28,29 +28,33 @@ const sendEmailRoutes = require("../routes/sendEmailRoutes")
 
 const app = express();
 
-const allowedOrigins = [
-    "http://localhost:3000",
-    "https://mrctraveltoursapi.vercel.app",
-    "https://mrctraveltours.vercel.app",
-];
+// const allowedOrigins = [
+//     "http://localhost:3000",
+//     "https://mrctraveltoursapi.vercel.app",
+//     "https://mrctraveltours.vercel.app",
+// ];
 
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-};
+// const corsOptions = {
+//     origin: function (origin, callback) {
+//         if (!origin) return callback(null, true);
+//         if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error('Not allowed by CORS'));
+//         }
+//     },
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"]
+// };
 
-// --- FIX 1: Use Regex Literals (No quotes) to avoid PathError ---
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+// app.use(cors(corsOptions));
+// app.options('*', cors(corsOptions));
+
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
