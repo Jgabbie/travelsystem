@@ -9,7 +9,6 @@ const cookieParser = require('cookie-parser');
 
 const serverless = require('serverless-http');
 
-
 const userRoutes = require("./routes/userRoutes")
 const authRoutes = require("./routes/authRoutes")
 const logRoutes = require("./routes/logRoutes");
@@ -30,7 +29,7 @@ const sendEmailRoutes = require("./routes/sendEmailRoutes")
 const app = express();
 
 const corsOptions = {
-    origin: "https://mrctraveltours.vercel.app",
+    origin: "https://mrctravelntours.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true
 };
@@ -86,13 +85,11 @@ app.use("/api/visa", visaRoutes);
 app.use("/api/email", sendEmailRoutes);
 
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use('/api', (req, res) => {
     res.status(404).json({ message: 'API route not found' });
 });
-
 
 app.get('/', (req, res) => res.send("API Working"));
 
