@@ -8,16 +8,6 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const transactionRoute = require('./routes/transactionRoute');
 const ratingRoutes = require('./routes/ratingRoutes');
-const logRoutes = require('./routes/logRoutes')
-const packageRoutes = require('./routes/packageRoutes')
-const adminRoutes = require('./routes/adminRoute');
-const paymentRoutes = require('./routes/paymentRoute');
-const quotationRoutes = require('./routes/quotationRoutes');
-const passportRoutes = require('./routes/passportRoutes');
-const serviceRoutes = require('./routes/serviceRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
-const visaRoutes = require('./routes/visaRoutes');
-const sendEmailRoutes = require('./routes/sendEmailRoutes');
 
 const cookieParser = require('cookie-parser');
 
@@ -71,16 +61,6 @@ app.use('/api/booking', bookingRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/transaction', transactionRoute);
 app.use('/api/rating', ratingRoutes);
-app.use('/api/logs', logRoutes);
-app.use('/api/package', packageRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/payment', paymentRoutes);
-app.use('/api/quotation', quotationRoutes);
-app.use("/api/passport", passportRoutes);
-app.use("/api/services", serviceRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/visa", visaRoutes);
-app.use("/api/email", sendEmailRoutes);
 
 app.get('/', (req, res) => res.send('API Working'));
 
