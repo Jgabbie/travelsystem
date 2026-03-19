@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 const path = require("path")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
+const connectToDatabase = require('../utils/mongodb');
 
 
 //signup
@@ -94,7 +95,7 @@ const signupUser = async (req, res) => {
 //login
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
-
+    await connectToDatabase();
     try {
         const user = await UserModel.findOne({ username })
         if (!user) {
@@ -183,6 +184,7 @@ const refreshToken = async (req, res) => {
 //check username and email duplicates
 const checkDups = async (req, res) => {
     const { username, email } = req.body
+    await connectToDatabase();
     try {
         if (username) {
             const usernameExists = await UserModel.findOne({ username })

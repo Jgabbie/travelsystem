@@ -28,28 +28,19 @@ const sendEmailRoutes = require("./routes/sendEmailRoutes")
 
 const app = express();
 
-const corsOptions = {
-    origin: "https://mrctravelntours.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+const allowedOrigins = [
+    'https://mrctravelntours.vercel.app',
+    'https://www.mrctravelntours.vercel.app',
+    'http://localhost:3000'
+];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+        else callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
-};
-
-app.use(cors(corsOptions));
-
-let cached = global.mongoose;
-if (!cached) {
-    cached = global.mongoose = { conn: null, promise: null };
-}
-
-async function connectToDatabase() {
-    if (cached.conn) return cached.conn;
-    if (!cached.promise) {
-        cached.promise = mongoose.connect(process.env.MONGODB_URI)
-            .then((mongoose) => mongoose);
-    }
-    cached.conn = await cached.promise;
-    return cached.conn;
-}
+}));
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
