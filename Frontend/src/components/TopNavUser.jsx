@@ -20,10 +20,6 @@ export default function TopNavUser() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const renderAuthControls = () => {
-        if (authLoading) {
-            return <span className="nav-auth-loading" />;
-        }
-
         if (auth) {
             return (
                 <>
