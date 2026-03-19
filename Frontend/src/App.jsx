@@ -60,9 +60,7 @@ import { BookingProvider } from "./context/BookingContext";
 function App() {
   return (
     <div>
-
-
-      {/* <BookingProvider>
+      <BookingProvider>
         <Routes>
 
           <Route path='/' element={<Navigate to="/home" replace />} />
@@ -78,12 +76,12 @@ function App() {
             <Route path='/package/:id' element={<PackagePage />} />
           </Route>
 
-          
+
           <Route element={<PublicRoute />}>
             <Route path='/reset-password' element={<ResetPassword />} />
           </Route>
 
-          
+
           <Route element={<AdminRoute />}>
             <Route element={<AdminLayout />}>
               <Route index element={<Navigate to="/dashboard" />} />
@@ -109,13 +107,13 @@ function App() {
               <Route path="adminprofile" element={<AdminProfile />} />
               <Route path="package-quotation" element={<QuotationManagement />} />
               <Route path="quotation/:id" element={<QuotationRequest />} />
-              
+
               <Route path="logging" element={<Logging />} />
               <Route path="auditing" element={<Auditing />} />
             </Route>
           </Route>
 
-          
+
           <Route element={<EmployeeRoute />}>
             <Route path="/employee" element={<EmployeeLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
@@ -143,7 +141,7 @@ function App() {
             </Route>
           </Route>
 
-         
+
           <Route element={<ProtectedRoute />}>
             <Route path='/profile' element={<ProfilePage />} />
             <Route path='/user-bookings' element={<UserBookings />} />
@@ -161,7 +159,7 @@ function App() {
 
           <Route path='*' element={<Navigate to="/home" replace />} />
         </Routes>
-      </BookingProvider> */}
+      </BookingProvider>
     </div >
   );
 }
