@@ -3,15 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
+const cookieParser = require('cookie-parser');
+
 const userRoutes = require('./routes/userRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const transactionRoute = require('./routes/transactionRoute');
 const ratingRoutes = require('./routes/ratingRoutes');
-
-const cookieParser = require('cookie-parser');
-
-
 
 require('dotenv').config();
 
