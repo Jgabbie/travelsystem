@@ -1,6 +1,11 @@
 
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const UserModel = require('./models/user');
+
+require('dotenv').config();
 
 const app = express();
 
@@ -12,19 +17,66 @@ app.use(cors({
 
 app.use(express.json());
 
+let cached = global.mongoose;
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectToDatabase() {
+    if (cached.conn) return cached.conn;
+    if (!cached.promise) {
+        cached.promise = mongoose.connect(process.env.MONGODB_URI)
+            .then((mongooseInstance) => mongooseInstance);
+    }
+    cached.conn = await cached.promise;
+    return cached.conn;
+}
+
+app.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next();
+    } catch (err) {
+        console.error('DB connection failed:', err);
+        res.status(500).json({ message: 'Database connection error' });
+    }
+});
+
 app.get('/api/test', (req, res) => {
     res.json({ message: 'API is working!' });
 });
 
-// Simple login test endpoint (no DB)
-app.post('/api/loginUser', (req, res) => {
+// Simple login endpoint (DB-backed)
+app.post('/api/loginUser', async (req, res) => {
     const { username, password } = req.body || {};
-
-    if (username === 'juanlanuza' && password === '123***AAA') {
-        return res.json({ success: true, message: 'Login successful' });
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    try {
+        const user = await UserModel.findOne({ username });
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const match = await bcrypt.compare(password, user.hashedPassword);
+        if (!match) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Login successful',
+            user: {
+                id: user._id,
+                username: user.username,
+                role: user.role,
+            }
+        });
+    } catch (err) {
+        console.error('Login error:', err);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
 });
 
 app.get('/', (req, res) => res.send('API Working'));
