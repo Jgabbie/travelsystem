@@ -1,91 +1,35 @@
-require('dotenv').config();
 
 const express = require('express');
-const mongoose = require('mongoose');
-
 const cors = require('cors');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-
-const serverless = require('serverless-http');
-
-const userRoutes = require("./routes/userRoutes")
-const authRoutes = require("./routes/authRoutes")
-const logRoutes = require("./routes/logRoutes");
-const packageRoutes = require("./routes/packageRoutes");
-const adminRoutes = require("./routes/adminRoute");
-const bookingRoutes = require("./routes/bookingRoutes");
-const ratingRoutes = require("./routes/ratingRoutes");
-const wishlistRoutes = require("./routes/wishlistRoutes");
-const paymentRoutes = require("./routes/paymentRoute");
-const transactionRoute = require("./routes/transactionRoute");
-const quotationRoutes = require("./routes/quotationRoutes")
-const passportRoutes = require("./routes/passportRoutes")
-const serviceRoutes = require("./routes/serviceRoutes")
-const notificationRoutes = require("./routes/notificationRoutes")
-const visaRoutes = require("./routes/visaRoutes")
-const sendEmailRoutes = require("./routes/sendEmailRoutes")
 
 const app = express();
 
-const allowedOrigins = [
-    'https://mrctravelntours.vercel.app',
-    'https://www.mrctravelntours.vercel.app',
-    'http://localhost:3000'
-];
-
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-        else callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true
+    origin: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
 }));
 
-app.use(cookieParser());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json());
 
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'API is working!' });
+});
 
-app.use(async (req, res, next) => {
-    try {
-        await connectToDatabase();
-        next(); // proceed to the next middleware / route
-    } catch (err) {
-        console.error("DB connection failed:", err);
-        res.status(500).json({ message: "Database connection error" });
+// Simple login test endpoint (no DB)
+app.post('/api/loginUser', (req, res) => {
+    const { username, password } = req.body || {};
+
+    if (username === 'juanlanuza' && password === '123***AAA') {
+        return res.json({ success: true, message: 'Login successful' });
     }
+
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
 });
 
+app.get('/', (req, res) => res.send('API Working'));
 
-app.use('/api/auth', authRoutes)
-app.use('/api/logs', logRoutes)
-app.use('/api/user', userRoutes)
-app.use('/api/package', packageRoutes)
-app.use('/api/admin', adminRoutes)
-app.use('/api/booking', bookingRoutes)
-app.use('/api/rating', ratingRoutes)
-app.use('/api/wishlist', wishlistRoutes)
-app.use('/api/payment', paymentRoutes);
-app.use('/api/transaction', transactionRoute);
-app.use('/api/quotation', quotationRoutes);
-app.use("/api/passport", passportRoutes);
-app.use("/api/services", serviceRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/visa", visaRoutes);
-app.use("/api/email", sendEmailRoutes);
-
-
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-app.use('/api', (req, res) => {
-    res.status(404).json({ message: 'API route not found' });
-});
-
-app.get('/', (req, res) => res.send("API Working"));
-
-
-module.exports = serverless(app);
+module.exports = app;
 
 
 // require('dotenv').config();
