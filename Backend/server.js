@@ -2,8 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const UserModel = require('./models/user');
+const authRoutes = require('./routes/authRoutes');
 
 require('dotenv').config();
 
@@ -46,38 +45,7 @@ app.get('/api/test', (req, res) => {
     res.json({ message: 'API is working!' });
 });
 
-// Simple login endpoint (DB-backed)
-app.post('/api/loginUser', async (req, res) => {
-    const { username, password } = req.body || {};
-    if (!username || !password) {
-        return res.status(400).json({ success: false, message: 'Username and password are required' });
-    }
-
-    try {
-        const user = await UserModel.findOne({ username });
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-
-        const match = await bcrypt.compare(password, user.hashedPassword);
-        if (!match) {
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-
-        return res.json({
-            success: true,
-            message: 'Login successful',
-            user: {
-                id: user._id,
-                username: user.username,
-                role: user.role,
-            }
-        });
-    } catch (err) {
-        console.error('Login error:', err);
-        return res.status(500).json({ success: false, message: 'Server error' });
-    }
-});
+app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => res.send('API Working'));
 

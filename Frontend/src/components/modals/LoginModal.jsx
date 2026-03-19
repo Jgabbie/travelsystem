@@ -66,7 +66,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         setIsLoading(true);
         try {
             const response = await axiosInstance.post(
-                '/loginUser',
+                '/auth/loginUser',
                 { username: values.username, password: values.password }
             )
             if (onLoginSuccess) {
