@@ -2,7 +2,6 @@ const express = require('express')
 const router = express.Router()
 const ratingController = require('../controllers/ratingController')
 const userAuth = require('../middleware/userAuth')
-const optionalUserAuth = require('../middleware/optionalUserAuth')
 const UserModel = require('../models/user')
 
 const adminOnly = async (req, res, next) => {
@@ -17,12 +16,13 @@ const adminOnly = async (req, res, next) => {
     }
 }
 
-router.post('/submit-rating', optionalUserAuth, ratingController.submitRating)
+router.post('/submit-rating', userAuth, ratingController.submitRating)
 router.get('/package/:packageId/ratings', ratingController.getPackageRatings)
 router.get('/my-ratings', userAuth, ratingController.getUserRatings)
 router.delete('/:id', userAuth, ratingController.deleteRating)
 router.get('/all-ratings', userAuth, adminOnly, ratingController.getAllRatings)
 router.put('/:id', userAuth, ratingController.updateRating)
 router.get('/average-rating/:packageId', ratingController.getAverageRating)
+router.get('/average-ratings', ratingController.getAverageRatings)
 
 module.exports = router

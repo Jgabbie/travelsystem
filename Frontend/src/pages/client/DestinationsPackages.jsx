@@ -25,11 +25,16 @@ export default function DestinationsPackages() {
             try {
                 const response = await axiosInstance.get('/package/get-packages')
                 const ratingResponse = await axiosInstance.get('/rating/average-ratings')
-                const rating = ratingResponse.data?.averageRatings || 0
 
+                const ratingMap = new Map(
+                    (ratingResponse.data?.averages || []).map((item) => [
+                        String(item.packageId),
+                        Number(item.averageRating || 0)
+                    ])
+                )
 
                 const packages = response.data.map((pkg) => {
-                    const rating = ratingResponse.data?.averageRatings || 0
+                    const rating = ratingMap.get(String(pkg._id)) || 0
 
                     return {
                         id: pkg._id,
@@ -43,6 +48,8 @@ export default function DestinationsPackages() {
                         rating
                     };
                 });
+
+                console.log('Fetched packages:', packages)
 
                 setPackages(packages)
             } catch (error) {

@@ -184,4 +184,29 @@ const getAverageRating = async (req, res) => {
     }
 };
 
-module.exports = { submitRating, getPackageRatings, deleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating }
+const getAverageRatings = async (_req, res) => {
+    try {
+        const result = await Rating.aggregate([
+            {
+                $group: {
+                    _id: "$packageId",
+                    averageRating: { $avg: "$rating" },
+                    totalRatings: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const averages = result.map((item) => ({
+            packageId: item._id,
+            averageRating: item.averageRating,
+            totalRatings: item.totalRatings
+        }));
+
+        return res.json({ averages });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { submitRating, getPackageRatings, deleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings }
