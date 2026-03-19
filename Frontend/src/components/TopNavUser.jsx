@@ -19,10 +19,59 @@ export default function TopNavUser() {
     const [isSignupVisible, setIsSignupVisible] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    //when reloading page, check if user is authenticated, authLoading is used to prevent the UI from flashing the wrong state (e.g. showing login/signup buttons briefly before auth check completes)
-    if (authLoading) {
-        return null;
-    }
+    const renderAuthControls = () => {
+        if (authLoading) {
+            return <span className="nav-auth-loading" />;
+        }
+
+        if (auth) {
+            return (
+                <>
+                    <div className="dropdown-div">
+                        <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
+                            <Space className='dropdown-space'>
+                                <div className='nav-user-avatar'>
+                                    {profileImage ? (
+                                        <img src={profileImage} alt="Profile" className='nav-user-avatar-img' />
+                                    ) : (
+                                        <div className='nav-user-avatar-placeholder'>{getInitials()}</div>
+                                    )}
+                                </div>
+                                <h4 className='username-text'>
+                                    Welcome, <span className='username-dropdown'>
+                                        {auth?.username?.toUpperCase()}
+                                    </span>
+                                </h4>
+                                <DownOutlined className='user-dropdown-icon' />
+                            </Space>
+                        </Dropdown>
+                    </div>
+
+                    <Notifications />
+                </>
+            );
+        }
+
+        return (
+            <span className="regsignin">
+                <Button
+                    className='landing-button-links'
+                    type="link"
+                    onClick={() => setIsSignupVisible(true)}
+                >
+                    SIGN UP
+                </Button>
+                |
+                <Button
+                    className='landing-button-links'
+                    type="link"
+                    onClick={() => setIsLoginVisible(true)}
+                >
+                    LOG IN
+                </Button>
+            </span>
+        );
+    };
 
     const handleOk = async () => {
         setIsModalOpen(false);
@@ -146,50 +195,7 @@ export default function TopNavUser() {
                         ))}
                     </div>
 
-                    {/* If authenticated → show user dropdown & notifications */}
-                    {auth ? (
-                        <>
-                            <div className="dropdown-div">
-                                <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
-                                    <Space className='dropdown-space'>
-                                        <div className='nav-user-avatar'>
-                                            {profileImage ? (
-                                                <img src={profileImage} alt="Profile" className='nav-user-avatar-img' />
-                                            ) : (
-                                                <div className='nav-user-avatar-placeholder'>{getInitials()}</div>
-                                            )}
-                                        </div>
-                                        <h4 className='username-text'>
-                                            Welcome, <span className='username-dropdown'>
-                                                {auth?.username?.toUpperCase()}
-                                            </span>
-                                        </h4>
-                                        <DownOutlined className='user-dropdown-icon' />
-                                    </Space>
-                                </Dropdown>
-                            </div>
-
-                            <Notifications />
-                        </>
-                    ) : (
-                        <span className="regsignin">
-                            <Button
-                                className='landing-button-links'
-                                type="link"
-                                onClick={() => setIsSignupVisible(true)}
-                            >
-                                SIGN UP
-                            </Button>
-                            |
-                            <Button
-                                className='landing-button-links'
-                                type="link"
-                                onClick={() => setIsLoginVisible(true)}
-                            >
-                                LOG IN
-                            </Button>
-                        </span>
-                    )}
+                    {renderAuthControls()}
 
                 </div>
             </nav>
