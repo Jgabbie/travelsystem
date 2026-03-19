@@ -70,11 +70,16 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 { username: values.username, password: values.password }
             )
             if (onLoginSuccess) {
-                const userRole = response.data.user?.role;
+                const userData = response.data.user;
+                const userRole = userData?.role;
                 console.log("userRole:", userRole)
                 setIsLoading(false);
 
-                setAuth({ username: values.username, role: userRole });
+                if (userData) {
+                    setAuth({ id: userData.id, username: userData.username, role: userData.role });
+                } else {
+                    setAuth({ username: values.username, role: userRole });
+                }
                 message.success('Login successful');
                 if (userRole === 'Admin') {
                     navigate('/dashboard')

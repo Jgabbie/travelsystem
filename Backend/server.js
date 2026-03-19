@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
+const cookieParser = require('cookie-parser');
 
 require('dotenv').config();
 
@@ -15,6 +16,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 let cached = global.mongoose;
 if (!cached) {
