@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input } from 'antd';
+import { Button, Modal, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
@@ -75,6 +75,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 setIsLoading(false);
 
                 setAuth({ username: values.username, role: userRole });
+                message.success('Login successful');
                 if (userRole === 'Admin') {
                     navigate('/dashboard')
                 } else {
@@ -112,6 +113,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             const errorMsg = err.response?.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
+            message.error(errorMsg);
             setIsLoading(false);
         }
     }
