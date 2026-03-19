@@ -5,15 +5,10 @@ const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const cookieParser = require('cookie-parser');
 
-const userRoutes = require('./routes/userRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
-const wishlistRoutes = require('./routes/wishlistRoutes');
-const transactionRoute = require('./routes/transactionRoute');
-const ratingRoutes = require('./routes/ratingRoutes');
-
 require('dotenv').config();
 
 const app = express();
+app.use(cookieParser());
 
 app.use(cors({
     origin: true,
@@ -22,7 +17,6 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(cookieParser());
 
 let cached = global.mongoose;
 if (!cached) {
@@ -54,11 +48,6 @@ app.get('/api/test', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/booking', bookingRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/transaction', transactionRoute);
-app.use('/api/rating', ratingRoutes);
 
 app.get('/', (req, res) => res.send('API Working'));
 
