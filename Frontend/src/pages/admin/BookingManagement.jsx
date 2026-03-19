@@ -7,6 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/booking.css";
+import { useAuth } from "../../hooks/useAuth";
 
 
 const getBase64ImageFromURL = (url) => {
@@ -39,33 +40,30 @@ export default function BookingManagement() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { auth } = useAuth();
+  const isEmployee = auth?.role === 'Employee';
+  const basePath = isEmployee ? '/employee' : '';
 
   useEffect(() => {
     const fetchBookings = async () => {
       setLoading(true);
       try {
         const response = await axiosInstance.get("/booking/all-bookings");
-        const rows = (response.data || []).map((booking) => { 
-          const details = booking.bookingDetails || {};
-          const travelerCounts = details.travelers || {};
-          const travelersTotal = Object.values(travelerCounts) 
-            .reduce((sum, value) => sum + (Number(value) || 0), 0);
 
-          const statusRaw = booking.status || "Pending"; 
-          const statusFormatted =
-            statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1); 
+        const bookings = response.data.map((b) => ({
+          key: b._id,
+          ref: b.reference || b._id,
+          username: b.userId?.username || "Customer Name",
+          pkg: b.packageId?.packageName || "Package",
+          travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM DD, YYYY') : dayjs(b.travelDate).format('MMM DD, YYYY'), //get start date
+          bookingDate: dayjs(b.createdAt).format('MMM DD, YYYY'),
+          qty: b.travelers || 0,
+          status: b.status?.charAt(0)?.toUpperCase() + b.status?.slice(1) || "Pending",
 
-          return { 
-            key: booking._id,
-            ref: booking.reference || booking._id,
-            pkg: details.packageName || "Package",
-            travelDate: details.travelDate || booking.createdAt,
-            bookingDate: booking.createdAt,
-            qty: travelersTotal || 0,
-            status: statusFormatted
-          };
-        });
-        setData(rows); 
+          bookingDetails: b.bookingDetails || {} //no booking details for now
+        }));
+
+        setData(bookings);
       } catch (error) {
         message.error("Unable to load bookings");
         setData([]);
@@ -78,11 +76,15 @@ export default function BookingManagement() {
   }, []);
 
 
-  const filteredData = useMemo(() => data.filter(item => {
+  const filteredData = data.filter(item => {
     const matchesSearch =
-      item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.pkg.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.status.toLowerCase().includes(searchText.toLowerCase());
+      (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
+      (dayjs(item.travelDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+      (dayjs(item.bookingDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.qty.toString().toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.ref.toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.pkg.toLowerCase().includes(searchText.toLowerCase())) ||
+      (item.status.toLowerCase().includes(searchText.toLowerCase()));
 
     const matchesStatus =
       statusFilter === "" || item.status === statusFilter;
@@ -100,39 +102,39 @@ export default function BookingManagement() {
       matchesStatus &&
       matchesBookingDate &&
       matchesTravelDate
-    );
-  }), [data, searchText, statusFilter, bookingDateFilter, travelDateFilter]);
+    )
+  })
+
 
   const generatePDF = async () => {
-    // Changed back to Portrait ('p') to match the size of Pic 1
-    const doc = new jsPDF('p', 'mm', 'a4'); 
-    
+    const doc = new jsPDF('p', 'mm', 'a4');
+
     const tableColumn = ["Reference", "Package", "Travel Date", "Booking Date", "Travellers", "Status"];
-    
+
     const tableRows = filteredData.map(item => [
-      item.ref, 
-      item.pkg, 
-      dayjs(item.travelDate).format("MMM DD, YYYY"), 
-      dayjs(item.bookingDate).format("MMM DD, YYYY"), 
-      item.qty, 
+      item.ref,
+      item.pkg,
+      dayjs(item.travelDate).format("MMM DD, YYYY"),
+      dayjs(item.bookingDate).format("MMM DD, YYYY"),
+      item.qty,
       item.status
     ]);
 
     try {
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
-      doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+      doc.addImage(imgData, "PNG", 14, 12, 30, 22);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+    doc.text("M&RC TRAVEL AND TOURS", 50, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
-    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
-    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
 
     doc.setDrawColor(48, 87, 151);
     doc.line(14, 38, 196, 38); // Line width reset for Portrait
@@ -220,7 +222,7 @@ export default function BookingManagement() {
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
-      navigate(`/bookings/${key}/invoice`, { state: { booking } });
+      navigate(`${basePath}/bookings/${key}/invoice`, { state: { booking } });
     }
   };
 
@@ -249,9 +251,9 @@ export default function BookingManagement() {
           okButtonProps: { className: "booking-manage-confirm-btn" },
           cancelButtonProps: { className: "booking-manage-cancel-btn" },
           style: { top: 200 },
-          onOk: async () => { 
+          onOk: async () => {
             const updatedRow = { ...newData[index], ...row };
-            if (dayjs.isDayjs(updatedRow.travelDate)) { 
+            if (dayjs.isDayjs(updatedRow.travelDate)) {
               updatedRow.travelDate = updatedRow.travelDate.format("YYYY-MM-DD");
             }
             if (dayjs.isDayjs(updatedRow.bookingDate)) {
@@ -259,11 +261,11 @@ export default function BookingManagement() {
             }
 
             try {
-              const statusValue = updatedRow.status 
+              const statusValue = updatedRow.status
                 ? updatedRow.status.toLowerCase()
                 : undefined;
 
-              const payload = { 
+              const payload = {
                 status: statusValue,
                 bookingDetails: {
                   packageName: updatedRow.pkg,
@@ -303,8 +305,9 @@ export default function BookingManagement() {
   };
 
   const columns = [
-    { title: "Reference", dataIndex: "ref" },
-    { title: "Package", dataIndex: "pkg", editable: true },
+    { title: "Booking Reference", dataIndex: "ref" },
+    { title: "Travel Package", dataIndex: "pkg", editable: true },
+    { title: "Customer Name", dataIndex: "username", editable: true },
     {
       title: "Travel Date",
       dataIndex: "travelDate",
@@ -317,7 +320,7 @@ export default function BookingManagement() {
       editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY")
     },
-    { title: "Travellers", dataIndex: "qty", editable: true },
+    { title: "Travelers", dataIndex: "qty", editable: true },
     {
       title: "Status",
       dataIndex: "status",

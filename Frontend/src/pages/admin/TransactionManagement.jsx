@@ -41,16 +41,19 @@ export default function TransactionManagement() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axiosInstance.get("/transaction/user-transactions");
+        const response = await axiosInstance.get("/transaction/all-transactions");
+
         const transactions = response.data.map((t) => ({
           key: t._id,
           ref: t.reference,
-          package: t.packageName || "",
+          username: t.userId?.username || "Unknown User",
+          package: t.packageId?.packageName || "No Package",
           date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
           price: `₱${Number(t.amount || 0).toLocaleString()}`,
-          method: t.method || "",
-          status: t.status || ""
+          method: t.method.charAt(0)?.toUpperCase() + t.method.slice(1) || "No Method",
+          status: t.status || "No Status"
         }));
+
         setData(transactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -86,6 +89,11 @@ export default function TransactionManagement() {
     );
   });
 
+  const totalTransactions = filteredData.length;
+  const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
+  const totalPending = filteredData.filter(t => t.status === "Pending").length;
+  const totalFailed = filteredData.filter(t => t.status === "Failed").length;
+
   const generatePDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const tableColumn = ["Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
@@ -100,19 +108,19 @@ export default function TransactionManagement() {
 
     try {
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
-      doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+      doc.addImage(imgData, "PNG", 14, 12, 30, 22);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+    doc.text("M&RC TRAVEL AND TOURS", 50, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
-    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
-    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
 
     doc.setDrawColor(48, 87, 151);
     doc.line(14, 38, 196, 38);
@@ -148,8 +156,6 @@ export default function TransactionManagement() {
     doc.save(`Transaction_Report_${new Date().toLocaleDateString()}.pdf`);
     message.success("Report exported to PDF successfully.");
   };
-
-  // ================= TABLE =================
 
   const isEditing = (record) => record.key === editingKey;
 
@@ -264,9 +270,11 @@ export default function TransactionManagement() {
     }
   };
 
+  // ================= TABLE =================
   const columns = [
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Travel Package", dataIndex: "package", editable: true },
+    { title: "Customer Name", dataIndex: "username", editable: true },
     {
       title: "Payment Date & Time",
       dataIndex: "date",
@@ -415,10 +423,7 @@ export default function TransactionManagement() {
     );
   };
 
-  const totalTransactions = filteredData.length;
-  const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
-  const totalPending = filteredData.filter(t => t.status === "Pending").length;
-  const totalFailed = filteredData.filter(t => t.status === "Failed").length;
+
 
   return (
     <ConfigProvider
@@ -475,7 +480,6 @@ export default function TransactionManagement() {
         </Row>
 
         <div className="transaction-actions">
-
           <Input
             prefix={<SearchOutlined />}
             placeholder="Search reference, package, method or status..."
@@ -520,12 +524,12 @@ export default function TransactionManagement() {
             onChange={(d) => setPaymentDateFilter(d)}
             allowClear
           />
-          
+
           <Space style={{ marginLeft: 'auto' }}>
-            <Button 
-              className='export-pdf-button' 
-              type="primary" 
-              icon={<FilePdfOutlined />} 
+            <Button
+              className='export-pdf-button'
+              type="primary"
+              icon={<FilePdfOutlined />}
               onClick={generatePDF}
             >
               Export to PDF
@@ -556,51 +560,89 @@ export default function TransactionManagement() {
           footer={null}
           className="transaction-view-modal"
           width={720}
-          destroyOnClose
+          style={{ top: 60 }}
         >
           {selectedTransaction && (
-            <div className="transaction-view-content">
-              <div className="transaction-view-header">
-                <div>
-                  <h2 className="transaction-view-title">Transaction Details</h2>
-                  <div className="transaction-view-subtitle">
+            <div className="receipt-container">
+              {/* Header Section */}
+              <div className="receipt-header">
+                <div className="company-info">
+
+                  <div className="header-flex-container">
+                    <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+
+                    <div className="address-details">
+                      <h2 className="brand-name">M&RC Travel and Tours</h2>
+                      <p className="sub-info">2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1</p>
+                      <p className="sub-info">Parañaque City, Philippines</p>
+                      <p className="sub-info">1709 PHL</p>
+                      <p className="sub-info">+63 969 055 4806</p>
+                      <p className="sub-info">info1@mrctravels.com</p>
+                    </div>
+                  </div>
+
+
+                </div>
+                <div className="receipt-title-box">
+                  <h1 className="receipt-title">Receipt</h1>
+                </div>
+              </div>
+
+              {/* Billing & Meta Section */}
+              <div className="receipt-meta">
+                <div className="billed-to">
+                  <span className="label-blue">Billed To</span>
+                  <h3 className="customer-name" style={{ margin: 0 }}>{selectedTransaction.username || "Customer Name"}</h3>
+                </div>
+                <div className="receipt-details">
+                  <div className="detail-item">
+                    <span className="label-blue">Receipt #</span>
                     <span>{selectedTransaction.ref}</span>
-                    <Tag
-                      color={
-                        selectedTransaction.status === "Successful"
-                          ? "green"
-                          : selectedTransaction.status === "Pending"
-                            ? "orange"
-                            : "red"
-                      }
-                    >
-                      {selectedTransaction.status}
-                    </Tag>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label-blue">Receipt date</span>
+                    <span>{selectedTransaction.date ? dayjs(selectedTransaction.date).format("DD-MM-YYYY") : "--"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="transaction-view-grid">
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Package</span>
-                  <span className="transaction-view-value">{selectedTransaction.package}</span>
+              {/* Items Table */}
+              <table className="receipt-table">
+                <thead>
+                  <tr>
+                    <th>QTY</th>
+                    <th>Description</th>
+                    <th className="text-right">Unit Price</th>
+                    <th className="text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>{selectedTransaction.package}</td>
+                    <td className="text-right">{selectedTransaction.price}</td>
+                    <td className="text-right">{selectedTransaction.price}</td>
+                  </tr>
+                  {/* Add more rows here if your transaction data has multiple items */}
+                </tbody>
+              </table>
+
+              {/* Calculation Section */}
+              <div className="receipt-summary">
+                <div className="summary-row">
+                  <span>Subtotal</span>
+                  <span>{selectedTransaction.price}</span>
                 </div>
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Payment Date</span>
-                  <span className="transaction-view-value">
-                    {selectedTransaction.date
-                      ? dayjs(selectedTransaction.date).format("MMM DD, YYYY hh:mm A")
-                      : "--"}
-                  </span>
+                <div className="summary-row total-row">
+                  <span className="label-blue">Total</span>
+                  <span className="total-amount">{selectedTransaction.price}</span>
                 </div>
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Amount</span>
-                  <span className="transaction-view-value">{selectedTransaction.price}</span>
-                </div>
-                <div className="transaction-view-item">
-                  <span className="transaction-view-label">Method</span>
-                  <span className="transaction-view-value">{selectedTransaction.method}</span>
-                </div>
+              </div>
+
+              {/* Footer Notes */}
+              <div className="receipt-footer">
+                <p className="support-text">Thank you for your purchase!</p>
+                <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
               </div>
             </div>
           )}

@@ -37,7 +37,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
     const submitOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/verify-account', { otp: getOTP, email: userEmail, username: userUsername, password: userPassword }, { withCredentials: true })
+            const response = await axiosInstance.post('/auth/verify-account', { otp: getOTP, email: userEmail, username: userUsername, password: userPassword }, { withCredentials: true })
 
             if (response.data.success || response.status === 200) {
                 setOTP("")
@@ -55,7 +55,7 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axios.post('http://localhost:8000/api/auth/send-verify-otp', { email: userEmail })
+            const response = await axiosInstance.post('/auth/send-verify-otp', { email: userEmail })
             alert("OTP sent!")
             setTimer(60)
         } catch (err) {

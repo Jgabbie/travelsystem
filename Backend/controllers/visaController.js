@@ -63,7 +63,4 @@ const getVisaApplications = async (_req, res) => {
     }
 }
 
-module.exports = {
-    applyVisa,
-    getVisaApplications
-}
+module.exports = { applyVisa, getVisaApplications }

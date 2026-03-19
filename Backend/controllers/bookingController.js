@@ -1,5 +1,4 @@
 const BookingModel = require('../models/booking')
-const PackageModel = require('../models/package')
 const CancellationModel = require('../models/cancellations')
 const logAction = require('../utils/logger')
 
@@ -9,50 +8,48 @@ const generateBookingReference = () => {
     return `BK-${timestamp}${random}`
 }
 
-const createBooking = async (req, res) => {
-    const { packageId, bookingDetails, checkoutToken } = req.body
-    const userId = req.userId
-    const { packageName } = bookingDetails || {}
+const generateCancellationReference = () => {
+    const timestamp = Date.now().toString().slice(-6)
+    const random = Math.floor(1000 + Math.random() * 9000)
+    return `CN-${timestamp}${random}`
+}
 
-    console.log(bookingDetails)
+const createBooking = async (req, res) => {
+    const { bookingPayload } = req.body
+    const userId = req.userId
+
+    console.log("Creating booking with data:", bookingPayload)
+
+    const packageId = bookingPayload.packageId
+    const travelDate = bookingPayload.travelDate
+    const bookingDate = bookingPayload.bookingDate
+    const travelers = bookingPayload.travelers
 
     //find package by name to get its id, then create booking with that package id
     try {
 
-        let finalPackageId = packageId;
-
-        if (!userId || !bookingDetails || !checkoutToken) {
+        if (!userId || !bookingPayload) {
             return res.status(400).json({ message: "Missing required fields" })
         }
 
-        const existingBooking = await BookingModel.findOne({ checkoutToken });
-        if (existingBooking) {
-            return res.status(200).json(existingBooking); // return existing booking
-        }
-
-        if (!finalPackageId && packageName) {
-            const pkg = await PackageModel.findOne({ packageName });
-            if (!pkg) {
-                return res.status(404).json({ message: "Package not found" });
-            }
-            finalPackageId = pkg._id;
-        }
-
-        if (!finalPackageId) {
-            return res.status(400).json({ message: "Package ID is required" });
-        }
+        // const existingBooking = await BookingModel.findOne({ checkoutToken });
+        // if (existingBooking) {
+        //     return res.status(200).json(existingBooking); // return existing booking
+        // }
 
         const newBooking = await BookingModel.create({
-            packageId: finalPackageId,
+            packageId,
             userId,
-            bookingDetails,
-            checkoutToken,
+            travelDate,
+            bookingDate,
+            travelers,
             reference: generateBookingReference(),
             status: 'Successful'
         })
+
         logAction('BOOKING_CREATED', userId, {
             bookingId: newBooking._id,
-            packageId: finalPackageId
+            packageId: packageId
         })
         res.status(201).json(newBooking)
     } catch (error) {
@@ -64,6 +61,8 @@ const getUserBookings = async (req, res) => {
     const userId = req.userId
     try {
         const bookings = await BookingModel.find({ userId }).sort({ createdAt: -1 })
+            .populate('userId', 'username')
+            .populate('packageId', 'packageName packageType')
         res.status(200).json(bookings)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching bookings', error })
@@ -73,6 +72,11 @@ const getUserBookings = async (req, res) => {
 const getAllBookings = async (_req, res) => {
     try {
         const bookings = await BookingModel.find({}).sort({ createdAt: -1 })
+            .populate('userId', 'username')
+            .populate('packageId', 'packageName packageType')
+
+            .sort({ createdAt: -1 });
+
         res.status(200).json(bookings)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching bookings', error })
@@ -122,8 +126,17 @@ const deleteBooking = async (req, res) => {
 
 const cancelBooking = async (req, res) => {
     const { id } = req.params
-    const { reason } = req.body
     const userId = req.userId
+    const { reason, comments } = req.body || {}
+    const uploadedFiles = Array.isArray(req.files) ? req.files : []
+    const supportingFiles = uploadedFiles.map((file) => `/uploads/${file.filename}`)
+
+
+    console.log('Cancellation form data:', {
+        reason,
+        comments,
+        filesCount: supportingFiles.length
+    });
 
     try {
         const booking = await BookingModel.findById(id)
@@ -135,12 +148,20 @@ const cancelBooking = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized to cancel this booking' })
         }
 
+        if (!reason) {
+            return res.status(400).json({ message: 'Cancellation reason is required' })
+        }
+
         booking.status = 'cancelled'
         await booking.save()
         await CancellationModel.create({
             bookingId: id,
             userId,
+            reference: generateCancellationReference(),
             cancellationReason: reason,
+            cancellationComments: comments || '',
+            cancellationDate: new Date(),
+            supportingFiles,
             status: 'Pending'
         })
         logAction('BOOKING_CANCELLED', userId, { bookingId: id, reason })

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, message, Spin, Card, Space, Rate, DatePicker, Select } from 'antd';
+import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
 import '../../style/client/profilepage.css'
+
 
 export default function ProfilePage() {
     const [userData, setUserData] = useState(null)
@@ -32,6 +33,7 @@ export default function ProfilePage() {
 
     const [recentReviews, setRecentReviews] = useState([])
     const [recentBookings, setRecentBookings] = useState([])
+    const [isLoading, setIsLoading] = useState(false);
 
     //proper case function
     const toProperCase = (value) =>
@@ -310,23 +312,314 @@ export default function ProfilePage() {
         }
     }
 
-    if (!userData) {
-        return (
-            <div className="profile-container">
-                <Card className="profile-card">
-                    <p>Unable to load profile. Please try again.</p>
-                </Card>
-            </div>
-        )
-    }
+    // if (!userData) {
+    //     return (
+    //         <div className="profile-container">
+    //             <Card className="profile-card">
+    //                 <p>Unable to load profile. Please try again.</p>
+    //             </Card>
+    //         </div>
+    //     )
+    // }
 
     return (
-        <div className="profile-page">
-            <TopNavUser />
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#305797',
+                }
+            }}
+        >
+            <div className="profile-page">
+                <TopNavUser />
 
-            <div className="profile-container">
-                <div className="profile-content">
+                {/* profile */}
+                <div className="profile-container">
+                    <div className="profile-content">
+                        <Card
+                            className="profile-card"
+                            title={
+                                <div className="profile-card-header">
+                                    <h2>My Profile</h2>
+                                    {!editing && (
+                                        <Button
+                                            type="primary"
+                                            className="profile-action-button"
+                                            icon={<EditOutlined />}
+                                            onClick={handleEdit}
+                                        >
+                                            Edit Profile
+                                        </Button>
+                                    )}
+                                </div>
+                            }
+                        >
+
+                            <div className="profile-avatar-section">
+                                <div className="profile-avatar">
+                                    {profileImage ? (
+                                        <img src={profileImage} alt="Profile" />
+                                    ) : (
+                                        <div className="profile-avatar-placeholder">{getInitials()}</div>
+                                    )}
+                                </div>
+                                {editing && (
+                                    <>
+                                        <input
+                                            ref={fileInputRef}
+                                            className="profile-avatar-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                        />
+                                        <Button
+                                            className="profile-action-button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            Change Photo
+                                        </Button>
+                                        <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="profile-fields">
+                                <div className="profile-field">
+                                    <label className="profile-label">Username</label>
+                                    <Input
+                                        placeholder="Username"
+                                        value={values.username}
+                                        disabled
+                                    />
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">First Name</label>
+                                    <Input
+                                        placeholder="Enter your first name"
+                                        allowClear
+                                        status={error.firstname ? "error" : ""}
+                                        value={values.firstname}
+                                        disabled={!editing}
+                                        onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                        onKeyDown={(e) => {
+                                            const value = e.target.value;
+                                            if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                            if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+
+                                            if (
+                                                !/^[A-Za-z ]$/.test(e.key) &&
+                                                e.key !== "Backspace" &&
+                                                e.key !== "ArrowLeft" &&
+                                                e.key !== "ArrowRight"
+                                            ) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                    />
+                                    {error.firstname && (
+                                        <p className="profile-error-message">{error.firstname}</p>
+                                    )}
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">Last Name</label>
+                                    <Input
+                                        placeholder="Enter your last name"
+                                        allowClear
+                                        status={error.lastname ? "error" : ""}
+                                        value={values.lastname}
+                                        disabled={!editing}
+                                        onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                        onKeyDown={(e) => {
+                                            const value = e.target.value;
+                                            if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                            if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                            if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                            if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                            if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                            if (
+                                                !/^[A-Za-z -]$/.test(e.key) &&
+                                                e.key !== "Backspace" &&
+                                                e.key !== "ArrowLeft" &&
+                                                e.key !== "ArrowRight"
+                                            ) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                    />
+                                    {error.lastname && (
+                                        <p className="profile-error-message">{error.lastname}</p>
+                                    )}
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">Email Address</label>
+                                    <Input
+                                        placeholder="Enter your email"
+                                        type="email"
+                                        allowClear
+                                        status={error.email ? "error" : ""}
+                                        value={values.email}
+                                        disabled={!editing}
+                                        onChange={(e) => valueHandler('email', e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === " " && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    {error.email && (
+                                        <p className="profile-error-message">{error.email}</p>
+                                    )}
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">Phone Number</label>
+                                    <Input
+                                        placeholder="Enter your phone number"
+                                        allowClear
+                                        addonBefore="+63"
+                                        status={error.phone ? "error" : ""}
+                                        value={values.phone}
+                                        disabled={!editing}
+                                        onChange={(e) => {
+                                            let value = e.target.value.replace(/\D/g, "");
+
+                                            let formatted = "";
+                                            if (value.length > 0) formatted += value.slice(0, 3);
+                                            if (value.length >= 4) formatted += " " + value.slice(3, 6);
+                                            if (value.length >= 7) formatted += " " + value.slice(6, 10);
+
+                                            valueHandler("phone", formatted)
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    {error.phone && (
+                                        <p className="profile-error-message">{error.phone}</p>
+                                    )}
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">Home Address</label>
+                                    <Input
+                                        placeholder="Enter your home address"
+                                        allowClear
+                                        value={values.homeAddress}
+                                        disabled={!editing}
+                                        onChange={(e) => valueHandler('homeAddress', e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">Gender</label>
+                                    <Select
+                                        placeholder="Select gender"
+                                        value={values.gender || undefined}
+                                        disabled={!editing}
+                                        onChange={(value) => valueHandler('gender', value || '')}
+                                        options={[
+                                            { value: 'Male', label: 'Male' },
+                                            { value: 'Female', label: 'Female' },
+                                            { value: 'Other', label: 'Other' },
+                                            { value: 'Prefer not to say', label: 'Prefer not to say' }
+                                        ]}
+                                        allowClear
+                                    />
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">Birthdate</label>
+                                    <DatePicker
+                                        placeholder="Select birthdate"
+                                        value={values.birthdate ? dayjs(values.birthdate) : null}
+                                        disabled={!editing}
+                                        onChange={(date) =>
+                                            valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
+                                        }
+                                        format="YYYY-MM-DD"
+                                        allowClear
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+
+                                <div className="profile-field">
+                                    <label className="profile-label">Nationality</label>
+                                    <Input
+                                        placeholder="Enter your nationality"
+                                        allowClear
+                                        value={values.nationality}
+                                        disabled={!editing}
+                                        onChange={(e) => valueHandler('nationality', e.target.value)}
+                                    />
+                                </div>
+
+                                {userData?.role && (
+                                    <div className="profile-field">
+                                        <label className="profile-label">Role</label>
+                                        <Input value={userData.role} disabled />
+                                    </div>
+                                )}
+                            </div>
+
+                            {userData?.isAccountVerified && (
+                                <div className="verification-status">
+                                    <p>✓ Account Verified</p>
+                                </div>
+                            )}
+
+                            {editing && (
+                                <Space>
+                                    <Button
+                                        type="primary"
+                                        className="profile-action-button"
+                                        icon={<SaveOutlined />}
+                                        onClick={handleSave}
+                                    >
+                                        Save Changes
+                                    </Button>
+                                    <Button
+                                        className="profile-cancel-button"
+                                        icon={<CloseOutlined />}
+                                        onClick={handleCancel}
+                                        disabled={saving}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Space>
+                            )}
+                        </Card>
+                    </div>
+
+
+                    {/* recent bookings and reviews */}
                     <div className="profile-side-column">
+                        <Card
+                            className="profile-side-card"
+                            title={<h3>My Recent Reviews</h3>}
+                        >
+                            {recentReviews.length === 0 ? (
+                                <p className="profile-empty-text">No reviews yet.</p>
+                            ) : (
+                                <div className="profile-review-list">
+                                    {recentReviews.map((review, index) => (
+                                        <div className="profile-review-item" key={review?._id || index}>
+                                            <div>
+                                                <p className="profile-review-title">{review?.title || 'Untitled Review'}</p>
+                                                <p className="profile-review-meta">{review?.date || 'Recently'}</p>
+                                                <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
+                                            </div>
+                                            <p className="profile-review-snippet">{review?.snippet || review?.comment || 'View review details.'}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </Card>
+
                         <Card
                             className="profile-side-card"
                             title={<h3>My Recent Bookings</h3>}
@@ -353,290 +646,8 @@ export default function ProfilePage() {
                             )}
                         </Card>
                     </div>
-
-                    <Card
-                        className="profile-card"
-                        title={
-                            <div className="profile-card-header">
-                                <h2>My Profile</h2>
-                                {!editing && (
-                                    <Button
-                                        type="primary"
-                                        className="profile-action-button"
-                                        icon={<EditOutlined />}
-                                        onClick={handleEdit}
-                                    >
-                                        Edit Profile
-                                    </Button>
-                                )}
-                            </div>
-                        }
-                    >
-
-                        <div className="profile-avatar-section">
-                            <div className="profile-avatar">
-                                {profileImage ? (
-                                    <img src={profileImage} alt="Profile" />
-                                ) : (
-                                    <div className="profile-avatar-placeholder">{getInitials()}</div>
-                                )}
-                            </div>
-                            {editing && (
-                                <>
-                                    <input
-                                        ref={fileInputRef}
-                                        className="profile-avatar-input"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                    />
-                                    <Button
-                                        className="profile-action-button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        Change Photo
-                                    </Button>
-                                    <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
-                                </>
-                            )}
-                        </div>
-
-                        <div className="profile-fields">
-                            <div className="profile-field">
-                                <label className="profile-label">Username</label>
-                                <Input
-                                    placeholder="Username"
-                                    value={values.username}
-                                    disabled
-                                />
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">First Name</label>
-                                <Input
-                                    placeholder="Enter your first name"
-                                    allowClear
-                                    status={error.firstname ? "error" : ""}
-                                    value={values.firstname}
-                                    disabled={!editing}
-                                    onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
-                                    onKeyDown={(e) => {
-                                        const value = e.target.value;
-                                        if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
-                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-
-                                        if (
-                                            !/^[A-Za-z ]$/.test(e.key) &&
-                                            e.key !== "Backspace" &&
-                                            e.key !== "ArrowLeft" &&
-                                            e.key !== "ArrowRight"
-                                        ) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                />
-                                {error.firstname && (
-                                    <p className="profile-error-message">{error.firstname}</p>
-                                )}
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">Last Name</label>
-                                <Input
-                                    placeholder="Enter your last name"
-                                    allowClear
-                                    status={error.lastname ? "error" : ""}
-                                    value={values.lastname}
-                                    disabled={!editing}
-                                    onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
-                                    onKeyDown={(e) => {
-                                        const value = e.target.value;
-                                        if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
-                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-                                        if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
-                                        if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
-                                        if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                        if (
-                                            !/^[A-Za-z -]$/.test(e.key) &&
-                                            e.key !== "Backspace" &&
-                                            e.key !== "ArrowLeft" &&
-                                            e.key !== "ArrowRight"
-                                        ) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                />
-                                {error.lastname && (
-                                    <p className="profile-error-message">{error.lastname}</p>
-                                )}
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">Email Address</label>
-                                <Input
-                                    placeholder="Enter your email"
-                                    type="email"
-                                    allowClear
-                                    status={error.email ? "error" : ""}
-                                    value={values.email}
-                                    disabled={!editing}
-                                    onChange={(e) => valueHandler('email', e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault()
-                                        }
-                                    }}
-                                />
-                                {error.email && (
-                                    <p className="profile-error-message">{error.email}</p>
-                                )}
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">Phone Number</label>
-                                <Input
-                                    placeholder="Enter your phone number"
-                                    allowClear
-                                    addonBefore="+63"
-                                    status={error.phone ? "error" : ""}
-                                    value={values.phone}
-                                    disabled={!editing}
-                                    onChange={(e) => {
-                                        let value = e.target.value.replace(/\D/g, "");
-
-                                        let formatted = "";
-                                        if (value.length > 0) formatted += value.slice(0, 3);
-                                        if (value.length >= 4) formatted += " " + value.slice(3, 6);
-                                        if (value.length >= 7) formatted += " " + value.slice(6, 10);
-
-                                        valueHandler("phone", formatted)
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                            e.preventDefault()
-                                        }
-                                    }}
-                                />
-                                {error.phone && (
-                                    <p className="profile-error-message">{error.phone}</p>
-                                )}
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">Home Address</label>
-                                <Input
-                                    placeholder="Enter your home address"
-                                    allowClear
-                                    value={values.homeAddress}
-                                    disabled={!editing}
-                                    onChange={(e) => valueHandler('homeAddress', e.target.value)}
-                                />
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">Gender</label>
-                                <Select
-                                    placeholder="Select gender"
-                                    value={values.gender || undefined}
-                                    disabled={!editing}
-                                    onChange={(value) => valueHandler('gender', value || '')}
-                                    options={[
-                                        { value: 'Male', label: 'Male' },
-                                        { value: 'Female', label: 'Female' },
-                                        { value: 'Other', label: 'Other' },
-                                        { value: 'Prefer not to say', label: 'Prefer not to say' }
-                                    ]}
-                                    allowClear
-                                />
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">Birthdate</label>
-                                <DatePicker
-                                    placeholder="Select birthdate"
-                                    value={values.birthdate ? dayjs(values.birthdate) : null}
-                                    disabled={!editing}
-                                    onChange={(date) =>
-                                        valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
-                                    }
-                                    format="YYYY-MM-DD"
-                                    allowClear
-                                    style={{ width: '100%' }}
-                                />
-                            </div>
-
-                            <div className="profile-field">
-                                <label className="profile-label">Nationality</label>
-                                <Input
-                                    placeholder="Enter your nationality"
-                                    allowClear
-                                    value={values.nationality}
-                                    disabled={!editing}
-                                    onChange={(e) => valueHandler('nationality', e.target.value)}
-                                />
-                            </div>
-
-                            {userData?.role && (
-                                <div className="profile-field">
-                                    <label className="profile-label">Role</label>
-                                    <Input value={userData.role} disabled />
-                                </div>
-                            )}
-                        </div>
-
-                        {userData?.isAccountVerified && (
-                            <div className="verification-status">
-                                <p>✓ Account Verified</p>
-                            </div>
-                        )}
-
-                        {editing && (
-                            <Space>
-                                <Button
-                                    type="primary"
-                                    className="profile-action-button"
-                                    icon={<SaveOutlined />}
-                                    onClick={handleSave}
-                                >
-                                    Save Changes
-                                </Button>
-                                <Button
-                                    className="profile-cancel-button"
-                                    icon={<CloseOutlined />}
-                                    onClick={handleCancel}
-                                    disabled={saving}
-                                >
-                                    Cancel
-                                </Button>
-                            </Space>
-                        )}
-                    </Card>
-
-                    <div className="profile-side-column">
-                        <Card
-                            className="profile-side-card"
-                            title={<h3>My Recent Reviews</h3>}
-                        >
-                            {recentReviews.length === 0 ? (
-                                <p className="profile-empty-text">No reviews yet.</p>
-                            ) : (
-                                <div className="profile-review-list">
-                                    {recentReviews.map((review, index) => (
-                                        <div className="profile-review-item" key={review?._id || index}>
-                                            <div>
-                                                <p className="profile-review-title">{review?.title || 'Untitled Review'}</p>
-                                                <p className="profile-review-meta">{review?.date || 'Recently'}</p>
-                                                <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
-                                            </div>
-                                            <p className="profile-review-snippet">{review?.snippet || review?.comment || 'View review details.'}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Card>
-                    </div>
                 </div>
-            </div>
-        </div >
+            </div >
+        </ConfigProvider>
     )
 }

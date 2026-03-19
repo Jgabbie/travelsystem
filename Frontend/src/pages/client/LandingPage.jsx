@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider } from 'antd';
+import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
-import { href, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import TopNavUser from '../../components/TopNavUser';
 import LoginModal from '../../components/modals/LoginModal';
 import '../../style/client/landingpage.css'
@@ -21,13 +21,15 @@ export default function LandingPage() {
     const [activity, setActivity] = useState('Adventure Type');
     const [type, setType] = useState('Tour Type');
     const [duration, setDuration] = useState('Length of Stay');
-    const [pax, setPax] = useState('Number of Travelers');
+    const [pax, setPax] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoginVisible, setIsLoginVisible] = useState(false)
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
     const [chatMessage, setChatMessage] = useState('')
 
-    const [modal, contextHolder] = Modal.useModal();
+    const [openModalSuccess, setOpenModalSuccess] = useState(false)
+    const [openModalError, setOpenModalError] = useState(false)
+
 
     const [contactValues, setContactValues] = useState({
         name: '',
@@ -66,6 +68,13 @@ export default function LandingPage() {
             params.set('tourType', type);
         }
 
+        if (pax) {
+            const parsedTravelers = Number.parseInt(pax, 10);
+            if (Number.isFinite(parsedTravelers)) {
+                params.set('travelers', String(parsedTravelers));
+            }
+        }
+
         params.set('minBudget', String(budgetRange[0]));
         params.set('maxBudget', String(budgetRange[1]));
 
@@ -76,20 +85,14 @@ export default function LandingPage() {
     const sendMessage = async () => {
         try {
             await axiosInstance.post('/email/contact', contactValues)
-            modal.success({
-                title: 'Message Sent',
-                content: 'Your message has been sent successfully! We will get back to you soon.',
-            });
+            setOpenModalSuccess(true)
             setContactValues({
                 name: '',
                 email: '',
                 message: '',
             })
         } catch (error) {
-            modal.error({
-                title: 'Failed to Send Message',
-                content: 'There was an error sending your message. Please try again later.',
-            });
+            setOpenModalError(true)
         }
     }
 
@@ -107,7 +110,6 @@ export default function LandingPage() {
                 },
             }}
         >
-            {contextHolder}
             <div className="landing-container">
                 <TopNavUser />
 
@@ -178,7 +180,6 @@ export default function LandingPage() {
                                 />
                             </div>
 
-
                             <div className="filter-group">
                                 <label>TOUR TYPE</label>
                                 <Select
@@ -193,6 +194,30 @@ export default function LandingPage() {
                                 />
                             </div>
 
+                            <div className="filter-group">
+                                <label>TRAVELERS</label>
+                                <InputNumber
+                                    className="landing-filter-input"
+                                    maxLength={2}
+                                    value={pax}
+                                    placeholder="Travelers"
+                                    min={1}
+                                    max={50}
+                                    onChange={(val) => {
+                                        setPax(val);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = [
+                                            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
+                                            'Tab', 'Enter', 'Escape'
+                                        ];
+
+                                        if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                />
+                            </div>
 
                             <div className="filter-group" style={{ minWidth: '200px' }}>
                                 <label>BUDGET</label>
@@ -203,7 +228,7 @@ export default function LandingPage() {
                                 <Slider
                                     range
                                     min={0}
-                                    max={50000}
+                                    max={100000}
                                     step={1000}
                                     value={budgetRange}
                                     onChange={setBudgetRange}
@@ -638,6 +663,53 @@ export default function LandingPage() {
                     </div>
                 </Modal>
             </div>
+
+            {/* success modal */}
+            <Modal
+                open={openModalSuccess}
+                className='emailverify-success-modal'
+                footer={null}
+                closable={false}
+                style={{ top: 230 }}
+            >
+                <div className='emailverify-container-modal'>
+                    <h1 className='emailverify-heading-modal'>Your message has been sent</h1>
+                    <p className='emailverify-secondary-heading-modal'>Kindly check your email for responses.</p>
+                    <Button
+                        id='emailverify-success-button'
+                        onClick={() => {
+                            setOpenModalSuccess(false)
+                            navigate('/home')
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </div>
+            </Modal>
+
+            {/* fail modal */}
+            <Modal
+                open={openModalError}
+                className='emailverify-fail-modal'
+                footer={null}
+                closable={false}
+                style={{ top: 230 }}
+            >
+                <div className='emailverify-container-modal'>
+                    <h1 className='emailverify-heading-modal'>Failed to Send Message</h1>
+                    <p className='emailverify-secondary-heading-modal'>There was an error sending your message. Please try again later.</p>
+                    <Button
+                        id='emailverify-success-button'
+                        onClick={() => {
+                            setOpenModalError(false)
+                            navigate('/home')
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </div>
+            </Modal>
+
         </ConfigProvider>
     );
 }

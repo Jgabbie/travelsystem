@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { Modal, message, Button, Input, Card, ConfigProvider } from "antd"
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import BookingRegistrationModal from "../../components/modals/BookingRegistrationModal";
-import DisplayInvoiceModal from "../../components/modals/DisplayInvoiceModal";
 import PaymentMethodsModal from "../../components/modals/PaymentMethodsModal";
 import axiosInstance from "../../config/axiosConfig";
 import '../../style/client/userquotationrequest.css'
@@ -20,7 +19,6 @@ export default function UserQuotationRequest() {
 
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false);
     const [isBookingRegistrationOpen, setIsBookingRegistrationOpen] = useState(false);
-    const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
     const [isPaymentMethodsOpen, setIsPaymentMethodsOpen] = useState(false);
     // console.log("Quotation ID from URL:", id);
 
@@ -190,12 +188,6 @@ export default function UserQuotationRequest() {
 
     const bookingRegistrationProceed = () => {
         setIsBookingRegistrationOpen(false);
-        setIsInvoiceModalOpen(true);
-    }
-
-    const invoiceProceed = () => {
-        setIsInvoiceModalOpen(false);
-        setIsPaymentMethodsOpen(true);
     }
 
     const paymentProceed = () => {
@@ -341,19 +333,6 @@ export default function UserQuotationRequest() {
                     packageName: quotation.packageName,
                     packageDuration: quotation.travelDetails?.duration || "N/A",
                     packagePricePerPax: quotation.travelDetails?.pricePerPax || 0
-                }}
-            />
-
-            <DisplayInvoiceModal
-                open={isInvoiceModalOpen}
-                onCancel={() => { setIsInvoiceModalOpen(false); }}
-                onProceed={invoiceProceed}
-                summary={{
-                    packageName: quotation.packageName,
-                    travelDetails: quotation.travelDetails,
-                    amount: 29000,
-                    method: "Online Payment",
-                    status: "Completed"
                 }}
             />
 

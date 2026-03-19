@@ -13,7 +13,7 @@ export default function Logging() {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/logs/get-logs', {
+                const response = await axiosInstance.get('/logs/get-logs', {
                     withCredentials: true
                 });
                 setLogs(response.data);

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import '../style/components/loadingscreen.css';

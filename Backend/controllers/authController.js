@@ -1,8 +1,10 @@
 const UserModel = require('../models/user');
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const path = require("path")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
+const connectToDatabase = require('../utils/mongodb');
 
 
 //signup
@@ -21,6 +23,8 @@ const signupUser = async (req, res) => {
         user.role = "User" //set the role of the new registered user
         await user.save() //save new user to database
 
+
+        //in order to send email with Logo, use hosted url
         const mailOptions = {
             from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
             to: user.email,
@@ -28,7 +32,7 @@ const signupUser = async (req, res) => {
             html: `
             <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
             <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                
+
                 <h2 style="color:#305797; margin-bottom:10px;">
                     Welcome to M&RC Travel and Tours
                 </h2>
@@ -38,11 +42,11 @@ const signupUser = async (req, res) => {
                 </p>
 
                 <p style="color:#555; font-size:15px; line-height:1.6;">
-                    Your account has been successfully created! We're excited to help you explore amazing destinations and create unforgettable travel experiences.
+                    Your account has been successfully created!
                 </p>
 
                 <p style="color:#555; font-size:15px; line-height:1.6;">
-                    You can now log in to your account and start browsing our travel packages, tours, and exclusive offers.
+                    Kindly log in to verify your account and start browsing our travel packages, tours, and exclusive offers.
                 </p>
 
                 <a href="http://localhost:3000/home"
@@ -57,7 +61,7 @@ const signupUser = async (req, res) => {
                         font-weight:bold;
                         font-size:14px;
                     ">
-                    Explore Tours
+                    Log In to Your Account
                 </a>
 
                 <p style="color:#777; font-size:13px; margin-top:30px;">
@@ -78,10 +82,9 @@ const signupUser = async (req, res) => {
 
         await transporter.sendMail(mailOptions)
 
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress; //ip???
         await logAction("USER_CREATED_ACC", user._id, { //log action for account creation
             username: user.username, email: user.email
-        }, ip);
+        });
 
         res.status(200).json({ message: "Signup Successful!", userId: user._id })
     } catch (e) {
@@ -92,10 +95,7 @@ const signupUser = async (req, res) => {
 //login
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
-
-    // Capture IP immediately for logging
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
+    await connectToDatabase();
     try {
         const user = await UserModel.findOne({ username })
         if (!user) {
@@ -104,7 +104,7 @@ const loginUser = async (req, res) => {
 
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
-            await logAction("LOGIN_FAILED", user._id, { reason: "Incorrect Password" }, ip);
+            await logAction("LOGIN_FAILED", user._id, { reason: "Incorrect Password" });
             return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
@@ -120,22 +120,22 @@ const loginUser = async (req, res) => {
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
         // Check role to determine action name
         //LOG SUCCESSFUL LOGIN
         const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : "USER_LOGIN";
-        await logAction(actionName, user._id, { username: user.username }, ip);
+        await logAction(actionName, user._id, { username: user.username });
 
         res.status(200).json({
             message: "Login Successful!",
@@ -170,8 +170,8 @@ const refreshToken = async (req, res) => {
 
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 2 * 60 * 60 * 1000
         });
 
@@ -184,6 +184,7 @@ const refreshToken = async (req, res) => {
 //check username and email duplicates
 const checkDups = async (req, res) => {
     const { username, email } = req.body
+    await connectToDatabase();
     try {
         if (username) {
             const usernameExists = await UserModel.findOne({ username })
@@ -213,8 +214,8 @@ const logoutUser = async (req, res) => {
         const { refreshToken } = req.cookies;
 
         if (!refreshToken) {
-            res.clearCookie('accessToken')
-            res.clearCookie('refreshToken')
+            res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
+            res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
             return res.status(200).json({ message: "Logged Out" })
         }
 
@@ -224,21 +225,15 @@ const logoutUser = async (req, res) => {
             await user.save()
         }
 
-        res.clearCookie('accessToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
-        res.clearCookie('refreshToken', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
-        res.clearCookie('token', { httpOnly: true, secure: false, sameSite: 'lax', path: '/' })
+        res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
+        res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
+        res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
 
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
         // Determine action based on the user found (if any)
         const actionName = (user && user.role === 'Admin') ? "ADMIN_LOGOUT" : "USER_LOGOUT";
 
-        await logAction(
-            actionName,
-            user ? user._id : null,
-            { username: user ? user.username : 'Unknown' },
-            ip
-        );
+        await logAction(actionName, user ? user._id : null, { username: user ? user.username : 'Unknown' });
 
         res.status(200).json({ message: "Logged Out" })
     }
@@ -370,15 +365,15 @@ const verifyEmail = async (req, res) => {
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'lax',
+            secure: true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
@@ -441,6 +436,7 @@ const isUserVerified = async (req, res) => {
     }
 }
 
+
 const sendResetOtp = async (req, res) => {
     const { email } = req.body
 
@@ -462,10 +458,46 @@ const sendResetOtp = async (req, res) => {
         await user.save()
 
         const mailOptions = {
-            from: process.env.SENDER_EMAIL,
+            from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
             to: user.email,
-            subject: 'Password Reset OTP',
-            text: `Your OTP for resetting your password is ${otp}. Use this OTP to proceed with resetting your password.`
+            subject: 'M&RC Travel and Tours - Password Reset OTP',
+            html: `
+            <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                    
+                    <h2 style="color:#305797; margin-bottom:10px;">
+                        M&RC Travel and Tours
+                    </h2>
+
+                    <p style="color:#555; font-size:16px;">
+                        Reset your password using the OTP below
+                    </p>
+
+                    <div style="
+                        margin:25px 0;
+                        font-size:32px;
+                        font-weight:bold;
+                        letter-spacing:8px;
+                        color:#992A46;
+                        background:#f9fafb;
+                        padding:15px;
+                        border-radius:8px;
+                        border:1px dashed #ddd;
+                    ">
+                        ${otp}
+                    </div>
+
+                    <p style="color:#777; font-size:14px;">
+                        This OTP will expire in <b>5 minutes</b>.
+                    </p>
+
+                    <p style="color:#aaa; font-size:12px; margin-top:30px;">
+                        If you did not request this password reset, please ignore this email.
+                    </p>
+
+                </div>
+            </div>
+            `
         }
 
         await transporter.sendMail(mailOptions)
@@ -498,7 +530,7 @@ const checkResetOtp = async (req, res) => {
     user.resetOtp = ''
     user.resetOtpExpireAt = ''
 
-    await user.save
+    await user.save()
 
     return res.status(200).json({ message: "You can now reset your password", resetToken })
 }
@@ -533,8 +565,7 @@ const resetPassword = async (req, res) => {
 
         await user.save()
 
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        await logAction("PASSWORD_CHANGE", user._id, { method: "Reset via Email" }, ip);
+        await logAction("PASSWORD_CHANGE", user._id, { method: "Reset via Email" });
 
         return res.status(200).json({ message: "Password has been reset successfully" })
 

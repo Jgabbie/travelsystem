@@ -23,7 +23,18 @@ export default function UserPackageQuotation() {
             setLoading(true);
             try {
                 const response = await axiosInstance.get('/quotation/my-quotations');
-                setQuotations(response.data || []);
+
+                const quotations = response.data.map(q => ({
+                    key: q.id,
+                    reference: q.reference,
+                    packageName: q.packageName,
+                    travelers: q.travelDetails.travelers,
+                    requestedDate: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
+                    status: q.status,
+                    createdAt: q.createdAt
+                }));
+
+                setQuotations(quotations);
             } catch (error) {
                 console.error('Error fetching quotations:', error);
                 setQuotations([]);
@@ -41,42 +52,20 @@ export default function UserPackageQuotation() {
 
     }
 
-    const dataSource = useMemo(() => quotations.map((quotation) => {
-        const travelDetails = quotation.travelDetails || {}
+    const filteredDataSource = quotations.filter(item => {
+        const matchesSearch =
+            (item.reference?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.packageName?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.status?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.travelers.toString().includes(searchText)) ||
+            (dayjs(item.createdAt).format('MMM D, YYYY').toLowerCase().includes(searchText.toLowerCase()))
 
-        return {
-            key: quotation._id,
-            reference: quotation.reference || quotation._id,
-            packageName: quotation.packageName || "N/A",
-            travelers: travelDetails.travelers || 0,
-            status: quotation.status || "Pending",
-            requestedDate: quotation.createdAt ? new Date(quotation.createdAt).toLocaleDateString() : '--'
-        }
-    }), [quotations])
+        const matchesStatus = !statusFilter || item.status === statusFilter;
 
-    const filteredDataSource = useMemo(() =>
-        quotations
-            .filter(q => {
-                const matchesSearch =
-                    q.reference?.toLowerCase().includes(searchText.toLowerCase()) ||
-                    q.packageName?.toLowerCase().includes(searchText.toLowerCase()) ||
-                    q.status?.toLowerCase().includes(searchText.toLowerCase());
+        const matchesDate = !quotationDateFilter || dayjs(item.createdAt).isSame(quotationDateFilter, 'day');
 
-                const matchesStatus = !statusFilter || q.status === statusFilter;
-
-                const matchesDate = !quotationDateFilter || dayjs(q.createdAt).isSame(quotationDateFilter, 'day');
-
-                return matchesSearch && matchesStatus && matchesDate;
-            })
-            .map(q => ({
-                key: q._id,
-                reference: q.reference || q._id,
-                packageName: q.packageName || "N/A",
-                travelers: q.travelDetails?.travelers || 0,
-                requestedDate: q.createdAt ? dayjs(q.createdAt).format('MMM D, YYYY') : '--',
-                status: q.status || "Pending"
-            }))
-        , [quotations, searchText, statusFilter, quotationDateFilter]);
+        return matchesSearch && matchesStatus && matchesDate;
+    })
 
     const columns = [
         {

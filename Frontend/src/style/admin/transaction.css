@@ -31,17 +31,6 @@
   box-shadow: none !important;
 }
 
-@media (max-width: 768px) {
-  .transaction-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-input {
-    width: 100%;
-  }
-}
-
 .editbutton-transactionmanagement,
 .viewbutton-transactionmanagement {
   border-color: #305797;
@@ -88,20 +77,8 @@
   color: #fff !important;
 }
 
-.exportbutton-transactionmanagement {
-  border-color: #305797;
-  color: #305797 !important;
-  background-color: #fff !important;
-}
-
-.exportbutton-transactionmanagement:hover {
-  background-color: #305797 !important;
-  color: #fff !important;
-}
-
 .savebutton-transactionmanagement,
-.cancelbutton-transactionmanagement,
-.exportbutton-transactionmanagement {
+.cancelbutton-transactionmanagement {
   box-shadow: none !important;
 }
 
@@ -165,6 +142,137 @@
   font-size: 14px;
   color: #1f2a44;
   font-weight: 600;
+}
+
+/* receipt format */
+.receipt-container {
+  padding: 20px;
+  font-family: 'Helvetica', sans-serif;
+  color: #333;
+}
+
+.receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+.receipt-company-logo {
+  width: 80px;
+  height: auto;
+  margin-bottom: 12px;
+}
+
+.header-flex-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.brand-name {
+  color: #374151;
+  font-weight: 700;
+  margin: 0;
+}
+
+.sub-info {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.receipt-title {
+  color: #374151;
+  font-size: 24px;
+  margin: 0;
+}
+
+.label-blue {
+  color: #374151;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.receipt-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.receipt-table th {
+  background-color: #374151;
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+.receipt-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.receipt-summary {
+  width: 40%;
+  margin-left: auto;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.total-row {
+  border-top: 2px solid #374151;
+  border-bottom: 2px solid #374151;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.total-amount {
+  color: #374151;
+  font-size: 18px;
+}
+
+.receipt-footer {
+  margin-top: 50px;
+  font-size: 12px;
+  color: #666;
+}
+
+.support-text {
+  font-weight: 600;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .transaction-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+  }
 }
 
 @media (max-width: 576px) {

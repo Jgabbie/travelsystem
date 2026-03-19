@@ -15,6 +15,7 @@ export default function DestinationsPackages() {
     const [selectedTags, setSelectedTags] = useState([])
     const [tourType, setTourType] = useState('All')
     const [daysValue, setDaysValue] = useState(3)
+    const [travelersValue, setTravelersValue] = useState(null)
 
     const { Title, Text } = Typography
 
@@ -23,27 +24,34 @@ export default function DestinationsPackages() {
         const fetchPackages = async () => {
             try {
                 const response = await axiosInstance.get('/package/get-packages')
+                const ratingResponse = await axiosInstance.get('/rating/average-ratings')
 
-                const mapped = (response.data || []).map(async (pkg) => {
-                    const ratingResponse = await axiosInstance.get(`/rating/average-rating/${pkg._id}`)
-                    const rating = ratingResponse.data?.averageRating || 0
+                const ratingMap = new Map(
+                    (ratingResponse.data?.averages || []).map((item) => [
+                        String(item.packageId),
+                        Number(item.averageRating || 0)
+                    ])
+                )
 
-                    console.log(rating)
+                const packages = response.data.map((pkg) => {
+                    const rating = ratingMap.get(String(pkg._id)) || 0
 
                     return {
                         id: pkg._id,
                         title: pkg.packageName,
-                        location: pkg.packageType === 'international' ? 'International' : 'Philippines',
                         type: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
                         budget: pkg.packagePricePerPax,
-                        rating,
+                        availableSlots: pkg.packageAvailableSlots || 0,
                         images: pkg.images && pkg.images.length > 0 ? pkg.images[0] : '',
-                        tags: pkg.packageTags || []
-                    }
-                })
+                        tags: pkg.packageTags || [],
+                        rating
+                    };
+                });
 
-                setPackages(await Promise.all(mapped))
+                console.log('Fetched packages:', packages)
+
+                setPackages(packages)
             } catch (error) {
                 console.error('Failed to load packages:', error)
                 setPackages([])
@@ -64,6 +72,7 @@ export default function DestinationsPackages() {
         const minBudget = Number(params.get('minBudget'))
         const maxBudget = Number(params.get('maxBudget'))
         const maxDays = Number(params.get('maxDays'))
+        const travelers = Number(params.get('travelers'))
 
         if (query !== null) {
             setSearch(query)
@@ -77,7 +86,6 @@ export default function DestinationsPackages() {
             setTourType(tourTypeParam)
         }
 
-
         // it checks first if the min and max budget values are integers or values then , set the budget range
         if (Number.isFinite(minBudget) && Number.isFinite(maxBudget)) {
             setBudgetRange([
@@ -89,6 +97,10 @@ export default function DestinationsPackages() {
         // same as the budget range, check if the max days is an integer then set the days value
         if (Number.isFinite(maxDays)) {
             setDaysValue(maxDays)
+        }
+
+        if (Number.isFinite(travelers) && travelers > 0) {
+            setTravelersValue(travelers)
         }
     }, [location.search])
 
@@ -104,37 +116,35 @@ export default function DestinationsPackages() {
     }, [packages])
 
 
-    const filteredPackages = useMemo(() => {
-        const query = search.trim().toLowerCase()
-        return packages.filter((pkg) => {
-            const matchesSearch =
-                query.length === 0 ||
-                pkg.title.toLowerCase().includes(query) ||
-                pkg.location.toLowerCase().includes(query)
+    const filteredPackages = packages.filter((item) => {
+        const matchesSearch =
+            (item.id.toLowerCase().includes(search.toLowerCase())) ||
+            (item.title.toLowerCase().includes(search.toLowerCase())) ||
+            (item.type.toLowerCase().includes(search.toLowerCase())) ||
+            (item.days.toLowerCase().includes(search.toLowerCase())) ||
+            (item.budget.toString().toLowerCase().includes(search.toLowerCase())) ||
+            (item.availableSlots.toString().toLowerCase().includes(search.toLowerCase())) ||
+            (item.tags?.some((tag) => tag.toLowerCase().includes(search.toLowerCase())))
 
-            const matchesBudget =
-                pkg.budget >= budgetRange[0] && pkg.budget <= budgetRange[1]
+        const matchesBudget =
+            item.budget >= budgetRange[0] && item.budget <= budgetRange[1]
 
-            const matchesTags =
-                selectedTags.length === 0 ||
-                selectedTags.every((tag) =>
-                    pkg.tags?.includes(tag)
-                )
-
-            const matchesType = tourType === 'All' || pkg.type === tourType
-
-            const matchesDays =
-                pkg.days >= 1 && pkg.days <= daysValue
-
-            return (
-                matchesSearch &&
-                matchesBudget &&
-                matchesTags &&
-                matchesType &&
-                matchesDays
+        const matchesTags =
+            selectedTags.length === 0 ||
+            selectedTags.every((tag) =>
+                item.tags?.includes(tag)
             )
-        })
-    }, [packages, search, budgetRange, selectedTags, tourType, daysValue])
+
+        const matchesType = tourType === 'All' || item.type === tourType
+
+        const matchesDays =
+            item.days >= 1 && item.days <= daysValue
+
+        const matchesTravelers =
+            !Number.isFinite(travelersValue) || travelersValue <= 0 || item.availableSlots >= travelersValue
+
+        return matchesSearch && matchesBudget && matchesTags && matchesType && matchesDays && matchesTravelers
+    })
 
 
     return (
@@ -230,7 +240,7 @@ export default function DestinationsPackages() {
                                 </div>
                             </Col>
 
-                            <Col xs={24} md={12} xl={6}>
+                            <Col xs={24} md={12} xl={5}>
                                 <div className="filter-field">
                                     <Text className="destinations-label">Tags</Text>
                                     <Select
@@ -248,7 +258,7 @@ export default function DestinationsPackages() {
                                 </div>
                             </Col>
 
-                            <Col xs={24} md={12} xl={6}>
+                            <Col xs={24} md={12} xl={4}>
                                 <div className="filter-field">
                                     <Text className="destinations-label">Tour Type</Text>
                                     <Select
@@ -264,7 +274,30 @@ export default function DestinationsPackages() {
                                 </div>
                             </Col>
 
-                            <Col xs={24} md={12} xl={6}>
+                            <Col xs={24} md={12} xl={4}>
+                                <div className="filter-field">
+                                    <Text className="destinations-label">Travelers</Text>
+                                    <InputNumber
+                                        className='destinations-inputs'
+                                        maxLength={2}
+                                        min={1}
+                                        max={50}
+                                        placeholder="How many travellers?"
+                                        value={travelersValue}
+                                        onChange={(value) => setTravelersValue(value ?? null)}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                                                e.preventDefault()
+                                            }
+                                        }}
+                                    />
+                                    <Text className="filter-hint">
+                                        Show packages with available slots for your group size
+                                    </Text>
+                                </div>
+                            </Col>
+
+                            <Col xs={24} md={12} xl={5}>
                                 <div className="filter-field">
                                     <Text className="destinations-label">Days of Tour</Text>
                                     <div className="filter-range-inputs">
@@ -295,6 +328,7 @@ export default function DestinationsPackages() {
                                     </Text>
                                 </div>
                             </Col>
+
                         </Row>
                     </div>
 
@@ -324,7 +358,7 @@ export default function DestinationsPackages() {
                                                 <Title level={5} className="destinations-card-title">
                                                     {pkg.title}
                                                 </Title>
-                                                <Text type="secondary">{pkg.location}</Text>
+                                                <Text type="secondary">{pkg.type}</Text>
                                             </div>
                                             <Tag className="destinations-rating">⭐ {pkg.rating}</Tag>
                                         </div>
@@ -339,9 +373,18 @@ export default function DestinationsPackages() {
                                         </div>
                                         <div className="destinations-card-footer">
                                             <Text className="destinations-price">
-                                                ₱{pkg.budget.toLocaleString()}
+                                                ₱{(
+                                                    Number.isFinite(travelersValue) && travelersValue > 0
+                                                        ? pkg.budget * travelersValue
+                                                        : pkg.budget
+                                                ).toLocaleString()}
+                                                {Number.isFinite(travelersValue) && travelersValue > 0
+                                                    ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
+                                                    : ''}
                                             </Text>
-                                            <Text className="destinations-budget">Budget</Text>
+                                            <Text className="destinations-budget">
+                                                {Number.isFinite(travelersValue) && travelersValue > 0 ? 'Total Budget' : 'Budget / Pax'}
+                                            </Text>
                                         </div>
                                     </Card>
                                 </Col>

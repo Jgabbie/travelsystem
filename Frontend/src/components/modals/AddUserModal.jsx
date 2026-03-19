@@ -148,7 +148,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                 delete payload.confirmPassword;
             }
 
-            await axios.post('http://localhost:8000/api/user/createUsers', payload, {
+            await axiosInstance.post('/user/createUsers', payload, {
                 withCredentials: true
             });
 

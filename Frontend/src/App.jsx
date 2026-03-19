@@ -17,16 +17,23 @@ import NewPassport from "./pages/client/NewPassport";
 import RenewPassport from "./pages/client/RenewPassport";
 import ApplyVisa from "./pages/client/ApplyVisa";
 import BookingProcess from "./pages/client/BookingProcess";
+import PaymentProcess from "./pages/client/PaymentProcess";
+import SuccessfulBooking from "./pages/client/SuccessfulBooking";
+import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
+import PackageInternationalQuotation from "./pages/client/PackageInternationalQuotation";
 
 import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
 
 import AdminLayout from "./components/AdminLayout";
+import EmployeeLayout from "./components/EmployeeLayout";
 import BookingManagement from "./pages/admin/BookingManagement";
 import UploadBookingInvoice from "./pages/admin/UploadBookingInvoice";
 import UserManagement from "./pages/admin/UserManagement";
 import PackageManagement from "./pages/admin/PackageManagement";
 import AddPackage from "./pages/admin/AddPackage";
+import AddPackageDomestic from "./pages/admin/AddPackageDomestic";
+import AddPackageInternational from "./pages/admin/AddPackageInternational";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import TransactionManagement from "./pages/admin/TransactionManagement";
 import ReviewRatings from "./pages/admin/ReviewRatings";
@@ -43,6 +50,7 @@ import PublicRoute from "./routes/PublicRoute";
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
+import EmployeeRoute from "./routes/EmployeeRoute";
 
 
 import "antd/dist/reset.css";
@@ -68,12 +76,12 @@ function App() {
             <Route path='/package/:id' element={<PackagePage />} />
           </Route>
 
-          {/* public routes */}
+
           <Route element={<PublicRoute />}>
             <Route path='/reset-password' element={<ResetPassword />} />
           </Route>
 
-          {/* admin routes */}
+
           <Route element={<AdminRoute />}>
             <Route element={<AdminLayout />}>
               <Route index element={<Navigate to="/dashboard" />} />
@@ -84,7 +92,11 @@ function App() {
               <Route path="transactions" element={<TransactionManagement />} />
               <Route path="packages" element={<PackageManagement />} />
               <Route path="packages/add" element={<AddPackage />} />
+              <Route path="packages/add/domestic" element={<AddPackageDomestic />} />
+              <Route path="packages/add/international" element={<AddPackageInternational />} />
               <Route path="/packages/edit/:id" element={<AddPackage />} />
+              <Route path="/packages/edit/domestic/:id" element={<AddPackageDomestic />} />
+              <Route path="/packages/edit/international/:id" element={<AddPackageInternational />} />
               <Route path="ratings" element={<ReviewRatings />} />
               <Route path="visa-applications" element={<VisaApplications />} />
               <Route path="visa-services" element={<VisaServices />} />
@@ -95,13 +107,41 @@ function App() {
               <Route path="adminprofile" element={<AdminProfile />} />
               <Route path="package-quotation" element={<QuotationManagement />} />
               <Route path="quotation/:id" element={<QuotationRequest />} />
-              {/* logging and auditing routes */}
+
               <Route path="logging" element={<Logging />} />
               <Route path="auditing" element={<Auditing />} />
             </Route>
           </Route>
 
-          {/* protected routes */}
+
+          <Route element={<EmployeeRoute />}>
+            <Route path="/employee" element={<EmployeeLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="bookings" element={<BookingManagement />} />
+              <Route path="bookings/:id/invoice" element={<UploadBookingInvoice />} />
+              <Route path="transactions" element={<TransactionManagement />} />
+              <Route path="packages" element={<PackageManagement />} />
+              <Route path="packages/add" element={<AddPackage />} />
+              <Route path="packages/edit/:id" element={<AddPackage />} />
+              <Route path="packages/add/domestic" element={<AddPackageDomestic />} />
+              <Route path="packages/add/international" element={<AddPackageInternational />} />
+              <Route path="packages/edit/domestic/:id" element={<AddPackageDomestic />} />
+              <Route path="packages/edit/international/:id" element={<AddPackageInternational />} />
+              <Route path="ratings" element={<ReviewRatings />} />
+              <Route path="package-quotation" element={<QuotationManagement />} />
+              <Route path="quotation/:id" element={<QuotationRequest />} />
+              <Route path="adminprofile" element={<AdminProfile />} />
+              <Route path="visa-services" element={<VisaServices />} />
+              <Route path="visa-services/add" element={<AddService />} />
+              <Route path="visa-services/edit/:id" element={<AddService />} />
+              <Route path="visa-applications" element={<VisaApplications />} />
+              <Route path="passport-applications" element={<PassportApplications />} />
+              <Route path="cancellation-requests" element={<CancellationRequests />} />
+            </Route>
+          </Route>
+
+
           <Route element={<ProtectedRoute />}>
             <Route path='/profile' element={<ProfilePage />} />
             <Route path='/user-bookings' element={<UserBookings />} />
@@ -111,12 +151,16 @@ function App() {
             <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
             <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
             <Route path='/booking-process' element={<BookingProcess />} />
+            <Route path='/booking-payment' element={<PaymentProcess />} />
+            <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
+            <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
+            <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
           </Route>
 
           <Route path='*' element={<Navigate to="/home" replace />} />
         </Routes>
       </BookingProvider>
-    </div>
+    </div >
   );
 }
 

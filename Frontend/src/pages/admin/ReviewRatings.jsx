@@ -34,7 +34,7 @@ export default function ReviewRatings() {
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState("");
     const [ratingFilter, setRatingFilter] = useState(null);
-    const [dateRange, setDateRange] = useState([null, null]);
+    const [dateFilter, setDateFilter] = useState(null);
 
     // Fetch ratings
     useEffect(() => {
@@ -69,6 +69,38 @@ export default function ReviewRatings() {
         fetchRatings();
     }, []);
 
+    // Filtered ratings
+    const filteredRatings = ratings.filter((item) => {
+        const matchesSearch =
+            (item.user.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.packageName.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.comment.toLowerCase().includes(searchText.toLowerCase())) ||
+            (dayjs(item.date).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.rating.toString().toLowerCase().includes(searchText.toLowerCase()));
+
+        const matchesRating = ratingFilter ? item.rating === ratingFilter : true;
+
+        const matchesDate = !dateFilter ||
+            (item.date && dayjs(item.date).isSame(dateFilter, "day"));
+
+        return matchesSearch && matchesRating && matchesDate;
+    });
+
+    const averageRating = useMemo(() => {
+        if (!ratings.length) return null;
+        const total = ratings.reduce((sum, item) => sum + (item.rating || 0), 0);
+        return (total / ratings.length).toFixed(1);
+    }, [ratings]);
+
+    const latestReview = useMemo(() => {
+        if (!ratings.length) return "—";
+        const sortedByDate = ratings
+            .filter(item => item.date)
+            .sort((a, b) => b.date.valueOf() - a.date.valueOf());
+        const latest = sortedByDate[0]?.date;
+        return latest ? dayjs(latest).format("MMM D, YYYY") : "—";
+    }, [ratings]);
+
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["User", "Package", "Rating", "Comment", "Date"];
@@ -82,19 +114,19 @@ export default function ReviewRatings() {
 
         try {
             const imgData = await getBase64ImageFromURL("/images/Logo.png");
-            doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+            doc.addImage(imgData, "PNG", 14, 12, 30, 22);
         } catch (e) {
             console.warn("Logo not found at /public/images/Logo.png");
         }
 
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+        doc.text("M&RC TRAVEL AND TOURS", 50, 18);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
-        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
-        doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
+        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
+        doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
 
         doc.setDrawColor(48, 87, 151);
         doc.line(14, 38, 196, 38);
@@ -151,36 +183,33 @@ export default function ReviewRatings() {
         });
     };
 
-    // Filtered ratings
-    const filteredRatings = ratings.filter((r) => {
-        const matchesSearch =
-            r.user.toLowerCase().includes(searchText.toLowerCase()) ||
-            r.packageName.toLowerCase().includes(searchText.toLowerCase());
-
-        const matchesRating = ratingFilter ? r.rating === ratingFilter : true;
-
-        const matchesDate =
-            dateRange[0] && dateRange[1]
-                ? r.date && r.date.isBetween(dateRange[0], dateRange[1], null, "[]")
-                : true;
-
-        return matchesSearch && matchesRating && matchesDate;
-    });
-
     // Table columns
     const columns = [
-        { title: "User", dataIndex: "user", key: "user" },
-        { title: "Package", dataIndex: "packageName", key: "packageName" },
         {
-            title: "Rating",
+            title: "Customer Name",
+            dataIndex: "user",
+            key: "user"
+        },
+        {
+            title: "Travel Package",
+            dataIndex: "packageName",
+            key: "packageName"
+        },
+        {
+            title: "Customer Ratings",
             dataIndex: "rating",
             key: "rating",
             render: (rating) =>
                 rating ? `${rating} Stars` : <Tag color="default">—</Tag>,
         },
-        { title: "Comment", dataIndex: "comment", key: "comment", ellipsis: true },
         {
-            title: "Date",
+            title: "Customer Comments",
+            dataIndex: "comment",
+            key: "comment",
+            ellipsis: true
+        },
+        {
+            title: "Review Date",
             dataIndex: "date",
             key: "date",
             render: (date) =>
@@ -200,20 +229,6 @@ export default function ReviewRatings() {
         },
     ];
 
-    const averageRating = useMemo(() => {
-        if (!ratings.length) return null;
-        const total = ratings.reduce((sum, r) => sum + (r.rating || 0), 0);
-        return (total / ratings.length).toFixed(1);
-    }, [ratings]);
-
-    const latestReview = useMemo(() => {
-        if (!ratings.length) return "—";
-        const sortedByDate = ratings
-            .filter(r => r.date)
-            .sort((a, b) => b.date.valueOf() - a.date.valueOf());
-        const latest = sortedByDate[0]?.date;
-        return latest ? dayjs(latest).format("MMM D, YYYY") : "—";
-    }, [ratings]);
 
     return (
         <ConfigProvider
@@ -268,27 +283,26 @@ export default function ReviewRatings() {
 
                     <Select
                         className="reviewratings-select"
-                        placeholder="Filter by Rating"
-                        style={{ width: 300 }}
+                        placeholder="Rating"
+                        style={{ width: 160 }}
                         allowClear
                         value={ratingFilter}
                         onChange={(value) => setRatingFilter(value)}
                         options={[1, 2, 3, 4, 5].map((r) => ({ label: `${r} Stars`, value: r }))}
                     />
 
-                    <RangePicker
-                        className="reviewratings-date-filter"
-                        style={{ width: 300 }}
+                    <DatePicker
+                        placeholder="Review Date"
+                        value={dateFilter}
+                        onChange={(date) => setDateFilter(date)}
                         allowClear
-                        value={dateRange}
-                        onChange={(dates) => setDateRange(dates || [null, null])}
                     />
 
                     <Space style={{ marginLeft: 'auto' }}>
-                        <Button 
-                            className='export-pdf-button' 
-                            type="primary" 
-                            icon={<FilePdfOutlined />} 
+                        <Button
+                            className='export-pdf-button'
+                            type="primary"
+                            icon={<FilePdfOutlined />}
                             onClick={generatePDF}
                         >
                             Export to PDF

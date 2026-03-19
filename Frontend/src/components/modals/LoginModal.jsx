@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, Spin } from 'antd';
+import { Button, Modal, Input, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
-import EmailVerifyModal from './EmailVerifyModal';
 import LoadingScreen from '../LoadingScreen';
 import { useAuth } from '../../hooks/useAuth';
 import axiosInstance from '../../config/axiosConfig';
@@ -29,7 +28,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const [errorOTP, setErrorOTP] = useState("")
     const [getOTP, setOTP] = useState("")
     const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
-
 
     //start timer when OTP modal opens
     useEffect(() => {
@@ -72,11 +70,17 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 { username: values.username, password: values.password }
             )
             if (onLoginSuccess) {
-                const userRole = response.data.user?.role;
+                const userData = response.data.user;
+                const userRole = userData?.role;
                 console.log("userRole:", userRole)
                 setIsLoading(false);
 
-                setAuth({ username: values.username, role: userRole });
+                if (userData) {
+                    setAuth({ id: userData.id, username: userData.username, role: userData.role });
+                } else {
+                    setAuth({ username: values.username, role: userRole });
+                }
+                message.success('Login successful');
                 if (userRole === 'Admin') {
                     navigate('/dashboard')
                 } else {
@@ -87,6 +91,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 onLoginSuccess()
                 clearForm()
             }
+
+            setIsLoading(false);
 
         } catch (err) {
 
@@ -105,11 +111,15 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     const errorMsg = error.response?.data?.message || "Verification failed"
                     console.error("Error: ", errorMsg)
                     setError(errorMsg)
+                    setIsLoading(false);
+                    return
                 }
             }
             const errorMsg = err.response?.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
+            message.error(errorMsg);
+            setIsLoading(false);
         }
     }
 
@@ -137,7 +147,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axiosInstance.post('auth/send-verify-otp', { email: email })
+            await axiosInstance.post('auth/send-verify-otp', { email: email })
             alert("OTP sent!")
             setTimer(60)
         } catch (err) {
@@ -185,7 +195,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         <div>
             <LoadingScreen isVisible={isLoading} message="Logging in..." onComplete={() => console.log("Loading complete")} />
 
-
             <Modal
                 open={isOpenLogin}
                 className='login-modal'
@@ -226,8 +235,12 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             <div className='login-div-input-fields-modal'>
                                 <label className='login-labels-modal' htmlFor="username">Username</label>
                                 <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                    if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
-                                        e.preventDefault()
+                                    if (e.key === " " || e.key === "Backspace") {
+                                        return;
+                                    }
+
+                                    if (!/^[A-Za-z0-9]+$/.test(e.key)) {
+                                        e.preventDefault();
                                     }
                                 }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
                             </div>
@@ -275,16 +288,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     </Button>
                 </div>
             </Modal>
-
-
-            {/* <EmailVerifyModal
-                isOpenOTPModal={isOTPModalVisible}
-                isCloseOTPModal={() => setIsOTPModalVisible(false)}
-                userEmail={email}
-                userUsername={values.username}
-                userPassword={values.password}
-            />
- */}
 
         </div >
     )

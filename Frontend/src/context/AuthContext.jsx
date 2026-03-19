@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../config/axiosConfig';
 
-//use axiosInstance to make the code cleaner
+
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {

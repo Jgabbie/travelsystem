@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
+import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, DatePicker, Tabs } from "antd";
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
+import dayjs from "dayjs";
 import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/quotationmanagement.css";
+import { useAuth } from "../../hooks/useAuth";
 
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
@@ -27,6 +29,8 @@ const getBase64ImageFromURL = (url) => {
 export default function QuotationManagement() {
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [dateFilter, setDateFilter] = useState(null)
+    const [activeTab, setActiveTab] = useState("all");
 
     const [editingKey, setEditingKey] = useState("");
     const [form] = Form.useForm();
@@ -35,42 +39,25 @@ export default function QuotationManagement() {
     const [data, setData] = useState([]);
 
     const navigate = useNavigate()
+    const { auth } = useAuth()
+    const isEmployee = auth?.role === 'Employee'
+    const basePath = isEmployee ? '/employee' : ''
 
     useEffect(() => {
         const fetchQuotations = async () => {
             setLoading(true);
             try {
                 const response = await axiosInstance.get("/quotation/all-quotations")
-                const rows = (response.data || []).map((quote) => {
-                    const details = quote.travelDetails || {};
-                    const travelers = details.travelers || 0;
-                    const preferredAirlines = details.preferredAirlines || "N/A";
-                    const preferredHotels = details.preferredHotels || "N/A";
-                    const budgetRange = details.budgetRange || "N/A";
-                    const itineraryNotes = details.itineraryNotes || "N/A";
-                    const additionalComments = details.additionalComments || "N/A";
-                    const quoteStatus = quote.status || "Pending";
-                    const quoteRef = quote.reference || "N/A";
-                    const quotePackageName = quote.packageName || "N/A";
-                    const quoteCustomerName = quote.userName || "N/A";
-                    const dateRequested = quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : "N/A";
-
-                    return {
-                        key: quote._id,
-                        ref: quoteRef,
-                        travelers: travelers,
-                        preferredAirlines: preferredAirlines,
-                        preferredHotels: preferredHotels,
-                        budgetRange: budgetRange,
-                        itineraryNotes: itineraryNotes,
-                        additionalComments: additionalComments,
-                        status: quoteStatus,
-                        customerName: quoteCustomerName,
-                        packageName: quotePackageName,
-                        dateRequested: dateRequested
-                    };
-                });
-                setData(rows);
+                const quotations = response.data.map((q) => ({
+                    key: q._id,
+                    ref: q.reference,
+                    packageName: q.packageName,
+                    customerName: q.userName,
+                    dateRequested: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
+                    travelers: q.travelDetails.travelers,
+                    status: q.status
+                }))
+                setData(quotations);
             } catch (error) {
                 console.error("Error fetching quotations:", error);
             } finally {
@@ -80,6 +67,164 @@ export default function QuotationManagement() {
 
         fetchQuotations();
     }, []);
+
+    const filteredData = data.filter(item => {
+        const matchesSearch =
+            (item.ref?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.customerName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.packageName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.status?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.travelers?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            dayjs(item.dateRequested).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase());
+
+        const matchesStatus = statusFilter === "" || item.status === statusFilter;
+
+        const matchesDate = !dateFilter ||
+            (item.dateRequested && dayjs(item.dateRequested).isSame(dateFilter, "day"));
+
+        return matchesSearch && matchesStatus && matchesDate;
+    });
+
+    const totals = data.length
+    const pending = data.filter((item) => item.status === 'Pending').length
+    const approved = data.filter((item) => item.status === 'Approved').length
+    const rejected = data.filter((item) => item.status === 'Rejected').length
+
+    const generatePDF = async () => {
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        // Headers updated to match your screenshot exactly
+        const tableColumn = [
+            "Quotation Request No.",
+            "Package Name",
+            "Date Requested",
+            "Customer Name",
+            "Travelers",
+            "Status"
+        ];
+
+        const tableRows = filteredData.map(item => [
+            item.ref,
+            item.packageName,
+            item.dateRequested,
+            item.customerName,
+            item.travelers,
+            item.status
+        ]);
+
+        try {
+            const imgData = await getBase64ImageFromURL("/images/Logo.png");
+            doc.addImage(imgData, "PNG", 14, 12, 30, 22);
+        } catch (e) {
+            console.warn("Logo not found at /public/images/Logo.png");
+        }
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("M&RC TRAVEL AND TOURS", 50, 18);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
+        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
+        doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
+
+        doc.setDrawColor(48, 87, 151);
+        doc.line(14, 38, 196, 38);
+
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(48, 87, 151);
+        doc.text("QUOTATION MANAGEMENT REPORT", 14, 48);
+
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
+
+        let tableStartY = 62;
+        if (searchText) {
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Search Criteria: "${searchText}"`, 14, 62);
+            tableStartY = 68;
+        }
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: tableStartY,
+            styles: { fontSize: 7.5 },
+            headStyles: { fillColor: [48, 87, 151] },
+            alternateRowStyles: { fillColor: [245, 247, 250] },
+            margin: { left: 14, right: 14 }
+        });
+
+        doc.save(`Quotation_Report_${new Date().toLocaleDateString()}.pdf`);
+        message.success("Report exported to PDF successfully.");
+    };
+
+    const columns = [
+        {
+            title: "Quotation Request No.",
+            dataIndex: "ref",
+            key: "ref"
+        },
+        {
+            title: "Package Name",
+            dataIndex: "packageName",
+            key: "packageName"
+        },
+        {
+            title: "Customer Name",
+            dataIndex: "customerName",
+            key: "customerName"
+        },
+        {
+            title: "Date Requested",
+            dataIndex: "dateRequested",
+            key: "dateRequested"
+        },
+        {
+            title: "Travelers",
+            dataIndex: "travelers",
+            key: "travelers"
+        },
+        {
+            title: "Status",
+            dataIndex: "status",
+            render: (status) => {
+                const color =
+                    status === "Accepted" ? "green" :
+                        status === "Pending" ? "orange" :
+                            status === "Under Review" ? "blue" :
+                                status === "Revision Requested" ? "purple" :
+                                    "red";
+
+                return <Tag color={color}>{status}</Tag>;
+            }
+        },
+        {
+            title: "Actions",
+            render: (text, record) => (
+                <Space>
+                    <Button
+                        className="quotation-view"
+                        type="primary"
+                        icon={<EyeOutlined />}
+                        onClick={() => handleView(record.key)}
+                        disabled={editingKey !== ""}
+                    />
+                    <Button
+                        className="quotation-reject"
+                        type="primary"
+                        icon={<CloseCircleOutlined />}
+                        onClick={() => edit(record)}
+                        disabled={editingKey !== ""}
+                    />
+                </Space>
+            )
+        }
+    ];
 
     const isEditing = (record) => record.key === editingKey;
 
@@ -131,146 +276,15 @@ export default function QuotationManagement() {
         const quotation = data.find((item) => item.key === key);
         if (quotation) {
             console.log("Viewing quotation:", quotation);
-            navigate(`/quotation/${key}`);
+            navigate(`${basePath}/quotation/${key}`);
         }
     }
-
-    const filteredData = useMemo(() => (
-        data.filter((item) => {
-            const matchesSearch =
-                item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.packageName.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.customerName.toLowerCase().includes(searchText.toLowerCase()) ||
-                item.status.toLowerCase().includes(searchText.toLowerCase());
-
-            const matchesStatus =
-                statusFilter === "" || item.status === statusFilter;
-
-            return matchesSearch && matchesStatus;
-        })
-    ), [data, searchText, statusFilter]);
-
-    const generatePDF = async () => {
-        const doc = new jsPDF('p', 'mm', 'a4');
-        
-        // Headers updated to match your screenshot exactly
-        const tableColumn = [
-            "Quotation Request No.", 
-            "Package Name", 
-            "Date Requested", 
-            "Customer Name", 
-            "Travelers", 
-            "Status"
-        ];
-        
-        const tableRows = filteredData.map(item => [
-            item.ref,
-            item.packageName,
-            item.dateRequested,
-            item.customerName,
-            item.travelers,
-            item.status
-        ]);
-
-        try {
-            const imgData = await getBase64ImageFromURL("/images/Logo.png");
-            doc.addImage(imgData, "PNG", 14, 12, 22, 22);
-        } catch (e) {
-            console.warn("Logo not found at /public/images/Logo.png");
-        }
-
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.text("M&RC TRAVEL AND TOURS", 40, 18);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8);
-        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
-        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
-        doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
-
-        doc.setDrawColor(48, 87, 151);
-        doc.line(14, 38, 196, 38);
-
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(48, 87, 151);
-        doc.text("QUOTATION MANAGEMENT REPORT", 14, 48);
-
-        doc.setFontSize(9);
-        doc.setTextColor(100);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
-
-        let tableStartY = 62;
-        if (searchText) {
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Search Criteria: "${searchText}"`, 14, 62);
-            tableStartY = 68;
-        }
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: tableStartY,
-            styles: { fontSize: 7.5 },
-            headStyles: { fillColor: [48, 87, 151] },
-            alternateRowStyles: { fillColor: [245, 247, 250] },
-            margin: { left: 14, right: 14 }
-        });
-
-        doc.save(`Quotation_Report_${new Date().toLocaleDateString()}.pdf`);
-        message.success("Report exported to PDF successfully.");
-    };
 
     const totalRequests = filteredData.length;
     const totalPending = filteredData.filter((item) => item.status === "Pending").length;
     const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
     const totalAccepted = filteredData.filter(item => item.status === "Accepted").length;
     const totalExpired = filteredData.filter(item => item.status === "Expired").length;
-
-    const columns = [
-        { title: "Quotation Request No.", dataIndex: "ref" },
-        { title: "Package Name", dataIndex: "packageName" },
-        { title: "Date Requested", dataIndex: "dateRequested" },
-        { title: "Customer Name", dataIndex: "customerName" },
-        { title: "Travelers", dataIndex: "travelers" },
-        {
-            title: "Status",
-            dataIndex: "status",
-            render: (status) => {
-                const color =
-                    status === "Accepted" ? "green" :
-                        status === "Pending" ? "orange" :
-                            status === "Under Review" ? "blue" :
-                                status === "Revision Requested" ? "purple" :
-                                    "red";
-
-                return <Tag color={color}>{status}</Tag>;
-            }
-        },
-        {
-            title: "Actions",
-            render: (text, record) => (
-                <Space>
-                    <Button
-                        className="quotation-view"
-                        type="primary"
-                        icon={<EyeOutlined />}
-                        onClick={() => handleView(record.key)}
-                        disabled={editingKey !== ""}
-                    />
-                    <Button
-                        className="quotation-reject"
-                        type="primary"
-                        icon={<CloseCircleOutlined />}
-                        onClick={() => edit(record)}
-                        disabled={editingKey !== ""}
-                    />
-                </Space>
-            )
-        }
-    ];
 
     const mergedColumns = columns.map((col) => {
         if (!col.editable) {
@@ -319,6 +333,17 @@ export default function QuotationManagement() {
         >
             <div className="quotation-management-container">
                 <h1 className="page-header">Quotation Management</h1>
+
+                <Tabs
+                    activeKey={activeTab}
+                    onChange={setActiveTab}
+                    style={{ marginBottom: 16 }}
+                    items={[
+                        { key: "all", label: "All Requests" },
+                        { key: "domestic", label: "Domestic" },
+                        { key: "international", label: "International" },
+                    ]}
+                />
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={6}>
@@ -385,6 +410,13 @@ export default function QuotationManagement() {
                         ]}
                     />
 
+                    <DatePicker
+                        placeholder="Request Date"
+                        value={dateFilter}
+                        onChange={(date) => setDateFilter(date)}
+                        allowClear
+                    />
+
                     <Space style={{ marginLeft: 'auto' }}>
                         <Button
                             className='export-pdf-button'
@@ -405,10 +437,10 @@ export default function QuotationManagement() {
                                     cell: EditableCell
                                 }
                             }}
-                            columns={mergedColumns}
+                            columns={columns}
                             dataSource={filteredData}
                             loading={loading}
-                            pagination={{ pageSize: 6 }}
+                            pagination={{ pageSize: 10 }}
                             rowClassName={"editable-row"}
                             scroll={{ x: "max-content" }}
                         />

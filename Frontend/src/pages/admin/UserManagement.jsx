@@ -15,7 +15,9 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import AddUserModal from "../../components/modals/AddUserModal";
+import axiosInstance from '../../config/axiosConfig';
 import "../../style/admin/users.css";
+
 
 // HELPER: Converts Logo.png to Base64
 const getBase64ImageFromURL = (url) => {
@@ -51,7 +53,7 @@ export default function UserManagement() {
   const getUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8000/api/user/getUsers", { withCredentials: true });
+      const response = await axiosInstance.get('/user/getUsers', { withCredentials: true });
       const formattedData = response.data.map(user => ({
         key: user._id,
         id: user._id,
@@ -147,7 +149,7 @@ export default function UserManagement() {
       okType: "danger",
       onOk: async () => {
         try {
-          await axios.delete(`http://localhost:8000/api/user/deleteUsers`, { data: { id }, withCredentials: true });
+          await axiosInstance.delete('/user/deleteUsers', { data: { id }, withCredentials: true });
           message.success("User deleted");
           getUsers();
         } catch { message.error("Delete failed"); }
@@ -163,7 +165,7 @@ export default function UserManagement() {
   const save = async (key) => {
     try {
       const row = await form.validateFields();
-      await axios.put(`http://localhost:8000/api/admin/editUser/${key}`, row, { withCredentials: true });
+      await axiosInstance.put(`/admin/editUser/${key}`, row, { withCredentials: true });
       setEditingKey("");
       getUsers();
       message.success("User updated");

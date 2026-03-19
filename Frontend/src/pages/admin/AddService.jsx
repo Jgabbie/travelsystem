@@ -4,10 +4,14 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/addservice.css";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export default function AddService() {
     const navigate = useNavigate();
+    const { auth } = useAuth();
+    const isEmployee = auth?.role === 'Employee';
+    const basePath = isEmployee ? '/employee' : '';
     const { id } = useParams();
     const isEdit = Boolean(id);
 
@@ -122,7 +126,7 @@ export default function AddService() {
         } else {
             await axiosInstance.post("/services/create-service", payload);
         }
-        navigate("/visa-services");
+        navigate(`${basePath}/visa-services`);
     };
 
     const priceFormat = (value) => {
@@ -147,7 +151,7 @@ export default function AddService() {
 
             } catch (error) {
                 message.error("Failed to load service details.");
-                navigate("/visa-services");
+                navigate(`${basePath}/visa-services`);
             }
         }
 
@@ -167,7 +171,7 @@ export default function AddService() {
                 <Card className="add-service-form">
                     <div className="add-service-header-container">
                         <h1>{isEdit ? "Edit Visa Service" : "Add Visa Service"}</h1>
-                        <Button className="back-add-service-button" onClick={() => navigate("/visa-services")}>
+                        <Button className="back-add-service-button" onClick={() => navigate(`${basePath}/visa-services`)}>
                             Back to Visa Services
                         </Button>
                     </div>

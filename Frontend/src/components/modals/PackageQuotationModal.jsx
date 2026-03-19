@@ -3,8 +3,6 @@ import { Modal, Input, InputNumber, Slider, Button, message, Select } from 'antd
 import '../../style/components/modals/packagequotationmodal.css'
 import axiosInstance from '../../config/axiosConfig'
 
-
-
 const buildItineraryLabels = (itinerary, days) => {
     if (Array.isArray(itinerary) && itinerary.length) {
         return itinerary.map((label, index) => label || `Day ${index + 1}`)

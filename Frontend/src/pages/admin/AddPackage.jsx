@@ -5,12 +5,16 @@ import axiosInstance from "../../config/axiosConfig";
 import '../../style/admin/addpackage.css';
 import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
+import { useAuth } from "../../hooks/useAuth";
 
 const { RangePicker } = DatePicker;
 
 export default function AddPackage() {
 
   const navigate = useNavigate();
+  const { auth } = useAuth();
+  const isEmployee = auth?.role === 'Employee';
+  const basePath = isEmployee ? '/employee' : '';
 
   const { id } = useParams();
   const fileInputRef = useRef(null)
@@ -395,7 +399,7 @@ export default function AddPackage() {
       } else {
         await axiosInstance.post("/package/add-package", payload);
       }
-      navigate("/packages");
+      navigate(`${basePath}/packages`);
     } catch (err) {
       setBackEndErrors(err.response?.data || err.message);
       console.error("Failed to save package:", err);
@@ -509,7 +513,7 @@ export default function AddPackage() {
         <Card className={'add-package-form'}>
           <div className="add-package-header-container">
             <h1>{isEdit ? "Edit Package" : "Add Package"}</h1>
-            <Button className="back-add-package-button" onClick={() => { navigate("/packages") }}>Back to Package Management</Button>
+            <Button className="back-add-package-button" onClick={() => { navigate(`${basePath}/packages`) }}>Back to Package Management</Button>
           </div>
 
           <div className="add-package-container">
@@ -981,6 +985,9 @@ export default function AddPackage() {
               ))}
             </Card>
             <p className="add-package-error-message">{errors.itineraries}</p>
+
+
+
 
             <h2 className="section-headers">Package Image</h2>
             {/* PACKAGE IMAGE UPLOAD */}

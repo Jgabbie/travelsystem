@@ -3,6 +3,14 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+.visaapplications-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 .approve-visa-application {
     border-color: #167a30;
     background-color: #fff !important;

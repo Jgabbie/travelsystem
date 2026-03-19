@@ -1,21 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
-.package-actions {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  align-items: center;
-}
 
 .package-management-card {
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
-}
-
-.package-search-input {
-  width: 795px;
 }
 
 .package-card {
@@ -66,11 +55,18 @@
   flex: 1;
 }
 
+
+/* package actions */
 .package-actions {
   display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  width: 795px;
 }
 
 .search-input,
@@ -82,6 +78,9 @@
   font-size: 14px !important;
   box-shadow: none !important;
 }
+
+
+
 
 .package-info {
   display: flex;
@@ -119,14 +118,12 @@
 }
 
 .viewdetails-package-button,
-.edit-package-button,
-.add-package-button {
+.edit-package-button {
   border-color: #305797;
   background-color: #fff !important;
   color: #305797 !important;
 }
 
-.add-package-button:hover,
 .viewdetails-package-button:hover,
 .edit-package-button:hover {
   background-color: #305797 !important;
@@ -295,17 +292,6 @@
   font-size: 15px;
   font-weight: 600;
   color: #1f2a44;
-}
-
-/* remove hover/focus shadow */
-.add-package-button {
-  box-shadow: none !important;
-}
-
-
-.add-package-button:hover,
-.add-package-button:focus {
-  box-shadow: none !important;
 }
 
 
