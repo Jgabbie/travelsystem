@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider } from "antd";
+import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Input } from "antd";
 import { UploadOutlined, SendOutlined } from "@ant-design/icons";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import axiosInstance from "../../config/axiosConfig";
 import QuotationFormDetails from "../../components/quotationform/QuotationFormDetails";
 import QuotationFormInEx from "../../components/quotationform/QuotationFormInEx";
@@ -10,11 +12,14 @@ import QuotationFormTermsConditions from "../../components/quotationform/Quotati
 export default function QuotationRequest() {
     const { id } = useParams(); // quotation ID from URL
     const [quotation, setQuotation] = useState(null);
+    const [adminName, setAdminName] = useState(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewURL, setPreviewURL] = useState(null);
     const [previewStep, setPreviewStep] = useState(0);
+    const [autoUploaded, setAutoUploaded] = useState(false);
+    const pdfContainerRef = useRef(null);
 
     useEffect(() => {
         const fetchQuotation = async () => {
@@ -28,8 +33,52 @@ export default function QuotationRequest() {
             }
         };
 
+        const getAdminName = async () => {
+            try {
+                const response = await axiosInstance.get(`/user/data`, { withCredentials: true })
+                const adminNameFirstName = response.data.userData.firstname;
+                const adminNameLastName = response.data.userData.lastname;
+                const adminName = `${adminNameFirstName} ${adminNameLastName}`;
+
+                setAdminName(adminName);
+                // Do something with the admin name if needed
+            } catch (error) {
+                console.error("Error fetching admin name:", error);
+            }
+        };
+
         fetchQuotation();
+        getAdminName();
     }, [id]);
+
+
+
+    console.log("Fetched quotation:", quotation);
+
+
+    const packageName = quotation?.packageName || "N/A";
+    const hotel = quotation?.travelDetails?.preferredHotels || "N/A";
+    const airline = quotation?.travelDetails?.preferredAirlines || "N/A";
+    const travelDates = quotation?.travelDetails?.preferredDates || "N/A";
+    const travelers = quotation?.travelDetails?.travelers || "N/A";
+    const inclusions = quotation?.packageId?.packageInclusions || [];
+    const exclusions = quotation?.packageId?.packageExclusions || [];
+    const itinerary = quotation?.packageId?.packageItineraries || {};
+
+    const coordinatorName = adminName || "N/A";
+
+    const quotationData = {
+        packageName,
+        hotel,
+        airline,
+        travelDates,
+        travelers,
+        inclusions,
+        exclusions,
+        itinerary,
+        coordinatorName
+    };
+
 
     if (loading)
         return <Spin size="large" style={{ margin: "50px auto", display: "block" }} />;
@@ -41,15 +90,22 @@ export default function QuotationRequest() {
     const previewItems = [
         {
             title: "Quotation Form Preview",
-            content: <QuotationFormDetails />,
+            content: <QuotationFormDetails
+                quotationData={quotationData}
+            />,
         },
         {
             title: "Quotation Inclusions & Itinerary",
-            content: <QuotationFormInEx />,
+            content: <QuotationFormInEx
+                quotationData={quotationData}
+
+            />,
         },
         {
             title: "Quotation Terms & Conditions",
-            content: <QuotationFormTermsConditions />,
+            content: <QuotationFormTermsConditions
+                quotationData={quotationData}
+            />,
         },
     ];
 
@@ -92,6 +148,66 @@ export default function QuotationRequest() {
         }
     };
 
+    const generateAndUploadPdf = async () => {
+        if (!pdfContainerRef.current) return;
+
+        const pages = Array.from(pdfContainerRef.current.querySelectorAll("[data-quotation-page]"));
+        if (!pages.length) return;
+
+        setUploading(true);
+        try {
+            const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+
+            for (let i = 0; i < pages.length; i += 1) {
+                const canvas = await html2canvas(pages[i], {
+                    scale: 1,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                });
+
+                const imgData = canvas.toDataURL("image/jpeg", 1.0);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                const renderHeight = Math.min(imgHeight, pdfHeight);
+
+                pdf.setFillColor(255, 255, 255);
+                pdf.rect(0, 0, pdfWidth, pdfHeight, "F");
+                pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, renderHeight);
+
+                if (i < pages.length - 1) {
+                    pdf.addPage();
+                }
+            }
+
+            const pdfBlob = pdf.output("blob");
+            const formData = new FormData();
+            formData.append("pdf", pdfBlob, `quotation-${id}.pdf`);
+
+            await axiosInstance.post(`/quotation/${id}/upload-pdf`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            setAutoUploaded(true);
+            message.success("Quotation PDF generated and uploaded.");
+        } catch (error) {
+            console.error("Auto upload error:", error);
+            message.error("Failed to auto-upload PDF.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleNextPreview = async () => {
+        const nextStep = Math.min(previewItems.length - 1, previewStep + 1);
+
+        if (nextStep === previewItems.length - 1 && !autoUploaded) {
+            await generateAndUploadPdf();
+        }
+
+        setPreviewStep(nextStep);
+    };
+
     return (
         <ConfigProvider
             theme={{
@@ -103,26 +219,88 @@ export default function QuotationRequest() {
             <div>
                 <div>
                     <h1 style={{ margin: 20 }}>Initial Quotation Request</h1>
-                    <Card title={`Quotation Details - ${quotation.reference}`} style={{ margin: 20 }}>
-                        <Descriptions bordered column={1}>
-                            <Descriptions.Item label="Package Name">{quotation.packageName}</Descriptions.Item>
-                            <Descriptions.Item label="Customer Name">{quotation.userName}</Descriptions.Item>
-                            <Descriptions.Item label="Travelers">{details.travelers || "N/A"}</Descriptions.Item>
-                            <Descriptions.Item label="Preferred Airlines">{details.preferredAirlines || "N/A"}</Descriptions.Item>
-                            <Descriptions.Item label="Preferred Hotels">{details.preferredHotels || "N/A"}</Descriptions.Item>
-                            <Descriptions.Item label="Budget Range">{details.budgetRange ? `₱${details.budgetRange.join(" - ")}` : "N/A"}</Descriptions.Item>
-                            <Descriptions.Item label="Itinerary Notes">
-                                {itineraryNotes.length === 0
-                                    ? "N/A"
-                                    : itineraryNotes.map((note, index) => (
-                                        <div key={index}><strong>Day {index + 1}:</strong> {note}</div>
-                                    ))
-                                }
-                            </Descriptions.Item>
-                            <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
-                            <Descriptions.Item label="Status">{quotation.status}</Descriptions.Item>
-                        </Descriptions>
+                    <div style={{ display: "flex", gap: 20, flexWrap: "wrap", margin: 20 }}>
+                        <Card
+                            title={`Quotation Details - ${quotation.reference}`}
+                            style={{ flex: "1 1 360px", margin: 0 }}
+                        >
+                            <Descriptions bordered column={1}>
+                                <Descriptions.Item label="Package Name">{quotation.packageName}</Descriptions.Item>
+                                <Descriptions.Item label="Customer Name">{quotation.userName}</Descriptions.Item>
+                                <Descriptions.Item label="Travelers">{details.travelers || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Preferred Airlines">{details.preferredAirlines || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Preferred Hotels">{details.preferredHotels || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Budget Range">{details.budgetRange ? `₱${details.budgetRange.join(" - ")}` : "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Itinerary Notes">
+                                    {itineraryNotes.length === 0
+                                        ? "N/A"
+                                        : itineraryNotes.map((note, index) => (
+                                            <div key={index}><strong>Day {index + 1}:</strong> {note}</div>
+                                        ))
+                                    }
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Status">{quotation.status}</Descriptions.Item>
+                            </Descriptions>
+                        </Card>
+
+                        <Card
+                            title="Package Details"
+                            style={{ flex: "1 1 360px", margin: 0 }}
+                        >
+                            <Descriptions bordered column={1}>
+                                <Descriptions.Item label="Itineraries">
+                                    {quotation.packageId?.packageItineraries ? (
+                                        Object.entries(quotation.packageId.packageItineraries).map(
+                                            ([day, activities], index) => (
+                                                <div key={index}>
+                                                    <strong>{day.toUpperCase()}:</strong>
+                                                    {activities.map((act, i) => (
+                                                        <div key={i} style={{ marginLeft: "10px" }}>
+                                                            - {act}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )
+                                        )
+                                    ) : (
+                                        "N/A"
+                                    )}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Inclusions">
+                                    {quotation.packageId?.packageInclusions?.length > 0 ? (
+                                        quotation.packageId.packageInclusions.map((inclusion, index) => (
+                                            <div key={index}>{inclusion}</div>
+                                        ))
+                                    ) : (
+                                        "N/A"
+                                    )}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Exclusions">
+                                    {quotation.packageId?.packageExclusions?.length > 0 ? (
+                                        quotation.packageId.packageExclusions.map((exclusion, index) => (
+                                            <div key={index}>{exclusion}</div>
+                                        ))
+                                    ) : (
+                                        "N/A"
+                                    )}
+                                </Descriptions.Item>
+                            </Descriptions>
+                        </Card>
+                    </div>
+
+                    <Card title="Quotation Input" style={{ margin: 20 }}>
+                        <div>
+                            <Input.TextArea placeholder="Enter quotation details..." rows={4} />
+                            <Input placeholder="Bag in allowance" rows={4} style={{ marginTop: 10 }} />
+                            <Upload>
+                                <Button icon={<UploadOutlined />} style={{ marginTop: 10 }}>
+                                    Upload Ticket Images
+                                </Button>
+                            </Upload>
+                        </div>
                     </Card>
+
 
                     <Card title={previewItems[previewStep].title} style={{ margin: 20 }}>
                         {previewItems[previewStep].content}
@@ -135,13 +313,28 @@ export default function QuotationRequest() {
                             </Button>
                             <Button
                                 type="primary"
-                                onClick={() => setPreviewStep((prev) => Math.min(previewItems.length - 1, prev + 1))}
+                                onClick={handleNextPreview}
                                 disabled={previewStep === previewItems.length - 1}
                             >
                                 Next
                             </Button>
                         </div>
                     </Card>
+                </div>
+
+                <div
+                    ref={pdfContainerRef}
+                    style={{ position: "absolute", left: -9999, top: 0, width: 800 }}
+                >
+                    <div data-quotation-page>
+                        <QuotationFormDetails quotationData={quotationData} />
+                    </div>
+                    <div data-quotation-page>
+                        <QuotationFormInEx quotationData={quotationData} />
+                    </div>
+                    <div data-quotation-page>
+                        <QuotationFormTermsConditions quotationData={quotationData} />
+                    </div>
                 </div>
 
 
@@ -182,15 +375,17 @@ export default function QuotationRequest() {
                 </Card>
 
                 <Card title="Quotation Revision History" style={{ margin: 20 }}>
-                    {quotation.pdfRevisions?.length === 0 ? (
+                    {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
                         <p>No PDF revisions uploaded yet.</p>
                     ) : (
-                        quotation.pdfRevisions.map((rev, index) => (
-                            <div key={index} style={{ marginBottom: "10px" }}>
-                                <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
-                                <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
-                            </div>
-                        ))
+                        quotation.pdfRevisions
+                            .filter((rev) => rev?.url)
+                            .map((rev, index) => (
+                                <div key={index} style={{ marginBottom: "10px" }}>
+                                    <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
+                                    <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                                </div>
+                            ))
                     )}
                 </Card>
 

@@ -142,6 +142,7 @@ export default function PackageInternationalQuotation() {
                     travelers,
                     preferredAirlines,
                     preferredHotels,
+                    preferredDates,
                     budgetRange,
                     itineraryNotes,
                     additionalComments
@@ -457,6 +458,7 @@ export default function PackageInternationalQuotation() {
                             className="quotation-modal-button"
                             onClick={() => {
                                 setIsBookingSuccessOpen(false);
+                                navigate('/user-package-quotation');
                             }}>
                             OK
                         </Button>

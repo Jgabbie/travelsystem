@@ -65,7 +65,6 @@ export default function PackageManagement() {
       onOk: async () => {
         try {
           const response = await axiosInstance.delete(`/package/remove-package/${id}`);
-          console.log("Package removed:", response.data);
           message.success("Package removed successfully");
           getPackages();
         } catch (error) {
@@ -105,11 +104,7 @@ export default function PackageManagement() {
     return matchesType && matchesAvailability && matchesSearch;
   });
 
-
   const totalPackages = packagesData.length;
-
-  //check if packagesData has data
-  console.log("Fetched Packages Data:", packagesData);
 
   return (
     <ConfigProvider

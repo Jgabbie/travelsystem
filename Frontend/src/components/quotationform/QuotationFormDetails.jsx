@@ -1,40 +1,70 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Input, Upload, Button, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
-export default function QuotationFormDetails() {
+export default function QuotationFormDetails({ quotationData }) {
+    const [flightImageA, setFlightImageA] = useState('');
+    const [flightImageB, setFlightImageB] = useState('');
+
+    const handleImageUpload = (file, setImage) => {
+        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isJpgOrPng) {
+            message.error('Only JPG or PNG files are allowed.');
+            return Upload.LIST_IGNORE;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            setImage(reader.result?.toString() || '');
+        };
+        reader.readAsDataURL(file);
+
+        return false;
+    };
+
     const packageRows = [
-        { label: 'TRAVEL PACKAGE', value: '5D4N ALL IN JAPAN PACKAGE', emphasis: true },
-        { label: 'TRAVEL DATES', value: 'MARCH 31 - APRIL 4, 2025' },
-        { label: 'HOTEL', value: 'HOTEL HILLARYS' },
-        { label: 'ROOM/S (NO./TYPE)', value: '1 STUDIO TWIN ROOM' },
-        { label: 'AIRLINE', value: 'VIA AIR ASIA' },
-        { label: 'BAGGAGE ALLOWANCE', value: 'HANDCARRY: 1PC. 7KGS/PERSON | CHECK IN: N/A' },
+        { label: 'TRAVEL PACKAGE', value: quotationData.packageName, emphasis: true },
+        { label: 'TRAVEL DATES', value: quotationData.travelDates },
+        { label: 'HOTEL', value: quotationData.hotel },
+        {
+            label: 'ROOM/S (NO./TYPE)',
+            value: (
+                <Input
+                    size="small"
+                    className="mrc-tour-details-input"
+                    placeholder="1 STUDIO TWIN ROOM"
+                />
+            )
+        },
+        { label: 'AIRLINE', value: quotationData.airline },
+        {
+            label: 'BAGGAGE ALLOWANCE',
+            value: (
+                <Input
+                    size="small"
+                    className="mrc-tour-details-input"
+                    placeholder="HANDCARRY: 1PC. 7KGS/PERSON | CHECK IN: N/A"
+                />
+            )
+        },
         { label: 'PH TRAVEL TAX OF PHP 1620', value: 'EXCLUDED', danger: true },
         { label: 'AIRPORT TERMINAL FEE', value: 'INCLUDED' },
         {
             label: 'TOTAL RATE PER PERSON (QUOTED FOR A MINIMUM OF 3 | VAT EXCLUSIVE)',
-            value: 'ADULTS: PHP 46,888/PAX',
+            value: (
+                <Input
+                    size="small"
+                    className="mrc-tour-details-input"
+                    placeholder="ADULTS: PHP 46,888/PAX"
+                />
+            ),
             emphasis: true,
         },
     ];
 
-    const flights = [
-        {
-            title: 'Onward - 1 Flight(s)',
-            route: 'Manila to Osaka',
-            airline: 'Philippines AirAsia',
-            flightNo: 'Z2 188',
-            date: '31 Mar, 08:10 - 31 Mar, 13:15',
-        },
-        {
-            title: 'Return - 1 Flight(s)',
-            route: 'Osaka to Manila',
-            airline: 'Philippines AirAsia',
-            flightNo: 'Z2 189',
-            date: '04 Apr, 14:15 - 04 Apr, 17:20',
-        },
-    ];
+    const flights = [];
 
     return (
         <div className="mrc-overlay-wrapper">
@@ -47,7 +77,7 @@ export default function QuotationFormDetails() {
                     <p>Dear Ma&apos;am/ Sir,</p>
                     <p>
                         Greetings from M&amp;RC Travel and Tours! We are pleased to offer our quotation for your
-                        JAPAN TRIP on below schedule. Rates are as follows:
+                        {" " + quotationData.packageName} on below schedule. Rates are as follows:
                     </p>
                 </div>
 
@@ -80,6 +110,49 @@ export default function QuotationFormDetails() {
                                 <div className="mrc-flight-date">{flight.date}</div>
                             </div>
                         ))}
+                        {flights.length === 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flexWrap: 'wrap' }}>
+                                <div>
+                                    {flightImageA ? (
+                                        <img
+                                            src={flightImageA}
+                                            alt="Flight Upload 1"
+                                            style={{ width: 240, height: 150, objectFit: 'cover', borderRadius: 8 }}
+                                        />
+                                    ) : (
+                                        <Upload
+                                            showUploadList={false}
+                                            beforeUpload={(file) => handleImageUpload(file, setFlightImageA)}
+                                            accept=".jpg,.jpeg,.png"
+                                        >
+                                            <Button icon={<UploadOutlined />}>
+                                                Upload Flight Image 1
+                                            </Button>
+                                        </Upload>
+                                    )}
+                                </div>
+
+                                <div>
+                                    {flightImageB ? (
+                                        <img
+                                            src={flightImageB}
+                                            alt="Flight Upload 2"
+                                            style={{ width: 240, height: 150, objectFit: 'cover', borderRadius: 8 }}
+                                        />
+                                    ) : (
+                                        <Upload
+                                            showUploadList={false}
+                                            beforeUpload={(file) => handleImageUpload(file, setFlightImageB)}
+                                            accept=".jpg,.jpeg,.png"
+                                        >
+                                            <Button icon={<UploadOutlined />}>
+                                                Upload Flight Image 2
+                                            </Button>
+                                        </Upload>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

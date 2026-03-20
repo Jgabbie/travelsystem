@@ -2,51 +2,21 @@ import React from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
-export default function QuotationFormInEx() {
-    const inclusions = [
-        'Roundtrip Airfare via Air Asia (7kg hand carry only)',
-        'Hotel accommodation for 4 nights',
-        'Daily breakfast',
-        'Roundtrip Airport Private Transfer',
-        'Nara - Kyoto Tour',
-        'Universal Studio 1 Day Pass',
-    ];
+export default function QuotationFormInEx({ quotationData }) {
 
-    const exclusions = [
-        'Personal expenses',
-        'Meals not stated in the itinerary',
-        'Tipping not compulsory',
-        'PH Travel Tax 1620/pax',
-    ];
+    console.log('Received quotationData in QuotationFormInEx:', quotationData); // Debug log to check received data
 
-    const itinerary = [
-        {
-            date: 'March 31',
-            day: 'Day 1',
-            details: 'Arrival Hongkong meet at Arrival Area. The coordinator will guide you to the Van transfers.',
-        },
-        {
-            date: 'April 01',
-            day: 'Day 2',
-            details: 'Breakfast then proceed to Nara-Kyoto Tour.',
-            bullets: ['Golden Pavilion Temple', 'Arashiyama', 'Fushimi-Inari Taisha', 'Nara Park'],
-        },
-        {
-            date: 'April 02',
-            day: 'Day 3',
-            details: 'Breakfast then proceed to Universal Studio Tour.',
-        },
-        {
-            date: 'April 03',
-            day: 'Day 4',
-            details: 'Breakfast, free time for own leisure.',
-        },
-        {
-            date: 'April 04',
-            day: 'Day 5',
-            details: 'Breakfast then free time until transfer back to Japan Airport. Home sweet home.',
-        },
-    ];
+    const inclusions = quotationData.inclusions || [];
+
+    const exclusions = quotationData.exclusions || [];
+
+    const itinerary = Object.entries(quotationData.itinerary || {}).map(
+        ([dayKey, activities], index) => ({
+            day: `Day ${index + 1}`,
+            date: quotationData.itineraryDate || '',
+            bullets: activities,
+        })
+    );
 
     const remarks = [
         'Air and Land Arrangement is on a BOOK AND BUY basis. No room space and seats reserved.',

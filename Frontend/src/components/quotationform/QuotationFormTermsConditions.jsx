@@ -2,7 +2,7 @@ import React from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
-export default function QuotationFormTermsConditions() {
+export default function QuotationFormTermsConditions({ quotationData }) {
     const terms = [
         'Minimum number of pax to avail the promo package, rooms are based on twin/double sharing. Single supplements apply.',
         'Failure to pay remaining balances on due dates means cancellation of package. No refund for unused airfare tickets, rooms, meals, tours & transfer services.',
@@ -32,10 +32,12 @@ export default function QuotationFormTermsConditions() {
 
                     <div className="mrc-quotation-signoff">
                         <p>Best regards,</p>
-                        <p className="mrc-quotation-signoff-name">PINKY DOLIENTE</p>
+                        <p className="mrc-quotation-signoff-name">{quotationData.coordinatorName}</p>
                         <p>Travel coordinator.</p>
                     </div>
                 </div>
+
+                <div style={{ height: 300 }} />
             </div>
         </div>
     );

@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import BookingRegistrationModal from "../../components/modals/BookingRegistrationModal";
 import PaymentMethodsModal from "../../components/modals/PaymentMethodsModal";
 import axiosInstance from "../../config/axiosConfig";
+import { useBooking } from "../../context/BookingContext";
 import '../../style/client/userquotationrequest.css'
 
 
@@ -13,6 +14,7 @@ export default function UserQuotationRequest() {
     const [quotation, setQuotation] = useState(null);
     const { id } = useParams();
     const fetchCalled = useRef(false);
+    const { setBookingData } = useBooking();
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -148,7 +150,24 @@ export default function UserQuotationRequest() {
             cancelButtonProps: { className: "accept-cancel-btn" },
             onOk: async () => {
                 try {
-                    setIsBookingRegistrationOpen(true);
+                    const details = quotation?.travelDetails || {};
+                    setBookingData(prev => ({
+                        ...prev,
+                        packageName: quotation?.packageName,
+                        travelDate: details.travelDate || details.date || null,
+                        travelDatePrice: details.pricePerPax || details.totalPrice || 0,
+                        travelersCount: details.travelers || 1,
+                        travelers: Array.from({ length: details.travelers || 1 }, (_, index) => ({
+                            id: index + 1
+                        })),
+                        hotelOptions: details.preferredHotels ? [{ name: details.preferredHotels }] : [],
+                        airlineOptions: details.preferredAirlines ? [{ name: details.preferredAirlines }] : [],
+                        inclusions: details.inclusions || [],
+                        exclusions: details.exclusions || [],
+                        itinerary: details.itinerary || {},
+                        images: details.images || []
+                    }));
+                    navigate("/quotation-booking-process");
                 } catch (error) {
                     message.error("Unable to accept quotation");
                 }
@@ -226,15 +245,17 @@ export default function UserQuotationRequest() {
 
                 <div style={{ marginBottom: "20px" }}>
                     <Card title="Quotation Revision History">
-                        {quotation.pdfRevisions?.length === 0 ? (
+                        {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
                             <p>No PDF revisions uploaded yet.</p>
                         ) : (
-                            quotation.pdfRevisions.map((rev, index) => (
-                                <div key={index} style={{ marginBottom: "10px" }}>
-                                    <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
-                                    <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
-                                </div>
-                            ))
+                            quotation.pdfRevisions
+                                .filter((rev) => rev?.url)
+                                .map((rev, index) => (
+                                    <div key={index} style={{ marginBottom: "10px" }}>
+                                        <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
+                                        <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                                    </div>
+                                ))
                         )}
                     </Card>
                 </div>
@@ -247,9 +268,9 @@ export default function UserQuotationRequest() {
                         marginBottom: "20px",
                     }}
                 >
-                    {quotation.pdfRevisions && quotation.pdfRevisions.length > 0 ? (
+                    {quotation.pdfRevisions && quotation.pdfRevisions.some((rev) => rev?.url) ? (
                         <iframe
-                            src={quotation.pdfRevisions[quotation.pdfRevisions.length - 1].url}
+                            src={quotation.pdfRevisions.filter((rev) => rev?.url).slice(-1)[0].url}
                             title="Quotation PDF"
                             width="100%"
                             height="100%"
@@ -322,25 +343,6 @@ export default function UserQuotationRequest() {
                 </Modal>
             </div>
 
-
-            {/* Booking Process when package is accepted */}
-
-            <BookingRegistrationModal
-                open={isBookingRegistrationOpen}
-                onCancel={() => setIsBookingRegistrationOpen(false)}
-                onProceed={bookingRegistrationProceed}
-                packageData={{
-                    packageName: quotation.packageName,
-                    packageDuration: quotation.travelDetails?.duration || "N/A",
-                    packagePricePerPax: quotation.travelDetails?.pricePerPax || 0
-                }}
-            />
-
-            <PaymentMethodsModal
-                open={isPaymentMethodsOpen}
-                onCancel={() => { setIsPaymentMethodsOpen(false); }}
-                onProceed={paymentProceed}
-            />
 
         </ConfigProvider>
     );

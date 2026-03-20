@@ -114,8 +114,11 @@ const getQuotation = async (req, res) => {
     try {
         const { id } = req.params
         const quotation = await QuotationModel.findById(id)
+            .populate('packageId', 'packageItineraries packageInclusions packageExclusions')
+
 
         if (!quotation) return res.status(404).json({ message: "Quotation not found" })
+
 
         res.status(200).json(quotation)
     } catch (error) {

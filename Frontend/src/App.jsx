@@ -17,6 +17,8 @@ import NewPassport from "./pages/client/NewPassport";
 import RenewPassport from "./pages/client/RenewPassport";
 import ApplyVisa from "./pages/client/ApplyVisa";
 import BookingProcess from "./pages/client/BookingProcess";
+import QuotationsPaymentProcess from "./pages/client/QuotationsPaymentProcess";
+import QuotationBookingProcess from "./pages/client/QuotationBookingProcess";
 import PaymentProcess from "./pages/client/PaymentProcess";
 import SuccessfulBooking from "./pages/client/SuccessfulBooking";
 import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
@@ -151,6 +153,8 @@ function App() {
             <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
             <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
             <Route path='/booking-process' element={<BookingProcess />} />
+            <Route path='/quotation-booking-process' element={<QuotationBookingProcess />} />
+            <Route path='/quotation-payment-process' element={<QuotationsPaymentProcess />} />
             <Route path='/booking-payment' element={<PaymentProcess />} />
             <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
             <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
