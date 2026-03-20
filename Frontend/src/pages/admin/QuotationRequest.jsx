@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider } from "antd";
 import { UploadOutlined, SendOutlined } from "@ant-design/icons";
 import axiosInstance from "../../config/axiosConfig";
+import QuotationFormDetails from "../../components/quotationform/QuotationFormDetails";
+import QuotationFormInEx from "../../components/quotationform/QuotationFormInEx";
+import QuotationFormTermsConditions from "../../components/quotationform/QuotationFormTermsConditions";
 
 export default function QuotationRequest() {
     const { id } = useParams(); // quotation ID from URL
@@ -11,6 +14,7 @@ export default function QuotationRequest() {
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewURL, setPreviewURL] = useState(null);
+    const [previewStep, setPreviewStep] = useState(0);
 
     useEffect(() => {
         const fetchQuotation = async () => {
@@ -34,6 +38,20 @@ export default function QuotationRequest() {
 
     const details = quotation.travelDetails || {};
     const itineraryNotes = details.itineraryNotes || [];
+    const previewItems = [
+        {
+            title: "Quotation Form Preview",
+            content: <QuotationFormDetails />,
+        },
+        {
+            title: "Quotation Inclusions & Itinerary",
+            content: <QuotationFormInEx />,
+        },
+        {
+            title: "Quotation Terms & Conditions",
+            content: <QuotationFormTermsConditions />,
+        },
+    ];
 
     // When a file is selected
     const handleFileSelect = (file) => {
@@ -83,27 +101,49 @@ export default function QuotationRequest() {
             }}
         >
             <div>
-                <h1 style={{ margin: 20 }}>Initial Quotation Request</h1>
-                <Card title={`Quotation Details - ${quotation.reference}`} style={{ margin: 20 }}>
-                    <Descriptions bordered column={1}>
-                        <Descriptions.Item label="Package Name">{quotation.packageName}</Descriptions.Item>
-                        <Descriptions.Item label="Customer Name">{quotation.userName}</Descriptions.Item>
-                        <Descriptions.Item label="Travelers">{details.travelers || "N/A"}</Descriptions.Item>
-                        <Descriptions.Item label="Preferred Airlines">{details.preferredAirlines || "N/A"}</Descriptions.Item>
-                        <Descriptions.Item label="Preferred Hotels">{details.preferredHotels || "N/A"}</Descriptions.Item>
-                        <Descriptions.Item label="Budget Range">{details.budgetRange ? `₱${details.budgetRange.join(" - ")}` : "N/A"}</Descriptions.Item>
-                        <Descriptions.Item label="Itinerary Notes">
-                            {itineraryNotes.length === 0
-                                ? "N/A"
-                                : itineraryNotes.map((note, index) => (
-                                    <div key={index}><strong>Day {index + 1}:</strong> {note}</div>
-                                ))
-                            }
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
-                        <Descriptions.Item label="Status">{quotation.status}</Descriptions.Item>
-                    </Descriptions>
-                </Card>
+                <div>
+                    <h1 style={{ margin: 20 }}>Initial Quotation Request</h1>
+                    <Card title={`Quotation Details - ${quotation.reference}`} style={{ margin: 20 }}>
+                        <Descriptions bordered column={1}>
+                            <Descriptions.Item label="Package Name">{quotation.packageName}</Descriptions.Item>
+                            <Descriptions.Item label="Customer Name">{quotation.userName}</Descriptions.Item>
+                            <Descriptions.Item label="Travelers">{details.travelers || "N/A"}</Descriptions.Item>
+                            <Descriptions.Item label="Preferred Airlines">{details.preferredAirlines || "N/A"}</Descriptions.Item>
+                            <Descriptions.Item label="Preferred Hotels">{details.preferredHotels || "N/A"}</Descriptions.Item>
+                            <Descriptions.Item label="Budget Range">{details.budgetRange ? `₱${details.budgetRange.join(" - ")}` : "N/A"}</Descriptions.Item>
+                            <Descriptions.Item label="Itinerary Notes">
+                                {itineraryNotes.length === 0
+                                    ? "N/A"
+                                    : itineraryNotes.map((note, index) => (
+                                        <div key={index}><strong>Day {index + 1}:</strong> {note}</div>
+                                    ))
+                                }
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
+                            <Descriptions.Item label="Status">{quotation.status}</Descriptions.Item>
+                        </Descriptions>
+                    </Card>
+
+                    <Card title={previewItems[previewStep].title} style={{ margin: 20 }}>
+                        {previewItems[previewStep].content}
+                        <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between" }}>
+                            <Button
+                                onClick={() => setPreviewStep((prev) => Math.max(0, prev - 1))}
+                                disabled={previewStep === 0}
+                            >
+                                Previous
+                            </Button>
+                            <Button
+                                type="primary"
+                                onClick={() => setPreviewStep((prev) => Math.min(previewItems.length - 1, prev + 1))}
+                                disabled={previewStep === previewItems.length - 1}
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </Card>
+                </div>
+
 
                 <Card title="Upload Quotation PDF" style={{ margin: 20 }}>
 

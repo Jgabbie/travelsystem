@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { Row, Col, Input, Form } from 'antd';
 import dayjs from 'dayjs';
+import axiosInstance from '../../config/axiosConfig';
 import '../../style/components/mrcregistration.css';
 
+
 export default function BookingRegistrationTermsPart1({ form, onValuesChange }) {
+    const [userProfile, setUserProfile] = React.useState(null);
 
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const sectionHeaderStyle = {
@@ -18,10 +21,39 @@ export default function BookingRegistrationTermsPart1({ form, onValuesChange }) 
     const textStyle = { fontSize: '11px', lineHeight: '1.3', textAlign: 'justify', marginBottom: '10px' };
 
     useEffect(() => {
-        form.setFieldsValue({
-            termsDate: dayjs().format('MMMM DD, YYYY')
-        });
-    }, [form]);
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance.get('/user/data', { withCredentials: true });
+
+                const u = response.data?.userData
+
+                const user = {
+                    firstName: u.firstname,
+                    lastName: u.lastname,
+                    fullName: `${u.firstname} ${u.lastname}`,
+                    email: u.email,
+                    phone: u.phone,
+                    homeAddress: u.homeAddress,
+                }
+
+                form.setFieldsValue({
+                    leadFullName: user.fullName,
+                    leadEmail: user.email,
+                    leadContact: user.phone,
+                    leadAddress: user.homeAddress,
+                    travelersSignature: user.fullName,
+                    termsDate: dayjs().format('MMMM DD, YYYY')
+                });
+
+                console.log("user data response:", user);
+                setUserProfile(user);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchUserData();
+    }, [form])
 
     return (
         <div className="mrc-overlay-wrapper">
@@ -110,14 +142,14 @@ export default function BookingRegistrationTermsPart1({ form, onValuesChange }) 
                     <Form form={form} onValuesChange={onValuesChange}>
                         <Row gutter={40}>
                             <Col span={12}>
-                                <Form.Item name="termsSignature" style={{ marginBottom: 0 }}>
-                                    <Input style={{ ...boxStyle, height: '45px' }} />
+                                <Form.Item name="leadFullName" style={{ marginBottom: 0 }}>
+                                    <Input style={{ ...boxStyle, height: '45px', textAlign: 'center' }} readOnly />
                                 </Form.Item>
-                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your full name</div>
+                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Signature over printed name</div>
                             </Col>
                             <Col span={12}>
                                 <Form.Item name="termsDate" style={{ marginBottom: 0 }}>
-                                    <Input style={{ ...boxStyle, height: '45px' }} readOnly />
+                                    <Input style={{ ...boxStyle, height: '45px', textAlign: 'center' }} readOnly />
                                 </Form.Item>
                                 <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Date</div>
                             </Col>

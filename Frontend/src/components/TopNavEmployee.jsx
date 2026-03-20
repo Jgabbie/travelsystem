@@ -11,13 +11,15 @@ const { Header } = Layout;
 export default function TopNavEmployee() {
     const navigate = useNavigate();
 
-    const { auth, setAuth, checkAuth } = useAuth();
+    const { auth, setAuth, checkAuth, authLoading } = useAuth();
     const [profileImage, setProfileImage] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        checkAuth();
-    }, []);
+        if (!auth && !authLoading) {
+            checkAuth();
+        }
+    }, [auth, authLoading, checkAuth]);
 
     const handleOk = async () => {
         setIsModalOpen(false);

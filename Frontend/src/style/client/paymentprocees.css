@@ -1,3 +1,226 @@
+.payment-process-container {
+    padding: 40px;
+}
+
+.payment-process-backbutton {
+    display: flex;
+    justify-content: flex-start;
+    margin: 40px 40px;
+}
+
+.payment-top-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 24px;
+    align-items: start;
+    margin: 0 40px 40px;
+}
+
+.payment-top-grid .payment-section {
+    margin: 0;
+}
+
+.payment-section {
+    margin: 40px;
+    padding: 32px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    border: 1px solid #e0e7ff;
+    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+}
+
+.payment-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 20px;
+    padding-bottom: 0px;
+    flex-wrap: wrap;
+}
+
+.payment-section-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.payment-section-subtitle {
+    margin: 0;
+    color: #4e5b72;
+    font-size: 14px;
+    max-width: 520px;
+}
+
+.payment-section .display-invoice-card,
+.payment-section .payment-methods-wrapper,
+.payment-section .manual-transfer-details {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.payment-section .display-invoice-card {
+    padding: 20px;
+}
+
+.payment-section .payment-methods-wrapper {
+    padding: 0;
+    text-align: left;
+}
+
+.payment-section .manual-transfer-details {
+    padding: 24px;
+    background: #ffffff;
+    border-style: solid;
+}
+
+.payment-section .payment-methods-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    align-items: stretch;
+    padding: 20px;
+}
+
+.payment-methods-container.payment-section {
+    min-height: 460px;
+}
+
+.payment-mode-container.payment-section {
+    min-height: 925px;
+}
+
+.payment-section .payment-methods-title,
+.payment-section .payment-methods-subtitle {
+    text-align: left;
+}
+
+.payment-section .payment-card {
+    border-radius: 16px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    text-align: left;
+}
+
+.payment-cards-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.payment-schedule-list {
+    display: grid;
+    gap: 8px;
+}
+
+.payment-schedule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    borderBottom: 1px dashed #e6eaf4;
+}
+
+.payment-schedule-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.payment-schedule-date {
+    font-size: 12px;
+    color: #4e5b72;
+}
+
+.payment-schedule-amount {
+    font-size: 13px;
+    font-weight: 700;
+    color: #305797;
+}
+
+.payment-schedule-note {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #8a4b1b;
+}
+
+.payment-section .payment-methods-cards .ant-radio-wrapper {
+    width: 100%;
+    align-items: stretch;
+}
+
+.payment-section .payment-card h3 {
+    margin: 0 0 8px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #1f2a44;
+}
+
+.payment-section .payment-card p {
+    margin: 0;
+    font-size: 13px;
+    color: #4e5b72;
+    line-height: 1.6;
+}
+
+.payment-section .payment-card.selected {
+    border-color: #305797;
+    box-shadow: 0 16px 30px rgba(48, 87, 151, 0.16);
+}
+
+.payment-section .bank-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.upload-preview-container {
+    margin-top: 16px;
+}
+
+.upload-preview-box {
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px dashed #cfd8ee;
+    border-radius: 12px;
+    background: #f7f9ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-preview-image {
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+@media (max-width: 840px) {
+    .payment-process-container {
+        padding: 20px;
+    }
+
+    .payment-top-grid {
+        grid-template-columns: 1fr;
+        margin: 0 16px 24px;
+    }
+
+    .payment-section {
+        margin: 24px 16px;
+        padding: 20px;
+    }
+
+    .payment-section-header {
+        margin-bottom: 18px;
+    }
+}
+
 .manual-transfer-details {
     margin-top: 24px;
     padding: 24px;

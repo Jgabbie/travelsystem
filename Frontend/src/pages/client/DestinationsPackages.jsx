@@ -38,8 +38,8 @@ export default function DestinationsPackages() {
 
                     return {
                         id: pkg._id,
-                        title: pkg.packageName,
-                        type: pkg.packageType === 'international' ? 'International' : 'Domestic',
+                        packageName: pkg.packageName,
+                        packageType: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
                         budget: pkg.packagePricePerPax,
                         availableSlots: pkg.packageAvailableSlots || 0,
@@ -119,9 +119,9 @@ export default function DestinationsPackages() {
     const filteredPackages = packages.filter((item) => {
         const matchesSearch =
             (item.id.toLowerCase().includes(search.toLowerCase())) ||
-            (item.title.toLowerCase().includes(search.toLowerCase())) ||
-            (item.type.toLowerCase().includes(search.toLowerCase())) ||
-            (item.days.toLowerCase().includes(search.toLowerCase())) ||
+            (item.packageName.toLowerCase().includes(search.toLowerCase())) ||
+            (item.packageType.toLowerCase().includes(search.toLowerCase())) ||
+            (item.days.toString().toLowerCase().includes(search.toLowerCase())) ||
             (item.budget.toString().toLowerCase().includes(search.toLowerCase())) ||
             (item.availableSlots.toString().toLowerCase().includes(search.toLowerCase())) ||
             (item.tags?.some((tag) => tag.toLowerCase().includes(search.toLowerCase())))
@@ -135,7 +135,7 @@ export default function DestinationsPackages() {
                 item.tags?.includes(tag)
             )
 
-        const matchesType = tourType === 'All' || item.type === tourType
+        const matchesType = tourType === 'All' || item.packageType === tourType
 
         const matchesDays =
             item.days >= 1 && item.days <= daysValue
@@ -348,7 +348,7 @@ export default function DestinationsPackages() {
                                     >
                                         <div className="destinations-card-image">
                                             {pkg.images ? (
-                                                <img src={pkg.images} alt={pkg.title} />
+                                                <img src={pkg.images} alt={pkg.packageName} />
                                             ) : (
                                                 <div className="destinations-card-image-placeholder">No Image</div>
                                             )}
@@ -356,14 +356,14 @@ export default function DestinationsPackages() {
                                         <div className="destinations-card-header">
                                             <div>
                                                 <Title level={5} className="destinations-card-title">
-                                                    {pkg.title}
+                                                    {pkg.packageName}
                                                 </Title>
-                                                <Text type="secondary">{pkg.type}</Text>
+                                                <Text type="secondary">{pkg.packageType}</Text>
                                             </div>
                                             <Tag className="destinations-rating">⭐ {pkg.rating}</Tag>
                                         </div>
                                         <div className="destinations-card-meta">
-                                            <Tag className="destinations-type">{pkg.type}</Tag>
+                                            <Tag className="destinations-type">{pkg.packageType}</Tag>
                                             <Text type="secondary">{pkg.days} days</Text>
                                         </div>
                                         <div className="destinations-card-activities">

@@ -11,6 +11,7 @@ import TopNavUser from '../../components/TopNavUser'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
+import LoadingScreen from '../../components/LoadingScreen';
 
 
 export default function PackagePage() {
@@ -28,10 +29,9 @@ export default function PackagePage() {
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
 
-
-
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
+    const [selectedDatePrice, setSelectedDatePrice] = useState(0)
     const [travelerCounts, setTravelerCounts] = useState(null)
     const [arrangementSelection, setArrangementSelection] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
@@ -56,6 +56,7 @@ export default function PackagePage() {
     //reset all booking states, used when user cancels booking flow
     const resetBookingFlow = () => {
         setSelectedDate(null)
+        setSelectedDatePrice(0)
         setTravelerCounts(null)
         setArrangementSelection(null)
         setSoloGroupSelection(null)
@@ -287,6 +288,10 @@ export default function PackagePage() {
         hotelOptions: packageData?.packageHotels,
         airlineOptions: packageData?.packageAirlines,
         travelDate: selectedDate,
+        travelDatePrice: selectedDatePrice,
+        inclusions: packageData?.packageInclusions || [],
+        exclusions: packageData?.packageExclusions || [],
+        itinerary: packageData?.packageItineraries || {},
         images: packageData?.images || []
     }
 
@@ -373,6 +378,7 @@ export default function PackagePage() {
                 }
             }}
         >
+            <LoadingScreen isVisible={packageLoading} message="Loading package details..." onComplete={() => console.log("Loading complete")} />
             <div>
                 <TopNavUser />
                 <div className="packagepage-container">
@@ -638,7 +644,11 @@ export default function PackagePage() {
                     onProceed={handleProceedDate}
                     packageData={packageData}
                     selectedDate={selectedDate}
-                    onDateChange={setSelectedDate}
+                    selectedDatePrice={selectedDatePrice}
+                    onDateChange={({ date, price }) => {
+                        setSelectedDate(date);
+                        setSelectedDatePrice(price);
+                    }}
                 />
 
                 {/* login modal */}

@@ -16,6 +16,7 @@
     "antd": "^6.1.4",
     "antd-style": "^4.1.0",
     "axios": "^1.13.2",
+    "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "jwt-decode": "^4.0.0",

@@ -2,20 +2,53 @@ import React, { useEffect } from 'react';
 import { Form, Input, Select, Row, Col } from 'antd';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css';
+import axiosInstance from '../../config/axiosConfig';
+
 
 const { TextArea } = Input;
-const { Option } = Select;
 
 export default function BookingRegistrationDiet({ form, onValuesChange, summary }) {
+
+    const [userProfile, setUserProfile] = React.useState(null);
 
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const labelStyle = { fontSize: '11px', fontWeight: 'bold', color: '#000' };
 
+
     useEffect(() => {
-        form.setFieldsValue({
-            signatureDate: dayjs().format('MMMM DD, YYYY')
-        });
-    }, [form]);
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance.get('/user/data', { withCredentials: true });
+
+                const u = response.data?.userData
+
+                const user = {
+                    firstName: u.firstname,
+                    lastName: u.lastname,
+                    fullName: `${u.firstname} ${u.lastname}`,
+                    email: u.email,
+                    phone: u.phone,
+                    homeAddress: u.homeAddress,
+                }
+
+                form.setFieldsValue({
+                    leadFullName: user.fullName,
+                    leadEmail: user.email,
+                    leadContact: user.phone,
+                    leadAddress: user.homeAddress,
+                    travelersSignature: user.fullName,
+                    signatureDate: dayjs().format('MMMM DD, YYYY')
+                });
+
+                console.log("user data response:", user);
+                setUserProfile(user);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchUserData();
+    }, [form])
 
     return (
         <div className="mrc-overlay-wrapper">
@@ -50,16 +83,43 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                         <Row align="middle">
                             <Col span={18} style={labelStyle}>Does anyone in your group have any dietary requests?</Col>
                             <Col span={4}>
-                                <Form.Item name="dietaryRequest" noStyle>
-                                    <Select size="small" style={{ ...boxStyle, width: '60px' }} placeholder="N">
-                                        <Option value="Y">Y</Option>
-                                        <Option value="N">N</Option>
+                                <Form.Item
+                                    name="dietaryRequest"
+                                    rules={[{ required: true, message: 'Required' }]}
+                                    noStyle
+                                >
+                                    <Select
+                                        size="small"
+                                        style={{ ...boxStyle, width: '60px' }}
+                                        placeholder="Y/N"
+                                        options={[
+                                            { value: 'Y', label: 'Y' },
+                                            { value: 'N', label: 'N' },
+                                        ]}
+                                    >
                                     </Select>
                                 </Form.Item>
                             </Col>
                         </Row>
                         <div style={{ fontSize: '9px', fontStyle: 'italic', marginBottom: '5px' }}>(Applicable for tour package with meal inclusions; if not included, please select N/A)</div>
-                        <Form.Item label={<span style={{ fontSize: '10px' }}>If yes, please indicate details:</span>} name="dietaryDetails" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
+                        <Form.Item
+                            label={<span style={{ fontSize: '10px' }}>If yes, please indicate details:</span>}
+                            name="dietaryDetails"
+                            labelCol={{ span: 6 }}
+                            wrapperCol={{ span: 18 }}
+                            dependencies={['dietaryRequest']}
+                            disabled={form.getFieldValue('dietaryRequest') !== 'Y'}
+                            rules={[
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        if (getFieldValue('dietaryRequest') === 'Y' && !value) {
+                                            return Promise.reject('Please provide dietary details');
+                                        }
+                                        return Promise.resolve();
+                                    }
+                                })
+                            ]}
+                        >
                             <TextArea rows={2} style={boxStyle} />
                         </Form.Item>
                     </div>
@@ -69,16 +129,43 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                         <Row align="middle">
                             <Col span={18} style={labelStyle}>Does anyone in your group have any Allergies/Medical conditions?</Col>
                             <Col span={4}>
-                                <Form.Item name="medicalRequest" noStyle>
-                                    <Select size="small" style={{ ...boxStyle, width: '60px' }} placeholder="N">
-                                        <Option value="Y">Y</Option>
-                                        <Option value="N">N</Option>
+                                <Form.Item
+                                    name="medicalRequest"
+                                    rules={[{ required: true, message: 'Required' }]}
+                                    noStyle
+                                >
+                                    <Select
+                                        size="small"
+                                        style={{ ...boxStyle, width: '60px' }}
+                                        placeholder="Y/N"
+                                        options={[
+                                            { value: 'Y', label: 'Y' },
+                                            { value: 'N', label: 'N' },
+                                        ]}
+                                    >
                                     </Select>
                                 </Form.Item>
                             </Col>
                         </Row>
                         <div style={{ fontSize: '9px', fontStyle: 'italic', marginBottom: '5px' }}>(Applicable for tour package with meal inclusions; if not included, please select N/A)</div>
-                        <Form.Item label={<span style={{ fontSize: '10px' }}>If yes, please indicate details:</span>} name="medicalDetails" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }} style={{ marginTop: '5px' }}>
+                        <Form.Item
+                            label={<span style={{ fontSize: '10px' }}>If yes, please indicate details:</span>}
+                            name="medicalDetails" labelCol={{ span: 6 }}
+                            wrapperCol={{ span: 18 }}
+                            style={{ marginTop: '5px' }}
+                            dependencies={['medicalRequest']}
+                            disabled={form.getFieldValue('medicalRequest') !== 'Y'}
+                            rules={[
+                                ({ getFieldValue }) => ({
+                                    validator(_, value) {
+                                        if (getFieldValue('medicalRequest') === 'Y' && !value) {
+                                            return Promise.reject('Please provide medical details');
+                                        }
+                                        return Promise.resolve();
+                                    }
+                                })
+                            ]}
+                        >
                             <TextArea rows={2} style={boxStyle} />
                         </Form.Item>
                     </div>
@@ -94,7 +181,24 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
 
                         <Row align="middle" style={{ marginBottom: '5px' }}>
                             <Col span={16} style={{ fontSize: '10px' }}>Do you agree to purchase a Travel Insurance from us?</Col>
-                            <Col span={4}><Form.Item name="purchaseInsurance" noStyle><Input size="small" style={{ ...boxStyle, width: '60px' }} placeholder="Y/N" /></Form.Item></Col>
+                            <Col span={4}>
+                                <Form.Item
+                                    name="purchaseInsurance"
+                                    noStyle
+                                    rules={[{ required: true, message: 'Required' }]}
+                                >
+                                    <Select
+                                        size="small"
+                                        style={{ ...boxStyle, width: '60px' }}
+                                        placeholder="Y/N"
+                                        options={[
+                                            { value: 'Y', label: 'Y' },
+                                            { value: 'N', label: 'N' },
+                                        ]}
+                                    >
+                                    </Select>
+                                </Form.Item>
+                            </Col>
                         </Row>
 
                         <p style={{ fontSize: '9px', lineHeight: '1.2' }}>
@@ -105,7 +209,24 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
 
                         <Row align="middle" style={{ marginBottom: '5px' }}>
                             <Col span={16} style={{ fontSize: '10px' }}>Do you agree to purchase a Travel Insurance from us?</Col>
-                            <Col span={4}><Form.Item name="ownInsurance" noStyle><Input size="small" style={{ ...boxStyle, width: '60px' }} placeholder="Y/N" /></Form.Item></Col>
+                            <Col span={4}>
+                                <Form.Item
+                                    name="ownInsurance"
+                                    noStyle
+                                    rules={[{ required: true, message: 'Required' }]}
+                                >
+                                    <Select
+                                        size="small"
+                                        style={{ ...boxStyle, width: '60px' }}
+                                        placeholder="Y/N"
+                                        options={[
+                                            { value: 'Y', label: 'Y' },
+                                            { value: 'N', label: 'N' },
+                                        ]}
+                                    >
+                                    </Select>
+                                </Form.Item>
+                            </Col>
                         </Row>
                     </div>
 
@@ -141,13 +262,39 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                 <tr>
                                     <td style={{ border: '1px solid #000', width: '10%', padding: '4px', fontWeight: 'bold' }}>Title:</td>
                                     <td style={{ border: '1px solid #000', width: '20%' }}>
-                                        <Form.Item name="emergencyTitle" noStyle>
-                                            <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
+                                        <Form.Item
+                                            name="emergencyTitle"
+                                            noStyle
+                                            rules={[
+                                                { required: true, message: 'Please select a title' },
+                                                {
+                                                    validator: (_, value) =>
+                                                        value === 'MR' || value === 'MS'
+                                                            ? Promise.resolve()
+                                                            : Promise.reject(new Error('Title must be MR or MS')),
+                                                },
+                                            ]}>
+                                            <Select
+                                                size="small"
+                                                style={{ width: '100%', padding: 0, fontSize: '10px' }}
+                                                // Select components need this to affect the inner box
+                                                variant="borderless"
+                                                placeholder="MR/MS"
+                                                options={[
+                                                    { value: 'MR', label: 'MR' },
+                                                    { value: 'MS', label: 'MS' },
+                                                ]}
+                                            >
+                                            </Select>
                                         </Form.Item>
                                     </td>
                                     <td style={{ border: '1px solid #000', width: '15%', padding: '4px', fontWeight: 'bold' }}>Full name:</td>
                                     <td style={{ border: '1px solid #000', width: '55%' }}>
-                                        <Form.Item name="emergencyName" noStyle>
+                                        <Form.Item
+                                            name="emergencyName"
+                                            noStyle
+                                            rules={[{ required: true, message: 'Full name is required' }]}
+                                        >
                                             <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
                                         </Form.Item>
                                     </td>
@@ -155,23 +302,44 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
 
                                 {/* Row 2: Email, Contact No, and Relation */}
                                 <tr>
-                                    <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>Email Add</td>
+                                    <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>Email:</td>
                                     <td style={{ border: '1px solid #000' }}>
-                                        <Form.Item name="emergencyEmail" noStyle>
+                                        <Form.Item
+                                            name="emergencyEmail"
+                                            noStyle
+                                            rules={[
+                                                { required: true, message: 'Email is required' },
+                                                { type: 'email', message: 'Invalid email format' }
+                                            ]}
+                                        >
                                             <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
                                         </Form.Item>
                                     </td>
-                                    <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>Contact no:</td>
+                                    <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>Contact Number:</td>
                                     <td style={{ border: '1px solid #000' }}>
                                         <div style={{ display: 'flex', width: '100%' }}>
                                             <div style={{ flex: 1 }}>
-                                                <Form.Item name="emergencyContact" noStyle>
+                                                <Form.Item
+                                                    name="emergencyContact"
+                                                    noStyle
+                                                    rules={[
+                                                        { required: true, message: 'Contact number is required' },
+                                                        {
+                                                            pattern: /^[0-9]{10,13}$/,
+                                                            message: 'Enter valid contact number'
+                                                        }
+                                                    ]}
+                                                >
                                                     <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
                                                 </Form.Item>
                                             </div>
-                                            <div style={{ borderLeft: '1px solid #000', padding: '4px', width: '80px', fontWeight: 'bold' }}>Relation</div>
+                                            <div style={{ borderLeft: '1px solid #000', padding: '4px', width: '80px', fontWeight: 'bold' }}>Relation:</div>
                                             <div style={{ flex: 1, borderLeft: '1px solid #000' }}>
-                                                <Form.Item name="emergencyRelation" noStyle>
+                                                <Form.Item
+                                                    name="emergencyRelation"
+                                                    noStyle
+                                                    rules={[{ required: true, message: 'Relation is required' }]}
+                                                >
                                                     <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
                                                 </Form.Item>
                                             </div>
@@ -186,14 +354,14 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                     <div style={{ marginTop: '30px' }}>
                         <Row gutter={40}>
                             <Col span={12}>
-                                <Form.Item name="signature" style={{ marginBottom: 0 }}>
-                                    <Input style={{ ...boxStyle, height: '40px' }} />
+                                <Form.Item name="leadFullName" style={{ marginBottom: 0 }}>
+                                    <Input style={{ ...boxStyle, height: '40px', textAlign: 'center' }} readOnly />
                                 </Form.Item>
-                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your fullname</div>
+                                <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Signature over printed name</div>
                             </Col>
                             <Col span={12}>
                                 <Form.Item name="signatureDate" style={{ marginBottom: 0 }}>
-                                    <Input style={{ ...boxStyle, height: '40px' }} readOnly />
+                                    <Input style={{ ...boxStyle, height: '40px', textAlign: 'center' }} readOnly />
                                 </Form.Item>
                                 <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Date</div>
                             </Col>

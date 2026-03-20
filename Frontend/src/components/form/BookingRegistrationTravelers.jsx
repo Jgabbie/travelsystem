@@ -1,13 +1,50 @@
-import React, { useEffect } from 'react';
-import { Form, Input, Select, Row, Col, DatePicker, ConfigProvider } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Select, Row, Col, ConfigProvider } from 'antd';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css'
-
-const { Option } = Select;
+import axiosInstance from '../../config/axiosConfig';
 
 export default function BookingRegistrationTravelers({ form, onValuesChange, summary, totalCount }) {
 
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
+    const [userProfile, setUserProfile] = useState({})
+
+    console.log("summary in travelers:", summary);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance.get('/user/data', { withCredentials: true });
+
+                const u = response.data?.userData
+
+                const user = {
+                    firstName: u.firstname,
+                    lastName: u.lastname,
+                    fullName: `${u.firstname} ${u.lastname}`,
+                    email: u.email,
+                    phone: u.phone,
+                    homeAddress: u.homeAddress,
+                }
+
+                form.setFieldsValue({
+                    leadFullName: user.fullName,
+                    leadEmail: user.email,
+                    leadContact: user.phone,
+                    leadAddress: user.homeAddress,
+                    travelersSignature: user.fullName
+                });
+
+                console.log("user data response:", user);
+                setUserProfile(user);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+        fetchUserData();
+    }, [])
+
 
     useEffect(() => {
         const currentTravelers = form.getFieldValue('travelers') || [];
@@ -21,11 +58,34 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
         }
     }, [totalCount, form]);
 
+
+
     useEffect(() => {
+        const travelers = form.getFieldValue('travelers') || [];
+        if (!userProfile.firstName) return;
+
+        travelers[0] = {
+            ...travelers[0],
+            title: 'MR',
+            firstName: userProfile.firstName,
+            lastName: userProfile.lastName,
+        };
+
         form.setFieldsValue({
-            travelersDate: dayjs().format('MMMM DD, YYYY')
+            dateOfRegistration: dayjs().format('MM/DD/YYYY'),
+            tourPackageTitle: summary.packageName,
+            tourPackageVia: summary.packageName,
+            packageTravelDate: dayjs(summary.travelDate).format('MM/DD/YYYY'),
+            travelersDate: dayjs().format('MMMM DD, YYYY'),
         });
-    }, [form]);
+
+        const countDiff = totalCount - travelers.length;
+        if (countDiff > 0) {
+            form.setFieldsValue({ travelers: [...travelers, ...Array(countDiff).fill({})] });
+        } else if (countDiff < 0) {
+            form.setFieldsValue({ travelers: travelers.slice(0, totalCount) });
+        }
+    }, [totalCount, userProfile, form]);
 
     return (
         <ConfigProvider
@@ -54,12 +114,12 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item name="dateOfRegistration" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>DATE OF REGISTRATION</span>}>
-                                        <Input size="small" className='mrc-tour-details-input' />
+                                        <Input size="small" className='mrc-tour-details-input' readOnly />
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
                                     <Form.Item name="packageTravelDate" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>PACKAGE TRAVEL DATE</span>} style={{ marginBottom: '4px' }}>
-                                        <Input size="small" className='mrc-tour-details-input' />
+                                        <Input size="small" className='mrc-tour-details-input' readOnly />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -67,12 +127,12 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Form.Item name="tourPackageTitle" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>TOUR PACKAGE TITLE</span>} style={{ marginBottom: '4px' }}>
-                                        <Input size="small" className='mrc-tour-details-input' />
+                                        <Input size="small" className='mrc-tour-details-input' readOnly />
                                     </Form.Item>
                                 </Col>
                                 <Col span={12}>
                                     <Form.Item name="tourPackageVia" label={<span style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>TOUR PACKAGE VIA</span>} style={{ marginBottom: '4px' }}>
-                                        <Input size="small" className='mrc-tour-details-input' />
+                                        <Input size="small" className='mrc-tour-details-input' readOnly />
                                     </Form.Item>
                                 </Col>
                             </Row>
@@ -92,12 +152,29 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                         name="leadTitle"
                                         label={<span style={{ fontSize: '10px', fontWeight: 'bold' }}>TITLE:</span>}
                                         style={{ marginBottom: '4px' }}
+                                        rules={[
+                                            { required: true, message: 'Please select a title' },
+                                            {
+                                                validator: (_, value) =>
+                                                    value === 'MR' || value === 'MS'
+                                                        ? Promise.resolve()
+                                                        : Promise.reject(new Error('Title must be MR or MS')),
+                                            },
+                                        ]}
                                     >
-                                        <Input
+                                        <Select
                                             size="small"
+                                            style={{ width: '100%', padding: 0 }}
+                                            // Select components need this to affect the inner box
+                                            variant="borderless"
                                             placeholder="MR/MS"
                                             className="mrc-lead-guest-section-input"
-                                        />
+                                            options={[
+                                                { value: 'MR', label: 'MR' },
+                                                { value: 'MS', label: 'MS' },
+                                            ]}
+                                        >
+                                        </Select>
                                     </Form.Item>
                                 </Col>
                                 <Col span={18}>
@@ -109,6 +186,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                         <Input
                                             size="small"
                                             className="mrc-lead-guest-section-input"
+                                            readOnly
                                         />
                                     </Form.Item>
                                 </Col>
@@ -125,6 +203,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                         <Input
                                             size="small"
                                             className="mrc-lead-guest-section-input"
+                                            readOnly
                                         />
                                     </Form.Item>
                                 </Col>
@@ -137,6 +216,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                         <Input
                                             size="small"
                                             className="mrc-lead-guest-section-input"
+                                            readOnly
                                         />
                                     </Form.Item>
                                 </Col>
@@ -153,11 +233,33 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                         <Input
                                             size="small"
                                             style={{ borderRadius: 0, height: '22px', borderBottom: '1px solid black', borderTop: 0, borderLeft: 0, borderRight: 0, fontSize: '11px' }}
+                                            readOnly
                                         />
                                     </Form.Item>
                                 </Col>
                             </Row>
                         </div>
+
+                        <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.leadTitle !== currentValues.leadTitle}>
+                            {() => {
+                                const value = form.getFieldValue('leadTitle');
+                                const isInvalid = value && value !== 'MR' && value !== 'MS';
+                                const isEmpty = !value;
+
+                                return isEmpty || isInvalid ? (
+                                    <div style={{
+                                        color: '#ff4d4f',
+                                        fontSize: '11px',
+                                        fontWeight: 'bold',
+                                        marginTop: '4px',
+                                        marginBottom: '0px',
+                                        padding: '0px'
+                                    }}>
+                                        {isEmpty ? 'Please select a title' : 'Title must be MR or MS'}
+                                    </div>
+                                ) : null;
+                            }}
+                        </Form.Item>
 
                         {/* PASSENGER TABLE SECTION */}
                         <h3 className="mrc-passengers-section-header">PASSENGER LIST (Including Lead Guest)</h3>
@@ -197,8 +299,31 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                     <Col span={1} style={{ ...inputStyle, textAlign: 'center', background: '#fafafa' }}>{index + 1}</Col>
 
                                                     <Col span={2}>
-                                                        <Form.Item {...restField} name={[name, 'title']} noStyle>
-                                                            <Input placeholder="MR" style={inputStyle} />
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'title']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please select a title' },
+                                                                {
+                                                                    validator: (_, value) =>
+                                                                        value === 'MR' || value === 'MS'
+                                                                            ? Promise.resolve()
+                                                                            : Promise.reject(new Error('Title must be MR or MS')),
+                                                                },
+                                                            ]}>
+                                                            <Select
+                                                                size="small"
+                                                                style={{ ...inputStyle, width: '100%', padding: 0 }}
+                                                                // Select components need this to affect the inner box
+                                                                variant="borderless"
+                                                                placeholder="MR/MS"
+                                                                options={[
+                                                                    { value: 'MR', label: 'MR' },
+                                                                    { value: 'MS', label: 'MS' },
+                                                                ]}
+                                                            >
+                                                            </Select>
                                                         </Form.Item>
                                                     </Col>
 
@@ -222,35 +347,95 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                 // Select components need this to affect the inner box
                                                                 variant="borderless"
                                                                 className="mrc-select-flat"
+                                                                options={[
+                                                                    { value: 'TWIN', label: 'TWIN' },
+                                                                    { value: 'DOUBLE', label: 'DOUBLE' },
+                                                                    { value: 'SINGLE', label: 'SINGLE' },
+                                                                    { value: 'TRIPLE', label: 'TRIPLE' },
+                                                                ]}
                                                             >
-                                                                <Option value="TWIN">TWIN</Option>
-                                                                <Option value="DOUBLE">DOUBLE</Option>
-                                                                <Option value="SINGLE">SINGLE</Option>
-                                                                <Option value="TRIPLE">TRIPLE</Option>
                                                             </Select>
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={3}>
-                                                        <Form.Item {...restField} name={[name, 'birthday']} noStyle>
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'birthday']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter birthday' },
+                                                                {
+                                                                    validator: (_, value) => {
+                                                                        if (!value) return Promise.reject('Please enter birthday');
+                                                                        // Basic MM/DD/YY format check
+                                                                        const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{2}$/;
+                                                                        return regex.test(value)
+                                                                            ? Promise.resolve()
+                                                                            : Promise.reject(new Error('Birthday must be in MM/DD/YY format'));
+                                                                    },
+                                                                },
+                                                            ]}
+                                                        >
                                                             <Input placeholder="MM/DD/YY" style={inputStyle} />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={1}>
-                                                        <Form.Item {...restField} name={[name, 'age']} noStyle>
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'age']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter age' },
+                                                                {
+                                                                    type: 'number',
+                                                                    min: 0,
+                                                                    max: 120,
+                                                                    transform: (value) => Number(value),
+                                                                    message: 'Age must be a valid number between 0 and 120',
+                                                                },
+                                                            ]}
+                                                        >
                                                             <Input style={{ ...inputStyle, textAlign: 'center', padding: 0 }} />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={3}>
-                                                        <Form.Item {...restField} name={[name, 'passportNo']} noStyle>
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'passportNo']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter passport number' },
+                                                                {
+                                                                    pattern: /^[a-zA-Z0-9]{5,20}$/,
+                                                                    message: 'Passport number must be 5–20 alphanumeric characters',
+                                                                },
+                                                            ]}
+                                                        >
                                                             <Input style={inputStyle} />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={3}>
-                                                        <Form.Item {...restField} name={[name, 'passportExpiry']} noStyle>
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'passportExpiry']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter passport expiry date' },
+                                                                {
+                                                                    validator: (_, value) => {
+                                                                        if (!value) return Promise.reject('Please enter passport expiry date');
+                                                                        const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{2}$/;
+                                                                        return regex.test(value)
+                                                                            ? Promise.resolve()
+                                                                            : Promise.reject(new Error('Expiry must be in MM/DD/YY format'));
+                                                                    },
+                                                                },
+                                                            ]}
+                                                        >
                                                             <Input placeholder="MM/DD/YY" style={inputStyle} />
                                                         </Form.Item>
                                                     </Col>
@@ -260,6 +445,35 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                     </>
                                 )}
                             </Form.List>
+
+                            <Form.Item shouldUpdate>
+                                {() => {
+                                    const travelers = form.getFieldValue('travelers') || [];
+
+                                    const hasIncomplete = travelers.some((t) => {
+                                        return !t ||
+                                            !t.title ||
+                                            !t.firstName ||
+                                            !t.lastName ||
+                                            !t.roomType ||
+                                            !t.birthday ||
+                                            !t.age ||
+                                            !t.passportNo ||
+                                            !t.passportExpiry;
+                                    });
+
+                                    return hasIncomplete ? (
+                                        <div style={{
+                                            color: '#ff4d4f',
+                                            fontSize: '11px',
+                                            fontWeight: 'bold',
+                                            marginTop: '8px'
+                                        }}>
+                                            Please complete all traveler details before proceeding.
+                                        </div>
+                                    ) : null;
+                                }}
+                            </Form.Item>
                         </div>
 
                         <div className="mrc-form-footer" style={{ marginTop: '20px' }}>
@@ -295,13 +509,13 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                             <Row gutter={40}>
                                 <Col span={12}>
                                     <Form.Item name="travelersSignature" style={{ marginBottom: 0 }}>
-                                        <Input style={{ ...boxStyle, height: '40px' }} />
+                                        <Input style={{ ...boxStyle, height: '40px', textAlign: 'center' }} readOnly />
                                     </Form.Item>
-                                    <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Type your fullname</div>
+                                    <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Signature over printed name</div>
                                 </Col>
                                 <Col span={12}>
                                     <Form.Item name="travelersDate" style={{ marginBottom: 0 }}>
-                                        <Input style={{ ...boxStyle, height: '40px' }} readOnly />
+                                        <Input style={{ ...boxStyle, height: '40px', textAlign: 'center' }} value={new Date().toLocaleDateString()} readOnly />
                                     </Form.Item>
                                     <div style={{ fontSize: '10px', textAlign: 'center', marginTop: '5px', fontWeight: 'bold' }}>Date</div>
                                 </Col>

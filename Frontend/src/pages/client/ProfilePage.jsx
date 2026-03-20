@@ -138,32 +138,18 @@ export default function ProfilePage() {
 
     const fetchRecentBookings = async () => {
         try {
-            const response = await axiosInstance.get('/booking/my-bookings', {
-                withCredentials: true
-            })
-            const bookings = (response.data || []).slice(0, 3).map((booking) => {
-                const details = booking.bookingDetails || {}
-                const travelDate = details.travelDate
-                const date = travelDate
-                    ? new Date(travelDate).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    })
-                    : 'Recently'
-                const packageType = details.packageType || ''
-                const statusRaw = booking.status || 'pending'
-                const status = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1)
+            const response = await axiosInstance.get('/booking/my-bookings')
+            const bookings = response.data.map((b) => ({
+                key: b._id,
+                ref: b.reference || b._id,
+                packageName: b.packageId?.packageName || 'Tour Package',
+                packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
+                travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM D, YYYY') : dayjs(b.travelDate).format('MMM D, YYYY'),
+                bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
+                travelersCount: b.travelers || {},
+                status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
+            }))
 
-                return {
-                    _id: booking._id,
-                    title: details.packageName || 'Package',
-                    date,
-                    status,
-                    packageType: packageType ? `${packageType.charAt(0).toUpperCase()}${packageType.slice(1)}` : '--',
-                    reference: booking.reference || 'BK-00000'
-                }
-            })
             setRecentBookings(bookings)
         } catch (error) {
             setRecentBookings([])
@@ -172,27 +158,15 @@ export default function ProfilePage() {
 
     const fetchRecentReviews = async () => {
         try {
-            const response = await axiosInstance.get('/rating/my-ratings', {
-                withCredentials: true
-            })
-            const reviews = (response.data || []).slice(0, 3).map((rating) => {
-                const pkg = rating.packageId || {}
-                const date = rating.createdAt
-                    ? new Date(rating.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    })
-                    : 'Recently'
+            const response = await axiosInstance.get('/rating/my-ratings')
+            const reviews = response.data.map((r) => ({
+                key: r._id,
+                packageName: r.packageId?.packageName || 'Untitled Review',
+                rating: r.rating || 0,
+                date: dayjs(r.createdAt).format('MMM D, YYYY'),
+                review: r.review
+            }))
 
-                return {
-                    _id: rating._id,
-                    title: pkg.packageName || 'Package',
-                    date,
-                    snippet: rating.review || 'View review details.',
-                    rating: rating.rating || 0
-                }
-            })
             setRecentReviews(reviews)
         } catch (error) {
             setRecentReviews([])
@@ -311,16 +285,6 @@ export default function ProfilePage() {
             setSaving(false)
         }
     }
-
-    // if (!userData) {
-    //     return (
-    //         <div className="profile-container">
-    //             <Card className="profile-card">
-    //                 <p>Unable to load profile. Please try again.</p>
-    //             </Card>
-    //         </div>
-    //     )
-    // }
 
     return (
         <ConfigProvider
@@ -609,11 +573,11 @@ export default function ProfilePage() {
                                     {recentReviews.map((review, index) => (
                                         <div className="profile-review-item" key={review?._id || index}>
                                             <div>
-                                                <p className="profile-review-title">{review?.title || 'Untitled Review'}</p>
+                                                <p className="profile-review-title">{review?.packageName || 'Untitled Review'}</p>
                                                 <p className="profile-review-meta">{review?.date || 'Recently'}</p>
                                                 <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
                                             </div>
-                                            <p className="profile-review-snippet">{review?.snippet || review?.comment || 'View review details.'}</p>
+                                            <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -632,14 +596,14 @@ export default function ProfilePage() {
                                         <div className="profile-booking-item" key={booking?._id || index}>
                                             <div className="profile-booking-header">
                                                 <div>
-                                                    <p className="profile-booking-title">{booking?.title || 'Untitled Booking'}</p>
-                                                    <p className="profile-booking-meta">{booking?.date || 'Recently'}</p>
+                                                    <p className="profile-booking-title">{booking?.packageName || 'Untitled Booking'}</p>
+                                                    <p className="profile-booking-meta">{booking?.bookingDate || 'Recently'}</p>
                                                 </div>
                                                 <span className={`profile-booking-status profile-booking-${(booking?.status || 'Pending').toLowerCase()}`}>
                                                     {booking?.status || 'Pending'}
                                                 </span>
                                             </div>
-                                            <p className="profile-booking-details">Ref: {booking?.reference || 'BK-00000'} • {booking?.packageType} Booking</p>
+                                            <p className="profile-booking-details">Reference No. {booking?.ref || 'BK-00000'} • {booking?.packageType}</p>
                                         </div>
                                     ))}
                                 </div>
