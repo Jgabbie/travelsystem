@@ -4,7 +4,6 @@
 }
 
 .display-invoice-container {
-    padding: 40px;
     margin-top: 20px;
     display: flex;
     flex-direction: column;
@@ -23,20 +22,20 @@
     font-weight: 600;
     color: #1f2a44;
     margin: 0;
-    text-align: center;
+    text-align: left;
 }
 
 .display-invoice-subtitle {
-    text-align: center;
+    text-align: left;
     color: #555;
 }
 
 .display-invoice-card {
-    background: #f9f9f9;
-    border-radius: 8px;
+    background: #ffffff;
+    border-radius: 20px;
     padding: 16px;
-    border: 1px solid #eee;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
 }
 
 .display-invoice-actions {

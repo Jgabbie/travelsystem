@@ -44,8 +44,8 @@
 
 .upload-card {
     flex: 1 1 350px;
-    width: 100%;
-    height: 350px;
+    width: 60%;
+    height: 600px;
     background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
@@ -84,6 +84,16 @@
     border-color: #305797;
     background-color: #eef3ff;
 }
+
+.upload-passport-notes {
+    background-color: #fffbe6;
+    border: 1px solid #ffe58f;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
 
 .upload-passport-actions {
     display: flex;

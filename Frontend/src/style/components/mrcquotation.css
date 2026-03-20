@@ -1,0 +1,263 @@
+.mrc-quotation-page {
+    max-width: 760px;
+    padding: 26px 28px 30px;
+}
+
+.mrc-quotation-page::before {
+    height: 70px;
+    background: #1f6aa5;
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+}
+
+.mrc-quotation-page::after {
+    height: 70px;
+    background: #1f6aa5;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.mrc-quotation-page::before,
+.mrc-quotation-page::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    left: 0;
+    z-index: -1;
+}
+
+.mrc-quotation-page::before {
+    top: -24px;
+}
+
+.mrc-quotation-page::after {
+    bottom: -24px;
+}
+
+.mrc-quotation-intro {
+    font-size: 12px;
+    color: #333;
+    margin-bottom: 12px;
+    line-height: 1.45;
+}
+
+.mrc-quotation-table {
+    border: 1px solid #3a3a3a;
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+.mrc-quotation-row {
+    display: grid;
+    grid-template-columns: 38% 62%;
+    border-bottom: 1px solid #3a3a3a;
+    background: #f2f2f2;
+}
+
+.mrc-quotation-row:last-child {
+    border-bottom: none;
+}
+
+.mrc-quotation-label {
+    background: #2f4f78;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 6px 8px;
+    border-right: 1px solid #3a3a3a;
+    text-transform: uppercase;
+}
+
+.mrc-quotation-value {
+    font-size: 11px;
+    padding: 6px 8px;
+    color: #222;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.mrc-quotation-row.is-emphasis .mrc-quotation-value {
+    background: #f7e04f;
+    color: #1a1a1a;
+    font-weight: 800;
+}
+
+.mrc-quotation-row.is-danger .mrc-quotation-value {
+    color: #d32f2f;
+}
+
+.mrc-flight-details {
+    margin-top: 6px;
+}
+
+.mrc-flight-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #d32f2f;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.mrc-flight-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.mrc-flight-card {
+    border: 1px solid #d9d9d9;
+    padding: 10px 12px;
+    background: #fafafa;
+    font-size: 11px;
+}
+
+.mrc-flight-title {
+    font-weight: 700;
+    color: #4a4a4a;
+    margin-bottom: 6px;
+}
+
+.mrc-flight-route {
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+}
+
+.mrc-flight-airline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.mrc-flight-airline-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #e53b2c;
+    display: inline-block;
+}
+
+.mrc-flight-no {
+    color: #666;
+}
+
+.mrc-flight-date {
+    color: #444;
+}
+
+.mrc-quotation-footer {
+    margin-top: 18px;
+    display: grid;
+    gap: 4px;
+    font-size: 10px;
+    color: #4a4a4a;
+    text-align: center;
+}
+
+.mrc-quotation-section {
+    margin-bottom: 14px;
+    color: #222;
+    font-size: 11px;
+}
+
+.mrc-quotation-subtitle {
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.mrc-quotation-list {
+    margin: 0;
+    padding-left: 18px;
+    list-style: none;
+    display: grid;
+    gap: 4px;
+}
+
+.mrc-quotation-list li::before {
+    content: '\2713';
+    color: #1a1a1a;
+    margin-right: 6px;
+    font-weight: 700;
+}
+
+.mrc-quotation-list.is-bulleted li::before {
+    content: '\2022';
+    color: #111;
+    margin-right: 6px;
+    font-weight: 700;
+}
+
+.mrc-quotation-itinerary {
+    display: grid;
+    gap: 8px;
+}
+
+.mrc-quotation-itinerary-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 10px;
+}
+
+.mrc-quotation-itinerary-date {
+    font-weight: 700;
+    text-transform: uppercase;
+    background: #f7e04f;
+    padding: 2px 6px;
+    display: inline-block;
+    align-self: start;
+}
+
+.mrc-quotation-itinerary-body p {
+    margin: 0 0 4px;
+}
+
+.mrc-quotation-remark-title {
+    color: #d32f2f;
+}
+
+.mrc-quotation-note {
+    margin-top: 10px;
+    background: #f7e04f;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.mrc-quotation-terms-box {
+    border: 1px solid #8a8a8a;
+    padding: 16px 18px;
+    font-size: 11px;
+    color: #222;
+    line-height: 1.5;
+}
+
+.mrc-quotation-terms-title {
+    font-weight: 700;
+    color: #d32f2f;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.mrc-quotation-terms-list {
+    margin: 0 0 18px;
+    padding-left: 18px;
+    display: grid;
+    gap: 6px;
+}
+
+.mrc-quotation-terms-list li::marker {
+    color: #111;
+}
+
+.mrc-quotation-signoff {
+    margin-top: 18px;
+}
+
+.mrc-quotation-signoff p {
+    margin: 0;
+}
+
+.mrc-quotation-signoff-name {
+    font-weight: 700;
+    margin-top: 6px;
+}

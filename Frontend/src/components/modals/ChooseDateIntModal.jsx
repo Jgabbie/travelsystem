@@ -9,9 +9,11 @@ export default function ChooseDateIntModal({
     onProceed,
     packageData,
     selectedDate,
+    selectedTravelerPrice,
     onDateChange
 }) {
     const [selectedStartDate, setSelectedStartDate] = useState(null);
+    const [selectedDatePrice, setSelectedDatePrice] = useState(0);
 
     // Sync local selection with parent (dayjs object) — only date
     useEffect(() => {
@@ -25,8 +27,9 @@ export default function ChooseDateIntModal({
 
 
     const handleProceed = () => {
-        if (!selectedStartDate) return;
-        onProceed({ selectedDate: selectedStartDate }); // only date string
+        if (!selectedStartDate || !selectedDatePrice) return;
+        console.log('Proceeding with date:', selectedStartDate, 'and price:', selectedDatePrice);
+        onProceed({ selectedDate: selectedStartDate, selectedTravelerPrice: selectedDatePrice }); // only date string
     };
 
     const handleCancel = () => {
@@ -64,7 +67,11 @@ export default function ChooseDateIntModal({
                                         }`}
                                     onClick={() => {
                                         setSelectedStartDate(startDateStr);
-                                        onDateChange?.(startDateStr);
+                                        setSelectedDatePrice(price);
+                                        onDateChange?.({
+                                            date: startDateStr,
+                                            price: price
+                                        });
                                     }}
                                 >
                                     <div className="budget-card-info">

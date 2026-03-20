@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space } from 'antd';
+import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,6 +12,14 @@ import axiosInstance from '../../config/axiosConfig';
 const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
 
 
+const getBase64 = (file) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    });
+
 export default function PaymentProcess() {
     const { bookingData } = useBooking();
     const navigate = useNavigate();
@@ -20,7 +28,11 @@ export default function PaymentProcess() {
     const [paymentType, setPaymentType] = useState(null); // 'deposit' or 'full'
     const [frequency, setFrequency] = useState('Every 2 weeks');
     const [method, setMethod] = useState(null);
+
     const [fileList, setFileList] = useState([]);
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
+    const [previewTitle, setPreviewTitle] = useState('');
 
     useEffect(() => {
         if (!bookingData) {
@@ -31,9 +43,31 @@ export default function PaymentProcess() {
         }
     }, [bookingData, navigate, searchParams]);
 
+    const handleUploadChange = async ({ fileList: newFileList }) => {
+        const file = newFileList[0];
 
+        if (file && file.originFileObj) {
+            file.preview = await getBase64(file.originFileObj);
+        }
 
-    const handleUploadChange = ({ fileList: newFileList }) => setFileList(newFileList);
+        setFileList(newFileList.slice(-1));
+    };
+
+    const beforeUpload = (file) => {
+        const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isImage) {
+            message.error('Only JPG/PNG files are allowed');
+            return Upload.LIST_IGNORE;
+        }
+
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            message.error('Image must be smaller than 2MB');
+            return Upload.LIST_IGNORE;
+        }
+
+        return false; // prevent auto upload
+    };
 
     const generateInvoiceNumber = () => {
         const prefix = 'INV';
@@ -68,6 +102,22 @@ export default function PaymentProcess() {
     const phone = bookingData?.leadContact || 'Phone Number';
 
     const proceedBooking = async () => {
+
+        if (!paymentType) {
+            message.warning("Please select a payment type.");
+            return;
+        }
+
+        if (!method) {
+            message.warning("Please select a payment method.");
+            return;
+        }
+
+        if (method === 'manual' && fileList.length === 0) {
+            message.warning("Please upload proof of payment.");
+            return;
+        }
+
         try {
             const successToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
             localStorage.setItem(SUCCESS_TOKEN_KEY, successToken);
@@ -168,6 +218,43 @@ export default function PaymentProcess() {
 
     const formatCurrency = (value) => `PHP ${value.toFixed(2)}`;
 
+    const getFrequencyWeeks = (value) => {
+        if (value === 'Every week') return 1
+        if (value === 'Every 3 weeks') return 3
+        return 2
+    }
+
+    const frequencyWeeks = getFrequencyWeeks(frequency)
+    const today = dayjs()
+    const travelDateValue = bookingData?.travelDate ? dayjs(bookingData.travelDate) : null
+    const depositAmount = null
+    const remainingAmount = null
+    const firstPaymentDate = today.add(frequencyWeeks, 'week')
+    const secondPaymentDate = firstPaymentDate.add(frequencyWeeks, 'week')
+    const cappedSecondPaymentDate = travelDateValue && secondPaymentDate.isAfter(travelDateValue)
+        ? travelDateValue
+        : secondPaymentDate
+
+    const formatScheduleAmount = (value) => (value == null ? 'PHP TBD' : formatCurrency(value))
+
+    const paymentSchedule = [
+        {
+            label: 'Deposit (Airfare + Hotel)',
+            amount: depositAmount,
+            date: today
+        },
+        {
+            label: 'Installment 1',
+            amount: remainingAmount,
+            date: firstPaymentDate
+        },
+        {
+            label: 'Installment 2',
+            amount: remainingAmount,
+            date: cappedSecondPaymentDate
+        }
+    ]
+
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -255,6 +342,22 @@ export default function PaymentProcess() {
                         <Text style={styles.thankYou}>THANK YOU.</Text>
                     </View>
                 </View>
+
+                {paymentType === 'deposit' && (
+                    <View style={styles.scheduleSection}>
+                        <Text style={styles.scheduleTitle}>Payment Schedule</Text>
+                        {paymentSchedule.map((entry) => (
+                            <View key={entry.label} style={styles.scheduleRow}>
+                                <View>
+                                    <Text style={styles.scheduleLabel}>{entry.label}</Text>
+                                    <Text style={styles.scheduleDate}>{entry.date.format('MM/DD/YYYY')}</Text>
+                                </View>
+                                <Text style={styles.scheduleAmount}>{formatScheduleAmount(entry.amount)}</Text>
+                            </View>
+                        ))}
+                        <Text style={styles.scheduleNote}>Note: A penalty of PHP 500 applies for late deposit payments.</Text>
+                    </View>
+                )}
             </Page>
         </Document>
     );
@@ -292,7 +395,14 @@ export default function PaymentProcess() {
         totalDueRow: { flexDirection: 'row', borderTop: '1pt solid #333', borderBottom: '1pt solid #333', paddingVertical: 10, width: '100%', justifyContent: 'space-between', marginBottom: 10 },
         totalDueLabel: { fontSize: 10, fontWeight: 'bold' },
         totalDueValue: { fontSize: 10, fontWeight: 'bold' },
-        thankYou: { fontSize: 9, fontWeight: 'bold', color: '#555' }
+        thankYou: { fontSize: 9, fontWeight: 'bold', color: '#555' },
+        scheduleSection: { marginTop: 18, paddingTop: 10, borderTop: '1pt solid #E5E7EB' },
+        scheduleTitle: { fontSize: 10, fontWeight: 'bold', marginBottom: 6, color: '#333' },
+        scheduleRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderBottom: '0.5pt dashed #E5E7EB' },
+        scheduleLabel: { fontSize: 8, fontWeight: 'bold', color: '#333' },
+        scheduleDate: { fontSize: 8, color: '#555' },
+        scheduleAmount: { fontSize: 8, fontWeight: 'bold', color: '#305797' },
+        scheduleNote: { marginTop: 6, fontSize: 8, color: '#8a4b1b' }
     });
 
 
@@ -306,95 +416,135 @@ export default function PaymentProcess() {
                 }}
             >
                 <div className="payment-process-container">
-                    <div className='display-invoice-container'>
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '15px',
-                        }}>
-                            <div>
-                                <h2 className="display-invoice-title" style={{ textAlign: "left" }}>Booking Invoice</h2>
-                                <p className="display-invoice-subtitle" style={{ textAlign: "left", marginTop: '10px' }}>
-                                    Please review your booking invoice before proceeding to payment.
-                                </p>
-                            </div>
 
+                    <Space style={{ marginLeft: "auto" }}>
+                        <Button
+                            className='payment-process-backbutton'
+                            onClick={() => navigate(-1)}
+                            style={{ display: 'flex', alignItems: 'center' }}
+                        >
+                            Back
+                        </Button>
+                    </Space>
 
-                            <Space style={{ marginLeft: "auto" }}>
-                                <Button
-                                    onClick={() => navigate(-1)}
-                                    style={{ display: 'flex', alignItems: 'center' }}
-                                >
-                                    Back
-                                </Button>
-                            </Space>
-                        </div>
-                        <div className="display-invoice-wrapper">
-                            <div className="display-invoice-card">
-                                <div className="pdf-viewer-wrapper">
-                                    <div className="pdf-toolbar-mask"></div>
-                                    <PDFViewer style={{ width: '100%', height: 727 }}>
-                                        <MyDocument />
-                                    </PDFViewer>
+                    <div className="payment-top-grid">
+                        <div className='payment-mode-container payment-section'>
+                            <div className="payment-methods-wrapper">
+                                <div className="payment-section-header">
+                                    <div>
+                                        <h2 className="payment-methods-title payment-section-title">Mode of Payment</h2>
+                                        <p className="payment-methods-subtitle payment-section-subtitle">
+                                            Select your mode of payment.
+                                        </p>
+                                    </div>
                                 </div>
 
+                                <Radio.Group
+                                    onChange={(e) => setPaymentType(e.target.value)}
+                                    value={paymentType}
+                                    className="payment-methods-cards"
+                                >
+                                    <div className='payment-cards-group'>
+                                        <Radio value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
+                                            <div style={{ width: '100%' }}>
+                                                <h3>Deposit</h3>
+                                                <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
+
+                                                {paymentType === 'deposit' && (
+                                                    <div style={{ marginTop: '12px' }} onClick={(e) => e.stopPropagation()}>
+                                                        <p style={{ marginBottom: '8px', fontSize: '12px', fontWeight: 'bold' }}>
+                                                            Payment Schedule:
+                                                        </p>
+                                                        <Select
+                                                            defaultValue="Every 2 weeks"
+                                                            style={{ width: '100%' }}
+                                                            onChange={(value) => setFrequency(value)}
+                                                            options={[
+                                                                { value: 'Every week', label: 'Every week' },
+                                                                { value: 'Every 2 weeks', label: 'Every 2 weeks' },
+                                                                { value: 'Every 3 weeks', label: 'Every 3 weeks' },
+                                                            ]}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </Radio>
+
+                                        <Radio value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
+                                            <div>
+                                                <h3>Full Payment</h3>
+                                                <p>Pay the full amount to secure your booking and not worry about future payment deadlines.</p>
+                                            </div>
+                                        </Radio>
+                                    </div>
+
+                                </Radio.Group>
+                            </div>
+                            {paymentType === 'deposit' && (
+                                <div style={{ marginTop: '16px', padding: '16px 20px', borderRadius: '14px', background: '#f7f9ff', border: '1px dashed #cfd8ee' }}>
+                                    <p style={{ marginBottom: '8px', fontSize: '28px', fontWeight: 500, color: '#1f2a44' }}>
+                                        Payment Schedule
+                                    </p>
+                                    <div className="payment-schedule-list">
+                                        {paymentSchedule.map((entry) => (
+                                            <div
+                                                key={entry.label}
+                                                className="payment-schedule-item"
+                                            >
+                                                <div>
+                                                    <div className="payment-schedule-label">{entry.label}</div>
+                                                    <div className="payment-schedule-date">
+                                                        {entry.date.format('MMM D, YYYY')}
+                                                    </div>
+                                                </div>
+                                                <div className="payment-schedule-amount">
+                                                    {formatScheduleAmount(entry.amount)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="payment-schedule-note">
+                                        Note: A penalty of PHP 500 applies for late deposit payments.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className='display-invoice-container payment-section'>
+                            <div className="payment-section-header">
+                                <div>
+                                    <h2 className="display-invoice-title payment-section-title">Booking Invoice</h2>
+                                    <p className="display-invoice-subtitle payment-section-subtitle">
+                                        Please review your booking invoice before proceeding to payment.
+                                    </p>
+                                </div>
+
+
+                            </div>
+                            <div className="display-invoice-wrapper">
+                                <div className="display-invoice-card">
+                                    <div className="pdf-viewer-wrapper">
+                                        <div className="pdf-toolbar-mask"></div>
+                                        <PDFViewer style={{ width: '100%', height: 727 }}>
+                                            <MyDocument />
+                                        </PDFViewer>
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className='payment-methods-container'>
+                    <div className='payment-methods-container payment-section'>
                         <div className="payment-methods-wrapper">
-                            <h2 className="payment-methods-title" style={{ textAlign: "left" }}>Mode of Payment</h2>
-                            <p className="payment-methods-subtitle" style={{ textAlign: "left" }}>
-                                Select your mode of payment.
-                            </p>
-
-                            <Radio.Group
-                                onChange={(e) => setPaymentType(e.target.value)}
-                                value={paymentType}
-                                className="payment-methods-cards"
-                            >
-                                <Radio value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
-                                    <div style={{ width: '100%' }}>
-                                        <h3>Deposit</h3>
-                                        <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
-
-                                        {paymentType === 'deposit' && (
-                                            <div style={{ marginTop: '12px' }} onClick={(e) => e.stopPropagation()}>
-                                                <p style={{ marginBottom: '8px', fontSize: '12px', fontWeight: 'bold' }}>
-                                                    Payment Schedule:
-                                                </p>
-                                                <Select
-                                                    defaultValue="Every 2 weeks"
-                                                    style={{ width: '100%' }}
-                                                    onChange={(value) => setFrequency(value)}
-                                                    options={[
-                                                        { value: 'Every week', label: 'Every week' },
-                                                        { value: 'Every 2 weeks', label: 'Every 2 weeks' },
-                                                        { value: 'Every 3 weeks', label: 'Every 3 weeks' },
-                                                    ]}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </Radio>
-
-                                <Radio value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
-                                    <div>
-                                        <h3>Full Payment</h3>
-                                        <p>Pay the full amount to secure your booking and not worry about future payment deadlines.</p>
-                                    </div>
-                                </Radio>
-                            </Radio.Group>
-                        </div>
-                    </div>
-
-                    <div className='payment-methods-container'>
-                        <div className="payment-methods-wrapper">
-                            <h2 className="payment-methods-title" style={{ textAlign: "left" }}>Payment Methods</h2>
-                            <p className="payment-methods-subtitle" style={{ textAlign: "left" }}>
-                                Select a payment method to complete your booking.
-                            </p>
+                            <div className="payment-section-header">
+                                <div>
+                                    <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
+                                    <p className="payment-methods-subtitle payment-section-subtitle">
+                                        Select a payment method to complete your booking.
+                                    </p>
+                                </div>
+                            </div>
 
                             <Radio.Group
                                 onChange={(e) => setMethod(e.target.value)}
@@ -425,10 +575,9 @@ export default function PaymentProcess() {
                                 </Radio>
                             </Radio.Group>
                         </div>
-                    </div>
 
-                    {method === 'manual' && (
-                        <div className="manual-transfer-container">
+                        {method === 'manual' && (
+
                             <div className="manual-transfer-details">
                                 <div className="bank-accounts-section">
                                     <h4 className="section-subtitle">Available Bank Accounts</h4>
@@ -473,19 +622,45 @@ export default function PaymentProcess() {
                                         maxCount={1}
                                         fileList={fileList}
                                         onChange={handleUploadChange}
-                                        beforeUpload={() => false} // Prevents auto-upload to server immediately
+                                        beforeUpload={beforeUpload}
+                                        accept=".jpg,.jpeg,.png"
                                     >
                                         <Button icon={<UploadOutlined />} className="upload-btn">
                                             Select Receipt Image
                                         </Button>
                                     </Upload>
+
+                                    {fileList.length > 0 && (
+                                        <div className="upload-preview-container">
+                                            <h4 className="section-subtitle">Preview</h4>
+
+                                            <div className="upload-preview-box">
+                                                <img
+                                                    src={fileList[0].preview}
+                                                    alt="Receipt Preview"
+                                                    className="upload-preview-image"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        </div>
-                    )}
+
+                        )}
+                    </div>
+
+
 
                     <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
-                        <Button type="primary" onClick={proceedBooking}>
+                        <Button
+                            type="primary"
+                            onClick={proceedBooking}
+                            disabled={
+                                !paymentType ||
+                                !method ||
+                                (method === 'manual' && fileList.length === 0)
+                            }
+                        >
                             Proceed
                         </Button>
                     </div>

@@ -1,12 +1,18 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom';
+import { Spin } from 'antd';
 import { useAuth } from '../hooks/useAuth';
 
 const GuestsUsersRoute = () => {
-    const { auth } = useAuth();
+    const { auth, authLoading } = useAuth();
 
-    // const isAuthenticated = !!auth?.username; //if authenticated
-    // const isAdmin = auth?.role === 'Admin'; //if authenticated user is admin
+    if (authLoading && !auth) {
+        return (
+            <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Spin size="large" />
+            </div>
+        );
+    }
 
     if (auth?.role === "Admin") {
         return <Navigate to="/dashboard" replace />;

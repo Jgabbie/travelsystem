@@ -27,3 +27,372 @@
     color: #555;
     text-align: center;
 }
+
+.pdf-capture {
+    width: 794px;
+    min-height: 1123px;
+    margin: 0 auto;
+}
+
+.itinerary-inclusions-exclusions {
+    margin: 40px;
+    padding: 32px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    border: 1px solid #e0e7ff;
+    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section {
+    margin: 40px;
+    padding: 32px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    border: 1px solid #e0e7ff;
+    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.booking-section-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.booking-section-subtitle {
+    margin: 0;
+    color: #4e5b72;
+    font-size: 14px;
+    max-width: 520px;
+}
+
+.booking-section .booking-summary-wrapper {
+    text-align: left;
+}
+
+.booking-section .booking-summary-images {
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.booking-section .booking-summary-image {
+    width: 320px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section .booking-summary-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section .booking-summary-row {
+    padding: 6px 0;
+    border-bottom: 1px dashed #e6eaf4;
+}
+
+.booking-section .booking-summary-row:last-child {
+    border-bottom: none;
+}
+
+.booking-section .booking-summary-package-type-card {
+    border: 1px dashed #cfd8ee;
+    background: #f7f9ff;
+}
+
+.booking-section .travelers-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.booking-section .traveler-card {
+    border-radius: 16px;
+    border: 1px solid #e7ecf7;
+    background: #ffffff;
+    padding: 16px;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section .traveler-counter {
+    justify-content: flex-start;
+}
+
+.booking-section .upload-passport-wrapper {
+    text-align: left;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(320px, 625px));
+    gap: 20px;
+    justify-content: start;
+    justify-items: start;
+}
+
+.booking-section .upload-card {
+    width: 100%;
+    max-width: 625px;
+    height: auto;
+    min-height: 240px;
+    border-radius: 16px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section .upload-passport-left {
+    align-items: flex-start;
+}
+
+.booking-section .upload-passport-right {
+    align-items: center;
+}
+
+.booking-section .upload-passport-notes {
+    border-radius: 12px;
+    border: 1px solid #f5d37a;
+}
+
+.booking-section .solo-group-cards {
+    gap: 24px;
+    height: auto;
+}
+
+.booking-section .solo-group-card {
+    border-radius: 20px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.booking-section .solo-group-card:hover {
+    transform: translateY(-4px);
+    border-color: #cdd9f5;
+    box-shadow: 0 16px 30px rgba(31, 42, 68, 0.12);
+}
+
+.booking-section .solo-group-card.is-selected {
+    border-color: #305797;
+    box-shadow: 0 18px 34px rgba(48, 87, 151, 0.2);
+    transform: translateY(-2px);
+}
+
+.booking-section .solo-group-image {
+    height: 180px;
+    border-radius: 14px;
+}
+
+.itinerary-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.itinerary-section-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.itinerary-section-subtitle {
+    margin: 0;
+    color: #4e5b72;
+    font-size: 14px;
+    max-width: 520px;
+}
+
+.itinerary-inclusions-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+}
+
+.itinerary-card,
+.inclusions-exclusions-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.card-title {
+    margin-bottom: 20px;
+}
+
+.card-title h3 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    color: #1f2a44;
+    margin: 8px 0 6px;
+}
+
+.card-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7486;
+}
+
+.card-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #305797;
+    background: rgba(48, 87, 151, 0.12);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.itinerary-list {
+    display: grid;
+    gap: 16px;
+}
+
+.itinerary-day {
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #f7f9ff;
+    border: 1px solid #e4e9f8;
+}
+
+.itinerary-day-label {
+    font-weight: 600;
+    color: #1f2a44;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.itinerary-items,
+.inclusions-list,
+.exclusions-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.itinerary-items li,
+.inclusions-list li,
+.exclusions-list li {
+    position: relative;
+    padding-left: 22px;
+    font-size: 14px;
+    color: #3c465a;
+}
+
+.itinerary-items li::before,
+.inclusions-list li::before,
+.exclusions-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #305797;
+    box-shadow: 0 0 0 3px rgba(48, 87, 151, 0.15);
+}
+
+.exclusions-list li::before {
+    background: #b54747;
+    box-shadow: 0 0 0 3px rgba(181, 71, 71, 0.14);
+}
+
+.itinerary-empty {
+    margin: 0;
+    font-size: 13px;
+    color: #7c8799;
+    font-style: italic;
+}
+
+.inclusions-exclusions-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.inclusions-card,
+.exclusions-card {
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: #f9fafc;
+    border: 1px solid #edf0f7;
+}
+
+.inclusions-card h4,
+.exclusions-card h4 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    color: #1f2a44;
+}
+
+@media (max-width: 840px) {
+    .pdf-capture {
+        width: 100%;
+        min-height: 0;
+    }
+
+    .itinerary-inclusions-exclusions {
+        margin: 24px 16px;
+        padding: 20px;
+    }
+
+    .booking-section {
+        margin: 24px 16px;
+        padding: 20px;
+    }
+
+    .itinerary-inclusions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-section-header {
+        margin-bottom: 18px;
+    }
+
+    .booking-section .booking-summary-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-section .booking-summary-image {
+        width: 100%;
+        height: auto;
+        max-height: 220px;
+    }
+
+    .booking-section .upload-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .booking-section .upload-passport-right {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 540px) {
+    .booking-section .booking-summary-image {
+        max-height: 180px;
+    }
+}
