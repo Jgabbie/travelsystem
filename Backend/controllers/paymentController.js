@@ -178,6 +178,8 @@ const handlePayMongoWebhook = async (req, res) => {
         if (event === 'checkout_session.payment.paid') {
             let metadata = eventData.metadata || sessionData.metadata || {};
 
+            let sessionAttributes = null;
+
             if (!metadata.userId) {
                 const sessionId =
                     payload?.data?.attributes?.data?.id ||
@@ -198,7 +200,8 @@ const handlePayMongoWebhook = async (req, res) => {
                                 },
                             }
                         );
-                        metadata = sessionResponse?.data?.data?.attributes?.metadata || metadata;
+                        sessionAttributes = sessionResponse?.data?.data?.attributes || null;
+                        metadata = sessionAttributes?.metadata || metadata;
                     } catch (sessionError) {
                         console.error('PayMongo checkout session fetch failed:', sessionError.response?.data || sessionError.message);
                     }
@@ -228,12 +231,26 @@ const handlePayMongoWebhook = async (req, res) => {
                 status: 'Successful'
             });
 
+            const amountCents =
+                eventData.paid_amount ||
+                eventData.amount ||
+                sessionData.amount_total ||
+                sessionAttributes?.amount_total ||
+                0;
+
+            console.log('PayMongo amount sources:', {
+                paid_amount: eventData.paid_amount,
+                amount: eventData.amount,
+                session_amount_total: sessionData.amount_total,
+                fetched_amount_total: sessionAttributes?.amount_total,
+            });
+
             await TransactionModel.create({
                 bookingId: newBooking._id,
                 packageId: metadata.packageId,
                 userId: user._id,
                 reference: generateTransactionReference(),
-                amount: (eventData.paid_amount || eventData.amount || sessionData.amount_total || 0) / 100,
+                amount: amountCents / 100,
                 method: 'Paymongo',
                 status: 'Successful',
             });
