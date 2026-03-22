@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require("./routes/userRoutes")
+const packageRoutes = require("./routes/packageRoutes");
 const cookieParser = require('cookie-parser');
 
 require('dotenv').config();
@@ -49,6 +51,9 @@ app.get('/api/test', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/package', packageRoutes);
+
 
 app.get('/', (req, res) => res.send('API Working'));
 
