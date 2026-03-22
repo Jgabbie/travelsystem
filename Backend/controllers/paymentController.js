@@ -28,8 +28,9 @@ const parsePayMongoSignature = (signatureHeader) => {
         if (key && value) acc[key] = value;
         return acc;
     }, {});
-    if (!signatureMap.t || !signatureMap.v1) return null;
-    return { timestamp: signatureMap.t, signature: signatureMap.v1 };
+    const signature = signatureMap.v1 || signatureMap.te;
+    if (!signatureMap.t || !signature) return null;
+    return { timestamp: signatureMap.t, signature };
 };
 
 
