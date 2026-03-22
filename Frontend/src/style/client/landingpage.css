@@ -72,7 +72,7 @@ body {
 .search-widget {
     position: absolute;
     bottom: -60px;
-    background: rgba(255, 255, 255);
+    background: rgb(255, 255, 255);
     width: 80%;
     max-width: 1000px;
     border-radius: 15px;
@@ -107,7 +107,7 @@ body {
 }
 
 .search-btn {
-    background-color: #2E5994;
+    background-color: #ff0000;
     border: none;
     padding: 0 25px;
     border-radius: 5px;
