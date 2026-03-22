@@ -74,7 +74,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
         form.setFieldsValue({
             dateOfRegistration: dayjs().format('MM/DD/YYYY'),
             tourPackageTitle: summary.packageName,
-            tourPackageVia: summary.packageName,
+            tourPackageVia: summary.airlineOptions?.[0]?.name ? summary.airlineOptions[0].type === "fixed" ? summary.airlineOptions[0].name : 'N/A' : 'N/A',
             packageTravelDate: dayjs(summary.travelDate).format('MM/DD/YYYY'),
             travelersDate: dayjs().format('MMMM DD, YYYY'),
         });

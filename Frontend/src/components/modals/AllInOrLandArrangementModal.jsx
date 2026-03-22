@@ -62,10 +62,10 @@ export default function AllInOrLandArrangementModal({
 
                     <button
                         type="button"
-                        className={`arrangement-card${selection === 'all-in' ? ' is-selected' : ''}`}
-                        onClick={() => handleSelect('all-in')}
+                        className={`arrangement-card${selection === 'private' ? ' is-selected' : ''}`}
+                        onClick={() => handleSelect('private')}
                     >
-                        <div className="arrangement-image all-in" aria-hidden="true" />
+                        <div className="arrangement-image private" aria-hidden="true" />
                         <h3>Customized Package</h3>
                         <p>
                             Build your own itinerary by selecting preferred hotels, activities, and other

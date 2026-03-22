@@ -19,7 +19,8 @@ export const AuthProvider = ({ children }) => {
             setAuth({
                 id: user.id,
                 username: user.username,
-                role: user.role
+                role: user.role,
+                loginOnce: user.loginOnce
             });
         } catch (err) {
             console.error("Auth check failed:", err);

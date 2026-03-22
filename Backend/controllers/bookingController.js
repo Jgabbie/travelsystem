@@ -51,6 +51,13 @@ const createBooking = async (req, res) => {
             bookingId: newBooking._id,
             packageId: packageId
         })
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('booking:created', {
+                id: newBooking._id,
+                createdAt: newBooking.createdAt
+            })
+        }
         res.status(201).json(newBooking)
     } catch (error) {
         res.status(500).json({ message: "Error creating booking", error })
@@ -154,7 +161,7 @@ const cancelBooking = async (req, res) => {
 
         booking.status = 'cancelled'
         await booking.save()
-        await CancellationModel.create({
+        const cancellation = await CancellationModel.create({
             bookingId: id,
             userId,
             reference: generateCancellationReference(),
@@ -165,6 +172,13 @@ const cancelBooking = async (req, res) => {
             status: 'Pending'
         })
         logAction('BOOKING_CANCELLED', userId, { bookingId: id, reason })
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('cancellation:created', {
+                id: cancellation._id,
+                cancellationDate: cancellation.cancellationDate
+            })
+        }
         res.status(200).json({ message: 'Booking cancelled' })
     }
     catch (error) {

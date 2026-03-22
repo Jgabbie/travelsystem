@@ -30,6 +30,14 @@ const createTransaction = async (req, res) => {
 
         logAction('TRANSACTION_CREATED', userId, { transactionId: newTransaction._id })
 
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('transaction:created', {
+                id: newTransaction._id,
+                createdAt: newTransaction.createdAt
+            })
+        }
+
         res.status(201).json(newTransaction)
     } catch (error) {
         logAction('CREATE_TRANSACTION_ERROR', userId, { error: error.message })

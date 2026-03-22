@@ -29,6 +29,14 @@ const submitRating = async (req, res) => {
                 review
             });
 
+            const io = req.app.get('io')
+            if (io) {
+                io.emit('rating:created', {
+                    id: newRating._id,
+                    createdAt: newRating.createdAt
+                })
+            }
+
             return res.status(201).json({
                 message: "Rating submitted successfully",
                 rating: newRating
@@ -60,6 +68,14 @@ const submitRating = async (req, res) => {
             rating,
             review
         });
+
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('rating:created', {
+                id: guestRating._id,
+                createdAt: guestRating.createdAt
+            })
+        }
 
         res.status(201).json({
             message: "Guest review submitted successfully",

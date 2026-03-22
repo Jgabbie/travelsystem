@@ -216,6 +216,14 @@ const createUsers = async (req, res) => {
                 new_username: newUser.username
             });
 
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('user:created', {
+                id: newUser._id,
+                createdAt: newUser.createdAt
+            })
+        }
+
         res.status(201).json({ message: "User created successfully", user: newUser });
 
     } catch (err) {
@@ -223,6 +231,26 @@ const createUsers = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+const markLoginOnce = async (req, res) => {
+    try {
+        const { userId } = req
+        const user = await UserModel.findById(userId)
+
+        if (!user) {
+            return res.status(409).json({ message: "User not found" })
+        }
+
+        if (!user.loginOnce) {
+            user.loginOnce = true
+            await user.save()
+        }
+
+        res.json({ success: true, loginOnce: user.loginOnce })
+    } catch (e) {
+        res.status(500).json({ message: "Mark login once failed: " + e.message })
+    }
+}
 
 const delUsers = async (req, res) => {
     const { id } = req.body;
@@ -268,4 +296,4 @@ const delUsers = async (req, res) => {
     }
 };
 
-module.exports = { getUsers, createUsers, delUsers, getUserData, updateUserData };
+module.exports = { getUsers, createUsers, delUsers, getUserData, updateUserData, markLoginOnce };

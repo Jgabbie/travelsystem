@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider } from 'antd';
+import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -11,7 +11,6 @@ import TopNavUser from '../../components/TopNavUser'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
-import LoadingScreen from '../../components/LoadingScreen';
 
 
 export default function PackagePage() {
@@ -32,6 +31,7 @@ export default function PackagePage() {
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
     const [selectedDatePrice, setSelectedDatePrice] = useState(0)
+    const [selectedDateRate, setSelectedDateRate] = useState(0)
     const [travelerCounts, setTravelerCounts] = useState(null)
     const [arrangementSelection, setArrangementSelection] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
@@ -57,6 +57,7 @@ export default function PackagePage() {
     const resetBookingFlow = () => {
         setSelectedDate(null)
         setSelectedDatePrice(0)
+        setSelectedDateRate(0)
         setTravelerCounts(null)
         setArrangementSelection(null)
         setSoloGroupSelection(null)
@@ -158,7 +159,14 @@ export default function PackagePage() {
                         <strong>{day.replace('day', 'Day ')}</strong>
                         <ul>
                             {(itineraries[day] || []).map((item, index) => (
-                                <li key={`${day}-${index}`}>{item}</li>
+                                <li key={`${day}-${index}`}>
+                                    <div>{item.activity}</div>
+                                    {item.isOptional && (
+                                        <div>
+                                            Optional: {item.optionalActivity} - ₱{item.optionalPrice?.toLocaleString()}
+                                        </div>
+                                    )}
+                                </li>
                             ))}
                         </ul>
                     </div>
@@ -279,7 +287,11 @@ export default function PackagePage() {
     const summaryData = {
         packageId: packageData?._id || null,
         packageName: packageData?.packageName || 'Package Details',
-        packagePricePerPax: packageData?.packagePricePerPax || 0,
+        packagePricePerPax: packageData?.packagePricePerPax + selectedDateRate || 0,
+        packageSoloRate: packageData?.packageSoloRate + selectedDateRate || 0,
+        packageChildRate: packageData?.packageChildRate + selectedDateRate || 0,
+        packageInfantRate: packageData?.packageInfantRate + selectedDateRate || 0,
+        packageDeposit: packageData?.packageDeposit || 0,
         packageType: packageData?.packageType || 'fixed',
         travelers: travelerSummary,
         travelerCount: travelerCounts,
@@ -289,6 +301,7 @@ export default function PackagePage() {
         airlineOptions: packageData?.packageAirlines,
         travelDate: selectedDate,
         travelDatePrice: selectedDatePrice,
+        travelDateRate: selectedDateRate,
         inclusions: packageData?.packageInclusions || [],
         exclusions: packageData?.packageExclusions || [],
         itinerary: packageData?.packageItineraries || {},
@@ -353,11 +366,9 @@ export default function PackagePage() {
             return;
         }
 
-        if (packageData?.packageType === 'domestic') {
-            navigate('/domestic-quotation', { state: { packageId: packageData?._id } })
-        } else {
-            setIsArrangementModalOpen(true)
-        }
+
+        setIsArrangementModalOpen(true)
+
     };
 
     const handleProceedArrangement = () => {
@@ -365,8 +376,10 @@ export default function PackagePage() {
 
         if (arrangementSelection === 'fixed') {
             setIsDateModalOpen(true)
-        } else if (arrangementSelection === 'land' || arrangementSelection === 'all-in') {
+        } else if (arrangementSelection === 'private' && packageData.packageType === "international") {
             navigate('/international-quotation', { state: { packageId: packageData?._id } })
+        } else {
+            navigate('/domestic-quotation', { state: { packageId: packageData?._id } })
         }
     }
 
@@ -378,289 +391,292 @@ export default function PackagePage() {
                 }
             }}
         >
-            <LoadingScreen isVisible={packageLoading} message="Loading package details..." onComplete={() => console.log("Loading complete")} />
+
             <div>
-                <TopNavUser />
-                <div className="packagepage-container">
-                    <div className="package-box">
-                        <div className="package-left">
-                            <div className="package-title-group">
-                                <h1 className="package-title">{packageData?.packageName || 'Package Details'}</h1>
-                                {packageData?.packageDuration && (
-                                    <p className="package-duration">{packageData.packageDuration} days</p>
-                                )}
-                            </div>
-
-                            <div className="package-actions-left">
-                                <Button className="package-action-secondary" onClick={handleWishlistClick}>Add to Wishlist</Button>
-                                <Button className="package-action-outline" onClick={() => setShowReviews((prev) => !prev)}>
-                                    {showReviews ? 'Back to Details' : 'Review and Ratings'}
-                                </Button>
-                            </div>
-
-                            <div className="package-left-content">
-                                <div className="package-description">
-                                    {packageLoading ? (
-                                        <p>Loading package details...</p>
-                                    ) : packageError ? (
-                                        <p>{packageError}</p>
-                                    ) : (
-                                        <p>{packageData?.packageDescription || 'No description available.'}</p>
+                <Spin spinning={packageLoading} tip="Loading package details..." size="large">
+                    <TopNavUser />
+                    <div className="packagepage-container">
+                        <div className="package-box">
+                            <div className="package-left">
+                                <div className="package-title-group">
+                                    <h1 className="package-title">{packageData?.packageName || 'Package Details'}</h1>
+                                    {packageData?.packageDuration && (
+                                        <p className="package-duration">{packageData.packageDuration} days</p>
                                     )}
                                 </div>
 
-                                <div className="package-image-section">
-                                    {packageData?.images ? (
-                                        <img
-                                            className="package-image"
-                                            draggable={false}
-                                            alt={packageData.packageName}
-                                            src={packageData.images[0]}
-                                        />
-                                    ) : (
-                                        <div className="package-image-placeholder">No image available</div>
-                                    )}
+                                <div className="package-actions-left">
+                                    <Button className="package-action-secondary" onClick={handleWishlistClick}>Add to Wishlist</Button>
+                                    <Button className="package-action-outline" onClick={() => setShowReviews((prev) => !prev)}>
+                                        {showReviews ? 'Back to Details' : 'Review and Ratings'}
+                                    </Button>
+                                </div>
+
+                                <div className="package-left-content">
+                                    <div className="package-description">
+                                        {packageLoading ? (
+                                            <p>Loading package details...</p>
+                                        ) : packageError ? (
+                                            <p>{packageError}</p>
+                                        ) : (
+                                            <p>{packageData?.packageDescription || 'No description available.'}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="package-image-section">
+                                        {packageData?.images ? (
+                                            <img
+                                                className="package-image"
+                                                draggable={false}
+                                                alt={packageData.packageName}
+                                                src={packageData.images[0]}
+                                            />
+                                        ) : (
+                                            <div className="package-image-placeholder">No image available</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="package-right">
-                            {showReviews ? (
-                                <Card className="package-reviews-card" bordered={false}>
-                                    <div className="package-reviews">
-                                        <div className="package-review-summary">
-                                            <div>
-                                                <p className="package-review-label">Average rating</p>
-                                                <div className="package-review-average">
-                                                    <Rate
-                                                        allowHalf
-                                                        disabled
-                                                        value={averageRating} />
-                                                    <span>{averageRating ? averageRating.toFixed(1) : '0.0'}</span>
-                                                </div>
-                                            </div>
-                                            <span className="package-review-count">{reviews.length} reviews</span>
-                                        </div>
-                                        <div className="package-review-breakdown">
-                                            <p className="package-review-breakdown-title">
-                                                Review Breakdown for {packageData?.packageName || 'this package'}
-                                            </p>
-                                            {[5, 4, 3, 2, 1].map((star) => {
-                                                const count = ratingBreakdown[star - 1]
-                                                return (
-                                                    <div key={star} className="package-review-breakdown-row">
-                                                        <span className="package-review-breakdown-label">{star} star</span>
-                                                        <div className="package-review-breakdown-bar">
-                                                            <span
-                                                                className="package-review-breakdown-fill"
-                                                                style={{
-                                                                    width: reviews.length
-                                                                        ? `${Math.round((count / reviews.length) * 100)}%`
-                                                                        : '0%'
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <span className="package-review-breakdown-count">{count}</span>
+                            <div className="package-right">
+                                {showReviews ? (
+                                    <Card className="package-reviews-card" bordered={false}>
+                                        <div className="package-reviews">
+                                            <div className="package-review-summary">
+                                                <div>
+                                                    <p className="package-review-label">Average rating</p>
+                                                    <div className="package-review-average">
+                                                        <Rate
+                                                            allowHalf
+                                                            disabled
+                                                            value={averageRating} />
+                                                        <span>{averageRating ? averageRating.toFixed(1) : '0.0'}</span>
                                                     </div>
-                                                )
-                                            })}
-                                        </div>
-                                        <div className="package-review-list">
-                                            {reviews.length ? (
-                                                reviews.map((review) => {
-                                                    const isUserReview = auth && String(review.userId) === String(auth?.id);
-
+                                                </div>
+                                                <span className="package-review-count">{reviews.length} reviews</span>
+                                            </div>
+                                            <div className="package-review-breakdown">
+                                                <p className="package-review-breakdown-title">
+                                                    Review Breakdown for {packageData?.packageName || 'this package'}
+                                                </p>
+                                                {[5, 4, 3, 2, 1].map((star) => {
+                                                    const count = ratingBreakdown[star - 1]
                                                     return (
-                                                        <div key={review.id} className="package-review-card">
-                                                            <div className="package-review-header">
-                                                                <div className="package-review-user">
-                                                                    <div className="package-review-avatar">
-                                                                        {review.avatar ? (
-                                                                            <img src={review.avatar} alt={review.name} />
-                                                                        ) : (
-                                                                            <span className="package-review-avatar-fallback">
-                                                                                {review.name?.charAt(0)?.toUpperCase() || 'U'}
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                    <span className="package-review-name">
-                                                                        {review.name}
-                                                                        {isUserReview && (
-                                                                            <span style={{ color: "#888", marginLeft: 6 }}>(You)</span>
-                                                                        )}
-                                                                    </span>
-                                                                </div>
-                                                                <Rate disabled value={review.rating} />
-                                                            </div>
-                                                            <p className="package-review-date">{review.date || 'Recently'}</p>
-                                                            <p className="package-review-comment">{review.comment}</p>
-
-                                                            {isUserReview && (
-                                                                <Button
-                                                                    type="link"
-                                                                    style={{ padding: 0, marginTop: 4, border: 'none' }}
-                                                                    onClick={() => {
-                                                                        setReviewForm({
-                                                                            rating: review.rating,
-                                                                            comment: review.comment,
-                                                                            fullName: review.name,
-                                                                            email: review.email || ''
-                                                                        });
-                                                                        setIsEditingReview(true); // <-- mark as editing
-                                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        <div key={star} className="package-review-breakdown-row">
+                                                            <span className="package-review-breakdown-label">{star} star</span>
+                                                            <div className="package-review-breakdown-bar">
+                                                                <span
+                                                                    className="package-review-breakdown-fill"
+                                                                    style={{
+                                                                        width: reviews.length
+                                                                            ? `${Math.round((count / reviews.length) * 100)}%`
+                                                                            : '0%'
                                                                     }}
-                                                                >
-                                                                    Edit
-                                                                </Button>
-                                                            )}
-
+                                                                />
+                                                            </div>
+                                                            <span className="package-review-breakdown-count">{count}</span>
                                                         </div>
                                                     )
-                                                })
-                                            ) : (
-                                                <p>No reviews yet.</p>
-                                            )}
+                                                })}
+                                            </div>
+                                            <div className="package-review-list">
+                                                {reviews.length ? (
+                                                    reviews.map((review) => {
+                                                        const isUserReview = auth && String(review.userId) === String(auth?.id);
+
+                                                        return (
+                                                            <div key={review.id} className="package-review-card">
+                                                                <div className="package-review-header">
+                                                                    <div className="package-review-user">
+                                                                        <div className="package-review-avatar">
+                                                                            {review.avatar ? (
+                                                                                <img src={review.avatar} alt={review.name} />
+                                                                            ) : (
+                                                                                <span className="package-review-avatar-fallback">
+                                                                                    {review.name?.charAt(0)?.toUpperCase() || 'U'}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <span className="package-review-name">
+                                                                            {review.name}
+                                                                            {isUserReview && (
+                                                                                <span style={{ color: "#888", marginLeft: 6 }}>(You)</span>
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                    <Rate disabled value={review.rating} />
+                                                                </div>
+                                                                <p className="package-review-date">{review.date || 'Recently'}</p>
+                                                                <p className="package-review-comment">{review.comment}</p>
+
+                                                                {isUserReview && (
+                                                                    <Button
+                                                                        type="link"
+                                                                        style={{ padding: 0, marginTop: 4, border: 'none' }}
+                                                                        onClick={() => {
+                                                                            setReviewForm({
+                                                                                rating: review.rating,
+                                                                                comment: review.comment,
+                                                                                fullName: review.name,
+                                                                                email: review.email || ''
+                                                                            });
+                                                                            setIsEditingReview(true); // <-- mark as editing
+                                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                                        }}
+                                                                    >
+                                                                        Edit
+                                                                    </Button>
+                                                                )}
+
+                                                            </div>
+                                                        )
+                                                    })
+                                                ) : (
+                                                    <p>No reviews yet.</p>
+                                                )}
+                                            </div>
+
+                                            <div className="package-review-form">
+                                                <h3>Leave a review</h3>
+
+                                                {/* Show guest fields ONLY if not logged in */}
+                                                {!auth && (
+                                                    <>
+                                                        <Input
+                                                            placeholder="Full Name"
+                                                            value={reviewForm.fullName}
+                                                            onChange={(e) =>
+                                                                setReviewForm(prev => ({
+                                                                    ...prev,
+                                                                    fullName: e.target.value
+                                                                }))
+                                                            }
+                                                            style={{ marginBottom: 10 }}
+                                                        />
+
+                                                        <Input
+                                                            placeholder="Email Address"
+                                                            type="email"
+                                                            value={reviewForm.email}
+                                                            onChange={(e) =>
+                                                                setReviewForm(prev => ({
+                                                                    ...prev,
+                                                                    email: e.target.value
+                                                                }))
+                                                            }
+                                                            style={{ marginBottom: 10 }}
+                                                        />
+                                                    </>
+                                                )}
+
+                                                <Rate
+                                                    value={reviewForm.rating}
+                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
+                                                    onChange={(value) =>
+                                                        setReviewForm(prev => ({
+                                                            ...prev,
+                                                            rating: value
+                                                        }))
+                                                    }
+                                                />
+
+                                                <Input.TextArea
+                                                    rows={4}
+                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
+                                                    placeholder="Share your experience..."
+                                                    value={reviewForm.comment}
+                                                    onChange={(e) =>
+                                                        setReviewForm(prev => ({
+                                                            ...prev,
+                                                            comment: e.target.value
+                                                        }))
+                                                    }
+                                                    style={{ marginTop: 10 }}
+                                                />
+
+                                                <Button
+                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
+                                                    className="package-action-secondary"
+                                                    onClick={handleSubmitReview}
+                                                    style={{ marginTop: 10 }}
+                                                >
+                                                    {isEditingReview ? "Update Review" : "Submit Review"}
+                                                </Button>
+                                            </div>
                                         </div>
-
-                                        <div className="package-review-form">
-                                            <h3>Leave a review</h3>
-
-                                            {/* Show guest fields ONLY if not logged in */}
-                                            {!auth && (
-                                                <>
-                                                    <Input
-                                                        placeholder="Full Name"
-                                                        value={reviewForm.fullName}
-                                                        onChange={(e) =>
-                                                            setReviewForm(prev => ({
-                                                                ...prev,
-                                                                fullName: e.target.value
-                                                            }))
-                                                        }
-                                                        style={{ marginBottom: 10 }}
-                                                    />
-
-                                                    <Input
-                                                        placeholder="Email Address"
-                                                        type="email"
-                                                        value={reviewForm.email}
-                                                        onChange={(e) =>
-                                                            setReviewForm(prev => ({
-                                                                ...prev,
-                                                                email: e.target.value
-                                                            }))
-                                                        }
-                                                        style={{ marginBottom: 10 }}
-                                                    />
-                                                </>
-                                            )}
-
-                                            <Rate
-                                                value={reviewForm.rating}
-                                                disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
-                                                onChange={(value) =>
-                                                    setReviewForm(prev => ({
-                                                        ...prev,
-                                                        rating: value
-                                                    }))
-                                                }
-                                            />
-
-                                            <Input.TextArea
-                                                rows={4}
-                                                disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
-                                                placeholder="Share your experience..."
-                                                value={reviewForm.comment}
-                                                onChange={(e) =>
-                                                    setReviewForm(prev => ({
-                                                        ...prev,
-                                                        comment: e.target.value
-                                                    }))
-                                                }
-                                                style={{ marginTop: 10 }}
-                                            />
-
-                                            <Button
-                                                disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
-                                                className="package-action-secondary"
-                                                onClick={handleSubmitReview}
-                                                style={{ marginTop: 10 }}
-                                            >
-                                                {isEditingReview ? "Update Review" : "Submit Review"}
+                                    </Card>
+                                ) : (
+                                    <>
+                                        <div className="package-price-card">
+                                            <div className="package-price-label">Price per pax</div>
+                                            <div className="package-pricepax">
+                                                ₱{packageData?.packagePricePerPax?.toLocaleString() || '--'}
+                                            </div>
+                                            <Button className="package-availability-button" onClick={handleBookingProcess}>
+                                                Check Availability
                                             </Button>
                                         </div>
-                                    </div>
-                                </Card>
-                            ) : (
-                                <>
-                                    <div className="package-price-card">
-                                        <div className="package-price-label">Price per pax</div>
-                                        <div className="package-pricepax">
-                                            ₱{packageData?.packagePricePerPax?.toLocaleString() || '--'}
-                                        </div>
-                                        <Button className="package-availability-button" onClick={handleBookingProcess}>
-                                            {packageData?.packageType === "domestic" ? "Get Quotation" : "Check Availability"}
-                                        </Button>
-                                    </div>
 
-                                    <Tabs
-                                        className="package-tabs"
-                                        defaultActiveKey="1"
-                                        size="large"
-                                        items={itemsTab}
-                                    />
-                                </>
-                            )}
+                                        <Tabs
+                                            className="package-tabs"
+                                            defaultActiveKey="1"
+                                            size="large"
+                                            items={itemsTab}
+                                        />
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <Modal
-                    className="package-wishlist-modal"
-                    open={isWishlistModalOpen}
-                    footer={null}
-                    onCancel={() => setIsWishlistModalOpen(false)}
-                >
-                    <h2 className="package-wishlist-title">Added to Wishlist</h2>
-                    <p className="package-wishlist-text">This package has been successfully added to your wishlist.</p>
-                    <div className="package-wishlist-actions">
-                        <Button className="package-action-secondary" onClick={() => setIsWishlistModalOpen(false)}>
-                            Close
-                        </Button>
-                    </div>
-                </Modal>
+                    <Modal
+                        className="package-wishlist-modal"
+                        open={isWishlistModalOpen}
+                        footer={null}
+                        onCancel={() => setIsWishlistModalOpen(false)}
+                    >
+                        <h2 className="package-wishlist-title">Added to Wishlist</h2>
+                        <p className="package-wishlist-text">This package has been successfully added to your wishlist.</p>
+                        <div className="package-wishlist-actions">
+                            <Button className="package-action-secondary" onClick={() => setIsWishlistModalOpen(false)}>
+                                Close
+                            </Button>
+                        </div>
+                    </Modal>
 
-                <AllInOrLandArrangementModal
-                    open={isArrangementModalOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedArrangement}
-                    onSelect={setArrangementSelection}
-                />
+                    <AllInOrLandArrangementModal
+                        open={isArrangementModalOpen}
+                        onCancel={resetBookingFlow}
+                        onProceed={handleProceedArrangement}
+                        onSelect={setArrangementSelection}
+                    />
 
-                {/* choose date */}
-                <ChooseDateIntModal
-                    open={isDateModalOpen}
-                    onCancel={resetBookingFlow}
-                    onProceed={handleProceedDate}
-                    packageData={packageData}
-                    selectedDate={selectedDate}
-                    selectedDatePrice={selectedDatePrice}
-                    onDateChange={({ date, price }) => {
-                        setSelectedDate(date);
-                        setSelectedDatePrice(price);
-                    }}
-                />
+                    {/* choose date */}
+                    <ChooseDateIntModal
+                        open={isDateModalOpen}
+                        onCancel={resetBookingFlow}
+                        onProceed={handleProceedDate}
+                        packageData={packageData}
+                        selectedDate={selectedDate}
+                        selectedDatePrice={selectedDatePrice}
+                        selectedDateRate={selectedDateRate}
+                        onDateChange={({ date, price, rate }) => {
+                            setSelectedDate(date);
+                            setSelectedDatePrice(price);
+                            setSelectedDateRate(rate);
+                        }}
+                    />
 
-                {/* login modal */}
-                <LoginModal
-                    isOpenLogin={isLoginVisible}
-                    isCloseLogin={() => setIsLoginVisible(false)}
-                    onLoginSuccess={() => {
-                        setIsLoginVisible(false);
-                    }}
-                />
-
+                    {/* login modal */}
+                    <LoginModal
+                        isOpenLogin={isLoginVisible}
+                        isCloseLogin={() => setIsLoginVisible(false)}
+                        onLoginSuccess={() => {
+                            setIsLoginVisible(false);
+                        }}
+                    />
+                </Spin>
             </div>
-        </ConfigProvider>
+        </ConfigProvider >
     )
 }

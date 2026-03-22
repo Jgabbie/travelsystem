@@ -385,7 +385,22 @@ export default function PackageInternationalQuotation() {
                                                 <h4>{entry.label}</h4>
                                                 <ul>
                                                     {(entry.items || []).map((item, index) => (
-                                                        <li key={`${entry.label}-${index}`}>{item}</li>
+                                                        <li key={`${entry.label}-${index}`}>
+                                                            {typeof item === 'string' ? (
+                                                                item
+                                                            ) : (
+                                                                <>
+                                                                    <div>{item.activity}</div>
+
+                                                                    {item.isOptional && item.optionalActivity && (
+                                                                        <div>
+                                                                            Optional: {item.optionalActivity}
+                                                                            {item.optionalPrice && ` - ₱${item.optionalPrice.toLocaleString()}`}
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </li>
                                                     ))}
                                                 </ul>
                                             </div>

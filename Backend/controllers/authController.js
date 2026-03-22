@@ -86,6 +86,14 @@ const signupUser = async (req, res) => {
             username: user.username, email: user.email
         });
 
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('user:created', {
+                id: user._id,
+                createdAt: user.createdAt
+            })
+        }
+
         res.status(200).json({ message: "Signup Successful!", userId: user._id })
     } catch (e) {
         res.status(500).json({ message: "Signup Function failed " + e.message })
@@ -144,7 +152,8 @@ const loginUser = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                loginOnce: user.loginOnce
             }
         })
 
@@ -419,7 +428,8 @@ const isAuthenticated = async (req, res) => {
                 id: currentUser._id,
                 username: currentUser.username,
                 email: currentUser.email,
-                role: currentUser.role
+                role: currentUser.role,
+                loginOnce: currentUser.loginOnce
             }
         })
     } catch (e) {

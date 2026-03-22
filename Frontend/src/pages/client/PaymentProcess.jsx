@@ -66,7 +66,7 @@ export default function PaymentProcess() {
             return Upload.LIST_IGNORE;
         }
 
-        return false; // prevent auto upload
+        return false;
     };
 
     const generateInvoiceNumber = () => {
@@ -79,13 +79,23 @@ export default function PaymentProcess() {
     const issueDate = dayjs().format("MMMM D, YYYY");
     const dueDate = dayjs().add(45, "day").format("MMMM D, YYYY");
 
+    console.log("Booking Data in PaymentProcess:", bookingData);
+
     const travelerCountAdult = bookingData?.travelerCounts?.adult || 0;
     const travelerCountChild = bookingData?.travelerCounts?.child || 0;
     const travelerCountInfant = bookingData?.travelerCounts?.infant || 0;
     const travelerTotal = travelerCountAdult + travelerCountChild + travelerCountInfant || 0;
 
     const packagePricePerPax = bookingData?.packagePricePerPax || 0;
-    const totalAmount = packagePricePerPax * travelerTotal;
+    const childRate = bookingData?.packageChildRate || 0;
+    const infantRate = bookingData?.packageInfantRate || 0;
+
+    const computedTotalAmount =
+        travelerCountAdult * packagePricePerPax +
+        travelerCountChild * childRate +
+        travelerCountInfant * infantRate;
+
+    const totalAmount = bookingData?.totalPrice ?? computedTotalAmount;
 
     const packageId = bookingData?.packageId;
     const packageName = bookingData?.packageName || 'Tour Package';
@@ -122,9 +132,13 @@ export default function PaymentProcess() {
             const successToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
             localStorage.setItem(SUCCESS_TOKEN_KEY, successToken);
 
+            const amountToCharge = paymentType === 'deposit'
+                ? depositAmount
+                : totalAmount;
+
             const paymentPayload = {
                 packageId,
-                totalPrice: totalAmount,
+                totalPrice: amountToCharge,
                 travelDate,
                 travelerTotal,
                 leadEmail: bookingData.leadEmail,
@@ -202,8 +216,16 @@ export default function PaymentProcess() {
             travelers: travelerTotal,
         },
         items: [
-            { date: issueDate, activity: 'Tour Package', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: packagePricePerPax },
-        ],
+            travelerCountAdult
+                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: packagePricePerPax }
+                : null,
+            travelerCountChild
+                ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
+                : null,
+            travelerCountInfant
+                ? { date: issueDate, activity: 'Infant', description: packageName || 'Tour Package', qty: travelerCountInfant, rate: infantRate }
+                : null,
+        ].filter(Boolean),
         notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
 
@@ -227,32 +249,39 @@ export default function PaymentProcess() {
     const frequencyWeeks = getFrequencyWeeks(frequency)
     const today = dayjs()
     const travelDateValue = bookingData?.travelDate ? dayjs(bookingData.travelDate) : null
-    const depositAmount = null
-    const remainingAmount = null
-    const firstPaymentDate = today.add(frequencyWeeks, 'week')
-    const secondPaymentDate = firstPaymentDate.add(frequencyWeeks, 'week')
-    const cappedSecondPaymentDate = travelDateValue && secondPaymentDate.isAfter(travelDateValue)
-        ? travelDateValue
-        : secondPaymentDate
+    const dueCutoffDate = travelDateValue ? travelDateValue.subtract(45, 'day') : null
+    const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal
+    const remainingAmount = Math.max(totalAmount - depositAmount, 0)
+
+    const installmentWindowDays = dueCutoffDate ? 45 : 0
+
+    const installmentCount = installmentWindowDays
+        ? Math.max(Math.floor(installmentWindowDays / (frequencyWeeks * 7)), 1)
+        : 1
+
+    const installmentAmount = installmentCount ? remainingAmount / installmentCount : 0
+
+    const windowStartDate = dueCutoffDate
+        ? dueCutoffDate.subtract(frequencyWeeks * (installmentCount - 1), 'week')
+        : today
+
+    const paymentDates = Array.from({ length: installmentCount }, (_, index) => {
+        return dayjs(windowStartDate).add(frequencyWeeks * index, 'week')
+    })
 
     const formatScheduleAmount = (value) => (value == null ? 'PHP TBD' : formatCurrency(value))
 
     const paymentSchedule = [
         {
-            label: 'Deposit (Airfare + Hotel)',
+            label: 'Deposit',
             amount: depositAmount,
             date: today
         },
-        {
-            label: 'Installment 1',
-            amount: remainingAmount,
-            date: firstPaymentDate
-        },
-        {
-            label: 'Installment 2',
-            amount: remainingAmount,
-            date: cappedSecondPaymentDate
-        }
+        ...paymentDates.map((date, index) => ({
+            label: `Installment ${index + 1}`,
+            amount: installmentAmount,
+            date
+        }))
     ]
 
     const MyDocument = () => (

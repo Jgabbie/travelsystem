@@ -76,13 +76,16 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 setIsLoading(false);
 
                 if (userData) {
-                    setAuth({ id: userData.id, username: userData.username, role: userData.role });
-                } else {
-                    setAuth({ username: values.username, role: userRole });
+                    setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
                 }
+
                 message.success('Login successful');
                 if (userRole === 'Admin') {
                     navigate('/dashboard')
+                } else if (userRole === 'Employee') {
+                    navigate('/employee/dashboard')
+                } else if (userData && !userData.loginOnce) {
+                    navigate('/user-preferences')
                 } else {
                     navigate('/home')
                 }

@@ -21,7 +21,7 @@ const applyPassport = async (req, res) => {
         const user = await UserModel.findById(userId)
         const username = user.username;
 
-        await PassportModel.create({
+        const application = await PassportModel.create({
             userId,
             username: username,
             dfaLocation,
@@ -31,8 +31,15 @@ const applyPassport = async (req, res) => {
             applicationId: randomApplicationNumber()
         })
 
-
         logAction('APPLY_PASSPORT', userId, { dfaLocation, preferredDate, preferredTime, applicationType });
+
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('passport:created', {
+                id: application._id,
+                createdAt: application.createdAt
+            })
+        }
         res.status(201).json({ message: "Passport application submitted successfully" });
 
 
@@ -45,7 +52,11 @@ const applyPassport = async (req, res) => {
 const getPassportApplications = async (req, res) => {
     try {
         const userId = req.userId
-        const applications = await PassportModel.find({ userId }).sort({ createdAt: -1 });
+        const user = await UserModel.findById(userId).select('role')
+        const isStaff = user && (user.role === 'Admin' || user.role === 'Employee')
+        const query = isStaff ? {} : { userId }
+
+        const applications = await PassportModel.find(query).sort({ createdAt: -1 });
         res.status(200).json(applications);
     } catch (error) {
         console.error("Error fetching passport applications:", error);

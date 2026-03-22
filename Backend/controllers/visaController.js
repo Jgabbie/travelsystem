@@ -43,6 +43,13 @@ const applyVisa = async (req, res) => {
         })
 
         logAction('APPLY_VISA', userId, { serviceId, preferredDate, purposeOfTravel });
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('visa:created', {
+                id: application._id,
+                createdAt: application.createdAt
+            })
+        }
         res.status(201).json({ message: 'Visa application submitted successfully' })
 
     } catch (error) {

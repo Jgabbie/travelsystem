@@ -64,8 +64,16 @@ export default function BookingProcess() {
         ? 1
         : (counts.adult + counts.child + counts.infant)
 
+
+    const travelDateRate = data.travelDateRate || 0
+    const soloRate = data.packageSoloRate || 0
+    const childRate = data.packageChildRate || 0
+    const infantRate = data.packageInfantRate || 0
     const packagePricePerPax = data.travelDatePrice || 0
-    const totalPrice = packagePricePerPax * travelersCount
+    const totalPrice =
+        counts.adult * packagePricePerPax +
+        counts.child * childRate +
+        counts.infant * infantRate;
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
     const images = data.images || []
@@ -302,12 +310,12 @@ export default function BookingProcess() {
         };
     }, [previews]);
 
-    const increaseAdult = () => setCounts(prev => ({ ...prev, adult: prev.adult + 1 }))
-    const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(1, prev.adult - 1) }))
-    const increaseChild = () => setCounts(prev => ({ ...prev, child: prev.child + 1 }))
-    const decreaseChild = () => setCounts(prev => ({ ...prev, child: Math.max(0, prev.child - 1) }))
-    const increaseInfant = () => setCounts(prev => ({ ...prev, infant: prev.infant + 1 }))
-    const decreaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.max(0, prev.infant - 1) }))
+    const increaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.min(prev.adult + 1, maxAdults) }));
+    const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(1, prev.adult - 1) }));
+    const increaseChild = () => setCounts(prev => ({ ...prev, child: Math.min(prev.child + 1, maxChildren) }));
+    const decreaseChild = () => setCounts(prev => ({ ...prev, child: Math.max(0, prev.child - 1) }));
+    const increaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.min(prev.infant + 1, maxInfants) }));
+    const decreaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.max(0, prev.infant - 1) }));
 
     useEffect(() => {
         if (!bookingData) {
@@ -360,8 +368,9 @@ export default function BookingProcess() {
                                 onClick={() => setSelectedSoloGrouped('solo')}
                             >
                                 <div className="solo-group-image solo" />
-                                <h3>Solo Booking</h3>
+                                <h3>Single Supplement / Solo Booking</h3>
                                 <p>Book for yourself with a single traveler setup.</p>
+                                <p style={{ color: "#FF4D4F", fontWeight: "bold" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
                             </button>
 
                             <button
@@ -372,6 +381,7 @@ export default function BookingProcess() {
                                 <div className="solo-group-image group" />
                                 <h3>Grouped Booking</h3>
                                 <p>Plan a trip for a group with shared activities.</p>
+                                <p style={{ color: "#FF4D4F", fontWeight: "bold" }}>Note: Group booking should have a minimum of 2 travelers.</p>
                             </button>
                         </div>
                     </div>
@@ -409,7 +419,7 @@ export default function BookingProcess() {
                                 <div className="traveler-card">
                                     <h3>Child</h3>
                                     <p>
-                                        Rates: ₱{packagePricePerPax.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per child
+                                        Rates: ₱{childRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per child
                                     </p>
                                     <p>
                                         <strong>Maximum:</strong> {maxChildren}
@@ -426,7 +436,7 @@ export default function BookingProcess() {
                                 <div className="traveler-card">
                                     <h3>Infant</h3>
                                     <p>
-                                        Rates: ₱{packagePricePerPax.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per infant
+                                        Rates: ₱{infantRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per infant
                                     </p>
                                     <p>
                                         <strong>Maximum:</strong> {maxInfants}
@@ -520,7 +530,16 @@ export default function BookingProcess() {
                                     Total Amount
                                 </span>
                                 <h2 className='booking-summary-total-amount-value'>
-                                    ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    {selectedSoloGrouped === 'solo' && soloRate > 0 && (
+                                        <span>
+                                            ₱{soloRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                        </span>
+                                    )}
+                                    {selectedSoloGrouped === 'group' && (
+                                        <span>
+                                            ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                        </span>
+                                    )}
                                 </h2>
                                 <div className='booking-summary-total-amount-note'>
                                     *All inclusions fees are already factored in the total price.
@@ -558,7 +577,22 @@ export default function BookingProcess() {
                                             {day.items.length ? (
                                                 <ul className='itinerary-items'>
                                                     {day.items.map((item, index) => (
-                                                        <li key={`${day.key}-${index}`}>{item}</li>
+                                                        <li key={`${day.key}-${index}`}>
+                                                            {typeof item === 'string' ? (
+                                                                item
+                                                            ) : (
+                                                                <>
+                                                                    <div>{item.activity}</div>
+
+                                                                    {item.isOptional && item.optionalActivity && (
+                                                                        <div>
+                                                                            Optional: {item.optionalActivity}
+                                                                            {item.optionalPrice && ` - ₱${item.optionalPrice.toLocaleString()}`}
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </li>
                                                     ))}
                                                 </ul>
                                             ) : (

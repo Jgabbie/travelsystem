@@ -41,6 +41,14 @@ const createQuotation = async (req, res) => {
             packageId
         })
 
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('quotation:created', {
+                id: newQuotation._id,
+                createdAt: newQuotation.createdAt
+            })
+        }
+
         res.status(201).json(newQuotation)
 
     } catch (error) {

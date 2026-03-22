@@ -1,4 +1,4 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Dropdown, Space } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Dropdown, Space, Spin } from "antd";
 import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, DownOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -16,6 +16,7 @@ export default function PackageManagement() {
   const [packagesData, setPackagesData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [filters, setFilters] = useState({
     packageType: null, // "domestic" or "international"
@@ -76,12 +77,25 @@ export default function PackageManagement() {
   }
 
   const getPackages = async () => {
+    setLoading(true);
     try {
       const response = await axiosInstance.get('/package/get-packages');
       setPackagesData(response.data);
     } catch (error) {
       console.error("Error fetching packages:", error);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  const availableSlots = (pkg) => {
+    if (!pkg.packageSpecificDate || pkg.packageSpecificDate.length === 0) {
+      return 0; // No specific dates means no available slots
+    }
+    const totalSlots = pkg.packageSpecificDate.reduce((total, dateRange) => {
+      return total + (dateRange.slots || 0);
+    }, 0);
+    return totalSlots;
   }
 
   useEffect(() => {
@@ -93,7 +107,7 @@ export default function PackageManagement() {
   const filteredPackages = packagesData.filter((pkg) => {
     const matchesType = filters.packageType ? pkg.packageType === filters.packageType : true;
     const matchesAvailability = filters.availability
-      ? (filters.availability === "available" ? pkg.packageAvailableSlots > 0 : pkg.packageAvailableSlots === 0)
+      ? (filters.availability === "available" ? availableSlots(pkg) > 0 : availableSlots(pkg) === 0)
       : true;
 
     // safe search by name or code
@@ -132,7 +146,7 @@ export default function PackageManagement() {
             <Card className="package-management-card">
               <Statistic
                 title="Available"
-                value={filteredPackages.filter(pkg => pkg.packageAvailableSlots > 0).length}
+                value={filteredPackages.filter(pkg => availableSlots(pkg) > 0).length}
                 prefix={<CheckCircleOutlined />}
               />
             </Card>
@@ -142,7 +156,7 @@ export default function PackageManagement() {
             <Card className="package-management-card">
               <Statistic
                 title="Unavailable"
-                value={filteredPackages.filter(pkg => pkg.packageAvailableSlots === 0).length}
+                value={filteredPackages.filter(pkg => availableSlots(pkg) === 0).length}
                 prefix={<StopOutlined />}
               />
             </Card>
@@ -192,64 +206,63 @@ export default function PackageManagement() {
           </Space>
         </div >
 
-        {
-          filteredPackages.length > 0 ? filteredPackages.map(pkg => (
-            <Card key={pkg._id} className="package-card">
-              <div className="package-container">
-                <div className="package-media">
-                  {pkg.images && pkg.images.length > 0 ? (
-                    <img className="package-image" src={pkg.images[0]} alt={pkg.packageName} />
-                  ) : (
-                    <div className="package-image-placeholder">No Image</div>
-                  )}
-                </div>
-
-                <div className="package-details">
-                  <div className="package-info">
-                    <h3 className="package-name">{pkg.packageName}</h3>
-                    <h3 className="package-code">{pkg.packageCode}</h3>
-                    <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+        <Spin spinning={loading}>
+          {filteredPackages.length > 0 ? (
+            filteredPackages.map(pkg => (
+              <Card key={pkg._id} className="package-card">
+                <div className="package-container">
+                  <div className="package-media">
+                    {pkg.images && pkg.images.length > 0 ? (
+                      <img className="package-image" src={pkg.images[0]} alt={pkg.packageName} />
+                    ) : (
+                      <div className="package-image-placeholder">No Image</div>
+                    )}
                   </div>
 
-                  <p className="package-description">{pkg.packageDescription}</p>
-                  <h1 className="package-available-slots">Available Slots: {pkg.packageAvailableSlots}</h1>
+                  <div className="package-details">
+                    <div className="package-info">
+                      <h3 className="package-name">{pkg.packageName}</h3>
+                      <h3 className="package-code">{pkg.packageCode}</h3>
+                      <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+                    </div>
+
+                    <p className="package-description">{pkg.packageDescription}</p>
+                    <h1 className="package-available-slots">Available Slots: {availableSlots(pkg)}</h1>
+                  </div>
                 </div>
 
-              </div>
+                <div className="package-actions">
+                  <Button
+                    className="viewdetails-package-button"
+                    type="primary"
+                    icon={<EyeOutlined />}
+                    onClick={() => showModal(pkg)}
+                  />
 
-              <div className="package-actions">
-                <Button
-                  className="viewdetails-package-button"
-                  type="primary"
-                  icon={<EyeOutlined />}
-                  onClick={() => { showModal(pkg); }}
-                />
+                  <Button
+                    className="edit-package-button"
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() =>
+                      pkg.packageType === "international"
+                        ? navigate(`${basePath}/packages/edit/international/${pkg._id}`)
+                        : navigate(`${basePath}/packages/edit/domestic/${pkg._id}`)
+                    }
+                  />
 
-                <Button
-                  className="edit-package-button"
-                  type="primary"
-                  icon={<EditOutlined />}
-                  onClick={() =>
-                    pkg.packageType === "international"
-                      ? navigate(`${basePath}/packages/edit/international/${pkg._id}`)
-                      : navigate(`${basePath}/packages/edit/domestic/${pkg._id}`)
-                  }
-                />
-
-                <Button
-                  className="delete-package-button"
-                  type="primary"
-                  icon={<DeleteOutlined />}
-                  onClick={() => removePackage(pkg._id)}
-                />
-              </div>
-            </Card>
-          ))
-
-            :
-
-            <Empty description="No Packages" />
-        }
+                  <Button
+                    className="delete-package-button"
+                    type="primary"
+                    icon={<DeleteOutlined />}
+                    onClick={() => removePackage(pkg._id)}
+                  />
+                </div>
+              </Card>
+            ))
+          ) : (
+            <Empty description={loading ? "No data" : "No Packages"} />
+          )}
+        </Spin>
 
         < Modal
           title="Package Details"
@@ -284,7 +297,7 @@ export default function PackageManagement() {
               <div className="package-details-stats">
                 <div className="package-details-stat">
                   <span className="package-details-label">Available Slots</span>
-                  <span className="package-details-value">{pkg.packageAvailableSlots}</span>
+                  <span className="package-details-value">{availableSlots(pkg)}</span>
                 </div>
                 <div className="package-details-stat">
                   <span className="package-details-label">Package Type</span>

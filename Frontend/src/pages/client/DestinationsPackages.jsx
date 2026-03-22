@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider } from 'antd'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/destinationspackages.css'
@@ -11,17 +11,19 @@ export default function DestinationsPackages() {
     const location = useLocation()
     const [packages, setPackages] = useState([])
     const [search, setSearch] = useState('')
-    const [budgetRange, setBudgetRange] = useState([0, 40000])
+    const [budgetRange, setBudgetRange] = useState([0, 100000])
     const [selectedTags, setSelectedTags] = useState([])
     const [tourType, setTourType] = useState('All')
-    const [daysValue, setDaysValue] = useState(3)
+    const [daysValue, setDaysValue] = useState(6)
     const [travelersValue, setTravelersValue] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     const { Title, Text } = Typography
 
     //get all packages from package collection and map it
     useEffect(() => {
         const fetchPackages = async () => {
+            setLoading(true)
             try {
                 const response = await axiosInstance.get('/package/get-packages')
                 const ratingResponse = await axiosInstance.get('/rating/average-ratings')
@@ -55,6 +57,8 @@ export default function DestinationsPackages() {
             } catch (error) {
                 console.error('Failed to load packages:', error)
                 setPackages([])
+            } finally {
+                setLoading(false)
             }
         }
         fetchPackages()
@@ -156,6 +160,7 @@ export default function DestinationsPackages() {
             }}
         >
             <div>
+
                 <TopNavUser />
 
                 <div className="destinations-hero-section">
@@ -332,66 +337,69 @@ export default function DestinationsPackages() {
                         </Row>
                     </div>
 
-                    <section className="destinations-results">
-                        <div className="destinations-results-header">
-                            <Title level={4}>Available Packages</Title>
-                            <Text type="secondary">{filteredPackages.length} found</Text>
-                        </div>
+                    <Spin spinning={loading} tip="Loading packages..." size="large">
+                        <section className="destinations-results">
+                            <div className="destinations-results-header">
+                                <Title level={4}>Available Packages</Title>
+                                <Text type="secondary">{filteredPackages.length} found</Text>
+                            </div>
 
-                        <Row gutter={[18, 18]}>
-                            {filteredPackages.map((pkg) => (
-                                <Col xs={24} sm={12} lg={8} key={pkg.id}>
-                                    <Card
-                                        className="destinations-card"
-                                        hoverable
-                                        onClick={() => navigate(`/package/${pkg.id}`)}
-                                    >
-                                        <div className="destinations-card-image">
-                                            {pkg.images ? (
-                                                <img src={pkg.images} alt={pkg.packageName} />
-                                            ) : (
-                                                <div className="destinations-card-image-placeholder">No Image</div>
-                                            )}
-                                        </div>
-                                        <div className="destinations-card-header">
-                                            <div>
-                                                <Title level={5} className="destinations-card-title">
-                                                    {pkg.packageName}
-                                                </Title>
-                                                <Text type="secondary">{pkg.packageType}</Text>
+                            <Row gutter={[18, 18]}>
+                                {filteredPackages.map((pkg) => (
+                                    <Col xs={24} sm={12} lg={8} key={pkg.id}>
+                                        <Card
+                                            className="destinations-card"
+                                            hoverable
+                                            onClick={() => navigate(`/package/${pkg.id}`)}
+                                        >
+                                            <div className="destinations-card-image">
+                                                {pkg.images ? (
+                                                    <img src={pkg.images} alt={pkg.packageName} />
+                                                ) : (
+                                                    <div className="destinations-card-image-placeholder">No Image</div>
+                                                )}
                                             </div>
-                                            <Tag className="destinations-rating">⭐ {pkg.rating}</Tag>
-                                        </div>
-                                        <div className="destinations-card-meta">
-                                            <Tag className="destinations-type">{pkg.packageType}</Tag>
-                                            <Text type="secondary">{pkg.days} days</Text>
-                                        </div>
-                                        <div className="destinations-card-activities">
-                                            {pkg.tags?.map((tag) => (
-                                                <Tag key={tag}>{tag}</Tag>
-                                            ))}
-                                        </div>
-                                        <div className="destinations-card-footer">
-                                            <Text className="destinations-price">
-                                                ₱{(
-                                                    Number.isFinite(travelersValue) && travelersValue > 0
-                                                        ? pkg.budget * travelersValue
-                                                        : pkg.budget
-                                                ).toLocaleString()}
-                                                {Number.isFinite(travelersValue) && travelersValue > 0
-                                                    ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
-                                                    : ''}
-                                            </Text>
-                                            <Text className="destinations-budget">
-                                                {Number.isFinite(travelersValue) && travelersValue > 0 ? 'Total Budget' : 'Budget / Pax'}
-                                            </Text>
-                                        </div>
-                                    </Card>
-                                </Col>
-                            ))}
-                        </Row>
-                    </section>
+                                            <div className="destinations-card-header">
+                                                <div>
+                                                    <Title level={5} className="destinations-card-title">
+                                                        {pkg.packageName}
+                                                    </Title>
+                                                    <Text type="secondary">{pkg.packageType}</Text>
+                                                </div>
+                                                <Tag className="destinations-rating">⭐ {pkg.rating}</Tag>
+                                            </div>
+                                            <div className="destinations-card-meta">
+                                                <Tag className="destinations-type">{pkg.packageType}</Tag>
+                                                <Text type="secondary">{pkg.days} days</Text>
+                                            </div>
+                                            <div className="destinations-card-activities">
+                                                {pkg.tags?.map((tag) => (
+                                                    <Tag key={tag}>{tag}</Tag>
+                                                ))}
+                                            </div>
+                                            <div className="destinations-card-footer">
+                                                <Text className="destinations-price">
+                                                    ₱{(
+                                                        Number.isFinite(travelersValue) && travelersValue > 0
+                                                            ? pkg.budget * travelersValue
+                                                            : pkg.budget
+                                                    ).toLocaleString()}
+                                                    {Number.isFinite(travelersValue) && travelersValue > 0
+                                                        ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
+                                                        : ''}
+                                                </Text>
+                                                <Text className="destinations-budget">
+                                                    {Number.isFinite(travelersValue) && travelersValue > 0 ? 'Total Budget' : 'Budget / Pax'}
+                                                </Text>
+                                            </div>
+                                        </Card>
+                                    </Col>
+                                ))}
+                            </Row>
+                        </section>
+                    </Spin>
                 </div>
+
             </div>
         </ConfigProvider>
     )

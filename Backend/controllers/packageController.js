@@ -2,7 +2,9 @@ const PackageModel = require("../models/package");
 const logAction = require("../utils/logger");
 
 const addPackage = async (req, res) => {
-    const { name, code, pricePerPax, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags } = req.body;
+    const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags } = req.body;
+
+
     try {
 
         if (name === null || code === null || pricePerPax === null || availableSlots === null || description === null || packageType === null || duration === null || hotels === null || airlines === null || termsAndConditions === null || inclusions === null || exclusions === null || itineraries === null || tags === null) {
@@ -14,6 +16,10 @@ const addPackage = async (req, res) => {
             packageCode: code,
             packagePricePerPax: Number(pricePerPax),
             packageAvailableSlots: Number(availableSlots),
+            packageSoloRate: Number(soloRate),
+            packageChildRate: Number(childRate),
+            packageInfantRate: Number(infantRate),
+            packageDeposit: Number(deposit),
             packageDescription: description,
             packageType: packageType,
             packageDuration: Number(duration),
@@ -125,6 +131,10 @@ const updatePackage = async (req, res) => {
                 packageCode: req.body.code,
                 packagePricePerPax: Number(req.body.pricePerPax),
                 packageAvailableSlots: Number(req.body.availableSlots),
+                packageSoloRate: Number(req.body.soloRate),
+                packageChildRate: Number(req.body.childRate),
+                packageInfantRate: Number(req.body.infantRate),
+                packageDeposit: Number(req.body.deposit),
                 packageDuration: Number(req.body.duration),
                 packageDescription: req.body.description,
                 packageType: req.body.packageType,

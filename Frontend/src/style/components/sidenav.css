@@ -33,6 +33,29 @@
   transition: 0.2s;
 }
 
+.nav-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.nav-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ff4d4f;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(255, 77, 79, 0.35);
+}
+
 .nav-item:hover,
 .nav-item .logout {
   background: rgba(255, 255, 255, 0.15);

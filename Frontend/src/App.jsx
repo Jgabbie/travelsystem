@@ -23,6 +23,7 @@ import PaymentProcess from "./pages/client/PaymentProcess";
 import SuccessfulBooking from "./pages/client/SuccessfulBooking";
 import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
 import PackageInternationalQuotation from "./pages/client/PackageInternationalQuotation";
+import UserPreference1 from "./pages/client/newuser/UserPreference1";
 
 import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
@@ -159,6 +160,7 @@ function App() {
             <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
             <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
             <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
+            <Route path="/user-preferences" element={<UserPreference1 />} />
           </Route>
 
           <Route path='*' element={<Navigate to="/home" replace />} />
