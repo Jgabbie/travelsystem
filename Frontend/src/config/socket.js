@@ -11,4 +11,6 @@ const socket = io(SOCKET_URL, {
     autoConnect: isLocalhost,
 });
 
+export const isSocketEnabled = isLocalhost;
+
 export default socket;

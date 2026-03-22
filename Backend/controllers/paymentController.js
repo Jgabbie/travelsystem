@@ -125,8 +125,9 @@ const createCheckoutSession = async (req, res) => {
 //paymongo webhook handler
 const handlePayMongoWebhook = async (req, res) => {
     try {
-        // Use optional chaining here to avoid "reading properties of undefined"
         const event = req.body?.data?.attributes?.type;
+        const eventData = req.body?.data?.attributes?.data?.attributes || {};
+        const sessionData = req.body?.data?.attributes || {};
 
         if (!event) {
             console.error('Invalid webhook payload received');
@@ -134,12 +135,12 @@ const handlePayMongoWebhook = async (req, res) => {
         }
 
         if (event === 'checkout_session.payment.paid') {
-            const checkoutAttributes = req.body?.data?.attributes?.data?.attributes || {};
-            const metadata = checkoutAttributes.metadata || {};
+            const metadata = eventData.metadata || sessionData.metadata || {};
 
             // Your existing logic...
             if (!metadata.userId) {
-                throw new Error('Missing userId in PayMongo metadata.');
+                console.error('Missing userId in PayMongo metadata.');
+                return res.status(200).send('Event received');
             }
 
             const user = await UserModel.findById(metadata.userId);
@@ -148,12 +149,13 @@ const handlePayMongoWebhook = async (req, res) => {
             }
 
             // Create Booking and Transaction...
+            const travelerTotal = Number(metadata.travelerTotal || 0);
             const newBooking = await BookingModel.create({
                 packageId: metadata.packageId,
                 userId: user._id,
                 bookingDate: new Date().toISOString(),
                 travelDate: metadata.travelDate,
-                travelers: metadata.travelerTotal,
+                travelers: travelerTotal,
                 reference: generateBookingReference(),
                 status: 'Successful'
             });
@@ -163,7 +165,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 packageId: metadata.packageId,
                 userId: user._id,
                 reference: generateTransactionReference(),
-                amount: (checkoutAttributes.paid_amount || checkoutAttributes.amount) / 100,
+                amount: (eventData.paid_amount || eventData.amount || sessionData.amount_total || 0) / 100,
                 method: 'Paymongo',
                 status: 'Successful',
             });

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import "../style/components/sidenav.css";
 import axiosInstance from "../config/axiosConfig";
-import socket from "../config/socket";
+import socket, { isSocketEnabled } from "../config/socket";
 
 const { Sider } = Layout;
 
@@ -232,24 +232,35 @@ export default function SideNavEmployee() {
         };
 
         fetchNotifications();
-        socket.on("booking:created", handleBookingCreated);
-        socket.on("cancellation:created", handleCancellationCreated);
-        socket.on("transaction:created", handleTransactionCreated);
-        socket.on("quotation:created", handleQuotationCreated);
-        socket.on("rating:created", handleRatingCreated);
-        socket.on("passport:created", handlePassportCreated);
-        socket.on("visa:created", handleVisaCreated);
+
+        let intervalId;
+        if (isSocketEnabled) {
+            socket.on("booking:created", handleBookingCreated);
+            socket.on("cancellation:created", handleCancellationCreated);
+            socket.on("transaction:created", handleTransactionCreated);
+            socket.on("quotation:created", handleQuotationCreated);
+            socket.on("rating:created", handleRatingCreated);
+            socket.on("passport:created", handlePassportCreated);
+            socket.on("visa:created", handleVisaCreated);
+        } else {
+            intervalId = setInterval(fetchNotifications, 5000);
+        }
         window.addEventListener("focus", fetchNotifications);
         document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => {
             isMounted = false;
-            socket.off("booking:created", handleBookingCreated);
-            socket.off("cancellation:created", handleCancellationCreated);
-            socket.off("transaction:created", handleTransactionCreated);
-            socket.off("quotation:created", handleQuotationCreated);
-            socket.off("rating:created", handleRatingCreated);
-            socket.off("passport:created", handlePassportCreated);
-            socket.off("visa:created", handleVisaCreated);
+            if (isSocketEnabled) {
+                socket.off("booking:created", handleBookingCreated);
+                socket.off("cancellation:created", handleCancellationCreated);
+                socket.off("transaction:created", handleTransactionCreated);
+                socket.off("quotation:created", handleQuotationCreated);
+                socket.off("rating:created", handleRatingCreated);
+                socket.off("passport:created", handlePassportCreated);
+                socket.off("visa:created", handleVisaCreated);
+            }
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
             window.removeEventListener("focus", fetchNotifications);
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
