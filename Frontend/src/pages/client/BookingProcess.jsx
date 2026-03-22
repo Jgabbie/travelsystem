@@ -235,9 +235,6 @@ export default function BookingProcess() {
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
             for (let i = 0; i < stepsToCapture.length; i += 1) {
-                setCurrentStep(stepsToCapture[i]);
-
-                await new Promise((resolve) => setTimeout(resolve, 300));
 
                 if (!pdfStepRef.current) {
                     continue;

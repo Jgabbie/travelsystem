@@ -20,6 +20,18 @@ const generateTransactionReference = () => {
     return `TX-${timestamp}${random}`;
 };
 
+const parsePayMongoSignature = (signatureHeader) => {
+    if (!signatureHeader) return null;
+    const parts = signatureHeader.split(',').map((part) => part.trim());
+    const signatureMap = parts.reduce((acc, part) => {
+        const [key, value] = part.split('=');
+        if (key && value) acc[key] = value;
+        return acc;
+    }, {});
+    if (!signatureMap.t || !signatureMap.v1) return null;
+    return { timestamp: signatureMap.t, signature: signatureMap.v1 };
+};
+
 
 //paymongo
 const createCheckoutSession = async (req, res) => {
@@ -125,9 +137,34 @@ const createCheckoutSession = async (req, res) => {
 //paymongo webhook handler
 const handlePayMongoWebhook = async (req, res) => {
     try {
-        const event = req.body?.data?.attributes?.type;
-        const eventData = req.body?.data?.attributes?.data?.attributes || {};
-        const sessionData = req.body?.data?.attributes || {};
+        if (!process.env.PAYMONGO_WEBHOOK_SECRET) {
+            return res.status(500).send('Webhook secret is not configured');
+        }
+
+        const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body || {});
+        const signatureHeader = req.headers['paymongo-signature'];
+        const parsedSignature = parsePayMongoSignature(signatureHeader);
+
+        if (!parsedSignature) {
+            return res.status(400).send('Missing or invalid PayMongo signature');
+        }
+
+        const signedPayload = `${parsedSignature.timestamp}.${rawBody}`;
+        const expectedSignature = crypto
+            .createHmac('sha256', process.env.PAYMONGO_WEBHOOK_SECRET)
+            .update(signedPayload)
+            .digest('hex');
+
+        const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+        const receivedBuffer = Buffer.from(parsedSignature.signature, 'utf8');
+        if (expectedBuffer.length !== receivedBuffer.length || !crypto.timingSafeEqual(expectedBuffer, receivedBuffer)) {
+            return res.status(400).send('Invalid PayMongo signature');
+        }
+
+        const payload = Buffer.isBuffer(req.body) ? JSON.parse(rawBody) : req.body;
+        const event = payload?.data?.attributes?.type;
+        const eventData = payload?.data?.attributes?.data?.attributes || {};
+        const sessionData = payload?.data?.attributes || {};
 
         if (!event) {
             console.error('Invalid webhook payload received');
