@@ -145,6 +145,9 @@ const handlePayMongoWebhook = async (req, res) => {
         const signatureHeader = req.headers['paymongo-signature'];
         const parsedSignature = parsePayMongoSignature(signatureHeader);
 
+        console.log('PayMongo webhook signature header:', signatureHeader);
+        console.log('PayMongo webhook raw body length:', rawBody.length);
+
         if (!parsedSignature) {
             return res.status(400).send('Missing or invalid PayMongo signature');
         }
