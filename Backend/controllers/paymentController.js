@@ -26,6 +26,10 @@ const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
 
     try {
+        if (!process.env.PAYMONGO_SECRET_KEY) {
+            return res.status(500).json({ error: "PayMongo secret key is not configured." });
+        }
+
         const { paymentPayload } = req.body;
 
         const packageId = paymentPayload.packageId;
@@ -105,39 +109,9 @@ const createCheckoutSession = async (req, res) => {
         );
 
 
-        //for testing purposes, we can simulate the webhook call immediately after creating the session
         if (response.status !== 200) {
             console.error("PayMongo API Error:", response.data);
             return res.status(500).json({ error: "Failed to create checkout session" });
-        } else {
-
-            console.log("Simulating PayMongo Webhook with payload:", response.data);
-
-            const webhookPayload = {
-                "data": {
-                    "attributes": {
-                        "type": "checkout_session.payment.paid",
-                        "data": {
-                            "attributes": {
-                                "amount": totalPrice * 100, // amount in cents
-                                "paid_amount": totalPrice * 100,
-                                "metadata": {
-                                    "userId": userId,
-                                    "packageId": packageId,
-                                    "travelDate": travelDate,
-                                    "travelerTotal": travelerTotal
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            await axios.post("http://localhost:8000/api/payment/webhook/paymongo", webhookPayload, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
         }
 
         res.json(response.data);
