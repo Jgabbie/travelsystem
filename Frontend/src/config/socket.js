@@ -8,7 +8,7 @@ const SOCKET_URL = isLocalhost ? LOCAL_URL : PROD_URL;
 const socket = io(SOCKET_URL, {
     withCredentials: true,
     transports: ["websocket", "polling"],
-    autoConnect: true,
+    autoConnect: isLocalhost,
 });
 
 export default socket;
