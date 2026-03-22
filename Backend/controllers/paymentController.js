@@ -231,11 +231,22 @@ const handlePayMongoWebhook = async (req, res) => {
                 status: 'Successful'
             });
 
+            const lineItems = Array.isArray(sessionAttributes?.line_items)
+                ? sessionAttributes.line_items
+                : [];
+            const lineItemsTotal = lineItems.reduce((sum, item) => {
+                const itemAmount = Number(item?.amount || 0);
+                const itemQty = Number(item?.quantity || 0);
+                return sum + itemAmount * itemQty;
+            }, 0);
+
             const amountCents =
                 eventData.paid_amount ||
                 eventData.amount ||
                 sessionData.amount_total ||
                 sessionAttributes?.amount_total ||
+                sessionAttributes?.total_amount ||
+                lineItemsTotal ||
                 0;
 
             console.log('PayMongo amount sources:', {
@@ -243,6 +254,9 @@ const handlePayMongoWebhook = async (req, res) => {
                 amount: eventData.amount,
                 session_amount_total: sessionData.amount_total,
                 fetched_amount_total: sessionAttributes?.amount_total,
+                fetched_total_amount: sessionAttributes?.total_amount,
+                fetched_line_items_total: lineItemsTotal,
+                fetched_line_items_count: lineItems.length,
             });
 
             await TransactionModel.create({
