@@ -176,7 +176,34 @@ const handlePayMongoWebhook = async (req, res) => {
         }
 
         if (event === 'checkout_session.payment.paid') {
-            const metadata = eventData.metadata || sessionData.metadata || {};
+            let metadata = eventData.metadata || sessionData.metadata || {};
+
+            if (!metadata.userId) {
+                const sessionId =
+                    payload?.data?.id ||
+                    payload?.data?.attributes?.data?.id ||
+                    eventData?.checkout_session_id ||
+                    sessionData?.id ||
+                    null;
+
+                console.log('PayMongo webhook session id:', sessionId);
+
+                if (sessionId && process.env.PAYMONGO_SECRET_KEY) {
+                    try {
+                        const sessionResponse = await axios.get(
+                            `https://api.paymongo.com/v1/checkout_sessions/${sessionId}`,
+                            {
+                                headers: {
+                                    Authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64")}`,
+                                },
+                            }
+                        );
+                        metadata = sessionResponse?.data?.data?.attributes?.metadata || metadata;
+                    } catch (sessionError) {
+                        console.error('PayMongo checkout session fetch failed:', sessionError.response?.data || sessionError.message);
+                    }
+                }
+            }
 
             // Your existing logic...
             if (!metadata.userId) {
