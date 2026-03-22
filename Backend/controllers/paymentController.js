@@ -180,10 +180,10 @@ const handlePayMongoWebhook = async (req, res) => {
 
             if (!metadata.userId) {
                 const sessionId =
-                    payload?.data?.id ||
                     payload?.data?.attributes?.data?.id ||
                     eventData?.checkout_session_id ||
                     sessionData?.id ||
+                    payload?.data?.id ||
                     null;
 
                 console.log('PayMongo webhook session id:', sessionId);
