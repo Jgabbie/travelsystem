@@ -87,15 +87,19 @@ export default function PaymentProcess() {
     const travelerTotal = travelerCountAdult + travelerCountChild + travelerCountInfant || 0;
 
     const packagePricePerPax = bookingData?.packagePricePerPax || 0;
+    const soloRate = bookingData?.packageSoloRate || 0;
     const childRate = bookingData?.packageChildRate || 0;
     const infantRate = bookingData?.packageInfantRate || 0;
 
+    const bookingType = bookingData?.bookingType || 'Group Booking';
     const computedTotalAmount =
         travelerCountAdult * packagePricePerPax +
         travelerCountChild * childRate +
         travelerCountInfant * infantRate;
 
-    const totalAmount = bookingData?.totalPrice ?? computedTotalAmount;
+    const totalAmount = bookingType === 'Solo Booking'
+        ? travelerCountAdult * soloRate
+        : bookingData?.totalPrice ?? computedTotalAmount;
 
     const packageId = bookingData?.packageId;
     const packageName = bookingData?.packageName || 'Tour Package';
@@ -214,10 +218,11 @@ export default function PaymentProcess() {
             packageName: packageName || 'Tour Package',
             travelDates: `${startTravelDate} - ${endTravelDate}`,
             travelers: travelerTotal,
+            bookingType: bookingType
         },
         items: [
             travelerCountAdult
-                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: packagePricePerPax }
+                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: bookingType === 'Solo Booking' ? soloRate : packagePricePerPax }
                 : null,
             travelerCountChild
                 ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }

@@ -146,8 +146,6 @@ const handlePayMongoWebhook = async (req, res) => {
         const signatureHeader = req.headers['paymongo-signature'];
         const parsedSignature = parsePayMongoSignature(signatureHeader);
 
-        console.log('PayMongo webhook signature header:', signatureHeader);
-        console.log('PayMongo webhook raw body length:', rawBody.length);
 
         if (!parsedSignature) {
             return res.status(400).send('Missing or invalid PayMongo signature');
@@ -188,7 +186,6 @@ const handlePayMongoWebhook = async (req, res) => {
                     payload?.data?.id ||
                     null;
 
-                console.log('PayMongo webhook session id:', sessionId);
 
                 if (sessionId && process.env.PAYMONGO_SECRET_KEY) {
                     try {
@@ -249,15 +246,6 @@ const handlePayMongoWebhook = async (req, res) => {
                 lineItemsTotal ||
                 0;
 
-            console.log('PayMongo amount sources:', {
-                paid_amount: eventData.paid_amount,
-                amount: eventData.amount,
-                session_amount_total: sessionData.amount_total,
-                fetched_amount_total: sessionAttributes?.amount_total,
-                fetched_total_amount: sessionAttributes?.total_amount,
-                fetched_line_items_total: lineItemsTotal,
-                fetched_line_items_count: lineItems.length,
-            });
 
             await TransactionModel.create({
                 bookingId: newBooking._id,

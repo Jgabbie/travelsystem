@@ -61,19 +61,19 @@ export default function BookingProcess() {
     const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : []
     const travelDate = getDisplayDate(data.travelDate)
     const travelersCount = selectedSoloGrouped === 'solo'
-        ? 1
-        : (counts.adult + counts.child + counts.infant)
+        ? { adult: 1, child: 0, infant: 0 }
+        : { adult: counts.adult, child: counts.child, infant: counts.infant }
 
-
+    const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
     const travelDateRate = data.travelDateRate || 0
     const soloRate = data.packageSoloRate || 0
     const childRate = data.packageChildRate || 0
     const infantRate = data.packageInfantRate || 0
     const packagePricePerPax = data.travelDatePrice || 0
     const totalPrice =
-        counts.adult * packagePricePerPax +
-        counts.child * childRate +
-        counts.infant * infantRate;
+        travelersCount.adult * packagePricePerPax +
+        travelersCount.child * childRate +
+        travelersCount.infant * infantRate;
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
     const images = data.images || []
@@ -164,7 +164,8 @@ export default function BookingProcess() {
             setBookingData(prev => ({
                 ...prev,
                 ...currentFormValues,
-                travelerCounts: counts,
+                travelerCounts: travelersCount,
+                bookingType: bookingType,
                 totalPrice: totalPrice,
                 passportFiles: passportFilesFormatted
             }));
@@ -175,9 +176,10 @@ export default function BookingProcess() {
             console.log('Updated Booking Data on Next:', {
                 ...bookingData,
                 ...currentFormValues,
-                travelerCounts: counts,
+                travelerCounts: travelersCount,
+                bookingType: bookingType,
                 totalPrice: totalPrice,
-                passportFiles: fileLists
+                passportFiles: passportFilesFormatted
             });
             console.log('Save Successful, moving to next step');
 
@@ -367,7 +369,7 @@ export default function BookingProcess() {
                                 <div className="solo-group-image solo" />
                                 <h3>Single Supplement / Solo Booking</h3>
                                 <p>Book for yourself with a single traveler setup.</p>
-                                <p style={{ color: "#FF4D4F", fontWeight: "bold" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
+                                <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
                             </button>
 
                             <button
@@ -378,7 +380,7 @@ export default function BookingProcess() {
                                 <div className="solo-group-image group" />
                                 <h3>Grouped Booking</h3>
                                 <p>Plan a trip for a group with shared activities.</p>
-                                <p style={{ color: "#FF4D4F", fontWeight: "bold" }}>Note: Group booking should have a minimum of 2 travelers.</p>
+                                <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: Group booking should have a minimum of 2 travelers.</p>
                             </button>
                         </div>
                     </div>

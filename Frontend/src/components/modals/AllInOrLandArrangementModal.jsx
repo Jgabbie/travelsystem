@@ -43,6 +43,7 @@ export default function AllInOrLandArrangementModal({
             footer={null}
             className="arrangement-modal"
             width={900}
+            style={{ top: 55 }}
         >
             <div className="arrangement-content">
                 <h1 className='arrangement-heading'>Select Your Package Arrangement</h1>
@@ -54,9 +55,8 @@ export default function AllInOrLandArrangementModal({
                     >
                         <div className="arrangement-image fixed" aria-hidden="true" />
                         <h3>All in Package</h3>
-                        <p>
-                            Flights, hotels, transfers, and curated activities bundled for a
-                            worry-free trip.
+                        <p style={{ textAlign: "justify" }}>
+                            In this selection, you will receive a fixed itinerary based on the current package. This allows you to proceed with the booking process without any changes to the package details.
                         </p>
                     </button>
 
@@ -66,10 +66,12 @@ export default function AllInOrLandArrangementModal({
                         onClick={() => handleSelect('private')}
                     >
                         <div className="arrangement-image private" aria-hidden="true" />
-                        <h3>Customized Package</h3>
-                        <p>
-                            Build your own itinerary by selecting preferred hotels, activities, and other
-                            additional inclusions to create a personalized travel experience.
+                        <h3>Private Tour</h3>
+                        <p style={{ textAlign: "justify" }}>
+                            In this selection, you can customize the itinerary of the current package. This allows you to send quotation request for more personalized experience.
+                        </p>
+                        <p style={{ color: "#FF4D4F", fontWeight: "500", textAlign: "justify" }}>
+                            Note: This option may have a higher price than the All in Package arrangement, as it offers more flexibility and customization. The final price will depend on the specific changes you request.
                         </p>
                     </button>
                 </div>
