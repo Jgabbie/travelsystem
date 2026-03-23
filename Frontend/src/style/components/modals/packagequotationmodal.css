@@ -306,6 +306,11 @@
     box-shadow: 0 0 0 4px rgba(48, 87, 151, 0.28);
 }
 
+.quotation-flight-details.quotation-section {
+    width: 100%;
+    max-width: 650px;
+}
+
 .quotation-itinerary h3 {
     font-family: "Montserrat", sans-serif;
     font-size: 18px;
@@ -445,17 +450,16 @@
     color: #305797 !important;
 }
 
+/* Responsive Media Queries */
 @media (max-width: 900px) {
-    .quotation-modal .ant-modal {
-        width: 90% !important;
-        max-width: 720px;
-    }
-
     .quotation-top-grid {
         grid-template-columns: 1fr;
     }
 
-    .quotation-grid {
+    .quotation-grid,
+    .quotation-itinerary-grid,
+    .quotation-fixed-list,
+    .package-info-lists {
         grid-template-columns: 1fr;
     }
 
@@ -463,30 +467,22 @@
         grid-column: span 1;
     }
 
-    .quotation-itinerary-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .quotation-fixed-list {
-        grid-template-columns: 1fr;
-    }
-
-    .package-info-lists {
-        grid-template-columns: 1fr;
-    }
-
     .package-image-card img {
-        height: 200px;
+        height: 180px;
     }
 }
 
 @media (max-width: 600px) {
+    .quotation-container {
+        padding: 20px;
+    }
+
     .quotation-modal .ant-modal-content {
-        padding: 18px;
+        padding: 16px;
     }
 
     .quotation-header h2 {
-        font-size: 22px;
+        font-size: 20px;
     }
 
     .quotation-actions {
@@ -501,5 +497,38 @@
 @media (max-width: 840px) {
     .quotation-section {
         padding: 20px;
+    }
+}
+
+@media (max-width: 700px) {
+    .header-top-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .back-button {
+        width: auto;
+    }
+
+    .info-main {
+        flex-wrap: wrap;
+    }
+
+    .selection-cards {
+        height: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .quotation-section-title {
+        font-size: 22px;
+    }
+
+    .quotation-section-subtitle {
+        font-size: 12px;
+    }
+
+    .package-image-card img {
+        height: 150px;
     }
 }

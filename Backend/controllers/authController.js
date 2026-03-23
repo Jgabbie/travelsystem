@@ -49,7 +49,7 @@ const signupUser = async (req, res) => {
                     Kindly log in to verify your account and start browsing our travel packages, tours, and exclusive offers.
                 </p>
 
-                <a href="http://localhost:3000/home"
+                <a href="http://mrctravelntours.vercel.app/home"
                     style="
                         display:inline-block;
                         margin-top:25px;
@@ -269,7 +269,7 @@ const sendVerifyOtp = async (req, res) => {
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
         const hashedOtp = await bcrypt.hash(otp, 10)
         user.verifyOtp = hashedOtp;
-        user.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000
+        user.verifyOtpExpireAt = Date.now() + 60 * 1000
 
         await user.save()
 
@@ -304,7 +304,7 @@ const sendVerifyOtp = async (req, res) => {
                     </div>
 
                     <p style="color:#777; font-size:14px;">
-                        This OTP will expire in <b>5 minutes</b>.
+                        This OTP will expire in <b>1 minute</b>.
                     </p>
 
                     <p style="color:#aaa; font-size:12px; margin-top:30px;">
@@ -463,7 +463,7 @@ const sendResetOtp = async (req, res) => {
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
         const hashedOtp = await bcrypt.hash(otp, 10)
         user.resetOtp = hashedOtp;
-        user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000
+        user.resetOtpExpireAt = Date.now() + 60 * 1000
 
         await user.save()
 
@@ -498,7 +498,7 @@ const sendResetOtp = async (req, res) => {
                     </div>
 
                     <p style="color:#777; font-size:14px;">
-                        This OTP will expire in <b>5 minutes</b>.
+                        This OTP will expire in <b>1 minute</b>.
                     </p>
 
                     <p style="color:#aaa; font-size:12px; margin-top:30px;">

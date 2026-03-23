@@ -4,8 +4,8 @@
 .destinations-page {
     min-height: 100vh;
     padding: 40px 32px 40px;
-    background: #f5f7fb;
     font-family: "Roboto", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .destinations-header {
@@ -139,6 +139,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    background: none;
 }
 
 .destinations-results-header h3 {
@@ -315,5 +316,57 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
+    }
+
+    .filter-range-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-range-separator {
+        text-align: center;
+    }
+}
+
+@media (max-width: 1024px) {
+    .destinations-hero-section {
+        height: 520px;
+    }
+
+    .destinations-hero-content h1 {
+        font-size: 56px;
+    }
+
+    .destinations-hero-content p {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 640px) {
+    .destinations-hero-section {
+        height: 420px;
+    }
+
+    .destinations-hero-content {
+        margin-bottom: 40px;
+        padding: 0 16px;
+    }
+
+    .destinations-hero-content h1 {
+        font-size: 38px;
+    }
+
+    .destinations-hero-content p {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .destinations-hero-section {
+        height: 360px;
+    }
+
+    .destinations-hero-content h1 {
+        font-size: 30px;
     }
 }

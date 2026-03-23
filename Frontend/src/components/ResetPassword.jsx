@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { Input, Button, Modal } from 'antd';
+import { Input, Button, Modal, Spin, ConfigProvider } from 'antd';
 import axiosInstance from '../config/axiosConfig';
-import LoadingScreen from './LoadingScreen';
 import '../style/components/resetpasswordpage.css'
 import '../style/components/newpasswordpage.css'
 
@@ -137,6 +136,7 @@ export default function ResetPassword() {
 
     const handleSuccessCancel = () => {
         setIsSuccessModalOpen(false);
+        navigate('/login');
     };
 
     const validateEmail = (value) => {
@@ -162,34 +162,18 @@ export default function ResetPassword() {
     //password validations
     const validate = (field, value) => {
         if (field === "password") {
-            const errors = []
-            if (value === "") {
-                errors.push("Password is required.")
-            }
-            if (value.length < 8) {
-                errors.push("Password must be at least 8 characters.")
-            }
-            if (!/\d/.test(value)) {
-                errors.push("Password must have at least one number.")
-            }
-            if (!/[A-Z]/.test(value)) {
-                errors.push("Password must have at least one uppercase character.")
-            }
-            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
-                errors.push("Password must have at least contain one special character.")
-            }
-            return errors
+            if (value === "") return ["Password is required."]
+            if (value.length < 8) return ["Password must be at least 8 characters."]
+            if (!/\d/.test(value)) return ["Password must have at least one number."]
+            if (!/[A-Z]/.test(value)) return ["Password must have at least one uppercase character."]
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return ["Password must contain a special character."]
+            return []
         }
 
         if (field === "confirmPassword") {
-            const errors = []
-            if (value === "") {
-                errors.push("Confirm Password is required.")
-            }
-            if (value !== values.password) {
-                errors.push("Password and Confirm password does not match")
-            }
-            return errors
+            if (value === "") return ["Confirm Password is required."]
+            if (value !== values.password) return ["Passwords do not match."]
+            return []
         }
     }
 
@@ -202,13 +186,25 @@ export default function ResetPassword() {
     const submitNewPassword = async (e) => {
         e.preventDefault()
         setIsLoading(true);
-        if (error.password !== "") {
+
+        const passwordErrors = validate("password", values.password)
+        const confirmErrors = validate("confirmPassword", values.confirmPassword)
+
+        if (passwordErrors.length > 0 || confirmErrors.length > 0) {
+            setError({
+                password: passwordErrors,
+                confirmPassword: confirmErrors
+            })
             setIsLoading(false);
-            return console.log("Inputs are invalid!")
+            return console.log("Inputs are invalid!");
         }
 
         try {
-            const response = await axiosInstance.post('/auth/reset-password', { newPassword: values.password, token: resetToken })
+            const response = await axiosInstance.post('/auth/reset-password', {
+                newPassword: values.password,
+                token: resetToken
+            })
+
             if (response.data.success || response.status === 200) {
                 setIsLoading(false);
                 setIsSuccessModalOpen(true);
@@ -221,159 +217,169 @@ export default function ResetPassword() {
     }
 
     return (
-        <div>
-            {isOTPValid ?
-                <div className='newpassword-page-container'>
-                    <div className='newpassword-left-side'>
-                        <form onSubmit={submitNewPassword}>
-                            <div>
-                                <h1 className='newpassword-heading'>Set New Password</h1>
-                                <h4 className='newpassword-secondary-heading'>Enter New Password</h4>
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#305797',
+                },
+            }}
+        >
+            <Spin spinning={isLoading} tip="Loading..." size="large">
+                <div>
+                    {isOTPValid ?
+                        <div className='newpassword-page-container'>
+                            <div className='newpassword-left-side'>
+                                <form onSubmit={submitNewPassword}>
+                                    <div>
+                                        <h1 className='newpassword-heading'>Set New Password</h1>
+                                        <h4 className='newpassword-secondary-heading'>Enter New Password</h4>
+                                    </div>
+
+                                    <div className='div-input-fields'>
+                                        <label className='newpassword-labels' htmlFor="password">Password</label>
+                                        <Input.Password status={error.password.length ? "error" : ""} value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                            if (e.key === " " && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }} type="password" id="password" name="password" className='newpassword-input-fields' required />
+                                    </div>
+
+                                    {error.password.length > 0 && (
+                                        <p id='error-message'>{error.password[0]}</p>
+                                    )}
+
+                                    <div className='div-input-fields'>
+                                        <label className='newpassword-labels' htmlFor="confirmPassword">Confirm Password</label>
+                                        <Input.Password status={error.confirmPassword.length ? "error" : ""} value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                            if (e.key === " " && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }} type="password" id="confirmPassword" name="confirmPassword" className='newpassword-input-fields' required />
+                                    </div>
+
+                                    {error.confirmPassword.length > 0 && (
+                                        <p id='error-message'>{error.confirmPassword[0]}</p>
+                                    )}
+
+                                    <div id='newpassword-links-container'>
+                                        <Button className='newpassword-button-links' type='link' onClick={goToLogin}>Remembered your password? Go to Login</Button>
+                                    </div>
+
+                                    <Button id='newpassword-button' htmlType='submit'> Reset Password </Button>
+                                </form>
                             </div>
 
-                            <div className='div-input-fields'>
-                                <label className='newpassword-labels' htmlFor="password">Password</label>
-                                <Input.Password status={error.password.length ? "error" : ""} value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                    if (e.key === " " && e.key !== "Backspace") {
-                                        e.preventDefault()
-                                    }
-                                }} type="password" id="password" name="password" className='newpassword-input-fields' required />
+                            <div className='newpassword-right-side'>
+                            </div>
+                        </div>
+
+                        :
+
+                        <div className='resetpassword-page-container'>
+                            <div className='resetpassword-left-side'>
+                                <form onSubmit={resetPassword}>
+
+                                    <div>
+                                        <h1 className='resetpassword-heading'>Reset Password</h1>
+                                        <h4 className='resetpassword-second-heading'>Enter Email to Reset Password</h4>
+                                    </div>
+
+                                    <div className='resetpassword-div-input-fields'>
+                                        <label className='labels' htmlFor="email">Email</label>
+                                        <Input
+                                            status={errorEmail ? "error" : ""}
+                                            value={getEmail}
+                                            maxLength={40}
+                                            onChange={(e) => {
+                                                const value = e.target.value
+                                                setEmail(value)
+                                                setErrorEmail(validateEmail(value))
+                                            }}
+                                            autoComplete='off'
+                                            onKeyDown={(e) => {
+                                                if (e.key === " " && e.key !== "Backspace") {
+                                                    e.preventDefault()
+                                                }
+                                            }} type="email" id="email" name="email" className='input-fields' required />
+                                    </div>
+
+                                    <p id='error-message'>{errorEmail}</p>
+
+                                    <div id='resetpassword-links-container'>
+                                        <Button className='resetpassword-button-links' type='link' onClick={goToLogin}>Remembered your password? Go to Login</Button>
+                                    </div>
+
+                                    <Button id='resetpassword-button' htmlType="submit">Reset Password</Button>
+                                </form>
+
                             </div>
 
-                            {error.password.map((err, index) => (
-                                <p key={index} id='error-message'>{err}</p>
-                            ))}
-
-                            <div className='div-input-fields'>
-                                <label className='newpassword-labels' htmlFor="confirmPassword">Confirm Password</label>
-                                <Input.Password status={error.confirmPassword.length ? "error" : ""} value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                    if (e.key === " " && e.key !== "Backspace") {
-                                        e.preventDefault()
-                                    }
-                                }} type="password" id="confirmPassword" name="confirmPassword" className='newpassword-input-fields' required />
+                            <div className='resetpassword-right-side'>
                             </div>
+                        </div>
+                    }
 
-                            {error.confirmPassword.map((err, index) => (
-                                <p key={index} id='error-message'>{err}</p>
-                            ))}
 
-                            <div id='newpassword-links-container'>
-                                <Button className='newpassword-button-links' type='link' onClick={goToLogin}>Remembered your password? Go to Login</Button>
-                            </div>
+                    <Modal
+                        open={isModalOpen}
+                        className='resetpassword-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        onOk={handleOk}
+                        onCancel={handleCancel}
+                    >
 
-                            <Button id='newpassword-button' htmlType='submit'> Reset Password </Button>
-                        </form>
-                    </div>
+                        <div className='resetpassword-container-modal'>
+                            <h1 className='resetpassword-heading-modal'>Verify OTP</h1>
+                            <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
-                    <div className='newpassword-right-side'>
-                    </div>
-                </div>
-
-                :
-
-                <div className='resetpassword-page-container'>
-                    <div className='resetpassword-left-side'>
-                        <form onSubmit={resetPassword}>
-
-                            <div>
-                                <h1 className='resetpassword-heading'>Reset Password</h1>
-                                <h4 className='resetpassword-second-heading'>Enter Email to Reset Password</h4>
-                            </div>
-
-                            <div className='resetpassword-div-input-fields'>
-                                <label className='labels' htmlFor="email">Email</label>
-                                <Input
-                                    status={errorEmail ? "error" : ""}
-                                    value={getEmail}
-                                    maxLength={40}
-                                    onChange={(e) => {
-                                        const value = e.target.value
-                                        setEmail(value)
-                                        setErrorEmail(validateEmail(value))
+                            <form onSubmit={submitOTP}>
+                                <Input.OTP
+                                    status={errorOTP ? "error" : ""}
+                                    value={getOTP}
+                                    maxLength={6}
+                                    onChange={(value) => {
+                                        setOTP(value)
+                                        setErrorOTP(validateOTP(value))
                                     }}
-                                    autoComplete='off'
                                     onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
+                                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                             e.preventDefault()
                                         }
-                                    }} type="email" id="email" name="email" className='input-fields' required />
-                            </div>
+                                    }} type="tel" id="enterOTP" name="enterOTP" className='input-fields-modal' required />
 
-                            <p id='error-message'>{errorEmail}</p>
+                                <p id='error-message-modal'>{errorOTP}</p>
 
-                            <div id='resetpassword-links-container'>
-                                <Button className='resetpassword-button-links' type='link' onClick={goToLogin}>Remembered your password? Go to Login</Button>
-                            </div>
+                                <Button id='submit-otp-button' htmlType="submit">Submit</Button>
+                            </form>
 
-                            <Button id='resetpassword-button' htmlType="submit">Reset Password</Button>
-                        </form>
+                            {
+                                timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
+                                    :
+                                    <p id='footer-text-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
+                            }
+                        </div>
+                    </Modal>
 
-                    </div>
+                    <Modal
+                        open={isSuccessModalOpen}
+                        className='resetpassword-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        onOk={handleSuccessOk}
+                        onCancel={handleSuccessCancel}
+                        style={{ top: 230 }}
+                    >
+                        <div className='resetpassword-success-container'>
+                            <h1 className='resetpassword-success-heading'>Password Changed</h1>
+                            <p className='resetpassword-success-text'>Your password has been updated successfully.</p>
 
-                    <div className='resetpassword-right-side'>
-                    </div>
+                            <Button id='resetpassword-success-button' onClick={handleSuccessOk}>Continue</Button>
+                        </div>
+                    </Modal>
+
                 </div>
-            }
-
-
-            <Modal
-                open={isModalOpen}
-                className='resetpassword-modal'
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                footer={null}
-                onOk={handleOk}
-                onCancel={handleCancel}
-            >
-
-                <div className='resetpassword-container-modal'>
-                    <h1 className='resetpassword-heading-modal'>Verify OTP</h1>
-                    <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
-
-                    <form onSubmit={submitOTP}>
-                        <Input.OTP
-                            status={errorOTP ? "error" : ""}
-                            value={getOTP}
-                            maxLength={6}
-                            onChange={(value) => {
-                                setOTP(value)
-                                setErrorOTP(validateOTP(value))
-                            }}
-                            onKeyDown={(e) => {
-                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                    e.preventDefault()
-                                }
-                            }} type="tel" id="enterOTP" name="enterOTP" className='input-fields-modal' required />
-
-                        <p id='error-message-modal'>{errorOTP}</p>
-
-                        <Button id='submit-otp-button' htmlType="submit">Submit</Button>
-                    </form>
-
-                    {
-                        timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
-                            :
-                            <p id='footer-text-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
-                    }
-                </div>
-            </Modal>
-
-            <Modal
-                open={isSuccessModalOpen}
-                className='resetpassword-success-modal'
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                footer={null}
-                onOk={handleSuccessOk}
-                onCancel={handleSuccessCancel}
-            >
-                <div className='resetpassword-success-container'>
-                    <h1 className='resetpassword-success-heading'>Password Changed</h1>
-                    <p className='resetpassword-success-text'>Your password has been updated successfully.</p>
-
-                    <Button id='resetpassword-success-button' onClick={handleSuccessOk}>Continue</Button>
-                </div>
-            </Modal>
-
-            <LoadingScreen isVisible={isLoading} />
-        </div>
+            </Spin>
+        </ConfigProvider>
     )
 }

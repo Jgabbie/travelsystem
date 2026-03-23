@@ -16,7 +16,8 @@
     font-weight: 600;
     color: #305797;
     line-height: 10px;
-    width: 550px;
+    width: 100%;
+    max-width: 550px;
     margin-bottom: 40px;
     margin-top: 20px;
 }
@@ -29,7 +30,8 @@
     margin-top: 3px;
     margin-bottom: 40px;
     line-height: 5px;
-    width: 550px;
+    width: 100%;
+    max-width: 550px;
 }
 
 
@@ -150,7 +152,8 @@
     font-size: 18px;
     font-weight: 500;
     color: #305797;
-    width: 550px;
+    width: 100%;
+    max-width: 550px;
 }
 
 #emailverify-submit-otp-button,
@@ -173,5 +176,49 @@
 
 #error-message-modal {
     color: #ff0000;
-    width: 500px;
+    width: 100%;
+    max-width: 500px;
+}
+
+@media (max-width: 768px) {
+    .emailverify-heading-modal {
+        font-size: 32px;
+        line-height: 1.2;
+        margin-bottom: 20px;
+    }
+
+    .emailverify-secondary-heading-modal {
+        font-size: 16px;
+        line-height: 1.3;
+        margin-bottom: 20px;
+    }
+
+    .ant-otp input {
+        width: 46px;
+        height: 56px;
+        font-size: 24px;
+    }
+
+    #emailverify-submit-otp-button {
+        width: 100%;
+        max-width: 260px;
+        font-size: 18px;
+    }
+
+    #emailverify-footer-text-modal,
+    .emailverify-label-links-modal {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ant-otp {
+        gap: 6px;
+    }
+
+    .ant-otp input {
+        width: 40px;
+        height: 50px;
+        font-size: 20px;
+    }
 }

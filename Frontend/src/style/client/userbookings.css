@@ -166,4 +166,16 @@
     .user-bookings-upload-btn {
         height: 40px;
     }
+
+    .booking-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .booking-actions .search-input,
+    .booking-actions .booking-select,
+    .booking-actions .booking-date-filter {
+        width: 100% !important;
+    }
 }

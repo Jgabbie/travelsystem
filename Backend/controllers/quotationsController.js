@@ -11,25 +11,23 @@ const generateQuotationReference = () => {
 }
 
 const createQuotation = async (req, res) => {
-    const { packageId, packageName, travelDetails } = req.body
+    const { packageId, quotationDetails } = req.body
     const userId = req.userId
 
-    console.log("Creating quotation with data:", { packageId, packageName, userId, travelDetails })
+    console.log("Creating quotation with data:", { packageId, userId, quotationDetails })
 
     try {
         const userName = await UserModel.findById(userId).select('username')
         console.log("User found for quotation:", userName.username)
 
-        if (!packageId || !packageName || !userId || !travelDetails) {
+        if (!packageId || !quotationDetails) {
             return res.status(400).json({ message: "Missing required fields" })
         }
 
         const newQuotation = await QuotationModel.create({
             packageId,
-            userName: userName.username,
-            packageName,
             userId,
-            travelDetails,
+            quotationDetails,
             reference: generateQuotationReference(),
             status: 'Pending'
         })

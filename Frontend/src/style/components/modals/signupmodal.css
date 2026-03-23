@@ -15,13 +15,23 @@ body {
     top: 70px;
 }
 
+#signup-container-modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    width: 550px;
+}
+
 #signup-heading-modal {
     font-family: "Montserrat", sans-serif;
     font-size: 35px;
     font-weight: 600;
     color: #305797;
     line-height: 10px;
-    width: 550px;
+    width: 100%;
+    max-width: 550px;
     margin-bottom: 20px;
     margin-top: 20px;
 }
@@ -32,25 +42,26 @@ body {
     font-weight: 600;
     color: #305797;
     line-height: 5px;
-    width: 550px;
+    width: 100%;
+    max-width: 550px;
 }
 
 .signup-input-fields-modal-group {
-    width: 263px;
+    width: 100%;
     height: 35px;
     font-size: 13px;
     font-family: "Montserrat", sans-serif;
 }
 
 .signup-input-fields-modal {
-    width: 540px;
+    width: 100%;
     height: 35px;
     font-size: 13px;
     font-family: "Montserrat", sans-serif;
 }
 
 .ant-input-password input {
-    width: 500px;
+    width: 100%;
     font-size: 14px;
     font-family: "Montserrat", sans-serif;
 }
@@ -159,12 +170,73 @@ body {
 .signup-input-group-modal {
     margin-right: 7px;
     margin-top: 12px;
+    width: 100%;
 }
 
 .signup-button-row-modal {
     display: flex;
     justify-content: space-between;
     margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .signup-modal {
+        top: 30px;
+    }
+
+    #signup-heading-modal {
+        font-size: 28px;
+        line-height: 1.1;
+    }
+
+    #signup-secondary-heading-modal {
+        font-size: 14px;
+        line-height: 1.2;
+    }
+
+    .signup-input-row-modal {
+        flex-direction: column;
+    }
+
+    .signup-input-group-modal {
+        margin-right: 0;
+    }
+
+    .signup-button-row-modal {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    #signup-button-modal {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .signup-error-slot--multi {
+        min-height: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    #signup-container-modal {
+        padding: 0 12px;
+        width: 100%;
+    }
+
+    .signup-labels-modal,
+    .signup-label-links-modal,
+    .signup-button-links-modal {
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .signup-modal {
+        width: 1000px;
+        max-width: 92vw;
+    }
 }
 
 /* --- Signup Success Modal --- */

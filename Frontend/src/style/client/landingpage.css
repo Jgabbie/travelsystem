@@ -11,6 +11,7 @@ body {
     overflow-y: auto !important;
     scroll-behavior: smooth;
     margin: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .landing-container {
@@ -979,5 +980,77 @@ body {
         bottom: 16px;
         height: 44px;
         padding: 0 16px;
+    }
+}
+
+@media (max-width: 900px) {
+    .aboutus-vision-mission {
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .aboutus-vision-mision-block {
+        width: 100%;
+    }
+
+    .contactus-container {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .contactus-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .contactus-text {
+        width: 100%;
+        margin: 0 20px;
+    }
+
+    .contactus-section-right-card {
+        width: 100%;
+        max-width: 540px;
+        margin: 0 auto 20px;
+    }
+
+    .footer-section-top {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 24px;
+    }
+
+    .footer-section-logo,
+    .footer-section-address,
+    .footer-section-hours,
+    .footer-section-socials {
+        width: 100%;
+        max-width: 320px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-divider {
+        width: 90%;
+    }
+}
+
+@media (max-width: 600px) {
+    .contactus-section-right-card {
+        height: auto;
+        padding: 20px 0;
+    }
+
+    .contact-input,
+    .contact-textarea {
+        width: 90%;
+    }
+
+    .footer-section {
+        height: auto;
+        padding: 24px 16px;
+        gap: 16px;
     }
 }

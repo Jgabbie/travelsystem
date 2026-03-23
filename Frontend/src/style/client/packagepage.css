@@ -19,7 +19,8 @@
 .package-left {
     background: #ffffff;
     height: 551px;
-    width: 740px;
+    width: 100%;
+    max-width: 740px;
     border-radius: 16px;
     padding: 28px;
     box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
@@ -121,7 +122,8 @@
     display: flex;
     flex-direction: column;
     height: 540px;
-    width: 400px;
+    width: 100%;
+    max-width: 610px;
     gap: 18px;
 }
 
@@ -133,7 +135,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 610px;
+    width: 100%;
 }
 
 .package-price-label {
@@ -161,7 +163,7 @@
 
 .package-tabs {
     height: 400px;
-    width: 610px;
+    width: 100%;
     background: #ffffff;
     border-radius: 16px;
     padding: 18px;
@@ -215,7 +217,73 @@
 .package-reviews-card {
     border-radius: 16px;
     box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
-    width: 610px;
+    width: 100%;
+}
+
+@media (max-width: 1100px) {
+    .package-box {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    .package-left,
+    .package-right {
+        max-width: 900px;
+        height: auto;
+    }
+
+    .package-tabs {
+        height: auto;
+        min-height: 320px;
+    }
+
+    .package-tab-content-scroll {
+        height: auto;
+        max-height: 260px;
+    }
+}
+
+@media (max-width: 768px) {
+    .packagepage-container {
+        padding: 100px 16px 32px;
+    }
+
+    .package-left {
+        padding: 20px;
+    }
+
+    .package-title {
+        font-size: 22px;
+    }
+
+    .package-pricepax {
+        font-size: 32px;
+    }
+
+    .package-review-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .package-review-breakdown-row {
+        grid-template-columns: 48px minmax(0, 1fr) 28px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .package-left,
+    .package-right {
+        gap: 14px;
+    }
+
+    .package-description p {
+        font-size: 12px;
+    }
+
+    .package-tabs {
+        padding: 14px;
+    }
 }
 
 .package-reviews-card .ant-card-body {

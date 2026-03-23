@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
 import '../../style/client/profilepage.css'
+import '../../style/client/userpreference.css';
 
 
 export default function ProfilePage() {
@@ -30,6 +31,64 @@ export default function ProfilePage() {
         birthdate: '',
         nationality: ''
     });
+
+    const moodOptions = [
+        'Beach',
+        'Island Hopping',
+        'Cultural',
+        'Summer',
+        'Winter',
+        'Sightseeing',
+        'Hiking',
+        'City'
+    ];
+
+    //preferences options
+    const tourOptions = [
+        'Domestic',
+        'International'
+    ];
+
+    const [preferences, setPreferences] = useState({
+        moods: [],
+        tours: []
+    });
+    const [editingPreferences, setEditingPreferences] = useState(false);
+
+    const togglePreference = (key, value, limit) => {
+        setPreferences(prev => {
+            const current = prev[key] || [];
+            const exists = current.includes(value);
+
+            if (!exists && limit && current.length >= limit) {
+                return prev;
+            }
+
+            // toggle selection
+            const next = exists
+                ? current.filter(item => item !== value)
+                : [...current, value];
+
+            return { ...prev, [key]: next };
+        });
+    };
+
+    const savePreferences = async () => {
+        try {
+            await axiosInstance.post('/preferences/save', {
+                userId: userData._id,
+                moods: preferences.moods,
+                tours: preferences.tours
+            }, { withCredentials: true });
+
+            setEditingPreferences(false);
+            message.success('Preferences saved successfully!');
+        } catch (error) {
+            console.error('Error saving preferences:', error);
+            const errorMsg = error?.response?.data?.message || 'Failed to save preferences';
+            message.error(errorMsg);
+        }
+    };
 
     const [recentReviews, setRecentReviews] = useState([])
     const [recentBookings, setRecentBookings] = useState([])
@@ -97,7 +156,27 @@ export default function ProfilePage() {
         fetchUserData()
         fetchRecentBookings()
         fetchRecentReviews()
+        fetchPreferences()
     }, [])
+
+    const fetchPreferences = async () => {
+        try {
+            const response = await axiosInstance.get("/preferences/me", { withCredentials: true });
+            if (response.status === 200) {
+                const data = response.data.preferrences;
+                setPreferences({
+                    moods: data.moods || [],
+                    tours: data.tours || []
+                });
+
+                console.log("Fetched preferences:", data);
+                console.log("Set preferences state:", preferences);
+            }
+        } catch (error) {
+            console.error('Error fetching preferences:', error);
+            setPreferences({ moods: [], tours: [] });
+        }
+    };
 
     const fetchUserData = async () => {
         try {
@@ -294,11 +373,11 @@ export default function ProfilePage() {
                 }
             }}
         >
-            <div className="profile-page">
+            <div className="profile-page" >
                 <TopNavUser />
 
                 {/* profile */}
-                <div className="profile-container">
+                <div className="profile-container" style={{ marginBottom: 40 }}>
                     <div className="profile-content">
                         <Card
                             className="profile-card"
@@ -557,7 +636,106 @@ export default function ProfilePage() {
                                 </Space>
                             )}
                         </Card>
+
+
+                        <Card
+                            className="profile-card"
+                            title=
+                            {
+                                <div className='profile-card-header'>
+                                    <h2>Preferences</h2>
+                                    <Button
+                                        type="default"
+                                        onClick={() => setEditingPreferences(true)}
+                                        icon={<EditOutlined />}
+                                        disabled={editingPreferences}
+                                        className='profile-action-button'
+                                    >
+                                        Edit Preferences
+                                    </Button>
+                                </div>
+
+                            }
+                            style={{ marginTop: '20px' }}
+                        >
+                            <div className="preference-section">
+
+                                {/* MOODS */}
+                                <div className="preference-block">
+                                    <h3>What are you in the mood for?</h3>
+                                    <p>Choose up to 3</p>
+
+                                    <div className="preference-chip-grid">
+                                        {moodOptions.map((option) => (
+                                            <button
+                                                key={option}
+                                                type="button"
+                                                disabled={!editingPreferences}
+                                                className={
+                                                    preferences.moods.includes(option)
+                                                        ? 'preference-chip is-selected'
+                                                        : 'preference-chip'
+                                                }
+                                                onClick={() => togglePreference('moods', option, 3)}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* TOURS */}
+                                <div className="preference-block" style={{ marginTop: '20px' }}>
+                                    <h3>What type of tour do you like?</h3>
+
+                                    <div className="preference-chip-grid">
+                                        {tourOptions.map((option) => (
+                                            <button
+                                                key={option}
+                                                type="button"
+                                                disabled={!editingPreferences}
+                                                className={
+                                                    preferences.tours.includes(option)
+                                                        ? 'preference-chip is-selected'
+                                                        : 'preference-chip'
+                                                }
+                                                onClick={() => togglePreference('tours', option)}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+
+                                {editingPreferences && (
+                                    <div style={{ marginTop: '20px' }}>
+                                        <Button
+                                            type="primary"
+                                            onClick={savePreferences}
+                                            icon={<SaveOutlined />}
+                                            className="profile-action-button"
+                                        >
+                                            Save Preferences
+                                        </Button>
+
+                                        <Button
+                                            style={{ marginLeft: '10px' }}
+                                            onClick={() => setEditingPreferences(false)}
+                                            icon={<CloseOutlined />}
+                                            className="profile-cancel-button"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                )}
+
+                            </div>
+                        </Card>
+
                     </div>
+
+
 
 
                     {/* recent bookings and reviews */}
@@ -570,7 +748,7 @@ export default function ProfilePage() {
                                 <p className="profile-empty-text">No reviews yet.</p>
                             ) : (
                                 <div className="profile-review-list">
-                                    {recentReviews.map((review, index) => (
+                                    {recentReviews.slice(0, 3).map((review, index) => (
                                         <div className="profile-review-item" key={review?._id || index}>
                                             <div>
                                                 <p className="profile-review-title">{review?.packageName || 'Untitled Review'}</p>
@@ -592,7 +770,7 @@ export default function ProfilePage() {
                                 <p className="profile-empty-text">No bookings yet.</p>
                             ) : (
                                 <div className="profile-booking-list">
-                                    {recentBookings.map((booking, index) => (
+                                    {recentBookings.slice(0, 3).map((booking, index) => (
                                         <div className="profile-booking-item" key={booking?._id || index}>
                                             <div className="profile-booking-header">
                                                 <div>

@@ -113,12 +113,15 @@
         padding: 110px 16px 32px;
     }
 
-    .user-quotation-actions {
+    .booking-actions {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
     }
 
-    .search-input {
-        width: 100%;
+    .booking-actions .search-input,
+    .booking-actions .booking-select,
+    .booking-actions .booking-date-filter {
+        width: 100% !important;
     }
 }

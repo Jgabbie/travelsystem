@@ -42,10 +42,7 @@ const QuotationSchema = new mongoose.Schema({
     packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'packages', required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
 
-    userName: { type: String, required: true },
-    packageName: { type: String, required: true },
-
-    travelDetails: { type: Object, required: true },
+    quotationDetails: { type: Object, required: true },
 
     reference: { type: String, required: true, unique: true },
 
