@@ -129,19 +129,6 @@ const createCheckoutSession = async (req, res) => {
         const cancelUrl = paymentPayload.cancelUrl;
 
 
-        //currently not being used
-        const metadata = {
-            ...(paymentPayload.metadata || {}),
-            userId: req.userId,
-            packageId,
-            travelDate,
-            travelerTotal,
-            baseAmountCents,
-            convenienceFeeCents,
-            totalAmountCents: finalTotalCents
-        };
-
-
         console.log("Received payment payload:", paymentPayload);
 
         const package = await PackageModel.findById(packageId).select('packageName');
@@ -158,6 +145,18 @@ const createCheckoutSession = async (req, res) => {
         const finalTotalCents = baseAmountCents + convenienceFeeCents; //total amount with convenience fee
 
         console.log(`Creating PayMongo Checkout Session: Base=${baseAmountCents} cents, Fee=${convenienceFeeCents} cents, Total=${finalTotalCents} cents`);
+
+        //currently not being used
+        const metadata = {
+            ...(paymentPayload.metadata || {}),
+            userId: req.userId,
+            packageId,
+            travelDate,
+            travelerTotal,
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents
+        };
 
         const response = await axios.post(
             "https://api.paymongo.com/v1/checkout_sessions",

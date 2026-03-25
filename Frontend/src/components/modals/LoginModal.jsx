@@ -134,9 +134,24 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             if (response.data.success || response.status === 200) {
                 setOTP("")
                 setIsOTPModalVisible(false)
-                setIsVerifiedModalOpen(true)
+                setIsVerifiedModalOpen(false)
+
+                try {
+                    const loginResponse = await axiosInstance.post(
+                        '/auth/loginUser',
+                        { username: values.username, password: values.password }
+                    )
+                    const userData = loginResponse.data.user
+                    if (userData) {
+                        setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce })
+                    }
+                } catch (loginError) {
+                    console.error("Auto login after verification failed:", loginError.response?.data?.message || loginError.message)
+                }
+
                 clearForm()
                 onLoginSuccess()
+                navigate('/user-preferences')
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
