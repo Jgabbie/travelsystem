@@ -33,6 +33,82 @@ const parsePayMongoSignature = (signatureHeader) => {
     return { timestamp: signatureMap.t, signature };
 };
 
+const createManualPayment = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const {
+            packageId,
+            travelDate,
+            travelerTotal,
+            amount,
+            paymentType,
+            proofImage,
+            proofImageType,
+            proofFileName,
+            bookingReference,
+            bookingDetails
+        } = req.body || {};
+
+        if (!proofImage || !proofImageType) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        let booking = null;
+        if (bookingReference) {
+            booking = await BookingModel.findOne({ reference: bookingReference, userId: user._id });
+        }
+
+        if (!booking) {
+            if (!packageId || !travelDate || !travelerTotal || !amount) {
+                return res.status(400).json({ error: "Missing required booking details." });
+            }
+
+            booking = await BookingModel.create({
+                packageId,
+                userId: user._id,
+                bookingDate: new Date().toISOString(),
+                travelDate,
+                travelers: Number(travelerTotal),
+                reference: generateBookingReference(),
+                status: 'Pending',
+                ...(bookingDetails ? { bookingDetails } : {})
+            });
+        } else if (bookingDetails) {
+            booking.bookingDetails = bookingDetails;
+            await booking.save();
+        }
+
+        const transaction = await TransactionModel.create({
+            bookingId: booking._id,
+            packageId: booking.packageId || packageId,
+            userId: user._id,
+            reference: generateTransactionReference(),
+            amount: Number(amount),
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+            proofImageType,
+            proofFileName,
+            paymentType
+        });
+
+        return res.status(201).json({
+            message: 'Manual payment submitted for verification.',
+            bookingId: booking._id,
+            transactionId: transaction._id
+        });
+    } catch (error) {
+        console.error('Manual payment error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment.' });
+    }
+};
+
 
 //paymongo
 const createCheckoutSession = async (req, res) => {
@@ -216,17 +292,29 @@ const handlePayMongoWebhook = async (req, res) => {
                 throw new Error('User not found for PayMongo metadata userId.');
             }
 
-            // Create Booking and Transaction...
+            // Create or update booking and create transaction...
             const travelerTotal = Number(metadata.travelerTotal || 0);
-            const newBooking = await BookingModel.create({
-                packageId: metadata.packageId,
-                userId: user._id,
-                bookingDate: new Date().toISOString(),
-                travelDate: metadata.travelDate,
-                travelers: travelerTotal,
-                reference: generateBookingReference(),
-                status: 'Successful'
-            });
+            let booking = null;
+
+            if (metadata.bookingReference) {
+                booking = await BookingModel.findOneAndUpdate(
+                    { reference: metadata.bookingReference, userId: user._id },
+                    { status: 'Successful' },
+                    { new: true }
+                );
+            }
+
+            if (!booking) {
+                booking = await BookingModel.create({
+                    packageId: metadata.packageId,
+                    userId: user._id,
+                    bookingDate: new Date().toISOString(),
+                    travelDate: metadata.travelDate,
+                    travelers: travelerTotal,
+                    reference: generateBookingReference(),
+                    status: 'Successful'
+                });
+            }
 
             const lineItems = Array.isArray(sessionAttributes?.line_items)
                 ? sessionAttributes.line_items
@@ -248,7 +336,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
 
             await TransactionModel.create({
-                bookingId: newBooking._id,
+                bookingId: booking._id,
                 packageId: metadata.packageId,
                 userId: user._id,
                 reference: generateTransactionReference(),
@@ -377,4 +465,4 @@ const createCheckoutToken = async (req, res) => {
 
 
 
-module.exports = { createCheckoutSession, createCheckoutToken, hitpayPayment, handleHitPayWebhook, handlePayMongoWebhook };
+module.exports = { createCheckoutSession, createCheckoutToken, hitpayPayment, handleHitPayWebhook, handlePayMongoWebhook, createManualPayment };

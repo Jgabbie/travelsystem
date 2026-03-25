@@ -41,6 +41,10 @@ export default function PaymentProcess() {
         if (searchParams.get('status') === 'cancel') {
             localStorage.removeItem(SUCCESS_TOKEN_KEY);
         }
+        const methodParam = searchParams.get('method');
+        if (methodParam === 'manual' || methodParam === 'paymongo') {
+            setMethod(methodParam);
+        }
     }, [bookingData, navigate, searchParams]);
 
     const handleUploadChange = async ({ fileList: newFileList }) => {
@@ -115,6 +119,8 @@ export default function PaymentProcess() {
     const email = bookingData?.leadEmail || 'Email'
     const phone = bookingData?.leadContact || 'Phone Number';
 
+    const [bookingReference, setBookingReference] = useState(null);
+
     const proceedBooking = async () => {
 
         if (!paymentType) {
@@ -140,6 +146,48 @@ export default function PaymentProcess() {
                 ? depositAmount
                 : totalAmount;
 
+            let bookingRef = bookingReference;
+            if (!bookingRef) {
+                const bookingPayload = {
+                    packageId,
+                    travelDate: bookingData?.travelDate,
+                    bookingDate: new Date().toISOString(),
+                    travelers: travelerTotal,
+                    status: 'Pending',
+                    bookingDetails: bookingData
+                };
+
+                const bookingResponse = await axiosInstance.post('/booking/create-booking', { bookingPayload });
+                bookingRef = bookingResponse.data?.reference || bookingRef;
+                setBookingReference(bookingRef || null);
+            }
+
+            if (method === 'manual') {
+                const file = fileList?.[0];
+                const proofImage = file?.preview || (file?.originFileObj ? await getBase64(file.originFileObj) : null);
+
+                if (!proofImage) {
+                    message.error('Unable to read the proof of payment image.');
+                    return;
+                }
+
+                await axiosInstance.post('/payment/manual', {
+                    packageId,
+                    travelDate: bookingData?.travelDate,
+                    travelerTotal,
+                    amount: amountToCharge,
+                    paymentType,
+                    bookingReference: bookingRef,
+                    bookingDetails: bookingData,
+                    proofImage,
+                    proofImageType: file?.type,
+                    proofFileName: file?.name
+                });
+
+                navigate(`/booking-payment/success?token=${successToken}`)
+                return;
+            }
+
             const paymentPayload = {
                 packageId,
                 totalPrice: amountToCharge,
@@ -147,6 +195,9 @@ export default function PaymentProcess() {
                 travelerTotal,
                 leadEmail: bookingData.leadEmail,
                 leadContact: bookingData.leadContact,
+                metadata: {
+                    bookingReference: bookingRef
+                },
                 successUrl: `${window.location.origin}/booking-payment/success?token=${successToken}`,
                 cancelUrl: `${window.location.origin}/booking-payment?status=cancel`,
             };

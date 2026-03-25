@@ -92,6 +92,10 @@
     min-height: 925px;
 }
 
+.pdf-viewer-wrapper {
+    width: 100%;
+}
+
 .payment-section .payment-methods-title,
 .payment-section .payment-methods-subtitle {
     text-align: left;
@@ -206,6 +210,10 @@
         padding: 20px;
     }
 
+    .payment-process-backbutton {
+        margin: 16px 16px 0;
+    }
+
     .payment-top-grid {
         grid-template-columns: 1fr;
         margin: 0 16px 24px;
@@ -218,6 +226,60 @@
 
     .payment-section-header {
         margin-bottom: 18px;
+    }
+
+    .payment-section .payment-methods-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-mode-container.payment-section,
+    .payment-methods-container.payment-section {
+        min-height: auto;
+    }
+
+    .pdf-viewer-wrapper {
+        height: 520px;
+    }
+
+    .pdf-viewer-wrapper iframe {
+        height: 520px !important;
+    }
+}
+
+@media (max-width: 540px) {
+    .payment-section {
+        margin: 20px 12px;
+        padding: 16px;
+    }
+
+    .payment-section-header {
+        padding: 12px 12px 0;
+    }
+
+    .payment-section-title {
+        font-size: 22px;
+    }
+
+    .payment-section-subtitle {
+        font-size: 13px;
+    }
+
+    .payment-section .payment-methods-cards {
+        padding: 16px;
+    }
+
+    .payment-schedule-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .pdf-viewer-wrapper {
+        height: 420px;
+    }
+
+    .pdf-viewer-wrapper iframe {
+        height: 420px !important;
     }
 }
 

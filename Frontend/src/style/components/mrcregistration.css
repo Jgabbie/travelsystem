@@ -175,6 +175,15 @@
     padding-bottom: 20px;
 }
 
+.mrc-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mrc-table-container .ant-row {
+    min-width: 700px;
+}
+
 /* travelers */
 
 .mrc-table-header-row {
@@ -233,4 +242,35 @@
     border-left: 0;
     border-right: 0;
     font-size: 11px;
+}
+
+@media (max-width: 900px) {
+    .mrc-overlay-wrapper {
+        padding: 12px;
+    }
+
+    .mrc-form-page {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 640px) {
+    .mrc-form-page {
+        padding: 16px;
+    }
+
+    .mrc-logo {
+        max-height: 64px;
+    }
+
+    .mrc-lead-guest-section-header,
+    .mrc-passengers-section-header,
+    .mrc-booking-section-header,
+    .mrc-diet-header-title {
+        font-size: 12px;
+    }
+
+    .mrc-table-container .ant-row {
+        min-width: 700px;
+    }
 }

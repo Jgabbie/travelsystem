@@ -35,6 +35,8 @@ export default function TransactionManagement() {
   const [editingKey, setEditingKey] = useState("");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+  const [proofTransaction, setProofTransaction] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
@@ -51,8 +53,13 @@ export default function TransactionManagement() {
           package: t.packageId?.packageName || "No Package",
           date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
           price: `₱${Number(t.amount || 0).toLocaleString()}`,
-          method: t.method.charAt(0)?.toUpperCase() + t.method.slice(1) || "No Method",
-          status: t.status || "No Status"
+          amountRaw: Number(t.amount || 0),
+          method: t.method?.charAt(0)?.toUpperCase() + t.method?.slice(1) || "No Method",
+          methodRaw: t.method || "",
+          status: t.status || "No Status",
+          proofImage: t.proofImage || null,
+          proofImageType: t.proofImageType || "",
+          proofFileName: t.proofFileName || ""
         }));
 
         setData(transactions);
@@ -178,6 +185,27 @@ export default function TransactionManagement() {
   const openViewModal = (record) => {
     setSelectedTransaction(record);
     setIsViewModalOpen(true);
+  };
+
+  const openProofModal = (record) => {
+    setProofTransaction(record);
+    setIsProofModalOpen(true);
+  };
+
+  const handleProofDecision = async (record, status) => {
+    try {
+      await axiosInstance.put(`/transaction/${record.key}`, { status });
+      setData((prev) =>
+        prev.map((item) =>
+          item.key === record.key ? { ...item, status } : item
+        )
+      );
+      setIsProofModalOpen(false);
+      setProofTransaction(null);
+      message.success(`Proof ${status === "SUCCESSFUL" ? "accepted" : "rejected"}.`);
+    } catch (error) {
+      message.error("Failed to update proof status.");
+    }
   };
 
   const handleDelete = (key) => {
@@ -327,6 +355,16 @@ export default function TransactionManagement() {
                 disabled={editingKey !== ""}
 
               />
+              {record.methodRaw === "Manual" && record.proofImage && (
+                <Button
+                  className="viewbutton-transactionmanagement"
+                  type="primary"
+                  onClick={() => openProofModal(record)}
+                  disabled={editingKey !== ""}
+                >
+                  View Proof
+                </Button>
+              )}
               <Button
                 className="editbutton-transactionmanagement"
                 type="primary"
@@ -645,6 +683,64 @@ export default function TransactionManagement() {
                 <p className="support-text">Thank you for your purchase!</p>
                 <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
               </div>
+            </div>
+          )}
+        </Modal>
+
+        <Modal
+          open={isProofModalOpen}
+          onCancel={() => setIsProofModalOpen(false)}
+          className="transaction-view-modal"
+          width={720}
+          style={{ top: 60 }}
+          footer={
+            proofTransaction ? (
+              <Space>
+                <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
+                <Button
+                  type="primary"
+                  onClick={() => handleProofDecision(proofTransaction, "SUCCESSFUL")}
+                >
+                  Accept Proof
+                </Button>
+                <Button
+                  danger
+                  onClick={() => handleProofDecision(proofTransaction, "FAILED")}
+                >
+                  Reject Proof
+                </Button>
+              </Space>
+            ) : null
+          }
+        >
+          {proofTransaction && (
+            <div className="receipt-container">
+              <div className="receipt-header" style={{ marginBottom: 16 }}>
+                <div className="company-info">
+                  <div className="header-flex-container">
+                    <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+                    <div className="address-details">
+                      <h2 className="brand-name">Proof of Payment</h2>
+                      <p className="sub-info">Reference: {proofTransaction.ref}</p>
+                      <p className="sub-info">Customer: {proofTransaction.username}</p>
+                      <p className="sub-info">Method: {proofTransaction.method}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {proofTransaction.proofImage ? (
+                <div className="upload-preview-box" style={{ maxHeight: 520 }}>
+                  <img
+                    src={proofTransaction.proofImage}
+                    alt={proofTransaction.proofFileName || "Proof of payment"}
+                    className="upload-preview-image"
+                    style={{ width: "100%", height: "auto" }}
+                  />
+                </div>
+              ) : (
+                <p>No proof image available.</p>
+              )}
             </div>
           )}
         </Modal>

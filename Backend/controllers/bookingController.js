@@ -1,4 +1,5 @@
 const BookingModel = require('../models/booking')
+const TransactionModel = require('../models/transactions')
 const CancellationModel = require('../models/cancellations')
 const logAction = require('../utils/logger')
 
@@ -22,8 +23,10 @@ const createBooking = async (req, res) => {
 
     const packageId = bookingPayload.packageId
     const travelDate = bookingPayload.travelDate
-    const bookingDate = bookingPayload.bookingDate
+    const bookingDate = bookingPayload.bookingDate || new Date().toISOString()
     const travelers = bookingPayload.travelers
+    const bookingDetails = bookingPayload.bookingDetails || null
+    const status = bookingPayload.status || 'Pending'
 
     //find package by name to get its id, then create booking with that package id
     try {
@@ -44,7 +47,8 @@ const createBooking = async (req, res) => {
             bookingDate,
             travelers,
             reference: generateBookingReference(),
-            status: 'Successful'
+            status,
+            ...(bookingDetails ? { bookingDetails } : {})
         })
 
         logAction('BOOKING_CREATED', userId, {
@@ -87,6 +91,32 @@ const getAllBookings = async (_req, res) => {
         res.status(200).json(bookings)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching bookings', error })
+    }
+}
+
+const getBookingByReference = async (req, res) => {
+    const userId = req.userId
+    const { reference } = req.params
+
+    if (!reference) {
+        return res.status(400).json({ message: 'Reference is required' })
+    }
+
+    try {
+        const booking = await BookingModel.findOne({ reference, userId })
+            .populate('packageId', 'packageName packageType')
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' })
+        }
+
+        const transaction = await TransactionModel.findOne({ bookingId: booking._id })
+            .sort({ createdAt: -1 })
+            .populate('packageId', 'packageName')
+
+        return res.status(200).json({ booking, transaction })
+    } catch (error) {
+        return res.status(500).json({ message: 'Error fetching booking details', error })
     }
 }
 
@@ -198,4 +228,4 @@ const getcancellations = async (req, res) => {
     }
 }
 
-module.exports = { createBooking, getUserBookings, getAllBookings, updateBooking, deleteBooking, cancelBooking, getcancellations }
+module.exports = { createBooking, getUserBookings, getAllBookings, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference }

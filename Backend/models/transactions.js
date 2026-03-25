@@ -7,7 +7,11 @@ const TransactionSchema = new mongoose.Schema({
     reference: { type: String, required: true, unique: true },
     amount: { type: Number, required: true },
     method: { type: String, required: true },
-    status: { type: String, required: true }
+    status: { type: String, required: true },
+    proofImage: { type: String },
+    proofImageType: { type: String },
+    proofFileName: { type: String },
+    paymentType: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('transactions', TransactionSchema);

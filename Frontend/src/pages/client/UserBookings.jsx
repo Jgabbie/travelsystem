@@ -35,6 +35,7 @@ export default function UserBookings() {
                 const bookings = response.data.map((b) => ({
                     key: b._id,
                     ref: b.reference || b._id,
+                    reference: b.reference || b._id,
                     packageName: b.packageId?.packageName || 'Tour Package',
                     packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
                     travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM D, YYYY') : dayjs(b.travelDate).format('MMM D, YYYY'),
@@ -78,8 +79,8 @@ export default function UserBookings() {
         return matchesSearch && matchesStatus && matchesBookingDate && matchesTravelDate;
     });
 
-    const viewBookingInvoice = () => {
-        navigate('/user-booking-invoice')
+    const viewBookingInvoice = (booking) => {
+        navigate('/user-booking-invoice', { state: { booking } })
     }
 
     const openCancelModal = (key) => {
@@ -209,7 +210,7 @@ export default function UserBookings() {
                 <Space>
                     <Button
                         className="user-bookings-action user-bookings-action-primary"
-                        onClick={viewBookingInvoice}
+                        onClick={() => viewBookingInvoice(record)}
                     >View</Button>
                     <Button
                         className="user-bookings-action user-bookings-action-danger"

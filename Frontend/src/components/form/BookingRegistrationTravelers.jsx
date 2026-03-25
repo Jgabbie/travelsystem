@@ -11,6 +11,8 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
 
     console.log("summary in travelers:", summary);
 
+    const bookingType = summary.bookingType || 'No Booking';
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -47,6 +49,8 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
 
 
     useEffect(() => {
+
+
         const currentTravelers = form.getFieldValue('travelers') || [];
         if (currentTravelers.length < totalCount) {
             const diff = totalCount - currentTravelers.length;
@@ -64,28 +68,46 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
         const travelers = form.getFieldValue('travelers') || [];
         if (!userProfile.firstName) return;
 
+        const isSolo = bookingType === 'Solo Booking';
+
         travelers[0] = {
             ...travelers[0],
             title: 'MR',
             firstName: userProfile.firstName,
             lastName: userProfile.lastName,
+            roomType: isSolo ? 'SINGLE' : travelers[0]?.roomType
         };
 
+        const updatedTravelers = travelers.map(t => ({
+            ...t,
+            roomType: isSolo ? 'SINGLE' : t?.roomType
+        }));
+
         form.setFieldsValue({
+            travelers: updatedTravelers,
             dateOfRegistration: dayjs().format('MM/DD/YYYY'),
             tourPackageTitle: summary.packageName,
-            tourPackageVia: summary.airlineOptions?.[0]?.name ? summary.airlineOptions[0].type === "fixed" ? summary.airlineOptions[0].name : 'N/A' : 'N/A',
+            tourPackageVia: summary.airlineOptions?.[0]?.name
+                ? summary.airlineOptions[0].type === "fixed"
+                    ? summary.airlineOptions[0].name
+                    : 'N/A'
+                : 'N/A',
             packageTravelDate: dayjs(summary.travelDate).format('MM/DD/YYYY'),
             travelersDate: dayjs().format('MMMM DD, YYYY'),
         });
 
-        const countDiff = totalCount - travelers.length;
+        const countDiff = totalCount - updatedTravelers.length;
         if (countDiff > 0) {
-            form.setFieldsValue({ travelers: [...travelers, ...Array(countDiff).fill({})] });
+            form.setFieldsValue({
+                travelers: [...updatedTravelers, ...Array(countDiff).fill({})]
+            });
         } else if (countDiff < 0) {
-            form.setFieldsValue({ travelers: travelers.slice(0, totalCount) });
+            form.setFieldsValue({
+                travelers: updatedTravelers.slice(0, totalCount)
+            });
         }
-    }, [totalCount, userProfile, form]);
+
+    }, [totalCount, userProfile, form, bookingType]);
 
     return (
         <ConfigProvider
@@ -283,6 +305,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
 
                                         {/* 2. Data Rows */}
                                         {fields.map(({ key, name, ...restField }, index) => {
+                                            const isFirstRow = index === 0;
                                             // Shared style for all inputs to keep code clean
                                             const inputStyle = {
                                                 fontSize: '10px',
@@ -315,7 +338,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                             <Select
                                                                 size="small"
                                                                 style={{ ...inputStyle, width: '100%', padding: 0 }}
-                                                                // Select components need this to affect the inner box
+                                                                disabled={isFirstRow} // Disable title selection for lead guest
                                                                 variant="borderless"
                                                                 placeholder="MR/MS"
                                                                 options={[
@@ -329,13 +352,13 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
 
                                                     <Col span={4}>
                                                         <Form.Item {...restField} name={[name, 'firstName']} noStyle>
-                                                            <Input style={inputStyle} />
+                                                            <Input disabled={isFirstRow} style={inputStyle} />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={4}>
                                                         <Form.Item {...restField} name={[name, 'lastName']} noStyle>
-                                                            <Input style={inputStyle} />
+                                                            <Input disabled={isFirstRow} style={inputStyle} />
                                                         </Form.Item>
                                                     </Col>
 
@@ -347,6 +370,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                 // Select components need this to affect the inner box
                                                                 variant="borderless"
                                                                 className="mrc-select-flat"
+                                                                disabled={isFirstRow}
                                                                 options={[
                                                                     { value: 'TWIN', label: 'TWIN' },
                                                                     { value: 'DOUBLE', label: 'DOUBLE' },

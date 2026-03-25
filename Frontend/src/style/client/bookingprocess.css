@@ -374,6 +374,14 @@
         grid-template-columns: 1fr;
     }
 
+    .booking-section .booking-summary-card {
+        overflow: hidden;
+    }
+
+    .booking-summary-value {
+        text-align: left;
+    }
+
     .booking-section .booking-summary-image {
         width: 100%;
         height: auto;

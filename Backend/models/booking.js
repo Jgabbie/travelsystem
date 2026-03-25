@@ -7,7 +7,8 @@ const BookingSchema = new mongoose.Schema({
     travelDate: { type: String, required: true },
     travelers: { type: Number, required: true },
     reference: { type: String, required: true, unique: true },
-    status: { type: String, default: 'pending' }
+    status: { type: String, default: 'pending' },
+    bookingDetails: { type: mongoose.Schema.Types.Mixed }
 }, { timestamps: true })
 
 module.exports = mongoose.model('bookings', BookingSchema)

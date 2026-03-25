@@ -1,4 +1,18 @@
 import { Layout } from "antd";
+import {
+  AppstoreOutlined,
+  AuditOutlined,
+  BellOutlined,
+  FileTextOutlined,
+  FundOutlined,
+  IdcardOutlined,
+  ReadOutlined,
+  SafetyCertificateOutlined,
+  SolutionOutlined,
+  TeamOutlined,
+  TransactionOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import "../style/components/sidenav.css";
@@ -366,61 +380,81 @@ export default function SideNav() {
       <Sider className="sidenav" width={220}>
 
         <div className="nav-top">
-          <NavLink to="/dashboard" className="nav-item">Dashboard</NavLink>
+          <NavLink to="/dashboard" className="nav-item">
+            <span className="nav-item-content">
+              <span><AppstoreOutlined /> Dashboard</span>
+            </span>
+          </NavLink>
           <NavLink to="/users" className="nav-item" onClick={handleUsersClick}>
             <span className="nav-item-content">
-              <span>Users</span>
+              <span><UserOutlined /> Users</span>
               {userCount > 0 && <span className="nav-badge">{userCount}</span>}
             </span>
           </NavLink>
           <NavLink to="/bookings" className="nav-item" onClick={handleBookingsClick}>
             <span className="nav-item-content">
-              <span>Bookings</span>
+              <span><ReadOutlined /> Bookings</span>
               {bookingCount > 0 && <span className="nav-badge">{bookingCount}</span>}
             </span>
           </NavLink>
           <NavLink to="/transactions" className="nav-item" onClick={handleTransactionsClick}>
             <span className="nav-item-content">
-              <span>Transactions</span>
+              <span><TransactionOutlined /> Transactions</span>
               {transactionCount > 0 && <span className="nav-badge">{transactionCount}</span>}
             </span>
           </NavLink>
           <NavLink to="/package-quotation" className="nav-item" onClick={handleQuotationsClick}>
             <span className="nav-item-content">
-              <span>Quotation Requests</span>
+              <span><FileTextOutlined /> Quotation Requests</span>
               {quotationCount > 0 && <span className="nav-badge">{quotationCount}</span>}
             </span>
           </NavLink>
           <NavLink to="/cancellation-requests" className="nav-item" onClick={handleCancellationsClick}>
             <span className="nav-item-content">
-              <span>Cancellation Requests</span>
+              <span><SafetyCertificateOutlined /> Cancellation Requests</span>
               {cancellationCount > 0 && <span className="nav-badge">{cancellationCount}</span>}
             </span>
           </NavLink>
-          <NavLink to="/packages" className="nav-item">Packages</NavLink>
+          <NavLink to="/packages" className="nav-item">
+            <span className="nav-item-content">
+              <span><SolutionOutlined /> Packages</span>
+            </span>
+          </NavLink>
           <NavLink to="/ratings" className="nav-item" onClick={handleRatingsClick}>
             <span className="nav-item-content">
-              <span>Review Ratings</span>
+              <span><FundOutlined /> Review Ratings</span>
               {ratingCount > 0 && <span className="nav-badge">{ratingCount}</span>}
             </span>
           </NavLink>
-          <NavLink to="/visa-services" className="nav-item">Visa Services</NavLink>
+          <NavLink to="/visa-services" className="nav-item">
+            <span className="nav-item-content">
+              <span><IdcardOutlined /> Visa Services</span>
+            </span>
+          </NavLink>
           <NavLink to="/passport-applications" className="nav-item" onClick={handlePassportClick}>
             <span className="nav-item-content">
-              <span>Passport Applications</span>
+              <span><TeamOutlined /> Passport Applications</span>
               {passportCount > 0 && <span className="nav-badge">{passportCount}</span>}
             </span>
           </NavLink>
           <NavLink to="/visa-applications" className="nav-item" onClick={handleVisaClick}>
             <span className="nav-item-content">
-              <span>VISA Applications</span>
+              <span><IdcardOutlined /> VISA Applications</span>
               {visaCount > 0 && <span className="nav-badge">{visaCount}</span>}
             </span>
           </NavLink>
 
           <div style={{ margin: "10px 0", borderTop: "1px solid rgba(255,255,255,0.2)" }}></div>
-          <NavLink to="/logging" className="nav-item">Logging</NavLink>
-          <NavLink to="/auditing" className="nav-item">Auditing</NavLink>
+          <NavLink to="/logging" className="nav-item">
+            <span className="nav-item-content">
+              <span><BellOutlined /> Logging</span>
+            </span>
+          </NavLink>
+          <NavLink to="/auditing" className="nav-item">
+            <span className="nav-item-content">
+              <span><AuditOutlined /> Auditing</span>
+            </span>
+          </NavLink>
         </div>
 
       </Sider>
