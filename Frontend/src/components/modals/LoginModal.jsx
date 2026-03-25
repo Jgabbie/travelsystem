@@ -150,6 +150,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 }
 
                 clearForm()
+
                 onLoginSuccess()
                 navigate('/user-preferences')
             }

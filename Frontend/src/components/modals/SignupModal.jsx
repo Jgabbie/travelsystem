@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, ConfigProvider } from 'antd';
+import { Button, Modal, Input, ConfigProvider, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/signupmodal.css';
-import LoadingScreen from '../LoadingScreen';
 import axiosInstance from '../../config/axiosConfig';
 
 
@@ -11,7 +10,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
     const navigate = useNavigate();
 
-    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
     const [email, setEmail] = useState("")
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -260,6 +258,9 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                 },
             }}
         >
+            {isLoading && (
+                <Spin fullscreen size="large" className="app-loading-spin" style={{ zIndex: 2000 }} />
+            )}
             <div>
                 <Modal
                     open={isOpenSignup}
@@ -396,8 +397,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                         </form>
                     </div>
                 </Modal>
-
-                <LoadingScreen isVisible={isLoading} />
 
                 <Modal
                     open={isSignupSuccessVisible}
