@@ -335,7 +335,10 @@ export default function BookingProcess() {
                 }
             }
 
-            pdf.save(`booking-registration-${dayjs().format('YYYYMMDD-HHmmss')}.pdf`);
+            const pdfFileName = `booking-registration-${dayjs().format('YYYYMMDD-HHmmss')}.pdf`;
+            const pdfDataUri = pdf.output('datauristring');
+            localStorage.setItem('bookingRegistrationPdf', pdfDataUri);
+            localStorage.setItem('bookingRegistrationPdfName', pdfFileName);
 
             setCurrentStep(previousStep);
             setIsGeneratingPdf(false);

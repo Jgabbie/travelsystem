@@ -5,6 +5,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 
 const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
+const REGISTRATION_PDF_KEY = 'bookingRegistrationPdf';
+const REGISTRATION_PDF_NAME_KEY = 'bookingRegistrationPdfName';
 
 export default function SuccessfulBooking() {
     const navigate = useNavigate();
@@ -22,7 +24,21 @@ export default function SuccessfulBooking() {
             return;
         }
 
+        const pdfDataUri = localStorage.getItem(REGISTRATION_PDF_KEY);
+        const pdfFileName = localStorage.getItem(REGISTRATION_PDF_NAME_KEY) || 'booking-registration.pdf';
+
+        if (pdfDataUri) {
+            const link = document.createElement('a');
+            link.href = pdfDataUri;
+            link.download = pdfFileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         localStorage.removeItem(SUCCESS_TOKEN_KEY);
+        localStorage.removeItem(REGISTRATION_PDF_KEY);
+        localStorage.removeItem(REGISTRATION_PDF_NAME_KEY);
         setBookingData(null);
 
         const timer = setInterval(() => {
