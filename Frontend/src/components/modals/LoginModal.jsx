@@ -144,15 +144,15 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     const userData = loginResponse.data.user
                     if (userData) {
                         setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce })
+                        clearForm()
+                        onLoginSuccess()
+                        navigate('/user-preferences')
                     }
                 } catch (loginError) {
                     console.error("Auto login after verification failed:", loginError.response?.data?.message || loginError.message)
                 }
 
-                clearForm()
 
-                onLoginSuccess()
-                navigate('/user-preferences')
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Verification failed"
