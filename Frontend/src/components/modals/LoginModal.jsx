@@ -145,6 +145,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     if (userData) {
                         setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce })
                         clearForm()
+                        isCloseLogin()
                         onLoginSuccess()
                         navigate('/user-preferences')
                     }

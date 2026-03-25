@@ -319,7 +319,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
                 try {
                     await NotificationModel.create({
-                        userId: user.userId,
+                        userId: user._id,
                         title: 'Booking Confirmed',
                         message: `Your booking ${booking.reference} has been confirmed.`,
                         type: 'booking',
@@ -330,12 +330,12 @@ const handlePayMongoWebhook = async (req, res) => {
                     console.error('Failed to create notification:', notificationError)
                 }
 
-
-                const mailOptions = {
-                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                    to: user.email,
-                    subject: 'M&RC Travel and Tours - Booking Confirmation',
-                    html: `
+                try {
+                    const mailOptions = {
+                        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                        to: user.email,
+                        subject: 'M&RC Travel and Tours - Booking Confirmation',
+                        html: `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
                             
@@ -358,9 +358,13 @@ const handlePayMongoWebhook = async (req, res) => {
                         </div>
                     </div>
                     `
+                    }
+
+                    await transporter.sendMail(mailOptions);
+                } catch (emailError) {
+                    console.error('Failed to send booking confirmation email:', emailError);
                 }
 
-                await transporter.sendMail(mailOptions);
 
             }
 
@@ -396,7 +400,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
             try {
                 await NotificationModel.create({
-                    userId: user.userId,
+                    userId: user._id,
                     title: 'Payment Successful',
                     message: `Your payment for ${booking.reference} was successful.`,
                     type: 'booking',
@@ -407,11 +411,12 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.error('Failed to create notification:', notificationError)
             }
 
-            const mailOptions = {
-                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                to: user.email,
-                subject: 'M&RC Travel and Tours - Booking Payment Successful',
-                html: `
+            try {
+                const mailOptions = {
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: 'M&RC Travel and Tours - Booking Payment Successful',
+                    html: `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
                             
@@ -434,9 +439,13 @@ const handlePayMongoWebhook = async (req, res) => {
                         </div>
                     </div>
                     `
+                }
+
+                await transporter.sendMail(mailOptions);
+            } catch (emailError) {
+                console.error('Failed to send payment confirmation email:', emailError);
             }
 
-            await transporter.sendMail(mailOptions);
         }
 
         // IMPORTANT: Always return 200 so PayMongo stops retrying the request
