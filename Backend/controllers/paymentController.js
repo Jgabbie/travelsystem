@@ -7,6 +7,7 @@ const PackageModel = require("../models/package");
 const BookingModel = require("../models/booking");
 const TransactionModel = require("../models/transactions");
 const UserModel = require("../models/user");
+const NotificationModel = require("../models/notification");
 
 const generateBookingReference = () => {
     const timestamp = Date.now().toString().slice(-6);
@@ -316,26 +317,27 @@ const handlePayMongoWebhook = async (req, res) => {
                     reference: generateBookingReference(),
                     status: 'Successful'
                 });
+            }
 
-                try {
-                    await NotificationModel.create({
-                        userId: user._id,
-                        title: 'Booking Confirmed',
-                        message: `Your booking ${booking.reference} has been confirmed.`,
-                        type: 'booking',
-                        link: '/user-bookings',
-                        metadata: { bookingId: booking._id }
-                    })
-                } catch (notificationError) {
-                    console.error('Failed to create notification:', notificationError)
-                }
+            try {
+                await NotificationModel.create({
+                    userId: user._id,
+                    title: 'Booking Confirmed',
+                    message: `Your booking ${booking.reference} has been confirmed.`,
+                    type: 'booking',
+                    link: '/user-bookings',
+                    metadata: { bookingId: booking._id }
+                })
+            } catch (notificationError) {
+                console.error('Failed to create notification:', notificationError)
+            }
 
-                try {
-                    const mailOptions = {
-                        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                        to: user.email,
-                        subject: 'M&RC Travel and Tours - Booking Confirmation',
-                        html: `
+            try {
+                const bookingMailOptions = {
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: 'M&RC Travel and Tours - Booking Confirmation',
+                    html: `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
                             
@@ -358,14 +360,11 @@ const handlePayMongoWebhook = async (req, res) => {
                         </div>
                     </div>
                     `
-                    }
-
-                    await transporter.sendMail(mailOptions);
-                } catch (emailError) {
-                    console.error('Failed to send booking confirmation email:', emailError);
                 }
 
-
+                await transporter.sendMail(bookingMailOptions);
+            } catch (emailError) {
+                console.error('Failed to send booking confirmation email:', emailError);
             }
 
             const lineItems = Array.isArray(sessionAttributes?.line_items)
@@ -388,7 +387,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 0;
 
 
-            await TransactionModel.create({
+            const transaction = await TransactionModel.create({
                 bookingId: booking._id,
                 packageId: metadata.packageId,
                 userId: user._id,

@@ -424,549 +424,554 @@ export default function BookingProcess() {
                 token: { colorPrimary: '#305797' }
             }}
         >
-            <Spin spinning={isGeneratingPdf} tip="Preparing your PDF..." size="large">
-                <div className='bookingprocess-container'>
+            {isGeneratingPdf && (
+                <div className="booking-process-sticky-spin">
+                    <Spin spinning={isGeneratingPdf} tip="Preparing your PDF..." size="large" />
+                </div>
 
-                    {/* Solo/Group Selection */}
-                    <div className='bookingprocess-sologroup-container booking-section'>
-                        <div className="solo-group-content">
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '15px',
-                            }}>
+            )}
 
-                                <div>
-                                    <h1 className='solo-group-heading booking-section-title' style={{ textAlign: "left" }}>
-                                        Select Your Package Arrangement
-                                    </h1>
-                                    <p className="upload-passport-text booking-section-subtitle" style={{ marginTop: 10, textAlign: "left" }}>
-                                        Kindly select if you are traveling alone or with a group.
-                                    </p>
-                                </div>
+            <div className='bookingprocess-container'>
 
+                {/* Solo/Group Selection */}
+                <div className='bookingprocess-sologroup-container booking-section'>
+                    <div className="solo-group-content">
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px',
+                        }}>
 
-                                <Space style={{ marginLeft: "auto" }}>
-                                    <Button
-                                        onClick={() => navigate(-1)}
-                                        style={{ display: 'flex', alignItems: 'center' }}
-                                    >
-                                        Back
-                                    </Button>
-                                </Space>
-                            </div>
-                            <div className="solo-group-cards">
-                                <button
-                                    type="button"
-                                    className={`solo-group-card${selectedSoloGrouped === 'solo' ? ' is-selected' : ''}`}
-                                    onClick={() => setSelectedSoloGrouped('solo')}
-                                >
-                                    <div className="solo-group-image solo" />
-                                    <h3>Single Supplement / Solo Booking</h3>
-                                    <p>Book for yourself with a single traveler setup.</p>
-                                    <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    className={`solo-group-card${selectedSoloGrouped === 'group' ? ' is-selected' : ''}`}
-                                    onClick={() => setSelectedSoloGrouped('group')}
-                                >
-                                    <div className="solo-group-image group" />
-                                    <h3>Grouped Booking</h3>
-                                    <p>Plan a trip for a group with shared activities.</p>
-                                    <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: Group booking should have a minimum of 2 travelers.</p>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Traveler Counters (conditionally rendered) */}
-                    {selectedSoloGrouped === 'group' && (
-                        <div className='travelers-container booking-section'>
-                            <div className="travelers-content">
-                                <h3 className="travelers-title booking-section-title" style={{ textAlign: "left" }}>
-                                    Number of Travelers
-                                </h3>
-                                <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>
-                                    Kindly indicate the number of travelers in each category.
-                                </p>
-                                <div className="travelers-cards">
-                                    <div className="traveler-card">
-                                        <h3>Adult</h3>
-                                        <p>
-                                            Rates: ₱{packagePricePerPax.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per adult
-                                        </p>
-                                        <p>
-                                            <strong>Maximum:</strong> {maxAdults}
-
-                                        </p>
-                                        <p>
-                                            Ages 12 and above
-                                        </p>
-                                        <div className="traveler-counter">
-                                            <button
-                                                type="button"
-                                                onClick={decreaseAdult}
-                                                disabled={counts.adult <= 2}
-                                            >
-                                                -
-                                            </button>
-                                            <span>{counts.adult}</span>
-                                            <button type="button" onClick={increaseAdult}>+</button>
-                                        </div>
-                                    </div>
-                                    <div className="traveler-card">
-                                        <h3>Child</h3>
-                                        <p>
-                                            Rates: ₱{childRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per child
-                                        </p>
-                                        <p>
-                                            <strong>Maximum:</strong> {maxChildren}
-                                        </p>
-                                        <p>
-                                            Ages 3-11
-                                        </p>
-                                        <div className="traveler-counter">
-                                            <button type="button" onClick={decreaseChild}>-</button>
-                                            <span>{counts.child}</span>
-                                            <button type="button" onClick={increaseChild}>+</button>
-                                        </div>
-                                    </div>
-                                    <div className="traveler-card">
-                                        <h3>Infant</h3>
-                                        <p>
-                                            Rates: ₱{infantRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per infant
-                                        </p>
-                                        <p>
-                                            <strong>Maximum:</strong> {maxInfants}
-                                        </p>
-                                        <p>
-                                            Ages 0-2
-                                        </p>
-                                        <div className="traveler-counter">
-                                            <button type="button" onClick={decreaseInfant}>-</button>
-                                            <span>{counts.infant}</span>
-                                            <button type="button" onClick={increaseInfant}>+</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* booking summary section */}
-                    <div className="booking-summary-container booking-section">
-                        <div className="booking-section-header">
-                            <h2 className='booking-summary-title booking-section-title'>Booking Summary</h2>
-                            <p className="upload-passport-text booking-section-subtitle">
-                                Kindly check the details of your booking before proceeding.
-                            </p>
-                        </div>
-                        <div className="booking-summary-wrapper">
-
-                            {/* Images Row */}
-                            <div className="booking-summary-images">
-                                {images.map((img, index) => (
-                                    <img key={index} className="booking-summary-image" src={img} alt="tour" />
-                                ))}
-                            </div>
-
-                            {/* New Split Content Grid */}
-                            <div className="booking-summary-content-grid" style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 350px',
-                                gap: '24px',
-                                marginTop: '24px',
-                                alignItems: 'start'
-                            }}>
-
-                                {/* Left Column: Detailed Info */}
-                                <div className="booking-summary-card" style={{ margin: 0 }}>
-                                    <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-                                        Booking Details
-                                    </h3>
-
-                                    <div className="booking-summary-row">
-                                        <span className="booking-summary-label">Tour Package</span>
-                                        <span className="booking-summary-value"><strong>{packageName}</strong></span>
-                                    </div>
-
-                                    <div className="booking-summary-row">
-                                        <span className="booking-summary-label">Booking Type</span>
-                                        <span className="booking-summary-value">
-                                            {selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'}
-                                        </span>
-                                    </div>
-
-                                    <div className="booking-summary-row">
-                                        <span className="booking-summary-label">Travel Date</span>
-                                        <span className="booking-summary-value">
-                                            {travelDate ? dayjs(travelDate).format('MMMM D, YYYY') : 'Not set'}
-                                        </span>
-                                    </div>
-
-                                    <div className='booking-summary-row'>
-                                        <span className="booking-summary-label">Airline / Hotel</span>
-                                        <span className="booking-summary-value">
-                                            {airlineOptions[0]?.name || 'N/A'} • {hotelOptions[0]?.name || 'N/A'}
-                                        </span>
-                                    </div>
-
-                                    <div className="booking-summary-row">
-                                        <span className="booking-summary-label">Travelers</span>
-                                        <span className="booking-summary-value">
-                                            {travelersDisplay}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Right Column: Pricing Summary Card */}
-                                <div className="booking-summary-card price-highlight-card" >
-                                    <span className='booking-summary-total-amount-label'>
-                                        Total Amount
-                                    </span>
-                                    <h2 className='booking-summary-total-amount-value'>
-                                        {selectedSoloGrouped === 'solo' && soloRate > 0 && (
-                                            <span>
-                                                ₱{soloRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                            </span>
-                                        )}
-                                        {selectedSoloGrouped === 'group' && (
-                                            <span>
-                                                ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                            </span>
-                                        )}
-                                    </h2>
-                                    {selectedSoloGrouped === 'solo' && (
-                                        <div style={{ marginBottom: '12px' }}>
-                                            <div className="booking-summary-row">
-                                                <span className="booking-summary-label">Solo rate</span>
-                                                <span className="booking-summary-value">
-                                                    ₱{soloExtraRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </span>
-                                            </div>
-                                            {soloExtraRate > 0 && (
-                                                <div className="booking-summary-row">
-                                                    <span className="booking-summary-label">Date surcharge</span>
-                                                    <span className="booking-summary-value">
-                                                        {dateSurcharge === 0 ? "NONE" : `₱${dateSurcharge.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    {selectedSoloGrouped === 'group' && (
-                                        <div style={{ marginBottom: '12px' }}>
-                                            {travelersCount.adult > 0 && (
-                                                <div className="booking-summary-row">
-                                                    <span className="booking-summary-label">
-                                                        Adults ({travelersCount.adult} x ₱{packagePricePerPax.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
-                                                    </span>
-                                                    <span className="booking-summary-value">
-                                                        ₱{(travelersCount.adult * packagePricePerPax).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {travelersCount.child > 0 && (
-                                                <div className="booking-summary-row">
-                                                    <span className="booking-summary-label">
-                                                        Children ({travelersCount.child} x ₱{childRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
-                                                    </span>
-                                                    <span className="booking-summary-value">
-                                                        ₱{(travelersCount.child * childRate).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {travelersCount.infant > 0 && (
-                                                <div className="booking-summary-row">
-                                                    <span className="booking-summary-label">
-                                                        Infants ({travelersCount.infant} x ₱{infantRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
-                                                    </span>
-                                                    <span className="booking-summary-value">
-                                                        ₱{(travelersCount.infant * infantRate).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    <div className='booking-summary-total-amount-note'>
-                                        *All inclusions fees are already factored in the total price.
-                                    </div>
-
-                                    <div className='booking-summary-package-type-card' >
-                                        <span style={{ fontSize: '13px' }}>Package Type:</span><br />
-                                        <strong style={{ color: '#305797' }}>{packageType?.toUpperCase()}</strong>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className='itinerary-inclusions-exclusions'>
-                        <div className='itinerary-section-header'>
-                            <h2 className='itinerary-section-title'>Itinerary, Inclusions & Exclusions</h2>
-                            <p className='itinerary-section-subtitle'>Review the day-by-day schedule and what your package covers.</p>
-                        </div>
-
-                        <div className='itinerary-inclusions-grid'>
-                            <div className='itinerary-card'>
-                                <div className='card-title'>
-                                    <span className='card-pill'>Itinerary</span>
-                                    <h3>Day-by-day plan</h3>
-                                    <p className='card-subtitle'>Activities and highlights for each day.</p>
-                                </div>
-
-                                {itineraryEntries.length ? (
-                                    <div className='itinerary-list'>
-                                        {itineraryEntries.map((day) => (
-                                            <div key={day.key} className='itinerary-day'>
-                                                <div className='itinerary-day-label'>{day.label}</div>
-                                                {day.items.length ? (
-                                                    <ul className='itinerary-items'>
-                                                        {day.items.map((item, index) => (
-                                                            <li key={`${day.key}-${index}`}>
-                                                                {typeof item === 'string' ? (
-                                                                    item
-                                                                ) : (
-                                                                    <>
-                                                                        <div>{item.activity}</div>
-
-                                                                        {item.isOptional && item.optionalActivity && (
-                                                                            <div>
-                                                                                Optional: {item.optionalActivity}
-                                                                                {item.optionalPrice && ` - ₱${item.optionalPrice.toLocaleString()}`}
-                                                                            </div>
-                                                                        )}
-                                                                    </>
-                                                                )}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                ) : (
-                                                    <p className='itinerary-empty'>No activities listed.</p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className='itinerary-empty'>No itinerary details available.</p>
-                                )}
-                            </div>
-
-                            <div className='inclusions-exclusions-card'>
-                                <div className='card-title'>
-                                    <span className='card-pill'>Package</span>
-                                    <h3>Inclusions & Exclusions</h3>
-                                    <p className='card-subtitle'>Know what is covered and what is not.</p>
-                                </div>
-
-                                <div className='inclusions-exclusions-grid'>
-                                    <div className='inclusions-card'>
-                                        <h4>Inclusions</h4>
-                                        {inclusions.length ? (
-                                            <ul className='inclusions-list'>
-                                                {inclusions.map((item, index) => (
-                                                    <li key={`inc-${index}`}>{item}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className='itinerary-empty'>No inclusions listed.</p>
-                                        )}
-                                    </div>
-
-                                    <div className='exclusions-card'>
-                                        <h4>Exclusions</h4>
-                                        {exclusions.length ? (
-                                            <ul className='exclusions-list'>
-                                                {exclusions.map((item, index) => (
-                                                    <li key={`exc-${index}`}>{item}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className='itinerary-empty'>No exclusions listed.</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* upload passport section */}
-                    <div className='upload-passport-container booking-section'>
-                        <div className="booking-section-header">
-                            <h2 className="upload-passport-title booking-section-title">Upload Passport</h2>
-                            <p className="upload-passport-text booking-section-subtitle">
-                                Please upload a clear image of your passport bio page for each traveler.
-                            </p>
-                        </div>
-                        <div className="upload-passport-wrapper">
-                            {Array.from({
-                                length:
-                                    selectedSoloGrouped === 'solo'
-                                        ? 1
-                                        : counts.adult + counts.child + counts.infant
-                            }).map((_, index) => (
-                                <div key={index} className="upload-card">
-
-                                    <div className='upload-passport-left'>
-                                        <h4>Traveler {index + 1}</h4>
-                                        <p style={{ fontSize: 12, color: '#888' }}>
-                                            Upload passport and 2x2 ID photo
-                                        </p>
-                                        <Upload
-                                            fileList={fileLists[index]}
-                                            beforeUpload={validateFile}
-                                            onChange={(info) => handleChange(info, index)}
-                                            accept="image/jpeg,image/png"
-                                            maxCount={1}
-                                            showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
-                                        >
-                                            <Button type="default">
-                                                {fileLists[index]?.length > 0 ? 'Change File' : 'Upload File'}
-                                            </Button>
-                                        </Upload>
-
-                                        <Upload
-                                            fileList={photoFileLists[index]}
-                                            beforeUpload={validateFile}
-                                            onChange={(info) => handlePhotoChange(info, index)}
-                                            accept="image/jpeg,image/png"
-                                            maxCount={1}
-                                            style={{ marginTop: 10 }}
-                                        >
-                                            <Button>
-                                                {photoFileLists[index]?.length > 0 ? 'Change 2x2 Photo' : 'Upload 2x2 Photo'}
-                                            </Button>
-                                        </Upload>
-                                    </div>
-
-                                    <div className="upload-passport-right">
-                                        {previews[index] && (
-                                            <div className="passport-preview" style={{ marginTop: '10px' }}>
-                                                <img
-                                                    src={previews[index]}
-                                                    alt={`Passport Preview ${index + 1}`}
-                                                    className="passport-preview-image"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {photoPreviews[index] && (
-                                            <div style={{ marginTop: '10px' }}>
-                                                <img
-                                                    src={photoPreviews[index]}
-                                                    alt={`2x2 Preview ${index + 1}`}
-                                                    style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                </div>
-                            ))}
-                        </div>
-                        <div className='upload-passport-notes'>
                             <div>
-                                <strong>Note:</strong>
-                                <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                                    <li>Upload a clear image of the passport bio page</li>
-                                    <li>Accepted formats: JPG, PNG</li>
-                                    <li>Maximum file size: 5MB</li>
-                                    <li>Blurry or cropped images may delay booking confirmation</li>
-                                </ul>
+                                <h1 className='solo-group-heading booking-section-title' style={{ textAlign: "left" }}>
+                                    Select Your Package Arrangement
+                                </h1>
+                                <p className="upload-passport-text booking-section-subtitle" style={{ marginTop: 10, textAlign: "left" }}>
+                                    Kindly select if you are traveling alone or with a group.
+                                </p>
                             </div>
 
-                            <div style={{ marginTop: 10 }}>
-                                <strong >Note for 2x2 ID Photos:</strong>
-                                <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                                    <li>Upload a clear image of the 2x2 ID photo</li>
-                                    <li>The photo must have a white plain background</li>
-                                    <li>Face should be clearly visible and not covered by any accessories (e.g., glasses, hat)</li>
-                                    <li>No Fullnames or any names printed in the photo</li>
-                                    <li>Accepted formats: JPG, PNG</li>
-                                    <li>Maximum file size: 5MB</li>
-                                    <li>Blurry or cropped images may delay booking confirmation</li>
-                                </ul>
-                            </div>
 
-                        </div>
-                    </div>
-
-                    {/* booking registration section */}
-                    <div className="booking-form-stepper-container">
-                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
-                            Please upload a clear image of your passport bio page for each traveler.
-                        </p>
-                        <Steps
-                            current={currentStep}
-                            items={[
-                                { title: 'Traveler Info' },
-                                { title: 'Dietary & Insurance' },
-                                { title: 'General Package Disclaimer' },
-                                { title: 'Terms & Conditions' }
-                            ]}
-                            style={{ marginBottom: '30px' }}
-                        />
-
-                        <div className="form-content-wrapper pdf-capture" ref={pdfStepRef}>
-                            {currentStep === 0 && (
-                                <BookingRegistrationTravelers
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                    totalCount={selectedSoloGrouped === 'solo' ? 1 : travelersTotal}
-                                />
-                            )}
-
-                            {currentStep === 1 && (
-                                <BookingRegistrationDiet
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-
-                            {currentStep === 2 && (
-                                <BookingRegistrationTermsPart1
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-
-                            {currentStep === 3 && (
-                                <BookingRegistrationTermsPart2
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-                        </div>
-
-                        <div className="form-navigation-buttons" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                            {currentStep > 0 && (
-                                <Button onClick={prev}>
+                            <Space style={{ marginLeft: "auto" }}>
+                                <Button
+                                    onClick={() => navigate(-1)}
+                                    style={{ display: 'flex', alignItems: 'center' }}
+                                >
                                     Back
                                 </Button>
-                            )}
+                            </Space>
+                        </div>
+                        <div className="solo-group-cards">
+                            <button
+                                type="button"
+                                className={`solo-group-card${selectedSoloGrouped === 'solo' ? ' is-selected' : ''}`}
+                                onClick={() => setSelectedSoloGrouped('solo')}
+                            >
+                                <div className="solo-group-image solo" />
+                                <h3>Single Supplement / Solo Booking</h3>
+                                <p>Book for yourself with a single traveler setup.</p>
+                                <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
+                            </button>
 
-                            {currentStep < 3 ? (
-                                <Button type="primary" onClick={next}>
-                                    Next Step
-                                </Button>
-                            ) : (
-                                <Button type="primary" onClick={handleFinalSubmit} loading={isGeneratingPdf} disabled={isGeneratingPdf}>
-                                    Submit Final Booking
-                                </Button>
-                            )}
+                            <button
+                                type="button"
+                                className={`solo-group-card${selectedSoloGrouped === 'group' ? ' is-selected' : ''}`}
+                                onClick={() => setSelectedSoloGrouped('group')}
+                            >
+                                <div className="solo-group-image group" />
+                                <h3>Grouped Booking</h3>
+                                <p>Plan a trip for a group with shared activities.</p>
+                                <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: Group booking should have a minimum of 2 travelers.</p>
+                            </button>
                         </div>
                     </div>
-
                 </div>
-            </Spin>
+
+                {/* Traveler Counters (conditionally rendered) */}
+                {selectedSoloGrouped === 'group' && (
+                    <div className='travelers-container booking-section'>
+                        <div className="travelers-content">
+                            <h3 className="travelers-title booking-section-title" style={{ textAlign: "left" }}>
+                                Number of Travelers
+                            </h3>
+                            <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>
+                                Kindly indicate the number of travelers in each category.
+                            </p>
+                            <div className="travelers-cards">
+                                <div className="traveler-card">
+                                    <h3>Adult</h3>
+                                    <p>
+                                        Rates: ₱{packagePricePerPax.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per adult
+                                    </p>
+                                    <p>
+                                        <strong>Maximum:</strong> {maxAdults}
+
+                                    </p>
+                                    <p>
+                                        Ages 12 and above
+                                    </p>
+                                    <div className="traveler-counter">
+                                        <button
+                                            type="button"
+                                            onClick={decreaseAdult}
+                                            disabled={counts.adult <= 2}
+                                        >
+                                            -
+                                        </button>
+                                        <span>{counts.adult}</span>
+                                        <button type="button" onClick={increaseAdult}>+</button>
+                                    </div>
+                                </div>
+                                <div className="traveler-card">
+                                    <h3>Child</h3>
+                                    <p>
+                                        Rates: ₱{childRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per child
+                                    </p>
+                                    <p>
+                                        <strong>Maximum:</strong> {maxChildren}
+                                    </p>
+                                    <p>
+                                        Ages 3-11
+                                    </p>
+                                    <div className="traveler-counter">
+                                        <button type="button" onClick={decreaseChild}>-</button>
+                                        <span>{counts.child}</span>
+                                        <button type="button" onClick={increaseChild}>+</button>
+                                    </div>
+                                </div>
+                                <div className="traveler-card">
+                                    <h3>Infant</h3>
+                                    <p>
+                                        Rates: ₱{infantRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })} per infant
+                                    </p>
+                                    <p>
+                                        <strong>Maximum:</strong> {maxInfants}
+                                    </p>
+                                    <p>
+                                        Ages 0-2
+                                    </p>
+                                    <div className="traveler-counter">
+                                        <button type="button" onClick={decreaseInfant}>-</button>
+                                        <span>{counts.infant}</span>
+                                        <button type="button" onClick={increaseInfant}>+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* booking summary section */}
+                <div className="booking-summary-container booking-section">
+                    <div className="booking-section-header">
+                        <h2 className='booking-summary-title booking-section-title'>Booking Summary</h2>
+                        <p className="upload-passport-text booking-section-subtitle">
+                            Kindly check the details of your booking before proceeding.
+                        </p>
+                    </div>
+                    <div className="booking-summary-wrapper">
+
+                        {/* Images Row */}
+                        <div className="booking-summary-images">
+                            {images.map((img, index) => (
+                                <img key={index} className="booking-summary-image" src={img} alt="tour" />
+                            ))}
+                        </div>
+
+                        {/* New Split Content Grid */}
+                        <div className="booking-summary-content-grid" style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 350px',
+                            gap: '24px',
+                            marginTop: '24px',
+                            alignItems: 'start'
+                        }}>
+
+                            {/* Left Column: Detailed Info */}
+                            <div className="booking-summary-card" style={{ margin: 0 }}>
+                                <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
+                                    Booking Details
+                                </h3>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Tour Package</span>
+                                    <span className="booking-summary-value"><strong>{packageName}</strong></span>
+                                </div>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Booking Type</span>
+                                    <span className="booking-summary-value">
+                                        {selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'}
+                                    </span>
+                                </div>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Travel Date</span>
+                                    <span className="booking-summary-value">
+                                        {travelDate ? dayjs(travelDate).format('MMMM D, YYYY') : 'Not set'}
+                                    </span>
+                                </div>
+
+                                <div className='booking-summary-row'>
+                                    <span className="booking-summary-label">Airline / Hotel</span>
+                                    <span className="booking-summary-value">
+                                        {airlineOptions[0]?.name || 'N/A'} • {hotelOptions[0]?.name || 'N/A'}
+                                    </span>
+                                </div>
+
+                                <div className="booking-summary-row">
+                                    <span className="booking-summary-label">Travelers</span>
+                                    <span className="booking-summary-value">
+                                        {travelersDisplay}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Pricing Summary Card */}
+                            <div className="booking-summary-card price-highlight-card" >
+                                <span className='booking-summary-total-amount-label'>
+                                    Total Amount
+                                </span>
+                                <h2 className='booking-summary-total-amount-value'>
+                                    {selectedSoloGrouped === 'solo' && soloRate > 0 && (
+                                        <span>
+                                            ₱{soloRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                        </span>
+                                    )}
+                                    {selectedSoloGrouped === 'group' && (
+                                        <span>
+                                            ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                        </span>
+                                    )}
+                                </h2>
+                                {selectedSoloGrouped === 'solo' && (
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <div className="booking-summary-row">
+                                            <span className="booking-summary-label">Solo rate</span>
+                                            <span className="booking-summary-value">
+                                                ₱{soloExtraRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                        {soloExtraRate > 0 && (
+                                            <div className="booking-summary-row">
+                                                <span className="booking-summary-label">Date surcharge</span>
+                                                <span className="booking-summary-value">
+                                                    {dateSurcharge === 0 ? "NONE" : `₱${dateSurcharge.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {selectedSoloGrouped === 'group' && (
+                                    <div style={{ marginBottom: '12px' }}>
+                                        {travelersCount.adult > 0 && (
+                                            <div className="booking-summary-row">
+                                                <span className="booking-summary-label">
+                                                    Adults ({travelersCount.adult} x ₱{packagePricePerPax.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
+                                                </span>
+                                                <span className="booking-summary-value">
+                                                    ₱{(travelersCount.adult * packagePricePerPax).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {travelersCount.child > 0 && (
+                                            <div className="booking-summary-row">
+                                                <span className="booking-summary-label">
+                                                    Children ({travelersCount.child} x ₱{childRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
+                                                </span>
+                                                <span className="booking-summary-value">
+                                                    ₱{(travelersCount.child * childRate).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {travelersCount.infant > 0 && (
+                                            <div className="booking-summary-row">
+                                                <span className="booking-summary-label">
+                                                    Infants ({travelersCount.infant} x ₱{infantRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
+                                                </span>
+                                                <span className="booking-summary-value">
+                                                    ₱{(travelersCount.infant * infantRate).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                <div className='booking-summary-total-amount-note'>
+                                    *All inclusions fees are already factored in the total price.
+                                </div>
+
+                                <div className='booking-summary-package-type-card' >
+                                    <span style={{ fontSize: '13px' }}>Package Type:</span><br />
+                                    <strong style={{ color: '#305797' }}>{packageType?.toUpperCase()}</strong>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div className='itinerary-inclusions-exclusions'>
+                    <div className='itinerary-section-header'>
+                        <h2 className='itinerary-section-title'>Itinerary, Inclusions & Exclusions</h2>
+                        <p className='itinerary-section-subtitle'>Review the day-by-day schedule and what your package covers.</p>
+                    </div>
+
+                    <div className='itinerary-inclusions-grid'>
+                        <div className='itinerary-card'>
+                            <div className='card-title'>
+                                <span className='card-pill'>Itinerary</span>
+                                <h3>Day-by-day plan</h3>
+                                <p className='card-subtitle'>Activities and highlights for each day.</p>
+                            </div>
+
+                            {itineraryEntries.length ? (
+                                <div className='itinerary-list'>
+                                    {itineraryEntries.map((day) => (
+                                        <div key={day.key} className='itinerary-day'>
+                                            <div className='itinerary-day-label'>{day.label}</div>
+                                            {day.items.length ? (
+                                                <ul className='itinerary-items'>
+                                                    {day.items.map((item, index) => (
+                                                        <li key={`${day.key}-${index}`}>
+                                                            {typeof item === 'string' ? (
+                                                                item
+                                                            ) : (
+                                                                <>
+                                                                    <div>{item.activity}</div>
+
+                                                                    {item.isOptional && item.optionalActivity && (
+                                                                        <div>
+                                                                            Optional: {item.optionalActivity}
+                                                                            {item.optionalPrice && ` - ₱${item.optionalPrice.toLocaleString()}`}
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p className='itinerary-empty'>No activities listed.</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className='itinerary-empty'>No itinerary details available.</p>
+                            )}
+                        </div>
+
+                        <div className='inclusions-exclusions-card'>
+                            <div className='card-title'>
+                                <span className='card-pill'>Package</span>
+                                <h3>Inclusions & Exclusions</h3>
+                                <p className='card-subtitle'>Know what is covered and what is not.</p>
+                            </div>
+
+                            <div className='inclusions-exclusions-grid'>
+                                <div className='inclusions-card'>
+                                    <h4>Inclusions</h4>
+                                    {inclusions.length ? (
+                                        <ul className='inclusions-list'>
+                                            {inclusions.map((item, index) => (
+                                                <li key={`inc-${index}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className='itinerary-empty'>No inclusions listed.</p>
+                                    )}
+                                </div>
+
+                                <div className='exclusions-card'>
+                                    <h4>Exclusions</h4>
+                                    {exclusions.length ? (
+                                        <ul className='exclusions-list'>
+                                            {exclusions.map((item, index) => (
+                                                <li key={`exc-${index}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className='itinerary-empty'>No exclusions listed.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* upload passport section */}
+                <div className='upload-passport-container booking-section'>
+                    <div className="booking-section-header">
+                        <h2 className="upload-passport-title booking-section-title">Upload Passport</h2>
+                        <p className="upload-passport-text booking-section-subtitle">
+                            Please upload a clear image of your passport bio page for each traveler.
+                        </p>
+                    </div>
+                    <div className="upload-passport-wrapper">
+                        {Array.from({
+                            length:
+                                selectedSoloGrouped === 'solo'
+                                    ? 1
+                                    : counts.adult + counts.child + counts.infant
+                        }).map((_, index) => (
+                            <div key={index} className="upload-card">
+
+                                <div className='upload-passport-left'>
+                                    <h4>Traveler {index + 1}</h4>
+                                    <p style={{ fontSize: 12, color: '#888' }}>
+                                        Upload passport and 2x2 ID photo
+                                    </p>
+                                    <Upload
+                                        fileList={fileLists[index]}
+                                        beforeUpload={validateFile}
+                                        onChange={(info) => handleChange(info, index)}
+                                        accept="image/jpeg,image/png"
+                                        maxCount={1}
+                                        showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
+                                    >
+                                        <Button type="default">
+                                            {fileLists[index]?.length > 0 ? 'Change File' : 'Upload File'}
+                                        </Button>
+                                    </Upload>
+
+                                    <Upload
+                                        fileList={photoFileLists[index]}
+                                        beforeUpload={validateFile}
+                                        onChange={(info) => handlePhotoChange(info, index)}
+                                        accept="image/jpeg,image/png"
+                                        maxCount={1}
+                                        style={{ marginTop: 10 }}
+                                    >
+                                        <Button>
+                                            {photoFileLists[index]?.length > 0 ? 'Change 2x2 Photo' : 'Upload 2x2 Photo'}
+                                        </Button>
+                                    </Upload>
+                                </div>
+
+                                <div className="upload-passport-right">
+                                    {previews[index] && (
+                                        <div className="passport-preview" style={{ marginTop: '10px' }}>
+                                            <img
+                                                src={previews[index]}
+                                                alt={`Passport Preview ${index + 1}`}
+                                                className="passport-preview-image"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {photoPreviews[index] && (
+                                        <div style={{ marginTop: '10px' }}>
+                                            <img
+                                                src={photoPreviews[index]}
+                                                alt={`2x2 Preview ${index + 1}`}
+                                                style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                            </div>
+                        ))}
+                    </div>
+                    <div className='upload-passport-notes'>
+                        <div>
+                            <strong>Note:</strong>
+                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                <li>Upload a clear image of the passport bio page</li>
+                                <li>Accepted formats: JPG, PNG</li>
+                                <li>Maximum file size: 5MB</li>
+                                <li>Blurry or cropped images may delay booking confirmation</li>
+                            </ul>
+                        </div>
+
+                        <div style={{ marginTop: 10 }}>
+                            <strong >Note for 2x2 ID Photos:</strong>
+                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                <li>Upload a clear image of the 2x2 ID photo</li>
+                                <li>The photo must have a white plain background</li>
+                                <li>Face should be clearly visible and not covered by any accessories (e.g., glasses, hat)</li>
+                                <li>No Fullnames or any names printed in the photo</li>
+                                <li>Accepted formats: JPG, PNG</li>
+                                <li>Maximum file size: 5MB</li>
+                                <li>Blurry or cropped images may delay booking confirmation</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* booking registration section */}
+                <div className="booking-form-stepper-container">
+                    <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                    <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                        Please upload a clear image of your passport bio page for each traveler.
+                    </p>
+                    <Steps
+                        current={currentStep}
+                        items={[
+                            { title: 'Traveler Info' },
+                            { title: 'Dietary & Insurance' },
+                            { title: 'General Package Disclaimer' },
+                            { title: 'Terms & Conditions' }
+                        ]}
+                        style={{ marginBottom: '30px' }}
+                    />
+
+                    <div className="form-content-wrapper pdf-capture" ref={pdfStepRef}>
+                        {currentStep === 0 && (
+                            <BookingRegistrationTravelers
+                                form={form}
+                                onValuesChange={handleValuesChange}
+                                summary={summary}
+                                totalCount={selectedSoloGrouped === 'solo' ? 1 : travelersTotal}
+                            />
+                        )}
+
+                        {currentStep === 1 && (
+                            <BookingRegistrationDiet
+                                form={form}
+                                onValuesChange={handleValuesChange}
+                                summary={summary}
+                            />
+                        )}
+
+                        {currentStep === 2 && (
+                            <BookingRegistrationTermsPart1
+                                form={form}
+                                onValuesChange={handleValuesChange}
+                                summary={summary}
+                            />
+                        )}
+
+                        {currentStep === 3 && (
+                            <BookingRegistrationTermsPart2
+                                form={form}
+                                onValuesChange={handleValuesChange}
+                                summary={summary}
+                            />
+                        )}
+                    </div>
+
+                    <div className="form-navigation-buttons" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                        {currentStep > 0 && (
+                            <Button onClick={prev}>
+                                Back
+                            </Button>
+                        )}
+
+                        {currentStep < 3 ? (
+                            <Button type="primary" onClick={next}>
+                                Next Step
+                            </Button>
+                        ) : (
+                            <Button type="primary" onClick={handleFinalSubmit} loading={isGeneratingPdf} disabled={isGeneratingPdf}>
+                                Submit Final Booking
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+            </div>
         </ConfigProvider>
     )
 }
