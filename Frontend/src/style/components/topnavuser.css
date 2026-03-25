@@ -271,6 +271,22 @@
     margin-top: 6px;
 }
 
+.app-loading-spin .ant-spin-dot-item {
+    background-color: #305797;
+}
+
+.app-loading-spin .ant-spin-text {
+    color: #305797;
+}
+
+.app-loading-spin .ant-spin-tip {
+    color: #305797;
+}
+
+.app-loading-spin .ant-spin-description {
+    color: #305797;
+}
+
 /* --- Logout Confirmation Modal --- */
 .logout-confirm-modal .ant-modal-content {
     border-radius: 16px;

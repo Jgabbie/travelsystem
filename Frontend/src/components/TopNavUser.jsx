@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Dropdown, Space, Button, Modal } from 'antd';
+import { Dropdown, Space, Button, Modal, Spin, ConfigProvider } from 'antd';
 import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -18,6 +18,7 @@ export default function TopNavUser() {
     const [isLoginVisible, setIsLoginVisible] = useState(false);
     const [isSignupVisible, setIsSignupVisible] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const renderAuthControls = () => {
         if (auth) {
@@ -71,8 +72,16 @@ export default function TopNavUser() {
 
     const handleOk = async () => {
         setIsModalOpen(false);
-        await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
-        setAuth(null);
+        try {
+            setIsLoading(true);
+            await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
+            setAuth(null);
+            navigate('/home');
+        } catch (err) {
+            console.error('Logout failed:', err);
+            setIsLoading(false);
+        }
+        setIsLoading(false);
     };
 
     const handleCancel = () => {
@@ -167,66 +176,77 @@ export default function TopNavUser() {
 
 
     return (
-        <div>
-            <nav className="navbar">
-                <div className="logo-section">
-                    <img src={"/images/Logo.png"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
-                    <span>TRAVEX: M&RC Travel and Tours</span>
-                </div>
-
-                {/* if authenticated, show username, if not, then show signup and login button links */}
-                <div className="nav-links">
-
-                    {/* Always visible navigation */}
-                    <div className='nav-buttonlinks-group'>
-                        {navItems.map((item) => (
-                            <Button
-                                key={item.route}
-                                className={`nav-buttonlinks${location.pathname === item.route ? ' nav-buttonlinks--active' : ''}`}
-                                type="link"
-                                onClick={() => navigate(item.route)}
-                            >
-                                {item.label}
-                            </Button>
-                        ))}
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#305797',
+                },
+            }}
+        >
+            <div>
+                {isLoading && (
+                    <Spin fullscreen size="large" className="app-loading-spin" style={{ zIndex: 2000 }} />
+                )}
+                <nav className="navbar">
+                    <div className="logo-section">
+                        <img src={"/images/Logo.png"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
+                        <span>TRAVEX: M&RC Travel and Tours</span>
                     </div>
 
-                    {renderAuthControls()}
+                    {/* if authenticated, show username, if not, then show signup and login button links */}
+                    <div className="nav-links">
 
-                </div>
-            </nav>
+                        {/* Always visible navigation */}
+                        <div className='nav-buttonlinks-group'>
+                            {navItems.map((item) => (
+                                <Button
+                                    key={item.route}
+                                    className={`nav-buttonlinks${location.pathname === item.route ? ' nav-buttonlinks--active' : ''}`}
+                                    type="link"
+                                    onClick={() => navigate(item.route)}
+                                >
+                                    {item.label}
+                                </Button>
+                            ))}
+                        </div>
 
-            {/* open login modal */}
-            <LoginModal
-                isOpenLogin={isLoginVisible}
-                isCloseLogin={() => setIsLoginVisible(false)}
-                onLoginSuccess={checkAuth}
-                onOpenSignup={() => setIsSignupVisible(true)}
-            />
+                        {renderAuthControls()}
 
-            {/* open signup modal */}
-            <SignupModal
-                isOpenSignup={isSignupVisible}
-                isCloseSignup={() => setIsSignupVisible(false)}
-                onOpenLogin={() => setIsLoginVisible(true)}
-            />
-
-            <Modal
-                className="logout-confirm-modal"
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                open={isModalOpen}
-                footer={null}
-                onCancel={handleCancel}
-            >
-                <div className="logout-confirm-content">
-                    <h2 className="logout-confirm-title">Confirm Logout</h2>
-                    <p className="logout-confirm-text">Are you sure you want to logout?</p>
-                    <div className="logout-confirm-actions">
-                        <Button className="logout-cancel-btn" onClick={handleCancel}>Cancel</Button>
-                        <Button className="logout-confirm-btn" type="primary" onClick={handleOk}>Logout</Button>
                     </div>
-                </div>
-            </Modal>
-        </div>
+                </nav>
+
+                {/* open login modal */}
+                <LoginModal
+                    isOpenLogin={isLoginVisible}
+                    isCloseLogin={() => setIsLoginVisible(false)}
+                    onLoginSuccess={checkAuth}
+                    onOpenSignup={() => setIsSignupVisible(true)}
+                />
+
+                {/* open signup modal */}
+                <SignupModal
+                    isOpenSignup={isSignupVisible}
+                    isCloseSignup={() => setIsSignupVisible(false)}
+                    onOpenLogin={() => setIsLoginVisible(true)}
+                />
+
+                <Modal
+                    className="logout-confirm-modal"
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    open={isModalOpen}
+                    footer={null}
+                    onCancel={handleCancel}
+                >
+                    <div className="logout-confirm-content">
+                        <h2 className="logout-confirm-title">Confirm Logout</h2>
+                        <p className="logout-confirm-text">Are you sure you want to logout?</p>
+                        <div className="logout-confirm-actions">
+                            <Button className="logout-cancel-btn" onClick={handleCancel}>Cancel</Button>
+                            <Button className="logout-confirm-btn" type="primary" onClick={handleOk}>Logout</Button>
+                        </div>
+                    </div>
+                </Modal>
+            </div>
+        </ConfigProvider>
     )
 }

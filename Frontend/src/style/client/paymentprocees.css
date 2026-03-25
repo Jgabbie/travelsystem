@@ -2,6 +2,22 @@
     padding: 40px;
 }
 
+.payment-process-sticky-spin {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 1100;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.payment-process-spin .ant-spin {
+    color: #305797;
+}
+
 .payment-process-backbutton {
     display: flex;
     justify-content: flex-start;

@@ -146,6 +146,14 @@ export default function BookingProcess() {
         Array.from({ length: travelers.length || 1 }, () => null)
     );
 
+    const [photoFileLists, setPhotoFileLists] = useState(
+        Array.from({ length: travelers.length || 1 }, () => [])
+    );
+
+    const [photoPreviews, setPhotoPreviews] = useState(
+        Array.from({ length: travelers.length || 1 }, () => null)
+    );
+
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -161,6 +169,12 @@ export default function BookingProcess() {
             await form.validateFields();
 
             const missingUploads = fileLists.some(list => !list || list.length === 0);
+            const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
+
+            if (missingPhotos) {
+                message.error("Please upload 2x2 photo for all travelers.");
+                return;
+            }
 
             if (missingUploads) {
                 message.error("Please upload passport for all travelers.");
@@ -175,6 +189,22 @@ export default function BookingProcess() {
                     roomType: 'SINGLE'
                 }));
             }
+
+            const photoFilesFormatted = await Promise.all(
+                photoFileLists.map(async (list) => {
+                    const fileObj = list?.[0]?.originFileObj;
+
+                    if (!fileObj) {
+                        throw new Error("Invalid photo upload");
+                    }
+
+                    return {
+                        name: fileObj.name,
+                        type: fileObj.type,
+                        base64: await toBase64(fileObj),
+                    };
+                })
+            );
 
             const passportFilesFormatted = await Promise.all(
                 fileLists.map(async (list) => {
@@ -198,7 +228,8 @@ export default function BookingProcess() {
                 travelerCounts: travelersCount,
                 bookingType: bookingType,
                 totalPrice: totalPrice,
-                passportFiles: passportFilesFormatted
+                passportFiles: passportFilesFormatted,
+                photoFiles: photoFilesFormatted
             }));
 
             setCurrentStep(currentStep + 1);
@@ -210,7 +241,8 @@ export default function BookingProcess() {
                 travelerCounts: travelersCount,
                 bookingType: bookingType,
                 totalPrice: totalPrice,
-                passportFiles: passportFilesFormatted
+                passportFiles: passportFilesFormatted,
+                photoFiles: photoFilesFormatted
             });
             console.log('Save Successful, moving to next step');
 
@@ -341,13 +373,32 @@ export default function BookingProcess() {
         setPreviews(newPreviews);
     };
 
+    const handlePhotoChange = (info, index) => {
+        const newFileLists = [...photoFileLists];
+        newFileLists[index] = info.fileList;
+        setPhotoFileLists(newFileLists);
+
+        const file = info.file;
+        const newPreviews = [...photoPreviews];
+
+        if (file.status === 'removed') {
+            newPreviews[index] = null;
+        } else {
+            if (file instanceof File || (file.originFileObj instanceof File)) {
+                const previewUrl = URL.createObjectURL(file.originFileObj || file);
+                newPreviews[index] = previewUrl;
+            }
+        }
+        setPhotoPreviews(newPreviews);
+    };
+
     useEffect(() => {
         return () => {
-            previews.forEach(url => {
+            [...previews, ...photoPreviews].forEach(url => {
                 if (url) URL.revokeObjectURL(url);
             });
         };
-    }, [previews]);
+    }, [previews, photoPreviews]);
 
     const increaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.min(prev.adult + 1, maxAdults) }));
     const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(2, prev.adult - 1) }));
@@ -758,6 +809,9 @@ export default function BookingProcess() {
 
                                     <div className='upload-passport-left'>
                                         <h4>Traveler {index + 1}</h4>
+                                        <p style={{ fontSize: 12, color: '#888' }}>
+                                            Upload passport and 2x2 ID photo
+                                        </p>
                                         <Upload
                                             fileList={fileLists[index]}
                                             beforeUpload={validateFile}
@@ -768,6 +822,19 @@ export default function BookingProcess() {
                                         >
                                             <Button type="default">
                                                 {fileLists[index]?.length > 0 ? 'Change File' : 'Upload File'}
+                                            </Button>
+                                        </Upload>
+
+                                        <Upload
+                                            fileList={photoFileLists[index]}
+                                            beforeUpload={validateFile}
+                                            onChange={(info) => handlePhotoChange(info, index)}
+                                            accept="image/jpeg,image/png"
+                                            maxCount={1}
+                                            style={{ marginTop: 10 }}
+                                        >
+                                            <Button>
+                                                {photoFileLists[index]?.length > 0 ? 'Change 2x2 Photo' : 'Upload 2x2 Photo'}
                                             </Button>
                                         </Upload>
                                     </div>
@@ -782,19 +849,45 @@ export default function BookingProcess() {
                                                 />
                                             </div>
                                         )}
+
+                                        {photoPreviews[index] && (
+                                            <div style={{ marginTop: '10px' }}>
+                                                <img
+                                                    src={photoPreviews[index]}
+                                                    alt={`2x2 Preview ${index + 1}`}
+                                                    style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
                                 </div>
                             ))}
                         </div>
                         <div className='upload-passport-notes'>
-                            <strong>Note:</strong>
-                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                                <li>Upload a clear image of the passport bio page</li>
-                                <li>Accepted formats: JPG, PNG</li>
-                                <li>Maximum file size: 5MB</li>
-                                <li>Blurry or cropped images may delay booking confirmation</li>
-                            </ul>
+                            <div>
+                                <strong>Note:</strong>
+                                <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                    <li>Upload a clear image of the passport bio page</li>
+                                    <li>Accepted formats: JPG, PNG</li>
+                                    <li>Maximum file size: 5MB</li>
+                                    <li>Blurry or cropped images may delay booking confirmation</li>
+                                </ul>
+                            </div>
+
+                            <div style={{ marginTop: 10 }}>
+                                <strong >Note for 2x2 ID Photos:</strong>
+                                <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                    <li>Upload a clear image of the 2x2 ID photo</li>
+                                    <li>The photo must have a white plain background</li>
+                                    <li>Face should be clearly visible and not covered by any accessories (e.g., glasses, hat)</li>
+                                    <li>No Fullnames or any names printed in the photo</li>
+                                    <li>Accepted formats: JPG, PNG</li>
+                                    <li>Maximum file size: 5MB</li>
+                                    <li>Blurry or cropped images may delay booking confirmation</li>
+                                </ul>
+                            </div>
+
                         </div>
                     </div>
 

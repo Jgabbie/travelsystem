@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message } from 'antd';
+import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message, Spin } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -28,6 +28,9 @@ export default function PaymentProcess() {
     const [paymentType, setPaymentType] = useState(null); // 'deposit' or 'full'
     const [frequency, setFrequency] = useState('Every 2 weeks');
     const [method, setMethod] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const [monthBookingsCount, setMonthBookingsCount] = useState(0);
 
     const [fileList, setFileList] = useState([]);
     const [previewOpen, setPreviewOpen] = useState(false);
@@ -73,13 +76,19 @@ export default function PaymentProcess() {
         return false;
     };
 
-    const generateInvoiceNumber = () => {
-        const prefix = 'INV';
-        const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const randomPart = Math.floor(1000 + Math.random() * 9000);
-        return `${prefix}-${datePart}-${randomPart}`;
-    }
+    useEffect(() => {
+        const fetchMonthBookings = async () => {
+            try {
+                const response = await axiosInstance.get('/booking/bookings-total-month');
+                setMonthBookingsCount(response.data.totalBookings || 0);
+            } catch (error) {
+                console.error('Failed to fetch month bookings count', error);
+            }
+        };
+        fetchMonthBookings();
+    }, []);
 
+    const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
     const dueDate = dayjs().add(45, "day").format("MMMM D, YYYY");
 
@@ -123,6 +132,7 @@ export default function PaymentProcess() {
 
     const proceedBooking = async () => {
 
+
         if (!paymentType) {
             message.warning("Please select a payment type.");
             return;
@@ -139,6 +149,7 @@ export default function PaymentProcess() {
         }
 
         try {
+            setLoading(true);
             const successToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
             localStorage.setItem(SUCCESS_TOKEN_KEY, successToken);
 
@@ -183,7 +194,7 @@ export default function PaymentProcess() {
                     proofImageType: file?.type,
                     proofFileName: file?.name
                 });
-
+                setLoading(false);
                 navigate(`/booking-payment/success?token=${successToken}`)
                 return;
             }
@@ -204,6 +215,7 @@ export default function PaymentProcess() {
 
             const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session', { paymentPayload });
             const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+            setLoading(false);
 
             if (checkoutUrl) {
                 window.location.href = checkoutUrl;
@@ -255,7 +267,7 @@ export default function PaymentProcess() {
             email: 'info1@mrctravels.com',
         },
         invoice: {
-            number: generateInvoiceNumber(),
+            number: invoiceNumber,
             issueDate: issueDate,
             dueDate: dueDate,
             status: 'Pending'
@@ -305,24 +317,23 @@ export default function PaymentProcess() {
     const frequencyWeeks = getFrequencyWeeks(frequency)
     const today = dayjs()
     const travelDateValue = bookingData?.travelDate ? dayjs(bookingData.travelDate) : null
-    const dueCutoffDate = travelDateValue ? travelDateValue.subtract(45, 'day') : null
+    const dueCutoffDate = today.add(45, 'day')
     const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal
     const remainingAmount = Math.max(totalAmount - depositAmount, 0)
 
-    const installmentWindowDays = dueCutoffDate ? 45 : 0
+    const installmentWindowDays = dueCutoffDate.diff(today, 'day')
 
-    const installmentCount = installmentWindowDays
-        ? Math.max(Math.floor(installmentWindowDays / (frequencyWeeks * 7)), 1)
-        : 1
+    const installmentCount = Math.max(
+        Math.floor(installmentWindowDays / (frequencyWeeks * 7)),
+        1
+    )
 
     const installmentAmount = installmentCount ? remainingAmount / installmentCount : 0
 
-    const windowStartDate = dueCutoffDate
-        ? dueCutoffDate.subtract(frequencyWeeks * (installmentCount - 1), 'week')
-        : today
+    const windowStartDate = today
 
     const paymentDates = Array.from({ length: installmentCount }, (_, index) => {
-        return dayjs(windowStartDate).add(frequencyWeeks * index, 'week')
+        return dayjs(windowStartDate).add(frequencyWeeks * (index + 1), 'week')
     })
 
     const formatScheduleAmount = (value) => (value == null ? 'PHP TBD' : formatCurrency(value))
@@ -357,7 +368,7 @@ export default function PaymentProcess() {
                         </View>
                     </View>
                     <View style={styles.invoiceTitleContainer}>
-                        <Text style={styles.invoiceTitleText}>Invoice {Invoice.invoice.number.split('-').pop()}</Text>
+                        <Text style={styles.invoiceTitleText}>Invoice {Invoice.invoice.number}</Text>
                     </View>
                 </View>
 
@@ -501,6 +512,12 @@ export default function PaymentProcess() {
                 }}
             >
                 <div className="payment-process-container">
+                    {loading && (
+                        <div className="payment-process-sticky-spin">
+                            <Spin size="large" description="Processing payment..." className="app-loading-spin" />
+                        </div>
+                    )}
+
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
@@ -645,6 +662,7 @@ export default function PaymentProcess() {
                                     <div className="card-content">
                                         <h3>Paymongo</h3>
                                         <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
                                     </div>
                                 </Radio>
 
@@ -656,6 +674,7 @@ export default function PaymentProcess() {
                                     <div className="card-content">
                                         <h3>Manual Payment</h3>
                                         <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
                                     </div>
                                 </Radio>
                             </Radio.Group>
@@ -749,8 +768,8 @@ export default function PaymentProcess() {
                             Proceed
                         </Button>
                     </div>
-                </div>
 
+                </div>
             </ConfigProvider>
         </div>
     )

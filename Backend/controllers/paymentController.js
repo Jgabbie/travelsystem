@@ -1,9 +1,9 @@
 const axios = require("axios");
 const crypto = require('crypto');
+const transporter = require('../config/nodemailer')
 const { v4: uuidv4 } = require("uuid");
 const TokenCheckoutModel = require("../models/tokencheckout");
 const PackageModel = require("../models/package");
-const QuotationModel = require("../models/quotations");
 const BookingModel = require("../models/booking");
 const TransactionModel = require("../models/transactions");
 const UserModel = require("../models/user");
@@ -135,7 +135,10 @@ const createCheckoutSession = async (req, res) => {
             userId: req.userId,
             packageId,
             travelDate,
-            travelerTotal
+            travelerTotal,
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents
         };
 
 
@@ -314,6 +317,52 @@ const handlePayMongoWebhook = async (req, res) => {
                     reference: generateBookingReference(),
                     status: 'Successful'
                 });
+
+                try {
+                    await NotificationModel.create({
+                        userId: user.userId,
+                        title: 'Booking Confirmed',
+                        message: `Your booking ${booking.reference} has been confirmed.`,
+                        type: 'booking',
+                        link: '/user-bookings',
+                        metadata: { bookingId: booking._id }
+                    })
+                } catch (notificationError) {
+                    console.error('Failed to create notification:', notificationError)
+                }
+
+
+                const mailOptions = {
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: 'M&RC Travel and Tours - Booking Confirmation',
+                    html: `
+                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                            
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                M&RC Travel and Tours
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Your booking ${booking.reference} has been confirmed! We look forward to providing you with an unforgettable travel experience. If you have any questions, feel free to contact our support team.
+                            </p>
+
+                            <p style="color:#777; font-size:14px;">
+                                This is a confirmation of your booking. If you have any questions, feel free to contact our support team.
+                            </p>
+
+                            <p style="color:#aaa; font-size:12px; margin-top:30px;">
+                                If you did not request this verification, please ignore this email.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                }
+
+                await transporter.sendMail(mailOptions);
+
             }
 
             const lineItems = Array.isArray(sessionAttributes?.line_items)
@@ -331,6 +380,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 sessionData.amount_total ||
                 sessionAttributes?.amount_total ||
                 sessionAttributes?.total_amount ||
+                Number(metadata.totalAmountCents || metadata.amountCents || 0) ||
                 lineItemsTotal ||
                 0;
 
@@ -344,6 +394,50 @@ const handlePayMongoWebhook = async (req, res) => {
                 method: 'Paymongo',
                 status: 'Successful',
             });
+
+            try {
+                await NotificationModel.create({
+                    userId: user.userId,
+                    title: 'Payment Successful',
+                    message: `Your payment for ${booking.reference} was successful.`,
+                    type: 'booking',
+                    link: '/user-transactions',
+                    metadata: { transactionId: transaction._id }
+                })
+            } catch (notificationError) {
+                console.error('Failed to create notification:', notificationError)
+            }
+
+            const mailOptions = {
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: 'M&RC Travel and Tours - Booking Payment Successful',
+                html: `
+                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                            
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                M&RC Travel and Tours
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Your booking ${booking.reference} payment was successful! We look forward to providing you with an unforgettable travel experience. If you have any questions, feel free to contact our support team.
+                            </p>
+
+                            <p style="color:#777; font-size:14px;">
+                                This is a payment confirmation for your booking. If you have any questions, feel free to contact our support team.
+                            </p>
+
+                            <p style="color:#aaa; font-size:12px; margin-top:30px;">
+                                If you did not perform this payment, please ignore this email.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+            }
+
+            await transporter.sendMail(mailOptions);
         }
 
         // IMPORTANT: Always return 200 so PayMongo stops retrying the request

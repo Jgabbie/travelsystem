@@ -2,6 +2,7 @@ const BookingModel = require('../models/booking')
 const TransactionModel = require('../models/transactions')
 const CancellationModel = require('../models/cancellations')
 const logAction = require('../utils/logger')
+const dayjs = require('dayjs');
 
 const generateBookingReference = () => {
     const timestamp = Date.now().toString().slice(-6)
@@ -79,6 +80,25 @@ const getUserBookings = async (req, res) => {
         res.status(500).json({ message: 'Error fetching bookings', error })
     }
 }
+
+const getBookingsTotalBaseOnMonth = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const startOfMonth = dayjs().startOf('month').toDate();
+        const endOfMonth = dayjs().endOf('month').toDate();
+
+        const totalBookings = await BookingModel.countDocuments({
+            userId,
+            createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+        });
+
+        res.status(200).json({ totalBookings });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching bookings total', error });
+    }
+};
+
 
 const getAllBookings = async (_req, res) => {
     try {
@@ -228,4 +248,4 @@ const getcancellations = async (req, res) => {
     }
 }
 
-module.exports = { createBooking, getUserBookings, getAllBookings, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference }
+module.exports = { createBooking, getUserBookings, getAllBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference }

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, message } from 'antd';
+import { Button, Modal, Input, message, Spin, ConfigProvider } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
-import LoadingScreen from '../LoadingScreen';
 import { useAuth } from '../../hooks/useAuth';
 import axiosInstance from '../../config/axiosConfig';
 
@@ -195,103 +194,110 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     };
 
     return (
-        <div>
-            <LoadingScreen isVisible={isLoading} message="Logging in..." onComplete={() => console.log("Loading complete")} />
+        <ConfigProvider
+            theme={{
+                token: {
+                    colorPrimary: '#305979',
+                }
+            }}
+        >
+            <div>
+                <Spin spinning={isLoading} fullscreen size="large" className="app-loading-spin" style={{ zIndex: 2000 }} />
+                <Modal
+                    open={isOpenLogin}
+                    className='login-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    onCancel={clearForm}
+                >
 
-            <Modal
-                open={isOpenLogin}
-                className='login-modal'
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                footer={null}
-                onCancel={clearForm}
-            >
+                    {isOTPModalVisible ? (
+                        <div id='login-container-modal'>
+                            <h1 className='emailverify-heading-modal'>Verify OTP</h1>
+                            <p className='emailverify-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
-                {isOTPModalVisible ? (
-                    <div id='login-container-modal'>
-                        <h1 className='emailverify-heading-modal'>Verify OTP</h1>
-                        <p className='emailverify-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
-
-                        <form onSubmit={submitOTP}>
-                            <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
-                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                    e.preventDefault()
-                                }
-                            }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
-
-                            <p id='error-message-modal'>{errorOTP}</p>
-
-                            <Button id='emailverify-submit-otp-button' htmlType="submit">Submit</Button>
-                        </form>
-
-                        {
-                            timer > 0 ? <p id='emailverify-footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
-                                :
-                                <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
-                        }
-                    </div>
-                ) : (
-                    <div id='login-container-modal'>
-                        <h1 id='login-heading-modal'>Welcome</h1>
-                        <p id='login-secondary-heading-modal'>Login Account</p>
-
-                        <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
-                            <div className='login-div-input-fields-modal'>
-                                <label className='login-labels-modal' htmlFor="username">Username</label>
-                                <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                    if (e.key === " " || e.key === "Backspace") {
-                                        return;
-                                    }
-
-                                    if (!/^[A-Za-z0-9]+$/.test(e.key)) {
-                                        e.preventDefault();
-                                    }
-                                }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
-                            </div>
-
-                            <div className='login-div-input-fields-modal'>
-                                <label className='login-labels-modal' htmlFor="password">Password</label>
-                                <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                    if (e.key === " " && e.key !== "Backspace") {
+                            <form onSubmit={submitOTP}>
+                                <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
+                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
-                                }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} key={isOpenLogin ? "" : false} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
-                            </div>
+                                }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
 
-                            <p id='login-error-message-modal'>{error}</p>
+                                <p id='error-message-modal'>{errorOTP}</p>
 
-                            <div id='login-links-container-modal'>
-                                <Button className='login-button-links-modal' type="link" onClick={goToSignup}>Need an Account? Signup here</Button>
-                                <Button className='login-button-links-modal' type="link" onClick={resetPassword} > Forgot your Password?</Button>
-                            </div>
+                                <Button id='emailverify-submit-otp-button' htmlType="submit">Submit</Button>
+                            </form>
 
-                            <Button id='login-button-modal' htmlType="submit">Log in</Button>
-                        </form>
+                            {
+                                timer > 0 ? <p id='emailverify-footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
+                                    :
+                                    <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
+                            }
+                        </div>
+                    ) : (
+                        <div id='login-container-modal'>
+                            <h1 id='login-heading-modal'>Welcome</h1>
+                            <p id='login-secondary-heading-modal'>Login Account</p>
+
+                            <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
+                                <div className='login-div-input-fields-modal'>
+                                    <label className='login-labels-modal' htmlFor="username">Username</label>
+                                    <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                        if (e.key === " " || e.key === "Backspace") {
+                                            return;
+                                        }
+
+                                        if (!/^[A-Za-z0-9]+$/.test(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
+                                </div>
+
+                                <div className='login-div-input-fields-modal'>
+                                    <label className='login-labels-modal' htmlFor="password">Password</label>
+                                    <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                        if (e.key === " " && e.key !== "Backspace") {
+                                            e.preventDefault()
+                                        }
+                                    }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} key={isOpenLogin ? "" : false} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
+                                </div>
+
+                                <p id='login-error-message-modal'>{error}</p>
+
+                                <div id='login-links-container-modal'>
+                                    <Button className='login-button-links-modal' type="link" onClick={goToSignup}>Need an Account? Signup here</Button>
+                                    <Button className='login-button-links-modal' type="link" onClick={resetPassword} > Forgot your Password?</Button>
+                                </div>
+
+                                <Button id='login-button-modal' htmlType="submit">Log in</Button>
+                            </form>
+                        </div>
+
+                    )}
+                </Modal>
+
+                <Modal
+                    open={isVerifiedModalOpen}
+                    className='emailverify-success-modal'
+                    footer={null}
+                    closable={false}
+                >
+                    <div className='emailverify-container-modal'>
+                        <h1 className='emailverify-heading-modal'>Account has been verified</h1>
+                        <p className='emailverify-secondary-heading-modal'>You can now proceed to your account.</p>
+                        <Button
+                            id='emailverify-success-button'
+                            onClick={() => {
+                                setIsVerifiedModalOpen(false)
+                                navigate('/user-preferences')
+                            }}
+                        >
+                            Continue
+                        </Button>
                     </div>
+                </Modal>
 
-                )}
-            </Modal>
-
-            <Modal
-                open={isVerifiedModalOpen}
-                className='emailverify-success-modal'
-                footer={null}
-                closable={false}
-            >
-                <div className='emailverify-container-modal'>
-                    <h1 className='emailverify-heading-modal'>Account has been verified</h1>
-                    <p className='emailverify-secondary-heading-modal'>You can now proceed to your account.</p>
-                    <Button
-                        id='emailverify-success-button'
-                        onClick={() => {
-                            setIsVerifiedModalOpen(false)
-                            navigate('/home')
-                        }}
-                    >
-                        Continue
-                    </Button>
-                </div>
-            </Modal>
-
-        </div >
+            </div >
+        </ConfigProvider>
     )
 }

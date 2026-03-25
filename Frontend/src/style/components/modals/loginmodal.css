@@ -159,6 +159,23 @@ body {
     color: #ff0000;
     width: 100%;
     text-align: left;
+    margin-left: 20px;
+}
+
+.app-loading-spin .ant-spin-dot-item {
+    background-color: #305797;
+}
+
+.app-loading-spin .ant-spin-text {
+    color: #305797;
+}
+
+.app-loading-spin .ant-spin-tip {
+    color: #305797;
+}
+
+.app-loading-spin .ant-spin-description {
+    color: #305797;
 }
 
 @media (max-width: 768px) {

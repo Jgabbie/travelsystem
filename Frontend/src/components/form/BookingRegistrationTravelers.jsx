@@ -13,6 +13,22 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
 
     const bookingType = summary.bookingType || 'No Booking';
 
+    const roomOptions =
+        bookingType === 'Solo Booking'
+            ? [{ value: 'SINGLE', label: 'SINGLE' }]
+            : bookingType === 'Group Booking'
+                ? [
+                    { value: 'TWIN', label: 'TWIN' },
+                    { value: 'DOUBLE', label: 'DOUBLE' },
+                    { value: 'TRIPLE', label: 'TRIPLE' },
+                ]
+                : [
+                    { value: 'TWIN', label: 'TWIN' },
+                    { value: 'DOUBLE', label: 'DOUBLE' },
+                    { value: 'SINGLE', label: 'SINGLE' },
+                    { value: 'TRIPLE', label: 'TRIPLE' },
+                ];
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -62,13 +78,12 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
         }
     }, [totalCount, form]);
 
-
-
     useEffect(() => {
         const travelers = form.getFieldValue('travelers') || [];
         if (!userProfile.firstName) return;
 
         const isSolo = bookingType === 'Solo Booking';
+        const isGroup = bookingType === 'Group Booking';
 
         travelers[0] = {
             ...travelers[0],
@@ -78,9 +93,14 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
             roomType: isSolo ? 'SINGLE' : travelers[0]?.roomType
         };
 
-        const updatedTravelers = travelers.map(t => ({
+        const updatedTravelers = travelers.map((t) => ({
             ...t,
-            roomType: isSolo ? 'SINGLE' : t?.roomType
+            roomType:
+                isSolo
+                    ? 'SINGLE'
+                    : isGroup && t?.roomType === 'SINGLE'
+                        ? undefined
+                        : t?.roomType
         }));
 
         form.setFieldsValue({
@@ -338,7 +358,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                             <Select
                                                                 size="small"
                                                                 style={{ ...inputStyle, width: '100%', padding: 0 }}
-                                                                disabled={isFirstRow} // Disable title selection for lead guest
+                                                                disabled={isFirstRow}
                                                                 variant="borderless"
                                                                 placeholder="MR/MS"
                                                                 options={[
@@ -370,13 +390,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                 // Select components need this to affect the inner box
                                                                 variant="borderless"
                                                                 className="mrc-select-flat"
-                                                                disabled={isFirstRow}
-                                                                options={[
-                                                                    { value: 'TWIN', label: 'TWIN' },
-                                                                    { value: 'DOUBLE', label: 'DOUBLE' },
-                                                                    { value: 'SINGLE', label: 'SINGLE' },
-                                                                    { value: 'TRIPLE', label: 'TRIPLE' },
-                                                                ]}
+                                                                options={roomOptions}
                                                             >
                                                             </Select>
                                                         </Form.Item>
