@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
                 id: user.id,
                 username: user.username,
                 role: user.role,
+                profileImage: user.profileImage,
                 loginOnce: user.loginOnce
             });
         } catch (err) {

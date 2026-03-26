@@ -13,7 +13,6 @@ export default function TopNav() {
   const navigate = useNavigate();
 
   const { auth, setAuth, checkAuth, authLoading } = useAuth();
-  const [profileImage, setProfileImage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -105,8 +104,8 @@ export default function TopNav() {
             className='user-dropdown'>
             <Space className='dropdown-space'>
               <div className='admin-nav-user-avatar'>
-                {profileImage ? (
-                  <img src={profileImage} alt="Profile" className='admin-nav-user-avatar-img' />
+                {auth?.profileImage ? (
+                  <img src={auth.profileImage} alt="Profile" className='admin-nav-user-avatar-img' />
                 ) : (
                   <div className='admin-nav-user-avatar-placeholder'>{getInitials()}</div>
                 )}

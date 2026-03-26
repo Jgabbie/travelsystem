@@ -30,6 +30,7 @@ export default function AddPackageInternational() {
     childRate: "",
     infantRate: "",
     soloRate: "",
+    deposit: "",
     description: "",
     duration: "",
     dateRanges: "",
@@ -47,6 +48,7 @@ export default function AddPackageInternational() {
     childRate: null,
     infantRate: null,
     soloRate: null,
+    deposit: null,
     description: null,
     dateRanges: [],
     duration: null,
@@ -69,6 +71,7 @@ export default function AddPackageInternational() {
       childRate: validate("childRate", updatedValues.childRate),
       infantRate: validate("infantRate", updatedValues.infantRate),
       soloRate: validate("soloRate", updatedValues.soloRate),
+      deposit: validate("deposit", updatedValues.deposit),
       description: validate("description", updatedValues.description),
       duration: validate("duration", updatedValues.duration),
       dateRanges: validate("dateRanges", updatedValues.dateRanges, updatedValues),
@@ -140,6 +143,9 @@ export default function AddPackageInternational() {
     }
     if (field === "soloRate") {
       if (!value) return "Solo rate is required.";
+    }
+    if (field === "deposit") {
+      if (!value) return "Deposit is required.";
     }
     if (field === "description") {
       if (!value) return "Description is required.";
@@ -410,6 +416,7 @@ export default function AddPackageInternational() {
       childRate: validate("childRate", values.childRate),
       infantRate: validate("infantRate", values.infantRate),
       soloRate: validate("soloRate", values.soloRate),
+      deposit: validate("deposit", values.deposit),
       description: validate("description", values.description),
       duration: validate("duration", values.duration),
       dateRanges: validate("dateRanges", values.dateRanges, values),
@@ -464,6 +471,7 @@ export default function AddPackageInternational() {
       childRate: values.childRate,
       infantRate: values.infantRate,
       soloRate: values.soloRate,
+      deposit: values.deposit,
       description: values.description,
       packageType: "international",
       duration: values.duration,
@@ -511,6 +519,7 @@ export default function AddPackageInternational() {
           childRate: pkg.packageChildRate,
           infantRate: pkg.packageInfantRate,
           soloRate: pkg.packageSoloRate,
+          deposit: pkg.packageDeposit,
           description: pkg.packageDescription,
           packageType: "international",
           duration: pkg.packageDuration,
@@ -744,6 +753,29 @@ export default function AddPackageInternational() {
                     required={true}
                   />
                   <p className="add-package-error-message">{errors.soloRate}</p>
+                </div>
+
+                {/* Deposit */}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <label className="add-package-input-labels">Deposit</label>
+                  <Input
+                    maxLength={7}
+                    value={priceFormat(values.deposit)}
+                    className={`add-package-inputs${errors.deposit ? " add-package-inputs-error" : ""}`}
+                    style={{ marginBottom: 10 }}
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                        e.preventDefault()
+                      }
+                    }}
+                    onChange={(e) => {
+                      const price = e.target.value.replace(/\s/g, "");
+                      valueHandler("deposit", price)
+                    }}
+                    addonBefore={"₱"}
+                    required={true}
+                  />
+                  <p className="add-package-error-message">{errors.deposit}</p>
                 </div>
 
                 {/* Description */}

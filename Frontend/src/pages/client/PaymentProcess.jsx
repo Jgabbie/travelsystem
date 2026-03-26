@@ -513,8 +513,8 @@ export default function PaymentProcess() {
             >
                 <div className="payment-process-container">
                     {loading && (
-                        <div className="payment-process-sticky-spin">
-                            <Spin size="large" description="Processing payment..." className="app-loading-spin" />
+                        <div className="payment-loading-overlay">
+                            <Spin size="large" description="Processing payment..." />
                         </div>
                     )}
 

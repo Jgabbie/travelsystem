@@ -425,10 +425,9 @@ export default function BookingProcess() {
             }}
         >
             {isGeneratingPdf && (
-                <div className="booking-process-sticky-spin">
-                    <Spin spinning={isGeneratingPdf} tip="Preparing your PDF..." size="large" />
+                <div className="booking-loading-overlay">
+                    <Spin description="Preparing your PDF..." size="large" />
                 </div>
-
             )}
 
             <div className='bookingprocess-container'>

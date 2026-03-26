@@ -152,6 +152,7 @@ const loginUser = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
+                profileImage: user.profileImage,
                 role: user.role,
                 loginOnce: user.loginOnce
             }
@@ -399,7 +400,8 @@ const verifyEmail = async (req, res) => {
                 id: userName._id,
                 username: userName.username,
                 email: userName.email,
-                role: userName.role
+                role: userName.role,
+                profileImage: userName.profileImage
             }
         })
 
@@ -427,6 +429,7 @@ const isAuthenticated = async (req, res) => {
             user: {
                 id: currentUser._id,
                 username: currentUser.username,
+                profileImage: currentUser.profileImage,
                 email: currentUser.email,
                 role: currentUser.role,
                 loginOnce: currentUser.loginOnce

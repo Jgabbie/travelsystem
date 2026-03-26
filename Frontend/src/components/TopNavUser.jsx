@@ -14,11 +14,12 @@ export default function TopNavUser() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [profileImage, setProfileImage] = useState('');
     const [isLoginVisible, setIsLoginVisible] = useState(false);
     const [isSignupVisible, setIsSignupVisible] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    console.log(auth)
 
     const renderAuthControls = () => {
         if (auth) {
@@ -28,8 +29,8 @@ export default function TopNavUser() {
                         <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
                             <Space className='dropdown-space'>
                                 <div className='nav-user-avatar'>
-                                    {profileImage ? (
-                                        <img src={profileImage} alt="Profile" className='nav-user-avatar-img' />
+                                    {auth?.profileImage ? (
+                                        <img src={auth.profileImage} alt="Profile" className='nav-user-avatar-img' />
                                     ) : (
                                         <div className='nav-user-avatar-placeholder'>{getInitials()}</div>
                                     )}
