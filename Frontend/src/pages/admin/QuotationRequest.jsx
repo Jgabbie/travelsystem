@@ -26,6 +26,7 @@ export default function QuotationRequest() {
             setLoading(true);
             try {
                 const response = await axiosInstance.get(`/quotation/get-quotation/${id}`);
+                console.log("Fetched quotation data:", response.data); // Debug log to check fetched data
                 setQuotation(response.data);
             } catch (error) {
                 console.error("Error fetching quotation:", error);
@@ -56,12 +57,15 @@ export default function QuotationRequest() {
 
     console.log("Fetched quotation:", quotation);
 
-
-    const packageName = quotation?.packageName || "N/A";
-    const hotel = quotation?.travelDetails?.preferredHotels || "N/A";
-    const airline = quotation?.travelDetails?.preferredAirlines || "N/A";
-    const travelDates = quotation?.travelDetails?.preferredDates || "N/A";
-    const travelers = quotation?.travelDetails?.travelers || "N/A";
+    const packageName = quotation?.packageId?.packageName || "N/A";
+    const customerName = quotation?.userId?.username || "N/A";
+    const hotel = quotation?.quotationDetails?.preferredHotels || "N/A";
+    const airline = quotation?.quotationDetails?.preferredAirlines || "N/A";
+    const travelDates = quotation?.quotationDetails?.preferredDates || "N/A";
+    const budgetRange = Array.isArray(quotation?.quotationDetails?.budgetRange)
+        ? `₱${quotation.quotationDetails.budgetRange.join(" - ")}`
+        : "N/A";
+    const travelers = quotation?.quotationDetails?.travelers || "N/A";
     const inclusions = quotation?.packageId?.packageInclusions || [];
     const exclusions = quotation?.packageId?.packageExclusions || [];
     const itinerary = quotation?.packageId?.packageItineraries || {};
@@ -70,6 +74,7 @@ export default function QuotationRequest() {
 
     const quotationData = {
         packageName,
+        customerName,
         hotel,
         airline,
         travelDates,
@@ -80,10 +85,38 @@ export default function QuotationRequest() {
         coordinatorName
     };
 
+    console.log("Constructed quotationData for form components:", quotationData); // Debug log to check constructed data
+
+    const formatPackageItem = (item) => {
+        if (typeof item === "string") return item;
+        if (!item) return "N/A";
+        return item.activity || item.optionalActivity || item.item || "N/A";
+    };
+
+    const getItineraryActivity = (item) => {
+        if (typeof item === "string") {
+            return { activity: item, optional: "" };
+        }
+        if (!item) {
+            return { activity: "N/A", optional: "" };
+        }
+
+        const activity = item.activity || item.optionalActivity || item.item || "N/A";
+        const optionalPrice = Number.isFinite(Number(item.optionalPrice))
+            ? Number(item.optionalPrice).toLocaleString()
+            : null;
+        const optional = item.isOptional && item.optionalActivity
+            ? `Optional: ${item.optionalActivity}${optionalPrice ? ` - ₱${optionalPrice}` : ""}`
+            : "";
+
+        return { activity, optional };
+    };
+
     if (!quotation) return <p>Quotation not found.</p>;
 
-    const details = quotation.travelDetails || {};
+    const details = quotation.quotationDetails || {};
     const itineraryNotes = details.itineraryNotes || [];
+    const flightDetails = details.flightDetails || {};
     const previewItems = [
         {
             title: "Quotation Form Preview",
@@ -226,12 +259,12 @@ export default function QuotationRequest() {
                                 style={{ flex: "1 1 360px", margin: 0 }}
                             >
                                 <Descriptions bordered column={1}>
-                                    <Descriptions.Item label="Package Name">{quotation.packageName}</Descriptions.Item>
-                                    <Descriptions.Item label="Customer Name">{quotation.userName}</Descriptions.Item>
-                                    <Descriptions.Item label="Travelers">{details.travelers || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Preferred Airlines">{details.preferredAirlines || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Preferred Hotels">{details.preferredHotels || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Budget Range">{details.budgetRange ? `₱${details.budgetRange.join(" - ")}` : "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Package Name">{packageName}</Descriptions.Item>
+                                    <Descriptions.Item label="Customer Name">{customerName}</Descriptions.Item>
+                                    <Descriptions.Item label="Travelers">{travelers || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Preferred Airlines">{airline || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Preferred Hotels">{hotel || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Budget Range">{budgetRange}</Descriptions.Item>
                                     <Descriptions.Item label="Itinerary Notes">
                                         {itineraryNotes.length === 0
                                             ? "N/A"
@@ -240,6 +273,10 @@ export default function QuotationRequest() {
                                             ))
                                         }
                                     </Descriptions.Item>
+                                    <Descriptions.Item label="Package Category">{details.packageCategory || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Flight Airline">{flightDetails.flightAirline || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Flight Date">{flightDetails.flightDate || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Flight Time">{flightDetails.flightTime || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Status">{quotation.status}</Descriptions.Item>
                                 </Descriptions>
@@ -256,11 +293,23 @@ export default function QuotationRequest() {
                                                 ([day, activities], index) => (
                                                     <div key={index}>
                                                         <strong>{day.toUpperCase()}:</strong>
-                                                        {activities.map((act, i) => (
-                                                            <div key={i} style={{ marginLeft: "10px" }}>
-                                                                - {act}
-                                                            </div>
-                                                        ))}
+                                                        {(activities || []).map((act, i) => {
+                                                            const { activity, optional } = getItineraryActivity(act);
+                                                            return (
+                                                                <div key={i} style={{ marginLeft: "10px", marginTop: 6 }}>
+                                                                    <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                                                                        <span style={{ minWidth: 16 }}>&bull;</span>
+                                                                        <span>{activity}</span>
+                                                                    </div>
+                                                                    {optional && (
+                                                                        <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
+                                                                            <span style={{ minWidth: 16 }} />
+                                                                            <span>{optional}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
                                                     </div>
                                                 )
                                             )
@@ -270,18 +319,22 @@ export default function QuotationRequest() {
                                     </Descriptions.Item>
                                     <Descriptions.Item label="Inclusions">
                                         {quotation.packageId?.packageInclusions?.length > 0 ? (
-                                            quotation.packageId.packageInclusions.map((inclusion, index) => (
-                                                <div key={index}>{inclusion}</div>
-                                            ))
+                                            <ul style={{ margin: 0, paddingLeft: 18 }}>
+                                                {quotation.packageId.packageInclusions.map((inclusion, index) => (
+                                                    <li key={index}>{formatPackageItem(inclusion)}</li>
+                                                ))}
+                                            </ul>
                                         ) : (
                                             "N/A"
                                         )}
                                     </Descriptions.Item>
                                     <Descriptions.Item label="Exclusions">
                                         {quotation.packageId?.packageExclusions?.length > 0 ? (
-                                            quotation.packageId.packageExclusions.map((exclusion, index) => (
-                                                <div key={index}>{exclusion}</div>
-                                            ))
+                                            <ul style={{ margin: 0, paddingLeft: 18 }}>
+                                                {quotation.packageId.packageExclusions.map((exclusion, index) => (
+                                                    <li key={index}>{formatPackageItem(exclusion)}</li>
+                                                ))}
+                                            </ul>
                                         ) : (
                                             "N/A"
                                         )}

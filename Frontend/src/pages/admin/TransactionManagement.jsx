@@ -31,8 +31,9 @@ export default function TransactionManagement() {
   const [statusFilter, setStatusFilter] = useState("");
   const [paymentDateFilter, setPaymentDateFilter] = useState(null);
 
-  const [form] = Form.useForm();
-  const [editingKey, setEditingKey] = useState("");
+  const [editForm] = Form.useForm();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isProofModalOpen, setIsProofModalOpen] = useState(false);
@@ -165,21 +166,16 @@ export default function TransactionManagement() {
     message.success("Report exported to PDF successfully.");
   };
 
-  const isEditing = (record) => record.key === editingKey;
-
   const edit = (record) => {
-    form.setFieldsValue({
+    setEditingTransaction(record);
+    editForm.setFieldsValue({
       package: record.package,
-      date: dayjs(record.date),
-      price: record.price,
+      date: record.date ? dayjs(record.date) : null,
+      price: Number.isFinite(record.amountRaw) ? record.amountRaw : record.price,
       method: record.method,
       status: record.status
     });
-    setEditingKey(record.key);
-  };
-
-  const cancel = () => {
-    setEditingKey("");
+    setIsEditModalOpen(true);
   };
 
   const openViewModal = (record) => {
@@ -238,62 +234,49 @@ export default function TransactionManagement() {
     });
   };
 
-  const save = async (key) => {
+  const save = async () => {
     try {
-      const row = await form.validateFields();
-      const newData = [...data];
-      const index = newData.findIndex((item) => item.key === key);
-
-      if (index > -1) {
-        Modal.confirm({
-          className: "logout-confirm-modal",
-          icon: null,
-          title: (
-            <div className="logout-confirm-title" style={{ textAlign: "center" }}>
-              Confirm Changes
-            </div>
-          ),
-          content: (
-            <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-              <p className="logout-confirm-text">Are you sure about these changes?</p>
-            </div>
-          ),
-          okText: "Save",
-          cancelText: "Cancel",
-          okButtonProps: { className: "logout-confirm-btn" },
-          cancelButtonProps: { className: "logout-cancel-btn" },
-          onOk: async () => {
-            const updatedRow = { ...newData[index], ...row };
-            if (dayjs.isDayjs(updatedRow.date)) {
-              updatedRow.date = updatedRow.date.format("YYYY-MM-DD HH:mm");
-            }
-
-            const parsedAmount = Number(
-              String(updatedRow.price || "").replace(/[^0-9.-]/g, "")
-            );
-            const amount = Number.isFinite(parsedAmount) ? parsedAmount : 0;
-            updatedRow.price = `₱${amount.toLocaleString()}`;
-
-            try {
-              const payload = {
-                packageName: updatedRow.package,
-                method: updatedRow.method,
-                status: updatedRow.status,
-                amount
-              };
-
-              await axiosInstance.put(`/transaction/${key}`, payload);
-
-              newData.splice(index, 1, updatedRow);
-              setData(newData);
-              setEditingKey("");
-              message.success("Transaction updated");
-            } catch (error) {
-              message.error("Failed to update transaction");
-            }
-          }
-        });
+      if (!editingTransaction) {
+        return;
       }
+
+      const values = await editForm.validateFields();
+      const dateValue = dayjs.isDayjs(values.date)
+        ? values.date.format("YYYY-MM-DD HH:mm")
+        : values.date;
+      const parsedAmount = Number(String(values.price || "").replace(/[^0-9.-]/g, ""));
+      const amount = Number.isFinite(parsedAmount) ? parsedAmount : 0;
+      const priceFormatted = `₱${amount.toLocaleString()}`;
+
+      const payload = {
+        packageName: values.package,
+        method: values.method,
+        status: values.status,
+        amount
+      };
+
+      await axiosInstance.put(`/transaction/${editingTransaction.key}`, payload);
+
+      setData((prev) =>
+        prev.map((item) =>
+          item.key === editingTransaction.key
+            ? {
+              ...item,
+              package: values.package,
+              date: dateValue,
+              method: values.method,
+              status: values.status,
+              amountRaw: amount,
+              price: priceFormatted
+            }
+            : item
+        )
+      );
+
+      message.success("Transaction updated");
+      setIsEditModalOpen(false);
+      setEditingTransaction(null);
+      editForm.resetFields();
     } catch {
       message.error("Please fix validation errors");
     }
@@ -302,20 +285,18 @@ export default function TransactionManagement() {
   // ================= TABLE =================
   const columns = [
     { title: "Transaction Reference", dataIndex: "ref" },
-    { title: "Travel Package", dataIndex: "package", editable: true },
-    { title: "Customer Name", dataIndex: "username", editable: true },
+    { title: "Travel Package", dataIndex: "package" },
+    { title: "Customer Name", dataIndex: "username" },
     {
       title: "Payment Date & Time",
       dataIndex: "date",
-      editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY hh:mm A")
     },
-    { title: "Total Price", dataIndex: "price", editable: true },
-    { title: "Transaction Method", dataIndex: "method", editable: true },
+    { title: "Total Price", dataIndex: "price" },
+    { title: "Transaction Method", dataIndex: "method" },
     {
       title: "Status",
       dataIndex: "status",
-      editable: true,
       render: s => (
         <Tag
           color={
@@ -332,135 +313,37 @@ export default function TransactionManagement() {
       title: "Actions",
       render: (_, record) => (
         <Space>
-          {isEditing(record) ? (
-            <>
-              <Button
-                className="savebutton-transactionmanagement"
-                type="primary"
-                onClick={() => save(record.key)}
-              >
-                Save
-              </Button>
-              <Button className="cancelbutton-transactionmanagement" onClick={cancel}>
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                className='viewbutton-transactionmanagement'
-                type="primary"
-                icon={<EyeOutlined />}
-                onClick={() => openViewModal(record)}
-                disabled={editingKey !== ""}
-
-              />
-              {record.methodRaw === "Manual" && record.proofImage && (
-                <Button
-                  className="viewbutton-transactionmanagement"
-                  type="primary"
-                  onClick={() => openProofModal(record)}
-                  disabled={editingKey !== ""}
-                >
-                  View Proof
-                </Button>
-              )}
-              <Button
-                className="editbutton-transactionmanagement"
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => edit(record)}
-                disabled={editingKey !== ""}
-              />
-              <Button
-                className="deletebutton-transactionmanagement"
-                type="primary"
-                icon={<DeleteOutlined />}
-                disabled={editingKey !== ""}
-                onClick={() => handleDelete(record.key)}
-              />
-            </>
+          <Button
+            className='viewbutton-transactionmanagement'
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => openViewModal(record)}
+          />
+          {record.methodRaw === "Manual" && record.proofImage && (
+            <Button
+              className="viewbutton-transactionmanagement"
+              type="primary"
+              onClick={() => openProofModal(record)}
+            >
+              View Proof
+            </Button>
           )}
+          <Button
+            className="editbutton-transactionmanagement"
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => edit(record)}
+          />
+          <Button
+            className="deletebutton-transactionmanagement"
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.key)}
+          />
         </Space>
       )
     }
   ];
-
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-
-    let inputType = "text";
-    if (col.dataIndex === "method") inputType = "method";
-    if (col.dataIndex === "status") inputType = "status";
-    if (col.dataIndex === "date") inputType = "date";
-
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType,
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record)
-      })
-    };
-  });
-
-  const EditableCell = ({
-    editing,
-    dataIndex,
-    inputType,
-    children,
-    ...restProps
-  }) => {
-    let inputNode = <Input />;
-
-    if (inputType === "method") {
-      inputNode = (
-        <Select
-          options={[
-            { value: "Bank Transfer", label: "Bank Transfer" },
-            { value: "GCash", label: "GCash" },
-            { value: "Credit Card", label: "Credit Card" }
-          ]}
-        />
-      );
-    }
-
-    if (inputType === "status") {
-      inputNode = (
-        <Select
-          options={[
-            { value: "Successful", label: "Successful" },
-            { value: "Pending", label: "Pending" },
-            { value: "Failed", label: "Failed" }
-          ]}
-        />
-      );
-    }
-
-    if (inputType === "date") {
-      inputNode = <DatePicker showTime format="YYYY-MM-DD HH:mm" />;
-    }
-
-    return (
-      <td {...restProps}>
-        {editing ? (
-          <Form.Item
-            name={dataIndex}
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: `Please enter ${dataIndex}` }]}
-          >
-            {inputNode}
-          </Form.Item>
-        ) : (
-          children
-        )}
-      </td>
-    );
-  };
 
 
 
@@ -577,21 +460,95 @@ export default function TransactionManagement() {
         </div>
 
         <Card>
-          <Form form={form} component={false}>
-            <Table
-              components={{
-                body: {
-                  cell: EditableCell
-                }
-              }}
-              columns={mergedColumns}
-              dataSource={filteredData}
-              pagination={{ pageSize: 6 }}
-              rowClassName="editable-row"
-              scroll={{ x: "max-content" }}
-            />
-          </Form>
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            loading={loading}
+            pagination={{ pageSize: 6 }}
+            scroll={{ x: "max-content" }}
+          />
         </Card>
+
+        <Modal
+          title="Edit Transaction"
+          open={isEditModalOpen}
+          onCancel={() => {
+            setIsEditModalOpen(false);
+            setEditingTransaction(null);
+          }}
+          onOk={save}
+          okText="Save Changes"
+          style={{ top: 120 }}
+          className="transaction-edit-modal"
+          okButtonProps={{ className: "transaction-edit-save-btn" }}
+          cancelButtonProps={{ className: "transaction-edit-cancel-btn" }}
+        >
+          <Form form={editForm} layout="vertical" className="transaction-edit-form">
+            <Form.Item
+              name="package"
+              label="Package"
+              rules={[{ required: true, message: "Package is required" }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Row gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  name="date"
+                  label="Payment Date"
+                  rules={[{ required: true, message: "Payment date is required" }]}
+                >
+                  <DatePicker showTime format="YYYY-MM-DD HH:mm" style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  name="price"
+                  label="Amount"
+                  rules={[{ required: true, message: "Amount is required" }]}
+                >
+                  <Input type="number" min={0} />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  name="method"
+                  label="Method"
+                  rules={[{ required: true, message: "Method is required" }]}
+                >
+                  <Select
+                    options={[
+                      { value: "Bank Transfer", label: "Bank Transfer" },
+                      { value: "GCash", label: "GCash" },
+                      { value: "Credit Card", label: "Credit Card" }
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  name="status"
+                  label="Status"
+                  rules={[{ required: true, message: "Status is required" }]}
+                >
+                  <Select
+                    options={[
+                      { value: "Successful", label: "Successful" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Failed", label: "Failed" }
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
 
         <Modal
           open={isViewModalOpen}

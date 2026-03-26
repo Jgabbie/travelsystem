@@ -32,6 +32,7 @@ export default function CancellationRequests() {
     const [dateFilter, setDateFilter] = useState(null)
     const [isViewModalOpen, setIsViewModalOpen] = useState(false)
     const [selectedRequest, setSelectedRequest] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         getCancellationRequests()
@@ -44,7 +45,7 @@ export default function CancellationRequests() {
                 key: c._id,
                 ref: c.reference,
                 username: c.userId?.username || c.userId?.email || 'Unknown',
-                package: c.bookingId?.bookingDetails?.packageName || 'Package',
+                package: c.bookingId?.packageId?.packageName || 'Package',
                 daysAfterBooking: c.bookingId?.createdAt && c.cancellationDate
                     ? dayjs(c.cancellationDate).diff(dayjs(c.bookingId?.createdAt), 'day')
                     : '--',
@@ -52,7 +53,6 @@ export default function CancellationRequests() {
                 cancellationDate: c.cancellationDate,
                 status: c.status || 'Pending'
             }))
-
             setRequests(cancellations)
         } catch (err) {
             console.error('Error fetching cancellation requests:', err)
@@ -64,7 +64,7 @@ export default function CancellationRequests() {
         const matchesSearch =
             (item.ref.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
-            (item.package.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.package?.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.reason.toLowerCase().includes(searchText.toLowerCase())) ||
             (dayjs(item.cancellationDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
             (item.status.toLowerCase().includes(searchText.toLowerCase()))
@@ -175,14 +175,14 @@ export default function CancellationRequests() {
             key: 'ref'
         },
         {
-            title: 'Customer Name',
-            dataIndex: 'username',
-            key: 'username'
-        },
-        {
             title: 'Travel Package',
             dataIndex: 'package',
             key: 'package'
+        },
+        {
+            title: 'Customer Name',
+            dataIndex: 'username',
+            key: 'username'
         },
         {
             title: 'Reason',
@@ -332,6 +332,7 @@ export default function CancellationRequests() {
                 <Card style={{ marginTop: 20 }}>
                     <Table
                         columns={columns}
+                        loading={loading}
                         dataSource={filteredData}
                         pagination={{ pageSize: 6 }}
                     />
@@ -370,7 +371,7 @@ export default function CancellationRequests() {
                             <div className="cancellation-view-grid">
                                 <div className="cancellation-view-item">
                                     <span className="cancellation-view-label">Travel Package</span>
-                                    <span className="cancellation-view-value">{selectedRequest.packageName}</span>
+                                    <span className="cancellation-view-value">{selectedRequest.package}</span>
                                 </div>
                                 <div className="cancellation-view-item">
                                     <span className="cancellation-view-label">Reason</span>

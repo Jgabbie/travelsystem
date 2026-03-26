@@ -436,6 +436,13 @@ export default function ProfilePage() {
                                     />
                                 </div>
 
+                                {userData?.role && (
+                                    <div className="profile-field">
+                                        <label className="profile-label">Role</label>
+                                        <Input value={userData.role} disabled />
+                                    </div>
+                                )}
+
                                 <div className="profile-field">
                                     <label className="profile-label">First Name</label>
                                     <Input
@@ -559,6 +566,17 @@ export default function ProfilePage() {
                                 </div>
 
                                 <div className="profile-field">
+                                    <label className="profile-label">Nationality</label>
+                                    <Input
+                                        placeholder="Enter your nationality"
+                                        allowClear
+                                        value={values.nationality}
+                                        disabled={!editing}
+                                        onChange={(e) => valueHandler('nationality', e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="profile-field">
                                     <label className="profile-label">Gender</label>
                                     <Select
                                         placeholder="Select gender"
@@ -590,23 +608,9 @@ export default function ProfilePage() {
                                     />
                                 </div>
 
-                                <div className="profile-field">
-                                    <label className="profile-label">Nationality</label>
-                                    <Input
-                                        placeholder="Enter your nationality"
-                                        allowClear
-                                        value={values.nationality}
-                                        disabled={!editing}
-                                        onChange={(e) => valueHandler('nationality', e.target.value)}
-                                    />
-                                </div>
 
-                                {userData?.role && (
-                                    <div className="profile-field">
-                                        <label className="profile-label">Role</label>
-                                        <Input value={userData.role} disabled />
-                                    </div>
-                                )}
+
+
                             </div>
 
                             {userData?.isAccountVerified && (

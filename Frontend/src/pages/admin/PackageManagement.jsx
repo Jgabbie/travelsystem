@@ -80,7 +80,17 @@ export default function PackageManagement() {
     setLoading(true);
     try {
       const response = await axiosInstance.get('/package/get-packages');
-      setPackagesData(response.data);
+
+      const sortedPackages = response.data.sort((a, b) => {
+        // Sort by creation date if you have it
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+        // Fallback: sort by ObjectId timestamp
+        return b._id.localeCompare(a._id); // b first for newest
+      });
+
+      setPackagesData(sortedPackages);
     } catch (error) {
       console.error("Error fetching packages:", error);
     } finally {

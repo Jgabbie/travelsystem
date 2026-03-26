@@ -80,6 +80,21 @@
   }
 
 
+  .package-type-card {
+    transition: all 0.2s ease;
+    border-radius: 10px;
+  }
+
+  .package-type-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .package-type-card.selected {
+    border: 2px solid #305797 !important;
+    box-shadow: 0 0 8px rgba(48, 87, 151, 0.3);
+  }
+
+
   .save-package-button {
     background-color: #305797 !important;
     color: white !important;

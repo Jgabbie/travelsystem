@@ -435,47 +435,57 @@ export default function PackageDomesticQuotation() {
                                             <div className="quotation-flight-details quotation-section">
                                                 <h3>Flight Details</h3>
 
-                                                <div className="quotation-field">
-                                                    <label htmlFor="flight-airline">Airline <span style={{ color: 'red' }}>*</span></label>
-                                                    <Input
-                                                        id="flight-airline"
-                                                        placeholder="Enter airline name"
-                                                        value={flightAirline}
-                                                        onChange={(e) => setFlightAirline(e.target.value)}
-                                                        className={`quotation-input ${error.flightAirline ? 'input-error' : ''}`}
-                                                    />
-                                                    <p className='package-quotation-error'>{error.flightAirline}</p>
+                                                <div className='flightdetails-left'>
+                                                    <div className="quotation-field">
+                                                        <label htmlFor="flight-airline">Airline <span style={{ color: 'red' }}>*</span></label>
+                                                        <Input
+                                                            id="flight-airline"
+                                                            placeholder="Enter airline name"
+                                                            value={flightAirline}
+                                                            onChange={(e) => setFlightAirline(e.target.value)}
+                                                            className={`quotation-input ${error.flightAirline ? 'input-error' : ''}`}
+                                                        />
+                                                        <p className='package-quotation-error'>{error.flightAirline}</p>
+                                                    </div>
+
+                                                    <div className="quotation-field">
+                                                        <label htmlFor="flight-date">Flight Date <span style={{ color: 'red' }}>*</span></label>
+                                                        <DatePicker
+                                                            id="flight-date"
+                                                            placeholder="Select flight date"
+                                                            value={flightDate ? dayjs(flightDate) : null}
+                                                            onChange={(value) => setFlightDate(value)}
+                                                            className={`quotation-input ${error.flightDate ? 'input-error' : ''}`}
+                                                            disabledDate={(current) => {
+                                                                if (!current) return false;
+                                                                const date = dayjs(current);
+                                                                return date.isSameOrBefore(today, 'day') || date.year() !== currentYear;
+                                                            }}
+                                                        />
+                                                        <p className='package-quotation-error'>{error.flightDate}</p>
+                                                    </div>
+
+                                                    <div className="quotation-field">
+                                                        <label htmlFor="flight-time">Flight Time <span style={{ color: 'red' }}>*</span></label>
+                                                        <TimePicker
+                                                            id="flight-time"
+                                                            placeholder="Select flight time"
+                                                            value={flightTime ? dayjs(flightTime, 'hh:mm A') : null}
+                                                            onChange={(time) => setFlightTime(time ? time.format('hh:mm A') : '')}
+                                                            format="hh:mm A"
+                                                            className={`quotation-input ${error.flightTime ? 'input-error' : ''}`}
+                                                            showNow={false}
+                                                        />
+                                                        <p className='package-quotation-error'>{error.flightTime}</p>
+                                                    </div>
                                                 </div>
 
-                                                <div className="quotation-field">
-                                                    <label htmlFor="flight-date">Flight Date <span style={{ color: 'red' }}>*</span></label>
-                                                    <DatePicker
-                                                        id="flight-date"
-                                                        placeholder="Select flight date"
-                                                        value={flightDate ? dayjs(flightDate) : null}
-                                                        onChange={(value) => setFlightDate(value)}
-                                                        className={`quotation-input ${error.flightDate ? 'input-error' : ''}`}
-                                                        disabledDate={(current) => {
-                                                            if (!current) return false;
-                                                            const date = dayjs(current);
-                                                            return date.isSameOrBefore(today, 'day') || date.year() !== currentYear;
-                                                        }}
-                                                    />
-                                                    <p className='package-quotation-error'>{error.flightDate}</p>
-                                                </div>
-
-                                                <div className="quotation-field">
-                                                    <label htmlFor="flight-time">Flight Time <span style={{ color: 'red' }}>*</span></label>
-                                                    <TimePicker
-                                                        id="flight-time"
-                                                        placeholder="Select flight time"
-                                                        value={flightTime ? dayjs(flightTime, 'hh:mm A') : null}
-                                                        onChange={(time) => setFlightTime(time ? time.format('hh:mm A') : '')}
-                                                        format="hh:mm A"
-                                                        className={`quotation-input ${error.flightTime ? 'input-error' : ''}`}
-                                                        showNow={false}
-                                                    />
-                                                    <p className='package-quotation-error'>{error.flightTime}</p>
+                                                <div className='flightdetails-right'>
+                                                    <p className='quotation-flight-note'>
+                                                        Note: If you choose the "Land Arrangement" option, please provide your flight details.
+                                                        This will help us coordinate your airport transfers and ensure a seamless experience.
+                                                        If you haven't booked your flights yet, please provide your estimated flight schedule.
+                                                        Lastly, make sure that your chosen travel date is aligned to your flight schedule.</p>
                                                 </div>
                                             </div>
                                         )}

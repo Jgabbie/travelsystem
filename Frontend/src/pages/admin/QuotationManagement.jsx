@@ -51,10 +51,10 @@ export default function QuotationManagement() {
                 const quotations = response.data.map((q) => ({
                     key: q._id,
                     ref: q.reference,
-                    packageName: q.packageName,
-                    customerName: q.userName,
+                    packageName: q.packageId?.packageName || "Package",
+                    customerName: q.userId?.username || "Unknown",
                     dateRequested: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
-                    travelers: q.travelDetails.travelers,
+                    travelers: q.quotationDetails.travelers,
                     status: q.status
                 }))
                 setData(quotations);
@@ -170,7 +170,7 @@ export default function QuotationManagement() {
             key: "ref"
         },
         {
-            title: "Package Name",
+            title: "Travel Package",
             dataIndex: "packageName",
             key: "packageName"
         },

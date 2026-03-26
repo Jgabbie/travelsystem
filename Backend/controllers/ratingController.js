@@ -2,69 +2,29 @@ const Rating = require('../models/rating')
 const mongoose = require('mongoose')
 
 const submitRating = async (req, res) => {
-    const { packageId, rating, review, fullName, email } = req.body;
+    const { packageId, rating, review } = req.body;
     const userId = req.userId;
 
-    console.log("submitRating called with:", { packageId, rating, review, fullName, email, userId });
-
     try {
+        if (!userId) {
+            return res.status(401).json({ message: "Login required to submit a rating" })
+        }
+
         if (!packageId || !rating) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        //if authenticated user
-        if (userId) {
-            const existingRating = await Rating.findOne({ packageId, userId });
+        const existingRating = await Rating.findOne({ packageId, userId });
 
-            if (existingRating) {
-                return res.status(400).json({
-                    message: "You have already submitted a review for this package"
-                });
-            }
-
-            const newRating = await Rating.create({
-                packageId,
-                userId,
-                rating,
-                review
-            });
-
-            const io = req.app.get('io')
-            if (io) {
-                io.emit('rating:created', {
-                    id: newRating._id,
-                    createdAt: newRating.createdAt
-                })
-            }
-
-            return res.status(201).json({
-                message: "Rating submitted successfully",
-                rating: newRating
-            });
-        }
-
-        //if guest
-        if (!fullName || !email) {
-            return res.status(400).json({
-                message: "Guest must provide full name and email"
-            });
-        }
-
-        const existingGuestRating = await Rating.findOne({
-            packageId,
-            guestEmail: email
-        });
-
-        if (existingGuestRating) {
+        if (existingRating) {
             return res.status(400).json({
                 message: "You have already submitted a review for this package"
             });
         }
 
-        const guestRating = await Rating.create({
+        const newRating = await Rating.create({
             packageId,
-            guestName: fullName,
-            guestEmail: email,
+            userId,
             rating,
             review
         });
@@ -72,16 +32,15 @@ const submitRating = async (req, res) => {
         const io = req.app.get('io')
         if (io) {
             io.emit('rating:created', {
-                id: guestRating._id,
-                createdAt: guestRating.createdAt
+                id: newRating._id,
+                createdAt: newRating.createdAt
             })
         }
 
-        res.status(201).json({
-            message: "Guest review submitted successfully",
-            rating: guestRating
+        return res.status(201).json({
+            message: "Rating submitted successfully",
+            rating: newRating
         });
-
     } catch (error) {
         res.status(500).json({
             message: "Error submitting rating",

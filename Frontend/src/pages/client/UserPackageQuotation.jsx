@@ -27,8 +27,8 @@ export default function UserPackageQuotation() {
                 const quotations = response.data.map(q => ({
                     key: q._id || q.id,
                     reference: q.reference,
-                    packageName: q.packageName,
-                    travelers: q.travelDetails?.travelers ?? 0,
+                    packageName: q.packageId.packageName,
+                    travelers: q.quotationDetails?.travelers ?? 0,
                     requestedDate: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
                     status: q.status,
                     createdAt: q.createdAt

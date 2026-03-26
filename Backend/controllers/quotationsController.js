@@ -63,6 +63,7 @@ const getUserQuotations = async (req, res) => {
     const userId = req.userId
     try {
         const quotations = await QuotationModel.find({ userId }).sort({ createdAt: -1 })
+            .populate('packageId', 'packageName')
         res.status(200).json(quotations)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching quotations', error })
@@ -72,6 +73,8 @@ const getUserQuotations = async (req, res) => {
 const getAllQuotations = async (_req, res) => {
     try {
         const quotations = await QuotationModel.find({}).sort({ createdAt: -1 })
+            .populate('userId', 'username')
+            .populate('packageId', 'packageName')
         res.status(200).json(quotations)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching quotations', error })
@@ -120,11 +123,10 @@ const getQuotation = async (req, res) => {
     try {
         const { id } = req.params
         const quotation = await QuotationModel.findById(id)
-            .populate('packageId', 'packageItineraries packageInclusions packageExclusions')
-
+            .populate('packageId', 'packageName packageItineraries packageInclusions packageExclusions')
+            .populate('userId', 'username')
 
         if (!quotation) return res.status(404).json({ message: "Quotation not found" })
-
 
         res.status(200).json(quotation)
     } catch (error) {

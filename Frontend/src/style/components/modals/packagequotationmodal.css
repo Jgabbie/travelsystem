@@ -308,8 +308,85 @@
 
 .quotation-flight-details.quotation-section {
     width: 100%;
-    max-width: 650px;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    grid-column: 1 / -1;
 }
+
+.quotation-flight-details {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    column-gap: 20px;
+    row-gap: 16px;
+    align-items: start;
+}
+
+.flightdetails-left {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+    /* left column takes remaining space */
+    min-width: 0;
+}
+
+.flightdetails-right {
+    flex: 0 0 250px;
+    /* fixed width for note */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 0;
+}
+
+.quotation-flight-note {
+    background-color: #e6f0ff;
+    padding: 12px 15px;
+    border-left: 4px solid #305797;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: #333;
+    line-height: 1.4;
+}
+
+.quotation-flight-details h3 {
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    color: #305797;
+    /* matching your theme */
+    grid-column: 1 / -1;
+}
+
+.quotation-field label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.quotation-input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #d9d9d9;
+}
+
+.input-error {
+    border-color: red;
+}
+
+.package-quotation-error {
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 2px;
+}
+
 
 .quotation-itinerary h3 {
     font-family: "Montserrat", sans-serif;
@@ -452,6 +529,15 @@
 
 /* Responsive Media Queries */
 @media (max-width: 900px) {
+
+    .quotation-flight-details.quotation-section {
+        width: 100%;
+    }
+
+    .quotation-flight-details {
+        grid-template-columns: 1fr;
+    }
+
     .quotation-top-grid {
         grid-template-columns: 1fr;
     }
@@ -473,6 +559,11 @@
 }
 
 @media (max-width: 600px) {
+
+    .quotation-flight-details.quotation-section {
+        width: 450px;
+    }
+
     .quotation-container {
         padding: 20px;
     }
@@ -520,6 +611,11 @@
 }
 
 @media (max-width: 480px) {
+
+    .quotation-flight-details.quotation-section {
+        width: 320px;
+    }
+
     .quotation-section-title {
         font-size: 22px;
     }

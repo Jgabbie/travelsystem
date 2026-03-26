@@ -211,3 +211,66 @@
   color: #305797 !important;
   border-color: #305797 !important;
 }
+
+.booking-edit-modal .ant-modal-content {
+  border-radius: 16px;
+  padding: 24px;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  box-shadow: 0 14px 40px rgba(48, 87, 151, 0.16);
+}
+
+.booking-edit-modal .ant-modal-header {
+  border-bottom: none;
+  background: transparent;
+  padding-bottom: 0;
+}
+
+.booking-edit-modal .ant-modal-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #305797;
+}
+
+.booking-edit-modal .ant-modal-body {
+  padding-top: 16px;
+}
+
+.booking-edit-form .ant-form-item {
+  margin-bottom: 14px;
+}
+
+.booking-edit-modal .ant-input,
+.booking-edit-modal .ant-select-selector,
+.booking-edit-modal .ant-picker {
+  border-radius: 10px !important;
+  background-color: #f8fafc !important;
+}
+
+.booking-edit-modal .ant-input:focus,
+.booking-edit-modal .ant-select-focused .ant-select-selector,
+.booking-edit-modal .ant-picker-focused {
+  border-color: #305797 !important;
+  box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.12) !important;
+}
+
+.booking-edit-modal .ant-btn-primary.booking-edit-save-btn {
+  background-color: #305797;
+  border-color: #305797;
+  border-radius: 10px;
+  height: 38px;
+  padding: 0 18px;
+  font-weight: 600;
+  box-shadow: 0 10px 22px rgba(48, 87, 151, 0.2);
+}
+
+.booking-edit-modal .ant-btn-primary.booking-edit-save-btn:hover {
+  background-color: #24477a;
+  border-color: #24477a;
+}
+
+.booking-edit-modal .booking-edit-cancel-btn {
+  border-radius: 10px;
+  height: 38px;
+  padding: 0 18px;
+}

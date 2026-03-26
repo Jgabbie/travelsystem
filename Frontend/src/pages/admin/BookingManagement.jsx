@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
 import { SearchOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined } from "@ant-design/icons";
@@ -34,8 +34,9 @@ export default function BookingManagement() {
   const [bookingDateFilter, setBookingDateFilter] = useState(null);
   const [travelDateFilter, setTravelDateFilter] = useState(null);
 
-  const [form] = Form.useForm();
-  const [editingKey, setEditingKey] = useState("");
+  const [editForm] = Form.useForm();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(null);
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -171,21 +172,16 @@ export default function BookingManagement() {
     message.success("Report exported to PDF successfully.");
   };
 
-  const isEditing = (record) => record.key === editingKey;
-
   const edit = (record) => {
-    form.setFieldsValue({
+    setEditingBooking(record);
+    editForm.setFieldsValue({
       pkg: record.pkg,
-      travelDate: dayjs(record.travelDate),
-      bookingDate: dayjs(record.bookingDate),
+      travelDate: record.travelDate ? dayjs(record.travelDate) : null,
+      bookingDate: record.bookingDate ? dayjs(record.bookingDate) : null,
       qty: record.qty,
       status: record.status
     });
-    setEditingKey(record.key);
-  };
-
-  const cancel = () => {
-    setEditingKey("");
+    setIsEditModalOpen(true);
   };
 
   const handleDelete = (key) => {
@@ -226,79 +222,57 @@ export default function BookingManagement() {
     }
   };
 
-  const save = async (key) => {
+  const save = async () => {
     try {
-      const row = await form.validateFields();
-      const newData = [...data];
-      const index = newData.findIndex((item) => item.key === key);
-
-      if (index > -1) {
-        Modal.confirm({
-          className: "booking-manage-confirm-modal",
-          icon: null,
-          title: (
-            <div className="booking-manage-confirm-title" style={{ textAlign: "center" }}>
-              Confirm Changes
-            </div>
-          ),
-          content: (
-            <div className="booking-manage-confirm-content" style={{ textAlign: "center" }}>
-              <p className="booking-manage-confirm-text">Are you sure about these changes?</p>
-            </div>
-          ),
-          okText: "Save",
-          cancelText: "Cancel",
-          okButtonProps: { className: "booking-manage-confirm-btn" },
-          cancelButtonProps: { className: "booking-manage-cancel-btn" },
-          style: { top: 200 },
-          onOk: async () => {
-            const updatedRow = { ...newData[index], ...row };
-            if (dayjs.isDayjs(updatedRow.travelDate)) {
-              updatedRow.travelDate = updatedRow.travelDate.format("YYYY-MM-DD");
-            }
-            if (dayjs.isDayjs(updatedRow.bookingDate)) {
-              updatedRow.bookingDate = updatedRow.bookingDate.format("YYYY-MM-DD");
-            }
-
-            try {
-              const statusValue = updatedRow.status
-                ? updatedRow.status.toLowerCase()
-                : undefined;
-
-              const payload = {
-                status: statusValue,
-                bookingDetails: {
-                  packageName: updatedRow.pkg,
-                  travelDate: updatedRow.travelDate,
-                  bookingDate: updatedRow.bookingDate,
-                  travelers: { total: updatedRow.qty }
-                }
-              };
-
-              const response = await axiosInstance.put(`/booking/${key}`, payload);
-              const saved = response.data;
-              const savedDetails = saved.bookingDetails || {};
-              const statusRaw = saved.status || updatedRow.status || "pending";
-              const statusFormatted =
-                statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
-
-              newData.splice(index, 1, {
-                ...updatedRow,
-                pkg: savedDetails.packageName || updatedRow.pkg,
-                travelDate: savedDetails.travelDate || updatedRow.travelDate,
-                bookingDate: savedDetails.bookingDate || updatedRow.bookingDate,
-                status: statusFormatted
-              });
-
-              setData(newData);
-              setEditingKey("");
-              message.success("Booking updated");
-            } catch (error) {
-              message.error("Unable to update booking");
-            }
-          }
-        });
+      if (!editingBooking) {
+        return;
       }
+
+      const values = await editForm.validateFields();
+      const travelDate = dayjs.isDayjs(values.travelDate)
+        ? values.travelDate.format("YYYY-MM-DD")
+        : values.travelDate;
+      const bookingDate = dayjs.isDayjs(values.bookingDate)
+        ? values.bookingDate.format("YYYY-MM-DD")
+        : values.bookingDate;
+      const qtyValue = Number(values.qty) || 0;
+      const statusValue = values.status ? values.status.toLowerCase() : undefined;
+
+      const payload = {
+        status: statusValue,
+        bookingDetails: {
+          packageName: values.pkg,
+          travelDate,
+          bookingDate,
+          travelers: { total: qtyValue }
+        }
+      };
+
+      const response = await axiosInstance.put(`/booking/${editingBooking.key}`, payload);
+      const saved = response.data;
+      const savedDetails = saved.bookingDetails || {};
+      const statusRaw = saved.status || values.status || "pending";
+      const statusFormatted = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
+
+      setData((prev) =>
+        prev.map((item) =>
+          item.key === editingBooking.key
+            ? {
+              ...item,
+              pkg: savedDetails.packageName || values.pkg,
+              travelDate: savedDetails.travelDate || travelDate,
+              bookingDate: savedDetails.bookingDate || bookingDate,
+              qty: qtyValue,
+              status: statusFormatted
+            }
+            : item
+        )
+      );
+
+      message.success("Booking updated");
+      setIsEditModalOpen(false);
+      setEditingBooking(null);
+      editForm.resetFields();
     } catch {
       message.error("Please fix validation errors");
     }
@@ -306,25 +280,22 @@ export default function BookingManagement() {
 
   const columns = [
     { title: "Booking Reference", dataIndex: "ref" },
-    { title: "Travel Package", dataIndex: "pkg", editable: true },
-    { title: "Customer Name", dataIndex: "username", editable: true },
+    { title: "Travel Package", dataIndex: "pkg" },
+    { title: "Customer Name", dataIndex: "username" },
     {
       title: "Travel Date",
       dataIndex: "travelDate",
-      editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY")
     },
     {
       title: "Booking Date",
       dataIndex: "bookingDate",
-      editable: true,
       render: d => dayjs(d).format("MMM DD, YYYY")
     },
-    { title: "Travelers", dataIndex: "qty", editable: true },
+    { title: "Travelers", dataIndex: "qty" },
     {
       title: "Status",
       dataIndex: "status",
-      editable: true,
       render: s => {
         const displayStatus = s === "Confirmed" ? "Successful" : s;
         const color = displayStatus === "Successful" ? "green" :
@@ -337,107 +308,28 @@ export default function BookingManagement() {
       title: "Actions",
       render: (_, record) => (
         <Space>
-          {isEditing(record) ? (
-            <>
-              <Button
-                className="savebutton-bookingmanagement"
-                type="primary"
-                onClick={() => save(record.key)}
-              >
-                Save
-              </Button>
-              <Button className="cancelbutton-bookingmanagement" onClick={cancel}>
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                className='viewbutton-bookingmanagement'
-                type="primary"
-                icon={<EyeOutlined />}
-                onClick={() => handleView(record.key)}
-                disabled={editingKey !== ""}
-              />
-              <Button
-                className='editbutton-bookingmanagement'
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => edit(record)}
-                disabled={editingKey !== ""}
-              />
-              <Button
-                className='deletebutton-bookingmanagement'
-                type="primary"
-                icon={<DeleteOutlined />}
-                disabled={editingKey !== ""}
-                onClick={() => handleDelete(record.key)}
-              />
-            </>
-          )}
+          <Button
+            className='viewbutton-bookingmanagement'
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => handleView(record.key)}
+          />
+          <Button
+            className='editbutton-bookingmanagement'
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => edit(record)}
+          />
+          <Button
+            className='deletebutton-bookingmanagement'
+            type='primary'
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.key)}
+          />
         </Space>
       )
     }
   ];
-
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    let inputType = "text";
-    if (col.dataIndex === "status") inputType = "select";
-    if (col.dataIndex === "travelDate" || col.dataIndex === "bookingDate") inputType = "date";
-
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType,
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record)
-      })
-    };
-  });
-
-  const EditableCell = ({
-    editing,
-    dataIndex,
-    inputType,
-    children,
-    ...restProps
-  }) => {
-    let inputNode = <Input />;
-    if (inputType === "select") {
-      inputNode = (
-        <Select
-          options={[
-            { value: "Successful", label: "Successful" },
-            { value: "Pending", label: "Pending" },
-            { value: "Cancelled", label: "Cancelled" }
-          ]}
-        />
-      );
-    }
-    if (inputType === "date") {
-      inputNode = <DatePicker format="YYYY-MM-DD" />;
-    }
-    return (
-      <td {...restProps}>
-        {editing ? (
-          <Form.Item
-            name={dataIndex}
-            style={{ margin: 0 }}
-            rules={[{ required: true, message: `Please enter ${dataIndex}` }]}
-          >
-            {inputNode}
-          </Form.Item>
-        ) : (
-          children
-        )}
-      </td>
-    );
-  };
 
   const totalBookings = filteredData.length;
   const totalSuccessful = filteredData.filter(b => b.status === "Successful" || b.status === "Confirmed").length;
@@ -519,18 +411,89 @@ export default function BookingManagement() {
         </div>
 
         <Card>
-          <Form form={form} component={false}>
-            <Table
-              components={{ body: { cell: EditableCell } }}
-              columns={mergedColumns}
-              dataSource={filteredData}
-              loading={loading}
-              pagination={{ pageSize: 6 }}
-              rowClassName="editable-row"
-              scroll={{ x: "max-content" }}
-            />
-          </Form>
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            loading={loading}
+            pagination={{ pageSize: 6 }}
+            scroll={{ x: "max-content" }}
+          />
         </Card>
+
+        <Modal
+          title="Edit Booking"
+          open={isEditModalOpen}
+          onCancel={() => {
+            setIsEditModalOpen(false);
+            setEditingBooking(null);
+          }}
+          onOk={save}
+          okText="Save Changes"
+          style={{ top: 120 }}
+          className="booking-edit-modal"
+          okButtonProps={{ className: "booking-edit-save-btn" }}
+          cancelButtonProps={{ className: "booking-edit-cancel-btn" }}
+        >
+          <Form form={editForm} layout="vertical" className="booking-edit-form">
+            <Form.Item
+              name="pkg"
+              label="Package"
+              rules={[{ required: true, message: "Package is required" }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Row gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  name="travelDate"
+                  label="Travel Date"
+                  rules={[{ required: true, message: "Travel date is required" }]}
+                >
+                  <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  name="bookingDate"
+                  label="Booking Date"
+                  rules={[{ required: true, message: "Booking date is required" }]}
+                >
+                  <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  name="qty"
+                  label="Travelers"
+                  rules={[{ required: true, message: "Travelers is required" }]}
+                >
+                  <Input type="number" min={1} />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  name="status"
+                  label="Status"
+                  rules={[{ required: true, message: "Status is required" }]}
+                >
+                  <Select
+                    options={[
+                      { value: "Successful", label: "Successful" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Cancelled", label: "Cancelled" }
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </div>
     </ConfigProvider>
   );

@@ -38,6 +38,7 @@ const getBase64ImageFromURL = (url) => {
 
 export default function UserManagement() {
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,7 +48,9 @@ export default function UserManagement() {
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [editingKey, setEditingKey] = useState("");
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
 
   const getUsers = async () => {
     setLoading(true);
@@ -56,6 +59,8 @@ export default function UserManagement() {
       const formattedData = response.data.map(user => ({
         key: user._id,
         id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
         name: `${user.firstname} ${user.lastname}`,
         username: user.username,
         email: user.email,
@@ -67,6 +72,7 @@ export default function UserManagement() {
         createdAt: user.createdAt || "",
         lastLogin: user.lastLogin || ""
       }));
+      console.log("Fetched Users:", formattedData);
       setUsers(formattedData);
     } catch {
       message.error("Failed to load users");
@@ -156,19 +162,40 @@ export default function UserManagement() {
     });
   };
 
-  const isEditing = (record) => record.key === editingKey;
   const edit = (record) => {
-    form.setFieldsValue({ ...record });
-    setEditingKey(record.key);
+    console.log("EDIT RECORD:", record);
+
+    setEditingUser(record);
+
+    editForm.setFieldsValue({
+      firstname: record.firstname,
+      lastname: record.lastname,
+      username: record.username,
+      email: record.email,
+      role: record.role
+    });
+
+    setIsEditModalOpen(true);
   };
-  const save = async (key) => {
+
+  const save = async () => {
     try {
-      const row = await form.validateFields();
-      await axiosInstance.put(`/admin/editUser/${key}`, row, { withCredentials: true });
-      setEditingKey("");
-      getUsers();
+      const values = await editForm.validateFields();
+
+      await axiosInstance.put(
+        `/admin/editUser/${editingUser.id}`, // also fix this
+        values,
+        { withCredentials: true }
+      );
+
       message.success("User updated");
-    } catch { message.error("Update failed"); }
+      setIsEditModalOpen(false);
+      setEditingUser(null);
+      editForm.resetFields();
+      getUsers();
+    } catch {
+      message.error("Update failed");
+    }
   };
 
   const filteredUsers = users.filter(user => {
@@ -199,53 +226,34 @@ export default function UserManagement() {
       title: "Actions",
       render: (_, record) => (
         <Space>
-          {isEditing(record) ? (
-            <>
-              {/* RESTORED original classes */}
-              <Button className='savebutton-usermanagement' type="primary" onClick={() => save(record.key)}>Save</Button>
-              <Button className='cancelbutton-usermanagement' onClick={() => setEditingKey("")}>Cancel</Button>
-            </>
-          ) : (
-            <>
-              {/* RESTORED original outline-style classes */}
-              <Button className='viewbutton-usermanagement' type='primary' icon={<EyeOutlined />} onClick={() => { setSelectedUser(record); setIsViewModalOpen(true); }} />
-              <Button className='editbutton-usermanagement' type="primary" icon={<EditOutlined />} onClick={() => edit(record)} />
-              <Button className='deletebutton-usermanagement' type='primary' icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)} />
-            </>
-          )}
+          <Button
+            className='viewbutton-usermanagement'
+            type='primary'
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setSelectedUser(record);
+              setIsViewModalOpen(true);
+            }}
+          />
+
+          <Button
+            className='editbutton-usermanagement'
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => edit(record)}
+          />
+
+          <Button
+            className='deletebutton-usermanagement'
+            type='primary'
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+          />
         </Space>
       )
     }
   ];
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) return col;
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: col.dataIndex === "role" ? "select" : "text",
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record)
-      })
-    };
-  });
-
-  const EditableCell = ({ editing, dataIndex, inputType, children, ...restProps }) => {
-    const inputNode = inputType === "select" ? (
-      <Select options={[{ value: "Admin", label: "Admin" }, { value: "User", label: "User" }]} />
-    ) : <Input />;
-    return (
-      <td {...restProps}>
-        {editing ? (
-          <Form.Item name={dataIndex} style={{ margin: 0 }} rules={[{ required: true, message: `Please enter ${dataIndex}` }]}>
-            {inputNode}
-          </Form.Item>
-        ) : children}
-      </td>
-    );
-  };
 
   return (
     <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
@@ -273,13 +281,10 @@ export default function UserManagement() {
         <Card style={{ marginTop: 20 }}>
           <Form form={form} component={false}>
             <Table
-              components={{ body: { cell: EditableCell } }}
               loading={loading}
-              columns={mergedColumns}
+              columns={columns}
               dataSource={filteredUsers}
-              pagination={{ pageSize: 6 }}
-              rowClassName="editable-row"
-              scroll={{ x: "max-content" }}
+              pagination={{ pageSize: 10 }}
             />
           </Form>
         </Card>
@@ -317,6 +322,63 @@ export default function UserManagement() {
           )}
         </Modal>
       </div>
+
+
+      <Modal
+        title="Edit User"
+        open={isEditModalOpen}
+        onCancel={() => {
+          setIsEditModalOpen(false);
+          setEditingUser(null);
+        }}
+        onOk={save}
+        okText="Save Changes"
+        style={{ top: 120 }}
+        className="users-edit-modal"
+        okButtonProps={{ className: "users-edit-save-btn" }}
+        cancelButtonProps={{ className: "users-edit-cancel-btn" }}
+      >
+        <Form form={editForm} layout="vertical" className="users-edit-form">
+          <Row gutter={12}>
+            <Col span={12}>
+              <Form.Item
+                name="firstname"
+                label="First Name"
+                rules={[{ required: true, message: "First name is required" }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                name="lastname"
+                label="Last Name"
+                rules={[{ required: true, message: "Last name is required" }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+
+          <Form.Item name="email" label="Email">
+            <Input disabled />
+          </Form.Item>
+
+          <Form.Item name="role" label="Role" rules={[{ required: true }]}>
+            <Select
+              options={[
+                { value: "Admin", label: "Admin" },
+                { value: "User", label: "User" }
+              ]}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </ConfigProvider>
   );
 }

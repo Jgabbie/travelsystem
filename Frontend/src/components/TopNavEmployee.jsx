@@ -111,6 +111,7 @@ export default function TopNavEmployee() {
                 open={isModalOpen}
                 footer={null}
                 onCancel={handleCancel}
+                style={{ top: 250 }}
             >
                 <div className="logout-confirm-content">
                     <h2 className="logout-confirm-title">Confirm Logout</h2>

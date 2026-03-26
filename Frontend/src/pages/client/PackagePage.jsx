@@ -43,9 +43,7 @@ export default function PackagePage() {
     const [reviews, setReviews] = useState([])
     const [reviewForm, setReviewForm] = useState({
         rating: 0,
-        comment: '',
-        fullName: '',
-        email: ''
+        comment: ''
     });
 
     //states for package details
@@ -310,6 +308,11 @@ export default function PackagePage() {
 
     //submit review to backend and refresh reviews after successful submission
     const handleSubmitReview = async () => {
+        if (!auth) {
+            setIsLoginVisible(true)
+            return
+        }
+
         if (!reviewForm.rating || !reviewForm.comment.trim()) {
             message.warning("Please provide a rating and comment.");
             return;
@@ -330,9 +333,7 @@ export default function PackagePage() {
                 await axiosInstance.post('/rating/submit-rating', {
                     packageId: id,
                     rating: reviewForm.rating,
-                    review: reviewForm.comment.trim(),
-                    fullName: !auth ? reviewForm.fullName : undefined,
-                    email: !auth ? reviewForm.email : undefined
+                    review: reviewForm.comment.trim()
                 });
                 message.success("Review submitted");
             }
@@ -341,9 +342,7 @@ export default function PackagePage() {
 
             setReviewForm({
                 rating: 0,
-                comment: '',
-                fullName: '',
-                email: ''
+                comment: ''
             });
             setIsEditingReview(false);
         } catch (error) {
@@ -538,36 +537,6 @@ export default function PackagePage() {
 
                                             <div className="package-review-form">
                                                 <h3>Leave a review</h3>
-
-                                                {/* Show guest fields ONLY if not logged in */}
-                                                {!auth && (
-                                                    <>
-                                                        <Input
-                                                            placeholder="Full Name"
-                                                            value={reviewForm.fullName}
-                                                            onChange={(e) =>
-                                                                setReviewForm(prev => ({
-                                                                    ...prev,
-                                                                    fullName: e.target.value
-                                                                }))
-                                                            }
-                                                            style={{ marginBottom: 10 }}
-                                                        />
-
-                                                        <Input
-                                                            placeholder="Email Address"
-                                                            type="email"
-                                                            value={reviewForm.email}
-                                                            onChange={(e) =>
-                                                                setReviewForm(prev => ({
-                                                                    ...prev,
-                                                                    email: e.target.value
-                                                                }))
-                                                            }
-                                                            style={{ marginBottom: 10 }}
-                                                        />
-                                                    </>
-                                                )}
 
                                                 <Rate
                                                     value={reviewForm.rating}

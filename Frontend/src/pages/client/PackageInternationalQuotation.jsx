@@ -488,6 +488,14 @@ export default function PackageInternationalQuotation() {
                                                     />
                                                     <p className='package-quotation-error'>{error.flightTime}</p>
                                                 </div>
+
+                                                <div className='flightdetails-right'>
+                                                    <p className='quotation-flight-note'>
+                                                        Note: If you choose the "Land Arrangement" option, please provide your flight details.
+                                                        This will help us coordinate your airport transfers and ensure a seamless experience.
+                                                        If you haven't booked your flights yet, please provide your estimated flight schedule.
+                                                        Lastly, make sure that your chosen travel date is aligned to your flight schedule.</p>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

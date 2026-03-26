@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const CancellationSchema = new mongoose.Schema({
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'bookings', required: true },
+    packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'packages' },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
     cancellationReason: { type: String, required: true },
     cancellationComments: { type: String, default: '' },

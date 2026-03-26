@@ -26,6 +26,34 @@ export default function QuotationFormInEx({ quotationData }) {
         'For credit card payments, 3.5% charge will apply.',
     ];
 
+    const getItemText = (item) => {
+        if (typeof item === 'string') return item;
+        if (!item) return '';
+        return item.activity || item.optionalActivity || item.item || '';
+    };
+
+    const renderItineraryItem = (item) => {
+        if (typeof item === 'string') return item;
+        if (!item) return '';
+
+        const activity = item.activity || item.optionalActivity || item.item || '';
+        const optionalPrice = Number.isFinite(Number(item.optionalPrice))
+            ? Number(item.optionalPrice).toLocaleString()
+            : null;
+
+        return (
+            <>
+                <div>{activity}</div>
+                {item.isOptional && item.optionalActivity && (
+                    <div>
+                        Optional: {item.optionalActivity}
+                        {optionalPrice ? ` - ₱${optionalPrice}` : ''}
+                    </div>
+                )}
+            </>
+        );
+    };
+
     return (
         <div className="mrc-overlay-wrapper">
             <div className="mrc-form-page mrc-quotation-page">
@@ -36,8 +64,8 @@ export default function QuotationFormInEx({ quotationData }) {
                 <div className="mrc-quotation-section">
                     <div className="mrc-quotation-subtitle">INCLUSIONS:</div>
                     <ul className="mrc-quotation-list">
-                        {inclusions.map((item) => (
-                            <li key={item}>{item}</li>
+                        {inclusions.map((item, index) => (
+                            <li key={`inclusion-${index}`}>{getItemText(item) || '--'}</li>
                         ))}
                     </ul>
                 </div>
@@ -45,8 +73,8 @@ export default function QuotationFormInEx({ quotationData }) {
                 <div className="mrc-quotation-section">
                     <div className="mrc-quotation-subtitle">EXCLUSIONS:</div>
                     <ul className="mrc-quotation-list is-bulleted">
-                        {exclusions.map((item) => (
-                            <li key={item}>{item}</li>
+                        {exclusions.map((item, index) => (
+                            <li key={`exclusion-${index}`}>{getItemText(item) || '--'}</li>
                         ))}
                     </ul>
                 </div>
@@ -60,11 +88,10 @@ export default function QuotationFormInEx({ quotationData }) {
                                     {entry.date} {entry.day}
                                 </div>
                                 <div className="mrc-quotation-itinerary-body">
-                                    <p>{entry.details}</p>
                                     {entry.bullets && (
                                         <ul className="mrc-quotation-list is-bulleted">
-                                            {entry.bullets.map((item) => (
-                                                <li key={item}>{item}</li>
+                                            {entry.bullets.map((item, index) => (
+                                                <li key={`${entry.day}-${index}`}>{renderItineraryItem(item) || '--'}</li>
                                             ))}
                                         </ul>
                                     )}

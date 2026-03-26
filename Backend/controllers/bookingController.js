@@ -213,6 +213,7 @@ const cancelBooking = async (req, res) => {
         await booking.save()
         const cancellation = await CancellationModel.create({
             bookingId: id,
+            packageId: booking.packageId,
             userId,
             reference: generateCancellationReference(),
             cancellationReason: reason,
@@ -240,7 +241,12 @@ const getcancellations = async (req, res) => {
     try {
         const cancellations = await CancellationModel.find({})
             .populate('userId', 'username email')
-            .populate('bookingId', 'bookingDetails createdAt reference status')
+            .populate({
+                path: 'bookingId',
+                select: 'bookingDetails createdAt reference status packageId',
+                populate: { path: 'packageId', select: 'packageName' }
+            })
+            .populate('packageId', 'packageName')
             .sort({ cancellationDate: -1 })
         res.status(200).json(cancellations)
     } catch (error) {

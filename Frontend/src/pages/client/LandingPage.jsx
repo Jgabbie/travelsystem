@@ -599,8 +599,7 @@ export default function LandingPage() {
 
                                 <div className='footer-section-hours'>
                                     <h2 className='footer-header'>Our Hours</h2>
-                                    <p className='footer-text'>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                                    <p className='footer-text'>Saturday: 10:00 AM - 4:00 PM</p>
+                                    <p className='footer-text'>Monday - Saturday: 9:00 AM - 6:00 PM</p>
                                 </div>
 
                                 <div className='footer-section-socials'>

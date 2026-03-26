@@ -55,14 +55,11 @@
   flex: 1;
 }
 
-
-/* package actions */
 .package-actions {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  align-items: center;
-  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .search-input {
