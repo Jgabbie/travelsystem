@@ -184,13 +184,7 @@ const createCheckoutSessionPassport = async (req, res) => {
             return res.status(500).json({ error: "Failed to create checkout session" });
         }
 
-        const checkoutUrl = response.data?.data?.attributes?.url;
-        if (!checkoutUrl) {
-            console.error("PayMongo response missing URL:", response.data);
-            return res.status(500).json({ error: "Failed to create PayMongo checkout session - URL missing" });
-        }
-
-        res.json({ url: checkoutUrl });
+        res.json(response.data);
 
     } catch (error) {
         console.error("Passport Checkout Error:", error.response?.data || error.message);
@@ -272,13 +266,7 @@ const createCheckoutSessionVisa = async (req, res) => {
             return res.status(500).json({ error: "Failed to create checkout session" });
         }
 
-        const checkoutUrl = response.data?.data?.attributes?.url;
-        if (!checkoutUrl) {
-            console.error("PayMongo response missing URL:", response.data);
-            return res.status(500).json({ error: "Failed to create PayMongo checkout session - URL missing" });
-        }
-
-        res.json({ url: checkoutUrl });
+        res.json(response.data);
 
     } catch (error) {
         console.error("Visa Checkout Error:", error.response?.data || error.message);
