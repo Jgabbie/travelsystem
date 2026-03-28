@@ -27,8 +27,9 @@ export default function AddService() {
         visaName: "",
         description: "",
         visaPrice: "",
-        requirements: [""],
+        requirements: [{ req: "", desc: "" }],
         processSteps: [""],
+        reminders: [""]
     });
 
     const validate = (field, value) => {
@@ -37,7 +38,9 @@ export default function AddService() {
         if (field === "visaPrice" && !value) return "Visa price is required.";
         if (field === "requirements") {
             if (!value.length) return "At least one requirement is required.";
-            if (value.some((item) => !item.trim())) return "All requirements must be filled.";
+            if (value.some((item) => !item.req.trim())) return "All requirements must be filled.";
+            // Optionally, require description for each requirement
+            // if (value.some((item) => !item.desc.trim())) return "All requirement descriptions must be filled.";
         }
         if (field === "processSteps") {
             if (!value.length) return "At least one process step is required.";
@@ -63,25 +66,38 @@ export default function AddService() {
 
     const addBullet = (type) => {
         if (type === "requirements") {
-            const updated = [...values.requirements, ""];
+            const updated = [...values.requirements, { req: "", desc: "" }];
             valueHandler("requirements", updated);
         }
         if (type === "processSteps") {
             const updated = [...values.processSteps, ""];
             valueHandler("processSteps", updated);
-        };
+        }
+        if (type === "reminders") {
+            const updated = [...values.reminders, ""];
+            valueHandler("reminders", updated);
+        }
     };
 
-    const updateBullet = (type, index, value) => {
+    const updateBullet = (type, index, value, subfield) => {
         if (type === "requirements") {
             const updated = [...values.requirements];
-            updated[index] = value;
+            if (subfield) {
+                updated[index] = { ...updated[index], [subfield]: value };
+            } else {
+                updated[index] = value;
+            }
             valueHandler("requirements", updated);
         }
         if (type === "processSteps") {
             const updated = [...values.processSteps];
             updated[index] = value;
             valueHandler("processSteps", updated);
+        }
+        if (type === "reminders") {
+            const updated = [...values.reminders];
+            updated[index] = value;
+            valueHandler("reminders", updated);
         }
     };
 
@@ -93,6 +109,10 @@ export default function AddService() {
         if (type === "processSteps") {
             const updated = values.processSteps.filter((_, i) => i !== index);
             valueHandler("processSteps", updated);
+        }
+        if (type === "reminders") {
+            const updated = values.reminders.filter((_, i) => i !== index);
+            valueHandler("reminders", updated);
         }
     };
 
@@ -117,12 +137,13 @@ export default function AddService() {
             visaName: values.visaName.trim(),
             visaPrice: Number(values.visaPrice),
             visaDescription: values.description.trim(),
-            visaRequirements: values.requirements.map((item) => item.trim()),
+            visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim() })),
             visaProcessSteps: values.processSteps.map((item) => item.trim()),
+            visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0)
         };
 
         if (isEdit) {
-            await axiosInstance.put(`/services/get-service/${id}`, payload);
+            await axiosInstance.put(`/services/update-service/${id}`, payload);
         } else {
             await axiosInstance.post("/services/create-service", payload);
         }
@@ -145,8 +166,13 @@ export default function AddService() {
                     visaName: existing.visaName || "",
                     visaPrice: existing.visaPrice || "",
                     description: existing.visaDescription || "",
-                    requirements: existing.visaRequirements?.length ? existing.visaRequirements : [""],
+                    requirements: existing.visaRequirements?.length
+                        ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "" } : { req: item.req || "", desc: item.desc || "" })
+                        : [{ req: "", desc: "" }],
                     processSteps: existing.visaProcessSteps?.length ? existing.visaProcessSteps : [""],
+                    reminders: Array.isArray(existing.visaReminders)
+                        ? (existing.visaReminders.length ? existing.visaReminders : [""])
+                        : (existing.visaReminders ? [existing.visaReminders] : [""])
                 });
 
             } catch (error) {
@@ -248,20 +274,31 @@ export default function AddService() {
                                     className={errors.requirements ? "add-service-card-error" : ""}
                                 >
                                     {values.requirements.map((item, index) => (
-                                        <Space key={`req-${index}`} className="add-service-bullet-row">
-                                            <Input
-                                                value={item}
+                                        <div key={`req-${index}`} className="add-service-bullet-row" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                            <Space style={{ width: '100%' }}>
+                                                <Input
+                                                    value={item.req}
+                                                    className="add-service-inputs"
+                                                    placeholder="Requirement"
+                                                    onChange={(event) => updateBullet("requirements", index, event.target.value, "req")}
+                                                    style={{ flex: 1 }}
+                                                />
+                                                <Button
+                                                    className="delete-add-service-button"
+                                                    danger
+                                                    onClick={() => removeBullet("requirements", index)}
+                                                    icon={<DeleteOutlined />}
+                                                />
+                                            </Space>
+                                            <Input.TextArea
+                                                value={item.desc}
                                                 className="add-service-inputs"
-                                                placeholder="Requirement"
-                                                onChange={(event) => updateBullet("requirements", index, event.target.value)}
+                                                placeholder="Description (optional)"
+                                                autoSize={{ minRows: 1, maxRows: 3 }}
+                                                onChange={(event) => updateBullet("requirements", index, event.target.value, "desc")}
+                                                style={{ marginTop: 2 }}
                                             />
-                                            <Button
-                                                className="delete-add-service-button"
-                                                danger
-                                                onClick={() => removeBullet("requirements", index)}
-                                                icon={<DeleteOutlined />}
-                                            />
-                                        </Space>
+                                        </div>
                                     ))}
                                     <Button
                                         className="add-service-add-button"
@@ -310,6 +347,40 @@ export default function AddService() {
                                 </Card>
                                 <p className="add-service-error-message">{errors.processSteps}</p>
                             </div>
+                        </div>
+
+                        {/* Reminders Bulleted List */}
+                        <div style={{ marginTop: 24 }}>
+                            <label className="add-service-input-labels">Reminders</label>
+                            <Card size="small" title={null} style={{ padding: 0, border: 'none', background: 'none' }}>
+                                {values.reminders.map((item, index) => (
+                                    <Space key={`reminder-${index}`} className="add-service-bullet-row" style={{ width: '100%' }}>
+                                        <Input
+                                            value={item}
+                                            className="add-service-inputs"
+                                            placeholder="Reminder"
+                                            maxLength={150}
+                                            onChange={(event) => updateBullet("reminders", index, event.target.value)}
+                                            style={{ flex: 1, minWidth: 600, maxWidth: 1100 }}
+                                        />
+                                        <Button
+                                            className="delete-add-service-button"
+                                            danger
+                                            onClick={() => removeBullet("reminders", index)}
+                                            icon={<DeleteOutlined />}
+                                        />
+                                    </Space>
+                                ))}
+                                <Button
+                                    className="add-service-add-button"
+                                    type="dashed"
+                                    icon={<PlusOutlined />}
+                                    block
+                                    onClick={() => addBullet("reminders")}
+                                >
+                                    Add Reminder
+                                </Button>
+                            </Card>
                         </div>
                     </div>
 

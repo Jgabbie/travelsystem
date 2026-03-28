@@ -25,6 +25,10 @@ import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
 import PackageInternationalQuotation from "./pages/client/PackageInternationalQuotation";
 import UserPreference1 from "./pages/client/newuser/UserPreference1";
 
+import UserApplications from "./pages/client/UserApplications";
+import PassportApplication from "./pages/client/PassportApplication";
+import VisaApplication from "./pages/client/VisaApplication";
+
 import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
 
@@ -43,6 +47,7 @@ import ReviewRatings from "./pages/admin/ReviewRatings";
 import VisaApplications from "./pages/admin/VisaApplications";
 import PassportApplications from "./pages/admin/PassportApplications";
 import AdminProfile from "./pages/admin/AdminProfile";
+import ViewPassportApplication from "./pages/admin/ViewPassportApplication";
 import CancellationRequests from "./pages/admin/CancellationRequests";
 import QuotationManagement from "./pages/admin/QuotationManagement";
 import QuotationRequest from "./pages/admin/QuotationRequest";
@@ -106,6 +111,7 @@ function App() {
               <Route path="visa-services/add" element={<AddService />} />
               <Route path="visa-services/edit/:id" element={<AddService />} />
               <Route path="passport-applications" element={<PassportApplications />} />
+              <Route path="passport-applications/view/:id" element={<ViewPassportApplication />} />
               <Route path="cancellation-requests" element={<CancellationRequests />} />
               <Route path="adminprofile" element={<AdminProfile />} />
               <Route path="package-quotation" element={<QuotationManagement />} />
@@ -140,6 +146,7 @@ function App() {
               <Route path="visa-services/edit/:id" element={<AddService />} />
               <Route path="visa-applications" element={<VisaApplications />} />
               <Route path="passport-applications" element={<PassportApplications />} />
+              <Route path="passport-applications/view/:id" element={<ViewPassportApplication />} />
               <Route path="cancellation-requests" element={<CancellationRequests />} />
             </Route>
           </Route>
@@ -161,6 +168,9 @@ function App() {
             <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
             <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
             <Route path="/user-preferences" element={<UserPreference1 />} />
+            <Route path="/user-applications" element={<UserApplications />} />
+            <Route path="/passport-application/:id" element={<PassportApplication />} />
+            <Route path="/visa-application/:id" element={<VisaApplication />} />
           </Route>
 
           <Route path='*' element={<Navigate to="/home" replace />} />

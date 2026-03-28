@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, message, Input, Select, DatePicker } from "antd";
 import { FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -25,6 +26,7 @@ const getBase64ImageFromURL = (url) => {
 };
 
 export default function PassportApplications() {
+    const navigate = useNavigate();
 
     const [passportApplications, setPassportApplications] = useState([]);
 
@@ -199,6 +201,7 @@ export default function PassportApplications() {
                             className='viewbutton-passport-application'
                             type="primary"
                             icon={<EyeOutlined />}
+                            onClick={() => navigate(`view/${record.key}`)}
                         />
                         <Button
                             className="approve-passport-application"

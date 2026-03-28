@@ -165,51 +165,81 @@ export default function NewPassport() {
 
                     <section className="renew-passport-card">
                         <h3>Application Details</h3>
-                        <div className="passport-form">
-                            <label className="passport-label">Select DFA location</label>
-                            <Select
-                                className="passport-select"
-                                placeholder="Choose a DFA site"
-                                value={location}
-                                onChange={(value) => setLocation(value)}
-                                options={dfaLocations.map((item) => ({ value: item, label: item }))}
-                                popupRender={(menu) => (
-                                    <>
-                                        {menu}
-                                        <div style={{ padding: '8px', textAlign: 'center' }}>
-                                            <em>More locations available on the official DFA website</em>
-                                        </div>
-                                    </>
-                                )}
-                            />
-                            {error.location && <div className="error-message">{error.location}</div>}
+                        <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
 
-                            <label className="passport-label">Preferred date</label>
-                            <DatePicker
-                                disabledDate={disableDates}
-                                onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
-                                className="passport-input"
-                            />
-                            {error.preferredDate && <div className="error-message">{error.preferredDate}</div>}
+                            <div>
+                                <div className="form-group">
+                                    <label className="passport-label">Select DFA location</label>
+                                    <Select
+                                        className={`passport-select ${error.location ? 'input-error' : ''}`}
+                                        placeholder="Choose a DFA site"
+                                        value={location}
+                                        onChange={(value) => setLocation(value)}
+                                        options={dfaLocations.map((item) => ({ value: item, label: item }))}
+                                        popupRender={(menu) => (
+                                            <>
+                                                {menu}
+                                                <div style={{ padding: '8px', textAlign: 'center' }}>
+                                                    <em>More locations available on the official DFA website</em>
+                                                </div>
+                                            </>
+                                        )}
+                                    />
+                                    <p className="error-message">
+                                        {error.location || ''}
+                                    </p>
+                                </div>
 
-                            <label className="passport-label">Preferred time</label>
-                            <TimePicker
-                                format="h:mm A"
-                                use12Hours
-                                showNow={false}
-                                minuteStep={30}
-                                disabledTime={() => ({
-                                    disabledHours
-                                })}
-                                onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
-                                className="passport-input"
-                            />
-                            {error.preferredTime && <div className="error-message">{error.preferredTime}</div>}
+                                <div className="form-group">
+                                    <label className="passport-label">Preferred date</label>
+                                    <DatePicker
+                                        disabledDate={disableDates}
+                                        onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
+                                        className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
+                                    />
+                                    <p className="error-message">
+                                        {error.preferredDate || ''}
+                                    </p>
+                                </div>
 
-                            <Button className="passport-submit" type="primary" onClick={submitRequest}>
-                                Submit request
-                            </Button>
+                                <div className='form-group'>
+                                    <label className="passport-label">Preferred time</label>
+                                    <TimePicker
+                                        format="h:mm A"
+                                        use12Hours
+                                        showNow={false}
+                                        minuteStep={30}
+                                        disabledTime={() => ({
+                                            disabledHours
+                                        })}
+                                        onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
+                                        className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
+                                    />
+                                    <p className="error-message">
+                                        {error.preferredTime || ''}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{ marginLeft: '20px' }}>
+                                <h3>FAQs</h3>
+                                <p>Find answers to common questions about the new passport application process.</p>
+
+                                <h4>What documents do I need to prepare?</h4>
+                                <p className='faqs-answer'>Refer to the requirements section above for a general list. Specific services may have additional requirements.</p>
+
+                                <h4>How long does the process take?</h4>
+                                <p className='faqs-answer'>Processing times vary by the DFA office and the type of service you are applying for. After submission, you will receive updates on your application's status.</p>
+
+                                <h4>Can I reschedule my appointment?</h4>
+                                <p className='faqs-answer'>Rescheduling policies depend on the DFA office. If you need to change your appointment, please contact the DFA office directly.</p>
+                            </div>
+
                         </div>
+
+                        <Button className="passport-submit" type="primary" onClick={submitRequest}>
+                            Submit request
+                        </Button>
                     </section>
                 </div>
             </div>

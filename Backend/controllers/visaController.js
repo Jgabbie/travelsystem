@@ -70,4 +70,19 @@ const getVisaApplications = async (_req, res) => {
     }
 }
 
-module.exports = { applyVisa, getVisaApplications }
+const getVisaApplicationById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const application = await VisaModel.findById(id)
+            .populate('userId', 'firstname lastname username')
+            .populate('serviceId', 'visaName');
+        if (!application) {
+            return res.status(404).json({ message: 'Visa application not found' });
+        }
+        res.status(200).json(application);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching visa application', error: error.message });
+    }
+};
+
+module.exports = { applyVisa, getVisaApplications, getVisaApplicationById };

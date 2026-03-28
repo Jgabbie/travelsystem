@@ -7,7 +7,29 @@ const PassportSchema = new mongoose.Schema({
     preferredDate: { type: String, required: true },
     preferredTime: { type: String, required: true },
     applicationType: { type: String, required: true },
-    status: { type: String, default: 'Pending' },
+    submittedDocuments: {
+        birthCertificate: { type: String },
+        applicationForm: { type: String },
+        govId: { type: String },
+        additionalDocs: { type: String }
+    },
+    status: {
+        type: String,
+        enum: [
+            'Application submitted',
+            'Application approved',
+            'Payment complete',
+            'Documents uploaded',
+            'Documents approved',
+            'Documents received',
+            'Documents submitted',
+            'Processing by DFA',
+            'DFA approved',
+            'Passport released',
+            'Rejected'
+        ],
+        default: 'Application submitted'
+    },
     createdAt: { type: Date, default: Date.now }
 });
 

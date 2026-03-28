@@ -4,6 +4,7 @@ const paymentController = require("../controllers/paymentController");
 const userAuth = require("../middleware/userAuth");
 
 router.post("/create-checkout-session", userAuth, paymentController.createCheckoutSession);
+router.post("/create-checkout-session-passport", userAuth, paymentController.createCheckoutSessionPassport);
 router.post("/create-checkout-token", userAuth, paymentController.createCheckoutToken);
 router.post("/manual", userAuth, paymentController.createManualPayment);
 router.post('/hitpay', userAuth, paymentController.hitpayPayment);

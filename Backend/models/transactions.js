@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const TransactionSchema = new mongoose.Schema({
-    bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'bookings', required: true },
+    bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'bookings', required: false }, // make optional
+    applicationId: { type: mongoose.Schema.Types.ObjectId, ref: 'passportApplications', required: false }, // ADD THIS
     packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'packages', required: false },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
     reference: { type: String, required: true, unique: true },

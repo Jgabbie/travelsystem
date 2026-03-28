@@ -124,24 +124,30 @@
     font-family: "Montserrat", sans-serif;
 }
 
+
+
+/* form */
 .passport-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px 20px;
 }
 
 .passport-label {
-    grid-column: span 2;
     font-size: 13px;
     font-weight: 600;
     color: #4b5563;
     font-family: "Roboto", sans-serif;
 }
 
+.form-group {
+    margin-bottom: 16px;
+    width: 520px;
+}
+
 .passport-select,
 .passport-input {
     height: 40px;
     border-radius: 10px;
+    width: 520px;
 }
 
 .passport-input {
@@ -150,8 +156,16 @@
     font-family: "Roboto", sans-serif;
 }
 
+.faqs-answer {
+    margin-top: 4px;
+    color: #4b5563;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    text-align: justify;
+}
+
+
 .passport-submit {
-    grid-column: span 2;
     height: 42px;
     border-radius: 10px;
     background-color: #305797 !important;
@@ -168,10 +182,16 @@
 .error-message {
     color: #e53e3e;
     font-size: 10px;
-    height: 10px;
-    margin-top: 0px;
+    min-height: 14px;
+    margin-top: 5px;
     font-family: "Roboto", sans-serif;
 }
+
+.input-error {
+    border: 1px solid #e53e3e !important;
+}
+
+
 
 @media (max-width: 900px) {
     .passport-grid {

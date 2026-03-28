@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Select, Input, Button, ConfigProvider, DatePicker } from 'antd'
+import { Select, Input, Button, ConfigProvider, DatePicker, TimePicker } from 'antd'
 import { useLocation } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { useAuth } from '../../hooks/useAuth'
@@ -30,6 +30,7 @@ export default function ApplyVisa() {
     const [fullName, setFullName] = useState('')
     const [email, setEmail] = useState('')
     const [preferredDate, setPreferredDate] = useState('')
+    const [preferredTime, setPreferredTime] = useState('')
     const [purpose, setPurpose] = useState('')
 
     const { auth } = useAuth()
@@ -38,6 +39,7 @@ export default function ApplyVisa() {
     const [error, setError] = useState({
         selectedServiceId: '',
         preferredDate: '',
+        preferredTime: '',
         purpose: ''
     })
 
@@ -77,6 +79,7 @@ export default function ApplyVisa() {
         const newErrors = {
             selectedServiceId: '',
             preferredDate: '',
+            preferredTime: '',
             purpose: '',
         }
 
@@ -88,13 +91,17 @@ export default function ApplyVisa() {
             newErrors.preferredDate = 'Please select a preferred submission date'
         }
 
+        if (!preferredTime) {
+            newErrors.preferredTime = 'Please select a preferred submission time'
+        }
+
         if (!purpose.trim()) {
             newErrors.purpose = 'Please provide your purpose of travel'
         }
 
         setError(newErrors)
 
-        if (newErrors.selectedServiceId || newErrors.preferredDate || newErrors.purpose) {
+        if (newErrors.selectedServiceId || newErrors.preferredDate || newErrors.preferredTime || newErrors.purpose) {
             return
         }
 
@@ -109,6 +116,7 @@ export default function ApplyVisa() {
             await axiosInstance.post('/visa/apply', {
                 serviceId: selectedServiceId,
                 preferredDate,
+                preferredTime,
                 purposeOfTravel: purpose,
                 applicationType: 'Visa'
             })
@@ -119,7 +127,17 @@ export default function ApplyVisa() {
     }
 
     const disableDates = (current) => {
-        return (current && current < dayjs().startOf('day')) || current.day() === 0 || current.day() === 6
+        return current && current < dayjs().startOf('day') || current.day() === 0 || current.day() === 6;
+    }
+
+    const disabledHours = () => {
+        const hours = [];
+        for (let i = 0; i < 24; i++) {
+            if (i < 8 || i > 17) {
+                hours.push(i);
+            }
+        }
+        return hours;
     }
 
     return (
@@ -173,33 +191,76 @@ export default function ApplyVisa() {
                     </section>
 
                     <section className="renew-passport-card">
+
                         <h3>Application Details</h3>
-                        <div className="passport-form">
+                        <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
 
-                            <label className="passport-label">Preferred submission date</label>
-                            <DatePicker
-                                disabledDate={disableDates}
-                                onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
-                                className="passport-input"
-                            />
-                            {error.preferredDate && (
-                                <div className="error-message">{error.preferredDate}</div>
-                            )}
+                            <div>
+                                <div className="form-group">
+                                    <label className="passport-label">Preferred appointment date</label>
+                                    <DatePicker
+                                        disabledDate={disableDates}
+                                        onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
+                                        className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
+                                    />
+                                    <p className="error-message">
+                                        {error.preferredDate || ''}
+                                    </p>
+                                </div>
 
-                            <label className="passport-label">Purpose of travel</label>
-                            <Input.TextArea
-                                className="passport-input"
-                                rows={3}
-                                placeholder="Share your purpose of travel"
-                                value={purpose}
-                                onChange={(event) => setPurpose(event.target.value)}
-                            />
-                            {error.purpose && <div className="error-message">{error.purpose}</div>}
 
-                            <Button className="passport-submit" type="primary" onClick={submitRequest}>
-                                Submit request
-                            </Button>
+                                <div className="form-group">
+                                    <label className="passport-label">Preferred appointment time</label>
+                                    <TimePicker
+                                        format="h:mm A"
+                                        use12Hours
+                                        showNow={false}
+                                        minuteStep={30}
+                                        disabledTime={() => ({
+                                            disabledHours
+                                        })}
+                                        onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
+                                        className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
+                                    />
+                                    <p className="error-message">
+                                        {error.preferredTime || ''}
+                                    </p>
+                                </div>
+
+
+                                <div className="form-group">
+                                    <label className="passport-label">Purpose of travel</label>
+                                    <Input.TextArea
+                                        className={`passport-input ${error.purpose ? 'input-error' : ''}`}
+                                        rows={3}
+                                        placeholder="Share your purpose of travel"
+                                        value={purpose}
+                                        onChange={(event) => setPurpose(event.target.value)}
+                                    />
+                                    <p className="error-message">
+                                        {error.purpose || ''}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <div style={{ marginLeft: '20px' }}>
+                                <h3>FAQs</h3>
+                                <p>Find answers to common questions about the visa application process.</p>
+
+                                <h4>What documents do I need to prepare?</h4>
+                                <p className='faqs-answer'>Refer to the requirements section above for a general list. Specific services may have additional requirements.</p>
+
+                                <h4>How long does the process take?</h4>
+                                <p className='faqs-answer'>Processing times vary by embassy and service. After submission, you will receive updates on your application's status.</p>
+
+                                <h4>Can I reschedule my appointment?</h4>
+                                <p className='faqs-answer'>Rescheduling policies depend on the embassy. If you need to change your appointment, please contact the embassy directly.</p>
+                            </div>
                         </div>
+                        <Button className="passport-submit" type="primary" onClick={submitRequest}>
+                            Submit request
+                        </Button>
                     </section>
                 </div>
             </div>

@@ -18,16 +18,24 @@ export default function VisaServices() {
     const [selectedService, setSelectedService] = useState(null);
 
     useEffect(() => {
-        try {
-            const getServices = async () => {
+        const getServices = async () => {
+            try {
                 const response = await axiosInstance.get("/services/services");
-                setServicesData(response.data);
-                console.log("Fetched visa services:", response.data);
+                // Sort by createdAt descending if available, else by _id
+                const sorted = [...response.data].sort((a, b) => {
+                    if (a.createdAt && b.createdAt) {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    }
+                    // fallback: sort by _id (MongoDB ObjectId has timestamp)
+                    return (b._id > a._id ? 1 : -1);
+                });
+                setServicesData(sorted);
+                console.log("Fetched visa services:", sorted);
+            } catch (error) {
+                console.error("Failed to fetch visa services:", error);
             }
-            getServices();
-        } catch (error) {
-            console.error("Failed to fetch visa services:", error);
-        }
+        };
+        getServices();
     }, []);
 
     const showModal = (service) => {
@@ -150,7 +158,7 @@ export default function VisaServices() {
                             <div className="package-details">
                                 <div className="package-info">
                                     <h3 className="package-name">{service.visaName}</h3>
-                                    <h6 className="package-price">{service.visaPrice}</h6>
+                                    <h6 className="package-price">₱{service.visaPrice?.toLocaleString() || '--'}</h6>
                                 </div>
                                 <p className="package-description">{service.visaDescription}</p>
                             </div>

@@ -1,3 +1,33 @@
+const updatePassportStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const validStatuses = [
+            'Application submitted',
+            'Application approved',
+            'Payment complete',
+            'Documents uploaded',
+            'Documents approved',
+            'Documents received',
+            'Documents submitted',
+            'Processing by DFA',
+            'DFA approved',
+            'Passport released',
+            'Rejected'
+        ];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ message: "Invalid or missing status" });
+        }
+        const updated = await PassportModel.findByIdAndUpdate(id, { status }, { new: true });
+        if (!updated) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+        res.status(200).json({ message: "Status updated", application: updated });
+    } catch (error) {
+        console.error("Error updating passport status:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
 const PassportModel = require("../models/passport");
 const UserModel = require("../models/user");
 const logAction = require('../utils/logger');
@@ -49,6 +79,79 @@ const applyPassport = async (req, res) => {
     }
 };
 
+const updatePassportApplicationWithDocs = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id } = req.params;
+        const {
+            dfaLocation,
+            preferredDate,
+            preferredTime,
+            applicationType,
+            birthCertificate,
+            applicationForm,
+            govId,
+            additionalDocs
+        } = req.body;
+
+        // Find the application
+        const application = await PassportModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+
+        // Only owner or staff can update
+        if (application.userId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "You are not authorized to update this application" });
+        }
+
+        // Update basic fields if provided
+        if (dfaLocation) application.dfaLocation = dfaLocation;
+        if (preferredDate) application.preferredDate = preferredDate;
+        if (preferredTime) application.preferredTime = preferredTime;
+        if (applicationType) application.applicationType = applicationType;
+
+        // Update documents (Base64 strings) if provided
+        if (birthCertificate) application.birthCertificate = birthCertificate;
+        if (applicationForm) application.applicationForm = applicationForm;
+        if (govId) application.govId = govId;
+        if (additionalDocs && Array.isArray(additionalDocs)) {
+            application.additionalDocs = additionalDocs; // overwrite all additional docs
+        }
+
+        await application.save();
+
+        // Log action
+        logAction('UPDATE_PASSPORT', userId, {
+            id,
+            dfaLocation,
+            preferredDate,
+            preferredTime,
+            applicationType,
+            docsUpdated: !!(birthCertificate || applicationForm || govId || additionalDocs)
+        });
+
+        // Emit socket event
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('passport:updated', {
+                id: application._id,
+                updatedAt: application.updatedAt
+            });
+        }
+
+        res.status(200).json({
+            message: "Passport application updated successfully",
+            application
+        });
+
+    } catch (error) {
+        console.error("Error updating passport application with documents:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 const getPassportApplications = async (req, res) => {
     try {
         const userId = req.userId
@@ -64,4 +167,21 @@ const getPassportApplications = async (req, res) => {
     }
 };
 
-module.exports = { applyPassport, getPassportApplications };
+const getPassportApplicationById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const application = await PassportModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+        // Optionally, populate documents if you have a documents field
+        res.status(200).json(application);
+    } catch (error) {
+        console.error("Error fetching passport application by id:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+
+module.exports = { applyPassport, getPassportApplications, getPassportApplicationById, updatePassportStatus, updatePassportApplicationWithDocs };

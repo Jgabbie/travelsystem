@@ -19,8 +19,6 @@ export default function TopNavUser() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    console.log(auth)
-
     const renderAuthControls = () => {
         if (auth) {
             return (
@@ -119,6 +117,11 @@ export default function TopNavUser() {
             icon: <CarryOutOutlined />,
         },
         {
+            key: '8',
+            label: 'My Applications',
+            icon: <IdcardOutlined />,
+        },
+        {
             key: '4',
             label: 'My Quotations',
             icon: <IdcardOutlined />,
@@ -154,6 +157,8 @@ export default function TopNavUser() {
             navigate('/profile');
         } else if (key === '3') {
             navigate('/user-bookings');
+        } else if (key === '8') {
+            navigate('/user-applications');
         } else if (key === '4') {
             navigate('/user-package-quotation');
         } else if (key === '5') {

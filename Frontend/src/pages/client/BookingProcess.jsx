@@ -35,6 +35,7 @@ const INITIAL_COUNTS = {
     infant: 0,
 }
 
+//convert file to base64 string
 const toBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -42,6 +43,9 @@ const toBase64 = (file) =>
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+
+
+
 
 export default function BookingProcess() {
     const [form] = Form.useForm();
@@ -65,18 +69,14 @@ export default function BookingProcess() {
         ? { adult: 1, child: 0, infant: 0 }
         : { adult: counts.adult, child: counts.child, infant: counts.infant }
 
-    const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
+
     const soloRate = data.packageSoloRate || 0
     const soloExtraRate = Math.max(0, soloRate - (data.travelDatePrice || 0))
-    const soloTotal = soloRate + soloExtraRate
     const dateSurcharge = data.travelDateRate || 0
 
     const childRate = data.packageChildRate || 0
     const infantRate = data.packageInfantRate || 0
     const packagePricePerPax = data.travelDatePrice || 0
-
-
-
 
     const totalPrice =
         travelersCount.adult * packagePricePerPax +
@@ -91,6 +91,9 @@ export default function BookingProcess() {
     const travelersDisplay = selectedSoloGrouped === 'solo'
         ? '1 Person'
         : `${travelersTotal} Person(s)${travelerBreakdownParts.length ? ` (${travelerBreakdownParts.join(', ')})` : ''}`
+
+
+    const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
     const images = data.images || []
@@ -164,21 +167,24 @@ export default function BookingProcess() {
         }));
     }, [selectedSoloGrouped]);
 
+    //go next step
     const next = async () => {
         try {
             await form.validateFields();
 
-            const missingUploads = fileLists.some(list => !list || list.length === 0);
-            const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
+            if (currentStep === 2) {
+                const missingUploads = fileLists.some(list => !list || list.length === 0);
+                const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
-            if (missingPhotos) {
-                message.error("Please upload 2x2 photo for all travelers.");
-                return;
-            }
+                if (missingPhotos) {
+                    message.error("Please upload 2x2 photo for all travelers.");
+                    return;
+                }
 
-            if (missingUploads) {
-                message.error("Please upload passport for all travelers.");
-                return;
+                if (missingUploads) {
+                    message.error("Please upload passport for all travelers.");
+                    return;
+                }
             }
 
             let currentFormValues = form.getFieldsValue();
@@ -258,7 +264,9 @@ export default function BookingProcess() {
         }
     };
 
+    //go to previous step
     const prev = () => setCurrentStep(currentStep - 1);
+
 
     const validateFile = (file) => {
         const isValidType =
@@ -284,7 +292,6 @@ export default function BookingProcess() {
             await form.validateFields();
             const finalFormValues = form.getFieldsValue();
 
-            // Final save to context before navigating
             setBookingData(prev => ({
                 ...prev,
                 ...finalFormValues,
@@ -299,7 +306,7 @@ export default function BookingProcess() {
 
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
-            const waitForRender = (ms = 250) => new Promise((resolve) => {
+            const waitForRender = (ms = 450) => new Promise((resolve) => {
                 requestAnimationFrame(() => {
                     setTimeout(resolve, ms);
                 });
@@ -347,7 +354,7 @@ export default function BookingProcess() {
             navigate('/booking-payment');
         } catch (error) {
             setIsGeneratingPdf(false);
-            message.error("Please review the terms and conditions.");
+            message.error(error);
         }
     };
 
