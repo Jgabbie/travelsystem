@@ -1,33 +1,4 @@
-const updatePassportStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
-        const validStatuses = [
-            'Application submitted',
-            'Application approved',
-            'Payment complete',
-            'Documents uploaded',
-            'Documents approved',
-            'Documents received',
-            'Documents submitted',
-            'Processing by DFA',
-            'DFA approved',
-            'Passport released',
-            'Rejected'
-        ];
-        if (!status || !validStatuses.includes(status)) {
-            return res.status(400).json({ message: "Invalid or missing status" });
-        }
-        const updated = await PassportModel.findByIdAndUpdate(id, { status }, { new: true });
-        if (!updated) {
-            return res.status(404).json({ message: "Passport application not found" });
-        }
-        res.status(200).json({ message: "Status updated", application: updated });
-    } catch (error) {
-        console.error("Error updating passport status:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-};
+
 const PassportModel = require("../models/passport");
 const UserModel = require("../models/user");
 const logAction = require('../utils/logger');
@@ -178,6 +149,37 @@ const getPassportApplicationById = async (req, res) => {
         res.status(200).json(application);
     } catch (error) {
         console.error("Error fetching passport application by id:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const updatePassportStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const validStatuses = [
+            'Application submitted',
+            'Application approved',
+            'Payment complete',
+            'Documents uploaded',
+            'Documents approved',
+            'Documents received',
+            'Documents submitted',
+            'Processing by DFA',
+            'DFA approved',
+            'Passport released',
+            'Rejected'
+        ];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ message: "Invalid or missing status" });
+        }
+        const updated = await PassportModel.findByIdAndUpdate(id, { status }, { new: true });
+        if (!updated) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+        res.status(200).json({ message: "Status updated", application: updated });
+    } catch (error) {
+        console.error("Error updating passport status:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };

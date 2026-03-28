@@ -124,16 +124,18 @@ const createCheckoutSessionPassport = async (req, res) => {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
-        const convenienceFee = totalPrice * 0.035;
-        const totalWithFee = totalPrice + convenienceFee;
+        const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
+        const baseAmountCents = Math.round(totalPrice * 100);
+        const finalTotalCents = baseAmountCents + convenienceFeeCents;
 
         const metadata = {
-            userId: String(userId),
-            applicationId: String(applicationId),
-            email: String(email || ''),
-            originalAmountCents: String(Math.round(totalPrice * 100)),
-            convenienceFeeCents: String(Math.round(convenienceFee * 100)),
-            totalAmountCents: String(Math.round(totalWithFee * 100)),
+            userId,
+            applicationId,
+            applicationType: "Passport Application",
+            email,
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents,
         };
 
         const response = await axios.post(
@@ -147,11 +149,18 @@ const createCheckoutSessionPassport = async (req, res) => {
                         },
                         line_items: [
                             {
-                                name: "Passport Application Fee + 3.5% Convenience Fee",
+                                name: "Passport Assistance",
                                 quantity: 1,
-                                amount: Math.round(totalWithFee * 100), // PayMongo expects amount in centavos
+                                amount: baseAmountCents,
                                 currency: "PHP",
                             },
+                            {
+                                name: "Convenience Fee",
+                                description: "Payment processing and service fee",
+                                quantity: 1,
+                                amount: convenienceFeeCents,
+                                currency: "PHP",
+                            }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya"], // start with card first
                         success_url: successUrl,
@@ -171,16 +180,18 @@ const createCheckoutSessionPassport = async (req, res) => {
         );
 
         // Then safely extract checkout URL
-        const checkoutUrl =
-            response.data?.data?.attributes?.hosted_checkout_url ||
-            response.data?.data?.attributes?.checkout_url;
-
-        if (!checkoutUrl) {
-            console.error("No checkout URL returned:", JSON.stringify(response.data, null, 2));
-            return res.status(500).json({ error: "No checkout URL returned by PayMongo" });
+        if (response.status !== 200) {
+            console.error("PayMongo API Error:", response.data);
+            return res.status(500).json({ error: "Failed to create checkout session" });
         }
 
-        res.status(200).json({ url: checkoutUrl });
+        const checkoutUrl = response.data?.data?.attributes?.url;
+        if (!checkoutUrl) {
+            console.error("PayMongo response missing URL:", response.data);
+            return res.status(500).json({ error: "Failed to create PayMongo checkout session - URL missing" });
+        }
+
+        res.json({ url: checkoutUrl });
 
     } catch (error) {
         console.error("Passport Checkout Error:", error.response?.data || error.message);
@@ -188,85 +199,92 @@ const createCheckoutSessionPassport = async (req, res) => {
     }
 };
 
-const handlePayMongoWebhookPassport = async (req, res) => {
+const createCheckoutSessionVisa = async (req, res) => {
+    const userId = req.userId;
+
     try {
-        const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body || {});
-        const signatureHeader = req.headers['paymongo-signature'];
-        const parsedSignature = parsePayMongoSignature(signatureHeader);
-
-        if (!parsedSignature) return res.status(400).send('Invalid signature');
-
-        const signedPayload = `${parsedSignature.timestamp}.${rawBody}`;
-        const expectedSignature = crypto.createHmac('sha256', process.env.PAYMONGO_WEBHOOK_SECRET)
-            .update(signedPayload)
-            .digest('hex');
-
-        if (!crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(parsedSignature.signature))) {
-            return res.status(400).send('Invalid signature');
+        if (!process.env.PAYMONGO_SECRET_KEY) {
+            return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const payload = Buffer.isBuffer(req.body) ? JSON.parse(rawBody) : req.body;
-        const event = payload?.data?.attributes?.type;
+        const { applicationId, totalPrice, successUrl, cancelUrl, email } = req.body;
 
-        console.log("Payload:", JSON.stringify(payload, null, 2));
-        console.log("Webhook event type:", event);
-
-        const eventData = payload?.data?.attributes?.data?.attributes || {};
-        const sessionData = payload?.data?.attributes || {};
-
-        if (event === 'checkout_session.payment.paid') {
-            const metadata = eventData.metadata || sessionData.metadata || {};
-
-            console.log("Metadata received:", metadata);
-
-            const { userId, applicationId } = metadata;
-
-            console.log("userId:", userId);
-            console.log("applicationId:", applicationId);
-
-            const user = await UserModel.findById(userId);
-            if (!user) return res.status(404).send('User not found');
-
-            // Create passport application transaction
-            const transaction = await TransactionModel.create({
-                userId: user._id,
-                applicationId,       // <-- use applicationId from metadata
-                reference: generateTransactionReference(),
-                amount: Number(metadata.totalAmountCents || 0) / 100,
-                method: 'Paymongo',
-                status: 'Successful',
-                packageId: null,
-            });
-
-            console.log("✅ Transaction created:", transaction);
-
-            // Notification
-            await NotificationModel.create({
-                userId: user._id,
-                title: 'Passport Payment Successful',
-                message: `Your passport application payment (ID: ${applicationId}) was successful.`,
-                type: 'passport',
-                link: '/user-transactions',
-                metadata: { applicationId, transactionId: transaction._id }
-            });
-
-            // Email confirmation
-            await transporter.sendMail({
-                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                to: user.email,
-                subject: 'Passport Payment Successful',
-                html: `
-                    <p>Your passport application payment was successful.</p>
-                    <p>Application ID: <b>${applicationId}</b></p>
-                    <p>Transaction ID: <b>${transaction.reference}</b></p>
-                `
-            });
+        if (!applicationId || !totalPrice || !successUrl || !cancelUrl) {
+            return res.status(400).json({ error: "Missing required fields." });
         }
 
-        res.status(200).send('Event received');
+        const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
+        const baseAmountCents = Math.round(totalPrice * 100);
+        const finalTotalCents = baseAmountCents + convenienceFeeCents;
+
+        const metadata = {
+            userId,
+            applicationId,
+            applicationType: "Visa Application",
+            email,
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents,
+        };
+
+        const response = await axios.post(
+            "https://api.paymongo.com/v1/checkout_sessions",
+            {
+                data: {
+                    attributes: {
+                        billing: {
+                            name: "Visa Applicant",
+                            email: email || "test@example.com",
+                        },
+                        line_items: [
+                            {
+                                name: "Visa Application",
+                                quantity: 1,
+                                amount: baseAmountCents,
+                                currency: "PHP",
+                            },
+                            {
+                                name: "Convenience Fee",
+                                description: "Payment processing and service fee",
+                                quantity: 1,
+                                amount: convenienceFeeCents,
+                                currency: "PHP",
+                            }
+                        ],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"], // start with card first
+                        success_url: successUrl,
+                        cancel_url: cancelUrl,
+                        metadata,
+                        show_description: true,
+                        show_line_items: true,
+                    },
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64")}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        // Then safely extract checkout URL
+        if (response.status !== 200) {
+            console.error("PayMongo API Error:", response.data);
+            return res.status(500).json({ error: "Failed to create checkout session" });
+        }
+
+        const checkoutUrl = response.data?.data?.attributes?.url;
+        if (!checkoutUrl) {
+            console.error("PayMongo response missing URL:", response.data);
+            return res.status(500).json({ error: "Failed to create PayMongo checkout session - URL missing" });
+        }
+
+        res.json({ url: checkoutUrl });
+
     } catch (error) {
-        console.error('FULL WEBHOOK ERROR:', error);
-        res.status(500).send('Internal Server Error');
+        console.error("Visa Checkout Error:", error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
     }
 };
 
@@ -296,7 +314,6 @@ const createCheckoutSession = async (req, res) => {
 
         const baseAmountCents = Math.round(totalPrice * 100);
         const convenienceFeeCents = Math.round((baseAmountCents * 0.035) + 1500);
-
         const finalTotalCents = baseAmountCents + convenienceFeeCents; //total amount with convenience fee
 
         //currently not being used
@@ -369,8 +386,6 @@ const createCheckoutSession = async (req, res) => {
 //paymongo webhook handler
 const handlePayMongoWebhook = async (req, res) => {
     console.log('🚀 Webhook HIT!');
-
-
     try {
 
         //check if secret key exists
@@ -459,14 +474,44 @@ const handlePayMongoWebhook = async (req, res) => {
 
         console.log('metadata:', metadata);
 
-        // if applicationId exists in metadata, we know this payment is for a passport application, so we create a transaction record linked to that application and send a notification to the user. We also send a confirmation email to the user about their passport payment. After handling the passport payment, we return early since we don't want to accidentally process it as a booking payment as well.
-        if (metadata.applicationId) {
-            console.log('🛂 Passport payment detected');
-            const amount = Number(metadata.totalAmountCents || 0) / 100;
+        if (metadata.applicationId && metadata.applicationType === "Visa Application") {
+            console.log('🛂 Visa payment detected');
+            const amount =
+                Number(metadata.totalAmountCents || 0) / 100 ||
+                Number(sessionAttributes?.amount_total || 0) / 100;
 
             await TransactionModel.create({
                 userId: user._id,
                 applicationId: metadata.applicationId,
+                applicationType: "Visa Application",
+                reference: generateTransactionReference(),
+                amount,
+                method: 'Paymongo',
+                status: 'Successful',
+            });
+
+            await NotificationModel.create({
+                userId: user._id,
+                title: 'Visa Payment Successful',
+                message: `Your visa application (${metadata.applicationId}) was successful.`,
+                type: 'visa',
+                link: '/user-transactions',
+            });
+
+            return res.status(200).send('Visa handled');
+        }
+
+        // if applicationId exists in metadata, we know this payment is for a passport application, so we create a transaction record linked to that application and send a notification to the user. We also send a confirmation email to the user about their passport payment. After handling the passport payment, we return early since we don't want to accidentally process it as a booking payment as well.
+        if (metadata.applicationId && metadata.applicationType === "Passport Application") {
+            console.log('🛂 Passport payment detected');
+            const amount =
+                Number(metadata.totalAmountCents || 0) / 100 ||
+                Number(sessionAttributes?.amount_total || 0) / 100;
+
+            await TransactionModel.create({
+                userId: user._id,
+                applicationId: metadata.applicationId,
+                applicationType: "Passport Application",
                 reference: generateTransactionReference(),
                 amount,
                 method: 'Paymongo',
@@ -483,6 +528,8 @@ const handlePayMongoWebhook = async (req, res) => {
 
             return res.status(200).send('Passport handled');
         }
+
+
 
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
         if (metadata.packageId) {
@@ -513,7 +560,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
 
-            const transaction = await TransactionModel.create({
+            await TransactionModel.create({
                 bookingId: booking._id,
                 packageId: metadata.packageId,
                 userId: user._id,
@@ -556,91 +603,6 @@ const handlePayMongoWebhook = async (req, res) => {
     }
 };
 
-
-
-//hitpay
-const hitpayPayment = async (req, res) => {
-    try {
-        const { totalPrice, orderId, email } = req.body;
-
-        const isProduction = process.env.NODE_ENV === 'production';
-        const baseUrl = isProduction
-            ? 'https://api.hit-pay.com/v1/payment-requests'
-            : 'https://api.sandbox.hit-pay.com/v1/payment-requests';
-
-        const params = new URLSearchParams();
-        params.append('amount', totalPrice);
-        params.append('currency', 'SGD');
-        params.append('reference_number', orderId);
-        params.append('email', email);
-
-
-        // Update these to your actual frontend and backend URLs
-        params.append('redirect_url', 'http://localhost:3000/payment-success');
-        params.append('webhook', 'https://your-ngrok-url.ngrok-free.app/api/payment/webhook/hitpay');
-
-        const response = await axios.post(baseUrl, params, {
-            headers: {
-                'X-BUSINESS-API-KEY': process.env.HITPAY_SECRET_KEY,
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
-        console.log(`HitPay Request Created: ${response.data.id}`);
-
-        // IMPORTANT: Send the URL back to the frontend
-        res.status(200).json({ url: response.data.url });
-
-    } catch (error) {
-        const errorMsg = error.response?.data?.message || error.message;
-        console.error('HitPay Integration Error:', errorMsg);
-        res.status(500).json({ error: `Payment failed: ${errorMsg}` });
-    }
-};
-
-//hitpay webhook handler
-const handleHitPayWebhook = async (req, res) => {
-    try {
-        const data = req.body;
-        const receivedHmac = data.hmac;
-        const salt = process.env.HITPAY_SALT; // Found in HitPay Settings > API Keys
-
-        // 1. SECURE STEP: Verify HMAC Signature
-        // We remove 'hmac' from the data, then hash the rest to see if it matches
-        const { hmac, ...fields } = data;
-
-        // Sort keys alphabetically (HitPay requirement for HMAC)
-        const sortedKeys = Object.keys(fields).sort();
-        const queryString = sortedKeys
-            .map(key => `${key}${fields[key]}`)
-            .join('');
-
-        const computedHmac = crypto
-            .createHmac('sha256', salt)
-            .update(queryString)
-            .digest('hex');
-
-        if (computedHmac !== receivedHmac) {
-            console.error("Invalid HitPay Signature!");
-            return res.status(401).send('Unauthorized');
-        }
-
-        if (data.status === 'completed') {
-            const referenceNumber = data.reference_number;
-            console.log(`Payment successful for: ${referenceNumber}`);
-        }
-
-        res.status(200).send('OK');
-
-    } catch (error) {
-        console.error('Webhook Error:', error.message);
-        res.status(500).send('Internal Server Error');
-    }
-};
-
-
-
 const createCheckoutToken = async (req, res) => {
     // const { quotationId, travelers } = req.body;
     const userId = req.userId;
@@ -666,4 +628,4 @@ const createCheckoutToken = async (req, res) => {
 
 
 
-module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutToken, hitpayPayment, handleHitPayWebhook, handlePayMongoWebhook, handlePayMongoWebhookPassport, createManualPayment };
+module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutToken, handlePayMongoWebhook, createManualPayment };

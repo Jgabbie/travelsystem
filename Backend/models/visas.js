@@ -14,13 +14,15 @@ const VisaApplicationSchema = new mongoose.Schema({
     serviceName: { type: String, required: true },
     applicantName: { type: String, required: true },
     preferredDate: { type: String, required: true },
+    preferredTime: { type: String, required: true },
     purposeOfTravel: { type: String, required: true },
     applicationNumber: { type: String, required: true, unique: true },
+    submittedDocuments: { type: Object },
     status: {
-        type: String,
-        enum: ['Pending', 'Processing', 'Approved', 'Rejected'],
-        default: 'Pending'
-    }
+        type: [String],
+        default: ['Application Submitted']
+    },
+    currentStepIndex: { type: Number, default: 0 }
 }, { timestamps: true })
 
 module.exports = mongoose.model('visas', VisaApplicationSchema)

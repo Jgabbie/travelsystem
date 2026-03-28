@@ -11,10 +11,12 @@ const generateApplicationNumber = () => {
 }
 
 const applyVisa = async (req, res) => {
-    const { serviceId, preferredDate, purposeOfTravel } = req.body
+    const { serviceId, preferredDate, preferredTime, purposeOfTravel, status } = req.body
     const userId = req.userId
 
-    if (!serviceId || !preferredDate || !purposeOfTravel) {
+    console.log("Applying for visa with data:", { serviceId, preferredDate, preferredTime, purposeOfTravel, status });
+
+    if (!serviceId || !preferredDate || !preferredTime || !purposeOfTravel) {
         return res.status(400).json({ message: 'Missing required fields' })
     }
 
@@ -39,7 +41,9 @@ const applyVisa = async (req, res) => {
             serviceName: serviceName.visaName,
             applicantName,
             preferredDate,
-            purposeOfTravel
+            preferredTime,
+            purposeOfTravel,
+            status,
         })
 
         logAction('APPLY_VISA', userId, { serviceId, preferredDate, purposeOfTravel });
@@ -57,6 +61,51 @@ const applyVisa = async (req, res) => {
     }
 }
 
+const updateVisaApplicationWithDocs = async (req, res) => {
+    try {
+        const userId = req.userId
+        const { id } = req.params;
+
+        const {
+            preferredDate,
+            preferredTime,
+            purposeOfTravel,
+            submittedDocuments
+        } = req.body;
+
+        const application = await VisaModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: 'Visa application not found' })
+        }
+
+        if (application.userId.toString() !== userId) {
+            return res.status(403).json({ message: 'Unauthorized to update this application' })
+        }
+
+        application.preferredDate = preferredDate || application.preferredDate
+        application.preferredTime = preferredTime || application.preferredTime
+        application.purposeOfTravel = purposeOfTravel || application.purposeOfTravel
+        application.submittedDocuments = submittedDocuments || application.submittedDocuments
+
+        await application.save();
+
+        logAction('UPDATE_VISA_APPLICATION', userId, { applicationId: id, preferredDate, purposeOfTravel, submittedDocuments });
+
+        const io = req.app.get('io')
+        if (io) {
+            io.emit('visa:updated', {
+                id: application._id,
+                updatedAt: application.updatedAt
+            })
+        }
+
+        res.status(200).json({ message: 'Visa application updated successfully' })
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating visa application', error: error.message })
+    }
+
+}
 const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
@@ -85,4 +134,40 @@ const getVisaApplicationById = async (req, res) => {
     }
 };
 
-module.exports = { applyVisa, getVisaApplications, getVisaApplicationById };
+const updateVisaApplicationStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        // Get the serviceId from the visa application
+        const visaDoc = await VisaModel.findById(id).select('serviceId');
+        if (!visaDoc || !visaDoc.serviceId) {
+            return res.status(404).json({ message: 'Visa application or service not found' });
+        }
+
+        const serviceId = visaDoc.serviceId._id || visaDoc.serviceId;
+
+        // Get the valid steps from the service
+        const serviceDoc = await ServiceModel.findById(serviceId).select('visaProcessSteps');
+        const validStatuses = serviceDoc?.visaProcessSteps || [];
+
+        console.log("Updating visa application status with data:", { id, status, serviceId, validStatuses });
+
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Invalid status value' });
+        }
+
+        const updated = await VisaModel.findByIdAndUpdate(id, { status }, { new: true });
+        if (!updated) {
+            return res.status(404).json({ message: 'Visa application not found' });
+        }
+
+        res.status(200).json({ message: 'Status updated', application: updated });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error updating visa application status', error: error.message });
+    }
+};
+
+module.exports = { applyVisa, getVisaApplications, getVisaApplicationById, updateVisaApplicationWithDocs, updateVisaApplicationStatus };

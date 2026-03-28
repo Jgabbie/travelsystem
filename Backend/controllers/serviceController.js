@@ -85,6 +85,7 @@ const getService = async (req, res) => {
     try {
         const { id } = req.params;
         const service = await ServiceModel.findById(id);
+
         if (!service) {
             logAction('SERVICE_NOT_FOUND', userId);
             return res.status(404).json({ message: "Service not found" });
