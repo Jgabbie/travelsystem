@@ -131,6 +131,7 @@ const createCheckoutSessionPassport = async (req, res) => {
         const metadata = {
             userId,
             applicationId,
+            applicationType: "Passport Application",
             email,
             baseAmountCents,
             convenienceFeeCents,
@@ -213,6 +214,7 @@ const createCheckoutSessionVisa = async (req, res) => {
         const metadata = {
             userId,
             applicationId,
+            applicationType: "Visa Application",
             email,
             baseAmountCents,
             convenienceFeeCents,
