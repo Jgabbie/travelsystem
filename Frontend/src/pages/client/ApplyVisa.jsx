@@ -8,21 +8,6 @@ import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/passport.css'
 import axiosInstance from '../../config/axiosConfig'
 
-const DEFAULT_REQUIREMENTS = [
-    'Valid passport (at least 6 months validity)',
-    'Completed visa application form',
-    'Recent passport-size photo',
-    'Proof of travel itinerary',
-    'Financial documents or bank statements'
-]
-
-const DEFAULT_STEPS = [
-    'Choose a visa service and submit your request.',
-    'Prepare all documents based on the service requirements.',
-    'Attend biometrics or interview schedule if required.',
-    'Wait for processing updates from the embassy.'
-]
-
 export default function ApplyVisa() {
     const [loginModalVisible, setLoginModalVisible] = useState(false)
     const [services, setServices] = useState([])
@@ -47,6 +32,7 @@ export default function ApplyVisa() {
         const loadServices = async () => {
             try {
                 const response = await axiosInstance.get('/services/services')
+                console.log('Loaded visa services:', response.data)
                 setServices(response.data || [])
             } catch (loadError) {
                 console.error('Failed to load visa services:', loadError)
@@ -67,13 +53,8 @@ export default function ApplyVisa() {
         [services, selectedServiceId]
     )
 
-    const requirements = selectedService?.visaRequirements?.length
-        ? selectedService.visaRequirements
-        : DEFAULT_REQUIREMENTS
-
-    const steps = selectedService?.visaProcessSteps?.length
-        ? selectedService.visaProcessSteps
-        : DEFAULT_STEPS
+    const requirements = selectedService?.visaRequirements || []
+    const steps = selectedService?.visaProcessSteps || []
 
     const submitRequest = async () => {
         const newErrors = {
@@ -118,7 +99,8 @@ export default function ApplyVisa() {
                 preferredDate,
                 preferredTime,
                 purposeOfTravel: purpose,
-                applicationType: 'Visa'
+                applicationType: 'Visa',
+                status: steps[0]
             })
             console.log('Submitting visa application request')
         } catch (submitError) {
@@ -169,7 +151,11 @@ export default function ApplyVisa() {
                             <h3>Requirements</h3>
                             <ul className="passport-list">
                                 {requirements.map((item, index) => (
-                                    <li key={`req-${index}`}>{item}</li>
+                                    <li key={`req-${index}`}>
+                                        <strong>{item.req}</strong>
+                                        <br />
+                                        <span>{item.desc}</span>
+                                    </li>
                                 ))}
                             </ul>
                         </div>
@@ -182,7 +168,10 @@ export default function ApplyVisa() {
                                         <span className="passport-step-number">{index + 1}</span>
                                         <div>
                                             <h4>{`Step ${index + 1}`}</h4>
-                                            <p>{step}</p>
+                                            <p>
+                                                <strong>{step}</strong><br />
+
+                                            </p>
                                         </div>
                                     </div>
                                 ))}

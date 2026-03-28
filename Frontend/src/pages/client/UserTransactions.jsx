@@ -27,7 +27,8 @@ export default function UserTransactions() {
                 const transactions = response.data.map(t => ({
                     key: t.id,
                     reference: t.reference,
-                    packageName: t.packageId?.packageName || 'Tour Package',
+                    applicationType: t.applicationType || '--',
+                    packageName: t.packageId?.packageName,
                     date: t.createdAt ? dayjs(t.createdAt).format('MMM D, YYYY h:mm A') : '--',
                     createdAt: t.createdAt || null,
                     method: t.method || '--',
@@ -73,8 +74,8 @@ export default function UserTransactions() {
         },
         {
             title: 'Tour Package',
-            dataIndex: 'packageName',
-            key: 'packageName'
+            dataIndex: 'packageName' || 'applicationType', // show packageName if exists, otherwise show applicationType
+            key: 'packageName' || 'applicationType',
         },
         {
             title: 'Date and Time',

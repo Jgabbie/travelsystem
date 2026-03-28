@@ -64,16 +64,6 @@ export default function UserApplications() {
     });
 
     // Status color mapping
-    const statusColor = (status) => {
-        const s = (status || '').toLowerCase();
-        if (s.includes('approved') || s.includes('released')) return 'green';
-        if (s.includes('pending') || s.includes('submitted')) return 'blue';
-        if (s.includes('processing')) return 'orange';
-        if (s.includes('rejected') || s.includes('denied')) return 'red';
-        if (s.includes('review')) return 'purple';
-        if (s.includes('complete') || s.includes('verified')) return 'cyan';
-        return 'default';
-    };
 
     const columns = [
         { title: 'Reference', dataIndex: 'ref', key: 'ref' },
@@ -85,7 +75,7 @@ export default function UserApplications() {
             ],
             onFilter: (value, record) => record.type === value
         },
-        { title: 'Status', dataIndex: 'status', key: 'status', render: (value) => <Tag color={statusColor(value)}>{value}</Tag> },
+        { title: 'Status', dataIndex: 'status', key: 'status', render: (value) => <Tag>{value}</Tag> },
         { title: 'Application Date', dataIndex: 'date', key: 'date', render: (value) => dayjs(value).format('MMM D, YYYY') },
         {
             title: 'Actions', key: 'actions', render: (_, record) => (

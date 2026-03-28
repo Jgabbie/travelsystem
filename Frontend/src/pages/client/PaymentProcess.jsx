@@ -224,20 +224,6 @@ export default function PaymentProcess() {
                 throw new Error("Failed to create PayMongo checkout session - URL missing");
             }
 
-            // const hitpayResponse = await axiosInstance.post('/payment/hitpay', {
-            //     totalPrice: totalAmount,
-            //     orderId: "ORREF-83271836", // Link HitPay to your booking reference
-            //     email: "tukiiiiimukiiiii@gmail.com", // Customer's email for HitPay receipt
-            //     packageName: packageName
-            // });
-
-            // if (hitpayResponse.data.url) {
-            //     // 4. Redirect the user to HitPay Checkout
-            //     window.location.href = hitpayResponse.data.url;
-            // } else {
-            //     throw new Error("Failed to generate payment link");
-            // }
-
         } catch (error) {
             console.error('Booking failed:', error);
             Modal.error({
@@ -246,16 +232,6 @@ export default function PaymentProcess() {
             });
         }
     }
-
-
-    // useEffect(() => {
-    //     if (!bookingData) {
-    //         navigate('/home', { replace: true });
-    //     }
-    // }, [bookingData, navigate]);
-
-    // if (!bookingData) return null;
-
 
     const Invoice = {
         company: {

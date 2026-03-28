@@ -165,13 +165,15 @@ export default function PassportApplication() {
                 console.log("Creating checkout session with payload:", payload);
 
                 // Send request to create checkout session
-                const { data } = await axiosInstance.post('/payment/create-checkout-session-passport', payload);
-
+                const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session-passport', payload);
+                const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
                 // Redirect user to PayMongo checkout
-                if (data.url) {
-                    window.location.href = data.url;
+
+                if (checkoutUrl) {
+                    window.location.href = checkoutUrl;
                 } else {
-                    message.error("Failed to create checkout session");
+                    console.error("PayMongo Response Structure:", paymongoResponse.data);
+                    throw new Error("Failed to create PayMongo checkout session - URL missing");
                 }
             }
 

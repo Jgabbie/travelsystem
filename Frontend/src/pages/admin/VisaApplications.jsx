@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, message, ConfigProvider, Space, Select, Input, DatePicker } from "antd";
 import { FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/visaapplications.css";
+
 
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
@@ -25,6 +27,8 @@ const getBase64ImageFromURL = (url) => {
 };
 
 export default function VisaApplications() {
+    const navigate = useNavigate();
+
     const [applications, setApplications] = useState([])
 
     const [searchText, setSearchText] = useState("");
@@ -160,30 +164,26 @@ export default function VisaApplications() {
             dataIndex: "status",
             key: "status",
             render: (status) => {
-                const colorMap = {
-                    Pending: "orange",
-                    Processing: "blue",
-                    Approved: "green",
-                    Rejected: "red",
-                };
+                const currentStatus = Array.isArray(status) ? status[status.length - 1] : status;
 
                 return (
-                    <Tag color={colorMap[status] || "default"}>
-                        {status || "Unknown"}
+                    <Tag >
+                        {currentStatus || "Unknown"}
                     </Tag>
                 );
-            },
+            }
         },
         {
             title: "Actions",
             key: "actions",
-            render: () => (
+            render: (text, record) => (
                 <>
                     <Space>
                         <Button
                             className='viewbutton-visa-application'
                             type="primary"
                             icon={<EyeOutlined />}
+                            onClick={() => navigate(`/visa-applications/view/${record.key}`)}
                         />
                         <Button
                             className="approve-visa-application"
@@ -300,7 +300,7 @@ export default function VisaApplications() {
                     <Table
                         columns={columns}
                         dataSource={filteredData}
-                        rowKey="applicationNumber"
+                        rowKey="key"
                         pagination={{ pageSize: 10 }}
                         locale={{
                             emptyText: (

@@ -48,6 +48,7 @@ import VisaApplications from "./pages/admin/VisaApplications";
 import PassportApplications from "./pages/admin/PassportApplications";
 import AdminProfile from "./pages/admin/AdminProfile";
 import ViewPassportApplication from "./pages/admin/ViewPassportApplication";
+import ViewVisaApplication from "./pages/admin/ViewVisaApplication";
 import CancellationRequests from "./pages/admin/CancellationRequests";
 import QuotationManagement from "./pages/admin/QuotationManagement";
 import QuotationRequest from "./pages/admin/QuotationRequest";
@@ -63,6 +64,7 @@ import EmployeeRoute from "./routes/EmployeeRoute";
 
 import "antd/dist/reset.css";
 import { BookingProvider } from "./context/BookingContext";
+
 
 
 function App() {
@@ -112,6 +114,7 @@ function App() {
               <Route path="visa-services/edit/:id" element={<AddService />} />
               <Route path="passport-applications" element={<PassportApplications />} />
               <Route path="passport-applications/view/:id" element={<ViewPassportApplication />} />
+              <Route path="visa-applications/view/:id" element={<ViewVisaApplication />} />
               <Route path="cancellation-requests" element={<CancellationRequests />} />
               <Route path="adminprofile" element={<AdminProfile />} />
               <Route path="package-quotation" element={<QuotationManagement />} />
@@ -147,6 +150,7 @@ function App() {
               <Route path="visa-applications" element={<VisaApplications />} />
               <Route path="passport-applications" element={<PassportApplications />} />
               <Route path="passport-applications/view/:id" element={<ViewPassportApplication />} />
+              <Route path="visa-applications/view/:id" element={<ViewVisaApplication />} />
               <Route path="cancellation-requests" element={<CancellationRequests />} />
             </Route>
           </Route>
