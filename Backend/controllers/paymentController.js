@@ -507,7 +507,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 status: 'Successful',
             });
 
-            await PassportApplicationModel.findOneAndUpdate(
+            const updatedApp = await PassportApplicationModel.findOneAndUpdate(
                 { applicationId: metadata.applicationId },
                 { status: "Payment complete" },
                 { new: true }
