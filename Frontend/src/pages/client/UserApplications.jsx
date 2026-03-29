@@ -53,13 +53,23 @@ export default function UserApplications() {
     }, []);
 
     const filteredData = applications.filter(item => {
+        const search = searchText.toLowerCase();
+
+        const statusStr = item.status ? String(item.status) : '';
+        const typeStr = item.type ? String(item.type) : '';
+        const refStr = item.ref ? String(item.ref) : '';
+        const nameStr = item.name ? String(item.name) : '';
+
         const matchesSearch =
-            item.ref?.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.type?.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.status?.toLowerCase().includes(searchText.toLowerCase());
-        const matchesType = !typeFilter || item.type === typeFilter;
-        const matchesStatus = !statusFilter || item.status === statusFilter;
-        const matchesDate = !dateFilter || dayjs(item.date).isSame(dateFilter, 'day');
+            refStr.toLowerCase().includes(search) ||
+            typeStr.toLowerCase().includes(search) ||
+            statusStr.toLowerCase().includes(search) ||
+            nameStr.toLowerCase().includes(search);
+
+        const matchesType = !typeFilter || typeStr.toLowerCase() === typeFilter.toLowerCase();
+        const matchesStatus = !statusFilter || statusStr.toLowerCase() === statusFilter.toLowerCase();
+        const matchesDate = !dateFilter || dayjs(item.date).isSame(dayjs(dateFilter), 'day');
+
         return matchesSearch && matchesType && matchesStatus && matchesDate;
     });
 
@@ -125,7 +135,8 @@ export default function UserApplications() {
                             value={typeFilter || undefined}
                             onChange={v => setTypeFilter(v || "")}
                             options={[
-                                { value: 'Passport', label: 'Passport' },
+                                { value: 'New Passport', label: 'New Passport' },
+                                { value: 'Renew Passport', label: 'Renew Passport' },
                                 { value: 'Visa', label: 'Visa' },
                             ]}
                         />

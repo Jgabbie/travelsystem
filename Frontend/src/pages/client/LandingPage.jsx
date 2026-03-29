@@ -452,45 +452,122 @@ export default function LandingPage() {
                                 </div>
                             </div>
 
-                            <h1 className='explore-text'>About Us</h1>
 
-                            <p className='aboutus-text'>
-                                M&RC Travel and Tours is a dedicated travel company committed to turning your dream vacations into unforgettable experiences.
-                                We specialize in carefully curated travel packages that combine convenience, value, and adventure—whether you’re planning a
-                                relaxing getaway, a family holiday, a romantic escape, or a group tour. Our team is passionate about travel and focused on delivering personalized service from start to finish.
-                                From flights and accommodations to guided tours and activities, we handle every detail so you can travel with confidence and peace of mind.
-                                We partner with trusted airlines, hotels, and local operators to ensure quality, safety, and memorable journeys for every client.
-                            </p>
+                            <div style={{ display: 'flex', flexDirection: 'row', marginTop: '50px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>
+                                    <h1 className='explore-text'>About Us</h1>
 
-                            <p className='aboutus-text'>
-                                At M&RC Travel and Tours, we believe that travel should be easy, enjoyable, and accessible to everyone.
-                                Our mission is to help you explore new destinations, create lasting memories, and experience the world without the stress of planning.
-                            </p>
-
-                            <p className='aboutus-text'>
-                                Let us take you there — your journey begins with M&RC Travel and Tours.
-                            </p>
-
-
-                            <div className='aboutus-vision-mission'>
-                                <div className='aboutus-vision-mision-block'>
-                                    <h2 className='explore-text'>Our Vision</h2>
                                     <p className='aboutus-text'>
-                                        To be the leading travel company that inspires and enables people to explore the world with confidence, comfort, and joy.
+                                        M&RC Travel and Tours humbly started travel business in July 2018 when two vibrant entrepreneur, traveler,
+                                        Maricar Carle and Rhon Carle decided to turn their passion into business. Office is located at #1 Cor Fatima Street
+                                        San antonio Avenue Valley 1, Brgy. San Antonio Paranaque City with over thousand of agents worldwide and travel partners.
+                                    </p>
+
+                                    <p className='aboutus-text'>
+                                        We commit to adapt the changing needs of business sectors and become a major player through satisfying specialized requirements of the small, medium and large organizations.
+                                    </p>
+
+                                    <p className='aboutus-text'>
+                                        We value honesty and integrity.
+                                        M&RC Travel and Tours continuously develop other line of services with the primary objective of extending wide range of quality and excellent service.
                                     </p>
                                 </div>
 
-                                <div className='aboutus-vision-mision-block'>
-                                    <h2 className='explore-text'>Our Mission</h2>
-                                    <p className='aboutus-text'>
-                                        To provide exceptional travel experiences through personalized service, quality partnerships, and a commitment to making travel easy and enjoyable for everyone.
-                                    </p>
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '45%', alignItems: 'center', marginLeft: 40 }}>
+                                    <img
+                                        style={{ width: 250, height: 250, borderRadius: '55%' }}
+                                        draggable={false}
+                                        alt="example"
+                                        src="/images/owners.jpg"
+                                    />
+                                </div>
+
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'row', marginTop: '50px' }}>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '45%', alignItems: 'center', marginLeft: 40 }}>
+                                    <img
+                                        style={{ width: 250, height: 250, borderRadius: '55%' }}
+                                        draggable={false}
+                                        alt="example"
+                                        src="/images/owners.jpg"
+                                    />
+                                </div>
+
+                                <div className='aboutus-vision-mission' style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>
+                                    <div className='aboutus-vision-mision-block' style={{ width: 550 }}>
+                                        <h2 className='explore-text'>Our Vision</h2>
+                                        <p className='aboutus-text'>
+                                            Our Vision is to be the preferred travel
+                                            and tours agency in the country of ering
+
+                                            specialized, high quality and cost-
+                                            ef icient travel solutions at all times,
+
+                                            anywhere, everywhere.
+                                        </p>
+                                    </div>
+
+                                    <div className='aboutus-vision-mision-block' style={{ width: 550 }}>
+                                        <h2 className='explore-text'>Our Mission</h2>
+                                        <p className='aboutus-text'>
+                                            We are committed to provide value- added travel
+                                            solutions to our Customers by of ering good service
+                                            and meaningful experience through the help of our
+                                            reliable and service- oriented travel partners.
+                                            We aim to grow and profit with the knowledge that
+
+                                            each customer we served is fully satisfied.
+
+                                            We adhere to the notion of reliability, competence,
+
+                                            competitiveness and integrity.
+
+                                            We are committed to be updated with the latest
+                                            technology to keep up with the demands of the global
+
+                                            market.
+
+                                            We care for the well-being of our employees, our
+
+                                            community and our environment.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
 
                             <div className='aboutus-accreditation'>
-                                <h2 className='explore-text'>Accreditation</h2>
+                                <h2 className='explore-text'>Accreditations</h2>
+
+                                <div style={{ display: 'flex', gap: '70px', flexDirection: 'row' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                                        <img
+                                            style={{ width: 200, height: 200 }}
+                                            draggable={false}
+                                            alt="example"
+                                            src="/images/philgeps.png"
+                                        />
+
+                                        <p style={{ textAlign: "center", width: 600 }} className='aboutus-text'>
+                                            M&RC Travel and Tours is accredited by the Philippine Government Electronic Procurement System (PhilGEPS), ensuring that we meet the highest standards of quality, reliability, and professionalism in providing travel services. Our accreditation reflects our commitment to excellence and our dedication to delivering exceptional travel experiences to our customers.
+                                        </p>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                                        <img
+                                            style={{ width: 200, height: 200 }}
+                                            draggable={false}
+                                            alt="example"
+                                            src="/images/dotseal.png"
+                                        />
+
+                                        <p style={{ textAlign: "center", width: 600 }} className='aboutus-text'>
+                                            M&RC Travel and Tours is accredited by the Department of Tourism (DOT) of the Philippines, ensuring that we meet the highest standards of quality, safety, and customer service in the travel industry. Our accreditation reflects our commitment to providing exceptional travel experiences and our dedication to upholding the integrity and professionalism of our services.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
                         </div>

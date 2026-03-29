@@ -23,7 +23,7 @@ const adminOnly = async (req, res, next) => {
 router.post('/create-booking', userAuth, bookingController.createBooking)
 router.get('/my-bookings', userAuth, bookingController.getUserBookings)
 router.get('/by-reference/:reference', userAuth, bookingController.getBookingByReference)
-router.get('/all-bookings', userAuth, adminOnly, bookingController.getAllBookings)
+router.get('/all-bookings', userAuth, bookingController.getAllBookings)
 router.get('/bookings-total-month', userAuth, bookingController.getBookingsTotalBaseOnMonth)
 router.put('/:id', userAuth, adminOnly, bookingController.updateBooking)
 router.delete('/:id', userAuth, adminOnly, bookingController.deleteBooking)

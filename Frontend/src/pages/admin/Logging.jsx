@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Tag, Table, Input, ConfigProvider, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin } from 'antd'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/destinationspackages.css'
@@ -337,13 +337,22 @@ export default function DestinationsPackages() {
                         </Row>
                     </div>
 
-                    <Spin spinning={loading} tip="Loading packages..." size="large">
-                        <section className="destinations-results">
-                            <div className="destinations-results-header">
-                                <Title level={4}>Available Packages</Title>
-                                <Text type="secondary">{filteredPackages.length} found</Text>
-                            </div>
 
+                    <section className="destinations-results">
+                        <div className="destinations-results-header">
+                            <Title level={4}>Available Packages</Title>
+                            <Text type="secondary">{filteredPackages.length} found</Text>
+                        </div>
+
+                        {loading ? (
+                            <div className="loading-wrapper">
+                                <Spin size="large" description="Loading packages..." />
+                            </div>
+                        ) : filteredPackages.length === 0 ? (
+                            <div className="wishlist-empty">
+                                <Empty description="No packages match your filters right now." />
+                            </div>
+                        ) : (
                             <Row gutter={[18, 18]}>
                                 {filteredPackages.map((pkg) => (
                                     <Col xs={24} sm={12} lg={8} key={pkg.id}>
@@ -396,11 +405,11 @@ export default function DestinationsPackages() {
                                     </Col>
                                 ))}
                             </Row>
-                        </section>
-                    </Spin>
+                        )}
+                    </section>
                 </div>
 
             </div>
-        </ConfigProvider>
+        </ConfigProvider >
     )
 }

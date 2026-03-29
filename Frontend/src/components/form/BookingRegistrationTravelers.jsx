@@ -149,6 +149,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                         layout="vertical"
                         onValuesChange={onValuesChange}
                         initialValues={{ travelers: Array(totalCount).fill({}) }}
+                        validateMessages={{ required: '' }}
                     >
 
                         {/* 2. Registration & Package Details */}
@@ -195,14 +196,10 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                         label={<span style={{ fontSize: '10px', fontWeight: 'bold' }}>TITLE:</span>}
                                         style={{ marginBottom: '4px' }}
                                         rules={[
-                                            { required: true, message: 'Please select a title' },
-                                            {
-                                                validator: (_, value) =>
-                                                    value === 'MR' || value === 'MS'
-                                                        ? Promise.resolve()
-                                                        : Promise.reject(new Error('Title must be MR or MS')),
-                                            },
+                                            { required: true },
                                         ]}
+                                        help={null}
+                                        validateStatus={undefined}
                                     >
                                         <Select
                                             size="small"
@@ -215,6 +212,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                 { value: 'MR', label: 'MR' },
                                                 { value: 'MS', label: 'MS' },
                                             ]}
+
                                         >
                                         </Select>
                                     </Form.Item>

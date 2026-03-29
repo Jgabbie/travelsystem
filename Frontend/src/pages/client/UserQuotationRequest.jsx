@@ -1,36 +1,35 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Modal, message, Button, Input, Card, ConfigProvider } from "antd"
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import BookingRegistrationModal from "../../components/modals/BookingRegistrationModal";
-import PaymentMethodsModal from "../../components/modals/PaymentMethodsModal";
+import React, { useEffect, useState } from "react";
+import { Modal, message, Button, Input, Card, ConfigProvider, Spin } from "antd"
+import { ArrowLeftOutlined } from "@ant-design/icons"
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../config/axiosConfig";
 import { useBooking } from "../../context/BookingContext";
 import '../../style/client/userquotationrequest.css'
-
-
 
 export default function UserQuotationRequest() {
     const [notes, setNotes] = useState("");
     const [quotation, setQuotation] = useState(null);
     const { id } = useParams();
-    const fetchCalled = useRef(false);
     const { setBookingData } = useBooking();
 
     const navigate = useNavigate();
-    const location = useLocation();
 
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false);
-    const [isBookingRegistrationOpen, setIsBookingRegistrationOpen] = useState(false);
-    const [isPaymentMethodsOpen, setIsPaymentMethodsOpen] = useState(false);
-    // console.log("Quotation ID from URL:", id);
+    const [loading, setLoading] = useState(false);
+
 
     useEffect(() => {
         const fetchQuotationDetails = async () => {
+            setLoading(true);
             try {
+                console.log("Calling API for quotation ID:", id);
                 const response = await axiosInstance.get(`/quotation/get-quotation/${id}`);
                 const quotationData = response.data;
+
+                console.log("Quotation data received from API:", quotationData);
+
                 setQuotation({
-                    packageName: quotationData.packageName,
+                    packageName: quotationData.packageId.packageName || "N/A",
                     travelDetails: quotationData.travelDetails || {},
                     reference: quotationData.reference || "N/A",
                     status: quotationData.status || "N/A",
@@ -42,66 +41,13 @@ export default function UserQuotationRequest() {
             } catch (error) {
                 console.error("Error fetching quotation details:", error);
                 setNotes("Unable to load quotation details.");
+            } finally {
+                setLoading(false);
             }
+
         }
         fetchQuotationDetails();
     }, []);
-
-
-    useEffect(() => {
-        if (fetchCalled.current) return; // skip if already called
-        fetchCalled.current = true;
-
-        const searchParams = new URLSearchParams(location.search);
-        const checkoutToken = searchParams.get("checkoutToken");
-        const bookingStatus = searchParams.get("booking");
-
-        if (bookingStatus === "success" && checkoutToken) {
-            // Optional: could call backend to finalize booking here
-            setIsBookingSuccessOpen(true);
-
-            //temp booking data, to check if booking creation works
-            const bookingData = {
-                packageName: "Boracay Tour Package",
-                travelDetails: "2 travelers, 3 days, 2 nights",
-            };
-
-            axiosInstance.post("/booking/create-booking", {
-                bookingDetails: bookingData,
-                checkoutToken
-            })
-                .then(res => {
-                    console.log("Booking created successfully:", res.data);
-                    const bookingId = res.data._id;
-                    const amount = 29000; //temporary price, can get from quotation details later
-                    const method = "Online Payment"; //temporary method, can get from payment details later
-                    const status = "Completed"; //temporary status, can get from payment details later
-                    const packageName = res.data.bookingDetails.packageName || "N/A";
-
-                    axiosInstance.post("/transaction/create-transaction", {
-                        bookingId,
-                        amount,
-                        method,
-                        status,
-                        packageName
-                    })
-                        .then(transactionRes => {
-                            console.log("Transaction created successfully:", transactionRes.data);
-                        })
-                        .catch(transactionErr => {
-                            console.error("Error creating transaction:", transactionErr.response?.data || transactionErr.message);
-                            message.error("Booking was successful, but there was an issue creating the transaction.");
-                        });
-
-                })
-                .catch(err => {
-                    console.error("Error creating booking:", err.response?.data || err.message);
-                    message.error("Booking was successful, but there was an issue finalizing it. Please contact support.");
-                });
-
-            window.history.replaceState({}, '', location.pathname); //can replace with a thank you page
-        }
-    }, [location.search, location.pathname]);
 
 
     const handleCheckout = async () => {
@@ -175,15 +121,6 @@ export default function UserQuotationRequest() {
         });
     };
 
-    const successUrl = id
-        ? `${window.location.origin}/user-quotation-request/${id}?booking=success`
-        : `${window.location.origin}/user-quotation-request?booking=success`;
-    const cancelUrl = id
-        ? `${window.location.origin}/user-quotation-request/${id}?booking=cancel`
-        : `${window.location.origin}/user-quotation-request?booking=return`;
-
-    // console.log("Current quotation state:", quotation);
-
     const handleRevise = () => {
         if (notes === "" || notes.trim() === "" || notes.length > 50) {
             message.error("Please provide notes for revision.");
@@ -201,20 +138,6 @@ export default function UserQuotationRequest() {
         });
     };
 
-    if (!quotation) {
-        return <p>Loading quotation details...</p>;
-    }
-
-    const bookingRegistrationProceed = () => {
-        setIsBookingRegistrationOpen(false);
-    }
-
-    const paymentProceed = () => {
-        setIsPaymentMethodsOpen(false);
-        handleCheckout();
-    }
-
-
     return (
         <ConfigProvider
             theme={{
@@ -223,127 +146,142 @@ export default function UserQuotationRequest() {
                 }
             }}
         >
-            <div style={{ padding: "20px" }}>
-                <div className="quotation-header-container">
-                    <div>
-                        <h2>{quotation.packageName}</h2>
-                        <p>
-                            <strong>Reference:</strong> {quotation.reference} |{" "}
-                            <strong>Status:</strong> {quotation.status}
-                        </p>
-                    </div>
-
-                    <Button
-                        className="quotation-backbutton"
-                        style={{ marginBottom: "15px" }}
-                        onClick={() => navigate("/user-package-quotation")}
-                    >
-                        Back
-                    </Button>
+            {loading && !quotation ? (
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "90vh", // fill most of the viewport
+                    flexDirection: "column",
+                }}>
+                    <Spin spinning={true} description="Loading quotation..." size="large">
+                    </Spin>
                 </div>
 
+            ) : (
+                quotation && (
+                    <div style={{ padding: "20px" }}>
+                        <Button
+                            className="quotation-backbutton"
+                            style={{ marginBottom: "15px" }}
+                            onClick={() => navigate("/user-package-quotation")}
+                        >
+                            <ArrowLeftOutlined />
+                            Back
+                        </Button>
+                        <div className="quotation-header-container">
+                            <div>
+                                <h2>{quotation.packageName}</h2>
+                                <p>
+                                    <strong>Reference:</strong> {quotation.reference} |{" "}
+                                    <strong>Status:</strong> {quotation.status}
+                                </p>
+                            </div>
+                        </div>
 
-                <div style={{ marginBottom: "20px" }}>
-                    <Card title="Quotation Revision History">
-                        {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
-                            <p>No PDF revisions uploaded yet.</p>
-                        ) : (
-                            quotation.pdfRevisions
-                                .filter((rev) => rev?.url)
-                                .map((rev, index) => (
-                                    <div key={index} style={{ marginBottom: "10px" }}>
-                                        <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
-                                        <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+
+                        <div style={{ marginBottom: "20px" }}>
+                            <Card title="Quotation Revision History">
+                                {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
+                                    <p>No PDF revisions uploaded yet.</p>
+                                ) : (
+                                    quotation.pdfRevisions
+                                        .filter((rev) => rev?.url)
+                                        .map((rev, index) => (
+                                            <div key={index} style={{ marginBottom: "10px" }}>
+                                                <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
+                                                <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                                            </div>
+                                        ))
+                                )}
+                            </Card>
+                        </div>
+
+                        <h1>Latest Revision</h1>
+                        <div
+                            style={{
+                                border: "1px solid #ccc",
+                                height: "600px",
+                                marginBottom: "20px",
+                            }}
+                        >
+                            {quotation.pdfRevisions && quotation.pdfRevisions.some((rev) => rev?.url) ? (
+                                <iframe
+                                    src={quotation.pdfRevisions.filter((rev) => rev?.url).slice(-1)[0].url}
+                                    title="Quotation PDF"
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: "none" }}
+                                />
+                            ) : (
+                                <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
+                            )}
+                        </div>
+
+                        <Card title="Revision Notes History" style={{ marginBottom: 20 }}>
+                            {quotation.revisionComments.length === 0 ? (
+                                <p>No revision comments yet.</p>
+                            ) : (
+                                quotation.revisionComments.map((comment, index) => (
+                                    <div key={index} style={{ marginBottom: 15 }}>
+                                        <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
+                                        <br />
+                                        <small>{new Date(comment.createdAt).toLocaleString()}</small>
                                     </div>
                                 ))
-                        )}
-                    </Card>
-                </div>
+                            )}
+                        </Card>
 
-                <h1>Latest Revision</h1>
-                <div
-                    style={{
-                        border: "1px solid #ccc",
-                        height: "600px",
-                        marginBottom: "20px",
-                    }}
-                >
-                    {quotation.pdfRevisions && quotation.pdfRevisions.some((rev) => rev?.url) ? (
-                        <iframe
-                            src={quotation.pdfRevisions.filter((rev) => rev?.url).slice(-1)[0].url}
-                            title="Quotation PDF"
-                            width="100%"
-                            height="100%"
-                            style={{ border: "none" }}
+                        <Input.TextArea
+                            maxLength={200}
+                            rows={3}
+                            placeholder={`Kindly provide any notes for revision (max 200 characters). Please be detailed as possible.`}
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="quotation-input-request"
+                            disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
+                            required
                         />
-                    ) : (
-                        <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
-                    )}
-                </div>
 
-                <Card title="Revision Notes History" style={{ marginBottom: 20 }}>
-                    {quotation.revisionComments.length === 0 ? (
-                        <p>No revision comments yet.</p>
-                    ) : (
-                        quotation.revisionComments.map((comment, index) => (
-                            <div key={index} style={{ marginBottom: 15 }}>
-                                <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
-                                <br />
-                                <small>{new Date(comment.createdAt).toLocaleString()}</small>
+                        <div className="buttons-container-userquotationrequest">
+                            <Button
+                                className="acceptbutton-userquotationrequest"
+                                type="primary"
+                                onClick={handleAccept}
+                            >
+                                Accept
+                            </Button>
+                            <Button
+                                className="revisebutton-userquotationrequest"
+                                onClick={handleRevise}
+                                disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
+                            >
+                                Request Revision
+                            </Button>
+                        </div>
+
+
+                        {/* booking success modal */}
+                        <Modal
+                            className="package-wishlist-modal"
+                            open={isBookingSuccessOpen}
+                            footer={null}
+                            onCancel={() => setIsBookingSuccessOpen(false)}
+                        >
+                            <h2 className="package-wishlist-title">Booking Successful</h2>
+                            <p className="package-wishlist-text">Your booking has been confirmed.</p>
+                            <div className="package-wishlist-actions">
+                                <Button className="package-action-secondary" onClick={() => {
+                                    setIsBookingSuccessOpen(false)
+                                }}>
+                                    OK
+                                </Button>
                             </div>
-                        ))
-                    )}
-                </Card>
-
-                <Input.TextArea
-                    maxLength={200}
-                    rows={3}
-                    placeholder={`Kindly provide any notes for revision (max 200 characters). Please be detailed as possible.`}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="quotation-input-request"
-                    disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
-                    required
-                />
-
-                <div className="buttons-container-userquotationrequest">
-                    <Button
-                        className="acceptbutton-userquotationrequest"
-                        type="primary"
-                        onClick={handleAccept}
-                    >
-                        Accept
-                    </Button>
-                    <Button
-                        className="revisebutton-userquotationrequest"
-                        onClick={handleRevise}
-                        disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
-                    >
-                        Request Revision
-                    </Button>
-                </div>
-
-
-                {/* booking success modal */}
-                <Modal
-                    className="package-wishlist-modal"
-                    open={isBookingSuccessOpen}
-                    footer={null}
-                    onCancel={() => setIsBookingSuccessOpen(false)}
-                >
-                    <h2 className="package-wishlist-title">Booking Successful</h2>
-                    <p className="package-wishlist-text">Your booking has been confirmed.</p>
-                    <div className="package-wishlist-actions">
-                        <Button className="package-action-secondary" onClick={() => {
-                            setIsBookingSuccessOpen(false)
-                        }}>
-                            OK
-                        </Button>
+                        </Modal>
                     </div>
-                </Modal>
-            </div>
+                ))
+            }
 
-
-        </ConfigProvider>
+        </ConfigProvider >
     );
 }

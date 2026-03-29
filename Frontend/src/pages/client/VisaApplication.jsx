@@ -17,6 +17,9 @@ const VISA_STEPS = [
     { title: 'Processing DFA', description: 'Processing | DFA', },
 ];
 
+//temporary
+const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
+
 export default function VisaApplication() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -263,7 +266,7 @@ export default function VisaApplication() {
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
             <div className="user-bookings-page">
                 <TopNavUser />
-                <div className="user-bookings-container" style={{ maxWidth: 900, margin: '0 auto' }}>
+                <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
                     <Button
                         icon={<ArrowLeftOutlined />}
                         style={{ marginTop: 24, marginBottom: 8 }}
@@ -275,46 +278,50 @@ export default function VisaApplication() {
                     <Spin spinning={loading}>
                         {application && (
                             <>
-                                <Card style={{ marginBottom: 32 }}>
-                                    <Descriptions title="Application Info" bordered column={1}>
-                                        <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
-                                        <Descriptions.Item label="Status">
-                                            <Tag>{application?.status || 'N/A'}</Tag>
-                                        </Descriptions.Item>
-                                        <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
-                                        <Descriptions.Item label="Applicant Name">{application.applicantName || application.user?.name}</Descriptions.Item>
-                                        <Descriptions.Item label="Preferred Date">{application.preferredDate}</Descriptions.Item>
-                                        <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
-                                        <Descriptions.Item label="Application Type">{application.serviceName}</Descriptions.Item>
-                                        <Descriptions.Item label="Total Price">₱{servicePrice.toFixed(2)}</Descriptions.Item>
-                                    </Descriptions>
-                                </Card>
-                                <Card title="Progress Tracker" style={{ marginBottom: 32, height: 180 }}>
-                                    <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
-                                        <Steps
-                                            direction="horizontal"
-                                            size="default"
-                                            current={currentStep}
-                                            style={{ minWidth: 1100, width: 'max-content' }}
-                                            items={process.map((step, idx) => ({
-                                                title: (
-                                                    <span style={{
-                                                        fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                        fontSize: 16,
-                                                        color: "#305797",
-                                                        textAlign: 'center',
-                                                        whiteSpace: 'nowrap',
-                                                    }}>
-                                                        {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
-                                                    </span>
-                                                ),
-                                                description: (
-                                                    <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
-                                                ),
-                                            }))}
-                                        />
-                                    </div>
-                                </Card>
+                                <div style={{ display: 'flex', flexDirection: 'row', gap: 24 }}>
+                                    <Card style={{ marginBottom: 32, width: '100%' }}>
+                                        <Descriptions title="Application Info" bordered column={1}>
+                                            <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
+                                            <Descriptions.Item label="Status">
+                                                <Tag>{application?.status || 'N/A'}</Tag>
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
+                                            <Descriptions.Item label="Applicant Name">{application.applicantName || application.user?.name}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Date">{application.preferredDate}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
+                                            <Descriptions.Item label="Application Type">{application.serviceName}</Descriptions.Item>
+                                            <Descriptions.Item label="Total Price">₱{servicePrice.toFixed(2)}</Descriptions.Item>
+                                        </Descriptions>
+                                    </Card>
+
+                                    <Card title="Progress Tracker" style={{ marginBottom: 32, minHeight: 180 }}>
+                                        <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
+                                            <Steps
+                                                direction="vertical"
+                                                size="default"
+                                                current={currentStep}
+                                                style={{ minWidth: 350, width: 'max-content' }}
+                                                items={process.map((step, idx) => ({
+                                                    title: (
+                                                        <span style={{
+                                                            fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                            fontSize: 16,
+                                                            color: "#305797",
+                                                            textAlign: 'center',
+                                                            whiteSpace: 'nowrap',
+                                                        }}>
+                                                            {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
+                                                        </span>
+                                                    ),
+                                                    description: (
+                                                        <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
+                                                    ),
+                                                }))}
+                                            />
+                                        </div>
+                                    </Card>
+                                </div>
+
 
                                 {application.status[0] && application?.status[0].toLowerCase() === 'payment complete' && (
                                     <Card title="Upload Requirements">
@@ -387,7 +394,7 @@ export default function VisaApplication() {
                                             className="payment-methods-cards"
                                             style={{ width: '100%', display: 'flex', gap: '16px' }}
                                         >
-                                            <Radio
+                                            <Radio.Button
                                                 value="paymongo"
                                                 className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                                 style={{ flex: 1, height: 'auto', padding: '20px' }}
@@ -397,9 +404,9 @@ export default function VisaApplication() {
                                                     <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
                                                     <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
                                                 </div>
-                                            </Radio>
+                                            </Radio.Button>
 
-                                            <Radio
+                                            <Radio.Button
                                                 value="manual"
                                                 className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                                 style={{ flex: 1, height: 'auto', padding: '20px' }}
@@ -409,7 +416,7 @@ export default function VisaApplication() {
                                                     <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
                                                     <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
                                                 </div>
-                                            </Radio>
+                                            </Radio.Button>
                                         </Radio.Group>
                                     </div>
 

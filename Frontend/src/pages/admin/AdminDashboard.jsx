@@ -8,15 +8,6 @@ import axiosInstance from "../../config/axiosConfig";
 import '../../style/admin/admindashboard.css';
 
 export default function AdminDashboard() {
-  const themeColor = "#305797";
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const monthlyRevenue = [120000, 98000, 135000, 160000, 142000, 175000, 190000, 210000, 195000, 220000, 205000, 240000];
-  const bookingTrend = [80, 92, 110, 125, 118, 140, 150, 165, 158, 172, 168, 190];
-  const paymentSplit = [
-    { id: 0, value: 48, label: "Domestic" },
-    { id: 1, value: 32, label: "International" },
-  ];
-
   const [stats, setStats] = useState({
     totalTransactions: 0,
     totalBookings: 0,
@@ -28,6 +19,91 @@ export default function AdminDashboard() {
   const [pieWidth, setPieWidth] = useState(0);
   const barRef = useRef(null);
   const pieRef = useRef(null);
+
+  const [transactions, setTransactions] = useState([]);
+  const [bookings, setBookings] = useState([]);
+
+
+  //top 3 packages
+  const packageCountMap = {};
+
+  bookings.forEach((booking) => {
+    const packageId = booking.packageId?._id;
+    const packageName = booking.packageId?.packageName;
+
+    if (!packageId) return;
+
+    if (!packageCountMap[packageId]) {
+      packageCountMap[packageId] = { packageName, count: 0 };
+    }
+
+    packageCountMap[packageId].count++;
+  });
+
+  const packageCountArray = Object.values(packageCountMap);
+
+  packageCountArray.sort((a, b) => b.count - a.count);
+
+  const top3Packages = packageCountArray.slice(0, 3);
+
+  console.log("Top 3 most booked packages:", top3Packages);
+
+
+
+  //booking trends
+  const currentYear = new Date().getFullYear();
+
+  const bookingTrendData = Array(12).fill(0);
+
+  bookings.forEach((booking) => {
+    if (!booking.bookingDate) return;
+
+    const date = new Date(booking.bookingDate);
+
+    if (date.getFullYear() !== currentYear) return;
+
+    const monthIndex = date.getMonth();
+    bookingTrendData[monthIndex]++;
+  });
+
+  const bookingTrend = bookingTrendData;
+
+
+  // package type amount
+  const bookingTypeCount = {
+    domestic: 0,
+    international: 0
+  };
+
+  bookings.forEach((booking) => {
+    const type = booking.packageId?.packageType?.toLowerCase();
+
+    if (type === "domestic") bookingTypeCount.domestic++;
+    if (type === "international") bookingTypeCount.international++;
+  });
+
+  const paymentSplit = [
+    { id: 0, value: bookingTypeCount.domestic, label: "Domestic" },
+    { id: 1, value: bookingTypeCount.international, label: "International" },
+  ];
+
+
+  //transactions amount
+  const monthlyRevenueData = Array(12).fill(0);
+
+  transactions.forEach((txn) => {
+    if (!txn.createdAt) return;
+
+    const date = new Date(txn.createdAt);
+    const monthIndex = date.getMonth(); // 0 = Jan, 11 = Dec
+
+    monthlyRevenueData[monthIndex] += Number(txn.amount || 0);
+  });
+
+  const themeColor = "#305797";
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthlyRevenue = monthlyRevenueData
+
 
 
   useEffect(() => {
@@ -45,6 +121,37 @@ export default function AdminDashboard() {
     };
 
     fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await axiosInstance.get("/transaction/all-transactions");
+        console.log("Fetched transactions:", response.data);
+
+        setTransactions(response.data);
+
+      } catch (error) {
+        console.error("Failed to load transactions:", error);
+        message.error("Unable to load transactions.");
+      }
+    };
+
+    const fetchBookings = async () => {
+      try {
+        const response = await axiosInstance.get("/booking/all-bookings")
+        console.log("Fetched bookings:", response.data);
+
+        setBookings(response.data);
+
+      } catch (error) {
+        console.error("Failed to load bookings:", error);
+        message.error("Unable to load bookings.");
+      }
+    }
+
+    fetchTransactions();
+    fetchBookings();
   }, []);
 
   useEffect(() => {
@@ -233,11 +340,31 @@ export default function AdminDashboard() {
       </div>
 
       <div className="dashboard-section">
-        <h2>Recent Activity</h2>
+        <h2>Top 3 Most Booked Packages</h2>
 
-        <Card className="activity-card">
-
-        </Card>
+        <Row gutter={[16, 16]}>
+          {top3Packages.map((pkg, idx) => (
+            <Col xs={24} sm={24} md={8} key={pkg.packageName}>
+              <Card
+                className="top-package-card"
+              >
+                <div className="top-package-content">
+                  <h3 className="top-package-card-name">
+                    {idx + 1}. {pkg.packageName}
+                  </h3>
+                  <p className="top-package-card-bookings" >
+                    {pkg.count} bookings
+                  </p>
+                  <div
+                    className="top-package-card-number"
+                  >
+                    #{idx + 1}
+                  </div>
+                </div>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </div>
 
     </div>

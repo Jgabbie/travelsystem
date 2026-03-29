@@ -287,6 +287,12 @@
     text-align: center;
 }
 
+.loading-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 @media (max-width: 768px) {
     .wishlist-page {
         padding: 100px 20px 32px;

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal } from 'antd'
+import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import TopNavUser from '../../components/TopNavUser'
 import axiosInstance from '../../config/axiosConfig'
@@ -22,6 +22,9 @@ export default function Wishlist() {
                 setIsLoading(true)
                 const response = await axiosInstance.get('/wishlist')
                 const wishlist = response?.data?.wishlist || []
+
+                //console.log('Wishlist data:', wishlist)
+
                 setWishlistItems(wishlist)
             } catch (error) {
                 const errorMessage =
@@ -39,13 +42,18 @@ export default function Wishlist() {
     const wishlistPackages = useMemo(() => {
         return wishlistItems.map((entry) => {
             const pkg = entry?.packageId || {}
-            const availableSlots = Number(pkg.packageAvailableSlots || 0)
+            const availableSlots = (pkg.packageSpecificDate || []).reduce(
+                (total, item) => total + Number(item.slots || 0),
+                0
+            )
             const availabilityLabel =
                 availableSlots <= 0
                     ? 'Sold out'
                     : availableSlots <= 5
                         ? 'Few slots'
                         : 'Available'
+
+            console.log(availableSlots)
 
             return {
                 wishlistId: entry._id,
@@ -54,9 +62,9 @@ export default function Wishlist() {
                 location: pkg.packageCode || pkg.packageType || 'Package',
                 duration: pkg.packageDuration ? `${pkg.packageDuration} DAYS` : 'N/A',
                 price: pkg.packagePricePerPax ?? 0,
-                category: pkg.packageType || 'Other',
+                category: pkg.packageType ? pkg.packageType.toUpperCase() : 'Other',
                 availability: availabilityLabel,
-                typeLabel: pkg.packageType || 'Package',
+                typeLabel: pkg.packageType ? pkg.packageType.toUpperCase() : 'Package',
                 image: pkg.images?.[0] || ''
             }
         })
@@ -131,6 +139,7 @@ export default function Wishlist() {
                 }
             }}
         >
+
             <div>
                 <TopNavUser />
 
@@ -214,8 +223,8 @@ export default function Wishlist() {
                         </div>
 
                         {isLoading ? (
-                            <div className="wishlist-empty">
-                                <Empty description="Loading wishlist..." />
+                            <div className="loading-wrapper">
+                                <Spin size="large" description="Loading wishlist..." />
                             </div>
                         ) : filteredPackages.length === 0 ? (
                             <div className="wishlist-empty">

@@ -1,0 +1,16 @@
+.ant-steps-vertical .ant-steps-item-tail {
+    display: none !important;
+}
+
+.no-line .ant-steps-item-tail {
+    display: none !important;
+}
+
+.steps-vertical-line .ant-steps-item {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.steps-vertical-line .ant-steps-item-content {
+    margin-left: 0 !important;
+}

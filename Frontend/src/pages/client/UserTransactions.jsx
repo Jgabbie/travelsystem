@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal } from 'antd'
 import { SearchOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
@@ -52,6 +52,7 @@ export default function UserTransactions() {
     const filteredData = transactions.filter(item => {
         const matchesSearch =
             (item.packageName?.toLowerCase().includes(searchText.toLowerCase())) ||
+            (item.applicationType?.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.reference?.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.method?.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.status?.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -73,9 +74,9 @@ export default function UserTransactions() {
             key: 'reference'
         },
         {
-            title: 'Tour Package',
-            dataIndex: 'packageName' || 'applicationType', // show packageName if exists, otherwise show applicationType
-            key: 'packageName' || 'applicationType',
+            title: 'Items',
+            key: 'items',
+            render: (_, record) => record.packageName || record.applicationType || '--',
         },
         {
             title: 'Date and Time',

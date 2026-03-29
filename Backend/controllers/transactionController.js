@@ -67,6 +67,7 @@ const getAllTransactions = async (_req, res) => {
         res.status(200).json(transactions)
     } catch (error) {
         logAction('GET_ALL_TRANSACTIONS_ERROR', _req.userId, { error: error.message })
+        console.error('Error fetching transactions:', error)
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
     }
 }

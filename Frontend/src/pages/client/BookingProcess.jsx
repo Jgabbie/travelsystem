@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Button, message, Upload, Form, Steps, ConfigProvider, Space, Spin } from 'antd'
+import { Button, message, Upload, Form, Steps, ConfigProvider, Spin } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import dayjs from 'dayjs';
@@ -43,8 +44,6 @@ const toBase64 = (file) =>
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
-
-
 
 
 export default function BookingProcess() {
@@ -438,10 +437,18 @@ export default function BookingProcess() {
             )}
 
             <div className='bookingprocess-container'>
-
+                <Button
+                    onClick={() => navigate(-1)}
+                    style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
+                >
+                    <ArrowLeftOutlined />
+                    Back
+                </Button>
                 {/* Solo/Group Selection */}
                 <div className='bookingprocess-sologroup-container booking-section'>
+
                     <div className="solo-group-content">
+
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -458,14 +465,6 @@ export default function BookingProcess() {
                             </div>
 
 
-                            <Space style={{ marginLeft: "auto" }}>
-                                <Button
-                                    onClick={() => navigate(-1)}
-                                    style={{ display: 'flex', alignItems: 'center' }}
-                                >
-                                    Back
-                                </Button>
-                            </Space>
                         </div>
                         <div className="solo-group-cards">
                             <button

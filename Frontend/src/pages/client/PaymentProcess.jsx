@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message, Spin } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
@@ -9,8 +9,8 @@ import '../../style/components/modals/displayinvoicemodal.css';
 import '../../style/client/paymentprocees.css';
 import axiosInstance from '../../config/axiosConfig';
 
+//temporary
 const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
-
 
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -130,9 +130,9 @@ export default function PaymentProcess() {
 
     const [bookingReference, setBookingReference] = useState(null);
 
+
+    //checkout
     const proceedBooking = async () => {
-
-
         if (!paymentType) {
             message.warning("Please select a payment type.");
             return;
@@ -501,6 +501,7 @@ export default function PaymentProcess() {
                             onClick={() => navigate(-1)}
                             style={{ display: 'flex', alignItems: 'center' }}
                         >
+                            <ArrowLeftOutlined />
                             Back
                         </Button>
                     </Space>

@@ -316,8 +316,11 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                         </Form.Item>
                                     </td>
                                     <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>Contact Number:</td>
+
                                     <td style={{ border: '1px solid #000' }}>
+
                                         <div style={{ display: 'flex', width: '100%' }}>
+
                                             <div style={{ flex: 1 }}>
                                                 <Form.Item
                                                     name="emergencyContact"
@@ -330,19 +333,22 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                                         }
                                                     ]}
                                                 >
-                                                    <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
+                                                    <Input variant="borderless" size="small" style={{ fontSize: '10px', padding: '4px' }} />
                                                 </Form.Item>
                                             </div>
+
                                             <div style={{ borderLeft: '1px solid #000', padding: '4px', width: '80px', fontWeight: 'bold' }}>Relation:</div>
+
                                             <div style={{ flex: 1, borderLeft: '1px solid #000' }}>
                                                 <Form.Item
                                                     name="emergencyRelation"
                                                     noStyle
                                                     rules={[{ required: true, message: 'Relation is required' }]}
                                                 >
-                                                    <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
+                                                    <Input variant="borderless" size="small" style={{ fontSize: '10px', padding: '4px' }} />
                                                 </Form.Item>
                                             </div>
+
                                         </div>
                                     </td>
                                 </tr>

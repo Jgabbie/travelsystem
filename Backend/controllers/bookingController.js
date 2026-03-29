@@ -102,14 +102,15 @@ const getBookingsTotalBaseOnMonth = async (req, res) => {
 
 const getAllBookings = async (_req, res) => {
     try {
-        const bookings = await BookingModel.find({}).sort({ createdAt: -1 })
+        const bookings = await BookingModel.find({})
             .populate('userId', 'username')
             .populate('packageId', 'packageName packageType')
-
             .sort({ createdAt: -1 });
 
         res.status(200).json(bookings)
     } catch (error) {
+        logAction('GET_ALL_BOOKINGS_ERROR', _req.userId, { error: error.message })
+        console.error('Error fetching bookings:', error)
         res.status(500).json({ message: 'Error fetching bookings', error })
     }
 }
