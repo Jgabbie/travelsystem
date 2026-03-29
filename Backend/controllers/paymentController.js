@@ -120,9 +120,9 @@ const createCheckoutSessionPassport = async (req, res) => {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const { applicationId, totalPrice, successUrl, cancelUrl, email } = req.body;
+        const { applicationId, applicationNumber, totalPrice, successUrl, cancelUrl, email } = req.body;
 
-        if (!applicationId || !totalPrice || !successUrl || !cancelUrl) {
+        if (!applicationId || !applicationNumber || !totalPrice || !successUrl || !cancelUrl) {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
@@ -133,6 +133,7 @@ const createCheckoutSessionPassport = async (req, res) => {
         const metadata = {
             userId,
             applicationId,
+            applicationNumber,
             applicationType: "Passport Application",
             email,
             baseAmountCents,
@@ -203,9 +204,9 @@ const createCheckoutSessionVisa = async (req, res) => {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const { applicationId, totalPrice, successUrl, cancelUrl, email } = req.body;
+        const { applicationId, applicationNumber, totalPrice, successUrl, cancelUrl, email } = req.body;
 
-        if (!applicationId || !totalPrice || !successUrl || !cancelUrl) {
+        if (!applicationId || !applicationNumber || !totalPrice || !successUrl || !cancelUrl) {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
@@ -216,6 +217,7 @@ const createCheckoutSessionVisa = async (req, res) => {
         const metadata = {
             userId,
             applicationId,
+            applicationNumber,
             applicationType: "Visa Application",
             email,
             baseAmountCents,
@@ -499,7 +501,7 @@ const handlePayMongoWebhook = async (req, res) => {
             await NotificationModel.create({
                 userId: user._id,
                 title: 'Visa Payment Successful',
-                message: `Your visa application (${metadata.applicationId}) was successful.`,
+                message: `Your visa application (${metadata.applicationNumber}) was successful.`,
                 type: 'visa',
                 link: '/user-transactions',
             });
@@ -542,7 +544,7 @@ const handlePayMongoWebhook = async (req, res) => {
             await NotificationModel.create({
                 userId: user._id,
                 title: 'Passport Payment Successful',
-                message: `Your passport application (${metadata.applicationId}) was successful.`,
+                message: `Your passport application (${metadata.applicationNumber}) was successful.`,
                 type: 'passport',
                 link: '/user-transactions',
             });

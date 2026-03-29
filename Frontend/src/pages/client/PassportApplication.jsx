@@ -159,9 +159,9 @@ export default function PassportApplication() {
                 }
 
 
-
                 const payload = {
                     applicationId: application._id,
+                    applicationNumber: application.applicationId,
                     totalPrice: 2000, // make sure this field exists in your application
                     successUrl: `${window.location.origin}/user-applications/success/${application._id}`, // redirect here after success
                     cancelUrl: `${window.location.origin}/passport-application/${application._id}`, // stay on same page if cancelled
