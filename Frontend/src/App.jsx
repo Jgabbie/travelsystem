@@ -21,6 +21,8 @@ import QuotationsPaymentProcess from "./pages/client/QuotationsPaymentProcess";
 import QuotationBookingProcess from "./pages/client/QuotationBookingProcess";
 import PaymentProcess from "./pages/client/PaymentProcess";
 import SuccessfulBooking from "./pages/client/SuccessfulBooking";
+import SuccessfulPaymentPassport from "./pages/client/SuccessfulPaymentPassport";
+import SuccessfulPaymentVisa from "./pages/client/SuccessfulPaymentVisa";
 import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
 import PackageInternationalQuotation from "./pages/client/PackageInternationalQuotation";
 import UserPreference1 from "./pages/client/newuser/UserPreference1";
@@ -64,7 +66,8 @@ import EmployeeRoute from "./routes/EmployeeRoute";
 
 import "antd/dist/reset.css";
 import { BookingProvider } from "./context/BookingContext";
-import SuccessfulPaymentPassport from "./pages/client/SuccessfulPaymentPassport";
+
+
 
 
 
@@ -171,12 +174,14 @@ function App() {
             <Route path='/booking-payment' element={<PaymentProcess />} />
             <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
             <Route path="/user-applications/success/:id" element={<SuccessfulPaymentPassport />} />
+            <Route path="/user-applications/success/visa/:id" element={<SuccessfulPaymentVisa />} />
             <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
             <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
             <Route path="/user-preferences" element={<UserPreference1 />} />
             <Route path="/user-applications" element={<UserApplications />} />
             <Route path="/passport-application/:id" element={<PassportApplication />} />
             <Route path="/visa-application/:id" element={<VisaApplication />} />
+
           </Route>
 
           <Route path='*' element={<Navigate to="/home" replace />} />

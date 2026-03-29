@@ -17,9 +17,6 @@ const VISA_STEPS = [
     { title: 'Processing DFA', description: 'Processing | DFA', },
 ];
 
-//temporary
-const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
-
 export default function VisaApplication() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -155,7 +152,7 @@ export default function VisaApplication() {
                 const payload = {
                     applicationId: application._id,
                     totalPrice: servicePrice, // make sure this field exists in your application
-                    successUrl: `${window.location.origin}/user-applications`, // redirect here after success
+                    successUrl: `${window.location.origin}/user-applications/success/visa/${application._id}`, // redirect here after success
                     cancelUrl: `${window.location.origin}/visa-application/${application._id}`, // stay on same page if cancelled
                     email: application.email,
                 };
