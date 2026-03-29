@@ -9,6 +9,7 @@ const TransactionModel = require("../models/transactions");
 const UserModel = require("../models/user");
 const NotificationModel = require("../models/notification");
 const PassportModel = require("../models/passport");
+const VisaModel = require("../models/visas");
 
 const generateBookingReference = () => {
     const timestamp = Date.now().toString().slice(-6);
@@ -478,6 +479,22 @@ const handlePayMongoWebhook = async (req, res) => {
                 method: 'Paymongo',
                 status: 'Successful',
             });
+
+            console.log('Created transaction for visa application:', metadata.applicationId);
+
+            const updatedVisa = await VisaModel.findOneAndUpdate(
+                { _id: metadata.applicationId }, // filter object
+                {
+                    $set: { status: ["Payment Complete"], currentStepIndex: 1 } // replace array & update progress
+                },
+                { new: true } // return the updated document
+            );
+
+            if (!updatedVisa) {
+                console.warn(`No visa application found with applicationId ${metadata.applicationId}`);
+            } else {
+                console.log("Visa payment status updated:", updatedVisa.status);
+            }
 
             await NotificationModel.create({
                 userId: user._id,
