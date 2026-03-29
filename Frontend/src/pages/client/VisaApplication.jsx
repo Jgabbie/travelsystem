@@ -151,7 +151,7 @@ export default function VisaApplication() {
 
                 const payload = {
                     applicationId: application._id,
-                    applicationNumber: application.applicationId,
+                    applicationNumber: application.applicationNumber,
                     totalPrice: servicePrice, // make sure this field exists in your application
                     successUrl: `${window.location.origin}/user-applications/success/visa/${application._id}`, // redirect here after success
                     cancelUrl: `${window.location.origin}/visa-application/${application._id}`, // stay on same page if cancelled
