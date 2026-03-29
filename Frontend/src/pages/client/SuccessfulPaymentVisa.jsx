@@ -20,11 +20,12 @@ export default function SuccessfulPaymentVisa() {
 
                 console.log("Polling visa application status:", res.data.status);
 
-                if (res.data.status?.toLowerCase() === 'payment complete') {
+                if (res.data.status?.some((s) => s.toLowerCase() === 'payment complete')) {
                     setVerified(true);
                     setLoading(false);
                     clearInterval(interval);
                 }
+
             } catch (err) {
                 console.error(err);
             }
