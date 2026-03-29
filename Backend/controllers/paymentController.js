@@ -8,7 +8,7 @@ const BookingModel = require("../models/booking");
 const TransactionModel = require("../models/transactions");
 const UserModel = require("../models/user");
 const NotificationModel = require("../models/notification");
-const PassportApplicationModel = require("../models/passport");
+const PassportModel = require("../models/passport");
 
 const generateBookingReference = () => {
     const timestamp = Date.now().toString().slice(-6);
@@ -509,8 +509,8 @@ const handlePayMongoWebhook = async (req, res) => {
 
             console.log('Created transaction for passport application:', metadata.applicationId);
 
-            const updatedApp = await PassportApplicationModel.findOneAndUpdate(
-                { applicationId: metadata.applicationId },
+            const updatedApp = await PassportModel.findOneAndUpdate(
+                metadata.applicationId,
                 { status: "Payment complete" },
                 { new: true }
             );
@@ -520,7 +520,6 @@ const handlePayMongoWebhook = async (req, res) => {
             } else {
                 console.log("Updated status:", updatedApp.status);
             }
-
             console.log("Updated status:", updatedApp.status);
 
             await NotificationModel.create({
