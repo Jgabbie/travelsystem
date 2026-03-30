@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Select, Button, ConfigProvider, DatePicker, TimePicker } from 'antd'
+import { Select, Button, ConfigProvider, DatePicker, TimePicker, Modal } from 'antd'
 import { useAuth } from '../../hooks/useAuth'
 import dayjs from 'dayjs'
 import LoginModal from '../../components/modals/LoginModal'
@@ -23,9 +23,10 @@ const dfaLocations = [
 
 export default function NewPassport() {
     const [loginModalVisible, setLoginModalVisible] = useState(false);
+    const [sentModalVisible, setSentModalVisible] = useState(false);
     const [location, setLocation] = useState(undefined)
-    const [preferredDate, setPreferredDate] = useState('')
-    const [preferredTime, setPreferredTime] = useState('')
+    const [preferredDate, setPreferredDate] = useState(null)
+    const [preferredTime, setPreferredTime] = useState(null)
     const { auth } = useAuth()
 
     const [error, setError] = useState({
@@ -72,6 +73,7 @@ export default function NewPassport() {
                 preferredTime,
                 applicationType: 'New Passport'
             });
+            setSentModalVisible(true);
             console.log('Submitting passport application request');
         } catch (error) {
             console.error('Error submitting passport application request:', error);
@@ -107,6 +109,35 @@ export default function NewPassport() {
                     setLoginModalVisible(false);
                 }}
             />
+
+            <Modal
+                open={sentModalVisible}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Application submitted</h1>
+                    <p className='signup-success-text'>Your passport application has been submitted successfully. Kindly wait for your application to be approved.</p>
+                    <Button
+                        id='signup-success-button'
+                        onClick={() => {
+                            setSentModalVisible(false)
+                            setLocation(undefined)
+                            setPreferredDate(null)
+                            setPreferredTime(null)
+                            setError({
+                                location: '',
+                                preferredDate: '',
+                                preferredTime: ''
+                            })
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </div>
+            </Modal>
 
             <div className="passport-page">
                 <TopNavUser />
@@ -193,6 +224,7 @@ export default function NewPassport() {
                                 <div className="form-group">
                                     <label className="passport-label">Preferred date</label>
                                     <DatePicker
+                                        value={preferredDate ? dayjs(preferredDate) : null}
                                         disabledDate={disableDates}
                                         onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
                                         className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
@@ -205,6 +237,7 @@ export default function NewPassport() {
                                 <div className='form-group'>
                                     <label className="passport-label">Preferred time</label>
                                     <TimePicker
+                                        value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
                                         format="h:mm A"
                                         use12Hours
                                         showNow={false}

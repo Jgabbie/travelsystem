@@ -230,6 +230,7 @@ export default function BookingProcess() {
             setBookingData(prev => ({
                 ...prev,
                 ...currentFormValues,
+                travelers: prev.travelers,
                 travelerCounts: travelersCount,
                 bookingType: bookingType,
                 totalPrice: totalPrice,
@@ -361,6 +362,13 @@ export default function BookingProcess() {
         console.log('Form values changed:', changedValues);
         console.log('All current form values:', allValues);
         console.log("Current Form Data:", allValues.travelers);
+
+        if (changedValues.travelers) {
+            setBookingData(prev => ({
+                ...prev,
+                travelers: allValues.travelers
+            }));
+        }
     };
 
     const handleChange = (info, index) => {
@@ -702,7 +710,7 @@ export default function BookingProcess() {
                                     </div>
                                 )}
                                 <div className='booking-summary-total-amount-note'>
-                                    *All inclusions fees are already factored in the total price.
+                                    *All inclusions fees for this package are already factored in the total price, execpt for Visas and other additionals. For solo booking, rate has already been applied in the total price.
                                 </div>
 
                                 <div className='booking-summary-package-type-card' >

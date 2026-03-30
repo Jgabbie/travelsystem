@@ -131,11 +131,11 @@ const getBookingByReference = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' })
         }
 
-        const transaction = await TransactionModel.findOne({ bookingId: booking._id })
-            .sort({ createdAt: -1 })
+        const transactions = await TransactionModel.find({ bookingId: booking._id })
+            .sort({ createdAt: -1 }) // latest first
             .populate('packageId', 'packageName')
 
-        return res.status(200).json({ booking, transaction })
+        return res.status(200).json({ booking, transactions })
     } catch (error) {
         return res.status(500).json({ message: 'Error fetching booking details', error })
     }

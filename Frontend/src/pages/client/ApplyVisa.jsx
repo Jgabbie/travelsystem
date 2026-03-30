@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Input, Button, ConfigProvider, DatePicker, TimePicker } from 'antd'
+import { Input, Button, ConfigProvider, DatePicker, TimePicker, Modal } from 'antd'
 import { useLocation } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { useAuth } from '../../hooks/useAuth'
@@ -10,6 +10,8 @@ import axiosInstance from '../../config/axiosConfig'
 
 export default function ApplyVisa() {
     const [loginModalVisible, setLoginModalVisible] = useState(false)
+    const [sentModalVisible, setSentModalVisible] = useState(false)
+
     const [services, setServices] = useState([])
     const [selectedServiceId, setSelectedServiceId] = useState(undefined)
     const [fullName, setFullName] = useState('')
@@ -102,6 +104,7 @@ export default function ApplyVisa() {
                 applicationType: 'Visa',
                 status: steps[0]
             })
+            setSentModalVisible(true)
             console.log('Submitting visa application request')
         } catch (submitError) {
             console.error('Error submitting visa application request:', submitError)
@@ -137,6 +140,35 @@ export default function ApplyVisa() {
                     setLoginModalVisible(false)
                 }}
             />
+
+            <Modal
+                open={sentModalVisible}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Application submitted</h1>
+                    <p className='signup-success-text'>Your visa application has been submitted successfully. Kindly wait for your application to be approved.</p>
+                    <Button
+                        id='signup-success-button'
+                        onClick={() => {
+                            setSentModalVisible(false)
+                            setPurpose('')
+                            setPreferredDate(null)
+                            setPreferredTime(null)
+                            setError({
+                                purpose: '',
+                                preferredDate: '',
+                                preferredTime: '',
+                            })
+                        }}
+                    >
+                        Continue
+                    </Button>
+                </div>
+            </Modal>
 
             <div className="passport-page">
                 <TopNavUser />
@@ -188,6 +220,7 @@ export default function ApplyVisa() {
                                 <div className="form-group">
                                     <label className="passport-label">Preferred appointment date</label>
                                     <DatePicker
+                                        value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
                                         disabledDate={disableDates}
                                         onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
                                         className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
@@ -201,6 +234,7 @@ export default function ApplyVisa() {
                                 <div className="form-group">
                                     <label className="passport-label">Preferred appointment time</label>
                                     <TimePicker
+                                        value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
                                         format="h:mm A"
                                         use12Hours
                                         showNow={false}

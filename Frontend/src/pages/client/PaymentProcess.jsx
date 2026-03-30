@@ -130,6 +130,27 @@ export default function PaymentProcess() {
 
     const [bookingReference, setBookingReference] = useState(null);
 
+    const bookingDetails = {
+        dateOfRegistration: bookingData.dateOfRegistration,
+        travelDate: bookingData.travelDate,
+        tourPackageTitle: bookingData.tourPackageTitle,
+        tourPackageVia: bookingData.tourPackageVia,
+        leadTitle: bookingData.leadTitle,
+        leadFullName: bookingData.leadFullName,
+        leadEmail: bookingData.leadEmail,
+        leadContact: bookingData.leadContact,
+        leadAddress: bookingData.leadAddress,
+        travelers: bookingData.travelers,
+        dietaryDetails: bookingData.dietaryDetails,
+        dietaryRequest: bookingData.dietaryRequest,
+        medicalDetails: bookingData.medicalDetails,
+        medicalRequest: bookingData.medicalRequest,
+        ownInsurance: bookingData.ownInsurance,
+        purchaseInsurance: bookingData.purchaseInsurance,
+        totalPrice: totalAmount,
+    }
+
+    console.log("Booking Details for Payment Payload:", bookingDetails);
 
     //checkout
     const proceedBooking = async () => {
@@ -152,6 +173,7 @@ export default function PaymentProcess() {
             setLoading(true);
             const successToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
             localStorage.setItem(SUCCESS_TOKEN_KEY, successToken);
+
 
             const amountToCharge = paymentType === 'deposit'
                 ? depositAmount
@@ -189,7 +211,7 @@ export default function PaymentProcess() {
                     amount: amountToCharge,
                     paymentType,
                     bookingReference: bookingRef,
-                    bookingDetails: bookingData,
+                    bookingDetails: bookingDetails,
                     proofImage,
                     proofImageType: file?.type,
                     proofFileName: file?.name
@@ -292,7 +314,6 @@ export default function PaymentProcess() {
 
     const frequencyWeeks = getFrequencyWeeks(frequency)
     const today = dayjs()
-    const travelDateValue = bookingData?.travelDate ? dayjs(bookingData.travelDate) : null
     const dueCutoffDate = today.add(45, 'day')
     const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal
     const remainingAmount = Math.max(totalAmount - depositAmount, 0)
