@@ -290,13 +290,23 @@ const createCheckoutSessionDeposit = async (req, res) => {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutModel.create({
+            token,
+            userId,
+            bookingId: newBooking._id,
+            amount: bookingPayload.amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
         const { paymentPayload } = req.body;
 
         const bookingId = paymentPayload.bookingId;
         const bookingReference = paymentPayload.bookingReference;
         const packageId = paymentPayload.packageId;
         const totalPrice = paymentPayload.totalPrice.amount;
-        const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${paymentToken}`;
+        const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${token}`;
         const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
 
         console.log("Deposit payment payload:", paymentPayload);
@@ -310,16 +320,6 @@ const createCheckoutSessionDeposit = async (req, res) => {
 
         const username = await UserModel.findById(userId).select('username');
         const email = await UserModel.findById(userId).select('email');
-
-        const token = uuidv4();
-
-        const tokenCheckout = await TokenCheckoutModel.create({
-            token,
-            userId,
-            bookingId: newBooking._id,
-            amount: bookingPayload.amount,
-            expiresAt: dayjs().add(5, 'minutes').toDate()
-        });
 
         console.log("Token checkout created:", tokenCheckout)
 
