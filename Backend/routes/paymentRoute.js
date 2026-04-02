@@ -9,5 +9,6 @@ router.post("/create-checkout-session-visa", userAuth, paymentController.createC
 router.post("/create-checkout-session-deposit", userAuth, paymentController.createCheckoutSessionDeposit);
 router.post("/create-checkout-token", userAuth, paymentController.createCheckoutToken);
 router.post("/manual", userAuth, paymentController.createManualPayment);
+router.post("/manual-deposit", userAuth, paymentController.createManualPaymentDeposit);
 router.post('/webhook/paymongo', express.raw({ type: 'application/json' }), paymentController.handlePayMongoWebhook);
 module.exports = router;

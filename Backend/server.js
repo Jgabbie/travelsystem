@@ -25,6 +25,7 @@ const notificationRoutes = require("./routes/notificationRoutes")
 const visaRoutes = require("./routes/visaRoutes")
 const sendEmailRoutes = require("./routes/sendEmailRoutes")
 const preferencesRoutes = require("./routes/preferencesRoutes")
+const uploadRoutes = require("./routes/uploadRoutes")
 
 const rateLimit = require('express-rate-limit');
 
@@ -96,7 +97,9 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/visa", visaRoutes);
 app.use("/api/email", sendEmailRoutes);
 app.use("/api/preferences", preferencesRoutes);
+app.use("/api/upload", uploadRoutes);
 
+//might remove later
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use('/api/contactlimit', contactLimiter);

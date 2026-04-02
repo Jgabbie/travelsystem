@@ -317,32 +317,59 @@ export default function UserBookingInvoice() {
             setLoading(true);
 
             if (method === 'manual') {
-                const file = fileList?.[0];
-                const proofImage = file?.preview || (file?.originFileObj ? await getBase64(file.originFileObj) : null);
+                const file = fileList?.[0]?.originFileObj;
 
-                if (!proofImage) {
-                    message.error('Unable to read the proof of payment image.');
+                if (!file) {
+                    message.error("Invalid file.");
+                    setLoading(false);
                     return;
                 }
 
-                await axiosInstance.post('/payment/manual', {
+                const formData = new FormData();
+                formData.append("file", file); // 
+
+                console.log("Uploading file:", file);
+                console.log("FormData file:", formData.get("file"));
+
+                const uploadRes = await axiosInstance.post(
+                    "/upload/upload-receipt",
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+                );
+
+                const imageUrl = uploadRes.data?.url;
+
+                if (!imageUrl) {
+                    message.error("Image upload failed.");
+                    setLoading(false);
+                    return;
+                }
+
+                const manualDepositRes = await axiosInstance.post('/payment/manual-deposit', {
                     bookingId: booking?._id,
                     packageId: booking?.packageId._id,
                     amount: currentUnpaidInstallment,
-                    proofImage,
+                    proofImage: imageUrl,
                     proofImageType: file?.type,
                     proofFileName: file?.name
                 });
                 setLoading(false);
-                navigate(`/booking-payment/success/${reference}`);
-                return;
+
+                if (manualDepositRes.data?.redirectUrl) {
+                    navigate(manualDepositRes.data.redirectUrl);
+                    return;
+                }
             }
 
             const paymentPayload = {
                 bookingId: booking?._id,
                 bookingReference: reference,
                 packageId: booking?.packageId._id,
-                totalPrice: currentUnpaidInstallment,
+                totalPrice: currentUnpaidInstallment?.amount,
             };
 
             const paymongoResponse = await axiosInstance.post(

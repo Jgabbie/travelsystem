@@ -279,7 +279,6 @@ const getcancellations = async (req, res) => {
 }
 
 const verifyTokenCheckout = async (req, res) => {
-
     const { token } = req.body
 
     try {

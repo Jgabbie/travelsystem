@@ -113,6 +113,64 @@ const createManualPayment = async (req, res) => {
     }
 };
 
+const createManualPaymentDeposit = async (req, res) => {
+    const userId = req.userId;
+    try {
+        const {
+            bookingId,
+            packageId,
+            amount,
+            proofImage,
+            proofImageType,
+            proofFileName,
+        } = req.body;
+
+        const FRONTEND_URL = "http://localhost:3000";
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutModel.create({
+            token,
+            userId,
+            bookingId,
+            amount: amount.amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created for manual deposit:", tokenCheckout);
+
+        const reference = generateTransactionReference();
+
+        if (!proofImage || !proofImageType) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const transaction = await TransactionModel.create({
+            bookingId,
+            packageId,
+            userId,
+            reference,
+            amount: Number(amount.amount),
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+            proofImageType,
+            proofFileName,
+        });
+
+        console.log('Manual payment deposit created:', transaction);
+
+        return res.status(200).json({
+            redirectUrl: `/booking-payment/success?token=${token}`
+        });
+
+
+        // Implementation for creating manual payment deposit
+    } catch (error) {
+        console.error('Manual payment deposit error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment deposit.' });
+    }
+};
+
 const createCheckoutSessionPassport = async (req, res) => {
     const userId = req.userId;
 
@@ -311,7 +369,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
         console.log("Deposit payment payload:", paymentPayload);
 
         const package = await PackageModel.findById(packageId).select('packageName');
-        const packageName = package.packageName;
+        const packageName = package.packageName
 
         const baseAmountCents = Math.round(totalPrice * 100);
         const convenienceFeeCents = Math.round((baseAmountCents * 0.035) + 1500);
@@ -806,4 +864,4 @@ const createCheckoutToken = async (req, res) => {
 
 
 
-module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment };
+module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentDeposit };
