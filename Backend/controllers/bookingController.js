@@ -1,8 +1,11 @@
 const BookingModel = require('../models/booking')
 const TransactionModel = require('../models/transactions')
 const CancellationModel = require('../models/cancellations')
+const TokenCheckoutModel = require('../models/tokencheckout')
+const { v4: uuidv4 } = require('uuid');
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs');
+
 
 const generateBookingReference = () => {
     const timestamp = Date.now().toString().slice(-6)
@@ -24,10 +27,12 @@ const createBooking = async (req, res) => {
 
     const packageId = bookingPayload.packageId
     const travelDate = bookingPayload.travelDate
-    const bookingDate = bookingPayload.bookingDate || new Date().toISOString()
     const travelers = bookingPayload.travelers
+    const bookingDate = new Date().toISOString()
     const bookingDetails = bookingPayload.bookingDetails || null
     const status = bookingPayload.status || 'Pending'
+    const amount = bookingPayload.amount || 0
+    const expiresAt = dayjs().add(5, 'minutes').toDate() // 5 minutes from now
 
     //find package by name to get its id, then create booking with that package id
     try {
@@ -46,16 +51,32 @@ const createBooking = async (req, res) => {
             userId,
             travelDate,
             bookingDate,
+            bookingDetails,
             travelers,
             reference: generateBookingReference(),
             status,
-            ...(bookingDetails ? { bookingDetails } : {})
+            expiresAt
         })
+
+        console.log("New booking created:", newBooking)
+
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutModel.create({
+            token,
+            userId,
+            bookingId: newBooking._id,
+            amount: bookingPayload.amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created:", tokenCheckout)
 
         logAction('BOOKING_CREATED', userId, {
             bookingId: newBooking._id,
             packageId: packageId
         })
+
         const io = req.app.get('io')
         if (io) {
             io.emit('booking:created', {
@@ -63,9 +84,11 @@ const createBooking = async (req, res) => {
                 createdAt: newBooking.createdAt
             })
         }
-        res.status(201).json(newBooking)
+
+        res.status(201).json({ booking: newBooking, paymentToken: token, expiresAt: tokenCheckout.expiresAt });
     } catch (error) {
         res.status(500).json({ message: "Error creating booking", error })
+        console.error("Error creating booking:", error)
     }
 }
 

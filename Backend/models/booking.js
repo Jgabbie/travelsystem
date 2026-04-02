@@ -10,6 +10,7 @@ const BookingSchema = new mongoose.Schema({
     status: { type: String, default: 'pending' },
     bookingDetails: { type: mongoose.Schema.Types.Mixed },
     createdAt: { type: Date, default: Date.now, index: true },
+    expiresAt: { type: Date, required: true, index: true }
 }, { timestamps: true })
 
 module.exports = mongoose.model('bookings', BookingSchema)

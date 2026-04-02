@@ -188,29 +188,33 @@ export default function PaymentProcess() {
 
         try {
             setLoading(true);
-            const successToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-            localStorage.setItem(SUCCESS_TOKEN_KEY, successToken);
-
 
             const amountToCharge = paymentType === 'deposit'
                 ? depositAmount
                 : totalAmount;
 
-            let bookingRef = bookingReference;
-            if (!bookingRef) {
-                const bookingPayload = {
+
+            const bookingRes = await axiosInstance.post('/booking/create-booking', {
+                bookingPayload: {
                     packageId,
                     travelDate: bookingData?.travelDate,
-                    bookingDate: new Date().toISOString(),
-                    travelers: travelerTotal,
-                    status: 'Pending',
-                    bookingDetails: bookingDetails
-                };
+                    travelers: bookingData?.travelerCounts.adult + bookingData?.travelerCounts.child + bookingData?.travelerCounts.infant || 0,
+                    bookingDetails,
+                    paymentType,
+                    amount: amountToCharge //for checkoutToken
+                }
+            });
 
-                const bookingResponse = await axiosInstance.post('/booking/create-booking', { bookingPayload });
-                bookingRef = bookingResponse.data?.reference || bookingRef;
-                setBookingReference(bookingRef || null);
+            const { paymentToken, expiresAt } = bookingRes.data;
+
+            // Expiry check (extra safety)
+            if (dayjs().isAfter(dayjs(expiresAt))) {
+                setLoading(false);
+                message.error("Booking session expired. Please try again.");
+                return;
             }
+
+
 
             if (method === 'manual') {
                 const file = fileList?.[0];
@@ -227,32 +231,31 @@ export default function PaymentProcess() {
                     travelerTotal,
                     amount: amountToCharge,
                     paymentType,
-                    bookingReference: bookingRef,
                     bookingDetails: bookingDetails,
                     proofImage,
                     proofImageType: file?.type,
                     proofFileName: file?.name
                 });
                 setLoading(false);
-                navigate(`/booking-payment/success?token=${successToken}`)
+                navigate(`/booking-payment/success?token=${paymentToken}`);
                 return;
             }
 
-            const paymentPayload = {
-                packageId,
-                totalPrice: amountToCharge,
-                travelDate,
-                travelerTotal,
-                leadEmail: bookingData.leadEmail,
-                leadContact: bookingData.leadContact,
-                metadata: {
-                    bookingReference: bookingRef
-                },
-                successUrl: `${window.location.origin}/booking-payment/success?token=${successToken}`,
-                cancelUrl: `${window.location.origin}/booking-payment?status=cancel`,
-            };
+            // const paymentPayload = {
+            //     packageId,
+            //     totalPrice: amountToCharge,
+            //     travelDate,
+            //     travelerTotal,
+            //     bookingDetails: bookingDetails,
+            //     successUrl: `${window.location.origin}/booking-payment/success?token=${paymentToken}`,
+            //     cancelUrl: `${window.location.origin}/booking-payment?status=cancel`,
+            // };
 
-            const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session', { paymentPayload });
+            const paymongoResponse = await axiosInstance.post(
+                '/payment/create-checkout-session',
+                { paymentToken }
+            );
+
             const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
             setLoading(false);
 

@@ -2,6 +2,7 @@ const axios = require("axios");
 const crypto = require('crypto');
 const transporter = require('../config/nodemailer')
 const { v4: uuidv4 } = require("uuid");
+const dayjs = require('dayjs');
 const TokenCheckoutModel = require("../models/tokencheckout");
 const PackageModel = require("../models/package");
 const BookingModel = require("../models/booking");
@@ -382,41 +383,58 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //paymongo
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
+    const FRONTEND_URL = "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const { paymentPayload } = req.body;
+        const { paymentToken } = req.body;
 
-        const packageId = paymentPayload.packageId;
-        const totalPrice = paymentPayload.totalPrice
-        const travelDate = paymentPayload.travelDate;
-        const travelerTotal = paymentPayload.travelerTotal;
-        const successUrl = paymentPayload.successUrl;
-        const cancelUrl = paymentPayload.cancelUrl;
+        const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${paymentToken}`;
+        const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
 
+        if (!paymentToken) {
+            return res.status(400).json({ error: "Missing payment token" });
+        }
 
-        const package = await PackageModel.findById(packageId).select('packageName');
-        const packageName = package.packageName
+        const tokenDoc = await TokenCheckoutModel.findOne({ token: paymentToken });
+        if (!tokenDoc) return res.status(404).json({ error: "Invalid payment token" });
 
+        console.log("Found token document:", tokenDoc);
+
+        if (dayjs().isAfter(dayjs(tokenDoc.expiresAt))) {
+            return res.status(400).json({ error: "Payment token expired" });
+        }
+
+        const booking = await BookingModel.findById(tokenDoc.bookingId).populate('packageId');
+        if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+        if (dayjs().isAfter(dayjs(booking.expiresAt))) {
+            return res.status(400).json({ error: "Booking expired" });
+        }
+
+        const packageName = booking.packageId.packageName;
+        const totalPrice = tokenDoc.amount;
+
+        console.log("Booking details:", { packageName, totalPrice });
 
         const baseAmountCents = Math.round(totalPrice * 100);
-        const convenienceFeeCents = Math.round((baseAmountCents * 0.035) + 1500);
-        const finalTotalCents = baseAmountCents + convenienceFeeCents; //total amount with convenience fee
+        const convenienceFeeCents = Math.round(baseAmountCents * 0.035 + 1500);
+        const finalTotalCents = baseAmountCents + convenienceFeeCents;
 
-        //currently not being used
         const metadata = {
-            ...(paymentPayload.metadata || {}),
-            userId: req.userId,
-            packageId,
-            travelDate,
-            travelerTotal,
+            userId: tokenDoc.userId,
+            bookingId: booking._id,
+            bookingReference: booking.reference,
+            transactionType: "Booking Payment",
             baseAmountCents,
             convenienceFeeCents,
-            totalAmountCents: finalTotalCents
+            totalAmountCents: finalTotalCents,
         };
+
+        console.log("Creating PayMongo checkout session with metadata:", metadata);
 
         const response = await axios.post(
             "https://api.paymongo.com/v1/checkout_sessions",
@@ -681,29 +699,26 @@ const handlePayMongoWebhook = async (req, res) => {
         }
 
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
-        if (metadata.packageId && !metadata.transactionType) {
+        if (metadata.bookingId && metadata.transactionType === "Booking Payment") {
             console.log('🛫 Booking payment detected');
             let booking = null;
 
-            if (metadata.bookingReference) {
-                booking = await BookingModel.findOneAndUpdate(
-                    { reference: metadata.bookingReference, userId: user._id },
-                    { status: 'Successful' },
-                    { new: true }
-                );
-            }
+            await BookingModel.findOneAndUpdate(
+                { status: 'Successful' },
+                { new: true }
+            );
 
-            if (!booking) {
-                booking = await BookingModel.create({
-                    packageId: metadata.packageId,
-                    userId: user._id,
-                    bookingDate: new Date(),
-                    travelDate: metadata.travelDate,
-                    travelers: Number(metadata.travelerTotal || 1),
-                    reference: generateBookingReference(),
-                    status: 'Successful',
-                });
-            }
+            // if (!booking) {
+            //     booking = await BookingModel.create({
+            //         packageId: metadata.packageId,
+            //         userId: user._id,
+            //         bookingDate: new Date(),
+            //         travelDate: metadata.travelDate,
+            //         travelers: Number(metadata.travelerTotal || 1),
+            //         reference: generateBookingReference(),
+            //         status: 'Successful',
+            //     });
+            // }
 
             const amount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
