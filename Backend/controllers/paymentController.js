@@ -293,7 +293,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const bookingId = paymentPayload.bookingId;
         const bookingReference = paymentPayload.bookingReference;
         const transactionType = "Installment Payment";
-        const packageId = paymentPayload.packageId._id;
+        const packageId = paymentPayload.packageId;
         const totalPrice = paymentPayload.totalPrice.amount;
         const successUrl = paymentPayload.successUrl;
         const cancelUrl = paymentPayload.cancelUrl;
@@ -676,10 +676,12 @@ const handlePayMongoWebhook = async (req, res) => {
                 type: 'payment',
                 link: '/user-transactions',
             });
+
+            return res.status(200).send('Installment handled');
         }
 
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
-        if (metadata.packageId || !metadata.transactionType) {
+        if (metadata.packageId && !metadata.transactionType) {
             console.log('🛫 Booking payment detected');
             let booking = null;
 

@@ -173,9 +173,6 @@ export default function UserBookingInvoice() {
 
     const summaryInvoice = bookingDetails
 
-    console.log("Booking details used for invoice:", summaryInvoice);
-
-
 
 
 
@@ -330,7 +327,7 @@ export default function UserBookingInvoice() {
 
                 await axiosInstance.post('/payment/manual', {
                     bookingId: booking?._id,
-                    packageId: booking?.packageId,
+                    packageId: booking?.packageId._id,
                     amount: currentUnpaidInstallment,
                     proofImage,
                     proofImageType: file?.type,
@@ -344,7 +341,7 @@ export default function UserBookingInvoice() {
             const paymentPayload = {
                 bookingId: booking?._id,
                 bookingReference: reference,
-                packageId: booking?.packageId,
+                packageId: booking?.packageId._id,
                 totalPrice: currentUnpaidInstallment,
                 successUrl: `${window.location.origin}/booking-payment/success/${reference}`,
                 cancelUrl: `${window.location.origin}/user-booking-invoice`,
