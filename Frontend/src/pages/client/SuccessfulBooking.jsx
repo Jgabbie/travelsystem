@@ -3,8 +3,8 @@ import { Button, ConfigProvider } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
+import axiosInstance from '../../config/axiosConfig';
 
-const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
 const REGISTRATION_PDF_KEY = 'bookingRegistrationPdf';
 const REGISTRATION_PDF_NAME_KEY = 'bookingRegistrationPdfName';
 
@@ -16,27 +16,33 @@ export default function SuccessfulBooking() {
     const [countdown, setCountdown] = useState(10);
 
     useEffect(() => {
-        const token = searchParams.get('token');
-        const storedToken = localStorage.getItem(SUCCESS_TOKEN_KEY);
 
-        if (!token || (storedToken && token !== storedToken)) {
+        const token = searchParams.get('token');
+        if (!token) {
             navigate('/home', { replace: true });
             return;
         }
 
-        const pdfDataUri = sessionStorage.getItem(REGISTRATION_PDF_KEY);
-        const pdfFileName = sessionStorage.getItem(REGISTRATION_PDF_NAME_KEY) || 'booking-registration.pdf';
+        // Call backend API to verify payment using token
+        axiosInstance.post(`/booking/verify-payment`, { token })
+            .then(res => {
+                const pdfDataUri = sessionStorage.getItem(REGISTRATION_PDF_KEY);
+                const pdfFileName = sessionStorage.getItem(REGISTRATION_PDF_NAME_KEY) || 'booking-registration.pdf';
 
-        if (pdfDataUri) {
-            const link = document.createElement('a');
-            link.href = pdfDataUri;
-            link.download = pdfFileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+                if (pdfDataUri) {
+                    const link = document.createElement('a');
+                    link.href = pdfDataUri;
+                    link.download = pdfFileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                message.error('Unable to verify booking.');
+            });
 
-        localStorage.removeItem(SUCCESS_TOKEN_KEY);
         sessionStorage.removeItem(REGISTRATION_PDF_KEY);
         sessionStorage.removeItem(REGISTRATION_PDF_NAME_KEY);
         setBookingData(null);

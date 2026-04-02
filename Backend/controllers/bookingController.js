@@ -278,4 +278,23 @@ const getcancellations = async (req, res) => {
     }
 }
 
-module.exports = { createBooking, getUserBookings, getAllBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference }
+const verifyTokenCheckout = async (req, res) => {
+
+    const { token } = req.body
+
+    try {
+        const tokenCheckout = await TokenCheckoutModel.findOne({ token })
+        if (!tokenCheckout) {
+            return { valid: false, message: 'Invalid token' }
+        }
+
+        if (tokenCheckout.expiresAt < new Date()) {
+            return { valid: false, message: 'Token has expired' }
+        }
+        return { valid: true, tokenCheckout }
+    } catch (error) {
+        console.error('Error verifying token checkout:', error)
+        return { valid: false, message: 'Error verifying token' }
+    }
+}
+module.exports = { createBooking, getUserBookings, getAllBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference, verifyTokenCheckout }
