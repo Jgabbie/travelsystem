@@ -292,26 +292,26 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const { paymentPayload } = req.body;
 
         const bookingId = paymentPayload.bookingId;
+        const totalPrice = paymentPayload.totalPrice.amount;
         const token = uuidv4();
 
         const tokenCheckout = await TokenCheckoutModel.create({
             token,
             userId,
             bookingId,
-            amount: bookingPayload.amount,
+            amount: totalPrice,
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
         const bookingReference = paymentPayload.bookingReference;
         const packageId = paymentPayload.packageId;
-        const totalPrice = paymentPayload.totalPrice.amount;
         const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${token}`;
         const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
 
         console.log("Deposit payment payload:", paymentPayload);
 
         const package = await PackageModel.findById(packageId).select('packageName');
-        const packageName = package.packageName
+        const packageName = package.packageName;
 
         const baseAmountCents = Math.round(totalPrice * 100);
         const convenienceFeeCents = Math.round((baseAmountCents * 0.035) + 1500);
