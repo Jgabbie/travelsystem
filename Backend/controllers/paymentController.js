@@ -383,7 +383,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //paymongo
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
