@@ -130,6 +130,17 @@ export default function PaymentProcess() {
 
     const [bookingReference, setBookingReference] = useState(null);
 
+
+    //payload for bookings
+    const paymentDetails = {
+        paymentType,
+        frequency,
+        depositAmount: bookingData?.packageDeposit ? (bookingData.packageDeposit * travelerTotal) : 0,
+        //bookingdate
+        //traveldate
+        //45days
+    }
+
     const bookingDetails = {
         dateOfRegistration: bookingData.dateOfRegistration,
         travelDate: bookingData.travelDate,
@@ -148,6 +159,12 @@ export default function PaymentProcess() {
         ownInsurance: bookingData.ownInsurance,
         purchaseInsurance: bookingData.purchaseInsurance,
         totalPrice: totalAmount,
+        emergencyContact: bookingData.emergencyContact,
+        emergencyEmail: bookingData.emergencyEmail,
+        emergencyName: bookingData.emergencyName,
+        emergencyRelation: bookingData.emergencyRelation,
+        emergencyTitle: bookingData.emergencyTitle,
+        paymentDetails: paymentDetails
     }
 
     console.log("Booking Details for Payment Payload:", bookingDetails);
@@ -187,7 +204,7 @@ export default function PaymentProcess() {
                     bookingDate: new Date().toISOString(),
                     travelers: travelerTotal,
                     status: 'Pending',
-                    bookingDetails: bookingData
+                    bookingDetails: bookingDetails
                 };
 
                 const bookingResponse = await axiosInstance.post('/booking/create-booking', { bookingPayload });
@@ -545,7 +562,7 @@ export default function PaymentProcess() {
                                     className="payment-methods-cards"
                                 >
                                     <div className='payment-cards-group'>
-                                        <Radio value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
+                                        <Radio.Button value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
                                             <div style={{ width: '100%' }}>
                                                 <h3>Deposit</h3>
                                                 <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
@@ -568,14 +585,14 @@ export default function PaymentProcess() {
                                                     </div>
                                                 )}
                                             </div>
-                                        </Radio>
+                                        </Radio.Button>
 
-                                        <Radio value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
+                                        <Radio.Button value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
                                             <div>
                                                 <h3>Full Payment</h3>
                                                 <p>Pay the full amount to secure your booking and not worry about future payment deadlines.</p>
                                             </div>
-                                        </Radio>
+                                        </Radio.Button>
                                     </div>
 
                                 </Radio.Group>

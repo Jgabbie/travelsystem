@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, message, Steps, Form, Upload } from "antd";
+import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, message, Steps, Form, Upload, Spin, Modal } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -9,24 +10,100 @@ import "../../style/client/userbookinginvoice.css";
 import "../../style/client/paymentprocees.css";
 import "../../style/components/modals/displayinvoicemodal.css";
 import axiosInstance from "../../config/axiosConfig";
-import BookingRegistrationTravelers from "../../components/form/BookingRegistrationTravelers";
-import BookingRegistrationDiet from "../../components/form/BookingRegistrationDiet";
-import BookingRegistrationTermsPart1 from "../../components/form/BookingRegistrationTermsPart1";
-import BookingRegistrationTermsPart2 from "../../components/form/BookingRegistrationTermsPart2";
+import BookingRegistrationTravelersInvoice from "../../components/form_bookinginvoice/BookingRegistrationTravelersInvoice";
+import BookingRegistrationDietInvoice from "../../components/form_bookinginvoice/BookingRegistrationDietInvoice";
+import BookingRegistrationTermsInvoicePart1 from "../../components/form_bookinginvoice/BookingRegistrationTermsInvoicePart1";
+import BookingRegistrationTermsInvoicePart2 from "../../components/form_bookinginvoice/BookingRegistrationTermsInvoicePart2";
+
 
 const { Title, Text: AntText } = Typography;
+
+const getFrequencyWeeks = (value) => {
+    if (value === 'Every week') return 1;
+    if (value === 'Every 3 weeks') return 3;
+    return 2;
+};
+
+const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
+    // 1. Ensure items exists and rates are numbers
+    const items = invoice?.items || [];
+    const subtotal = items.reduce((sum, item) => {
+        const qty = Number(item.qty) || 0;
+        const rate = Number(item.rate) || 0;
+        return sum + (qty * rate);
+    }, 0);
+
+    const totalAmount = subtotal;
+    const today = dayjs();
+    const dueCutoffDate = today.add(45, 'day');
+
+    // 2. Ensure deposit is a number
+    const depositAmount = Number(bookingDetails?.paymentDetails?.depositAmount) || 0;
+    const remainingAmount = Math.max(totalAmount - depositAmount, 0);
+
+    const frequencyWeeks = getFrequencyWeeks(bookingDetails?.paymentDetails?.frequency);
+    const installmentWindowDays = Math.max(dueCutoffDate.diff(today, 'day'), 1);
+
+    // 3. Ensure installmentCount is at least 1 to avoid division by zero
+    const installmentCount = Math.max(
+        Math.floor(installmentWindowDays / (frequencyWeeks * 7)),
+        1
+    );
+
+    // 4. Calculate amount and round to 2 decimal places
+    const installmentAmount = Number((remainingAmount / installmentCount).toFixed(2)) || 0;
+
+    const paymentSchedule = [
+        {
+            label: 'Deposit',
+            amount: depositAmount,
+            date: today,
+            status: paidAmount >= (depositAmount - 0.01) ? "PAID" : "PENDING"
+        },
+        ...Array.from({ length: installmentCount }, (_, index) => {
+            const date = today.add((index + 1) * frequencyWeeks, 'week');
+            const cumulativeTarget = depositAmount + (installmentAmount * (index + 1));
+            return {
+                label: `Installment ${index + 1}`,
+                amount: installmentAmount,
+                date: date,
+                finalDate: date.isAfter(dueCutoffDate) ? dueCutoffDate : date,
+                status: paidAmount >= (cumulativeTarget - 0.01) ? "PAID" : "PENDING"
+            };
+        })
+    ];
+
+    const nextUnpaid = paymentSchedule.find(item => item.status === "PENDING");
+    return { paymentSchedule, totalAmount, subtotal, nextUnpaid };
+};
+
+const getBase64 = (file) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    });
+
 
 export default function UserBookingInvoice() {
     const location = useLocation();
     const navigate = useNavigate();
+
     const initialBooking = location.state?.booking || null;
     const [booking, setBooking] = useState(initialBooking);
     const [transactions, setTransactions] = useState([]);
     const bookingDetails = booking?.bookingDetails || {};
     const [method, setMethod] = useState(null);
     const [invoiceNumber, setInvoiceNumber] = useState("");
+    const [fileList, setFileList] = useState([]);
+
+    const [loading, setLoading] = useState(true);
+
+    const stepsToCapture = [0, 1, 2, 3];
 
 
+    //payment display computation and transaction history
     const formatCurrency = useMemo(
         () => new Intl.NumberFormat("en-PH", {
             style: "currency",
@@ -35,22 +112,36 @@ export default function UserBookingInvoice() {
         []
     );
 
-    const totalPrice = Number(bookingDetails.totalPrice || 0);
+    const totalPrice = Number(booking?.totalPrice || booking?.bookingDetails?.totalPrice || 0);
     const paidAmount = transactions
-        .filter(txn => txn.status === "paid" || txn.status === "successful")
-        .reduce((sum, txn) => sum + Number(txn.amount || 0), 0);
+        .filter(txn => txn.status === "Paid" || txn.status === "Successful")
+        .reduce((sum, txn) => {
+            const amount = Number(txn.amount || 0);
+
+
+            if (txn.method?.toLowerCase() === "paymongo") {
+                const baseAmountReceived = (amount - 15) / 1.035;
+                return sum + baseAmountReceived;
+            }
+
+            return sum + amount;
+        }, 0);
+
 
     const transactionStatus = transactions.length === 0
-        ? "pending"
+        ? "Pending"
         : paidAmount >= totalPrice
-            ? "successful"
-            : "partial";
+            ? "Successful"
+            : "Partial";
+
+
+    console.log("Price data", totalPrice, paidAmount)
 
     const getPaymentStatus = () => {
-        if (transactionStatus === "successful" || transactionStatus === "paid") {
+        if (transactionStatus === "Successful" || transactionStatus === "Paid") {
             return { label: "Fully Paid", color: "green" };
         }
-        if (transactionStatus === "pending") {
+        if (transactionStatus === "Pending") {
             return { label: "Not Paid", color: "red" };
         }
         return { label: "Balance Due", color: "orange" };
@@ -75,24 +166,24 @@ export default function UserBookingInvoice() {
     const customerName = bookingDetails.leadFullName || booking?.leadFullName || "Customer";
     const customerPhone = bookingDetails.leadContact || booking?.leadContact || "--";
     const remainingBalance = Math.max(totalPrice - paidAmount, 0);
+
     const handleSelectPaymentMethod = (selectedMethod) => {
         setMethod(selectedMethod);
     };
 
-    const summary = bookingDetails
+    const summaryInvoice = bookingDetails
 
-    console.log("Booking details used for invoice:", summary);
+    console.log("Booking details used for invoice:", summaryInvoice);
+
+
+
+
 
     //pdf registration section
     const [form] = Form.useForm();
     const pdfStepRef = useRef(null);
-
-    const [fileLists, setFileLists] = useState([]);
-    const [photoFileLists, setPhotoFileLists] = useState([]);
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-
-
 
     const next = async () => {
         try {
@@ -107,23 +198,19 @@ export default function UserBookingInvoice() {
     //go to previous step
     const prev = () => setCurrentStep(currentStep - 1);
 
-
     const validateFile = (file) => {
         const isValidType =
             file.type === 'image/jpeg' ||
             file.type === 'image/png'
-
         if (!isValidType) {
             message.error('Only JPG or PNG');
             return Upload.LIST_IGNORE;
         }
-
         const isValidSize = file.size / 1024 / 1024 < 5;
         if (!isValidSize) {
             message.error('File must be smaller than 5MB');
             return Upload.LIST_IGNORE;
         }
-
         return false;
     };
 
@@ -133,22 +220,155 @@ export default function UserBookingInvoice() {
 
     const handleFinalSubmit = async () => {
         try {
-            const values = await form.validateFields();
 
-            await axiosInstance.put(`/booking/${booking._id}`, {
-                ...values,
-                status: "pending_payment"
+            setIsGeneratingPdf(true);
+
+            const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+
+            const waitForRender = (ms = 450) => new Promise((resolve) => {
+                requestAnimationFrame(() => {
+                    setTimeout(resolve, ms);
+                });
             });
 
-            message.success("Booking updated. Proceed to payment.");
-            navigate("/booking-payment");
+            for (let i = 0; i < stepsToCapture.length; i += 1) {
+                const step = stepsToCapture[i];
+                setCurrentStep(step);
+                await waitForRender();
+
+                if (!pdfStepRef.current) {
+                    continue;
+                }
+
+                const canvas = await html2canvas(pdfStepRef.current, {
+                    scale: 1.5,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                const renderHeight = Math.min(imgHeight, pdfHeight);
+
+
+                pdf.setFillColor(255, 255, 255);
+                pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderHeight);
+
+                if (i < stepsToCapture.length - 1) {
+                    pdf.addPage();
+                }
+            }
+
+            pdf.save(`Booking_${reference}.pdf`);
+            message.success("Booking Registration PDF downloaded successfully.");
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
 
         } catch (err) {
             message.error("Submission failed.");
+            console.error("Error during PDF generation:", err);
         }
     };
 
 
+    //payment functions
+    const handleUploadChange = async ({ fileList: newFileList }) => {
+        const file = newFileList[0];
+
+        if (file && file.originFileObj) {
+            file.preview = await getBase64(file.originFileObj);
+        }
+
+        setFileList(newFileList.slice(-1));
+    };
+
+    const beforeUpload = (file) => {
+        const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isImage) {
+            message.error('Only JPG/PNG files are allowed');
+            return Upload.LIST_IGNORE;
+        }
+
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            message.error('Image must be smaller than 2MB');
+            return Upload.LIST_IGNORE;
+        }
+
+        return false;
+    };
+
+    //checkout function
+    const proceedBooking = async () => {
+
+        if (!method) {
+            message.warning("Please select a payment method.");
+            return;
+        }
+
+        if (method === 'manual' && fileList.length === 0) {
+            message.warning("Please upload proof of payment.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            if (method === 'manual') {
+                const file = fileList?.[0];
+                const proofImage = file?.preview || (file?.originFileObj ? await getBase64(file.originFileObj) : null);
+
+                if (!proofImage) {
+                    message.error('Unable to read the proof of payment image.');
+                    return;
+                }
+
+                await axiosInstance.post('/payment/manual', {
+                    bookingId: booking?._id,
+                    packageId: booking?.packageId,
+                    amount: currentUnpaidInstallment,
+                    proofImage,
+                    proofImageType: file?.type,
+                    proofFileName: file?.name
+                });
+                setLoading(false);
+                navigate(`/booking-payment/success/${reference}`);
+                return;
+            }
+
+            const paymentPayload = {
+                bookingId: booking?._id,
+                bookingReference: reference,
+                packageId: booking?.packageId,
+                totalPrice: currentUnpaidInstallment,
+                successUrl: `${window.location.origin}/booking-payment/success/${reference}`,
+                cancelUrl: `${window.location.origin}/user-booking-invoice`,
+            };
+
+            const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session-deposit', { paymentPayload });
+            const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+            setLoading(false);
+
+            if (checkoutUrl) {
+                window.location.href = checkoutUrl;
+            } else {
+                console.error("PayMongo Response Structure:", paymongoResponse.data);
+                throw new Error("Failed to create PayMongo checkout session - URL missing");
+            }
+
+        } catch (error) {
+            console.error('Booking failed:', error);
+            Modal.error({
+                title: 'Booking Failed',
+                content: 'An error occurred while processing your booking. Please try again later.',
+            });
+        }
+    }
 
 
 
@@ -156,8 +376,7 @@ export default function UserBookingInvoice() {
 
 
 
-
-
+    //booking invoice
     const buildInvoiceNumber = (allBookings, currentBooking) => {
         if (!currentBooking) return "";
         const createdAtValue = currentBooking.createdAt || currentBooking.bookingDate;
@@ -180,50 +399,54 @@ export default function UserBookingInvoice() {
     };
 
     useEffect(() => {
+
         if (!reference || reference === "--") return;
 
-        const fetchInvoiceData = async () => {
+        const fetchAllData = async () => {
+            setLoading(true);
             try {
-                const response = await axiosInstance.get(`/booking/by-reference/${reference}`)
-                const fetchedBooking = response.data?.booking || null
-                const fetchedTransactions = response.data?.transactions || [];
 
-                console.log("Fetched transactions data:", fetchedTransactions);
+                const bookingRes = await axiosInstance.get(`/booking/by-reference/${reference}`);
+                const fetchedBooking = bookingRes.data?.booking || null;
+                const fetchedTransactions = bookingRes.data?.transactions || [];
 
-                setBooking(fetchedBooking || booking)
-                setTransactions(fetchedTransactions || []);
-            } catch {
-                // Keep fallback data from navigation state if fetch fails.
-            }
-        }
+                setBooking(fetchedBooking);
+                setTransactions(fetchedTransactions);
 
-        fetchInvoiceData()
-    }, [reference])
+                console.log("Fetched booking for invoice:", fetchedBooking);
 
-    useEffect(() => {
-        if (!booking?._id) return;
+                if (fetchedBooking?._id) {
+                    try {
+                        const allBookingsRes = await axiosInstance.get("/booking/all-bookings");
+                        const number = buildInvoiceNumber(allBookingsRes.data || [], fetchedBooking);
 
-        const fetchInvoiceNumber = async () => {
-            try {
-                const response = await axiosInstance.get("/booking/all-bookings");
-                const number = buildInvoiceNumber(response.data || [], booking);
-                if (number) {
-                    setInvoiceNumber(number);
-                    return;
+                        if (number) {
+                            setInvoiceNumber(number);
+                        } else {
+
+                            const createdAtValue = fetchedBooking.createdAt || fetchedBooking.bookingDate;
+                            const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
+                            if (createdAt?.isValid()) {
+                                setInvoiceNumber(`${createdAt.format("MM")}01`);
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Error fetching invoice number list:", err);
+
+                    }
                 }
-            } catch {
-                // Fallback to month + 01 if list cannot be loaded.
-            }
 
-            const createdAtValue = booking.createdAt || booking.bookingDate;
-            const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
-            if (createdAt && createdAt.isValid()) {
-                setInvoiceNumber(`${createdAt.format("MM")}01`);
+            } catch (err) {
+                message.error("Failed to load booking details.");
+                console.error("Primary fetch error:", err);
+            } finally {
+
+                setLoading(false);
             }
         };
 
-        fetchInvoiceNumber();
-    }, [booking]);
+        fetchAllData();
+    }, [reference]);
 
     const invoice = {
         company: {
@@ -258,6 +481,11 @@ export default function UserBookingInvoice() {
         ]
     };
 
+    //installment computation
+    const [currentUnpaidInstallment, setCurrentUnpaidInstallment] = useState(null);
+    const paymentType = bookingDetails?.paymentDetails?.paymentType || "Full";
+    const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
+
     const calculateTotals = (items) => {
         const subtotal = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
         const tax = 0;
@@ -267,6 +495,27 @@ export default function UserBookingInvoice() {
 
     const totals = calculateTotals(invoice.items);
 
+    const installmentData = useMemo(() => {
+        return runInstallmentLogic(invoice, bookingDetails, paidAmount);
+    }, [invoice, bookingDetails, paidAmount]); // Only 3 clear dependencies
+
+    useEffect(() => {
+        const next = installmentData.nextUnpaid;
+
+        // If both are null/undefined, do nothing
+        if (!next && !currentUnpaidInstallment) return;
+
+        // Only update if the specific identifying values changed
+        if (
+            next?.label !== currentUnpaidInstallment?.label ||
+            next?.amount !== currentUnpaidInstallment?.amount ||
+            next?.status !== currentUnpaidInstallment?.status
+        ) {
+            setCurrentUnpaidInstallment(next || null);
+        }
+    }, [installmentData.nextUnpaid]); // currentUnpaidInstallment is omitted to avoid a self-triggering loop
+
+    //invoice document
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -316,8 +565,6 @@ export default function UserBookingInvoice() {
 
                 <View style={styles.paidRow}>
                     <Text style={styles.label}>PAID AMOUNT</Text>
-
-
                 </View>
 
                 <View style={styles.table}>
@@ -342,6 +589,44 @@ export default function UserBookingInvoice() {
                     ))}
                 </View>
 
+                {paymentType === "deposit" && (
+                    <View style={{ marginTop: 20 }}>
+                        <Text style={[styles.label, { marginBottom: 8 }]}>
+                            PAYMENT SCHEDULE ({paymentFrequency.toUpperCase()})
+                        </Text>
+
+                        <View style={[styles.tableHeader, { backgroundColor: '#F3F4F6' }]}>
+                            <Text style={[styles.cell, { flex: 2 }]}>DESCRIPTION</Text>
+                            <Text style={[styles.cell, { flex: 2 }]}>DUE DATE</Text>
+                            <Text style={[styles.cell, { flex: 2, textAlign: "right" }]}>AMOUNT</Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>STATUS</Text>
+                        </View>
+
+                        {installmentData.paymentSchedule.map((item, index) => (
+                            <View key={index} style={styles.tableRow}>
+                                <Text style={[styles.cell, { flex: 2 }]}>{item.label}</Text>
+                                <Text style={[styles.cell, { flex: 2 }]}>
+                                    {item.date.format("MMM D, YYYY")}
+                                </Text>
+                                <Text style={[styles.cell, { flex: 2, textAlign: "right" }]}>
+                                    {formatCurrency.format(item.amount)}
+                                </Text>
+                                <Text style={[
+                                    styles.cell,
+                                    {
+                                        flex: 1.5,
+                                        textAlign: "right",
+                                        color: item.status === "PAID" ? "#059669" : "#D97706",
+                                        fontFamily: 'Helvetica-Bold'
+                                    }
+                                ]}>
+                                    {item.status}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+
                 <View style={styles.footerSection}>
                     <View style={styles.bankInfo}>
                         <Text style={styles.muted}>Payment to be deposited in below bank details:</Text>
@@ -352,8 +637,17 @@ export default function UserBookingInvoice() {
                     </View>
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>
-                            <Text style={styles.totalDueLabel}>TOTAL DUE</Text>
-                            <Text style={styles.totalDueValue}> {formatCurrency.format(totals.subtotal)}</Text>
+                            <Text style={styles.totalDueLabel}>TOTAL PRICE</Text>
+                            <Text style={styles.totalDueValue}>{formatCurrency.format(totalPrice)}</Text>
+                        </View>
+                        <View style={styles.totalDueRow}>
+                            <Text style={styles.totalDueLabel}>PAID TO DATE</Text>
+                            <Text style={styles.totalDueValue}>{formatCurrency.format(paidAmount)}</Text>
+                        </View>
+                        {/* Highlighting the Remaining Balance */}
+                        <View style={[styles.totalDueRow, { backgroundColor: '#f3f4f6', padding: 5 }]}>
+                            <Text style={[styles.totalDueLabel, { color: '#b91c1c' }]}>REMAINING BALANCE</Text>
+                            <Text style={[styles.totalDueValue, { color: '#b91c1c' }]}>{formatCurrency.format(remainingBalance)}</Text>
                         </View>
                         <Text style={styles.thankYou}>THANK YOU.</Text>
                     </View>
@@ -403,6 +697,14 @@ export default function UserBookingInvoice() {
             }}
         >
             <div className="user-invoice-page">
+                {(loading || isGeneratingPdf) && (
+                    <div className="booking-loading-overlay">
+                        <Spin
+                            tip={isGeneratingPdf ? "Preparing your PDF..." : "Loading invoice..."}
+                            size="large"
+                        />
+                    </div>
+                )}
                 <div className="user-invoice-header">
                     <div>
                         <Title level={2} className="page-header">Booking Invoice</Title>
@@ -468,6 +770,20 @@ export default function UserBookingInvoice() {
                 </div>
 
                 <Card title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
+                    <div style={{
+                        backgroundColor: '#f0f5ff',
+                        border: '1px solid #adc6ff',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        marginBottom: '16px',
+                        fontSize: '13px',
+                        color: '#2f54eb'
+                    }}>
+                        <AntText info>
+                            <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
+                        </AntText>
+                    </div>
+
                     {transactions.length === 0 ? (
                         <AntText type="secondary">No transactions yet.</AntText>
                     ) : (
@@ -481,7 +797,7 @@ export default function UserBookingInvoice() {
                                         </Col>
                                         <Col style={{ textAlign: "right" }}>
                                             <div><strong>₱{txn.amount}</strong></div>
-                                            <Tag color={txn.status === "paid" ? "green" : "orange"}>
+                                            <Tag color={txn.status === "Successful" ? "green" : "orange"}>
                                                 {txn.status}
                                             </Tag>
                                         </Col>
@@ -492,14 +808,24 @@ export default function UserBookingInvoice() {
                     )}
                 </Card>
 
+
                 <div className='payment-methods-container payment-section' style={{ marginTop: 24 }}>
                     <div className="payment-methods-wrapper">
-                        <div className="payment-section-header">
+                        <div className="payment-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
-                                <p className="payment-methods-subtitle payment-section-subtitle">
+                                <p className="payment-section-subtitle">
                                     Select a payment method to complete your booking.
                                 </p>
+                            </div>
+                            {/* Displaying balance here for clarity during checkout */}
+                            <div style={{ textAlign: 'right' }}>
+                                <AntText type="secondary">Amount to Pay:</AntText>
+                                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#b91c1c' }}>
+                                    {currentUnpaidInstallment?.amount
+                                        ? formatCurrency.format(currentUnpaidInstallment.amount)
+                                        : "Calculating..."}
+                                </div>
                             </div>
                         </div>
 
@@ -507,33 +833,117 @@ export default function UserBookingInvoice() {
                             onChange={(e) => handleSelectPaymentMethod(e.target.value)}
                             value={method}
                             className="payment-methods-cards"
-                            style={{ width: '100%', display: 'flex', gap: '16px' }}
+                            style={{ width: '100%', display: 'flex', gap: '16px', marginBottom: '24px' }}
                         >
-                            <Radio
+                            <Radio.Button
                                 value="paymongo"
+                                disabled={remainingBalance <= 0}
                                 className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                 style={{ flex: 1, height: 'auto', padding: '20px' }}
                             >
                                 <div className="card-content">
                                     <h3>Paymongo</h3>
-                                    <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                    <p>Pay securely via Credit Card, GCash, or Maya. (3.5% + ₱15 fee applies)</p>
                                 </div>
-                            </Radio>
+                            </Radio.Button>
 
-                            <Radio
+                            <Radio.Button
                                 value="manual"
+                                disabled={remainingBalance <= 0}
                                 className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                 style={{ flex: 1, height: 'auto', padding: '20px' }}
                             >
                                 <div className="card-content">
                                     <h3>Manual Payment</h3>
-                                    <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                    <p>Direct bank deposit. Requires manual verification of receipt.</p>
                                 </div>
-                            </Radio>
+                            </Radio.Button>
                         </Radio.Group>
-                    </div>
-                </div>
 
+                        {/* Proceed Button */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <Button
+                                type="primary"
+                                size="large"
+                                disabled={!method || remainingBalance <= 0}
+                                style={{ padding: '0 50px', height: '50px', fontSize: '16px', fontWeight: 'bold', margin: 30 }}
+                                onClick={proceedBooking}
+                            >
+                                Proceed to Checkout
+                            </Button>
+                        </div>
+                    </div>
+
+                    {method === 'manual' && (
+                        <div className="manual-transfer-details">
+                            <div className="bank-accounts-section">
+                                <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                <div className="bank-grid">
+                                    <div className="bank-item">
+                                        <span className="bank-name">BDO Unibank</span>
+                                        <span className="account-number">0012-3456-7890</span>
+                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                    </div>
+                                    <div className="bank-item">
+                                        <span className="bank-name">BPI</span>
+                                        <span className="account-number">9876-5432-10</span>
+                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bank-accounts-section">
+                                <div className="bank-grid">
+                                    <div className="bank-item">
+                                        <span className="bank-name">Metro Bank</span>
+                                        <span className="account-number">0012-3456-7890</span>
+                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                    </div>
+                                    <div className="bank-item">
+                                        <span className="bank-name">Land Bank</span>
+                                        <span className="account-number">9876-5432-10</span>
+                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="upload-section">
+                                <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                <Upload
+                                    listType="picture"
+                                    maxCount={1}
+                                    fileList={fileList}
+                                    onChange={handleUploadChange}
+                                    beforeUpload={beforeUpload}
+                                    accept=".jpg,.jpeg,.png"
+                                >
+                                    <Button icon={<UploadOutlined />} className="upload-btn">
+                                        Select Receipt Image
+                                    </Button>
+                                </Upload>
+
+                                {fileList.length > 0 && (
+                                    <div className="upload-preview-container">
+                                        <h4 className="section-subtitle">Preview</h4>
+
+                                        <div className="upload-preview-box">
+                                            <img
+                                                src={fileList[0].preview}
+                                                alt="Receipt Preview"
+                                                className="upload-preview-image"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* booking registration section */}
                 <div className="booking-form-stepper-container">
@@ -552,58 +962,86 @@ export default function UserBookingInvoice() {
                         style={{ marginBottom: '30px' }}
                     />
 
-                    <div className="form-content-wrapper pdf-capture" ref={pdfStepRef}>
+                    <div
+                        className="form-content-wrapper pdf-capture"
+                        ref={pdfStepRef}
+                        style={{
+                            position: isGeneratingPdf ? "absolute" : "relative",
+                            left: isGeneratingPdf ? "-9999px" : "0"
+                        }}
+                    >
                         {currentStep === 0 && (
-                            <BookingRegistrationTravelers
+                            <BookingRegistrationTravelersInvoice
                                 form={form}
-                                summary={summary}
+                                summaryInvoice={summaryInvoice}
                                 totalCount={bookingDetails?.travelerCounts?.total || 1}
                             />
                         )}
 
                         {currentStep === 1 && (
-                            <BookingRegistrationDiet
+                            <BookingRegistrationDietInvoice
                                 form={form}
-                                summary={summary}
+                                summaryInvoice={summaryInvoice}
                             />
                         )}
 
                         {currentStep === 2 && (
-                            <BookingRegistrationTermsPart1
+                            <BookingRegistrationTermsInvoicePart1
                                 form={form}
-                                summary={summary}
+                                summaryInvoice={summaryInvoice}
                             />
                         )}
 
                         {currentStep === 3 && (
-                            <BookingRegistrationTermsPart2
+                            <BookingRegistrationTermsInvoicePart2
                                 form={form}
-                                summary={summary}
+                                summaryInvoice={summaryInvoice}
                             />
                         )}
                     </div>
 
-                    <div className="form-navigation-buttons" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                        {currentStep > 0 && (
-                            <Button onClick={prev}>
-                                Back
-                            </Button>
-                        )}
+                    {!isGeneratingPdf && (
+                        <div className="form-navigation-buttons" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                            {currentStep > 0 && (
+                                <Button onClick={prev}>
+                                    Back
+                                </Button>
+                            )}
 
-                        {currentStep < 3 ? (
-                            <Button type="primary" onClick={next}>
-                                Next Step
-                            </Button>
-                        ) : (
-                            <Button type="primary" onClick={handleFinalSubmit} loading={isGeneratingPdf} disabled={isGeneratingPdf}>
-                                Submit Final Booking
-                            </Button>
-                        )}
-                    </div>
+                            {currentStep < 3 ? (
+                                <Button type="primary" onClick={next}>
+                                    Next Step
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="primary"
+                                    onClick={handleFinalSubmit}
+                                    loading={isGeneratingPdf}
+                                >
+                                    Download Booking Registration
+                                </Button>
+                            )}
+                        </div>
+                    )}
                 </div>
 
+                <Card title="Documents" style={{ marginTop: 24 }}>
+                    <AntText type="secondary">
+                        No documents uploaded yet.
+                    </AntText>
 
+                    <div style={{ marginTop: 16 }}>
+                        <Upload
+                            disabled
+                            style={{ width: "100%" }}
+                        >
+                            <Button disabled>
+                                Upload Documents (Coming Soon)
+                            </Button>
+                        </Upload>
+                    </div>
+                </Card>
             </div>
-        </ConfigProvider>
+        </ConfigProvider >
     );
 }

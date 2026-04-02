@@ -142,6 +142,7 @@ export default function VisaApplication() {
                 await axiosInstance.put(`/visa/applications/${application._id}/payment-proof`, { file: base64File });
                 message.success("Receipt uploaded! Our team will verify your payment.");
                 setFileList([]); // clear after submission
+
             } else if (method === 'paymongo') {
                 // Make sure application exists
                 if (!application) {

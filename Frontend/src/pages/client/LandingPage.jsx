@@ -500,20 +500,28 @@ export default function LandingPage() {
                                         <h2 className='explore-text'>Our Vision</h2>
                                         <p className='aboutus-text'>
                                             Our Vision is to be the preferred travel
-                                            and tours agency in the country of ering
-
+                                            and tours agency in the country offering
                                             specialized, high quality and cost-
-                                            ef icient travel solutions at all times,
-
+                                            efficient travel solutions at all times,
                                             anywhere, everywhere.
                                         </p>
+
+
+                                        <div>
+                                            <img
+                                                style={{ width: 200, height: 200 }}
+                                                draggable={false}
+                                                alt="example"
+                                                src="/images/philgeps.png"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className='aboutus-vision-mision-block' style={{ width: 550 }}>
                                         <h2 className='explore-text'>Our Mission</h2>
                                         <p className='aboutus-text'>
-                                            We are committed to provide value- added travel
-                                            solutions to our Customers by of ering good service
+                                            We are committed to provide value-added travel
+                                            solutions to our Customers by offering good service
                                             and meaningful experience through the help of our
                                             reliable and service- oriented travel partners.
                                             We aim to grow and profit with the knowledge that
@@ -533,6 +541,15 @@ export default function LandingPage() {
 
                                             community and our environment.
                                         </p>
+
+                                        <div>
+                                            <img
+                                                style={{ width: 200, height: 200 }}
+                                                draggable={false}
+                                                alt="example"
+                                                src="/images/philgeps.png"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

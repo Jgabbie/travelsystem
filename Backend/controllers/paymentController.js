@@ -280,6 +280,104 @@ const createCheckoutSessionVisa = async (req, res) => {
     }
 };
 
+const createCheckoutSessionDeposit = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        if (!process.env.PAYMONGO_SECRET_KEY) {
+            return res.status(500).json({ error: "PayMongo secret key is not configured." });
+        }
+
+        const { paymentPayload } = req.body;
+
+        const bookingId = paymentPayload.bookingId;
+        const bookingReference = paymentPayload.bookingReference;
+        const transactionType = "Installment Payment";
+        const packageId = paymentPayload.packageId;
+        const totalPrice = paymentPayload.totalPrice.amount;
+        const successUrl = paymentPayload.successUrl;
+        const cancelUrl = paymentPayload.cancelUrl;
+
+        console.log("Deposit payment payload:", paymentPayload);
+
+        const package = await PackageModel.findById(packageId).select('packageName');
+        const packageName = package.packageName
+
+        const baseAmountCents = Math.round(totalPrice * 100);
+        const convenienceFeeCents = Math.round((baseAmountCents * 0.035) + 1500);
+        const finalTotalCents = baseAmountCents + convenienceFeeCents; //total amount with convenience fee
+
+        const username = await UserModel.findById(userId).select('username');
+        const email = await UserModel.findById(userId).select('email');
+
+        console.log("Namespace variables:", { username, email });
+
+        //currently not being used
+        const metadata = {
+            ...(paymentPayload.metadata || {}),
+            userId: req.userId,
+            bookingId,
+            bookingReference,
+            transactionType,
+            packageId,
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents
+        };
+
+        const response = await axios.post(
+            "https://api.paymongo.com/v1/checkout_sessions",
+            {
+                data: {
+                    attributes: {
+                        billing: {
+                            name: username.username || "Test User",
+                            email: email.email || "test@example.com",
+                        },
+                        line_items: [
+                            {
+                                name: packageName || 'Tour Package',
+                                quantity: 1,
+                                amount: baseAmountCents,
+                                currency: "PHP",
+                            },
+                            {
+                                name: "Convenience Fee",
+                                description: "Payment processing and service fee",
+                                quantity: 1,
+                                amount: convenienceFeeCents,
+                                currency: "PHP",
+                            }
+                        ],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"],
+                        success_url: successUrl,
+                        cancel_url: cancelUrl,
+                        metadata,
+                        show_description: true,
+                        show_line_items: true,
+                    },
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64")}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+
+        if (response.status !== 200) {
+            console.error("PayMongo API Error:", response.data);
+            return res.status(500).json({ error: "Failed to create checkout session" });
+        }
+
+        res.json(response.data);
+    } catch (error) {
+        console.error("PayMongo error:", error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+}
 
 //paymongo
 const createCheckoutSession = async (req, res) => {
@@ -552,7 +650,30 @@ const handlePayMongoWebhook = async (req, res) => {
             return res.status(200).send('Passport handled');
         }
 
+        if (metadata.transactionType === "Installment Payment") {
+            console.log('💰 Installment payment detected');
+            const amount =
+                Number(metadata.totalAmountCents || 0) / 100 ||
+                Number(sessionAttributes?.amount_total || 0) / 100;
 
+            await TransactionModel.create({
+                bookingId: metadata.bookingId,
+                packageId: metadata.packageId,
+                userId: user._id,
+                reference: generateTransactionReference(),
+                amount,
+                method: 'Paymongo',
+                status: 'Successful',
+            });
+
+            await NotificationModel.create({
+                userId: user._id,
+                title: 'Installment Payment Successful',
+                message: `Your installment payment for booking ${metadata.bookingReference} was successful.`,
+                type: 'payment',
+                link: '/user-transactions',
+            });
+        }
 
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
         if (metadata.packageId) {
@@ -651,4 +772,4 @@ const createCheckoutToken = async (req, res) => {
 
 
 
-module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutToken, handlePayMongoWebhook, createManualPayment };
+module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment };

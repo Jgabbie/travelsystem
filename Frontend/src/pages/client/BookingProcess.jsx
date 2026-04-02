@@ -301,60 +301,63 @@ export default function BookingProcess() {
 
             const stepsToCapture = [0, 1, 2, 3];
             const previousStep = currentStep;
-
             setIsGeneratingPdf(true);
 
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
-            const waitForRender = (ms = 450) => new Promise((resolve) => {
-                requestAnimationFrame(() => {
-                    setTimeout(resolve, ms);
-                });
+            const waitForRender = (ms = 500) => new Promise((resolve) => {
+                requestAnimationFrame(() => setTimeout(resolve, ms));
             });
 
             for (let i = 0; i < stepsToCapture.length; i += 1) {
-                const step = stepsToCapture[i];
-                setCurrentStep(step);
+                setCurrentStep(stepsToCapture[i]);
                 await waitForRender();
 
-                if (!pdfStepRef.current) {
-                    continue;
-                }
+                if (!pdfStepRef.current) continue;
 
                 const canvas = await html2canvas(pdfStepRef.current, {
-                    scale: 1.5,
+                    scale: 1.2, // Reduced from 1.5 to save memory
                     useCORS: true,
                     backgroundColor: '#ffffff'
                 });
 
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                // CRITICAL: Lower quality to 0.7 to drastically reduce string size
+                const imgData = canvas.toDataURL('image/jpeg', 0.7);
+
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
                 const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-                const renderHeight = Math.min(imgHeight, pdfHeight);
 
-                pdf.setFillColor(255, 255, 255);
-                pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderHeight);
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, Math.min(imgHeight, pdfHeight));
 
-                if (i < stepsToCapture.length - 1) {
-                    pdf.addPage();
-                }
+                if (i < stepsToCapture.length - 1) pdf.addPage();
+
+                // Clean up canvas memory
+                canvas.width = 0;
+                canvas.height = 0;
             }
 
             const pdfFileName = `booking-registration-${dayjs().format('YYYYMMDD-HHmmss')}.pdf`;
-            const pdfDataUri = pdf.output('datauristring');
-            localStorage.setItem('bookingRegistrationPdf', pdfDataUri);
-            localStorage.setItem('bookingRegistrationPdfName', pdfFileName);
+
+            // Try-Catch specifically for the storage part
+            try {
+                const pdfDataUri = pdf.output('datauristring');
+                // Suggestion: Use sessionStorage instead of localStorage
+                sessionStorage.setItem('bookingRegistrationPdf', pdfDataUri);
+                sessionStorage.setItem('bookingRegistrationPdfName', pdfFileName);
+            } catch (storageError) {
+                console.warn("Storage quota exceeded, downloading directly instead.");
+                pdf.save(pdfFileName); // Fallback: Just download it if storage fails
+            }
 
             setCurrentStep(previousStep);
             setIsGeneratingPdf(false);
-
             message.success("Registration details saved. Proceeding to payment...");
             navigate('/booking-payment');
         } catch (error) {
             setIsGeneratingPdf(false);
-            message.error(error);
+            console.error(error);
+            message.error("An error occurred during submission.");
         }
     };
 

@@ -24,8 +24,8 @@ export default function SuccessfulBooking() {
             return;
         }
 
-        const pdfDataUri = localStorage.getItem(REGISTRATION_PDF_KEY);
-        const pdfFileName = localStorage.getItem(REGISTRATION_PDF_NAME_KEY) || 'booking-registration.pdf';
+        const pdfDataUri = sessionStorage.getItem(REGISTRATION_PDF_KEY);
+        const pdfFileName = sessionStorage.getItem(REGISTRATION_PDF_NAME_KEY) || 'booking-registration.pdf';
 
         if (pdfDataUri) {
             const link = document.createElement('a');
@@ -37,8 +37,8 @@ export default function SuccessfulBooking() {
         }
 
         localStorage.removeItem(SUCCESS_TOKEN_KEY);
-        localStorage.removeItem(REGISTRATION_PDF_KEY);
-        localStorage.removeItem(REGISTRATION_PDF_NAME_KEY);
+        sessionStorage.removeItem(REGISTRATION_PDF_KEY);
+        sessionStorage.removeItem(REGISTRATION_PDF_NAME_KEY);
         setBookingData(null);
 
         const timer = setInterval(() => {

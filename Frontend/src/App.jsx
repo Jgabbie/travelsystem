@@ -172,7 +172,7 @@ function App() {
             <Route path='/quotation-booking-process' element={<QuotationBookingProcess />} />
             <Route path='/quotation-payment-process' element={<QuotationsPaymentProcess />} />
             <Route path='/booking-payment' element={<PaymentProcess />} />
-            <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
+            <Route path='/booking-payment/success/:id' element={<SuccessfulBooking />} />
             <Route path="/user-applications/success/:id" element={<SuccessfulPaymentPassport />} />
             <Route path="/user-applications/success/visa/:id" element={<SuccessfulPaymentVisa />} />
             <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
