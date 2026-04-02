@@ -293,11 +293,10 @@ const createCheckoutSessionDeposit = async (req, res) => {
 
         const bookingId = paymentPayload.bookingId;
         const bookingReference = paymentPayload.bookingReference;
-        const transactionType = "Installment Payment";
         const packageId = paymentPayload.packageId;
         const totalPrice = paymentPayload.totalPrice.amount;
-        const successUrl = paymentPayload.successUrl;
-        const cancelUrl = paymentPayload.cancelUrl;
+        const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${paymentToken}`;
+        const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
 
         console.log("Deposit payment payload:", paymentPayload);
 
@@ -311,15 +310,26 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const username = await UserModel.findById(userId).select('username');
         const email = await UserModel.findById(userId).select('email');
 
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutModel.create({
+            token,
+            userId,
+            bookingId: newBooking._id,
+            amount: bookingPayload.amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created:", tokenCheckout)
+
         console.log("Namespace variables:", { username, email });
 
         //currently not being used
         const metadata = {
-            ...(paymentPayload.metadata || {}),
             userId: req.userId,
             bookingId,
             bookingReference,
-            transactionType,
+            transactionType: "Installment Payment",
             packageId,
             baseAmountCents,
             convenienceFeeCents,

@@ -343,11 +343,13 @@ export default function UserBookingInvoice() {
                 bookingReference: reference,
                 packageId: booking?.packageId._id,
                 totalPrice: currentUnpaidInstallment,
-                successUrl: `${window.location.origin}/booking-payment/success/${reference}`,
-                cancelUrl: `${window.location.origin}/user-booking-invoice`,
             };
 
-            const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session-deposit', { paymentPayload });
+            const paymongoResponse = await axiosInstance.post(
+                '/payment/create-checkout-session-deposit',
+                { paymentPayload }
+            );
+
             const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
             setLoading(false);
 

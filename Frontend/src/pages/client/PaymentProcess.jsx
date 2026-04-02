@@ -214,8 +214,6 @@ export default function PaymentProcess() {
                 return;
             }
 
-
-
             if (method === 'manual') {
                 const file = fileList?.[0];
                 const proofImage = file?.preview || (file?.originFileObj ? await getBase64(file.originFileObj) : null);
