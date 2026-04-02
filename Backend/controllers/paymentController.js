@@ -701,12 +701,16 @@ const handlePayMongoWebhook = async (req, res) => {
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
         if (metadata.bookingId && metadata.transactionType === "Booking Payment") {
             console.log('🛫 Booking payment detected');
-            let booking = null;
+            let booking = await BookingModel.findById(metadata.bookingId);
 
-            await BookingModel.findOneAndUpdate(
-                { status: 'Successful' },
-                { new: true }
-            );
+            if (!booking) {
+                console.warn('Booking not found for ID:', metadata.bookingId);
+                return res.status(404).send('Booking not found');
+            }
+
+            // Update the booking status
+            booking.status = 'Successful';
+            await booking.save();
 
             // if (!booking) {
             //     booking = await BookingModel.create({
