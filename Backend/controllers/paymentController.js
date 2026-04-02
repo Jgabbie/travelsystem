@@ -297,7 +297,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const tokenCheckout = await TokenCheckoutModel.create({
             token,
             userId,
-            bookingId: newBooking._id,
+            bookingId,
             amount: bookingPayload.amount,
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
