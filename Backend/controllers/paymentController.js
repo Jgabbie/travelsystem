@@ -658,7 +658,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
             await TransactionModel.create({
                 bookingId: metadata.bookingId,
-                packageId: metadata.packageId,
+                packageId: metadata.packageId._id,
                 userId: user._id,
                 reference: generateTransactionReference(),
                 amount,
