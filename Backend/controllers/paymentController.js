@@ -293,7 +293,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const bookingId = paymentPayload.bookingId;
         const bookingReference = paymentPayload.bookingReference;
         const transactionType = "Installment Payment";
-        const packageId = paymentPayload.packageId;
+        const packageId = paymentPayload.packageId._id;
         const totalPrice = paymentPayload.totalPrice.amount;
         const successUrl = paymentPayload.successUrl;
         const cancelUrl = paymentPayload.cancelUrl;
@@ -654,7 +654,6 @@ const handlePayMongoWebhook = async (req, res) => {
             console.log('💰 Installment payment detected');
 
             console.log('Installment payment metadata:', metadata);
-            console.log('Pakcage ID:', metadata.packageId._id);
 
             const amount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
