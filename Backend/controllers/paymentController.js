@@ -652,13 +652,15 @@ const handlePayMongoWebhook = async (req, res) => {
 
         if (metadata.transactionType === "Installment Payment") {
             console.log('💰 Installment payment detected');
+
+            console.log('Installment payment metadata:', metadata);
             const amount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
 
             await TransactionModel.create({
                 bookingId: metadata.bookingId,
-                packageId: metadata.packageId._id,
+                packageId: metadata.packageId,
                 userId: user._id,
                 reference: generateTransactionReference(),
                 amount,
