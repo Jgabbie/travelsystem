@@ -801,11 +801,13 @@ const handlePayMongoWebhook = async (req, res) => {
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
 
+            const transactionReference = generateTransactionReference();
+
             await TransactionModel.create({
                 userId: user._id,
                 applicationId: metadata.applicationId,
                 applicationType: "Visa Application",
-                reference: generateTransactionReference(),
+                reference: transactionReference,
                 amount,
                 method: 'Paymongo',
                 status: 'Successful',
