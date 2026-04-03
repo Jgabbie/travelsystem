@@ -332,7 +332,7 @@ export default function PassportApplication() {
                                 </div>
 
 
-                                {application.status && application.status.toLowerCase() === 'application approved' && !paymentCompleted && (
+                                {application?.status && application.status.toLowerCase() === 'application approved' && !paymentCompleted && (
                                     <Card title="Payment" style={{ marginBottom: 32 }}>
                                         <div className='payment-methods-container payment-section'>
                                             <div className="payment-methods-wrapper">
@@ -464,7 +464,7 @@ export default function PassportApplication() {
                                     </Card>
                                 )}
 
-                                {application.status && application.status?.toLowerCase() === 'documents approved' && (
+                                {application?.status && application.status?.toLowerCase() === 'documents approved' && (
                                     <Card
                                         style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
                                         title={<Tag color="green">Documents Approved</Tag>}
@@ -476,7 +476,7 @@ export default function PassportApplication() {
                                 )}
 
                                 {/* Only show upload requirements if status is "pending" */}
-                                {application.status && application.status?.toLowerCase() === 'payment complete' && (
+                                {application?.status && application.status?.toLowerCase() === 'payment complete' && (
                                     <Card title="Upload Requirements">
                                         <div style={{ marginBottom: 24 }}>
                                             <b>PSA-issued Birth Certificate</b>
@@ -569,7 +569,7 @@ export default function PassportApplication() {
                         )}
 
 
-                        {application.status && application.status?.toLowerCase() === 'documents uploaded' && (
+                        {application?.status && application.status?.toLowerCase() === 'documents uploaded' && (
                             <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
                                 {application.submittedDocuments && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
