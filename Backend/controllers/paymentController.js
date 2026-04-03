@@ -117,6 +117,8 @@ const createManualPayment = async (req, res) => {
         }
 
         console.log('Manual payment deposit created:', transaction);
+        console.log('userId for email:', userId.email);
+        console.log('username for email:', userId.username);
 
         try {
             await transporter.sendMail({
