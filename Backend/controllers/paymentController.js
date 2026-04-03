@@ -118,6 +118,55 @@ const createManualPayment = async (req, res) => {
 
         console.log('Manual payment deposit created:', transaction);
 
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Booking ${booking.reference} Confirmed`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Booking Confirmed!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${userId.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your booking has been successfully confirmed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${booking.reference} <br/>
+                                <b>Package:</b> ${packageDoc.packageName} <br/>
+                                <b>Travel Dates:</b> ${bookingStart} to ${bookingEnd} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not book this trip, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send booking email:', emailError);
+        }
+
         return res.status(200).json({
             redirectUrl: `/booking-payment/success?token=${token}`
         });
@@ -154,6 +203,12 @@ const createManualPaymentDeposit = async (req, res) => {
         console.log("Token checkout created for manual deposit:", tokenCheckout);
 
         const reference = generateTransactionReference();
+        const booking = await BookingModel.findById(bookingId);
+        const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
+        const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+
+        const packageDoc = await PackageModel.findById(packageId);
+
 
         if (!proofImage || !proofImageType) {
             return res.status(400).json({ error: "Proof of payment image is required." });
@@ -172,6 +227,55 @@ const createManualPaymentDeposit = async (req, res) => {
             proofFileName,
         });
 
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Installment Payment ${transactionReference} Successful`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Installment Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${userId.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your installment payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${reference} <br/>
+                                <b>Package:</b> ${packageDoc.packageName} <br/>
+                                <b>Travel Dates:</b> ${bookingStart} to ${bookingEnd} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send booking email:', emailError);
+        }
 
         console.log('Manual payment deposit created:', transaction);
 
@@ -708,6 +812,55 @@ const handlePayMongoWebhook = async (req, res) => {
                 link: '/user-transactions',
             });
 
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Visa Payment Successful`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Visa Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your visa payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${transactionReference} <br/>
+                                <b>Application Number:</b> ${metadata.applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                });
+            } catch (emailError) {
+                console.error('Failed to send visa email:', emailError);
+            }
+
             return res.status(200).send('Visa handled');
         }
 
@@ -718,11 +871,13 @@ const handlePayMongoWebhook = async (req, res) => {
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
 
+            const transactionReference = generateTransactionReference();
+
             await TransactionModel.create({
                 userId: user._id,
                 applicationId: metadata.applicationId,
                 applicationType: "Passport Application",
-                reference: generateTransactionReference(),
+                reference: transactionReference,
                 amount,
                 method: 'Paymongo',
                 status: 'Successful',
@@ -751,6 +906,55 @@ const handlePayMongoWebhook = async (req, res) => {
                 link: '/user-transactions',
             });
 
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Passport Payment Successful`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Passport Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your passport payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${transactionReference} <br/>
+                                <b>Application Number:</b> ${metadata.applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                });
+            } catch (emailError) {
+                console.error('Failed to send passport email:', emailError);
+            }
+
             return res.status(200).send('Passport handled');
         }
 
@@ -759,15 +963,23 @@ const handlePayMongoWebhook = async (req, res) => {
 
             console.log('Installment payment metadata:', metadata);
 
+            const booking = await BookingModel.findById(metadata.bookingId)
+            const packageDoc = await PackageModel.findById(metadata.packageId);
+
+            const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
+            const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+
             const amount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
+
+            const transactionReference = generateTransactionReference();
 
             await TransactionModel.create({
                 bookingId: metadata.bookingId,
                 packageId: metadata.packageId,
                 userId: user._id,
-                reference: generateTransactionReference(),
+                reference: transactionReference,
                 amount,
                 method: 'Paymongo',
                 status: 'Successful',
@@ -780,6 +992,56 @@ const handlePayMongoWebhook = async (req, res) => {
                 type: 'payment',
                 link: '/user-transactions',
             });
+
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Installment Payment ${transactionReference} Successful`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Installment Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your installment payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${transactionReference} <br/>
+                                <b>Package:</b> ${packageDoc.packageName} <br/>
+                                <b>Travel Dates:</b> ${bookingStart} to ${bookingEnd} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                });
+            } catch (emailError) {
+                console.error('Failed to send booking email:', emailError);
+            }
 
             return res.status(200).send('Installment handled');
         }
@@ -911,7 +1173,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
                         </div>
                     </div>
-            `
+                    `
                 });
             } catch (emailError) {
                 console.error('Failed to send booking email:', emailError);
