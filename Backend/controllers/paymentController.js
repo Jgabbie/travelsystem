@@ -467,7 +467,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //paymongo
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -785,6 +785,7 @@ const handlePayMongoWebhook = async (req, res) => {
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
         if (metadata.bookingId && metadata.transactionType === "Booking Payment") {
             console.log('🛫 Booking payment detected');
+            console.log('PackageId in metadata:', metadata.packageId);
             let booking = await BookingModel.findById(metadata.bookingId);
 
             if (!booking) {
@@ -794,11 +795,13 @@ const handlePayMongoWebhook = async (req, res) => {
 
             const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
             const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+            const packageId = booking.packageId.toString();
 
             console.log("Start Date:", bookingStart);
             console.log("End Date:", bookingEnd);
 
-            const packageDoc = await PackageModel.findById(metadata.packageId);
+            const packageDoc = await PackageModel.findById(packageId);
+            console.log("Fetched package document:", packageDoc);
             console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
 
             const updateResult = await PackageModel.updateOne(
