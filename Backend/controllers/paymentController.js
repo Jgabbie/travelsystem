@@ -117,13 +117,15 @@ const createManualPayment = async (req, res) => {
         }
 
         console.log('Manual payment deposit created:', transaction);
-        console.log('userId for email:', userId.email);
-        console.log('username for email:', userId.username);
+
+        const user = await UserModel.findById(userId).select('email username');
+        console.log('userId for email:', user.email);
+        console.log('username for email:', user.username);
 
         try {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                to: userId.email,
+                to: user.email,
                 subject: `Booking ${booking.reference} Confirmed`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
@@ -134,7 +136,7 @@ const createManualPayment = async (req, res) => {
                             </h2>
 
                             <p style="color:#555; font-size:16px;">
-                                Hello <b>${userId.username}</b>,
+                                Hello <b>${user.username}</b>,
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
@@ -229,10 +231,12 @@ const createManualPaymentDeposit = async (req, res) => {
             proofFileName,
         });
 
+        const user = await UserModel.findById(userId).select('email username');
+
         try {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                to: userId.email,
+                to: user.email,
                 subject: `Installment Payment ${reference} Successful`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
@@ -243,7 +247,7 @@ const createManualPaymentDeposit = async (req, res) => {
                             </h2>
 
                             <p style="color:#555; font-size:16px;">
-                                Hello <b>${userId.username}</b>,
+                                Hello <b>${user.username}</b>,
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
