@@ -221,6 +221,8 @@ export default function PaymentProcess() {
 
     //checkout
     const proceedBooking = async () => {
+
+        setIsProceedModalOpen(false);
         if (!paymentType) {
             message.warning("Please select a payment type.");
             return;
@@ -242,9 +244,6 @@ export default function PaymentProcess() {
             const amountToCharge = paymentType === 'deposit'
                 ? depositAmount
                 : totalAmount;
-
-
-            console.log()
 
             const allUrls = await uploadAllFiles(passportFiles, photoFiles);
 
@@ -356,8 +355,17 @@ export default function PaymentProcess() {
 
     const today = dayjs();
 
+    const travelDateComputation = bookingData?.travelDate?.startDate
+        ? dayjs(bookingData.travelDate.startDate)
+        : today;
 
-    const dueCutoffDate = dayjs(bookingData.travelDate.startDate);
+    // ✅ Limit to 45 days from today
+    const maxAllowedDate = today.add(45, 'day');
+
+    // ✅ Final cutoff = whichever comes FIRST
+    const dueCutoffDate = travelDateComputation.isBefore(maxAllowedDate)
+        ? travelDateComputation
+        : maxAllowedDate;
 
     const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal;
     const remainingAmount = Math.max(totalAmount - depositAmount, 0);
@@ -400,6 +408,10 @@ export default function PaymentProcess() {
         })),
     ];
 
+    const lastInstallmentDate = paymentDates.length > 0
+        ? paymentDates[paymentDates.length - 1]
+        : today;
+
     const Invoice = {
         company: {
             name: 'M&RC Travel and Tours',
@@ -412,7 +424,7 @@ export default function PaymentProcess() {
         invoice: {
             number: invoiceNumber,
             issueDate: issueDate,
-            dueDate: dueCutoffDate,
+            dueDate: lastInstallmentDate.format("MMMM D, YYYY"),
             status: 'Pending'
         },
         customer: {

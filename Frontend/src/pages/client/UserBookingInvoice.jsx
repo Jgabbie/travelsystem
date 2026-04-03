@@ -465,6 +465,13 @@ export default function UserBookingInvoice() {
         fetchAllData();
     }, [reference]);
 
+
+
+    //installment computation
+    const [currentUnpaidInstallment, setCurrentUnpaidInstallment] = useState(null);
+    const paymentType = bookingDetails?.paymentDetails?.paymentType || "Full";
+    const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
+
     const invoice = {
         company: {
             name: "M&RC Travel and Tours",
@@ -477,7 +484,7 @@ export default function UserBookingInvoice() {
         invoice: {
             number: invoiceNumber || "----",
             issueDate: issueDate.format("MMMM D, YYYY"),
-            dueDate: dueDate.format("MMMM D, YYYY")
+            dueDate: null
         },
         customer: {
             name: customerName,
@@ -498,10 +505,48 @@ export default function UserBookingInvoice() {
         ]
     };
 
-    //installment computation
-    const [currentUnpaidInstallment, setCurrentUnpaidInstallment] = useState(null);
-    const paymentType = bookingDetails?.paymentDetails?.paymentType || "Full";
-    const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
+    const installmentData = useMemo(() => {
+        return runInstallmentLogic(invoice, bookingDetails, paidAmount);
+    }, [invoice, bookingDetails, paidAmount]);
+
+    const installmentsOnly = installmentData.paymentSchedule?.filter(
+        (item) => item.label.toLowerCase().includes("installment")
+    );
+
+    const lastInstallment = installmentsOnly?.length
+        ? installmentsOnly[installmentsOnly.length - 1]
+        : null;
+
+    const lastInstallmentDate = lastInstallment
+        ? dayjs(lastInstallment.date).format("MMMM D, YYYY")
+        : null;
+
+    console.log("Last Installment Date:", lastInstallmentDate);
+    console.log("Formatted Last Installment Date:", lastInstallment);
+    console.log("Installment Data:", installmentData);
+
+    invoice.invoice.dueDate = lastInstallmentDate ? dayjs(lastInstallmentDate).format("MMMM D, YYYY") : null;
+
+    useEffect(() => {
+        const next = installmentData.nextUnpaid;
+
+        if (!next && !currentUnpaidInstallment) return;
+
+        if (
+            next?.label !== currentUnpaidInstallment?.label ||
+            next?.amount !== currentUnpaidInstallment?.amount ||
+            next?.status !== currentUnpaidInstallment?.status
+        ) {
+            setCurrentUnpaidInstallment(
+                next
+                    ? {
+                        ...next,
+                        dueDate: lastInstallmentDate, // ✅ use formatted last installment date
+                    }
+                    : null
+            );
+        }
+    }, [installmentData.nextUnpaid, lastInstallmentDate])
 
     const calculateTotals = (items) => {
         const subtotal = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
@@ -512,25 +557,7 @@ export default function UserBookingInvoice() {
 
     const totals = calculateTotals(invoice.items);
 
-    const installmentData = useMemo(() => {
-        return runInstallmentLogic(invoice, bookingDetails, paidAmount);
-    }, [invoice, bookingDetails, paidAmount]); // Only 3 clear dependencies
 
-    useEffect(() => {
-        const next = installmentData.nextUnpaid;
-
-        // If both are null/undefined, do nothing
-        if (!next && !currentUnpaidInstallment) return;
-
-        // Only update if the specific identifying values changed
-        if (
-            next?.label !== currentUnpaidInstallment?.label ||
-            next?.amount !== currentUnpaidInstallment?.amount ||
-            next?.status !== currentUnpaidInstallment?.status
-        ) {
-            setCurrentUnpaidInstallment(next || null);
-        }
-    }, [installmentData.nextUnpaid]);
 
     //invoice document
     const MyDocument = () => (

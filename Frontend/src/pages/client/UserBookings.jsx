@@ -38,7 +38,7 @@ export default function UserBookings() {
                     reference: b.reference || b._id,
                     packageName: b.packageId?.packageName || 'Tour Package',
                     packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
-                    travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM D, YYYY') : dayjs(b.travelDate).format('MMM D, YYYY'),
+                    travelDate: b.travelDate ? `${dayjs(b.travelDate.startDate).format('MMM D, YYYY')} - ${dayjs(b.travelDate.endDate).format('MMM D, YYYY')}` : 'TBD',
                     bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
                     travelersCount: b.travelers || {},
                     status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
