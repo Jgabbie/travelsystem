@@ -51,7 +51,7 @@ const createManualPayment = async (req, res) => {
 
         console.log("Manual payment request body:", req.body);
 
-        const FRONTEND_URL = "http://localhost:3000";
+        const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
         const token = uuidv4();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -140,7 +140,7 @@ const createManualPaymentDeposit = async (req, res) => {
             proofFileName,
         } = req.body;
 
-        const FRONTEND_URL = "http://localhost:3000";
+        const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
         const token = uuidv4();
 
         const tokenCheckout = await TokenCheckoutModel.create({
