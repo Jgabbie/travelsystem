@@ -121,7 +121,7 @@ const createManualPayment = async (req, res) => {
         try {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                to: user.email,
+                to: userId.email,
                 subject: `Booking ${booking.reference} Confirmed`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
@@ -230,8 +230,8 @@ const createManualPaymentDeposit = async (req, res) => {
         try {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-                to: user.email,
-                subject: `Installment Payment ${transactionReference} Successful`,
+                to: userId.email,
+                subject: `Installment Payment ${reference} Successful`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
