@@ -122,6 +122,15 @@ const createManualPayment = async (req, res) => {
         console.log('userId for email:', user.email);
         console.log('username for email:', user.username);
 
+        await NotificationModel.create({
+            userId: user._id,
+            title: 'Booking Confirmed',
+            message: `Your booking ${booking.reference} has been confirmed.`,
+            type: 'booking',
+            link: '/user-bookings',
+        });
+
+
         try {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
@@ -232,6 +241,14 @@ const createManualPaymentDeposit = async (req, res) => {
         });
 
         const user = await UserModel.findById(userId).select('email username');
+
+        await NotificationModel.create({
+            userId: user._id,
+            title: 'Installment Payment Successful',
+            message: `Your installment payment for booking ${booking.reference} was successful.`,
+            type: 'payment',
+            link: '/user-transactions',
+        });
 
         try {
             await transporter.sendMail({
