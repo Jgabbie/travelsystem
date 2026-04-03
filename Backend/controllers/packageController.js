@@ -1,5 +1,6 @@
 const PackageModel = require("../models/package");
 const logAction = require("../utils/logger");
+const dayjs = require("dayjs");
 
 const addPackage = async (req, res) => {
     const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags } = req.body;
@@ -25,10 +26,10 @@ const addPackage = async (req, res) => {
             packageDuration: Number(duration),
             packageSpecificDate: (dateRanges || []).map(range => ({
                 startdaterange: range.startdaterange
-                    ? new Date(range.startdaterange)
+                    ? new dayjs(range.startdaterange).format('YYYY-MM-DD')
                     : null,
                 enddaterange: range.enddaterange
-                    ? new Date(range.enddaterange)
+                    ? new dayjs(range.enddaterange).format('YYYY-MM-DD')
                     : null,
                 extrarate: range.extrarate
                     ? Number(range.extrarate)
@@ -140,10 +141,10 @@ const updatePackage = async (req, res) => {
                 packageType: req.body.packageType,
                 packageSpecificDate: (req.body.dateRanges || []).map(range => ({
                     startdaterange: range.startdaterange
-                        ? new Date(range.startdaterange)
+                        ? new dayjs(range.startdaterange).format('YYYY-MM-DD')
                         : null,
                     enddaterange: range.enddaterange
-                        ? new Date(range.enddaterange)
+                        ? new dayjs(range.enddaterange).format('YYYY-MM-DD')
                         : null,
                     extrarate: range.extrarate
                         ? Number(range.extrarate)

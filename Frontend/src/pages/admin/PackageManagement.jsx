@@ -197,22 +197,10 @@ export default function PackageManagement() {
           />
 
           <Space style={{ marginLeft: 'auto' }}>
-            <Dropdown
-              menu={{
-                items: [
-                  { key: "domestic", label: "Domestic Package" },
-                  { key: "international", label: "International Package" },
-                ],
-                onClick: ({ key }) => {
-                  if (key === "domestic") navigate(`${basePath}/packages/add/domestic`);
-                  else navigate(`${basePath}/packages/add/international`);
-                },
-              }}
-            >
-              <Button type="primary" icon={<PlusOutlined />}>
-                Add Package <DownOutlined />
-              </Button>
-            </Dropdown>
+
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate(`${basePath}/packages/add`)}>
+              Add Package
+            </Button>
           </Space>
         </div >
 
@@ -254,9 +242,7 @@ export default function PackageManagement() {
                     type="primary"
                     icon={<EditOutlined />}
                     onClick={() =>
-                      pkg.packageType === "international"
-                        ? navigate(`${basePath}/packages/edit/international/${pkg._id}`)
-                        : navigate(`${basePath}/packages/edit/domestic/${pkg._id}`)
+                      navigate(`${basePath}/packages/edit/${pkg._id}`)
                     }
                   />
 

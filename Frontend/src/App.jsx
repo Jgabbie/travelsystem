@@ -69,8 +69,6 @@ import { BookingProvider } from "./context/BookingContext";
 
 
 
-
-
 function App() {
   return (
     <div>

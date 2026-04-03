@@ -3,10 +3,12 @@ const router = express.Router();
 const uploadController = require('../controllers/uploadController');
 const { upload } = require('../middleware/uploadFile');
 
-router.post(
-    '/upload-receipt',
-    upload.single('file'),
-    uploadController.uploadReceiptProof
-);
+router.post('/upload-receipt', upload.single('file'), uploadController.uploadReceiptProof);
+router.post('/upload-booking-documents', upload.array('files', 20), uploadController.uploadBookingDocuments);
+router.post('/upload-package-images', upload.array('files', 3), uploadController.uploadPackageImage);
+router.post('/upload-profile-picture', upload.single('file'), uploadController.uploadProfilePicture);
+router.post('/upload-passport-requirements', upload.array('files', 10), uploadController.uploadPassportRequirements);
+router.post('/upload-visa-requirements', upload.array('files', 10), uploadController.uploadVisaRequirements);
+
 
 module.exports = router;

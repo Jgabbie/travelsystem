@@ -30,12 +30,24 @@ export default function PaymentProcess() {
     const [method, setMethod] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
+
+    const onCancelModal = () => {
+        setIsProceedModalOpen(false);
+    };
+
     const [monthBookingsCount, setMonthBookingsCount] = useState(0);
 
     const [fileList, setFileList] = useState([]);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
     const [previewTitle, setPreviewTitle] = useState('');
+
+    const passportFiles = bookingData?.passportFiles || [];
+    const photoFiles = bookingData?.photoFiles || [];
+
+    console.log("Passport Files:", passportFiles);
+    console.log("Photo Files:", photoFiles);
 
     useEffect(() => {
         if (!bookingData) {
@@ -49,6 +61,23 @@ export default function PaymentProcess() {
             setMethod(methodParam);
         }
     }, [bookingData, navigate, searchParams]);
+
+
+    //upload files functions
+
+    const base64ToFile = (base64Data, fileName, fileType) => {
+        const arr = base64Data.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1] || fileType;
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], fileName, { type: mime });
+    };
 
     const handleUploadChange = async ({ fileList: newFileList }) => {
         const file = newFileList[0];
@@ -72,10 +101,33 @@ export default function PaymentProcess() {
             message.error('Image must be smaller than 2MB');
             return Upload.LIST_IGNORE;
         }
-
         return false;
     };
 
+    const uploadAllFiles = async (passportFiles, photoFiles) => {
+        const formData = new FormData();
+
+        const passportFileObjs = passportFiles.map(file =>
+            base64ToFile(file.base64, file.name, file.type)
+        );
+
+        const photoFileObjs = photoFiles.map(file =>
+            base64ToFile(file.base64, file.name, file.type)
+        );
+
+        [...passportFileObjs, ...photoFileObjs].forEach(file => formData.append("files", file));
+
+        const res = await axiosInstance.post(
+            "/upload/upload-booking-documents",
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        return res.data.urls;
+    };
+
+
+    //get invoice number
     useEffect(() => {
         const fetchMonthBookings = async () => {
             try {
@@ -90,7 +142,6 @@ export default function PaymentProcess() {
 
     const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
-    const dueDate = dayjs().add(45, "day").format("MMMM D, YYYY");
 
     console.log("Booking Data in PaymentProcess:", bookingData);
 
@@ -117,8 +168,8 @@ export default function PaymentProcess() {
     const packageId = bookingData?.packageId;
     const packageName = bookingData?.packageName || 'Tour Package';
 
-    const startTravelDate = dayjs(bookingData?.travelDate).format("MMM D, YYYY") || 'TBD';
-    const endTravelDate = dayjs(bookingData?.travelDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
+    const startTravelDate = dayjs(bookingData?.travelDate?.startDate).format("MMM D, YYYY") || 'TBD';
+    const endTravelDate = dayjs(bookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
 
     const travelDate = startTravelDate === 'TBD' ? 'TBD' : `${startTravelDate} - ${endTravelDate}`;
 
@@ -131,19 +182,18 @@ export default function PaymentProcess() {
     const [bookingReference, setBookingReference] = useState(null);
 
 
+
+
     //payload for bookings
     const paymentDetails = {
         paymentType,
         frequency,
         depositAmount: bookingData?.packageDeposit ? (bookingData.packageDeposit * travelerTotal) : 0,
-        //bookingdate
-        //traveldate
-        //45days
     }
 
     const bookingDetails = {
         dateOfRegistration: bookingData.dateOfRegistration,
-        travelDate: bookingData.travelDate,
+        travelDate: bookingData?.travelDate,
         tourPackageTitle: bookingData.tourPackageTitle,
         tourPackageVia: bookingData.tourPackageVia,
         leadTitle: bookingData.leadTitle,
@@ -194,6 +244,14 @@ export default function PaymentProcess() {
                 : totalAmount;
 
 
+            console.log()
+
+            const allUrls = await uploadAllFiles(passportFiles, photoFiles);
+
+            const passportUrls = allUrls.slice(0, passportFiles.length);
+            const photoUrls = allUrls.slice(passportFiles.length);
+
+
             const bookingRes = await axiosInstance.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,
@@ -201,6 +259,8 @@ export default function PaymentProcess() {
                     travelers: bookingData?.travelerCounts.adult + bookingData?.travelerCounts.child + bookingData?.travelerCounts.infant || 0,
                     bookingDetails,
                     paymentType,
+                    passportFiles: passportUrls,
+                    photoFiles: photoUrls,
                     amount: amountToCharge //for checkoutToken
                 }
             });
@@ -215,39 +275,49 @@ export default function PaymentProcess() {
             }
 
             if (method === 'manual') {
-                const file = fileList?.[0];
-                const proofImage = file?.preview || (file?.originFileObj ? await getBase64(file.originFileObj) : null);
+                const file = fileList?.[0]?.originFileObj;
 
-                if (!proofImage) {
-                    message.error('Unable to read the proof of payment image.');
+                if (!file) {
+                    message.error("Invalid file.");
+                    setLoading(false);
                     return;
                 }
 
-                await axiosInstance.post('/payment/manual', {
+                const formData = new FormData();
+                formData.append("file", file); // 
+
+                console.log("Uploading file:", file);
+                console.log("FormData file:", formData.get("file"));
+
+                const uploadRes = await axiosInstance.post(
+                    "/upload/upload-receipt",
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+                );
+
+                const imageUrl = uploadRes.data?.url;
+
+                console.log("Booking data from new booking:", bookingRes);
+
+                const manualDepositRes = await axiosInstance.post('/payment/manual', {
+                    bookingId: bookingRes.data.booking._id,
                     packageId,
-                    travelDate: bookingData?.travelDate,
-                    travelerTotal,
                     amount: amountToCharge,
-                    paymentType,
-                    bookingDetails: bookingDetails,
-                    proofImage,
+                    proofImage: imageUrl,
                     proofImageType: file?.type,
                     proofFileName: file?.name
                 });
                 setLoading(false);
-                navigate(`/booking-payment/success?token=${paymentToken}`);
+                if (manualDepositRes.data?.redirectUrl) {
+                    navigate(manualDepositRes.data.redirectUrl);
+                    return;
+                }
                 return;
             }
-
-            // const paymentPayload = {
-            //     packageId,
-            //     totalPrice: amountToCharge,
-            //     travelDate,
-            //     travelerTotal,
-            //     bookingDetails: bookingDetails,
-            //     successUrl: `${window.location.origin}/booking-payment/success?token=${paymentToken}`,
-            //     cancelUrl: `${window.location.origin}/booking-payment?status=cancel`,
-            // };
 
             const paymongoResponse = await axiosInstance.post(
                 '/payment/create-checkout-session',
@@ -273,6 +343,63 @@ export default function PaymentProcess() {
         }
     }
 
+
+    const formatCurrency = (value) => `PHP ${value.toFixed(2)}`;
+
+    const getFrequencyWeeks = (value) => {
+        if (value === 'Every week') return 1;
+        if (value === 'Every 3 weeks') return 3;
+        return 2;
+    };
+
+    const frequencyWeeks = getFrequencyWeeks(frequency);
+
+    const today = dayjs();
+
+
+    const dueCutoffDate = dayjs(bookingData.travelDate.startDate);
+
+    const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal;
+    const remainingAmount = Math.max(totalAmount - depositAmount, 0);
+
+    const installmentWindowDays = dueCutoffDate.diff(today, 'day');
+
+    const paymentDates = [];
+
+    let nextDate = dayjs(today).add(frequencyWeeks, 'week');
+
+    while (nextDate.isBefore(dueCutoffDate) || nextDate.isSame(dueCutoffDate)) {
+        paymentDates.push(nextDate);
+        nextDate = nextDate.add(frequencyWeeks, 'week');
+    }
+
+    if (paymentDates.length === 0) {
+        paymentDates.push(dueCutoffDate.subtract(1, 'day'));
+    }
+
+    const installmentCount = paymentDates.length;
+
+    const installmentAmount = installmentCount
+        ? remainingAmount / installmentCount
+        : 0;
+
+    const formatScheduleAmount = (value) =>
+        value == null ? 'PHP TBD' : formatCurrency(value);
+
+    // ✅ Final payment schedule
+    const paymentSchedule = [
+        {
+            label: 'Deposit',
+            amount: depositAmount,
+            date: today,
+        },
+        ...paymentDates.map((date, index) => ({
+            label: `Installment ${index + 1}`,
+            amount: installmentAmount,
+            date,
+        })),
+    ];
+
     const Invoice = {
         company: {
             name: 'M&RC Travel and Tours',
@@ -285,7 +412,7 @@ export default function PaymentProcess() {
         invoice: {
             number: invoiceNumber,
             issueDate: issueDate,
-            dueDate: dueDate,
+            dueDate: dueCutoffDate,
             status: 'Pending'
         },
         customer: {
@@ -322,49 +449,6 @@ export default function PaymentProcess() {
 
     const totals = calculateTotals(Invoice.items);
 
-    const formatCurrency = (value) => `PHP ${value.toFixed(2)}`;
-
-    const getFrequencyWeeks = (value) => {
-        if (value === 'Every week') return 1
-        if (value === 'Every 3 weeks') return 3
-        return 2
-    }
-
-    const frequencyWeeks = getFrequencyWeeks(frequency)
-    const today = dayjs()
-    const dueCutoffDate = today.add(45, 'day')
-    const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal
-    const remainingAmount = Math.max(totalAmount - depositAmount, 0)
-
-    const installmentWindowDays = dueCutoffDate.diff(today, 'day')
-
-    const installmentCount = Math.max(
-        Math.floor(installmentWindowDays / (frequencyWeeks * 7)),
-        1
-    )
-
-    const installmentAmount = installmentCount ? remainingAmount / installmentCount : 0
-
-    const windowStartDate = today
-
-    const paymentDates = Array.from({ length: installmentCount }, (_, index) => {
-        return dayjs(windowStartDate).add(frequencyWeeks * (index + 1), 'week')
-    })
-
-    const formatScheduleAmount = (value) => (value == null ? 'PHP TBD' : formatCurrency(value))
-
-    const paymentSchedule = [
-        {
-            label: 'Deposit',
-            amount: depositAmount,
-            date: today
-        },
-        ...paymentDates.map((date, index) => ({
-            label: `Installment ${index + 1}`,
-            amount: installmentAmount,
-            date
-        }))
-    ]
 
     const MyDocument = () => (
         <Document>
@@ -774,7 +858,7 @@ export default function PaymentProcess() {
                     <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
                         <Button
                             type="primary"
-                            onClick={proceedBooking}
+                            onClick={() => setIsProceedModalOpen(true)}
                             disabled={
                                 !paymentType ||
                                 !method ||
@@ -786,6 +870,37 @@ export default function PaymentProcess() {
                     </div>
 
                 </div>
+
+                <Modal
+                    open={isProceedModalOpen}
+                    className='signup-success-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    onCancel={() => { setIsProceedModalOpen(false) }}
+                    style={{ top: 200 }}
+                >
+                    <div className='signup-success-container'>
+                        <h1 className='signup-success-heading'>Proceed to Payment</h1>
+                        <p className='signup-success-text'>Are you sure you want to proceed with the payment?</p>
+
+                    </div>
+
+                    <div className='signup-actions'>
+                        <Button
+                            id='signup-success-button'
+                            onClick={proceedBooking}
+                        >
+                            Proceed
+                        </Button>
+
+                        <Button
+                            id='signup-success-button-cancel'
+                            onClick={() => setIsProceedModalOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </Modal>
             </ConfigProvider>
         </div>
     )

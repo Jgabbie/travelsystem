@@ -30,8 +30,10 @@ const createBooking = async (req, res) => {
     const travelers = bookingPayload.travelers
     const bookingDate = new Date().toISOString()
     const bookingDetails = bookingPayload.bookingDetails || null
-    const status = bookingPayload.status || 'Pending'
+    const status = 'Not Paid'
     const amount = bookingPayload.amount || 0
+    const passportFiles = bookingPayload.passportFiles || []
+    const photoFiles = bookingPayload.photoFiles || []
     const expiresAt = dayjs().add(5, 'minutes').toDate() // 5 minutes from now
 
     //find package by name to get its id, then create booking with that package id
@@ -52,6 +54,8 @@ const createBooking = async (req, res) => {
             travelDate,
             bookingDate,
             bookingDetails,
+            passportFiles,
+            photoFiles,
             travelers,
             reference: generateBookingReference(),
             status,

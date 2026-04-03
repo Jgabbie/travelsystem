@@ -286,23 +286,44 @@ export default function ProfilePage() {
         })
     }
 
-    const handleImageChange = (event) => {
+    const handleImageChange = async (event) => {
         const file = event.target.files?.[0]
         if (!file) return
+
         if (!file.type.startsWith('image/')) {
             message.error('Please select a valid image file.')
             return
         }
+
         if (file.size > 2 * 1024 * 1024) {
             message.error('Image must be 2MB or less.')
             return
         }
 
-        const reader = new FileReader()
-        reader.onload = () => {
-            setProfileImage(reader.result?.toString() || '')
+        try {
+            const formData = new FormData()
+            formData.append("file", file)
+
+            const res = await axiosInstance.post(
+                "/upload/upload-profile-picture",
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    withCredentials: true
+                }
+            )
+
+            const imageUrl = res.data.url
+
+            // save Cloudinary URL
+            setProfileImage(imageUrl)
+
+            message.success("Image uploaded successfully!")
+
+        } catch (error) {
+            console.error(error)
+            message.error("Upload failed")
         }
-        reader.readAsDataURL(file)
     }
 
     // save profile changes

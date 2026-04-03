@@ -109,20 +109,9 @@ export default function PassportApplication() {
         : 0;
 
     //for payment
-    const getBase64 = (file) =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (err) => reject(err);
-        });
-
-    const handleUploadChange = async ({ fileList: newFileList }) => {
-        if (newFileList.length > 1) newFileList = [newFileList[newFileList.length - 1]]; // only 1 file
-        for (let file of newFileList) {
-            if (!file.url && !file.preview) {
-                file.preview = await getBase64(file.originFileObj);
-            }
+    const handleUploadChange = ({ fileList: newFileList }) => {
+        if (newFileList.length > 1) {
+            newFileList = [newFileList[newFileList.length - 1]];
         }
         setFileList(newFileList);
     };
@@ -145,10 +134,23 @@ export default function PassportApplication() {
             setPaymentLoading(true);
 
             if (method === 'manual') {
-                const base64File = fileList[0].preview;
-                await axiosInstance.put(`/passport/applications/${application._id}/payment-proof`, { file: base64File });
-                message.success("Receipt uploaded! Our team will verify your payment.");
-                setFileList([]); // clear after submission
+                const file = fileList[0].originFileObj;
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const uploadRes = await axiosInstance.post('/upload', formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+
+                const imageUrl = uploadRes.data.url;
+
+                await axiosInstance.put(
+                    `/passport/applications/${application._id}/payment-proof`,
+                    { file: imageUrl }
+                );
+
+
             } else if (method === 'paymongo') {
                 // Make sure application exists
 
@@ -193,63 +195,12 @@ export default function PassportApplication() {
 
 
     // for documents
-    const handleUpload = (type) => async ({ file, onSuccess, onError }) => {
-        setUploading(true);
-
-        const getBase64 = (file) =>
-            new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (error) => reject(error);
-            });
-
-        try {
-            const base64File = await getBase64(file.originFileObj || file);
-
-            // Store directly in the corresponding state
-            switch (type) {
-                case 'birth-certificate':
-                    setBirthCertList([{ uid: file.uid, name: file.name, url: base64File }]);
-                    break;
-                case 'application-form':
-                    setApplicationFormList([{ uid: file.uid, name: file.name, url: base64File }]);
-                    break;
-                case 'government-id':
-                    setGovIdList([{ uid: file.uid, name: file.name, url: base64File }]);
-                    break;
-                case 'additional-docs':
-                    setAdditionalDocsList(prev => [...prev, { uid: file.uid, name: file.name, url: base64File }]);
-                    break;
-                default:
-                    break;
-            }
-
-            message.success('File ready for submission');
-            onSuccess('ok');
-
-        } catch (err) {
-            console.error(err);
-            message.error('Failed to process file');
-            onError(err);
-        } finally {
-            setUploading(false);
+    const handlePreview = (file) => {
+        const src = file.url;
+        if (src) {
+            window.open(src);
         }
     };
-
-    const handlePreview = async (file) => {
-        const src = file.url || (file.originFileObj && await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file.originFileObj);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (err) => reject(err);
-        }));
-        const imgWindow = window.open(src);
-        if (imgWindow) {
-            imgWindow.document.write(`<img src="${src}" style="width:100%"/>`);
-        }
-    };
-
 
     const handleSubmit = async () => {
         if (uploading) {
@@ -260,24 +211,53 @@ export default function PassportApplication() {
         try {
             setUploading(true);
 
-            const payload = {
-                birthCertificate: birthCertList[0]?.url || null,
-                applicationForm: applicationFormList[0]?.url || null,
-                govId: govIdList[0]?.url || null,
-                additionalDocs: additionalDocsList.map(file => file.url),
-            };
+            const formData = new FormData();
 
-            await axiosInstance.put(`/passport/applications/${id}/documents`, payload);
+            if (birthCertList[0]) {
+                formData.append("files", birthCertList[0].originFileObj);
+            }
+
+            if (applicationFormList[0]) {
+                formData.append("files", applicationFormList[0].originFileObj);
+            }
+
+            if (govIdList[0]) {
+                formData.append("files", govIdList[0].originFileObj);
+            }
+
+            additionalDocsList.forEach(file => {
+                formData.append("files", file.originFileObj);
+            });
+
+            // 🔥 ONE request only
+            const res = await axiosInstance.post(
+                '/upload/upload-passport-requirements',
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+
+            const uploaded = res.data.urls;
+
+            console.log("Uploaded document URLs:", uploaded);
+
+            // Save URLs to your application
+            await axiosInstance.put(`/passport/applications/${id}/documents`, {
+                birthCertificate: uploaded[0],
+                applicationForm: uploaded[1],
+                govId: uploaded[2],
+                additionalDocs: uploaded.slice(3),
+            });
+
             message.success("Documents submitted successfully");
 
+            // reset
             setBirthCertList([]);
             setApplicationFormList([]);
             setGovIdList([]);
             setAdditionalDocsList([]);
 
-            // Refresh application
-            const res = await axiosInstance.get(`/passport/applications/${id}`);
-            setApplication(res.data);
+            const refreshed = await axiosInstance.get(`/passport/applications/${id}`);
+            setApplication(refreshed.data);
 
         } catch (err) {
             console.error(err);
@@ -484,17 +464,24 @@ export default function PassportApplication() {
                                     </Card>
                                 )}
 
-
-
+                                {application.status && application.status?.toLowerCase() === 'documents approved' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                        title={<Tag color="green">Documents Approved</Tag>}
+                                    >
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your documents have now been approved, kindly deliver your documents to us immediately.
+                                        </p>
+                                    </Card>
+                                )}
 
                                 {/* Only show upload requirements if status is "pending" */}
-                                {application.status && application.status.toLowerCase() === 'payment complete' && (
+                                {application.status && application.status?.toLowerCase() === 'payment complete' && (
                                     <Card title="Upload Requirements">
                                         <div style={{ marginBottom: 24 }}>
                                             <b>PSA-issued Birth Certificate</b>
                                             <Upload.Dragger
                                                 name="birthCert"
-                                                customRequest={handleUpload('birth-certificate')}
                                                 fileList={birthCertList}
                                                 onPreview={handlePreview}
                                                 onChange={({ fileList: newList }) => setBirthCertList(newList)}
@@ -503,6 +490,8 @@ export default function PassportApplication() {
                                                 maxCount={1}
                                                 disabled={uploading}
                                                 style={{ marginTop: 8 }}
+                                                beforeUpload={() => false}
+                                                customRequest={({ onSuccess }) => onSuccess("ok")}
                                             >
                                                 <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                 <p className="ant-upload-text">Upload PSA-issued Birth Certificate</p>
@@ -514,7 +503,6 @@ export default function PassportApplication() {
                                             <b>Application Form</b>
                                             <Upload.Dragger
                                                 name="applicationForm"
-                                                customRequest={handleUpload('application-form')}
                                                 fileList={applicationFormList}
                                                 onPreview={handlePreview}
                                                 onChange={({ fileList: newList }) => setApplicationFormList(newList)}
@@ -523,6 +511,8 @@ export default function PassportApplication() {
                                                 maxCount={1}
                                                 disabled={uploading}
                                                 style={{ marginTop: 8 }}
+                                                beforeUpload={() => false}
+                                                customRequest={({ onSuccess }) => onSuccess("ok")}
                                             >
                                                 <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                 <p className="ant-upload-text">Upload Accomplished Application Form</p>
@@ -533,7 +523,6 @@ export default function PassportApplication() {
                                             <b>One Government-issued ID</b>
                                             <Upload.Dragger
                                                 name="govId"
-                                                customRequest={handleUpload('government-id')}
                                                 fileList={govIdList}
                                                 onPreview={handlePreview}
                                                 onChange={({ fileList: newList }) => setGovIdList(newList)}
@@ -542,6 +531,8 @@ export default function PassportApplication() {
                                                 maxCount={1}
                                                 disabled={uploading}
                                                 style={{ marginTop: 8 }}
+                                                beforeUpload={() => false}
+                                                customRequest={({ onSuccess }) => onSuccess("ok")}
                                             >
                                                 <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                 <p className="ant-upload-text">Upload Government-issued ID</p>
@@ -552,7 +543,6 @@ export default function PassportApplication() {
                                             <b>Additional Documents (optional)</b>
                                             <Upload.Dragger
                                                 name="additionalDocs"
-                                                customRequest={handleUpload('additional-docs')}
                                                 fileList={additionalDocsList}
                                                 onPreview={handlePreview}
                                                 onChange={({ fileList: newList }) => setAdditionalDocsList(newList)}
@@ -561,6 +551,8 @@ export default function PassportApplication() {
                                                 maxCount={1}
                                                 disabled={uploading}
                                                 style={{ marginTop: 8 }}
+                                                beforeUpload={() => false}
+                                                customRequest={({ onSuccess }) => onSuccess("ok")}
                                             >
                                                 <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                 <p className="ant-upload-text">Upload Additional Documents (optional)</p>
@@ -574,6 +566,74 @@ export default function PassportApplication() {
                                     </Card>
                                 )}
                             </>
+                        )}
+
+
+                        {application.status && application.status?.toLowerCase() === 'documents uploaded' && (
+                            <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
+                                {application.submittedDocuments && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                        {application.submittedDocuments.birthCertificate && (
+                                            <div>
+                                                <b>PSA-issued Birth Certificate:</b>
+                                                <div>
+                                                    <img
+                                                        src={application.submittedDocuments.birthCertificate}
+                                                        alt="Birth Certificate"
+                                                        style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
+                                                        onClick={() => window.open(application.submittedDocuments.birthCertificate)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {application.submittedDocuments.applicationForm && (
+                                            <div>
+                                                <b>Application Form:</b>
+                                                <div>
+                                                    <img
+                                                        src={application.submittedDocuments.applicationForm}
+                                                        alt="Application Form"
+                                                        style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
+                                                        onClick={() => window.open(application.submittedDocuments.applicationForm)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {application.submittedDocuments.govId && (
+                                            <div>
+                                                <b>Government-issued ID:</b>
+                                                <div>
+                                                    <img
+                                                        src={application.submittedDocuments.govId}
+                                                        alt="Government ID"
+                                                        style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
+                                                        onClick={() => window.open(application.submittedDocuments.govId)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {application.submittedDocuments.additionalDocs && Array.isArray(application.submittedDocuments.additionalDocs) && (
+                                            <div>
+                                                <b>Additional Documents:</b>
+                                                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                                                    {application.submittedDocuments.additionalDocs.map((url, idx) => (
+                                                        <img
+                                                            key={idx}
+                                                            src={url}
+                                                            alt={`Additional Document ${idx + 1}`}
+                                                            style={{ maxWidth: '150px', cursor: 'pointer' }}
+                                                            onClick={() => window.open(url)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </Card>
                         )}
                     </Spin>
                 </div>

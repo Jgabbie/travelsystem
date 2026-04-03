@@ -291,6 +291,20 @@
   color: #1f2a44;
 }
 
+.package-type-card {
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.package-type-card:hover {
+  transform: scale(1.03);
+}
+
+.package-type-card.selected {
+  border: 2px solid #305797 !important;
+  background-color: #f0f5ff;
+}
+
 
 
 @media (max-width: 768px) {

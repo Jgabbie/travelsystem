@@ -138,7 +138,7 @@ export default function AddPackage() {
       if (!value) return "Package type is required."
     }
     if (field === "visaRequired") {
-      if (value === null || value === undefined) return "Visa requirement must be specified."
+      if (allValues.packageType === "international" && (value === null || value === undefined)) return "Visa requirement must be specified."
     }
     if (field === "name") {
       if (!value) return "Package name is required.";
@@ -431,6 +431,72 @@ export default function AddPackage() {
     validateAll(updated);
   };
 
+
+
+
+
+  //upload package images
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      message.error("Please select a valid image file.");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      message.error("Image must be 2MB or less.");
+      return;
+    }
+
+    if (values.images.length >= 3) {
+      message.error("You can upload up to 3 images only.");
+      return;
+    }
+
+    // store FILE instead of base64
+    valueHandler("images", [...values.images, file]);
+  };
+
+  const removeImage = (index) => {
+    valueHandler(
+      "images",
+      values.images.filter((_, i) => i !== index)
+    );
+  };
+
+  const uploadPackageImages = async (files) => {
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    try {
+      const res = await axiosInstance.post(
+        "/upload/upload-package-images",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return res.data.urls;
+    } catch (error) {
+      console.error("Upload failed:", error);
+      return [];
+    }
+  };
+
+
+
+
+
+
+
   //add package and update package function
   const savePackage = async () => {
     let hasError = false;
@@ -471,6 +537,10 @@ export default function AddPackage() {
       return; // stop submission
     }
 
+    if (values.packageType === "domestic") {
+      valueHandler("visaRequired", null);
+    }
+
     //format the text area inputs (inclusions, exclusions, terms and conditions) to an array of strings
     const formatInExTc = (valueToFormat) => {
       if (!valueToFormat) return [];
@@ -490,6 +560,28 @@ export default function AddPackage() {
 
       return [];
     };
+
+    const newFiles = values.images.filter((img) => img instanceof File);
+    const existingUrls = values.images.filter((img) => typeof img === "string");
+
+    let uploadedImageUrls = [];
+
+    if (newFiles.length > 0) {
+      message.loading({ content: "Uploading images...", key: "upload" });
+
+      uploadedImageUrls = await uploadPackageImages(newFiles);
+
+      if (!uploadedImageUrls.length) {
+        message.error({ content: "Image upload failed", key: "upload" });
+        return;
+      }
+
+      message.success({ content: "Images uploaded!", key: "upload" });
+    }
+
+    // combine both
+    const finalImages = [...existingUrls, ...uploadedImageUrls];
+
 
     setSavingPackage(true);
 
@@ -514,7 +606,7 @@ export default function AddPackage() {
       termsAndConditions: formatInExTc(values.termsConditions),
       itineraries: values.itineraries,
       tags: values.tags,
-      images: values.images,
+      images: finalImages,
     };
 
     try {
@@ -552,7 +644,7 @@ export default function AddPackage() {
           soloRate: pkg.packageSoloRate,
           deposit: pkg.packageDeposit,
           description: pkg.packageDescription,
-          packageType: pkg.packageType || null,
+          packageType: pkg.packageType,
           visaRequired: pkg.visaRequired !== undefined ? pkg.visaRequired : false,
           duration: pkg.packageDuration,
           hotels: pkg.packageHotels || [],
@@ -568,8 +660,11 @@ export default function AddPackage() {
           })),
           itineraries: normalizeItineraries(pkg.packageItineraries || {}),
           tags: pkg.packageTags || [],
-          images: pkg.images || [],
+          images: (pkg.images || []).filter((img) => img && img !== ""),
         }));
+
+
+
       } catch (err) {
         console.error("Failed to load package", err);
         setBackEndErrors(err.response?.data || err.message);
@@ -601,36 +696,7 @@ export default function AddPackage() {
     return value?.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ") || "";
   };
 
-  const handleImageChange = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      message.error("Please select a valid image file.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      message.error("Image must be 2MB or less.");
-      return;
-    }
 
-    if (values.images.length >= 3) {
-      message.error("You can upload up to 3 images only.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      valueHandler("images", [...values.images, reader.result?.toString() || ""]);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const removeImage = (index) => {
-    valueHandler(
-      "images",
-      values.images.filter((_, i) => i !== index)
-    );
-  };
 
   return (
     <ConfigProvider
@@ -669,15 +735,13 @@ export default function AddPackage() {
 
                   <div style={{ display: "flex", gap: 15 }}>
 
-                    {/* Domestic Card */}
+                    {/* Domestic */}
                     <Card
                       hoverable
                       onClick={() => {
                         valueHandler("packageType", "domestic");
-                        valueHandler("visaRequired", null);
                       }}
-                      className={`package-type-card ${values.packageType === "domestic" ? "selected" : ""
-                        }`}
+                      className={`package-type-card ${values.packageType === "domestic" ? "selected" : ""}`}
                       style={{
                         flex: 1,
                         cursor: "pointer",
@@ -687,21 +751,19 @@ export default function AddPackage() {
                             : "1px solid #d9d9d9",
                       }}
                     >
-                      <h3 style={{ marginBottom: 5 }}>Domestic</h3>
+                      <h3>Domestic</h3>
                       <p style={{ fontSize: 12, color: "#666" }}>
                         Travel within the country
                       </p>
                     </Card>
 
-                    {/* International Card */}
+                    {/* International */}
                     <Card
                       hoverable
                       onClick={() => {
                         valueHandler("packageType", "international");
-                        valueHandler("visaRequired", null);
                       }}
-                      className={`package-type-card ${values.packageType === "international" ? "selected" : ""
-                        }`}
+                      className={`package-type-card ${values.packageType === "international" ? "selected" : ""}`}
                       style={{
                         flex: 1,
                         cursor: "pointer",
@@ -711,7 +773,7 @@ export default function AddPackage() {
                             : "1px solid #d9d9d9",
                       }}
                     >
-                      <h3 style={{ marginBottom: 5 }}>International</h3>
+                      <h3>International</h3>
                       <p style={{ fontSize: 12, color: "#666" }}>
                         Travel outside the country
                       </p>
@@ -721,7 +783,7 @@ export default function AddPackage() {
                 </div>
 
                 {values.packageType === "international" && (
-                  <div style={{ display: "flex", flexDirection: "column", marginTop: 20 }}>
+                  <div style={{ display: "flex", flexDirection: "column", marginTop: 20, marginBottom: 20 }}>
                     <label className="add-package-input-labels">Visa Requirement</label>
 
                     <div style={{ display: "flex", gap: 15 }}>
@@ -730,8 +792,7 @@ export default function AddPackage() {
                       <Card
                         hoverable
                         onClick={() => valueHandler("visaRequired", true)}
-                        className={`package-type-card ${values.visaRequired === true ? "selected" : ""
-                          }`}
+                        className={`package-type-card ${values.visaRequired === true ? "selected" : ""}`}
                         style={{
                           flex: 1,
                           cursor: "pointer",
@@ -1413,11 +1474,14 @@ export default function AddPackage() {
                         }}
                       >
                         <img
-                          src={img}
+                          src={
+                            img instanceof File
+                              ? URL.createObjectURL(img)
+                              : img || null
+                          }
                           alt={`Package ${index}`}
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
-
                         {/* Overlay text only on first image */}
                         {index === 0 && (
                           <div

@@ -112,7 +112,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                     ? summary.airlineOptions[0].name
                     : 'N/A'
                 : 'N/A',
-            packageTravelDate: dayjs(summary.travelDate).format('MM/DD/YYYY'),
+            packageTravelDate: `${dayjs(summary.travelDate.startDate).format('MMMM DD, YYYY')} - ${dayjs(summary.travelDate.endDate).format('MMMM DD, YYYY')}`,
             travelersDate: dayjs().format('MMMM DD, YYYY'),
         });
 

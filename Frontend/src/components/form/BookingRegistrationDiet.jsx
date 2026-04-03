@@ -69,13 +69,13 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                     onValuesChange={onValuesChange}
                     initialValues={{
                         tourPackageTitle: summary?.packageName,
-                        packageTravelDate: summary?.travelDate
+                        packageTravelDate: `${dayjs(summary?.travelDate?.startDate).format('MMM D, YYYY')} - ${dayjs(summary?.travelDate?.endDate).format('MMM D, YYYY')}`
                     }}
                 >
                     {/* Read-Only Package Info */}
                     <div style={{ marginBottom: '15px' }}>
                         <div style={{ fontSize: '11px' }}><strong>TOUR PACKAGE TITLE:</strong> {summary?.packageName || '____________________'}</div>
-                        <div style={{ fontSize: '11px' }}><strong>PACKAGE TRAVEL DATE:</strong> {summary?.travelDate || '____________________'}</div>
+                        <div style={{ fontSize: '11px' }}><strong>PACKAGE TRAVEL DATE:</strong> {`${dayjs(summary?.travelDate?.startDate).format('MMM D, YYYY')} - ${dayjs(summary?.travelDate?.endDate).format('MMM D, YYYY')}` || '____________________'}</div>
                     </div>
 
                     {/* Dietary Section */}

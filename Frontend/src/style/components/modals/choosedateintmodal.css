@@ -161,6 +161,12 @@
     padding: 6px 10px;
 }
 
+.budget-card.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 
 /* buttons */
 .choose-date-actions {

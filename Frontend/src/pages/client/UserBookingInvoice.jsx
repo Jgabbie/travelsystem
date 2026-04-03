@@ -86,6 +86,8 @@ const getBase64 = (file) =>
     });
 
 
+
+
 export default function UserBookingInvoice() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -102,7 +104,6 @@ export default function UserBookingInvoice() {
 
     const stepsToCapture = [0, 1, 2, 3];
 
-
     //payment display computation and transaction history
     const formatCurrency = useMemo(
         () => new Intl.NumberFormat("en-PH", {
@@ -112,8 +113,8 @@ export default function UserBookingInvoice() {
         []
     );
 
-    const totalPrice = Number(booking?.totalPrice || booking?.bookingDetails?.totalPrice || 0);
-    const paidAmount = transactions
+    const totalPrice = (Math.round(Number(booking?.totalPrice || booking?.bookingDetails?.totalPrice || 0) * 100) / 100).toFixed(2);
+    const paidAmount = (Math.round(transactions
         .filter(txn => txn.status === "Paid" || txn.status === "Successful")
         .reduce((sum, txn) => {
             const amount = Number(txn.amount || 0);
@@ -125,7 +126,7 @@ export default function UserBookingInvoice() {
             }
 
             return sum + amount;
-        }, 0);
+        }, 0) * 100) / 100).toFixed(2); // Round to 2 decimal places
 
 
     const transactionStatus = transactions.length === 0
@@ -133,7 +134,6 @@ export default function UserBookingInvoice() {
         : paidAmount >= totalPrice
             ? "Successful"
             : "Partial";
-
 
     console.log("Price data", totalPrice, paidAmount)
 
@@ -165,15 +165,26 @@ export default function UserBookingInvoice() {
     const dueDate = issueDate.add(45, "day");
     const customerName = bookingDetails.leadFullName || booking?.leadFullName || "Customer";
     const customerPhone = bookingDetails.leadContact || booking?.leadContact || "--";
-    const remainingBalance = Math.max(totalPrice - paidAmount, 0);
+    const remainingBalance = (Math.round(Math.max(totalPrice - paidAmount, 0) * 100) / 100).toFixed(2);
 
     const handleSelectPaymentMethod = (selectedMethod) => {
         setMethod(selectedMethod);
     };
 
+    const disablePayment = useMemo(() => {
+        if (!transactions || transactions.length === 0) return false; // No transactions yet
+        return transactions[0].status === "Pending";
+    }, [transactions]);
+
     const summaryInvoice = bookingDetails
 
 
+
+    //documents
+    const passportFiles = booking.passportFiles || [];
+    const photoFiles = booking.photoFiles || [];
+    console.log("Passport Files:", passportFiles);
+    console.log("Photo Files:", photoFiles);
 
 
     //pdf registration section
@@ -194,26 +205,6 @@ export default function UserBookingInvoice() {
 
     //go to previous step
     const prev = () => setCurrentStep(currentStep - 1);
-
-    const validateFile = (file) => {
-        const isValidType =
-            file.type === 'image/jpeg' ||
-            file.type === 'image/png'
-        if (!isValidType) {
-            message.error('Only JPG or PNG');
-            return Upload.LIST_IGNORE;
-        }
-        const isValidSize = file.size / 1024 / 1024 < 5;
-        if (!isValidSize) {
-            message.error('File must be smaller than 5MB');
-            return Upload.LIST_IGNORE;
-        }
-        return false;
-    };
-
-    const handleValuesChange = (changedValues, allValues) => {
-        console.log("Form updated:", allValues);
-    };
 
     const handleFinalSubmit = async () => {
         try {
@@ -539,7 +530,7 @@ export default function UserBookingInvoice() {
         ) {
             setCurrentUnpaidInstallment(next || null);
         }
-    }, [installmentData.nextUnpaid]); // currentUnpaidInstallment is omitted to avoid a self-triggering loop
+    }, [installmentData.nextUnpaid]);
 
     //invoice document
     const MyDocument = () => (
@@ -835,141 +826,144 @@ export default function UserBookingInvoice() {
                 </Card>
 
 
-                <div className='payment-methods-container payment-section' style={{ marginTop: 24 }}>
-                    <div className="payment-methods-wrapper">
-                        <div className="payment-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                                <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
-                                <p className="payment-section-subtitle">
-                                    Select a payment method to complete your booking.
-                                </p>
-                            </div>
-                            {/* Displaying balance here for clarity during checkout */}
-                            <div style={{ textAlign: 'right' }}>
-                                <AntText type="secondary">Amount to Pay:</AntText>
-                                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#b91c1c' }}>
-                                    {currentUnpaidInstallment?.amount
-                                        ? formatCurrency.format(currentUnpaidInstallment.amount)
-                                        : "Calculating..."}
+                {remainingBalance > 0 && (
+                    <div className='payment-methods-container payment-section' style={{ marginTop: 24 }}>
+                        <div className="payment-methods-wrapper">
+                            <div className="payment-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
+                                    <p className="payment-section-subtitle">
+                                        Select a payment method to complete your booking.
+                                    </p>
+                                </div>
+                                {/* Displaying balance here for clarity during checkout */}
+                                <div style={{ textAlign: 'right' }}>
+                                    <AntText type="secondary">Amount to Pay:</AntText>
+                                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#b91c1c' }}>
+                                        {disablePayment ? "Pending Payments..." : currentUnpaidInstallment?.amount
+                                            ? formatCurrency.format(currentUnpaidInstallment.amount)
+                                            : "Calculating..."}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <Radio.Group
-                            onChange={(e) => handleSelectPaymentMethod(e.target.value)}
-                            value={method}
-                            className="payment-methods-cards"
-                            style={{ width: '100%', display: 'flex', gap: '16px', marginBottom: '24px' }}
-                        >
-                            <Radio.Button
-                                value="paymongo"
-                                disabled={remainingBalance <= 0}
-                                className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                style={{ flex: 1, height: 'auto', padding: '20px' }}
+                            <Radio.Group
+                                onChange={(e) => handleSelectPaymentMethod(e.target.value)}
+                                value={method}
+                                className="payment-methods-cards"
+                                style={{ width: '100%', display: 'flex', gap: '16px', marginBottom: '24px' }}
                             >
-                                <div className="card-content">
-                                    <h3>Paymongo</h3>
-                                    <p>Pay securely via Credit Card, GCash, or Maya. (3.5% + ₱15 fee applies)</p>
-                                </div>
-                            </Radio.Button>
-
-                            <Radio.Button
-                                value="manual"
-                                disabled={remainingBalance <= 0}
-                                className={`payment-card ${method === "manual" ? "selected" : ""}`}
-                                style={{ flex: 1, height: 'auto', padding: '20px' }}
-                            >
-                                <div className="card-content">
-                                    <h3>Manual Payment</h3>
-                                    <p>Direct bank deposit. Requires manual verification of receipt.</p>
-                                </div>
-                            </Radio.Button>
-                        </Radio.Group>
-
-                        {/* Proceed Button */}
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button
-                                type="primary"
-                                size="large"
-                                disabled={!method || remainingBalance <= 0}
-                                style={{ padding: '0 50px', height: '50px', fontSize: '16px', fontWeight: 'bold', margin: 30 }}
-                                onClick={proceedBooking}
-                            >
-                                Proceed to Checkout
-                            </Button>
-                        </div>
-                    </div>
-
-                    {method === 'manual' && (
-                        <div className="manual-transfer-details">
-                            <div className="bank-accounts-section">
-                                <h4 className="section-subtitle">Available Bank Accounts</h4>
-                                <div className="bank-grid">
-                                    <div className="bank-item">
-                                        <span className="bank-name">BDO Unibank</span>
-                                        <span className="account-number">0012-3456-7890</span>
-                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                    </div>
-                                    <div className="bank-item">
-                                        <span className="bank-name">BPI</span>
-                                        <span className="account-number">9876-5432-10</span>
-                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bank-accounts-section">
-                                <div className="bank-grid">
-                                    <div className="bank-item">
-                                        <span className="bank-name">Metro Bank</span>
-                                        <span className="account-number">0012-3456-7890</span>
-                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                    </div>
-                                    <div className="bank-item">
-                                        <span className="bank-name">Land Bank</span>
-                                        <span className="account-number">9876-5432-10</span>
-                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="upload-section">
-                                <h4 className="section-subtitle">Upload Proof of Payment</h4>
-                                <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
-                                <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
-
-                                <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
-
-                                <Upload
-                                    listType="picture"
-                                    maxCount={1}
-                                    fileList={fileList}
-                                    onChange={handleUploadChange}
-                                    beforeUpload={beforeUpload}
-                                    accept=".jpg,.jpeg,.png"
+                                <Radio.Button
+                                    value="paymongo"
+                                    disabled={remainingBalance <= 0 || disablePayment}
+                                    className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                    style={{ flex: 1, height: 'auto', padding: '20px' }}
                                 >
-                                    <Button icon={<UploadOutlined />} className="upload-btn">
-                                        Select Receipt Image
-                                    </Button>
-                                </Upload>
+                                    <div className="card-content">
+                                        <h3>Paymongo</h3>
+                                        <p>Pay securely via Credit Card, GCash, or Maya. (3.5% + ₱15 fee applies)</p>
+                                    </div>
+                                </Radio.Button>
 
-                                {fileList.length > 0 && (
-                                    <div className="upload-preview-container">
-                                        <h4 className="section-subtitle">Preview</h4>
+                                <Radio.Button
+                                    value="manual"
+                                    disabled={remainingBalance <= 0 || disablePayment}
+                                    className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                    style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                >
+                                    <div className="card-content">
+                                        <h3>Manual Payment</h3>
+                                        <p>Direct bank deposit. Requires manual verification of receipt.</p>
+                                    </div>
+                                </Radio.Button>
+                            </Radio.Group>
 
-                                        <div className="upload-preview-box">
-                                            <img
-                                                src={fileList[0].preview}
-                                                alt="Receipt Preview"
-                                                className="upload-preview-image"
-                                            />
+                            {/* Proceed Button */}
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    style={{ padding: '0 50px', height: '50px', fontSize: '16px', fontWeight: 'bold', margin: 30 }}
+                                    onClick={proceedBooking}
+                                    disabled={remainingBalance <= 0 || disablePayment}
+                                >
+                                    Proceed to Checkout
+                                </Button>
+                            </div>
+                        </div>
+
+                        {method === 'manual' && (
+                            <div className="manual-transfer-details">
+                                <div className="bank-accounts-section">
+                                    <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                    <div className="bank-grid">
+                                        <div className="bank-item">
+                                            <span className="bank-name">BDO Unibank</span>
+                                            <span className="account-number">0012-3456-7890</span>
+                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                        </div>
+                                        <div className="bank-item">
+                                            <span className="bank-name">BPI</span>
+                                            <span className="account-number">9876-5432-10</span>
+                                            <span className="account-holder">M&RC Travel and Tours</span>
                                         </div>
                                     </div>
-                                )}
+                                </div>
+
+                                <div className="bank-accounts-section">
+                                    <div className="bank-grid">
+                                        <div className="bank-item">
+                                            <span className="bank-name">Metro Bank</span>
+                                            <span className="account-number">0012-3456-7890</span>
+                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                        </div>
+                                        <div className="bank-item">
+                                            <span className="bank-name">Land Bank</span>
+                                            <span className="account-number">9876-5432-10</span>
+                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="upload-section">
+                                    <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                    <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                    <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                    <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                    <Upload
+                                        listType="picture"
+                                        maxCount={1}
+                                        fileList={fileList}
+                                        onChange={handleUploadChange}
+                                        beforeUpload={beforeUpload}
+                                        accept=".jpg,.jpeg,.png"
+                                    >
+                                        <Button icon={<UploadOutlined />} className="upload-btn">
+                                            Select Receipt Image
+                                        </Button>
+                                    </Upload>
+
+                                    {fileList.length > 0 && (
+                                        <div className="upload-preview-container">
+                                            <h4 className="section-subtitle">Preview</h4>
+
+                                            <div className="upload-preview-box">
+                                                <img
+                                                    src={fileList[0].preview}
+                                                    alt="Receipt Preview"
+                                                    className="upload-preview-image"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
+
 
                 {/* booking registration section */}
                 <div className="booking-form-stepper-container">
@@ -1052,21 +1046,68 @@ export default function UserBookingInvoice() {
                 </div>
 
                 <Card title="Documents" style={{ marginTop: 24 }}>
-                    <AntText type="secondary">
-                        No documents uploaded yet.
-                    </AntText>
+                    {passportFiles.length === 0 && photoFiles.length === 0 ? (
+                        <AntText type="secondary">No documents uploaded yet.</AntText>
+                    ) : (
+                        <div >
+                            {/* Traveler 1 Label */}
+                            <h4>Traveler 1</h4>
 
-                    <div style={{ marginTop: 16 }}>
-                        <Upload
-                            disabled
-                            style={{ width: "100%" }}
-                        >
-                            <Button disabled>
-                                Upload Documents (Coming Soon)
-                            </Button>
-                        </Upload>
-                    </div>
+                            <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
+                                {/* Passport Files */}
+                                {passportFiles.length > 0 && (
+                                    <div style={{ marginBottom: 16 }}>
+                                        <AntText strong>Passport Files:</AntText>
+                                        <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+                                            {passportFiles.map((url, index) => (
+                                                <img
+                                                    key={index}
+                                                    src={url}
+                                                    alt={`Traveler 1 Passport ${index + 1}`}
+                                                    style={{
+                                                        width: 350,        // bigger width
+                                                        height: 340,       // maintain aspect ratio
+                                                        objectFit: 'cover',
+                                                        borderRadius: 8,
+                                                        border: '1px solid #ccc'
+                                                    }}
+                                                    preview={{ mask: <div>Click to Preview</div> }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Photo Files */}
+                                {photoFiles.length > 0 && (
+                                    <div style={{ marginBottom: 16 }}>
+                                        <AntText strong>Photo Files:</AntText>
+                                        <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+                                            {photoFiles.map((url, index) => (
+                                                <img
+                                                    key={index}
+                                                    src={url}
+                                                    alt={`Traveler 1 Photo ${index + 1}`}
+                                                    style={{
+                                                        width: 200,
+                                                        height: 200,
+                                                        objectFit: 'cover',
+                                                        borderRadius: 8,
+                                                        border: '1px solid #ccc'
+                                                    }}
+                                                    preview={{ mask: <div>Click to Preview</div> }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                        </div>
+                    )}
                 </Card>
+
+
             </div>
         </ConfigProvider >
     );

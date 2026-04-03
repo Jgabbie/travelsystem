@@ -11,7 +11,7 @@ const PassportSchema = new mongoose.Schema({
         birthCertificate: { type: String },
         applicationForm: { type: String },
         govId: { type: String },
-        additionalDocs: { type: String }
+        additionalDocs: [{ type: String }]
     },
     status: {
         type: String,

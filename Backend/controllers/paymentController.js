@@ -39,74 +39,89 @@ const parsePayMongoSignature = (signatureHeader) => {
 
 const createManualPayment = async (req, res) => {
     const userId = req.userId;
-
     try {
         const {
+            bookingId,
             packageId,
-            travelDate,
-            travelerTotal,
             amount,
-            paymentType,
             proofImage,
             proofImageType,
             proofFileName,
-            bookingReference,
-            bookingDetails
-        } = req.body || {};
+        } = req.body;
+
+        console.log("Manual payment request body:", req.body);
+
+        const FRONTEND_URL = "http://localhost:3000";
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutModel.create({
+            token,
+            userId,
+            bookingId,
+            amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created for manual deposit:", tokenCheckout);
+
+        const reference = generateTransactionReference();
 
         if (!proofImage || !proofImageType) {
             return res.status(400).json({ error: "Proof of payment image is required." });
         }
 
-        const user = await UserModel.findById(userId);
-        if (!user) {
-            return res.status(404).json({ error: "User not found." });
-        }
-
-        let booking = null;
-        if (bookingReference) {
-            booking = await BookingModel.findOne({ reference: bookingReference, userId: user._id });
-        }
-
-        if (!booking) {
-            if (!packageId || !travelDate || !travelerTotal || !amount) {
-                return res.status(400).json({ error: "Missing required booking details." });
-            }
-
-            booking = await BookingModel.create({
-                packageId,
-                userId: user._id,
-                bookingDate: new Date().toISOString(),
-                travelDate,
-                travelers: Number(travelerTotal),
-                reference: generateBookingReference(),
-                status: 'Pending',
-                ...(bookingDetails ? { bookingDetails } : {})
-            });
-        } else if (bookingDetails) {
-            booking.bookingDetails = bookingDetails;
-            await booking.save();
-        }
-
         const transaction = await TransactionModel.create({
-            bookingId: booking._id,
-            packageId: booking.packageId || packageId,
-            userId: user._id,
-            reference: generateTransactionReference(),
-            amount: Number(amount),
+            bookingId,
+            packageId,
+            userId,
+            reference,
+            amount,
             method: 'Manual',
             status: 'Pending',
             proofImage,
             proofImageType,
             proofFileName,
-            paymentType
         });
 
-        return res.status(201).json({
-            message: 'Manual payment submitted for verification.',
-            bookingId: booking._id,
-            transactionId: transaction._id
+        const booking = await BookingModel.findById(bookingId);
+
+        const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
+        const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+
+        console.log("Start Date:", bookingStart);
+        console.log("End Date:", bookingEnd);
+
+        const packageDoc = await PackageModel.findById(packageId);
+        console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
+
+        const updateResult = await PackageModel.updateOne(
+            {
+                _id: packageId,
+                packageSpecificDate: {
+                    $elemMatch: {
+                        startdaterange: { $lte: booking.travelDate.startDate },
+                        enddaterange: { $gte: booking.travelDate.endDate },
+                        slots: { $gt: 0 }
+                    }
+                }
+            },
+            {
+                $inc: { 'packageSpecificDate.$.slots': -1 }
+            }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            console.log('No matching date range found or no slots remaining.');
+        } else if (updateResult.modifiedCount === 1) {
+            console.log('Slot successfully decremented.');
+        }
+
+        console.log('Manual payment deposit created:', transaction);
+
+        return res.status(200).json({
+            redirectUrl: `/booking-payment/success?token=${token}`
         });
+
     } catch (error) {
         console.error('Manual payment error:', error.message);
         return res.status(500).json({ error: 'Failed to submit manual payment.' });
@@ -156,6 +171,7 @@ const createManualPaymentDeposit = async (req, res) => {
             proofImageType,
             proofFileName,
         });
+
 
         console.log('Manual payment deposit created:', transaction);
 
@@ -451,7 +467,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //paymongo
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -774,6 +790,37 @@ const handlePayMongoWebhook = async (req, res) => {
             if (!booking) {
                 console.warn('Booking not found for ID:', metadata.bookingId);
                 return res.status(404).send('Booking not found');
+            }
+
+            const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
+            const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+
+            console.log("Start Date:", bookingStart);
+            console.log("End Date:", bookingEnd);
+
+            const packageDoc = await PackageModel.findById(metadata.packageId);
+            console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
+
+            const updateResult = await PackageModel.updateOne(
+                {
+                    _id: packageDoc._id,
+                    packageSpecificDate: {
+                        $elemMatch: {
+                            startdaterange: { $lte: booking.travelDate.startDate },
+                            enddaterange: { $gte: booking.travelDate.endDate },
+                            slots: { $gt: 0 }
+                        }
+                    }
+                },
+                {
+                    $inc: { 'packageSpecificDate.$.slots': -1 }
+                }
+            );
+
+            if (updateResult.matchedCount === 0) {
+                console.log('No matching date range found or no slots remaining.');
+            } else if (updateResult.modifiedCount === 1) {
+                console.log('Slot successfully decremented.');
             }
 
             // Update the booking status

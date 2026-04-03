@@ -51,7 +51,7 @@ export default function TransactionManagement() {
           key: t._id,
           ref: t.reference,
           username: t.userId?.username || "Unknown User",
-          package: t.packageId?.packageName || "No Package",
+          package: t.packageId?.packageName || t.applicationType,
           date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
           price: `₱${Number(t.amount || 0).toLocaleString()}`,
           amountRaw: Number(t.amount || 0),
@@ -178,6 +178,13 @@ export default function TransactionManagement() {
     setIsEditModalOpen(true);
   };
 
+
+  //view proof modal
+  const getDownloadUrl = (url) => {
+    if (!url) return "";
+    return url.replace("/upload/", "/upload/fl_attachment/");
+  };
+
   const openViewModal = (record) => {
     setSelectedTransaction(record);
     setIsViewModalOpen(true);
@@ -285,7 +292,7 @@ export default function TransactionManagement() {
   // ================= TABLE =================
   const columns = [
     { title: "Transaction Reference", dataIndex: "ref" },
-    { title: "Travel Package", dataIndex: "package" },
+    { title: "Item", dataIndex: "package" },
     { title: "Customer Name", dataIndex: "username" },
     {
       title: "Payment Date & Time",
@@ -654,12 +661,26 @@ export default function TransactionManagement() {
             proofTransaction ? (
               <Space>
                 <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
+
+                {/* 👇 DOWNLOAD BUTTON */}
+                <a
+                  href={getDownloadUrl(proofTransaction.proofImage)}
+                  download={proofTransaction.proofFileName}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button type="default">
+                    Download
+                  </Button>
+                </a>
+
                 <Button
                   type="primary"
                   onClick={() => handleProofDecision(proofTransaction, "SUCCESSFUL")}
                 >
                   Accept Proof
                 </Button>
+
                 <Button
                   danger
                   onClick={() => handleProofDecision(proofTransaction, "FAILED")}

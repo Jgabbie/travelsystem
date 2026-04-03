@@ -51,19 +51,19 @@ const applyPassport = async (req, res) => {
 };
 
 const updatePassportApplicationWithDocs = async (req, res) => {
+    console.log('Received request to update passport application with documents');
+
     try {
         const userId = req.userId;
         const { id } = req.params;
         const {
-            dfaLocation,
-            preferredDate,
-            preferredTime,
-            applicationType,
             birthCertificate,
             applicationForm,
             govId,
             additionalDocs
         } = req.body;
+
+        console.log("payload:", req.body);
 
         // Find the application
         const application = await PassportModel.findById(id);
@@ -76,29 +76,20 @@ const updatePassportApplicationWithDocs = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to update this application" });
         }
 
-        // Update basic fields if provided
-        if (dfaLocation) application.dfaLocation = dfaLocation;
-        if (preferredDate) application.preferredDate = preferredDate;
-        if (preferredTime) application.preferredTime = preferredTime;
-        if (applicationType) application.applicationType = applicationType;
-
         // Update documents (Base64 strings) if provided
-        if (birthCertificate) application.birthCertificate = birthCertificate;
-        if (applicationForm) application.applicationForm = applicationForm;
-        if (govId) application.govId = govId;
+        if (birthCertificate) application.submittedDocuments.birthCertificate = birthCertificate;
+        if (applicationForm) application.submittedDocuments.applicationForm = applicationForm;
+        if (govId) application.submittedDocuments.govId = govId;
         if (additionalDocs && Array.isArray(additionalDocs)) {
-            application.additionalDocs = additionalDocs; // overwrite all additional docs
+            application.submittedDocuments.additionalDocs = additionalDocs; // now array is valid
         }
+        application.status = "Documents uploaded";
 
         await application.save();
 
         // Log action
         logAction('UPDATE_PASSPORT', userId, {
             id,
-            dfaLocation,
-            preferredDate,
-            preferredTime,
-            applicationType,
             docsUpdated: !!(birthCertificate || applicationForm || govId || additionalDocs)
         });
 
