@@ -331,310 +331,322 @@ export default function PassportApplication() {
                                     </Card>
                                 </div>
 
-
-                                {application?.status && application.status.toLowerCase() === 'application approved' && !paymentCompleted && (
-                                    <Card title="Payment" style={{ marginBottom: 32 }}>
-                                        <div className='payment-methods-container payment-section'>
-                                            <div className="payment-methods-wrapper">
-                                                <div className="payment-section-header">
-                                                    <div>
-                                                        <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
-                                                        <p className="payment-methods-subtitle payment-section-subtitle">
-                                                            Select a payment method to complete your booking.
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <Radio.Group
-                                                    onChange={(e) => setMethod(e.target.value)}
-                                                    value={method}
-                                                    className="payment-methods-cards"
-                                                    style={{ width: '100%', display: 'flex', gap: '16px' }}
-                                                >
-                                                    <Radio.Button
-                                                        value="paymongo"
-                                                        className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
-                                                    >
-                                                        <div className="card-content">
-                                                            <h3>Paymongo</h3>
-                                                            <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                                            <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
-                                                        </div>
-                                                    </Radio.Button>
-
-                                                    <Radio.Button
-                                                        value="manual"
-                                                        className={`payment-card ${method === "manual" ? "selected" : ""}`}
-                                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
-                                                    >
-                                                        <div className="card-content">
-                                                            <h3>Manual Payment</h3>
-                                                            <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
-                                                            <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
-                                                        </div>
-                                                    </Radio.Button>
-                                                </Radio.Group>
-                                            </div>
-
-                                            {method === 'manual' && (
-
-                                                <div className="manual-transfer-details">
-                                                    <div className="bank-accounts-section">
-                                                        <h4 className="section-subtitle">Available Bank Accounts</h4>
-                                                        <div className="bank-grid">
-                                                            <div className="bank-item">
-                                                                <span className="bank-name">BDO Unibank</span>
-                                                                <span className="account-number">0012-3456-7890</span>
-                                                                <span className="account-holder">M&RC Travel and Tours</span>
-                                                            </div>
-                                                            <div className="bank-item">
-                                                                <span className="bank-name">BPI</span>
-                                                                <span className="account-number">9876-5432-10</span>
-                                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                {application ? (
+                                    <>
+                                        {application?.status && application.status.toLowerCase() === 'application approved' && !paymentCompleted && (
+                                            <Card title="Payment" style={{ marginBottom: 32 }}>
+                                                <div className='payment-methods-container payment-section'>
+                                                    <div className="payment-methods-wrapper">
+                                                        <div className="payment-section-header">
+                                                            <div>
+                                                                <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
+                                                                <p className="payment-methods-subtitle payment-section-subtitle">
+                                                                    Select a payment method to complete your booking.
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div className="bank-accounts-section">
-                                                        <div className="bank-grid">
-                                                            <div className="bank-item">
-                                                                <span className="bank-name">Metro Bank</span>
-                                                                <span className="account-number">0012-3456-7890</span>
-                                                                <span className="account-holder">M&RC Travel and Tours</span>
-                                                            </div>
-                                                            <div className="bank-item">
-                                                                <span className="bank-name">Land Bank</span>
-                                                                <span className="account-number">9876-5432-10</span>
-                                                                <span className="account-holder">M&RC Travel and Tours</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="upload-section">
-                                                        <h4 className="section-subtitle">Upload Proof of Payment</h4>
-                                                        <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
-                                                        <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
-
-                                                        <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
-
-                                                        <Upload
-                                                            listType="picture"
-                                                            maxCount={1}
-                                                            fileList={fileList}
-                                                            onChange={handleUploadChange}
-                                                            beforeUpload={beforeUpload}
-                                                            accept=".jpg,.jpeg,.png"
+                                                        <Radio.Group
+                                                            onChange={(e) => setMethod(e.target.value)}
+                                                            value={method}
+                                                            className="payment-methods-cards"
+                                                            style={{ width: '100%', display: 'flex', gap: '16px' }}
                                                         >
-                                                            <Button icon={<UploadOutlined />} className="upload-btn">
-                                                                Select Receipt Image
-                                                            </Button>
-                                                        </Upload>
+                                                            <Radio.Button
+                                                                value="paymongo"
+                                                                className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                                                style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                                            >
+                                                                <div className="card-content">
+                                                                    <h3>Paymongo</h3>
+                                                                    <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
+                                                                </div>
+                                                            </Radio.Button>
 
-                                                        {fileList.length > 0 && (
-                                                            <div className="upload-preview-container">
-                                                                <h4 className="section-subtitle">Preview</h4>
+                                                            <Radio.Button
+                                                                value="manual"
+                                                                className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                                                style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                                            >
+                                                                <div className="card-content">
+                                                                    <h3>Manual Payment</h3>
+                                                                    <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                                                </div>
+                                                            </Radio.Button>
+                                                        </Radio.Group>
+                                                    </div>
 
-                                                                <div className="upload-preview-box">
-                                                                    <img
-                                                                        src={fileList[0].preview}
-                                                                        alt="Receipt Preview"
-                                                                        className="upload-preview-image"
-                                                                    />
+                                                    {method === 'manual' && (
+
+                                                        <div className="manual-transfer-details">
+                                                            <div className="bank-accounts-section">
+                                                                <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                                                <div className="bank-grid">
+                                                                    <div className="bank-item">
+                                                                        <span className="bank-name">BDO Unibank</span>
+                                                                        <span className="account-number">0012-3456-7890</span>
+                                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                                    </div>
+                                                                    <div className="bank-item">
+                                                                        <span className="bank-name">BPI</span>
+                                                                        <span className="account-number">9876-5432-10</span>
+                                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        )}
-                                                    </div>
+
+                                                            <div className="bank-accounts-section">
+                                                                <div className="bank-grid">
+                                                                    <div className="bank-item">
+                                                                        <span className="bank-name">Metro Bank</span>
+                                                                        <span className="account-number">0012-3456-7890</span>
+                                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                                    </div>
+                                                                    <div className="bank-item">
+                                                                        <span className="bank-name">Land Bank</span>
+                                                                        <span className="account-number">9876-5432-10</span>
+                                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="upload-section">
+                                                                <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                                                <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                                                <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                                                <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                                                <Upload
+                                                                    listType="picture"
+                                                                    maxCount={1}
+                                                                    fileList={fileList}
+                                                                    onChange={handleUploadChange}
+                                                                    beforeUpload={beforeUpload}
+                                                                    accept=".jpg,.jpeg,.png"
+                                                                >
+                                                                    <Button icon={<UploadOutlined />} className="upload-btn">
+                                                                        Select Receipt Image
+                                                                    </Button>
+                                                                </Upload>
+
+                                                                {fileList.length > 0 && (
+                                                                    <div className="upload-preview-container">
+                                                                        <h4 className="section-subtitle">Preview</h4>
+
+                                                                        <div className="upload-preview-box">
+                                                                            <img
+                                                                                src={fileList[0].preview}
+                                                                                alt="Receipt Preview"
+                                                                                className="upload-preview-image"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
 
 
 
+                                                        </div>
+
+
+                                                    )}
+
+                                                    <Button style={{ marginTop: 20 }}
+                                                        type="primary"
+                                                        onClick={handleSubmitPayment}
+                                                        disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                    >
+                                                        {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                                    </Button>
                                                 </div>
+                                            </Card>
+                                        )}
+                                    </>
+                                ) : null}
 
 
-                                            )}
-
-                                            <Button style={{ marginTop: 20 }}
-                                                type="primary"
-                                                onClick={handleSubmitPayment}
-                                                disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                {application ? (
+                                    <>
+                                        {application?.status && application.status?.toLowerCase() === 'documents approved' && (
+                                            <Card
+                                                style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                                title={<Tag color="green">Documents Approved</Tag>}
                                             >
-                                                {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
-                                            </Button>
-                                        </div>
-                                    </Card>
-                                )}
-
-                                {application?.status && application.status?.toLowerCase() === 'documents approved' && (
-                                    <Card
-                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                        title={<Tag color="green">Documents Approved</Tag>}
-                                    >
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            Your documents have now been approved, kindly deliver your documents to us immediately.
-                                        </p>
-                                    </Card>
-                                )}
+                                                <p style={{ margin: 0, fontSize: 14 }}>
+                                                    Your documents have now been approved, kindly deliver your documents to us immediately.
+                                                </p>
+                                            </Card>
+                                        )}
+                                    </>
+                                ) : null}
 
                                 {/* Only show upload requirements if status is "pending" */}
-                                {application?.status && application.status?.toLowerCase() === 'payment complete' && (
-                                    <Card title="Upload Requirements">
-                                        <div style={{ marginBottom: 24 }}>
-                                            <b>PSA-issued Birth Certificate</b>
-                                            <Upload.Dragger
-                                                name="birthCert"
-                                                fileList={birthCertList}
-                                                onPreview={handlePreview}
-                                                onChange={({ fileList: newList }) => setBirthCertList(newList)}
-                                                showUploadList
-                                                accept="image/*"
-                                                maxCount={1}
-                                                disabled={uploading}
-                                                style={{ marginTop: 8 }}
-                                                beforeUpload={() => false}
-                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                            >
-                                                <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                <p className="ant-upload-text">Upload PSA-issued Birth Certificate</p>
-                                            </Upload.Dragger>
-                                            <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
-                                        </div>
-                                        {/* Repeat for other uploads */}
-                                        <div style={{ marginBottom: 24 }}>
-                                            <b>Application Form</b>
-                                            <Upload.Dragger
-                                                name="applicationForm"
-                                                fileList={applicationFormList}
-                                                onPreview={handlePreview}
-                                                onChange={({ fileList: newList }) => setApplicationFormList(newList)}
-                                                showUploadList
-                                                accept="image/*"
-                                                maxCount={1}
-                                                disabled={uploading}
-                                                style={{ marginTop: 8 }}
-                                                beforeUpload={() => false}
-                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                            >
-                                                <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                <p className="ant-upload-text">Upload Accomplished Application Form</p>
-                                            </Upload.Dragger>
-                                            <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
-                                        </div>
-                                        <div style={{ marginBottom: 24 }}>
-                                            <b>One Government-issued ID</b>
-                                            <Upload.Dragger
-                                                name="govId"
-                                                fileList={govIdList}
-                                                onPreview={handlePreview}
-                                                onChange={({ fileList: newList }) => setGovIdList(newList)}
-                                                showUploadList
-                                                accept="image/*"
-                                                maxCount={1}
-                                                disabled={uploading}
-                                                style={{ marginTop: 8 }}
-                                                beforeUpload={() => false}
-                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                            >
-                                                <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                <p className="ant-upload-text">Upload Government-issued ID</p>
-                                            </Upload.Dragger>
-                                            <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
-                                        </div>
-                                        <div>
-                                            <b>Additional Documents (optional)</b>
-                                            <Upload.Dragger
-                                                name="additionalDocs"
-                                                fileList={additionalDocsList}
-                                                onPreview={handlePreview}
-                                                onChange={({ fileList: newList }) => setAdditionalDocsList(newList)}
-                                                showUploadList
-                                                accept="image/*"
-                                                maxCount={1}
-                                                disabled={uploading}
-                                                style={{ marginTop: 8 }}
-                                                beforeUpload={() => false}
-                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                            >
-                                                <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                <p className="ant-upload-text">Upload Additional Documents (optional)</p>
-                                            </Upload.Dragger>
-                                            <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
-                                        </div>
+                                {application ? (
+                                    <>
+                                        {application?.status && application.status?.toLowerCase() === 'payment complete' && (
+                                            <Card title="Upload Requirements">
+                                                <div style={{ marginBottom: 24 }}>
+                                                    <b>PSA-issued Birth Certificate</b>
+                                                    <Upload.Dragger
+                                                        name="birthCert"
+                                                        fileList={birthCertList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setBirthCertList(newList)}
+                                                        showUploadList
+                                                        accept="image/*"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        style={{ marginTop: 8 }}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
+                                                        <p className="ant-upload-text">Upload PSA-issued Birth Certificate</p>
+                                                    </Upload.Dragger>
+                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                </div>
+                                                {/* Repeat for other uploads */}
+                                                <div style={{ marginBottom: 24 }}>
+                                                    <b>Application Form</b>
+                                                    <Upload.Dragger
+                                                        name="applicationForm"
+                                                        fileList={applicationFormList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setApplicationFormList(newList)}
+                                                        showUploadList
+                                                        accept="image/*"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        style={{ marginTop: 8 }}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
+                                                        <p className="ant-upload-text">Upload Accomplished Application Form</p>
+                                                    </Upload.Dragger>
+                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                </div>
+                                                <div style={{ marginBottom: 24 }}>
+                                                    <b>One Government-issued ID</b>
+                                                    <Upload.Dragger
+                                                        name="govId"
+                                                        fileList={govIdList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setGovIdList(newList)}
+                                                        showUploadList
+                                                        accept="image/*"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        style={{ marginTop: 8 }}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
+                                                        <p className="ant-upload-text">Upload Government-issued ID</p>
+                                                    </Upload.Dragger>
+                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                </div>
+                                                <div>
+                                                    <b>Additional Documents (optional)</b>
+                                                    <Upload.Dragger
+                                                        name="additionalDocs"
+                                                        fileList={additionalDocsList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setAdditionalDocsList(newList)}
+                                                        showUploadList
+                                                        accept="image/*"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        style={{ marginTop: 8 }}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
+                                                        <p className="ant-upload-text">Upload Additional Documents (optional)</p>
+                                                    </Upload.Dragger>
+                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                </div>
 
-                                        <Button style={{ marginTop: 20 }} type="primary" onClick={handleSubmit}>
-                                            Submit Documents
-                                        </Button>
+                                                <Button style={{ marginTop: 20 }} type="primary" onClick={handleSubmit}>
+                                                    Submit Documents
+                                                </Button>
+                                            </Card>
+                                        )}
+                                    </>
+                                ) : null}
+
+                                {application?.status && application.status?.toLowerCase() === 'documents uploaded' && (
+                                    <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
+                                        {application.submittedDocuments && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                                {application.submittedDocuments.birthCertificate && (
+                                                    <div>
+                                                        <b>PSA-issued Birth Certificate:</b>
+                                                        <div>
+                                                            <img
+                                                                src={application.submittedDocuments.birthCertificate}
+                                                                alt="Birth Certificate"
+                                                                style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
+                                                                onClick={() => window.open(application.submittedDocuments.birthCertificate)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {application.submittedDocuments.applicationForm && (
+                                                    <div>
+                                                        <b>Application Form:</b>
+                                                        <div>
+                                                            <img
+                                                                src={application.submittedDocuments.applicationForm}
+                                                                alt="Application Form"
+                                                                style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
+                                                                onClick={() => window.open(application.submittedDocuments.applicationForm)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {application.submittedDocuments.govId && (
+                                                    <div>
+                                                        <b>Government-issued ID:</b>
+                                                        <div>
+                                                            <img
+                                                                src={application.submittedDocuments.govId}
+                                                                alt="Government ID"
+                                                                style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
+                                                                onClick={() => window.open(application.submittedDocuments.govId)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {application.submittedDocuments.additionalDocs && Array.isArray(application.submittedDocuments.additionalDocs) && (
+                                                    <div>
+                                                        <b>Additional Documents:</b>
+                                                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                                                            {application.submittedDocuments.additionalDocs.map((url, idx) => (
+                                                                <img
+                                                                    key={idx}
+                                                                    src={url}
+                                                                    alt={`Additional Document ${idx + 1}`}
+                                                                    style={{ maxWidth: '150px', cursor: 'pointer' }}
+                                                                    onClick={() => window.open(url)}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </Card>
                                 )}
                             </>
                         )}
 
-
-                        {application?.status && application.status?.toLowerCase() === 'documents uploaded' && (
-                            <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
-                                {application.submittedDocuments && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                        {application.submittedDocuments.birthCertificate && (
-                                            <div>
-                                                <b>PSA-issued Birth Certificate:</b>
-                                                <div>
-                                                    <img
-                                                        src={application.submittedDocuments.birthCertificate}
-                                                        alt="Birth Certificate"
-                                                        style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
-                                                        onClick={() => window.open(application.submittedDocuments.birthCertificate)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {application.submittedDocuments.applicationForm && (
-                                            <div>
-                                                <b>Application Form:</b>
-                                                <div>
-                                                    <img
-                                                        src={application.submittedDocuments.applicationForm}
-                                                        alt="Application Form"
-                                                        style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
-                                                        onClick={() => window.open(application.submittedDocuments.applicationForm)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {application.submittedDocuments.govId && (
-                                            <div>
-                                                <b>Government-issued ID:</b>
-                                                <div>
-                                                    <img
-                                                        src={application.submittedDocuments.govId}
-                                                        alt="Government ID"
-                                                        style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
-                                                        onClick={() => window.open(application.submittedDocuments.govId)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {application.submittedDocuments.additionalDocs && Array.isArray(application.submittedDocuments.additionalDocs) && (
-                                            <div>
-                                                <b>Additional Documents:</b>
-                                                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
-                                                    {application.submittedDocuments.additionalDocs.map((url, idx) => (
-                                                        <img
-                                                            key={idx}
-                                                            src={url}
-                                                            alt={`Additional Document ${idx + 1}`}
-                                                            style={{ maxWidth: '150px', cursor: 'pointer' }}
-                                                            onClick={() => window.open(url)}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </Card>
-                        )}
                     </Spin>
                 </div>
             </div>
