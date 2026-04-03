@@ -276,7 +276,7 @@ const createManualPaymentDeposit = async (req, res) => {
                                 <b>Transaction Reference:</b> ${reference} <br/>
                                 <b>Package:</b> ${packageDoc.packageName} <br/>
                                 <b>Travel Dates:</b> ${bookingStart} to ${bookingEnd} <br/>
-                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+                                <b>Total Paid:</b> ₱${amount.amount.toFixed(2)}
 
                                 <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
                             </p>
