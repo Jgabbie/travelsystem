@@ -220,6 +220,16 @@ export default function QuotationRequest() {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
+            //download the generated PDF for preview
+            const downloadUrl = URL.createObjectURL(pdfBlob);
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.download = `quotation-${id}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(downloadUrl);
+
             setAutoUploaded(true);
             message.success("Quotation PDF generated and uploaded.");
         } catch (error) {
