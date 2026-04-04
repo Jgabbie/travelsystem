@@ -145,7 +145,11 @@ const uploadQuotationPDF = async (req, res) => {
     try {
         const uploadResult = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
-                { folder: 'quotation-pdfs', resource_type: 'raw' },
+                {
+                    folder: 'quotation-pdfs',
+                    resource_type: 'image',
+                    format: 'pdf'
+                },
                 (error, result) => {
                     if (error) return reject(error);
                     resolve(result);
