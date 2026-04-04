@@ -205,7 +205,7 @@ export default function TransactionManagement() {
       );
       setIsProofModalOpen(false);
       setProofTransaction(null);
-      message.success(`Proof ${status === "SUCCESSFUL" ? "accepted" : "rejected"}.`);
+      message.success(`Proof ${status === "Successful" ? "accepted" : "rejected"}.`);
     } catch (error) {
       message.error("Failed to update proof status.");
     }

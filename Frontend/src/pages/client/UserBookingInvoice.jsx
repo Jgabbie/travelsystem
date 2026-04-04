@@ -118,13 +118,6 @@ export default function UserBookingInvoice() {
         .filter(txn => txn.status === "Paid" || txn.status === "Successful" || txn.status === "Fully Paid")
         .reduce((sum, txn) => {
             const amount = Number(txn.amount || 0);
-
-
-            if (txn.method?.toLowerCase() === "paymongo") {
-                const baseAmountReceived = (amount - 15) / 1.035;
-                return sum + baseAmountReceived;
-            }
-
             return sum + amount;
         }, 0) * 100) / 100).toFixed(2); // Round to 2 decimal places
 
