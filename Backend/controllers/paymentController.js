@@ -1105,8 +1105,8 @@ const handlePayMongoWebhook = async (req, res) => {
             const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
-            const fee = (grossAmount * 0.035) + 15;
-            const amount = Number(Math.max(grossAmount - fee, 0).toFixed(2));
+            const net = grossAmount - ((grossAmount * 0.035) + 15);
+            const amount = Math.round(net / 100) * 100;
 
             const transactionReference = generateTransactionReference();
 
@@ -1202,8 +1202,8 @@ const handlePayMongoWebhook = async (req, res) => {
             const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
-            const fee = (grossAmount * 0.035) + 15;
-            const amount = Number(Math.max(grossAmount - fee, 0).toFixed(2));
+            const net = grossAmount - ((grossAmount * 0.035) + 15);
+            const amount = Math.round(net / 100) * 100;
 
             const transactionReference = generateTransactionReference();
 
