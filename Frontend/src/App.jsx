@@ -171,14 +171,14 @@ function App() {
             <Route path='/quotation-payment-process' element={<QuotationsPaymentProcess />} />
             <Route path='/booking-payment' element={<PaymentProcess />} />
             <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
-            <Route path="/user-applications/success/:id" element={<SuccessfulPaymentPassport />} />
-            <Route path="/user-applications/success/visa/:id" element={<SuccessfulPaymentVisa />} />
+            <Route path="/user-applications/success/passport" element={<SuccessfulPaymentPassport />} />
+            <Route path="/user-applications/success/visa" element={<SuccessfulPaymentVisa />} />
             <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
             <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
             <Route path="/user-preferences" element={<UserPreference1 />} />
             <Route path="/user-applications" element={<UserApplications />} />
-            <Route path="/passport-application/:id" element={<PassportApplication />} />
-            <Route path="/visa-application/:id" element={<VisaApplication />} />
+            <Route path="/passport-application" element={<PassportApplication />} />
+            <Route path="/visa-application" element={<VisaApplication />} />
 
           </Route>
 

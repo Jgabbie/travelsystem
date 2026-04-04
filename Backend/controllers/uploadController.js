@@ -238,5 +238,43 @@ const uploadVisaRequirements = async (req, res) => {
     }
 }
 
+const uploadCancellationProof = async (req, res) => {
+    console.log('Received request to upload cancellation proof');
+    console.log('BODY:', req.body);
+    console.log('FILE:', req.file);
 
-module.exports = { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements };
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    try {
+        console.log('Uploading file to Cloudinary:', req.file);
+
+        const uploadResult = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                { folder: 'cancellation-proofs' },
+                (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                }
+            );
+
+            stream.end(req.file.buffer);
+        });
+
+        console.log('Upload result:', uploadResult);
+
+        // Only send response once, after upload completes
+        return res.status(200).json({
+            message: 'File uploaded successfully.',
+            url: uploadResult.secure_url,
+        });
+    }
+
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Upload failed" });
+    }
+}
+
+module.exports = { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof };

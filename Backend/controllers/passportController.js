@@ -1,5 +1,6 @@
 
 const PassportModel = require("../models/passport");
+const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
 const UserModel = require("../models/user");
 const logAction = require('../utils/logger');
 
@@ -116,18 +117,28 @@ const updatePassportApplicationWithDocs = async (req, res) => {
 
 const getPassportApplications = async (req, res) => {
     try {
-        const userId = req.userId
-        const user = await UserModel.findById(userId).select('role')
-        const isStaff = user && (user.role === 'Admin' || user.role === 'Employee')
-        const query = isStaff ? {} : { userId }
 
-        const applications = await PassportModel.find(query).sort({ createdAt: -1 });
+        const applications = await PassportModel.find({})
+            .populate('userId', 'username email')
+            .sort({ createdAt: -1 })
+
         res.status(200).json(applications);
     } catch (error) {
         console.error("Error fetching passport applications:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+const getUserPassportApplications = async (req, res) => {
+    try {
+        const userId = req.userId
+        const applications = await PassportModel.find({ userId }).sort({ createdAt: -1 });
+        res.status(200).json(applications);
+    } catch (error) {
+        console.error("Error fetching user passport applications:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
 
 const getPassportApplicationById = async (req, res) => {
     try {
@@ -175,6 +186,28 @@ const updatePassportStatus = async (req, res) => {
     }
 };
 
+const verifyTokenCheckout = async (req, res) => {
+    const { token } = req.body;
+    try {
 
+        const tokenCheckoutPassport = await TokenCheckoutPassportModel.findOne({ token })
 
-module.exports = { applyPassport, getPassportApplications, getPassportApplicationById, updatePassportStatus, updatePassportApplicationWithDocs };
+        if (!tokenCheckoutPassport) {
+            return res.status(400).json({ message: "Invalid token" });
+        }
+
+        if (tokenCheckoutPassport.expiresAt < new Date()) {
+            return res.status(400).json({ message: "Token has expired" });
+        }
+
+        await TokenCheckoutPassportModel.deleteOne({ _id: tokenCheckoutPassport._id });
+
+        return { valid: true };
+
+    } catch (error) {
+        console.error("Error verifying token checkout:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+module.exports = { applyPassport, getPassportApplications, getUserPassportApplications, getPassportApplicationById, updatePassportStatus, updatePassportApplicationWithDocs, verifyTokenCheckout };

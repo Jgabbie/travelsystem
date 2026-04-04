@@ -9,6 +9,7 @@ router.post('/upload-package-images', upload.array('files', 3), uploadController
 router.post('/upload-profile-picture', upload.single('file'), uploadController.uploadProfilePicture);
 router.post('/upload-passport-requirements', upload.array('files', 10), uploadController.uploadPassportRequirements);
 router.post('/upload-visa-requirements', upload.array('files', 10), uploadController.uploadVisaRequirements);
+router.post('/upload-cancel-proof', upload.single('file'), uploadController.uploadCancellationProof);
 
 
 module.exports = router;

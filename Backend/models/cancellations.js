@@ -6,7 +6,7 @@ const CancellationSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
     cancellationReason: { type: String, required: true },
     cancellationComments: { type: String, default: '' },
-    supportingFiles: { type: [String], default: [] },
+    imageProof: { type: String, required: true },
     cancellationDate: { type: Date, default: Date.now },
     reference: { type: String, required: true, unique: true },
     status: { type: String, enum: ['Pending', 'Approved', 'Disapproved'], default: 'Pending' }

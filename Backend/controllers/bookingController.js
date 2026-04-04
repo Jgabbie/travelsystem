@@ -8,15 +8,11 @@ const dayjs = require('dayjs');
 
 
 const generateBookingReference = () => {
-    const timestamp = Date.now().toString().slice(-6)
-    const random = Math.floor(1000 + Math.random() * 9000)
-    return `BK-${timestamp}${random}`
+    return `BK-${Math.floor(100000000 + Math.random() * 900000000)}`
 }
 
 const generateCancellationReference = () => {
-    const timestamp = Date.now().toString().slice(-6)
-    const random = Math.floor(1000 + Math.random() * 9000)
-    return `CN-${timestamp}${random}`
+    return `CN-${Math.floor(100000000 + Math.random() * 900000000)}`
 }
 
 const createBooking = async (req, res) => {
@@ -42,11 +38,6 @@ const createBooking = async (req, res) => {
         if (!userId || !bookingPayload) {
             return res.status(400).json({ message: "Missing required fields" })
         }
-
-        // const existingBooking = await BookingModel.findOne({ checkoutToken });
-        // if (existingBooking) {
-        //     return res.status(200).json(existingBooking); // return existing booking
-        // }
 
         const newBooking = await BookingModel.create({
             packageId,
@@ -210,18 +201,20 @@ const deleteBooking = async (req, res) => {
 }
 
 const cancelBooking = async (req, res) => {
+    console.log('Received cancellation request with data')
+
     const { id } = req.params
     const userId = req.userId
-    const { reason, comments } = req.body || {}
-    const uploadedFiles = Array.isArray(req.files) ? req.files : []
-    const supportingFiles = uploadedFiles.map((file) => `/uploads/${file.filename}`)
+    const payload = req.body
 
-
+    console.log('Cancellation payload:', payload)
     console.log('Cancellation form data:', {
-        reason,
-        comments,
-        filesCount: supportingFiles.length
+        reason: payload.reason,
+        comments: payload.comments,
+        imageProof: payload.imageProof ? 'Image file included' : 'No image file'
     });
+
+    const { reason, comments, imageProof } = payload
 
     try {
         const booking = await BookingModel.findById(id)
@@ -233,11 +226,11 @@ const cancelBooking = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized to cancel this booking' })
         }
 
-        if (!reason) {
-            return res.status(400).json({ message: 'Cancellation reason is required' })
+        if (!reason || !imageProof) {
+            return res.status(400).json({ message: 'Cancellation reason and image proof are required' })
         }
 
-        booking.status = 'cancelled'
+        booking.status = 'cancellation requested'
         await booking.save()
         const cancellation = await CancellationModel.create({
             bookingId: id,
@@ -247,7 +240,7 @@ const cancelBooking = async (req, res) => {
             cancellationReason: reason,
             cancellationComments: comments || '',
             cancellationDate: new Date(),
-            supportingFiles,
+            imageProof: imageProof || null,
             status: 'Pending'
         })
         logAction('BOOKING_CANCELLED', userId, { bookingId: id, reason })
@@ -264,6 +257,41 @@ const cancelBooking = async (req, res) => {
         res.status(500).json({ message: 'Error cancelling booking', error })
     }
 }
+
+const approveCancellation = async (req, res) => {
+    const { id } = req.params
+    try {
+        const cancellation = await CancellationModel.findById(id)
+        if (!cancellation) {
+            return res.status(404).json({ message: 'Cancellation request not found' })
+        }
+
+        cancellation.status = 'Approved'
+        await cancellation.save()
+        await BookingModel.findByIdAndUpdate(cancellation.bookingId, { status: 'Cancelled' })
+        logAction('CANCELLATION_APPROVED', req.userId, { cancellationId: id })
+        res.status(200).json({ message: 'Cancellation approved' })
+    } catch (error) {
+        res.status(500).json({ message: 'Error approving cancellation', error })
+    }
+}
+
+const disApproveCancellation = async (req, res) => {
+    const { id } = req.params
+    try {
+        const cancellation = await CancellationModel.findById(id)
+        if (!cancellation) {
+            return res.status(404).json({ message: 'Cancellation request not found' })
+        }
+        cancellation.status = 'Disapproved'
+        await cancellation.save()
+        logAction('CANCELLATION_DISAPPROVED', req.userId, { cancellationId: id })
+        res.status(200).json({ message: 'Cancellation disapproved' })
+    } catch (error) {
+        res.status(500).json({ message: 'Error disapproving cancellation', error })
+    }
+}
+
 
 const getcancellations = async (req, res) => {
     try {
@@ -300,4 +328,4 @@ const verifyTokenCheckout = async (req, res) => {
         return { valid: false, message: 'Error verifying token' }
     }
 }
-module.exports = { createBooking, getUserBookings, getAllBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference, verifyTokenCheckout }
+module.exports = { createBooking, getUserBookings, getAllBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation }

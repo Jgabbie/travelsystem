@@ -51,7 +51,8 @@ export default function CancellationRequests() {
                     : '--',
                 reason: c.cancellationReason || '--',
                 cancellationDate: c.cancellationDate,
-                status: c.status || 'Pending'
+                status: c.status || 'Pending',
+                imageProof: c.imageProof || null
             }))
             setRequests(cancellations)
         } catch (err) {
@@ -344,7 +345,7 @@ export default function CancellationRequests() {
                     footer={null}
                     className="cancellation-view-modal"
                     width={680}
-                    destroyOnClose
+                    style={{ top: 35 }}
                 >
                     {selectedRequest && (
                         <div className="cancellation-view-content">
@@ -389,7 +390,18 @@ export default function CancellationRequests() {
                                             : '--'}
                                     </span>
                                 </div>
+                                {selectedRequest.imageProof && (
+                                    <div className="cancellation-view-item" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>
+                                        <span className="cancellation-view-label">Proof Image</span>
+                                        <img
+                                            src={selectedRequest.imageProof}
+                                            alt="Cancellation Proof"
+                                            style={{ maxWidth: '100%', maxHeight: '300px', marginTop: 8, borderRadius: 6 }}
+                                        />
+                                    </div>
+                                )}
                             </div>
+
                         </div>
                     )}
                 </Modal>

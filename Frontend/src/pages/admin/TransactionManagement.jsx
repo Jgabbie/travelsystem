@@ -662,7 +662,6 @@ export default function TransactionManagement() {
               <Space>
                 <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
 
-                {/* 👇 DOWNLOAD BUTTON */}
                 <a
                   href={getDownloadUrl(proofTransaction.proofImage)}
                   download={proofTransaction.proofFileName}
@@ -676,14 +675,14 @@ export default function TransactionManagement() {
 
                 <Button
                   type="primary"
-                  onClick={() => handleProofDecision(proofTransaction, "SUCCESSFUL")}
+                  onClick={() => handleProofDecision(proofTransaction, "Successful")}
                 >
                   Accept Proof
                 </Button>
 
                 <Button
                   danger
-                  onClick={() => handleProofDecision(proofTransaction, "FAILED")}
+                  onClick={() => handleProofDecision(proofTransaction, "Failed")}
                 >
                   Reject Proof
                 </Button>

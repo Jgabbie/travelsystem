@@ -1,4 +1,5 @@
 const VisaModel = require('../models/visas')
+const TokenCheckoutVisaModel = require('../models/tokencheckoutvisa')
 const ServiceModel = require('../models/service')
 const UserModel = require('../models/user')
 const logAction = require('../utils/logger')
@@ -117,6 +118,19 @@ const getVisaApplications = async (_req, res) => {
     }
 }
 
+const getUserVisaApplications = async (req, res) => {
+    try {
+        const userId = req.userId
+        const applications = await VisaModel.find({ userId })
+            .populate('serviceId', 'visaName')
+            .sort({ createdAt: -1 })
+        res.status(200).json(applications)
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Error fetching user visa applications', error: error.message })
+    }
+}
+
 const getVisaApplicationById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -168,4 +182,28 @@ const updateVisaApplicationStatus = async (req, res) => {
     }
 };
 
-module.exports = { applyVisa, getVisaApplications, getVisaApplicationById, updateVisaApplicationWithDocs, updateVisaApplicationStatus };
+const verifyTokenCheckout = async (req, res) => {
+    const { token } = req.body;
+    try {
+
+        const tokenCheckoutVisa = await TokenCheckoutVisaModel.findOne({ token })
+
+        if (!tokenCheckoutVisa) {
+            return res.status(400).json({ message: "Invalid token" });
+        }
+
+        if (tokenCheckoutVisa.expiresAt < new Date()) {
+            return res.status(400).json({ message: "Token has expired" });
+        }
+
+        await TokenCheckoutVisaModel.deleteOne({ _id: tokenCheckoutVisa._id });
+
+        return { valid: true };
+
+    } catch (error) {
+        console.error("Error verifying token checkout:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+module.exports = { applyVisa, getVisaApplications, getUserVisaApplications, getVisaApplicationById, updateVisaApplicationWithDocs, updateVisaApplicationStatus, verifyTokenCheckout };

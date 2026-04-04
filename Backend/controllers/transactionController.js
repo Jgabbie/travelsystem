@@ -1,5 +1,12 @@
 const TransactionModel = require('../models/transactions')
+const BookingModel = require('../models/booking')
 const logAction = require('../utils/logger')
+
+const parseAmount = (value) => {
+    if (value == null) return 0
+    const parsed = Number(String(value).replace(/[^0-9.-]/g, ''))
+    return Number.isFinite(parsed) ? parsed : 0
+}
 
 const generateTransactionReference = () => {
     const timestamp = Date.now().toString().slice(-6)
@@ -89,6 +96,31 @@ const updateTransaction = async (req, res) => {
         )
         if (!updatedTransaction) {
             return res.status(404).json({ message: "Transaction not found" })
+        }
+
+        if (updatedTransaction.bookingId && status === 'Successful') {
+            const booking = await BookingModel.findById(updatedTransaction.bookingId)
+            if (booking && !['Cancelled', 'cancellation requested'].includes(booking.status)) {
+                const totalPrice = parseAmount(booking?.bookingDetails?.totalPrice)
+                const paidAgg = await TransactionModel.aggregate([
+                    { $match: { bookingId: booking._id, status: 'Successful' } },
+                    { $group: { _id: null, totalPaid: { $sum: '$amount' } } }
+                ])
+                const totalPaid = paidAgg?.[0]?.totalPaid || 0
+
+                const nextStatus = totalPrice > 0 && totalPaid >= totalPrice
+                    ? 'Fully Paid'
+                    : 'Pending'
+
+                if (nextStatus && nextStatus !== booking.status) {
+                    booking.status = nextStatus
+                    if (!Array.isArray(booking.statusHistory)) {
+                        booking.statusHistory = []
+                    }
+                    booking.statusHistory.push({ status: nextStatus, changedAt: new Date() })
+                    await booking.save()
+                }
+            }
         }
 
         logAction('TRANSACTION_UPDATED', req.userId, {

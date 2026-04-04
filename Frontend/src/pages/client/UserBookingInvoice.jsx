@@ -115,7 +115,7 @@ export default function UserBookingInvoice() {
 
     const totalPrice = (Math.round(Number(booking?.totalPrice || booking?.bookingDetails?.totalPrice || 0) * 100) / 100).toFixed(2);
     const paidAmount = (Math.round(transactions
-        .filter(txn => txn.status === "Paid" || txn.status === "Successful")
+        .filter(txn => txn.status === "Paid" || txn.status === "Successful" || txn.status === "Fully Paid")
         .reduce((sum, txn) => {
             const amount = Number(txn.amount || 0);
 
@@ -132,13 +132,13 @@ export default function UserBookingInvoice() {
     const transactionStatus = transactions.length === 0
         ? "Pending"
         : paidAmount >= totalPrice
-            ? "Successful"
+            ? "Fully Paid"
             : "Partial";
 
     console.log("Price data", totalPrice, paidAmount)
 
     const getPaymentStatus = () => {
-        if (transactionStatus === "Successful" || transactionStatus === "Paid") {
+        if (transactionStatus === "Fully Paid" || transactionStatus === "Paid") {
             return { label: "Fully Paid", color: "green" };
         }
         if (transactionStatus === "Pending") {
@@ -841,7 +841,7 @@ export default function UserBookingInvoice() {
                                         </Col>
                                         <Col style={{ textAlign: "right" }}>
                                             <div><strong>₱{txn.amount}</strong></div>
-                                            <Tag color={txn.status === "Successful" ? "green" : "orange"}>
+                                            <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
                                                 {txn.status}
                                             </Tag>
                                         </Col>

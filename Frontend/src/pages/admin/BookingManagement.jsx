@@ -59,7 +59,15 @@ export default function BookingManagement() {
           travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM DD, YYYY') : dayjs(b.travelDate).format('MMM DD, YYYY'), //get start date
           bookingDate: dayjs(b.createdAt).format('MMM DD, YYYY'),
           qty: b.travelers || 0,
-          status: b.status?.charAt(0)?.toUpperCase() + b.status?.slice(1) || "Pending",
+          status: (() => {
+            const rawStatus = b.status || "";
+            const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+            const normalized = formatted.toLowerCase();
+            if (normalized === "successful" || normalized === "fully paid") {
+              return "Fully Paid";
+            }
+            return formatted || "Pending";
+          })(),
 
           bookingDetails: b.bookingDetails || {} //no booking details for now
         }));
@@ -236,7 +244,7 @@ export default function BookingManagement() {
         ? values.bookingDate.format("YYYY-MM-DD")
         : values.bookingDate;
       const qtyValue = Number(values.qty) || 0;
-      const statusValue = values.status ? values.status.toLowerCase() : undefined;
+      const statusValue = values.status || undefined;
 
       const payload = {
         status: statusValue,
@@ -297,8 +305,11 @@ export default function BookingManagement() {
       title: "Status",
       dataIndex: "status",
       render: s => {
-        const displayStatus = s === "Confirmed" ? "Successful" : s;
-        const color = displayStatus === "Successful" ? "green" :
+        const normalized = (s || "").toLowerCase();
+        const displayStatus = normalized === "confirmed" || normalized === "successful" || normalized === "fully paid"
+          ? "Fully Paid"
+          : s;
+        const color = displayStatus === "Fully Paid" ? "green" :
           displayStatus === "Pending" ? "orange" :
             "red";
         return <Tag color={color}>{displayStatus}</Tag>;
@@ -332,7 +343,7 @@ export default function BookingManagement() {
   ];
 
   const totalBookings = filteredData.length;
-  const totalSuccessful = filteredData.filter(b => b.status === "Successful" || b.status === "Confirmed").length;
+  const totalFullyPaid = filteredData.filter(b => b.status === "Fully Paid" || b.status === "Confirmed").length;
   const totalPending = filteredData.filter(b => b.status === "Pending").length;
   const totalCancelled = filteredData.filter(b => b.status === "Cancelled").length;
 
@@ -359,7 +370,7 @@ export default function BookingManagement() {
           </Col>
           <Col xs={24} sm={6}>
             <Card className="booking-management-card">
-              <Statistic title="Successful" value={totalSuccessful} prefix={<CheckCircleOutlined />} />
+              <Statistic title="Fully Paid" value={totalFullyPaid} prefix={<CheckCircleOutlined />} />
             </Card>
           </Col>
           <Col xs={24} sm={6}>
@@ -386,7 +397,7 @@ export default function BookingManagement() {
             value={statusFilter || undefined}
             onChange={(v) => setStatusFilter(v || "")}
             options={[
-              { value: "Successful", label: "Successful" },
+              { value: "Fully Paid", label: "Fully Paid" },
               { value: "Pending", label: "Pending" },
               { value: "Cancelled", label: "Cancelled" }
             ]}
@@ -484,7 +495,7 @@ export default function BookingManagement() {
                 >
                   <Select
                     options={[
-                      { value: "Successful", label: "Successful" },
+                      { value: "Fully Paid", label: "Fully Paid" },
                       { value: "Pending", label: "Pending" },
                       { value: "Cancelled", label: "Cancelled" }
                     ]}

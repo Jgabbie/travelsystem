@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
@@ -18,8 +18,11 @@ const VISA_STEPS = [
 ];
 
 export default function VisaApplication() {
-    const { id } = useParams();
+    const location = useLocation();
     const navigate = useNavigate();
+    const { applicationId } = location.state || {};
+
+    const id = applicationId;
 
     const [loading, setLoading] = useState(true);
     const [application, setApplication] = useState(null);
@@ -35,19 +38,28 @@ export default function VisaApplication() {
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
+    console.log('VisaApplication component rendered with application ID:', id);
 
+    const fetchVisaApplication = `/visa/applications/${id}`;
+
+    useEffect(() => {
+        if (!id) {
+            navigate('/user-applications');
+        }
+    }, [id, navigate]);
 
     useEffect(() => {
         const fetchApplication = async () => {
             setLoading(true);
             try {
-                const res = await axiosInstance.get(`/visa/applications/${id}`);
+                const res = await axiosInstance.get(fetchVisaApplication);
                 setApplication(res.data);
                 // If the application has a serviceId, fetch the service for requirements
                 if (res.data && res.data.serviceId) {
                     try {
                         const serviceId = res.data.serviceId._id || res.data.serviceId;
-                        const serviceRes = await axiosInstance.get(`/services/get-service/${serviceId}`);
+                        const serviceResEndpoint = `/services/get-service/${serviceId}`;
+                        const serviceRes = await axiosInstance.get(serviceResEndpoint);
                         console.log('Service details for requirements:', serviceRes.data);
                         setRequirements(serviceRes.data.visaRequirements || []);
                         setServicePrice(serviceRes.data.visaPrice || 0);
@@ -152,6 +164,7 @@ export default function VisaApplication() {
 
                 console.log("Manual payment response:", paymentRes.data);
 
+                navigate(paymentRes.data.redirectUrl);
                 message.success("Manual payment submitted successfully. Awaiting verification.");
                 setPaymentCompleted(true);
 

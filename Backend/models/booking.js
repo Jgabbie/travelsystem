@@ -11,6 +11,12 @@ const BookingSchema = new mongoose.Schema({
     bookingDetails: { type: mongoose.Schema.Types.Mixed },
     passportFiles: [{ type: String }], // Array of URLs for passport files
     photoFiles: [{ type: String }], // Array of URLs for photo files
+    statusHistory: [
+        {
+            status: { type: String },
+            changedAt: { type: Date, default: Date.now }
+        }
+    ],
     createdAt: { type: Date, default: Date.now, index: true },
     expiresAt: { type: Date, required: true, index: true }
 }, { timestamps: true })

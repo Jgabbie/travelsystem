@@ -4,6 +4,8 @@ const transporter = require('../config/nodemailer')
 const { v4: uuidv4 } = require("uuid");
 const dayjs = require('dayjs');
 const TokenCheckoutModel = require("../models/tokencheckout");
+const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
+const TokenCheckoutVisaModel = require("../models/tokencheckoutvisa");
 const PackageModel = require("../models/package");
 const BookingModel = require("../models/booking");
 const TransactionModel = require("../models/transactions");
@@ -12,11 +14,57 @@ const NotificationModel = require("../models/notification");
 const PassportModel = require("../models/passport");
 const VisaModel = require("../models/visas");
 
-const generateBookingReference = () => {
-    const timestamp = Date.now().toString().slice(-6);
-    const random = Math.floor(1000 + Math.random() * 9000);
-    return `BK-${timestamp}${random}`;
+
+
+const parseAmount = (value) => {
+    if (value == null) return 0;
+    const parsed = Number(String(value).replace(/[^0-9.-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
 };
+
+const normalizePaymongoAmount = (grossAmount) => {
+    const amount = parseAmount(grossAmount);
+    if (!amount) return 0;
+    const fee = (amount * 0.035) + 15;
+    return Math.max(amount - fee, 0);
+};
+
+const updateBookingPaymentStatus = async (bookingId) => {
+    const booking = await BookingModel.findById(bookingId);
+    if (!booking || ['Cancelled', 'cancellation requested'].includes(booking.status)) {
+        return null;
+    }
+
+    const totalPrice = parseAmount(booking?.bookingDetails?.totalPrice);
+    const rawPaymentType = booking?.bookingDetails?.paymentDetails?.paymentType || null;
+    const depositAmount = parseAmount(booking?.bookingDetails?.paymentDetails?.depositAmount);
+    const paymentType = rawPaymentType || (depositAmount > 0 ? 'deposit' : null);
+    const paidAgg = await TransactionModel.aggregate([
+        { $match: { bookingId: booking._id, status: 'Successful' } }, //counts successful transactions
+        { $group: { _id: null, totalPaid: { $sum: '$amount' } } }
+    ]);
+    const totalPaid = paidAgg?.[0]?.totalPaid || 0;
+
+    let nextStatus = totalPrice > 0 && totalPaid >= totalPrice
+        ? 'Fully Paid'
+        : 'Pending';
+
+    if (paymentType === 'deposit' && totalPaid < totalPrice) {
+        nextStatus = 'Pending';
+    }
+
+    if (nextStatus !== booking.status) {
+        booking.status = nextStatus;
+        if (!Array.isArray(booking.statusHistory)) {
+            booking.statusHistory = [];
+        }
+        booking.statusHistory.push({ status: nextStatus, changedAt: new Date() });
+        await booking.save();
+    }
+
+    return { booking, totalPaid, totalPrice, status: nextStatus };
+};
+
 
 const generateTransactionReference = () => {
     const timestamp = Date.now().toString().slice(-6);
@@ -87,6 +135,9 @@ const createManualPayment = async (req, res) => {
 
         const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
         const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+
+        booking.status = 'Pending'
+        booking.statusHistory.push({ status: 'Pending', changedAt: new Date() });
 
         console.log("Start Date:", bookingStart);
         console.log("End Date:", bookingEnd);
@@ -328,6 +379,18 @@ const createManualPaymentPassport = async (req, res) => {
             return res.status(400).json({ error: "Proof of payment image is required." });
         }
 
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutPassportModel.create({
+            token,
+            userId,
+            applicationId,
+            amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created for manual passport payment:", tokenCheckout);
+
         const reference = generateTransactionReference();
         const transaction = await TransactionModel.create({
             applicationId,
@@ -349,6 +412,7 @@ const createManualPaymentPassport = async (req, res) => {
             userId,
             title: "Manual Payment Submitted",
             message: `Your manual payment for passport application ${passportApp.applicationNumber} has been submitted and is pending review.`,
+            link: `/user-transactions`,
         });
 
         try {
@@ -400,7 +464,10 @@ const createManualPaymentPassport = async (req, res) => {
             console.error('Failed to send passport email:', emailError);
         }
 
-        return res.status(200).json({ message: "Manual payment for passport application submitted successfully." });
+        return res.status(200).json({
+            redirectUrl: `/user-applications/success/passport?token=${token}`
+        });
+
     } catch (error) {
         console.error('Manual payment for passport application error:', error.message);
         return res.status(500).json({ error: 'Failed to submit manual payment for passport application.' });
@@ -420,6 +487,18 @@ const createManualPaymentVisa = async (req, res) => {
         if (!proofImage) {
             return res.status(400).json({ error: "Proof of payment image is required." });
         }
+
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutVisaModel.create({
+            token,
+            userId,
+            applicationId,
+            amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created for manual visa payment:", tokenCheckout);
 
         const reference = generateTransactionReference();
         const transaction = await TransactionModel.create({
@@ -442,6 +521,7 @@ const createManualPaymentVisa = async (req, res) => {
             userId,
             title: "Manual Payment Submitted",
             message: `Your manual payment for visa application ${visaApp.applicationNumber} has been submitted and is pending review.`,
+            link: `/user-transactions`,
         });
 
         try {
@@ -493,7 +573,9 @@ const createManualPaymentVisa = async (req, res) => {
             console.error('Failed to send visa email:', emailError);
         }
 
-        return res.status(200).json({ message: "Manual payment for visa application submitted successfully." });
+        return res.status(200).json({
+            redirectUrl: `/user-applications/success/visa?token=${token}`
+        });
     } catch (error) {
         console.error('Manual payment for visa application error:', error.message);
         return res.status(500).json({ error: 'Failed to submit manual payment for visa application.' });
@@ -503,28 +585,46 @@ const createManualPaymentVisa = async (req, res) => {
 
 const createCheckoutSessionPassport = async (req, res) => {
     const userId = req.userId;
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const { applicationId, applicationNumber, totalPrice, successUrl, cancelUrl, email } = req.body;
+        const { applicationId, applicationNumber, totalPrice } = req.body;
 
-        if (!applicationId || !applicationNumber || !totalPrice || !successUrl || !cancelUrl) {
+        if (!applicationId || !applicationNumber || !totalPrice) {
             return res.status(400).json({ error: "Missing required fields." });
         }
+
+        const token = uuidv4();
+
+        const tokenCheckoutVisa = await TokenCheckoutVisaModel.create({
+            token,
+            userId,
+            applicationId,
+            amount: totalPrice,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created for visa application:", tokenCheckoutVisa);
+
+        const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
+        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
 
         const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
         const baseAmountCents = Math.round(totalPrice * 100);
         const finalTotalCents = baseAmountCents + convenienceFeeCents;
+
+        const email = await UserModel.findById(userId).select('email');
+        const username = await UserModel.findById(userId).select('username');
 
         const metadata = {
             userId,
             applicationId,
             applicationNumber,
             applicationType: "Passport Application",
-            email,
             baseAmountCents,
             convenienceFeeCents,
             totalAmountCents: finalTotalCents,
@@ -536,8 +636,8 @@ const createCheckoutSessionPassport = async (req, res) => {
                 data: {
                     attributes: {
                         billing: {
-                            name: "Passport Applicant",
-                            email: email || "test@example.com",
+                            name: username.username || "Passport Applicant",
+                            email: email.email || "test@example.com",
                         },
                         line_items: [
                             {
@@ -587,28 +687,46 @@ const createCheckoutSessionPassport = async (req, res) => {
 
 const createCheckoutSessionVisa = async (req, res) => {
     const userId = req.userId;
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const { applicationId, applicationNumber, totalPrice, successUrl, cancelUrl, email } = req.body;
+        const { applicationId, applicationNumber, totalPrice } = req.body;
 
-        if (!applicationId || !applicationNumber || !totalPrice || !successUrl || !cancelUrl) {
+        if (!applicationId || !applicationNumber || !totalPrice) {
             return res.status(400).json({ error: "Missing required fields." });
         }
+
+        const token = uuidv4();
+
+        const tokenCheckoutVisa = await TokenCheckoutVisaModel.create({
+            token,
+            userId,
+            applicationId,
+            amount: totalPrice,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created for visa application:", tokenCheckoutVisa);
+
+        const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
+        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
 
         const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
         const baseAmountCents = Math.round(totalPrice * 100);
         const finalTotalCents = baseAmountCents + convenienceFeeCents;
+
+        const email = await UserModel.findById(userId).select('email');
+        const username = await UserModel.findById(userId).select('username');
 
         const metadata = {
             userId,
             applicationId,
             applicationNumber,
             applicationType: "Visa Application",
-            email,
             baseAmountCents,
             convenienceFeeCents,
             totalAmountCents: finalTotalCents,
@@ -620,8 +738,8 @@ const createCheckoutSessionVisa = async (req, res) => {
                 data: {
                     attributes: {
                         billing: {
-                            name: "Visa Applicant",
-                            email: email || "test@example.com",
+                            name: username.username || "Visa Applicant",
+                            email: email.email || "test@example.com",
                         },
                         line_items: [
                             {
@@ -1019,7 +1137,7 @@ const handlePayMongoWebhook = async (req, res) => {
             await NotificationModel.create({
                 userId: user._id,
                 title: 'Visa Payment Successful',
-                message: `Your visa application (${metadata.applicationNumber}) was successful.`,
+                message: `Your visa application ${metadata.applicationNumber} was successful.`,
                 type: 'visa',
                 link: '/user-transactions',
             });
@@ -1113,7 +1231,7 @@ const handlePayMongoWebhook = async (req, res) => {
             await NotificationModel.create({
                 userId: user._id,
                 title: 'Passport Payment Successful',
-                message: `Your passport application (${metadata.applicationNumber}) was successful.`,
+                message: `Your passport application ${metadata.applicationNumber} was successful.`,
                 type: 'passport',
                 link: '/user-transactions',
             });
@@ -1181,9 +1299,12 @@ const handlePayMongoWebhook = async (req, res) => {
             const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
             const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
 
-            const amount =
-                Number(metadata.totalAmountCents || 0) / 100 ||
-                Number(sessionAttributes?.amount_total || 0) / 100;
+            const amount = metadata.baseAmountCents
+                ? Number(metadata.baseAmountCents || 0) / 100
+                : normalizePaymongoAmount(
+                    Number(metadata.totalAmountCents || 0) / 100 ||
+                    Number(sessionAttributes?.amount_total || 0) / 100
+                );
 
             const transactionReference = generateTransactionReference();
 
@@ -1196,6 +1317,8 @@ const handlePayMongoWebhook = async (req, res) => {
                 method: 'Paymongo',
                 status: 'Successful',
             });
+
+            await updateBookingPaymentStatus(metadata.bookingId);
 
             await NotificationModel.create({
                 userId: user._id,
@@ -1302,25 +1425,12 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.log('Slot successfully decremented.');
             }
 
-            // Update the booking status
-            booking.status = 'Successful';
-            await booking.save();
-
-            // if (!booking) {
-            //     booking = await BookingModel.create({
-            //         packageId: metadata.packageId,
-            //         userId: user._id,
-            //         bookingDate: new Date(),
-            //         travelDate: metadata.travelDate,
-            //         travelers: Number(metadata.travelerTotal || 1),
-            //         reference: generateBookingReference(),
-            //         status: 'Successful',
-            //     });
-            // }
-
-            const amount =
-                Number(metadata.totalAmountCents || 0) / 100 ||
-                Number(sessionAttributes?.amount_total || 0) / 100;
+            const amount = metadata.baseAmountCents
+                ? Number(metadata.baseAmountCents || 0) / 100
+                : normalizePaymongoAmount(
+                    Number(metadata.totalAmountCents || 0) / 100 ||
+                    Number(sessionAttributes?.amount_total || 0) / 100
+                );
 
             await TransactionModel.create({
                 bookingId: booking._id,
@@ -1331,6 +1441,20 @@ const handlePayMongoWebhook = async (req, res) => {
                 method: 'Paymongo',
                 status: 'Successful',
             });
+
+            const paymentType = booking?.bookingDetails?.paymentDetails?.paymentType || null;
+            if (paymentType === 'deposit') {
+                if (booking.status !== 'Pending') {
+                    booking.status = 'Pending';
+                    if (!Array.isArray(booking.statusHistory)) {
+                        booking.statusHistory = [];
+                    }
+                    booking.statusHistory.push({ status: 'Pending', changedAt: new Date() });
+                    await booking.save();
+                }
+            } else {
+                await updateBookingPaymentStatus(booking._id);
+            }
 
             await NotificationModel.create({
                 userId: user._id,
@@ -1404,14 +1528,10 @@ const handlePayMongoWebhook = async (req, res) => {
 };
 
 const createCheckoutToken = async (req, res) => {
-    // const { quotationId, travelers } = req.body;
     const userId = req.userId;
     const { totalPrice } = req.body
 
-    // const quotation = await QuotationModel.findById(quotationId);
-    // if (!quotation) return res.status(404).json({ message: "Quotation not found" });
 
-    // console.log(quotation)
     const token = uuidv4();
 
     await TokenCheckoutModel.create({
@@ -1423,9 +1543,6 @@ const createCheckoutToken = async (req, res) => {
 
     res.status(201).json({ token });
 };
-
-
-
 
 
 module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentDeposit, createManualPaymentVisa, createManualPaymentPassport };

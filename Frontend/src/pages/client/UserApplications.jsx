@@ -20,18 +20,18 @@ export default function UserApplications() {
             setLoading(true);
             try {
                 // Fetch passport applications
-                const passportRes = await axiosInstance.get('/passport/applications');
+                const passportRes = await axiosInstance.get('/passport/user-applications');
                 const passportApps = (passportRes.data || []).map(app => ({
                     key: app._id,
                     ref: app.applicationNumber,
-                    type: app.applicationType || 'Passport',
-                    name: 'Passport',
+                    type: 'Passport',
+                    name: app.applicationType,
                     status: app.status,
                     date: app.createdAt,
                     details: app,
                 }));
                 // Fetch visa applications
-                const visaRes = await axiosInstance.get('/visa/applications');
+                const visaRes = await axiosInstance.get('/visa/user-applications');
                 const visaApps = (visaRes.data || []).map(app => ({
                     key: app._id,
                     ref: app.applicationNumber || app._id,
@@ -72,7 +72,6 @@ export default function UserApplications() {
 
         return matchesSearch && matchesType && matchesStatus && matchesDate;
     });
-
     // Status color mapping
 
     const columns = [
@@ -93,11 +92,10 @@ export default function UserApplications() {
                     <Button
                         type="primary"
                         onClick={() => {
-                            if (record.name === 'Passport') {
-                                console.log("Navigating to passport application with ID:", record.key);
-                                navigate(`/passport-application/${record.key}`);
+                            if (record.type === 'Passport') {
+                                navigate('/passport-application', { state: { applicationId: record.key } });
                             } else if (record.type === 'Visa') {
-                                navigate(`/visa-application/${record.key}`);
+                                navigate('/visa-application', { state: { applicationId: record.key } });
                             }
                         }}
 

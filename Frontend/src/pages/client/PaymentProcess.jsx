@@ -250,7 +250,6 @@ export default function PaymentProcess() {
             const passportUrls = allUrls.slice(0, passportFiles.length);
             const photoUrls = allUrls.slice(passportFiles.length);
 
-
             const bookingRes = await axiosInstance.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,

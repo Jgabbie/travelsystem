@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
@@ -51,8 +51,11 @@ const PASSPORT_STEPS = [
 
 
 export default function PassportApplication() {
-    const { id } = useParams();
+    const location = useLocation();
+    const { applicationId } = location.state || {};
     const navigate = useNavigate();
+
+    const id = applicationId; // Use applicationId from location state instead of URL params
 
 
     const [loading, setLoading] = useState(true);
@@ -63,16 +66,24 @@ export default function PassportApplication() {
     const [additionalDocsList, setAdditionalDocsList] = useState([]);
     const [applicationFormList, setApplicationFormList] = useState([]);
 
-    const [method, setMethod] = useState(null); // default selected payment method
+    const [method, setMethod] = useState(null); // default selected payment method  
     const [fileList, setFileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
+
+    const fetchPassportApplication = `/passport/applications/${id}`;
+
+    useEffect(() => {
+        if (!id) {
+            navigate('/user-applications');
+        }
+    }, [id, navigate]);
 
     useEffect(() => {
         const fetchApplication = async () => {
             setLoading(true);
             try {
-                const res = await axiosInstance.get(`/passport/applications/${id}`);
+                const res = await axiosInstance.get(fetchPassportApplication);
                 setApplication(res.data);
             } catch (err) {
                 message.error('Failed to load passport application details');
@@ -160,6 +171,7 @@ export default function PassportApplication() {
 
                 console.log("Manual payment response:", paymentRes.data);
 
+                navigate(paymentRes.data.redirectUrl);
                 message.success("Manual payment submitted successfully. Awaiting verification.");
                 setPaymentCompleted(true);
 
@@ -176,10 +188,7 @@ export default function PassportApplication() {
                 const payload = {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
-                    totalPrice: 2000, // make sure this field exists in your application
-                    successUrl: `${window.location.origin}/user-applications/success/${application._id}`, // redirect here after success
-                    cancelUrl: `${window.location.origin}/passport-application/${application._id}`, // stay on same page if cancelled
-                    email: application.email,
+                    totalPrice: 2000,
                 };
 
                 console.log("Creating checkout session with payload:", payload);
