@@ -22,6 +22,6 @@ const uploadFolder = path.join(__dirname, '../uploads');
 //     }
 // });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 module.exports = upload;
