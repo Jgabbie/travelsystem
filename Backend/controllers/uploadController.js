@@ -3,6 +3,18 @@ const cloudinary = require("../config/cloudinary")
 const streamifier = require("streamifier")
 const { upload } = require("../middleware/uploadFile")
 
+const uploadBufferToCloudinary = (file, folder) => new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+        { folder, resource_type: 'auto' },
+        (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        }
+    );
+
+    streamifier.createReadStream(file.buffer).pipe(stream);
+});
+
 
 const uploadReceiptProof = async (req, res) => {
     console.log('Received request to upload receipt proof');
@@ -17,17 +29,7 @@ const uploadReceiptProof = async (req, res) => {
         console.log('Uploading file to Cloudinary:', req.file.originalname);
 
         // Use upload_stream with a Promise to await the upload
-        const uploadResult = await new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-                { folder: 'manual-deposits' },
-                (error, result) => {
-                    if (error) return reject(error);
-                    resolve(result);
-                }
-            );
-
-            stream.end(req.file.buffer);
-        });
+        const uploadResult = await uploadBufferToCloudinary(req.file, 'manual-deposits');
 
         console.log('Upload result:', uploadResult);
 
@@ -40,7 +42,7 @@ const uploadReceiptProof = async (req, res) => {
 
     catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Upload failed" });
+        res.status(500).json({ message: "Upload failed", error: err.message });
     }
 }
 
@@ -54,19 +56,9 @@ const uploadBookingDocuments = async (req, res) => {
     }
 
     try {
-        const uploadPromises = req.files.map(file => {
-            return new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    { folder: 'booking-documents' },
-                    (error, result) => {
-                        if (error) return reject(error);
-                        resolve(result.secure_url);
-                    }
-                );
-
-                stream.end(file.buffer);
-            });
-        });
+        const uploadPromises = req.files.map(file =>
+            uploadBufferToCloudinary(file, 'booking-documents').then(result => result.secure_url)
+        );
 
         const uploadedUrls = await Promise.all(uploadPromises);
 
@@ -79,7 +71,7 @@ const uploadBookingDocuments = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Upload failed" });
+        res.status(500).json({ message: "Upload failed", error: err.message });
     }
 };
 
@@ -93,19 +85,9 @@ const uploadPackageImage = async (req, res) => {
     }
 
     try {
-        const uploadPromises = req.files.map(file => {
-            return new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    { folder: 'package-images' },
-                    (error, result) => {
-                        if (error) return reject(error);
-                        resolve(result);
-                    }
-                );
-
-                stream.end(file.buffer);
-            });
-        });
+        const uploadPromises = req.files.map(file =>
+            uploadBufferToCloudinary(file, 'package-images')
+        );
 
         const uploadedResults = await Promise.all(uploadPromises);
 
@@ -117,7 +99,7 @@ const uploadPackageImage = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Upload failed" });
+        res.status(500).json({ message: "Upload failed", error: err.message });
     }
 };
 
@@ -133,17 +115,7 @@ const uploadProfilePicture = async (req, res) => {
     try {
         console.log('Uploading file to Cloudinary:', req.file);
 
-        const uploadResult = await new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-                { folder: 'profile-pictures' },
-                (error, result) => {
-                    if (error) return reject(error);
-                    resolve(result);
-                }
-            );
-
-            stream.end(req.file.buffer);
-        });
+        const uploadResult = await uploadBufferToCloudinary(req.file, 'profile-pictures');
 
         console.log('Upload result:', uploadResult);
 
@@ -156,7 +128,7 @@ const uploadProfilePicture = async (req, res) => {
 
     catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Upload failed" });
+        res.status(500).json({ message: "Upload failed", error: err.message });
     }
 };
 
@@ -170,19 +142,9 @@ const uploadPassportRequirements = async (req, res) => {
     }
 
     try {
-        const uploadPromises = req.files.map(file => {
-            return new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    { folder: 'passport-requirements' },
-                    (error, result) => {
-                        if (error) return reject(error);
-                        resolve(result);
-                    }
-                );
-
-                stream.end(file.buffer);
-            });
-        });
+        const uploadPromises = req.files.map(file =>
+            uploadBufferToCloudinary(file, 'passport-requirements')
+        );
 
         const uploadedResults = await Promise.all(uploadPromises);
 
@@ -195,7 +157,7 @@ const uploadPassportRequirements = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Upload failed" });
+        res.status(500).json({ message: "Upload failed", error: err.message });
     }
 }
 
@@ -209,19 +171,9 @@ const uploadVisaRequirements = async (req, res) => {
     }
 
     try {
-        const uploadPromises = req.files.map(file => {
-            return new Promise((resolve, reject) => {
-                const stream = cloudinary.uploader.upload_stream(
-                    { folder: 'visa-requirements' },
-                    (error, result) => {
-                        if (error) return reject(error);
-                        resolve(result);
-                    }
-                );
-
-                stream.end(file.buffer);
-            });
-        });
+        const uploadPromises = req.files.map(file =>
+            uploadBufferToCloudinary(file, 'visa-requirements')
+        );
 
         const uploadedResults = await Promise.all(uploadPromises);
 
@@ -234,7 +186,7 @@ const uploadVisaRequirements = async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Upload failed" });
+        res.status(500).json({ message: "Upload failed", error: err.message });
     }
 }
 
@@ -250,17 +202,7 @@ const uploadCancellationProof = async (req, res) => {
     try {
         console.log('Uploading file to Cloudinary:', req.file);
 
-        const uploadResult = await new Promise((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-                { folder: 'cancellation-proofs' },
-                (error, result) => {
-                    if (error) return reject(error);
-                    resolve(result);
-                }
-            );
-
-            stream.end(req.file.buffer);
-        });
+        const uploadResult = await uploadBufferToCloudinary(req.file, 'cancellation-proofs');
 
         console.log('Upload result:', uploadResult);
 
@@ -273,7 +215,7 @@ const uploadCancellationProof = async (req, res) => {
 
     catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Upload failed" });
+        res.status(500).json({ message: "Upload failed", error: err.message });
     }
 }
 
