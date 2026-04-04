@@ -1,4 +1,3 @@
-const upload = require('../middleware/upload')
 const cloudinary = require('../config/cloudinary')
 const QuotationModel = require('../models/quotations')
 const UserModel = require('../models/user')
