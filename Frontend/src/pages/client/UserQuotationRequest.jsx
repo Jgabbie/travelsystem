@@ -18,6 +18,8 @@ export default function UserQuotationRequest() {
 
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false);
 
 
     useEffect(() => {
@@ -56,6 +58,7 @@ export default function UserQuotationRequest() {
         if (!quotation) return;
 
         try {
+            setActionLoading(true);
             const tokenRes = await axiosInstance.post("/payment/create-checkout-token", {
                 quotationId: id,
                 travelers: quotation.travelDetails?.travelers || 1
@@ -75,6 +78,8 @@ export default function UserQuotationRequest() {
         } catch (err) {
             console.error(err.response?.data || err.message);
             message.error("Unable to proceed to payment");
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -129,6 +134,7 @@ export default function UserQuotationRequest() {
             return;
         }
         console.log("Revision requested with notes:", notes);
+        setActionLoading(true);
         axiosInstance.post(`/quotation/${id}/request-revision`, {
             notes
         }).then(res => {
@@ -137,8 +143,18 @@ export default function UserQuotationRequest() {
         }).catch(err => {
             console.error(err.response?.data || err.message);
             message.error("Failed to request revision.");
+        }).finally(() => {
+            setActionLoading(false);
         });
     };
+
+    const latestPdfUrl = quotation?.pdfRevisions?.filter((rev) => rev?.url).slice(-1)[0]?.url;
+
+    useEffect(() => {
+        if (latestPdfUrl) {
+            setPdfLoading(true);
+        }
+    }, [latestPdfUrl]);
 
     return (
         <ConfigProvider
@@ -148,141 +164,161 @@ export default function UserQuotationRequest() {
                 }
             }}
         >
-            {loading && !quotation ? (
-                <div style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "90vh", // fill most of the viewport
-                    flexDirection: "column",
-                }}>
-                    <Spin spinning={true} description="Loading quotation..." size="large">
-                    </Spin>
-                </div>
+            <Spin spinning={loading || actionLoading} tip={loading ? "Loading quotation..." : "Processing..."} size="large">
+                {loading && !quotation ? (
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "90vh", // fill most of the viewport
+                        flexDirection: "column",
+                    }}>
+                        <Spin spinning={true} description="Loading quotation..." size="large">
+                        </Spin>
+                    </div>
 
-            ) : (
-                quotation && (
-                    <div style={{ padding: "20px" }}>
-                        <Button
-                            className="quotation-backbutton"
-                            style={{ marginBottom: "15px" }}
-                            onClick={() => navigate("/user-package-quotation")}
-                        >
-                            <ArrowLeftOutlined />
-                            Back
-                        </Button>
-                        <div className="quotation-header-container">
-                            <div>
-                                <h2>{quotation.packageName}</h2>
-                                <p>
-                                    <strong>Reference:</strong> {quotation.reference} |{" "}
-                                    <strong>Status:</strong> {quotation.status}
-                                </p>
+                ) : (
+                    quotation && (
+                        <div style={{ padding: "20px" }}>
+                            <Button
+                                className="quotation-backbutton"
+                                style={{ marginBottom: "15px" }}
+                                onClick={() => navigate("/user-package-quotation")}
+                            >
+                                <ArrowLeftOutlined />
+                                Back
+                            </Button>
+                            <div className="quotation-header-container">
+                                <div>
+                                    <h2>{quotation.packageName}</h2>
+                                    <p>
+                                        <strong>Reference:</strong> {quotation.reference} |{" "}
+                                        <strong>Status:</strong> {quotation.status}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
 
-                        <div style={{ marginBottom: "20px" }}>
-                            <Card title="Quotation Revision History">
-                                {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
-                                    <p>No PDF revisions uploaded yet.</p>
-                                ) : (
-                                    quotation.pdfRevisions
-                                        .filter((rev) => rev?.url)
-                                        .map((rev, index) => (
-                                            <div key={index} style={{ marginBottom: "10px" }}>
-                                                <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
-                                                <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                            <div style={{ marginBottom: "20px" }}>
+                                <Card title="Quotation Revision History">
+                                    {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
+                                        <p>No PDF revisions uploaded yet.</p>
+                                    ) : (
+                                        quotation.pdfRevisions
+                                            .filter((rev) => rev?.url)
+                                            .map((rev, index) => (
+                                                <div key={index} style={{ marginBottom: "10px" }}>
+                                                    <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
+                                                    <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                                                </div>
+                                            ))
+                                    )}
+                                </Card>
+                            </div>
+
+                            <h1>Latest Revision</h1>
+                            <div
+                                style={{
+                                    border: "1px solid #ccc",
+                                    height: "600px",
+                                    marginBottom: "20px",
+                                    position: "relative",
+                                }}
+                            >
+                                {latestPdfUrl ? (
+                                    <>
+                                        {pdfLoading && (
+                                            <div style={{
+                                                position: "absolute",
+                                                inset: 0,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                background: "rgba(255, 255, 255, 0.8)",
+                                                zIndex: 1
+                                            }}>
+                                                <Spin spinning={true} tip="Loading PDF..." />
                                             </div>
-                                        ))
+                                        )}
+                                        <iframe
+                                            src={latestPdfUrl}
+                                            title="Quotation PDF"
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: "none" }}
+                                            onLoad={() => setPdfLoading(false)}
+                                            onError={() => setPdfLoading(false)}
+                                        />
+                                    </>
+                                ) : (
+                                    <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
+                                )}
+                            </div>
+
+                            <Card title="Revision Notes History" style={{ marginBottom: 20 }}>
+                                {quotation.revisionComments.length === 0 ? (
+                                    <p>No revision comments yet.</p>
+                                ) : (
+                                    quotation.revisionComments.map((comment, index) => (
+                                        <div key={index} style={{ marginBottom: 15 }}>
+                                            <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
+                                            <br />
+                                            <small>{new Date(comment.createdAt).toLocaleString()}</small>
+                                        </div>
+                                    ))
                                 )}
                             </Card>
-                        </div>
 
-                        <h1>Latest Revision</h1>
-                        <div
-                            style={{
-                                border: "1px solid #ccc",
-                                height: "600px",
-                                marginBottom: "20px",
-                            }}
-                        >
-                            {quotation.pdfRevisions && quotation.pdfRevisions.some((rev) => rev?.url) ? (
-                                <iframe
-                                    src={quotation.pdfRevisions.filter((rev) => rev?.url).slice(-1)[0].url}
-                                    title="Quotation PDF"
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: "none" }}
-                                />
-                            ) : (
-                                <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
-                            )}
-                        </div>
-
-                        <Card title="Revision Notes History" style={{ marginBottom: 20 }}>
-                            {quotation.revisionComments.length === 0 ? (
-                                <p>No revision comments yet.</p>
-                            ) : (
-                                quotation.revisionComments.map((comment, index) => (
-                                    <div key={index} style={{ marginBottom: 15 }}>
-                                        <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
-                                        <br />
-                                        <small>{new Date(comment.createdAt).toLocaleString()}</small>
-                                    </div>
-                                ))
-                            )}
-                        </Card>
-
-                        <Input.TextArea
-                            maxLength={200}
-                            rows={3}
-                            placeholder={`Kindly provide any notes for revision (max 200 characters). Please be detailed as possible.`}
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            className="quotation-input-request"
-                            disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
-                            required
-                        />
-
-                        <div className="buttons-container-userquotationrequest">
-                            <Button
-                                className="acceptbutton-userquotationrequest"
-                                type="primary"
-                                onClick={handleAccept}
-                            >
-                                Accept
-                            </Button>
-                            <Button
-                                className="revisebutton-userquotationrequest"
-                                onClick={handleRevise}
+                            <Input.TextArea
+                                maxLength={200}
+                                rows={3}
+                                placeholder={`Kindly provide any notes for revision (max 200 characters). Please be detailed as possible.`}
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                className="quotation-input-request"
                                 disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
-                            >
-                                Request Revision
-                            </Button>
-                        </div>
+                                required
+                            />
 
-
-                        {/* booking success modal */}
-                        <Modal
-                            className="package-wishlist-modal"
-                            open={isBookingSuccessOpen}
-                            footer={null}
-                            onCancel={() => setIsBookingSuccessOpen(false)}
-                        >
-                            <h2 className="package-wishlist-title">Booking Successful</h2>
-                            <p className="package-wishlist-text">Your booking has been confirmed.</p>
-                            <div className="package-wishlist-actions">
-                                <Button className="package-action-secondary" onClick={() => {
-                                    setIsBookingSuccessOpen(false)
-                                }}>
-                                    OK
+                            <div className="buttons-container-userquotationrequest">
+                                <Button
+                                    className="acceptbutton-userquotationrequest"
+                                    type="primary"
+                                    onClick={handleAccept}
+                                >
+                                    Accept
+                                </Button>
+                                <Button
+                                    className="revisebutton-userquotationrequest"
+                                    onClick={handleRevise}
+                                    disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
+                                >
+                                    Request Revision
                                 </Button>
                             </div>
-                        </Modal>
-                    </div>
-                ))
-            }
+
+
+                            {/* booking success modal */}
+                            <Modal
+                                className="package-wishlist-modal"
+                                open={isBookingSuccessOpen}
+                                footer={null}
+                                onCancel={() => setIsBookingSuccessOpen(false)}
+                            >
+                                <h2 className="package-wishlist-title">Booking Successful</h2>
+                                <p className="package-wishlist-text">Your booking has been confirmed.</p>
+                                <div className="package-wishlist-actions">
+                                    <Button className="package-action-secondary" onClick={() => {
+                                        setIsBookingSuccessOpen(false)
+                                    }}>
+                                        OK
+                                    </Button>
+                                </div>
+                            </Modal>
+                        </div>
+                    ))
+                }
+            </Spin>
 
         </ConfigProvider >
     );
