@@ -314,6 +314,193 @@ const createManualPaymentDeposit = async (req, res) => {
     }
 };
 
+const createManualPaymentPassport = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const {
+            applicationId,
+            applicationNumber,
+            amount,
+            proofImage,
+        } = req.body;
+        if (!proofImage) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const reference = generateTransactionReference();
+        const transaction = await TransactionModel.create({
+            applicationId,
+            applicationType: "Passport Application",
+            userId,
+            reference,
+            amount,
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+        });
+
+        console.log('Manual payment for passport application created:', transaction);
+
+        const passportApp = await PassportModel.findById(applicationId);
+        const user = await UserModel.findById(userId).select('email username');
+
+        await NotificationModel.create({
+            userId,
+            title: "Manual Payment Submitted",
+            message: `Your manual payment for passport application ${passportApp.applicationNumber} has been submitted and is pending review.`,
+        });
+
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Passport Payment Successful`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Passport Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your passport payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${reference} <br/>
+                                <b>Application Number:</b> ${applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send passport email:', emailError);
+        }
+
+        return res.status(200).json({ message: "Manual payment for passport application submitted successfully." });
+    } catch (error) {
+        console.error('Manual payment for passport application error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment for passport application.' });
+    }
+};
+
+const createManualPaymentVisa = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const {
+            applicationId,
+            applicationNumber,
+            amount,
+            proofImage,
+        } = req.body;
+        if (!proofImage) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const reference = generateTransactionReference();
+        const transaction = await TransactionModel.create({
+            applicationId,
+            applicationType: "Visa Application",
+            userId,
+            reference,
+            amount,
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+        });
+
+        console.log('Manual payment for visa application created:', transaction);
+
+        const visaApp = await VisaModel.findById(applicationId);
+        const user = await UserModel.findById(userId).select('email username');
+
+        await NotificationModel.create({
+            userId,
+            title: "Manual Payment Submitted",
+            message: `Your manual payment for visa application ${visaApp.applicationNumber} has been submitted and is pending review.`,
+        });
+
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Visa Payment Successful`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Visa Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your visa payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${reference} <br/>
+                                <b>Application Number:</b> ${applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send visa email:', emailError);
+        }
+
+        return res.status(200).json({ message: "Manual payment for visa application submitted successfully." });
+    } catch (error) {
+        console.error('Manual payment for visa application error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment for visa application.' });
+    }
+};
+
+
 const createCheckoutSessionPassport = async (req, res) => {
     const userId = req.userId;
 
@@ -1241,4 +1428,4 @@ const createCheckoutToken = async (req, res) => {
 
 
 
-module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentDeposit };
+module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentDeposit, createManualPaymentVisa, createManualPaymentPassport };

@@ -23,7 +23,7 @@ export default function UserApplications() {
                 const passportRes = await axiosInstance.get('/passport/applications');
                 const passportApps = (passportRes.data || []).map(app => ({
                     key: app._id,
-                    ref: app.applicationId || app._id, // Use applicationId if present, fallback to _id
+                    ref: app.applicationNumber,
                     type: app.applicationType || 'Passport',
                     name: 'Passport',
                     status: app.status,

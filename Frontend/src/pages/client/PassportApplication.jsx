@@ -63,7 +63,7 @@ export default function PassportApplication() {
     const [additionalDocsList, setAdditionalDocsList] = useState([]);
     const [applicationFormList, setApplicationFormList] = useState([]);
 
-    const [method, setMethod] = useState('paymongo'); // default selected payment method
+    const [method, setMethod] = useState(null); // default selected payment method
     const [fileList, setFileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
@@ -113,15 +113,15 @@ export default function PassportApplication() {
         if (newFileList.length > 1) {
             newFileList = [newFileList[newFileList.length - 1]];
         }
-        setFileList(newFileList);
-    };
 
-    const beforeUpload = (file) => {
-        const isValidType = file.type === 'image/jpeg' || file.type === 'image/png';
-        if (!isValidType) message.error('Only JPG/PNG files are allowed!');
-        const isLt2M = file.size / 1024 / 1024 < 2;
-        if (!isLt2M) message.error('File must be smaller than 2MB!');
-        return isValidType && isLt2M;
+        newFileList = newFileList.map(file => {
+            if (!file.preview && file.originFileObj) {
+                file.preview = URL.createObjectURL(file.originFileObj);
+            }
+            return file;
+        });
+
+        setFileList(newFileList);
     };
 
     const handleSubmitPayment = async () => {
@@ -134,22 +134,34 @@ export default function PassportApplication() {
             setPaymentLoading(true);
 
             if (method === 'manual') {
+                console.log("Submitting manual payment with receipt...");
+
                 const file = fileList[0].originFileObj;
+
+                console.log("Selected file:", file);
 
                 const formData = new FormData();
                 formData.append("file", file);
 
-                const uploadRes = await axiosInstance.post('/upload', formData, {
+                const uploadRes = await axiosInstance.post('/upload/upload-receipt', formData, {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
 
                 const imageUrl = uploadRes.data.url;
 
-                await axiosInstance.put(
-                    `/passport/applications/${application._id}/payment-proof`,
-                    { file: imageUrl }
-                );
+                console.log("Uploaded receipt URL:", imageUrl);
 
+                const paymentRes = await axiosInstance.post('/payment/manual-passport', {
+                    applicationId: application._id,
+                    applicationNumber: application.applicationNumber,
+                    amount: 2000,
+                    proofImage: imageUrl,
+                });
+
+                console.log("Manual payment response:", paymentRes.data);
+
+                message.success("Manual payment submitted successfully. Awaiting verification.");
+                setPaymentCompleted(true);
 
             } else if (method === 'paymongo') {
                 // Make sure application exists
@@ -163,7 +175,7 @@ export default function PassportApplication() {
 
                 const payload = {
                     applicationId: application._id,
-                    applicationNumber: application.applicationId,
+                    applicationNumber: application.applicationNumber,
                     totalPrice: 2000, // make sure this field exists in your application
                     successUrl: `${window.location.origin}/user-applications/success/${application._id}`, // redirect here after success
                     cancelUrl: `${window.location.origin}/passport-application/${application._id}`, // stay on same page if cancelled
@@ -424,8 +436,10 @@ export default function PassportApplication() {
                                                                     maxCount={1}
                                                                     fileList={fileList}
                                                                     onChange={handleUploadChange}
-                                                                    beforeUpload={beforeUpload}
                                                                     accept=".jpg,.jpeg,.png"
+                                                                    beforeUpload={() => false}
+                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                    action={undefined}
                                                                 >
                                                                     <Button icon={<UploadOutlined />} className="upload-btn">
                                                                         Select Receipt Image
@@ -500,8 +514,9 @@ export default function PassportApplication() {
                                                         maxCount={1}
                                                         disabled={uploading}
                                                         style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        beforeUpload={() => false} // stops auto upload
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
+                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
                                                     >
                                                         <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                         <p className="ant-upload-text">Upload PSA-issued Birth Certificate</p>
@@ -521,8 +536,9 @@ export default function PassportApplication() {
                                                         maxCount={1}
                                                         disabled={uploading}
                                                         style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        beforeUpload={() => false} // stops auto upload
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
+                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
                                                     >
                                                         <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                         <p className="ant-upload-text">Upload Accomplished Application Form</p>
@@ -541,8 +557,9 @@ export default function PassportApplication() {
                                                         maxCount={1}
                                                         disabled={uploading}
                                                         style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        beforeUpload={() => false} // stops auto upload
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
+                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
                                                     >
                                                         <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                         <p className="ant-upload-text">Upload Government-issued ID</p>
@@ -561,8 +578,9 @@ export default function PassportApplication() {
                                                         maxCount={1}
                                                         disabled={uploading}
                                                         style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        beforeUpload={() => false} // stops auto upload
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
+                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
                                                     >
                                                         <p className="ant-upload-drag-icon"><UploadOutlined /></p>
                                                         <p className="ant-upload-text">Upload Additional Documents (optional)</p>

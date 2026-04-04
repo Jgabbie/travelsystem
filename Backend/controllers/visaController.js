@@ -5,9 +5,7 @@ const logAction = require('../utils/logger')
 
 
 const generateApplicationNumber = () => {
-    const timestamp = Date.now().toString(36).toUpperCase()
-    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase()
-    return `APP-${timestamp}-${randomPart}`
+    return `APP-VISA-${Math.floor(100000000 + Math.random() * 900000000)}`
 }
 
 const applyVisa = async (req, res) => {

@@ -42,7 +42,7 @@ export default function PassportApplications() {
 
                 const applications = response.data.map((a) => ({
                     key: a._id,
-                    applicationNumber: a.applicationId,
+                    applicationNumber: a.applicationNumber,
                     applicantName: a.username,
                     dfaLocation: a.dfaLocation,
                     preferredDate: a.preferredDate ? dayjs(a.preferredDate).format("MMM DD, YYYY") : "Not Set",
@@ -202,11 +202,6 @@ export default function PassportApplications() {
                             type="primary"
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`view/${record.key}`)}
-                        />
-                        <Button
-                            className="approve-passport-application"
-                            type="primary"
-                            icon={<CheckOutlined />}
                         />
                         <Button
                             className="reject-passport-application"

@@ -32,6 +32,7 @@ export default function VisaApplication() {
 
     const [method, setMethod] = useState('paymongo'); // default selected payment method
     const [fileList, setFileList] = useState([]);
+    const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
 
@@ -102,30 +103,19 @@ export default function VisaApplication() {
 
 
     //for payment
-    const getBase64 = (file) =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (err) => reject(err);
+    const handleUploadChange = ({ fileList: newFileList }) => {
+        if (newFileList.length > 1) {
+            newFileList = [newFileList[newFileList.length - 1]];
+        }
+
+        newFileList = newFileList.map(file => {
+            if (!file.preview && file.originFileObj) {
+                file.preview = URL.createObjectURL(file.originFileObj);
+            }
+            return file;
         });
 
-    const handleUploadChange = async ({ fileList: newFileList }) => {
-        if (newFileList.length > 1) newFileList = [newFileList[newFileList.length - 1]]; // only 1 file
-        for (let file of newFileList) {
-            if (!file.url && !file.preview) {
-                file.preview = await getBase64(file.originFileObj);
-            }
-        }
         setFileList(newFileList);
-    };
-
-    const beforeUpload = (file) => {
-        const isValidType = ['image/jpeg', 'image/png'].includes(file.type);
-        if (!isValidType) message.error('Only JPG/PNG files are allowed!');
-        const isLt2M = file.size / 1024 / 1024 < 2;
-        if (!isLt2M) message.error('File must be smaller than 2MB!');
-        return isValidType && isLt2M;
     };
 
     const handleSubmitPayment = async () => {
@@ -138,10 +128,32 @@ export default function VisaApplication() {
             setPaymentLoading(true);
 
             if (method === 'manual') {
-                const base64File = fileList[0].preview;
-                await axiosInstance.put(`/visa/applications/${application._id}/payment-proof`, { file: base64File });
-                message.success("Receipt uploaded! Our team will verify your payment.");
-                setFileList([]); // clear after submission
+                const file = fileList[0].originFileObj;
+
+                console.log("Selected file:", file);
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const uploadRes = await axiosInstance.post('/upload/upload-receipt', formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+
+                const imageUrl = uploadRes.data.url;
+
+                console.log("Uploaded receipt URL:", imageUrl);
+
+                const paymentRes = await axiosInstance.post('/payment/manual-visa', {
+                    applicationId: application._id,
+                    applicationNumber: application.applicationNumber,
+                    amount: 2000,
+                    proofImage: imageUrl,
+                });
+
+                console.log("Manual payment response:", paymentRes.data);
+
+                message.success("Manual payment submitted successfully. Awaiting verification.");
+                setPaymentCompleted(true);
 
             } else if (method === 'paymongo') {
                 // Make sure application exists
@@ -465,7 +477,9 @@ export default function VisaApplication() {
                                                     maxCount={1}
                                                     fileList={fileList}
                                                     onChange={handleUploadChange}
-                                                    beforeUpload={beforeUpload}
+                                                    beforeUpload={() => false}
+                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    action={undefined}
                                                     accept=".jpg,.jpeg,.png"
                                                 >
                                                     <Button icon={<UploadOutlined />} className="upload-btn">

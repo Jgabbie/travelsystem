@@ -5,7 +5,7 @@ const logAction = require('../utils/logger');
 
 
 const randomApplicationNumber = () => {
-    return 'APP-' + Math.random().toString(36).slice(2, 11).toUpperCase();
+    return 'APP-PASS-' + Math.floor(100000000 + Math.random() * 900000000);
 }
 
 const applyPassport = async (req, res) => {
@@ -29,7 +29,7 @@ const applyPassport = async (req, res) => {
             preferredDate,
             preferredTime,
             applicationType,
-            applicationId: randomApplicationNumber()
+            applicationNumber: randomApplicationNumber()
         })
 
         logAction('APPLY_PASSPORT', userId, { dfaLocation, preferredDate, preferredTime, applicationType });

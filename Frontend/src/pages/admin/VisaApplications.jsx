@@ -186,11 +186,6 @@ export default function VisaApplications() {
                             onClick={() => navigate(`/visa-applications/view/${record.key}`)}
                         />
                         <Button
-                            className="approve-visa-application"
-                            type="primary"
-                            icon={<CheckOutlined />}
-                        />
-                        <Button
                             className="reject-visa-application"
                             type="primary"
                             icon={<CloseOutlined />}
