@@ -6,5 +6,6 @@ const userAuth = require('../middleware/userAuth');
 router.post('/add', userAuth, wishlistController.addToWishlist);
 router.get('/', userAuth, wishlistController.getWishlist);
 router.delete('/remove', userAuth, wishlistController.removeFromWishlist);
+router.delete('/remove/:id', userAuth, wishlistController.removeWishlistItem);
 
 module.exports = router;

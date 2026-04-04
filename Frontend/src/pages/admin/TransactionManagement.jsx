@@ -197,7 +197,11 @@ export default function TransactionManagement() {
 
   const handleProofDecision = async (record, status) => {
     try {
-      await axiosInstance.put(`/transaction/${record.key}`, { status });
+      if (status === "Failed") {
+        await axiosInstance.put(`/transaction/${record.key}/reject`);
+      } else {
+        await axiosInstance.put(`/transaction/${record.key}`, { status });
+      }
       setData((prev) =>
         prev.map((item) =>
           item.key === record.key ? { ...item, status } : item

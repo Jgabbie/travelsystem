@@ -11,11 +11,17 @@ export default function QuotationFormInEx({ quotationData }) {
     const exclusions = quotationData.exclusions || [];
 
     const itinerary = Object.entries(quotationData.itinerary || {}).map(
-        ([dayKey, activities], index) => ({
-            day: `Day ${index + 1}`,
-            date: quotationData.itineraryDate || '',
-            bullets: activities,
-        })
+        ([dayKey, activities], index) => {
+            const normalizedDay = String(dayKey || '').toLowerCase().startsWith('day')
+                ? dayKey.replace(/day/i, 'Day ')
+                : `Day ${index + 1}`;
+
+            return {
+                day: normalizedDay,
+                date: quotationData.itineraryDate || '',
+                bullets: Array.isArray(activities) ? activities : [],
+            };
+        }
     );
 
     const remarks = [
@@ -83,18 +89,16 @@ export default function QuotationFormInEx({ quotationData }) {
                     <div className="mrc-quotation-subtitle">SUGGESTED ITINERARY:</div>
                     <div className="mrc-quotation-itinerary">
                         {itinerary.map((entry) => (
-                            <div key={`${entry.date}-${entry.day}`} className="mrc-quotation-itinerary-row">
+                            <div key={`${entry.day}`} className="mrc-quotation-itinerary-row">
                                 <div className="mrc-quotation-itinerary-date">
-                                    {entry.date} {entry.day}
+                                    {entry.date ? `${entry.date} | ${entry.day}` : entry.day}
                                 </div>
                                 <div className="mrc-quotation-itinerary-body">
-                                    {entry.bullets && (
-                                        <ul className="mrc-quotation-list is-bulleted">
-                                            {entry.bullets.map((item, index) => (
-                                                <li key={`${entry.day}-${index}`}>{renderItineraryItem(item) || '--'}</li>
-                                            ))}
-                                        </ul>
-                                    )}
+                                    <ul className="mrc-quotation-list is-bulleted">
+                                        {(entry.bullets.length ? entry.bullets : ['N/A']).map((item, index) => (
+                                            <li key={`${entry.day}-${index}`}>{renderItineraryItem(item) || '--'}</li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
                         ))}

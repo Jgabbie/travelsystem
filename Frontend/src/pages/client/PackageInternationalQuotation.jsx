@@ -200,6 +200,7 @@ export default function PackageInternationalQuotation() {
                     travelers,
                     preferredAirlines,
                     preferredHotels,
+                    preferredDates,
                     budgetRange,
                     itineraryNotes,
                     additionalComments,
@@ -411,13 +412,15 @@ export default function PackageInternationalQuotation() {
                                                 value={preferredDates || undefined}
                                                 onChange={(value) => setPreferredDates(value)}
                                                 className={`quotation-input ${error.preferredDates ? 'input-error' : ''}`}
-                                                options={dateRanges.map((range, index) => {
-                                                    const rangeString = `${formatDate(range.startdaterange)} - ${formatDate(range.enddaterange)}`;
-                                                    return {
-                                                        label: `${rangeString} (Slots: ${range.slots})`,
-                                                        value: rangeString
-                                                    };
-                                                })}
+                                                options={dateRanges
+                                                    .filter((range) => dayjs(range.startdaterange).isAfter(today, 'day'))
+                                                    .map((range) => {
+                                                        const rangeString = `${formatDate(range.startdaterange)} - ${formatDate(range.enddaterange)}`;
+                                                        return {
+                                                            label: `${rangeString} (Slots: ${range.slots})`,
+                                                            value: rangeString
+                                                        };
+                                                    })}
                                             />
                                             <p className='package-quotation-error'>{error.preferredDates}</p>
                                         </div>

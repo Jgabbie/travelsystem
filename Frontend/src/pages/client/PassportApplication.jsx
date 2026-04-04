@@ -490,7 +490,7 @@ export default function PassportApplication() {
                                     </>
                                 ) : null}
 
-
+                                {/* //view documents section */}
                                 {application ? (
                                     <>
                                         {application?.status && application.status?.toLowerCase() === 'documents approved' && (

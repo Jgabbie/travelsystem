@@ -51,26 +51,43 @@ export default function BookingManagement() {
       try {
         const response = await axiosInstance.get("/booking/all-bookings");
 
-        const bookings = response.data.map((b) => ({
-          key: b._id,
-          ref: b.reference || b._id,
-          username: b.userId?.username || "Customer Name",
-          pkg: b.packageId?.packageName || "Package",
-          travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM DD, YYYY') : dayjs(b.travelDate).format('MMM DD, YYYY'), //get start date
-          bookingDate: dayjs(b.createdAt).format('MMM DD, YYYY'),
-          qty: b.travelers || 0,
-          status: (() => {
-            const rawStatus = b.status || "";
-            const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
-            const normalized = formatted.toLowerCase();
-            if (normalized === "successful" || normalized === "fully paid") {
-              return "Fully Paid";
-            }
-            return formatted || "Pending";
-          })(),
+        const bookings = response.data.map((b) => {
+          const rawTravel = b?.travelDate || b?.bookingDetails?.travelDate || null;
+          const travelStart = rawTravel?.startDate
+            || (typeof rawTravel === 'string' ? rawTravel.split(' - ')[0] : null)
+            || rawTravel
+            || null;
+          const travelDateDisplay = travelStart && dayjs(travelStart).isValid()
+            ? dayjs(travelStart).format('MMM DD, YYYY')
+            : '--';
 
-          bookingDetails: b.bookingDetails || {} //no booking details for now
-        }));
+          const bookingDateDisplay = b?.createdAt && dayjs(b.createdAt).isValid()
+            ? dayjs(b.createdAt).format('MMM DD, YYYY')
+            : '--';
+
+          return {
+            key: b._id,
+            ref: b.reference || b._id,
+            username: b.userId?.username || "Customer Name",
+            pkg: b.packageId?.packageName || "Package",
+            travelDate: travelDateDisplay,
+            travelDateRaw: travelStart,
+            bookingDate: bookingDateDisplay,
+            bookingDateRaw: b.createdAt || null,
+            qty: b.travelers || 0,
+            status: (() => {
+              const rawStatus = b.status || "";
+              const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+              const normalized = formatted.toLowerCase();
+              if (normalized === "successful" || normalized === "fully paid") {
+                return "Fully Paid";
+              }
+              return formatted || "Pending";
+            })(),
+
+            bookingDetails: b.bookingDetails || {}
+          };
+        });
 
         setData(bookings);
       } catch (error) {
@@ -88,8 +105,8 @@ export default function BookingManagement() {
   const filteredData = data.filter(item => {
     const matchesSearch =
       (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
-      (dayjs(item.travelDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
-      (dayjs(item.bookingDate).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase())) ||
+      (String(item.travelDate || "").toLowerCase().includes(searchText.toLowerCase())) ||
+      (String(item.bookingDate || "").toLowerCase().includes(searchText.toLowerCase())) ||
       (item.qty.toString().toLowerCase().includes(searchText.toLowerCase())) ||
       (item.ref.toLowerCase().includes(searchText.toLowerCase())) ||
       (item.pkg.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -100,11 +117,11 @@ export default function BookingManagement() {
 
     const matchesBookingDate =
       !bookingDateFilter ||
-      dayjs(item.bookingDate).isSame(bookingDateFilter, "day");
+      (item.bookingDateRaw && dayjs(item.bookingDateRaw).isSame(bookingDateFilter, "day"));
 
     const matchesTravelDate =
       !travelDateFilter ||
-      dayjs(item.travelDate).isSame(travelDateFilter, "day");
+      (item.travelDateRaw && dayjs(item.travelDateRaw).isSame(travelDateFilter, "day"));
 
     return (
       matchesSearch &&
@@ -123,8 +140,8 @@ export default function BookingManagement() {
     const tableRows = filteredData.map(item => [
       item.ref,
       item.pkg,
-      dayjs(item.travelDate).format("MMM DD, YYYY"),
-      dayjs(item.bookingDate).format("MMM DD, YYYY"),
+      item.travelDate,
+      item.bookingDate,
       item.qty,
       item.status
     ]);
@@ -184,8 +201,8 @@ export default function BookingManagement() {
     setEditingBooking(record);
     editForm.setFieldsValue({
       pkg: record.pkg,
-      travelDate: record.travelDate ? dayjs(record.travelDate) : null,
-      bookingDate: record.bookingDate ? dayjs(record.bookingDate) : null,
+      travelDate: record.travelDateRaw ? dayjs(record.travelDateRaw) : null,
+      bookingDate: record.bookingDateRaw ? dayjs(record.bookingDateRaw) : null,
       qty: record.qty,
       status: record.status
     });
@@ -293,12 +310,12 @@ export default function BookingManagement() {
     {
       title: "Travel Date",
       dataIndex: "travelDate",
-      render: d => dayjs(d).format("MMM DD, YYYY")
+      render: d => d || "--"
     },
     {
       title: "Booking Date",
       dataIndex: "bookingDate",
-      render: d => dayjs(d).format("MMM DD, YYYY")
+      render: d => d || "--"
     },
     { title: "Travelers", dataIndex: "qty" },
     {

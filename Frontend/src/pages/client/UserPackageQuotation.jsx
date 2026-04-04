@@ -27,7 +27,7 @@ export default function UserPackageQuotation() {
                 const quotations = response.data.map(q => ({
                     key: q._id || q.id,
                     reference: q.reference,
-                    packageName: q.packageId.packageName,
+                    packageName: q.packageId?.packageName || "N/A",
                     travelers: q.quotationDetails?.travelers ?? 0,
                     requestedDate: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
                     status: q.status,
@@ -48,10 +48,8 @@ export default function UserPackageQuotation() {
     }, [])
 
     const viewQuotation = (id) => {
-        // Implement view logic, e.g. navigate to detail page
-        navigate(`/user-quotation-request/${id}`);
+        navigate(`/user-quotation-request`, { state: { quotationId: id } });
         console.log('View quotation with ID:', id)
-
     }
 
     const filteredDataSource = quotations.filter(item => {

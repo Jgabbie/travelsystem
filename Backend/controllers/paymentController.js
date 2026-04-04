@@ -176,7 +176,7 @@ const createManualPayment = async (req, res) => {
         await NotificationModel.create({
             userId: user._id,
             title: 'Booking Confirmed',
-            message: `Your booking ${booking.reference} has been confirmed.`,
+            message: `Your manual payment for booking ${booking.reference} has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!`,
             type: 'booking',
             link: '/user-bookings',
         });
@@ -200,7 +200,7 @@ const createManualPayment = async (req, res) => {
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
-                                Your booking has been successfully confirmed!
+                                Your manual payment has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
@@ -296,7 +296,7 @@ const createManualPaymentDeposit = async (req, res) => {
         await NotificationModel.create({
             userId: user._id,
             title: 'Installment Payment Successful',
-            message: `Your installment payment for booking ${booking.reference} was successful.`,
+            message: `Your manual installment payment for booking ${booking.reference} has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!`,
             type: 'payment',
             link: '/user-transactions',
         });
@@ -319,8 +319,7 @@ const createManualPaymentDeposit = async (req, res) => {
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
-                                Your installment payment has been successfully processed!
-                            </p>
+                                You manual installment payment has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
 
@@ -419,13 +418,13 @@ const createManualPaymentPassport = async (req, res) => {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: `Passport Payment Successful`,
+                subject: `Passport Payment Submitted`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
                             <h2 style="color:#305797; margin-bottom:10px;">
-                                Passport Payment Successful!
+                                Passport Payment Submitted!
                             </h2>
 
                             <p style="color:#555; font-size:16px;">
@@ -433,7 +432,7 @@ const createManualPaymentPassport = async (req, res) => {
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
-                                Your passport payment has been successfully processed!
+                                Your manual passport payment has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
@@ -528,13 +527,13 @@ const createManualPaymentVisa = async (req, res) => {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: `Visa Payment Successful`,
+                subject: `Visa Payment Submitted`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
                             <h2 style="color:#305797; margin-bottom:10px;">
-                                Visa Payment Successful!
+                                Visa Payment Submitted!
                             </h2>
 
                             <p style="color:#555; font-size:16px;">
@@ -542,7 +541,7 @@ const createManualPaymentVisa = async (req, res) => {
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">
-                                Your visa payment has been successfully processed!
+                                Your visa payment has been successfully submitted and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
                             </p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">

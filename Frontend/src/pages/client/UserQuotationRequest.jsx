@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal, message, Button, Input, Card, ConfigProvider, Spin } from "antd"
 import { ArrowLeftOutlined } from "@ant-design/icons"
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../../config/axiosConfig";
 import { useBooking } from "../../context/BookingContext";
 import '../../style/client/userquotationrequest.css'
@@ -9,7 +9,9 @@ import '../../style/client/userquotationrequest.css'
 export default function UserQuotationRequest() {
     const [notes, setNotes] = useState("");
     const [quotation, setQuotation] = useState(null);
-    const { id } = useParams();
+    const location = useLocation();
+    const { quotationId } = location.state || {};
+    const id = quotationId;
     const { setBookingData } = useBooking();
 
     const navigate = useNavigate();

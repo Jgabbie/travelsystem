@@ -29,5 +29,7 @@ router.put('/:id', userAuth, adminOnly, bookingController.updateBooking)
 router.delete('/:id', userAuth, adminOnly, bookingController.deleteBooking)
 router.post('/cancel/:id', userAuth, upload.array('files', 5), bookingController.cancelBooking)
 router.get('/cancellations', userAuth, adminOnly, bookingController.getcancellations)
+router.post('/cancellations/:id/approve', userAuth, adminOnly, bookingController.approveCancellation)
+router.post('/cancellations/:id/reject', userAuth, adminOnly, bookingController.disApproveCancellation)
 router.post('/verify-payment', userAuth, bookingController.verifyTokenCheckout)
 module.exports = router

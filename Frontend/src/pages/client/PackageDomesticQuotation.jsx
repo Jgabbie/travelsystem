@@ -57,12 +57,13 @@ export default function PackageDomesticQuotation() {
         }
     }, [packageId])
 
-    const { hotels, airlines, fixedItinerary, days, basePrice, inclusions, exclusions, images } = useMemo(() => ({
+    const { hotels, airlines, fixedItinerary, days, basePrice, dateRanges, inclusions, exclusions, images } = useMemo(() => ({
         hotels: packageData?.packageHotels || [],
         airlines: packageData?.packageAirlines || [],
         fixedItinerary: packageData?.packageItineraries || [],
         days: packageData?.packageDuration || 0,
         basePrice: Number(packageData?.packagePricePerPax) || 0,
+        dateRanges: packageData?.packageSpecificDate || [],
         inclusions: packageData?.packageInclusions || [],
         exclusions: packageData?.packageExclusions || [],
         images: packageData?.images || packageData?.packageImages || []
@@ -71,6 +72,11 @@ export default function PackageDomesticQuotation() {
     const packageName = packageData?.packageName || 'the selected package'
     const packageType = packageData?.packageType || 'domestic'
     const packageDescription = packageData?.packageDescription || 'No description available for this package.'
+
+    const formatDate = (dateString) => {
+        const options = { month: 'short', day: '2-digit', year: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    };
 
     const itineraryLabels = useMemo(
         () => buildItineraryLabels(fixedItinerary, days),
@@ -194,6 +200,7 @@ export default function PackageDomesticQuotation() {
                     travelers,
                     preferredAirlines,
                     preferredHotels,
+                    prefferedDate,
                     budgetRange,
                     itineraryNotes,
                     additionalComments,
@@ -396,17 +403,21 @@ export default function PackageDomesticQuotation() {
 
                                         <div className="quotation-field">
                                             <label htmlFor="quotation-prefferedDate">Preferred Date <span style={{ color: 'red' }}>*</span></label>
-                                            <DatePicker
+                                            <Select
                                                 id="quotation-prefferedDate"
                                                 placeholder="Select preferred date"
                                                 value={prefferedDate || undefined}
                                                 onChange={(value) => setPrefferedDate(value)}
                                                 className={`quotation-input ${error.prefferedDate ? 'input-error' : ''}`}
-                                                disabledDate={(current) => {
-                                                    if (!current) return false;
-                                                    const date = dayjs(current);
-                                                    return date.isSameOrBefore(today, 'day') || date.year() !== currentYear;
-                                                }}
+                                                options={dateRanges
+                                                    .filter((range) => dayjs(range.startdaterange).isAfter(today, 'day'))
+                                                    .map((range) => {
+                                                        const rangeString = `${formatDate(range.startdaterange)} - ${formatDate(range.enddaterange)}`;
+                                                        return {
+                                                            label: `${rangeString} (Slots: ${range.slots})`,
+                                                            value: rangeString
+                                                        };
+                                                    })}
                                             />
                                             <p className='package-quotation-error'>{error.prefferedDate}</p>
                                         </div>

@@ -1,5 +1,9 @@
 const TransactionModel = require('../models/transactions')
 const BookingModel = require('../models/booking')
+const VisaModel = require('../models/visas')
+const NotificationModel = require('../models/notification')
+const UserModel = require('../models/user')
+const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger')
 
 const parseAmount = (value) => {
@@ -98,6 +102,72 @@ const updateTransaction = async (req, res) => {
             return res.status(404).json({ message: "Transaction not found" })
         }
 
+        if (updatedTransaction.method === 'Manual' && status === 'Successful') {
+            const booking = updatedTransaction.bookingId
+                ? await BookingModel.findById(updatedTransaction.bookingId)
+                : null
+            const user = await UserModel.findById(updatedTransaction.userId).select('email username')
+            const bookingReference = booking?.reference || updatedTransaction.reference
+
+            if (updatedTransaction.applicationType === 'Visa Application' && updatedTransaction.applicationId) {
+                await VisaModel.findByIdAndUpdate(
+                    updatedTransaction.applicationId,
+                    { status: ["Payment Complete"], currentStepIndex: 1 },
+                    { new: true }
+                )
+            }
+
+            await NotificationModel.create({
+                userId: updatedTransaction.userId,
+                title: 'Manual Payment Approved',
+                message: `Your manual payment for booking ${bookingReference} has been approved.`,
+                type: 'payment',
+                link: '/user-transactions'
+            })
+
+            if (user?.email) {
+                try {
+                    await transporter.sendMail({
+                        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                        to: user.email,
+                        subject: `Manual Payment Approved - ${bookingReference}`,
+                        html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">Manual Payment Approved</h2>
+
+                            <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your manual payment has been approved.
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${bookingReference}
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                Thank you for choosing M&RC Travel and Tours.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours<br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                    })
+                } catch (emailError) {
+                    console.error('Failed to send manual payment approval email:', emailError)
+                }
+            }
+        }
+
         if (updatedTransaction.bookingId && status === 'Successful') {
             const booking = await BookingModel.findById(updatedTransaction.bookingId)
             if (booking && !['Cancelled', 'cancellation requested'].includes(booking.status)) {
@@ -156,4 +226,82 @@ const deleteTransaction = async (req, res) => {
     }
 }
 
-module.exports = { createTransaction, getUserTransactions, getAllTransactions, updateTransaction, deleteTransaction }
+const rejectTransaction = async (req, res) => {
+    const { id } = req.params
+    try {
+        const updatedTransaction = await TransactionModel.findByIdAndUpdate(
+            id,
+            { status: 'Failed' },
+            { new: true }
+        )
+        if (!updatedTransaction) {
+            return res.status(404).json({ message: "Transaction not found" })
+        }
+
+        if (updatedTransaction.method === 'Manual') {
+            const booking = updatedTransaction.bookingId
+                ? await BookingModel.findById(updatedTransaction.bookingId)
+                : null
+            const user = await UserModel.findById(updatedTransaction.userId).select('email username')
+            const bookingReference = booking?.reference || updatedTransaction.reference
+
+            await NotificationModel.create({
+                userId: updatedTransaction.userId,
+                title: 'Manual Payment Rejected',
+                message: `Your manual payment for booking ${bookingReference} was rejected.`,
+                type: 'payment',
+                link: '/user-transactions'
+            })
+
+            if (user?.email) {
+                try {
+                    await transporter.sendMail({
+                        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                        to: user.email,
+                        subject: `Manual Payment Rejected - ${bookingReference}`,
+                        html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#b91c1c; margin-bottom:10px;">Manual Payment Rejected</h2>
+
+                            <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your manual payment has been rejected. Please contact support or submit a new proof of payment.
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${bookingReference}
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you have questions, please contact support.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours<br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                    })
+                } catch (emailError) {
+                    console.error('Failed to send manual payment rejection email:', emailError)
+                }
+            }
+        }
+
+        logAction('TRANSACTION_REJECTED', req.userId, { transactionId: id })
+        res.status(200).json(updatedTransaction)
+    } catch (error) {
+        logAction('REJECT_TRANSACTION_ERROR', req.userId, { error: error.message })
+        res.status(500).json({ message: "Failed to reject transaction", error: error.message })
+    }
+}
+
+module.exports = { createTransaction, getUserTransactions, getAllTransactions, updateTransaction, deleteTransaction, rejectTransaction }

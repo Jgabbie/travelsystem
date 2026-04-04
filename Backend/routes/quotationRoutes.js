@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const quotationsController = require('../controllers/quotationsController')
 const userAuth = require('../middleware/userAuth')
-const upload = require('../middleware/upload')
+const { upload } = require('../middleware/uploadFile')
 
 router.post('/create-quotation', userAuth, quotationsController.createQuotation)
 router.get('/my-quotations', userAuth, quotationsController.getUserQuotations)

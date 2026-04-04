@@ -62,4 +62,26 @@ const removeFromWishlist = async (req, res) => {
     }
 }
 
-module.exports = { addToWishlist, getWishlist, removeFromWishlist }
+const removeWishlistItem = async (req, res) => {
+    const { id } = req.params
+    const userId = req.userId
+    try {
+        if (!id) {
+            return res.status(400).json({ message: "Wishlist ID is required" })
+        }
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" })
+        }
+        const existingEntry = await Wishlist.findOne({ _id: id, userId })
+        if (!existingEntry) {
+            return res.status(404).json({ message: "Wishlist item not found" })
+        }
+        await Wishlist.deleteOne({ _id: id, userId })
+        return res.status(200).json({ message: "Wishlist item removed" })
+    } catch (error) {
+        console.error("Error removing wishlist item:", error)
+        return res.status(500).json({ message: "Internal server error" })
+    }
+}
+
+module.exports = { addToWishlist, getWishlist, removeFromWishlist, removeWishlistItem }

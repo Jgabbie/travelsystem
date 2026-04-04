@@ -2,6 +2,10 @@ const BookingModel = require('../models/booking')
 const TransactionModel = require('../models/transactions')
 const CancellationModel = require('../models/cancellations')
 const TokenCheckoutModel = require('../models/tokencheckout')
+const PackageModel = require('../models/package')
+const NotificationModel = require('../models/notification')
+const UserModel = require('../models/user')
+const transporter = require('../config/nodemailer')
 const { v4: uuidv4 } = require('uuid');
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs');
@@ -268,7 +272,91 @@ const approveCancellation = async (req, res) => {
 
         cancellation.status = 'Approved'
         await cancellation.save()
-        await BookingModel.findByIdAndUpdate(cancellation.bookingId, { status: 'Cancelled' })
+        const booking = await BookingModel.findById(cancellation.bookingId)
+        if (booking) {
+            booking.status = 'Cancelled'
+            if (!Array.isArray(booking.statusHistory)) {
+                booking.statusHistory = []
+            }
+            booking.statusHistory.push({ status: 'Cancelled', changedAt: new Date() })
+            await booking.save()
+
+            const packageDoc = await PackageModel.findById(booking.packageId)
+            if (packageDoc) {
+                const updateResult = await PackageModel.updateOne(
+                    {
+                        _id: packageDoc._id,
+                        packageSpecificDate: {
+                            $elemMatch: {
+                                startdaterange: { $lte: booking.travelDate.startDate },
+                                enddaterange: { $gte: booking.travelDate.endDate }
+                            }
+                        }
+                    },
+                    {
+                        $inc: { 'packageSpecificDate.$.slots': 1 }
+                    }
+                )
+
+                if (updateResult.matchedCount === 0) {
+                    console.log('No matching date range found for slot increment.')
+                } else if (updateResult.modifiedCount === 1) {
+                    console.log('Slot successfully incremented.')
+                }
+            }
+
+            await NotificationModel.create({
+                userId: booking.userId,
+                title: 'Cancellation Approved',
+                message: `Your cancellation request for booking ${booking.reference} was approved.`,
+                type: 'cancellation',
+                link: '/user-bookings'
+            })
+
+            const user = await UserModel.findById(booking.userId).select('email username')
+            if (user?.email) {
+                try {
+                    await transporter.sendMail({
+                        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                        to: user.email,
+                        subject: `Cancellation Approved - ${booking.reference}`,
+                        html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">Cancellation Approved</h2>
+
+                            <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your cancellation request has been approved.
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${booking.reference} <br/>
+                                <b>Travel Dates:</b> ${dayjs(booking.travelDate.startDate).format('YYYY-MM-DD')} to ${dayjs(booking.travelDate.endDate).format('YYYY-MM-DD')}
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not request this cancellation, please contact support.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours<br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                    })
+                } catch (emailError) {
+                    console.error('Failed to send cancellation approval email:', emailError)
+                }
+            }
+        }
         logAction('CANCELLATION_APPROVED', req.userId, { cancellationId: id })
         res.status(200).json({ message: 'Cancellation approved' })
     } catch (error) {
@@ -285,6 +373,84 @@ const disApproveCancellation = async (req, res) => {
         }
         cancellation.status = 'Disapproved'
         await cancellation.save()
+
+        const booking = await BookingModel.findById(cancellation.bookingId)
+        if (booking) {
+            let previousStatus = null
+            if (Array.isArray(booking.statusHistory) && booking.statusHistory.length) {
+                for (let i = booking.statusHistory.length - 1; i >= 0; i -= 1) {
+                    const candidate = booking.statusHistory[i]?.status
+                    if (candidate && candidate !== 'cancellation requested') {
+                        previousStatus = candidate
+                        break
+                    }
+                }
+            }
+
+            if (!previousStatus) {
+                previousStatus = booking.status === 'cancellation requested' ? 'Pending' : booking.status
+            }
+
+            booking.status = previousStatus
+            if (!Array.isArray(booking.statusHistory)) {
+                booking.statusHistory = []
+            }
+            booking.statusHistory.push({ status: previousStatus, changedAt: new Date() })
+            await booking.save()
+
+            await NotificationModel.create({
+                userId: booking.userId,
+                title: 'Cancellation Rejected',
+                message: `Your cancellation request for booking ${booking.reference} was rejected.`,
+                type: 'cancellation',
+                link: '/user-bookings'
+            })
+
+            const user = await UserModel.findById(booking.userId).select('email username')
+            if (user?.email) {
+                try {
+                    await transporter.sendMail({
+                        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                        to: user.email,
+                        subject: `Cancellation Rejected - ${booking.reference}`,
+                        html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#b91c1c; margin-bottom:10px;">Cancellation Rejected</h2>
+
+                            <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your cancellation request has been rejected.
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${booking.reference} <br/>
+                                <b>Current Status:</b> ${previousStatus}
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you have questions, please contact support.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours<br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                    })
+                } catch (emailError) {
+                    console.error('Failed to send cancellation rejection email:', emailError)
+                }
+            }
+        }
+
         logAction('CANCELLATION_DISAPPROVED', req.userId, { cancellationId: id })
         res.status(200).json({ message: 'Cancellation disapproved' })
     } catch (error) {

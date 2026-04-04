@@ -158,10 +158,21 @@ export default function CancellationRequests() {
         message.success("Report exported to PDF successfully.");
     };
 
-    const handleAction = (key, status) => {
-        setRequests((prev) =>
-            prev.map((item) => (item.key === key ? { ...item, status } : item))
-        )
+    const handleAction = async (key, status) => {
+        try {
+            setLoading(true)
+            const action = status === 'Approved' ? 'approve' : 'reject'
+            await axiosInstance.post(`/booking/cancellations/${key}/${action}`)
+            setRequests((prev) =>
+                prev.map((item) => (item.key === key ? { ...item, status } : item))
+            )
+            message.success(`Cancellation ${status.toLowerCase()}.`)
+        } catch (err) {
+            console.error('Failed to update cancellation status:', err)
+            message.error('Failed to update cancellation status. Please try again.')
+        } finally {
+            setLoading(false)
+        }
     }
 
     const openViewModal = (record) => {

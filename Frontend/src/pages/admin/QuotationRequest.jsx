@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Input } from "antd";
 import { UploadOutlined, SendOutlined } from "@ant-design/icons";
 import jsPDF from "jspdf";
@@ -10,7 +10,9 @@ import QuotationFormInEx from "../../components/quotationform/QuotationFormInEx"
 import QuotationFormTermsConditions from "../../components/quotationform/QuotationFormTermsConditions";
 
 export default function QuotationRequest() {
-    const { id } = useParams(); // quotation ID from URL
+    const location = useLocation();
+    const { quotationId } = location.state || {};
+    const id = quotationId; // quotation ID from location state
     const [quotation, setQuotation] = useState(null);
     const [adminName, setAdminName] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -253,10 +255,10 @@ export default function QuotationRequest() {
                     size="large">
                     <div>
                         <h1 style={{ margin: 20 }}>Initial Quotation Request</h1>
-                        <div style={{ display: "flex", gap: 20, flexWrap: "wrap", margin: 20 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 20, margin: 20 }}>
                             <Card
                                 title={`Quotation Details - ${quotation.reference}`}
-                                style={{ flex: "1 1 360px", margin: 0 }}
+                                style={{ margin: 0 }}
                             >
                                 <Descriptions bordered column={1}>
                                     <Descriptions.Item label="Package Name">{packageName}</Descriptions.Item>
@@ -284,7 +286,7 @@ export default function QuotationRequest() {
 
                             <Card
                                 title="Package Details"
-                                style={{ flex: "1 1 360px", margin: 0 }}
+                                style={{ margin: 0 }}
                             >
                                 <Descriptions bordered column={1}>
                                     <Descriptions.Item label="Itineraries">

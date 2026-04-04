@@ -120,7 +120,7 @@ function App() {
               <Route path="cancellation-requests" element={<CancellationRequests />} />
               <Route path="adminprofile" element={<AdminProfile />} />
               <Route path="package-quotation" element={<QuotationManagement />} />
-              <Route path="quotation/:id" element={<QuotationRequest />} />
+              <Route path="quotation" element={<QuotationRequest />} />
 
               <Route path="logging" element={<Logging />} />
               <Route path="auditing" element={<Auditing />} />
@@ -144,7 +144,7 @@ function App() {
               <Route path="packages/edit/international/:id" element={<AddPackageInternational />} />
               <Route path="ratings" element={<ReviewRatings />} />
               <Route path="package-quotation" element={<QuotationManagement />} />
-              <Route path="quotation/:id" element={<QuotationRequest />} />
+              <Route path="quotation" element={<QuotationRequest />} />
               <Route path="adminprofile" element={<AdminProfile />} />
               <Route path="visa-services" element={<VisaServices />} />
               <Route path="visa-services/add" element={<AddService />} />
@@ -165,7 +165,7 @@ function App() {
             <Route path='/wishlist' element={<Wishlist />} />
             <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
             <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
-            <Route path='/user-quotation-request/:id' element={<UserQuotationRequest />} />
+            <Route path='/user-quotation-request' element={<UserQuotationRequest />} />
             <Route path='/booking-process' element={<BookingProcess />} />
             <Route path='/quotation-booking-process' element={<QuotationBookingProcess />} />
             <Route path='/quotation-payment-process' element={<QuotationsPaymentProcess />} />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio } from 'antd';
+import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
@@ -37,6 +37,7 @@ export default function VisaApplication() {
     const [fileList, setFileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
+    const [isConfirmDocumentsOpen, setIsConfirmDocumentsOpen] = useState(false);
 
     console.log('VisaApplication component rendered with application ID:', id);
 
@@ -85,30 +86,84 @@ export default function VisaApplication() {
     }, [id]);
 
     // Find the current step index based on status
-    const currentStep = application?.status
+    const statusValue = Array.isArray(application?.status) ? application.status[0] : application?.status;
+    const currentStep = statusValue
         ? Math.max(
             0,
             process.findIndex(
-                s => String(s.title || '').toLowerCase() === String(application?.status || '').toLowerCase()
+                s => String(s.title || '').toLowerCase() === String(statusValue || '').toLowerCase()
             )
         )
         : 0;
 
 
     const handleSubmitDocuments = async () => {
-        if (uploading) return message.warning("Please wait until uploads finish");
-
-        const payload = {};
-        requirements.forEach(req => {
-            payload[req.key] = requirementFiles[req.key]?.[0]?.url || null;
-        });
+        if (uploading) {
+            message.warning("Please wait until uploads finish");
+            return;
+        }
 
         try {
-            await axiosInstance.put(`/visa/applications/${id}/documents`, payload);
+            setUploading(true);
+
+            const formData = new FormData();
+            const orderedRequirements = requirements.map((req, idx) => ({
+                key: req.key || `${req.label}-${idx}`,
+                label: req.label || `Requirement ${idx + 1}`
+            }));
+
+            orderedRequirements.forEach((req) => {
+                const fileItem = requirementFiles[req.key]?.[0];
+                if (fileItem?.originFileObj) {
+                    formData.append("files", fileItem.originFileObj);
+                }
+            });
+
+            if (!formData.has("files")) {
+                message.warning("Please upload at least one document.");
+                return;
+            }
+
+            const uploadRes = await axiosInstance.post(
+                '/upload/upload-visa-requirements',
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+
+            const uploaded = uploadRes.data.urls || [];
+            const submittedDocuments = {};
+            let uploadIndex = 0;
+
+            orderedRequirements.forEach((req) => {
+                if (requirementFiles[req.key]?.length) {
+                    submittedDocuments[req.key] = uploaded[uploadIndex] || null;
+                    uploadIndex += 1;
+                } else {
+                    submittedDocuments[req.key] = null;
+                }
+            });
+
+            await axiosInstance.put(`/visa/applications/${id}/documents`, {
+                submittedDocuments
+            });
+
+            const documentsStatus = process.find(
+                step => String(step.title || '').toLowerCase() === 'documents uploaded'
+            )?.title || 'Documents uploaded';
+
+            await axiosInstance.put(`/visa/applications/${id}/status`, {
+                status: documentsStatus
+            });
+
             message.success("Documents submitted successfully");
+
+            const refreshed = await axiosInstance.get(`/visa/applications/${id}`);
+            setApplication(refreshed.data);
         } catch (err) {
             console.error(err);
             message.error("Failed to submit documents");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -222,61 +277,32 @@ export default function VisaApplication() {
 
 
     const handleSubmit = async () => {
-        if (uploading) {
-            message.warning("Please wait until uploads finish");
-            return;
-        }
+        await handleSubmitDocuments();
+    };
 
-        try {
-            setUploading(true);
-
-            const payload = {
-                submittedDocuments: Object.fromEntries(
-                    requirements.map(req => [
-                        req.key,
-                        req.files[0]?.url || null
-                    ])
-                )
-            };
-
-            await axiosInstance.put(`/visa/applications/${id}/documents`, payload);
-            message.success("Documents submitted successfully");
-
-            // Refresh application
-            const res = await axiosInstance.get(`/visa/applications/${id}`);
-            setApplication(res.data);
-
-        } catch (err) {
-            console.error(err);
-            message.error("Failed to submit documents");
-        } finally {
-            setUploading(false);
-        }
+    const confirmSubmitDocuments = () => {
+        setIsConfirmDocumentsOpen(true);
     };
 
     // Generalized upload handler for dynamic requirements
     const handleUpload = (requirementKey) => async ({ file, onSuccess, onError }) => {
         setUploading(true);
-
-        const getBase64 = (file) =>
-            new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (error) => reject(error);
-            });
-
         try {
-            const base64File = await getBase64(file.originFileObj || file);
+            const originFileObj = file.originFileObj || file;
+            const previewUrl = URL.createObjectURL(originFileObj);
 
             setRequirementFiles(prev => ({
                 ...prev,
-                [requirementKey]: [{ uid: file.uid, name: file.name, url: base64File }],
+                [requirementKey]: [{
+                    uid: file.uid,
+                    name: file.name,
+                    url: previewUrl,
+                    originFileObj
+                }],
             }));
 
             message.success('File ready for submission');
             onSuccess('ok');
-
         } catch (err) {
             console.error(err);
             message.error('Failed to process file');
@@ -284,6 +310,28 @@ export default function VisaApplication() {
         } finally {
             setUploading(false);
         }
+    };
+
+    const requirementLabelMap = requirements.reduce((acc, req, idx) => {
+        const mapKey = req.key || `${req.label}-${idx}`;
+        acc[mapKey] = req.label || mapKey;
+        return acc;
+    }, {});
+
+    const getRequirementLabel = (key, fallbackIndex) => {
+        if (requirementLabelMap[key]) {
+            return requirementLabelMap[key];
+        }
+
+        const keyMatch = String(key || '').match(/-(\d+)$/);
+        const indexFromKey = keyMatch ? Number(keyMatch[1]) : Number(fallbackIndex);
+        const requirementByIndex = requirements[indexFromKey];
+
+        if (requirementByIndex?.label) {
+            return requirementByIndex.label;
+        }
+
+        return key;
     };
 
     return (
@@ -347,7 +395,7 @@ export default function VisaApplication() {
                                 </div>
 
 
-                                {application.status[0] && application?.status[0].toLowerCase() === 'payment complete' && (
+                                {statusValue && statusValue.toLowerCase() === 'payment complete' && (
                                     <Card title="Upload Requirements">
                                         {requirements.length === 0 && (
                                             <div>No requirements found for this service.</div>
@@ -393,13 +441,16 @@ export default function VisaApplication() {
                                                 </div>
                                             );
                                         })}
+                                        <Button style={{ marginTop: 20 }} type="primary" onClick={confirmSubmitDocuments}>
+                                            Submit Documents
+                                        </Button>
                                     </Card>
                                 )}
 
                             </>
                         )}
 
-                        {application?.status[0] && application?.status[0].toLowerCase() === 'application approved' && (
+                        {statusValue && statusValue.toLowerCase() === 'application approved' && (
                             <Card title="Payment" style={{ marginBottom: 32 }}>
                                 <div className='payment-methods-container payment-section'>
                                     <div className="payment-methods-wrapper">
@@ -445,7 +496,6 @@ export default function VisaApplication() {
                                     </div>
 
                                     {method === 'manual' && (
-
                                         <div className="manual-transfer-details">
                                             <div className="bank-accounts-section">
                                                 <h4 className="section-subtitle">Available Bank Accounts</h4>
@@ -514,15 +564,11 @@ export default function VisaApplication() {
                                                     </div>
                                                 )}
                                             </div>
-
-
-
                                         </div>
-
-
                                     )}
 
-                                    <Button style={{ marginTop: 20 }}
+                                    <Button
+                                        style={{ marginTop: 20 }}
                                         type="primary"
                                         onClick={handleSubmitPayment}
                                         disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
@@ -532,9 +578,89 @@ export default function VisaApplication() {
                                 </div>
                             </Card>
                         )}
+
+                        {statusValue && statusValue.toLowerCase() === 'documents uploaded' && (
+                            <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
+                                {application.submittedDocuments && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                        {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
+                                            if (!value) return null;
+                                            const label = getRequirementLabel(key, entryIndex);
+                                            if (Array.isArray(value)) {
+                                                return (
+                                                    <div key={key}>
+                                                        <b>{label}:</b>
+                                                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                                                            {value.map((url, idx) => (
+                                                                <img
+                                                                    key={`${key}-${idx}`}
+                                                                    src={url}
+                                                                    alt={`${label} ${idx + 1}`}
+                                                                    style={{ maxWidth: '150px', cursor: 'pointer' }}
+                                                                    onClick={() => window.open(url)}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return (
+                                                <div key={key}>
+                                                    <b>{label}:</b>
+                                                    <div>
+                                                        <img
+                                                            src={value}
+                                                            alt={label}
+                                                            style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
+                                                            onClick={() => window.open(value)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </Card>
+                        )}
                     </Spin>
                 </div>
             </div>
+
+            <Modal
+                open={isConfirmDocumentsOpen}
+                className="signup-success-modal"
+                closable={{ 'aria-label': 'Close modal' }}
+                footer={null}
+                onCancel={() => setIsConfirmDocumentsOpen(false)}
+                style={{ top: 200 }}
+            >
+                <div className="signup-success-container">
+                    <h1 className="signup-success-heading">Submit Documents</h1>
+                    <p className="signup-success-text">
+                        Make sure that these documents are not tampered with or fake. Our team will verify their legitimacy.
+                        Make sure that the image is clear and your face and details are clearly captured.
+                    </p>
+                </div>
+
+                <div className="signup-actions">
+                    <Button
+                        id="signup-success-button"
+                        onClick={async () => {
+                            setIsConfirmDocumentsOpen(false);
+                            await handleSubmitDocuments();
+                        }}
+                    >
+                        Submit
+                    </Button>
+
+                    <Button
+                        id="signup-success-button-cancel"
+                        onClick={() => setIsConfirmDocumentsOpen(false)}
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            </Modal>
         </ConfigProvider>
     );
 }

@@ -1,4 +1,5 @@
 const upload = require('../middleware/upload')
+const cloudinary = require('../config/cloudinary')
 const QuotationModel = require('../models/quotations')
 const UserModel = require('../models/user')
 const NotificationModel = require('../models/notification')
@@ -143,7 +144,19 @@ const uploadQuotationPDF = async (req, res) => {
     }
 
     try {
-        const pdfUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+        const uploadResult = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                { folder: 'quotation-pdfs', resource_type: 'raw' },
+                (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                }
+            );
+
+            stream.end(file.buffer);
+        });
+
+        const pdfUrl = uploadResult.secure_url;
         const quotation = await QuotationModel.findById(id);
 
         if (!quotation) {

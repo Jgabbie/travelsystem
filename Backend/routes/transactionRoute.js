@@ -7,5 +7,6 @@ router.post('/create-transaction', userAuth, transactionController.createTransac
 router.get('/user-transactions', userAuth, transactionController.getUserTransactions);
 router.get('/all-transactions', userAuth, transactionController.getAllTransactions);
 router.put('/:id', userAuth, transactionController.updateTransaction);
+router.put('/:id/reject', userAuth, transactionController.rejectTransaction);
 router.delete('/:id', userAuth, transactionController.deleteTransaction);
 module.exports = router;

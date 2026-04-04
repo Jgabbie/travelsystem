@@ -53,8 +53,8 @@ export default function QuotationManagement() {
                     ref: q.reference,
                     packageName: q.packageId?.packageName || "Package",
                     customerName: q.userId?.username || "Unknown",
-                    dateRequested: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
-                    travelers: q.quotationDetails.travelers,
+                    dateRequested: q.createdAt ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
+                    travelers: q.quotationDetails?.travelers ?? 0,
                     status: q.status
                 }))
                 setData(quotations);
@@ -276,7 +276,7 @@ export default function QuotationManagement() {
         const quotation = data.find((item) => item.key === key);
         if (quotation) {
             console.log("Viewing quotation:", quotation);
-            navigate(`${basePath}/quotation/${key}`);
+            navigate(`${basePath}/quotation`, { state: { quotationId: key } });
         }
     }
 

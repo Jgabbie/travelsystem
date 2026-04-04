@@ -158,10 +158,19 @@ export default function UserBookingInvoice() {
         booking?.pkg ||
         "Package";
     const travelDateValue =
-        bookingDetails.packageTravelDate ||
         bookingDetails.travelDate ||
-        booking?.travelDate;
-    const travelDate = travelDateValue ? dayjs(travelDateValue).format("MMM D, YYYY") : "--";
+        booking?.travelDate ||
+        bookingDetails.packageTravelDate;
+    const travelStart = travelDateValue?.startDate
+        || (typeof travelDateValue === 'string' ? travelDateValue.split(' - ')[0] : null)
+        || travelDateValue
+        || null;
+    const travelEnd = travelDateValue?.endDate || null;
+    const travelDate = travelStart && dayjs(travelStart).isValid()
+        ? (travelEnd && dayjs(travelEnd).isValid()
+            ? `${dayjs(travelStart).format("MMM D, YYYY")} - ${dayjs(travelEnd).format("MMM D, YYYY")}`
+            : dayjs(travelStart).format("MMM D, YYYY"))
+        : "--";
 
     const issueDate = booking?.createdAt ? dayjs(booking.createdAt) : dayjs();
     const dueDate = issueDate.add(45, "day");

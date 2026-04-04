@@ -101,15 +101,12 @@ export default function Wishlist() {
         })
     }, [search, category, availability, priceRange, wishlistPackages])
 
-    const handleRemove = async (packageId) => {
-        if (!packageId) return
+    const handleRemove = async (wishlistId) => {
+        if (!wishlistId) return
         try {
-            await axiosInstance.delete('/wishlist/remove', { data: { packageId } })
+            await axiosInstance.delete(`/wishlist/remove/${wishlistId}`)
             setWishlistItems((prev) =>
-                prev.filter((entry) => {
-                    const entryPackageId = entry?.packageId?._id || entry?.packageId
-                    return entryPackageId !== packageId
-                })
+                prev.filter((entry) => entry?._id !== wishlistId)
             )
             message.success('Removed from wishlist')
         } catch (error) {
@@ -126,7 +123,7 @@ export default function Wishlist() {
             okText: 'Remove',
             cancelText: 'Cancel',
             onOk: async () => {
-                await handleRemove(pkg.packageId)
+                await handleRemove(pkg.wishlistId)
             }
         })
     }
