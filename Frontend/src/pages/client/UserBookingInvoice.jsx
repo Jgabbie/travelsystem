@@ -35,23 +35,34 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
 
     const totalAmount = subtotal;
     const today = dayjs();
-    const dueCutoffDate = today.add(45, 'day');
+    const travelDateValue = bookingDetails?.travelDate?.startDate;
+    const travelDateComputation = travelDateValue ? dayjs(travelDateValue) : today;
+    const maxAllowedDate = today.add(45, 'day');
+    const dueCutoffDate = travelDateComputation.isBefore(maxAllowedDate)
+        ? travelDateComputation
+        : maxAllowedDate;
 
     // 2. Ensure deposit is a number
     const depositAmount = Number(bookingDetails?.paymentDetails?.depositAmount) || 0;
     const remainingAmount = Math.max(totalAmount - depositAmount, 0);
 
     const frequencyWeeks = getFrequencyWeeks(bookingDetails?.paymentDetails?.frequency);
-    const installmentWindowDays = Math.max(dueCutoffDate.diff(today, 'day'), 1);
+    const paymentDates = [];
+    let nextDate = dayjs(today).add(frequencyWeeks, 'week');
 
-    // 3. Ensure installmentCount is at least 1 to avoid division by zero
-    const installmentCount = Math.max(
-        Math.floor(installmentWindowDays / (frequencyWeeks * 7)),
-        1
-    );
+    while (nextDate.isBefore(dueCutoffDate) || nextDate.isSame(dueCutoffDate)) {
+        paymentDates.push(nextDate);
+        nextDate = nextDate.add(frequencyWeeks, 'week');
+    }
 
-    // 4. Calculate amount and round to 2 decimal places
-    const installmentAmount = Number((remainingAmount / installmentCount).toFixed(2)) || 0;
+    if (paymentDates.length === 0) {
+        paymentDates.push(dueCutoffDate.subtract(1, 'day'));
+    }
+
+    const installmentCount = paymentDates.length;
+    const installmentAmount = installmentCount
+        ? remainingAmount / installmentCount
+        : 0;
 
     const paymentSchedule = [
         {
@@ -60,14 +71,12 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
             date: today,
             status: paidAmount >= (depositAmount - 0.01) ? "PAID" : "PENDING"
         },
-        ...Array.from({ length: installmentCount }, (_, index) => {
-            const date = today.add((index + 1) * frequencyWeeks, 'week');
+        ...paymentDates.map((date, index) => {
             const cumulativeTarget = depositAmount + (installmentAmount * (index + 1));
             return {
                 label: `Installment ${index + 1}`,
                 amount: installmentAmount,
                 date: date,
-                finalDate: date.isAfter(dueCutoffDate) ? dueCutoffDate : date,
                 status: paidAmount >= (cumulativeTarget - 0.01) ? "PAID" : "PENDING"
             };
         })

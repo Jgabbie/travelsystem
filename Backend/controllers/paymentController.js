@@ -1102,9 +1102,10 @@ const handlePayMongoWebhook = async (req, res) => {
 
         if (metadata.applicationId && metadata.applicationType === "Visa Application") {
             console.log('🛂 Visa payment detected');
-            const amount =
+            const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
+            const amount = normalizePaymongoAmount(grossAmount);
 
             const transactionReference = generateTransactionReference();
 
@@ -1197,9 +1198,10 @@ const handlePayMongoWebhook = async (req, res) => {
         // if applicationId exists in metadata, we know this payment is for a passport application, so we create a transaction record linked to that application and send a notification to the user. We also send a confirmation email to the user about their passport payment. After handling the passport payment, we return early since we don't want to accidentally process it as a booking payment as well.
         if (metadata.applicationId && metadata.applicationType === "Passport Application") {
             console.log('🛂 Passport payment detected');
-            const amount =
+            const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
+            const amount = normalizePaymongoAmount(grossAmount);
 
             const transactionReference = generateTransactionReference();
 
