@@ -237,6 +237,53 @@
     color: #666;
 }
 
+.traveler-counters {
+    margin-top: 12px;
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #f7f9ff;
+    border: 1px solid #e3e8f5;
+}
+
+.traveler-counter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #e3e8f5;
+    box-shadow: 0 6px 14px rgba(31, 42, 68, 0.08);
+}
+
+.traveler-counter-label {
+    min-width: 70px;
+    font-weight: 600;
+    color: #2e3a59;
+}
+
+.traveler-counter-controls {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.traveler-counter-value {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 600;
+    color: #2e3a59;
+}
+
+.traveler-counter-btn {
+    border-radius: 8px !important;
+    border-color: #d6def2 !important;
+    color: #305797 !important;
+}
+
 
 .quotation-grid {
     display: grid;

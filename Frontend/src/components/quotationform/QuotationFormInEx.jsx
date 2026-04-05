@@ -1,35 +1,89 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
 
-export default function QuotationFormInEx({ quotationData, editableItinerary, setEditableItinerary, pdfMode = false }) {
+export default function QuotationFormInEx({
+    quotationData,
+    formData,
+    setFormData,
+    formErrors,
+    pdfMode = false
+}) {
 
     console.log('Received quotationData in QuotationFormInEx:', quotationData); // Debug log to check received data
-    const [isEditing, setIsEditing] = useState(true);
 
     const inclusions = quotationData.inclusions || [];
     const exclusions = quotationData.exclusions || [];
 
-    const handleItineraryChange = (index, value) => {
-        const newItinerary = [...editableItinerary];
-        newItinerary[index].text = value;
-        setEditableItinerary(newItinerary);
-    };
+    const buildItineraryObject = (items) => {
+        return (items || []).reduce((acc, entry, idx) => {
+            const key = entry?.day || `Day ${idx + 1}`;
+            const lines = (entry?.text || '')
+                .split('\n')
+                .map((line) => line.trim())
+                .filter(Boolean);
 
-    const remarks = [
-        'Air and Land Arrangement is on a BOOK AND BUY basis. No room space and seats reserved.',
-        'Itinerary may change due to local weather condition or any other unavoidable circumstances.',
-        'Surcharge may apply on peak season dates, rush bookings, foreign passport holder and late arrival or early departure.',
-        'Cash payment only. If check payment, booking will be finalized upon clearing of check.',
-        'For credit card payments, 3.5% charge will apply.',
-    ];
+            acc[key] = lines.map((line) => ({
+                activity: line,
+                isOptional: false,
+                optionalActivity: '',
+                optionalPrice: ''
+            }));
+            return acc;
+        }, {});
+    };
 
     const getItemText = (item) => {
         if (typeof item === 'string') return item;
         if (!item) return '';
         return item.activity || item.optionalActivity || item.item || '';
     };
+
+    const normalizeList = (items) =>
+        (items || []).map((item) => getItemText(item)).filter((text) => text.trim());
+
+    const ensureArray = (value) => {
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string') {
+            return value
+                .split('\n')
+                .map((line) => line.trim())
+                .filter(Boolean);
+        }
+        return [];
+    };
+
+    useEffect(() => {
+        if (!setFormData) return;
+
+        setFormData((prev) => {
+            const next = { ...prev };
+
+            if (!prev.inclusions || prev.inclusions.length === 0) {
+                next.inclusions = normalizeList(inclusions);
+            }
+
+            if (!prev.exclusions || prev.exclusions.length === 0) {
+                next.exclusions = normalizeList(exclusions);
+            }
+
+            return next;
+        });
+    }, [setFormData, inclusions, exclusions]);
+
+    useEffect(() => {
+        if (!setFormData) return;
+
+    }, [setFormData]);
+
+    const inclusionLines = formData?.inclusions?.length
+        ? ensureArray(formData.inclusions)
+        : normalizeList(inclusions);
+
+    const exclusionLines = formData?.exclusions?.length
+        ? ensureArray(formData.exclusions)
+        : normalizeList(exclusions);
 
     const renderItineraryItem = (item) => {
         if (typeof item === 'string') return item;
@@ -55,67 +109,56 @@ export default function QuotationFormInEx({ quotationData, editableItinerary, se
             <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
                 <div className="mrc-quotation-section">
                     <div className="mrc-quotation-subtitle">INCLUSIONS:</div>
-                    <ul className="mrc-quotation-list">
-                        {inclusions.map((item, index) => (
-                            <li key={`inclusion-${index}`}>{getItemText(item) || '--'}</li>
-                        ))}
-                    </ul>
+                    {pdfMode ? (
+                        <ul className="mrc-quotation-list">
+                            {(inclusionLines.length ? inclusionLines : ['--']).map((item, index) => (
+                                <li key={`inclusion-${index}`}>{item}</li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <textarea
+                            value={ensureArray(formData?.inclusions).join('\n')}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    inclusions: ensureArray(e.target.value),
+                                }))
+                            }
+                            rows={Math.max(4, ensureArray(formData?.inclusions).length)}
+                            style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
+                            placeholder="Add one inclusion per line"
+                        />
+                    )}
+                    {formErrors?.inclusions ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.inclusions}</div>
+                    ) : null}
                 </div>
 
                 <div className="mrc-quotation-section">
                     <div className="mrc-quotation-subtitle">EXCLUSIONS:</div>
-                    <ul className="mrc-quotation-list is-bulleted">
-                        {exclusions.map((item, index) => (
-                            <li key={`exclusion-${index}`}>{getItemText(item) || '--'}</li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-
-            {/* PAGE 2 */}
-            <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
-                <div className="mrc-quotation-section page-break">
-                    <div className="mrc-quotation-subtitle">SUGGESTED ITINERARY:</div>
-                    <div className="mrc-quotation-itinerary">
-                        {editableItinerary.map((entry, index) => (
-                            <div key={entry.day} className="mrc-quotation-itinerary-row">
-                                <div className="mrc-quotation-itinerary-date">
-                                    {entry.date ? `${entry.date} | ${entry.day}` : entry.day}
-                                </div>
-                                <div className="mrc-quotation-itinerary-body">
-                                    {pdfMode ? (
-                                        // PDF preview: always bullets
-                                        <ul className="mrc-quotation-list is-bulleted">
-                                            {entry.text.split('\n').filter(line => line.trim()).map((line, i) => (
-                                                <li key={i}>{line}</li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        // Editable UI
-                                        <textarea
-                                            value={entry.text}
-                                            onChange={(e) => handleItineraryChange(index, e.target.value)}
-                                            rows={Math.max(3, entry.text.split('\n').length)}
-                                            style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="mrc-quotation-section">
-                    <div className="mrc-quotation-subtitle mrc-quotation-remark-title">REMARKS:</div>
-                    <ul className="mrc-quotation-list is-bulleted">
-                        {remarks.map((item) => (
-                            <li key={item}>{item}</li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="mrc-quotation-note">
-                    NOTE: ALL RATES &amp; AVAILABILITY ARE STILL SUBJECT TO CHANGE WITHOUT PRIOR NOTICE.
+                    {pdfMode ? (
+                        <ul className="mrc-quotation-list is-bulleted">
+                            {(exclusionLines.length ? exclusionLines : ['--']).map((item, index) => (
+                                <li key={`exclusion-${index}`}>{item}</li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <textarea
+                            value={ensureArray(formData?.exclusions).join('\n')}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    exclusions: ensureArray(e.target.value),
+                                }))
+                            }
+                            rows={Math.max(4, ensureArray(formData?.exclusions).length)}
+                            style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
+                            placeholder="Add one exclusion per line"
+                        />
+                    )}
+                    {formErrors?.exclusions ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.exclusions}</div>
+                    ) : null}
                 </div>
             </div>
 

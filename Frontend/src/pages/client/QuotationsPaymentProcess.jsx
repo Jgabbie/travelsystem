@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message, Spin } from 'antd';
+import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
@@ -8,9 +8,6 @@ import dayjs from "dayjs";
 import '../../style/components/modals/displayinvoicemodal.css';
 import '../../style/client/paymentprocees.css';
 import axiosInstance from '../../config/axiosConfig';
-
-const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
-
 
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -28,20 +25,53 @@ export default function QuotationsPaymentProcess() {
     const [paymentType, setPaymentType] = useState(null); // 'deposit' or 'full'
     const [frequency, setFrequency] = useState('Every 2 weeks');
     const [method, setMethod] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
+
+    const onCancelModal = () => {
+        setIsProceedModalOpen(false);
+    };
+
+    const [monthBookingsCount, setMonthBookingsCount] = useState(0);
 
     const [fileList, setFileList] = useState([]);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
     const [previewTitle, setPreviewTitle] = useState('');
 
+    const passportFiles = bookingData?.passportFiles || [];
+    const photoFiles = bookingData?.photoFiles || [];
+
+    console.log("Passport Files:", passportFiles);
+    console.log("Photo Files:", photoFiles);
+
     useEffect(() => {
         if (!bookingData) {
             navigate('/home', { replace: true });
         }
-        if (searchParams.get('status') === 'cancel') {
-            localStorage.removeItem(SUCCESS_TOKEN_KEY);
+        const methodParam = searchParams.get('method');
+        if (methodParam === 'manual' || methodParam === 'paymongo') {
+            setMethod(methodParam);
         }
     }, [bookingData, navigate, searchParams]);
+
+
+    //upload files functions
+
+    const base64ToFile = (base64Data, fileName, fileType) => {
+        const arr = base64Data.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1] || fileType;
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], fileName, { type: mime });
+    };
 
     const handleUploadChange = async ({ fileList: newFileList }) => {
         const file = newFileList[0];
@@ -65,19 +95,49 @@ export default function QuotationsPaymentProcess() {
             message.error('Image must be smaller than 2MB');
             return Upload.LIST_IGNORE;
         }
-
-        return false; // prevent auto upload
+        return false;
     };
 
-    const generateInvoiceNumber = () => {
-        const prefix = 'INV';
-        const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const randomPart = Math.floor(1000 + Math.random() * 9000);
-        return `${prefix}-${datePart}-${randomPart}`;
-    }
+    const uploadAllFiles = async (passportFiles, photoFiles) => {
+        const formData = new FormData();
 
+        const passportFileObjs = passportFiles.map(file =>
+            base64ToFile(file.base64, file.name, file.type)
+        );
+
+        const photoFileObjs = photoFiles.map(file =>
+            base64ToFile(file.base64, file.name, file.type)
+        );
+
+        [...passportFileObjs, ...photoFileObjs].forEach(file => formData.append("files", file));
+
+        const res = await axiosInstance.post(
+            "/upload/upload-booking-documents",
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        return res.data.urls;
+    };
+
+
+    //get invoice number
+    useEffect(() => {
+        const fetchMonthBookings = async () => {
+            try {
+                const response = await axiosInstance.get('/booking/bookings-total-month');
+                setMonthBookingsCount(response.data.totalBookings || 0);
+            } catch (error) {
+                console.error('Failed to fetch month bookings count', error);
+            }
+        };
+        fetchMonthBookings();
+    }, []);
+
+    const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
-    const dueDate = dayjs().add(45, "day").format("MMMM D, YYYY");
+
+    console.log("Booking Data in PaymentProcess:", bookingData);
 
     const travelerCountAdult = bookingData?.travelerCounts?.adult || 0;
     const travelerCountChild = bookingData?.travelerCounts?.child || 0;
@@ -85,24 +145,73 @@ export default function QuotationsPaymentProcess() {
     const travelerTotal = travelerCountAdult + travelerCountChild + travelerCountInfant || 0;
 
     const packagePricePerPax = bookingData?.packagePricePerPax || 0;
-    const totalAmount = packagePricePerPax * travelerTotal;
+    const soloRate = bookingData?.packageSoloRate || 0;
+    const childRate = bookingData?.packageChildRate || 0;
+    const infantRate = bookingData?.packageInfantRate || 0;
+
+    const bookingType = bookingData?.bookingType || 'Group Booking';
+    const computedTotalAmount =
+        travelerCountAdult * packagePricePerPax +
+        travelerCountChild * childRate +
+        travelerCountInfant * infantRate;
+
+    const totalAmount = bookingType === 'Solo Booking'
+        ? travelerCountAdult * soloRate
+        : bookingData?.totalPrice ?? computedTotalAmount;
 
     const packageId = bookingData?.packageId;
     const packageName = bookingData?.packageName || 'Tour Package';
 
-    const startTravelDate = dayjs(bookingData?.travelDate).format("MMM D, YYYY") || 'TBD';
-    const endTravelDate = dayjs(bookingData?.travelDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
+    const startTravelDate = dayjs(bookingData?.travelDate?.startDate).format("MMM D, YYYY") || 'TBD';
+    const endTravelDate = dayjs(bookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
 
     const travelDate = startTravelDate === 'TBD' ? 'TBD' : `${startTravelDate} - ${endTravelDate}`;
 
-    console.log("Booking Data in QuotationsPaymentProcess:", travelDate);
+    console.log("Booking Data in PaymentProcess:", travelDate);
 
     const name = bookingData?.leadFullName || 'Customer';
     const email = bookingData?.leadEmail || 'Email'
     const phone = bookingData?.leadContact || 'Phone Number';
 
+    //payload for bookings
+    const paymentDetails = {
+        paymentType,
+        frequency,
+        depositAmount: bookingData?.packageDeposit ? (bookingData.packageDeposit * travelerTotal) : 0,
+    }
+
+    const bookingDetails = {
+        dateOfRegistration: bookingData.dateOfRegistration,
+        travelDate: bookingData?.travelDate,
+        tourPackageTitle: bookingData.tourPackageTitle,
+        tourPackageVia: bookingData.tourPackageVia,
+        leadTitle: bookingData.leadTitle,
+        leadFullName: bookingData.leadFullName,
+        leadEmail: bookingData.leadEmail,
+        leadContact: bookingData.leadContact,
+        leadAddress: bookingData.leadAddress,
+        travelers: bookingData.travelers,
+        dietaryDetails: bookingData.dietaryDetails,
+        dietaryRequest: bookingData.dietaryRequest,
+        medicalDetails: bookingData.medicalDetails,
+        medicalRequest: bookingData.medicalRequest,
+        ownInsurance: bookingData.ownInsurance,
+        purchaseInsurance: bookingData.purchaseInsurance,
+        totalPrice: totalAmount,
+        emergencyContact: bookingData.emergencyContact,
+        emergencyEmail: bookingData.emergencyEmail,
+        emergencyName: bookingData.emergencyName,
+        emergencyRelation: bookingData.emergencyRelation,
+        emergencyTitle: bookingData.emergencyTitle,
+        paymentDetails: paymentDetails
+    }
+
+    console.log("Booking Details for Payment Payload:", bookingDetails);
+
+    //checkout
     const proceedBooking = async () => {
 
+        setIsProceedModalOpen(false);
         if (!paymentType) {
             message.warning("Please select a payment type.");
             return;
@@ -119,22 +228,91 @@ export default function QuotationsPaymentProcess() {
         }
 
         try {
-            const successToken = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-            localStorage.setItem(SUCCESS_TOKEN_KEY, successToken);
+            setLoading(true);
 
-            const paymentPayload = {
-                packageId,
-                totalPrice: totalAmount,
-                travelDate,
-                travelerTotal,
-                leadEmail: bookingData.leadEmail,
-                leadContact: bookingData.leadContact,
-                successUrl: `${window.location.origin}/booking-payment/success?token=${successToken}`,
-                cancelUrl: `${window.location.origin}/quotation-payment-process?status=cancel`,
-            };
+            const amountToCharge = paymentType === 'deposit'
+                ? depositAmount
+                : totalAmount;
 
-            const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session', { paymentPayload });
+            const allUrls = await uploadAllFiles(passportFiles, photoFiles);
+
+            const passportUrls = allUrls.slice(0, passportFiles.length);
+            const photoUrls = allUrls.slice(passportFiles.length);
+
+            const bookingRes = await axiosInstance.post('/booking/create-booking', {
+                bookingPayload: {
+                    packageId,
+                    travelDate: bookingData?.travelDate,
+                    travelers: bookingData?.travelerCounts.adult + bookingData?.travelerCounts.child + bookingData?.travelerCounts.infant || 0,
+                    bookingDetails,
+                    paymentType,
+                    passportFiles: passportUrls,
+                    photoFiles: photoUrls,
+                    amount: amountToCharge //for checkoutToken
+                }
+            });
+
+            const { paymentToken, expiresAt } = bookingRes.data;
+
+            // Expiry check (extra safety)
+            if (dayjs().isAfter(dayjs(expiresAt))) {
+                setLoading(false);
+                message.error("Booking session expired. Please try again.");
+                return;
+            }
+
+            if (method === 'manual') {
+                const file = fileList?.[0]?.originFileObj;
+
+                if (!file) {
+                    message.error("Invalid file.");
+                    setLoading(false);
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("file", file); // 
+
+                console.log("Uploading file:", file);
+                console.log("FormData file:", formData.get("file"));
+
+                const uploadRes = await axiosInstance.post(
+                    "/upload/upload-receipt",
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+                );
+
+                const imageUrl = uploadRes.data?.url;
+
+                console.log("Booking data from new booking:", bookingRes);
+
+                const manualDepositRes = await axiosInstance.post('/payment/manual', {
+                    bookingId: bookingRes.data.booking._id,
+                    packageId,
+                    amount: amountToCharge,
+                    proofImage: imageUrl,
+                    proofImageType: file?.type,
+                    proofFileName: file?.name
+                });
+                setLoading(false);
+                if (manualDepositRes.data?.redirectUrl) {
+                    navigate(manualDepositRes.data.redirectUrl);
+                    return;
+                }
+                return;
+            }
+
+            const paymongoResponse = await axiosInstance.post(
+                '/payment/create-checkout-session',
+                { paymentToken }
+            );
+
             const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+            setLoading(false);
 
             if (checkoutUrl) {
                 window.location.href = checkoutUrl;
@@ -152,6 +330,76 @@ export default function QuotationsPaymentProcess() {
         }
     }
 
+
+    const formatCurrency = (value) => `PHP ${value.toFixed(2)}`;
+
+    const getFrequencyWeeks = (value) => {
+        if (value === 'Every week') return 1;
+        if (value === 'Every 3 weeks') return 3;
+        return 2;
+    };
+
+    const frequencyWeeks = getFrequencyWeeks(frequency);
+
+    const today = dayjs();
+
+    const travelDateComputation = bookingData?.travelDate?.startDate
+        ? dayjs(bookingData.travelDate.startDate)
+        : today;
+
+    // ✅ Limit to 45 days from today
+    const maxAllowedDate = today.add(45, 'day');
+
+    // ✅ Final cutoff = whichever comes FIRST
+    const dueCutoffDate = travelDateComputation.isBefore(maxAllowedDate)
+        ? travelDateComputation
+        : maxAllowedDate;
+
+    const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal;
+    const remainingAmount = Math.max(totalAmount - depositAmount, 0);
+
+    const installmentWindowDays = dueCutoffDate.diff(today, 'day');
+
+    const paymentDates = [];
+
+    let nextDate = dayjs(today).add(frequencyWeeks, 'week');
+
+    while (nextDate.isBefore(dueCutoffDate) || nextDate.isSame(dueCutoffDate)) {
+        paymentDates.push(nextDate);
+        nextDate = nextDate.add(frequencyWeeks, 'week');
+    }
+
+    if (paymentDates.length === 0) {
+        paymentDates.push(dueCutoffDate.subtract(1, 'day'));
+    }
+
+    const installmentCount = paymentDates.length;
+
+    const installmentAmount = installmentCount
+        ? remainingAmount / installmentCount
+        : 0;
+
+    const formatScheduleAmount = (value) =>
+        value == null ? 'PHP TBD' : formatCurrency(value);
+
+    // ✅ Final payment schedule
+    const paymentSchedule = [
+        {
+            label: 'Deposit',
+            amount: depositAmount,
+            date: today,
+        },
+        ...paymentDates.map((date, index) => ({
+            label: `Installment ${index + 1}`,
+            amount: installmentAmount,
+            date,
+        })),
+    ];
+
+    const lastInstallmentDate = paymentDates.length > 0
+        ? paymentDates[paymentDates.length - 1]
+        : today;
+
     const Invoice = {
         company: {
             name: 'M&RC Travel and Tours',
@@ -162,9 +410,9 @@ export default function QuotationsPaymentProcess() {
             email: 'info1@mrctravels.com',
         },
         invoice: {
-            number: generateInvoiceNumber(),
+            number: invoiceNumber,
             issueDate: issueDate,
-            dueDate: dueDate,
+            dueDate: lastInstallmentDate.format("MMMM D, YYYY"),
             status: 'Pending'
         },
         customer: {
@@ -176,10 +424,19 @@ export default function QuotationsPaymentProcess() {
             packageName: packageName || 'Tour Package',
             travelDates: `${startTravelDate} - ${endTravelDate}`,
             travelers: travelerTotal,
+            bookingType: bookingType
         },
         items: [
-            { date: issueDate, activity: 'Tour Package', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: packagePricePerPax },
-        ],
+            travelerCountAdult
+                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: bookingType === 'Solo Booking' ? soloRate : packagePricePerPax }
+                : null,
+            travelerCountChild
+                ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
+                : null,
+            travelerCountInfant
+                ? { date: issueDate, activity: 'Infant', description: packageName || 'Tour Package', qty: travelerCountInfant, rate: infantRate }
+                : null,
+        ].filter(Boolean),
         notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
 
@@ -192,44 +449,6 @@ export default function QuotationsPaymentProcess() {
 
     const totals = calculateTotals(Invoice.items);
 
-    const formatCurrency = (value) => `PHP ${value.toFixed(2)}`;
-
-    const getFrequencyWeeks = (value) => {
-        if (value === 'Every week') return 1
-        if (value === 'Every 3 weeks') return 3
-        return 2
-    }
-
-    const frequencyWeeks = getFrequencyWeeks(frequency)
-    const today = dayjs()
-    const travelDateValue = bookingData?.travelDate ? dayjs(bookingData.travelDate) : null
-    const depositAmount = null
-    const remainingAmount = null
-    const firstPaymentDate = today.add(frequencyWeeks, 'week')
-    const secondPaymentDate = firstPaymentDate.add(frequencyWeeks, 'week')
-    const cappedSecondPaymentDate = travelDateValue && secondPaymentDate.isAfter(travelDateValue)
-        ? travelDateValue
-        : secondPaymentDate
-
-    const formatScheduleAmount = (value) => (value == null ? 'PHP TBD' : formatCurrency(value))
-
-    const paymentSchedule = [
-        {
-            label: 'Deposit (Airfare + Hotel)',
-            amount: depositAmount,
-            date: today
-        },
-        {
-            label: 'Installment 1',
-            amount: remainingAmount,
-            date: firstPaymentDate
-        },
-        {
-            label: 'Installment 2',
-            amount: remainingAmount,
-            date: cappedSecondPaymentDate
-        }
-    ]
 
     const MyDocument = () => (
         <Document>
@@ -248,7 +467,7 @@ export default function QuotationsPaymentProcess() {
                         </View>
                     </View>
                     <View style={styles.invoiceTitleContainer}>
-                        <Text style={styles.invoiceTitleText}>Invoice {Invoice.invoice.number.split('-').pop()}</Text>
+                        <Text style={styles.invoiceTitleText}>Invoice {Invoice.invoice.number}</Text>
                     </View>
                 </View>
 
@@ -269,7 +488,7 @@ export default function QuotationsPaymentProcess() {
                         </View>
                         <View style={[styles.summaryCol, styles.darkBg]}>
                             <Text style={[styles.label, { color: '#FFF' }]}>PLEASE PAY</Text>
-                            <Text style={[styles.summaryValue, { color: '#FFF' }]}>{formatCurrency(totals.subtotal)}</Text>
+                            <Text style={[styles.summaryValue, { color: '#FFF' }]}>{totalAmount}</Text>
                         </View>
                         <View style={styles.summaryCol}>
                             <Text style={styles.label}>DUE DATE</Text>
@@ -313,7 +532,7 @@ export default function QuotationsPaymentProcess() {
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL DUE</Text>
-                            <Text style={styles.totalDueValue}>{formatCurrency(totals.subtotal)}</Text>
+                            <Text style={styles.totalDueValue}>{formatCurrency(totalAmount)}</Text>
                         </View>
                         <Text style={styles.thankYou}>THANK YOU.</Text>
                     </View>
@@ -392,6 +611,12 @@ export default function QuotationsPaymentProcess() {
                 }}
             >
                 <div className="payment-process-container">
+                    {loading && (
+                        <div className="payment-loading-overlay">
+                            <Spin size="large" description="Processing payment..." />
+                        </div>
+                    )}
+
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
@@ -399,6 +624,7 @@ export default function QuotationsPaymentProcess() {
                             onClick={() => navigate(-1)}
                             style={{ display: 'flex', alignItems: 'center' }}
                         >
+                            <ArrowLeftOutlined />
                             Back
                         </Button>
                     </Space>
@@ -421,7 +647,7 @@ export default function QuotationsPaymentProcess() {
                                     className="payment-methods-cards"
                                 >
                                     <div className='payment-cards-group'>
-                                        <Radio value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
+                                        <Radio.Button value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
                                             <div style={{ width: '100%' }}>
                                                 <h3>Deposit</h3>
                                                 <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
@@ -444,14 +670,14 @@ export default function QuotationsPaymentProcess() {
                                                     </div>
                                                 )}
                                             </div>
-                                        </Radio>
+                                        </Radio.Button>
 
-                                        <Radio value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
+                                        <Radio.Button value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
                                             <div>
                                                 <h3>Full Payment</h3>
                                                 <p>Pay the full amount to secure your booking and not worry about future payment deadlines.</p>
                                             </div>
-                                        </Radio>
+                                        </Radio.Button>
                                     </div>
 
                                 </Radio.Group>
@@ -536,6 +762,7 @@ export default function QuotationsPaymentProcess() {
                                     <div className="card-content">
                                         <h3>Paymongo</h3>
                                         <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
                                     </div>
                                 </Radio>
 
@@ -547,6 +774,7 @@ export default function QuotationsPaymentProcess() {
                                     <div className="card-content">
                                         <h3>Manual Payment</h3>
                                         <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
                                     </div>
                                 </Radio>
                             </Radio.Group>
@@ -630,7 +858,7 @@ export default function QuotationsPaymentProcess() {
                     <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
                         <Button
                             type="primary"
-                            onClick={proceedBooking}
+                            onClick={() => setIsProceedModalOpen(true)}
                             disabled={
                                 !paymentType ||
                                 !method ||
@@ -640,9 +868,41 @@ export default function QuotationsPaymentProcess() {
                             Proceed
                         </Button>
                     </div>
+
                 </div>
 
+                <Modal
+                    open={isProceedModalOpen}
+                    className='signup-success-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    onCancel={() => { setIsProceedModalOpen(false) }}
+                    style={{ top: 200 }}
+                >
+                    <div className='signup-success-container'>
+                        <h1 className='signup-success-heading'>Proceed to Payment</h1>
+                        <p className='signup-success-text'>Are you sure you want to proceed with the payment?</p>
+
+                    </div>
+
+                    <div className='signup-actions'>
+                        <Button
+                            id='signup-success-button'
+                            onClick={proceedBooking}
+                        >
+                            Proceed
+                        </Button>
+
+                        <Button
+                            id='signup-success-button-cancel'
+                            onClick={() => setIsProceedModalOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </Modal>
             </ConfigProvider>
         </div>
     )
 }
+

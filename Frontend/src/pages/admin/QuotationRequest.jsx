@@ -4,11 +4,14 @@ import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Inpu
 import { UploadOutlined, SendOutlined } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import dayjs from "dayjs";
 import axiosInstance from "../../config/axiosConfig";
 import QuotationFormDetails from "../../components/quotationform/QuotationFormDetails";
 import QuotationFormInEx from "../../components/quotationform/QuotationFormInEx";
 import QuotationFormTermsConditions from "../../components/quotationform/QuotationFormTermsConditions";
+import QuotationFormItineraries from "../../components/quotationform/QuotationFormItineraries";
 import '../../style/components/mrcquotation.css';
+
 
 export default function QuotationRequest() {
     const location = useLocation();
@@ -27,8 +30,19 @@ export default function QuotationRequest() {
 
     const [formData, setFormData] = useState({
         roomType: '',
+        travelDates: '',
+        hotel: '',
+        airline: '',
+        inclusions: [],
+        exclusions: [],
+        itinerary: {},
         baggageAllowance: '',
+        travelers: '',
         totalRate: '',
+        totalChildRate: '',
+        totalInfantRate: '',
+        totalPrice: '',
+        totalDeposit: '',
         flightImageA: '',
         flightImageB: ''
     });
@@ -67,7 +81,93 @@ export default function QuotationRequest() {
         getAdminName();
     }, [id]);
 
-    console.log("Fetched quotation:", quotation);
+    const formatDateValue = (value) => {
+        const parsed = dayjs(value);
+        if (!parsed.isValid()) {
+            return value;
+        }
+        return parsed.format('MMM DD, YYYY');
+    };
+
+    const formatTravelDates = (value) => {
+        if (!value) return 'N/A';
+
+        if (Array.isArray(value)) {
+            if (value.length === 2) {
+                return `${formatDateValue(value[0])} - ${formatDateValue(value[1])}`;
+            }
+            return value.map((item) => formatDateValue(item)).join(', ');
+        }
+
+        if (typeof value === 'object') {
+            const start = value.startDate || value.startdaterange || value.start;
+            const end = value.endDate || value.enddaterange || value.end;
+            if (start && end) {
+                return `${formatDateValue(start)} - ${formatDateValue(end)}`;
+            }
+        }
+
+        return formatDateValue(value);
+    };
+
+    const formatTravelers = (value) => {
+        if (typeof value === 'number') return String(value);
+        if (!value || typeof value !== 'object') return 'N/A';
+
+        const adult = Number(value.adult) || 0;
+        const child = Number(value.child) || 0;
+        const infant = Number(value.infant) || 0;
+        const parts = [];
+
+        parts.push(`Adult: ${adult}`);
+        if (child > 0) parts.push(`Child: ${child}`);
+        if (infant > 0) parts.push(`Infant: ${infant}`);
+
+        return parts.join(', ');
+    };
+
+    const parseTravelerCounts = (value) => {
+        if (!value) return { adult: 0, child: 0, infant: 0, total: 0 };
+
+        if (typeof value === 'number') {
+            return { adult: value, child: 0, infant: 0, total: value };
+        }
+
+        if (typeof value === 'object') {
+            const adult = Number(value.adult) || 0;
+            const child = Number(value.child) || 0;
+            const infant = Number(value.infant) || 0;
+            return { adult, child, infant, total: adult + child + infant };
+        }
+
+        const raw = String(value).trim();
+        if (!raw) return { adult: 0, child: 0, infant: 0, total: 0 };
+
+        if (/^\d+$/.test(raw)) {
+            const total = Number(raw) || 0;
+            return { adult: total, child: 0, infant: 0, total };
+        }
+
+        const adultMatch = raw.match(/adult\s*:\s*(\d+)/i);
+        const childMatch = raw.match(/child\s*:\s*(\d+)/i);
+        const infantMatch = raw.match(/infant\s*:\s*(\d+)/i);
+        const adult = adultMatch ? Number(adultMatch[1]) : 0;
+        const child = childMatch ? Number(childMatch[1]) : 0;
+        const infant = infantMatch ? Number(infantMatch[1]) : 0;
+
+        return { adult, child, infant, total: adult + child + infant };
+    };
+
+    const calculateTotalPrice = (data) => {
+        const totalRate = parseFloat(data.totalRate) || 0;
+        const totalChildRate = parseFloat(data.totalChildRate) || 0;
+        const totalInfantRate = parseFloat(data.totalInfantRate) || 0;
+        const counts = parseTravelerCounts(data.travelers);
+
+        return (totalRate * counts.adult)
+            + (totalChildRate * counts.child)
+            + (totalInfantRate * counts.infant);
+    };
 
     const packageName = quotation?.packageId?.packageName || "N/A";
     const customerName = quotation?.userId?.username || "N/A";
@@ -81,6 +181,7 @@ export default function QuotationRequest() {
     const inclusions = quotation?.packageId?.packageInclusions || [];
     const exclusions = quotation?.packageId?.packageExclusions || [];
     const itinerary = quotation?.packageId?.packageItineraries || {};
+    const quotationReference = quotation?.reference || "N/A";
 
     const coordinatorName = adminName || "N/A";
 
@@ -96,6 +197,36 @@ export default function QuotationRequest() {
         itinerary,
         coordinatorName
     };
+
+    console.log("Fetched quotation:", quotation);
+
+    useEffect(() => {
+        if (!quotation) return;
+
+        setFormData((prev) => {
+            const next = { ...prev };
+
+            if (!prev.travelDates?.trim()) {
+                const formattedDates = formatTravelDates(travelDates);
+                next.travelDates = formattedDates === 'N/A' ? '' : formattedDates;
+            }
+
+            if (!prev.hotel?.trim()) {
+                next.hotel = hotel && hotel !== 'N/A' ? String(hotel) : '';
+            }
+
+            if (!prev.airline?.trim()) {
+                next.airline = airline && airline !== 'N/A' ? String(airline) : '';
+            }
+
+            if (!prev.travelers?.trim()) {
+                const formattedTravelers = formatTravelers(travelers);
+                next.travelers = formattedTravelers === 'N/A' ? '' : formattedTravelers;
+            }
+
+            return next;
+        });
+    }, [quotation, travelDates, hotel, airline]);
 
     console.log("Constructed quotationData for form components:", quotationData); // Debug log to check constructed data
 
@@ -125,31 +256,6 @@ export default function QuotationRequest() {
         setEditableItinerary(newEditableItinerary);
     }, [quotation]);
 
-    const formatPackageItem = (item) => {
-        if (typeof item === "string") return item;
-        if (!item) return "N/A";
-        return item.activity || item.optionalActivity || item.item || "N/A";
-    };
-
-    const getItineraryActivity = (item) => {
-        if (typeof item === "string") {
-            return { activity: item, optional: "" };
-        }
-        if (!item) {
-            return { activity: "N/A", optional: "" };
-        }
-
-        const activity = item.activity || item.optionalActivity || item.item || "N/A";
-        const optionalPrice = Number.isFinite(Number(item.optionalPrice))
-            ? Number(item.optionalPrice).toLocaleString()
-            : null;
-        const optional = item.isOptional && item.optionalActivity
-            ? `Optional: ${item.optionalActivity}${optionalPrice ? ` - ₱${optionalPrice}` : ""}`
-            : "";
-
-        return { activity, optional };
-    };
-
     if (!quotation) return <p>Quotation not found.</p>;
 
     const details = quotation.quotationDetails || {};
@@ -169,9 +275,22 @@ export default function QuotationRequest() {
             title: "Quotation Inclusions & Itinerary",
             content: <QuotationFormInEx
                 quotationData={quotationData}
-                editableItinerary={editableItinerary}
-                setEditableItinerary={setEditableItinerary}
+                formData={formData}
+                setFormData={setFormData}
+                formErrors={formErrors}
                 pdfMode={previewStep === 2}
+            />,
+        },
+        {
+            title: "Quotation Inclusions & Itinerary",
+            content: <QuotationFormItineraries
+                quotationData={quotationData}
+                formData={formData}
+                setFormData={setFormData}
+                setEditableItinerary={setEditableItinerary}
+                editableItinerary={editableItinerary}
+                formErrors={formErrors}
+                pdfMode={previewStep === 3}
             />,
         },
         {
@@ -189,12 +308,41 @@ export default function QuotationRequest() {
             errors.roomType = "Room/Type is required.";
         }
 
+        if (!formData.travelDates.trim()) {
+            errors.travelDates = "Travel dates are required.";
+        }
+
+        if (!formData.hotel.trim()) {
+            errors.hotel = "Hotel is required.";
+        }
+
+        if (!formData.airline.trim()) {
+            errors.airline = "Airline is required.";
+        }
+
         if (!formData.baggageAllowance.trim()) {
             errors.baggageAllowance = "Baggage allowance is required.";
         }
 
+        if (!formData.travelers.trim()) {
+            errors.travelers = "Travelers information is required.";
+        }
+
+
         if (!formData.totalRate.trim()) {
             errors.totalRate = "Total rate is required.";
+        }
+
+        if (!formData.totalChildRate.trim()) {
+            errors.totalChildRate = "Total child rate is required.";
+        }
+
+        if (!formData.totalInfantRate.trim()) {
+            errors.totalInfantRate = "Total infant rate is required.";
+        }
+
+        if (!formData.totalDeposit.trim()) {
+            errors.totalDeposit = "Total deposit is required.";
         }
 
         if (!formData.flightImageA) {
@@ -280,24 +428,57 @@ export default function QuotationRequest() {
 
             // Save or upload
             const pdfBlob = pdf.output("blob");
-            const formData = new FormData();
-            formData.append("pdf", pdfBlob, `quotation-${id}.pdf`);
+            const pdfFormData = new FormData();
+            pdfFormData.append("pdf", pdfBlob, `quotation-${quotationReference}.pdf`);
 
-            await axiosInstance.post(`/quotation/${id}/upload-pdf`, formData, {
+            await axiosInstance.post(`/quotation/${id}/upload-pdf`, pdfFormData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
             const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = `quotation-${id}.pdf`;
+            link.download = `quotation-${quotationReference}.pdf`;
             link.click();
             URL.revokeObjectURL(url);
 
-            message.success("PDF generated with auto page breaks!");
+            const computedTotalPrice = calculateTotalPrice(formData);
+            const resolvedTotalPrice = formData.totalPrice?.trim()
+                ? formData.totalPrice
+                : String(computedTotalPrice);
+
+            const travelDetails = {
+                roomType: formData.roomType,
+                travelDates: formData.travelDates,
+                hotel: formData.hotel,
+                airline: formData.airline,
+                inclusions: formData.inclusions,
+                exclusions: formData.exclusions,
+                itinerary: formData.itinerary,
+                dynamicRows: formData.dynamicRows,
+                baggageAllowance: formData.baggageAllowance,
+                travelers: quotation.quotationDetails.travelers,
+                totalRate: formData.totalRate,
+                totalChildRate: formData.totalChildRate,
+                totalInfantRate: formData.totalInfantRate,
+                totalPrice: resolvedTotalPrice,
+                totalDeposit: formData.totalDeposit
+            };
+
+            if (!formData.totalPrice?.trim()) {
+                setFormData((prev) => ({
+                    ...prev,
+                    totalPrice: resolvedTotalPrice
+                }));
+            }
+
+            await axiosInstance.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
+
+
+            message.success("Quotation has been sent successfully!");
         } catch (err) {
             console.error(err);
-            message.error("Failed to generate PDF");
+            message.error("Quotation did not send");
         } finally {
             setUploading(false);
         }
@@ -360,7 +541,9 @@ export default function QuotationRequest() {
                                 <Descriptions bordered column={1}>
                                     <Descriptions.Item label="Package Name">{packageName}</Descriptions.Item>
                                     <Descriptions.Item label="Customer Name">{customerName}</Descriptions.Item>
-                                    <Descriptions.Item label="Travelers">{travelers || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Travelers">
+                                        {formatTravelers(travelers)}
+                                    </Descriptions.Item>
                                     <Descriptions.Item label="Preferred Airlines">{airline || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Preferred Hotels">{hotel || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Preferred Date">{travelDates || "N/A"}</Descriptions.Item>
@@ -528,8 +711,18 @@ export default function QuotationRequest() {
                             />
                             <QuotationFormInEx
                                 quotationData={quotationData}
+                                formData={formData}
+                                setFormData={setFormData}
+                                formErrors={formErrors}
+                                pdfMode={true}
+                            />
+                            <QuotationFormItineraries
+                                quotationData={quotationData}
                                 editableItinerary={editableItinerary}
                                 setEditableItinerary={setEditableItinerary}
+                                formData={formData}
+                                setFormData={setFormData}
+                                formErrors={formErrors}
                                 pdfMode={true}
                             />
                             <QuotationFormTermsConditions quotationData={quotationData} />

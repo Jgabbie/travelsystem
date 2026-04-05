@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Modal, Input, InputNumber, Slider, Button, message, Select, ConfigProvider, Spin, DatePicker, TimePicker } from 'antd'
+import { Modal, Input, Slider, Button, message, Select, ConfigProvider, Spin, DatePicker, TimePicker } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -108,6 +108,10 @@ export default function PackageInternationalQuotation() {
     const [isBookingSuccessOpen, setIsBookingSuccessOpen] = useState(false)
     const [packageCategory, setPackageCategory] = useState('All in Package');
     const [travelers, setTravelers] = useState(1)
+    const [travelerType, setTravelerType] = useState('solo')
+    const [adultCount, setAdultCount] = useState(2)
+    const [childCount, setChildCount] = useState(0)
+    const [infantCount, setInfantCount] = useState(0)
     const [preferredAirlines, setPreferredAirlines] = useState('')
     const [preferredHotels, setPreferredHotels] = useState('')
     const [preferredDates, setPreferredDates] = useState('')
@@ -123,6 +127,10 @@ export default function PackageInternationalQuotation() {
 
     useEffect(() => {
         setTravelers(1);
+        setTravelerType('solo');
+        setAdultCount(2);
+        setChildCount(0);
+        setInfantCount(0);
         setPreferredAirlines('');
         setPreferredHotels('');
         setPreferredDates(null);
@@ -135,6 +143,22 @@ export default function PackageInternationalQuotation() {
         setError({});
     }, [packageCategory, minBudget, maxBudget, itineraryLabels]);
 
+    useEffect(() => {
+        if (travelerType === 'group' && adultCount < 2) {
+            setAdultCount(2);
+        }
+    }, [travelerType, adultCount]);
+
+    useEffect(() => {
+        if (travelerType === 'solo') {
+            setTravelers(1);
+            return;
+        }
+
+        const total = Math.max(0, adultCount) + Math.max(0, childCount) + Math.max(0, infantCount);
+        setTravelers(total);
+    }, [travelerType, adultCount, childCount, infantCount]);
+
 
     const onCancelModal = () => {
         setIsBookingSuccessOpen(false)
@@ -143,6 +167,9 @@ export default function PackageInternationalQuotation() {
     const handleSubmit = () => {
         const missingItineraryNote = itineraryNotes.some((note) => !note.trim())
         const newErrors = {};
+        const totalTravelers = travelerType === 'solo'
+            ? 1
+            : Math.max(0, adultCount) + Math.max(0, childCount) + Math.max(0, infantCount);
 
         if (!Array.isArray(budgetRange) || budgetRange.length !== 2 || budgetRange[0] === budgetRange[1]) {
             newErrors.budgetRange = 'Please set your budget range.';
@@ -154,7 +181,7 @@ export default function PackageInternationalQuotation() {
             if (!flightTime) newErrors.flightTime = 'Please select flight time.';
         }
 
-        if (!travelers || travelers < 1) {
+        if (!totalTravelers || totalTravelers < 1) {
             newErrors.travelers = 'Please enter the number of travelers'
         }
         if (packageCategory !== 'Land Arrangement') {
@@ -194,10 +221,14 @@ export default function PackageInternationalQuotation() {
 
 
         try {
+            const travelersPayload = travelerType === 'solo'
+                ? { adult: 1, child: 0, infant: 0 }
+                : { adult: adultCount, child: childCount, infant: infantCount };
+
             axiosInstance.post('/quotation/create-quotation', {
                 packageId: packageId,
                 quotationDetails: {
-                    travelers,
+                    travelers: travelersPayload,
                     preferredAirlines,
                     preferredHotels,
                     preferredDates,
@@ -330,31 +361,66 @@ export default function PackageInternationalQuotation() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    <label className="section-label" style={{ marginTop: 16 }}>Travelers</label>
+                                    <div className="selection-cards">
+                                        <div
+                                            className={`selection-card ${travelerType === 'solo' ? 'active' : ''}`}
+                                            onClick={() => setTravelerType('solo')}
+                                        >
+                                            <div className="card-content">
+                                                <span className="card-title">Solo</span>
+                                                <p className="card-desc">Note: If you are a solo traveler, an additional single supplement rate may apply.</p>
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            className={`selection-card ${travelerType === 'group' ? 'active' : ''}`}
+                                            onClick={() => setTravelerType('group')}
+                                        >
+                                            <div className="card-content">
+                                                <span className="card-title">Group</span>
+                                                <p className="card-desc">Note: Group bookings may have different pricing and availability. The maximum pax allowed per booking is 2 or more.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {travelerType === 'group' && (
+                                        <div className="traveler-counters">
+                                            {[
+                                                { label: 'Adult', value: adultCount, setter: setAdultCount, min: 2 },
+                                                { label: 'Child', value: childCount, setter: setChildCount, min: 0 },
+                                                { label: 'Infant', value: infantCount, setter: setInfantCount, min: 0 }
+                                            ].map((row) => (
+                                                <div key={row.label} className="traveler-counter-row">
+                                                    <span className="traveler-counter-label">{row.label}</span>
+                                                    <div className="traveler-counter-controls">
+                                                        <Button
+                                                            size="small"
+                                                            className="traveler-counter-btn"
+                                                            onClick={() => row.setter(Math.max(row.min, row.value - 1))}
+                                                        >
+                                                            -
+                                                        </Button>
+                                                        <span className="traveler-counter-value">{row.value}</span>
+                                                        <Button
+                                                            size="small"
+                                                            className="traveler-counter-btn"
+                                                            onClick={() => row.setter(row.value + 1)}
+                                                        >
+                                                            +
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="quotation-right">
                                 <div className="quotation-section">
                                     <div className="quotation-grid">
-                                        <div className="quotation-field">
-                                            <label htmlFor="quotation-travelers">Number of Travelers <span style={{ color: 'red' }}>*</span></label>
-                                            <InputNumber
-                                                maxLength={2}
-                                                id="quotation-travelers"
-                                                min={1}
-                                                max={50}
-                                                value={travelers}
-                                                onChange={(value) => setTravelers(value || 1)}
-                                                className={`quotation-input ${error.travelers ? 'input-error' : ''}`}
-                                                required
-                                                onKeyDown={(e) => {
-                                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                                        e.preventDefault()
-                                                    }
-                                                }}
-                                            />
-                                            <p className='package-quotation-error'>{error.travelers}</p>
-                                        </div>
 
                                         {packageCategory === 'All in Package' && (
                                             <div className="quotation-field">

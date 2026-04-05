@@ -22,6 +22,11 @@ export default function UserQuotationRequest() {
     const [pdfLoading, setPdfLoading] = useState(false);
     const [signedPdfUrl, setSignedPdfUrl] = useState(null);
 
+    const isDisabled =
+        quotation?.status === "Pending" ||
+        quotation?.status === "Revision Requested" ||
+        quotation?.status === "Approved";
+
 
     useEffect(() => {
         const fetchQuotationDetails = async () => {
@@ -36,6 +41,7 @@ export default function UserQuotationRequest() {
                 setQuotation({
                     packageName: quotationData.packageId.packageName || "N/A",
                     travelDetails: quotationData.travelDetails || {},
+                    latestPdfRevision: quotationData.latestPdfRevision || null,
                     reference: quotationData.reference || "N/A",
                     status: quotationData.status || "N/A",
                     pdfUrl: quotationData.pdfUrl || null,
@@ -104,18 +110,25 @@ export default function UserQuotationRequest() {
             cancelButtonProps: { className: "accept-cancel-btn" },
             onOk: async () => {
                 try {
-                    const details = quotation?.travelDetails || {};
+                    const latestDetails = quotation?.latestPdfRevision?.travelDetails;
+                    const details = latestDetails || quotation?.travelDetails || {};
+                    const travelDateValue = details.travelDate || details.travelDates || details.date || null;
+                    const priceValue = details.pricePerPax || details.totalPrice || details.totalRate || 0;
+                    const travelersValue = details.travelers || 1;
+                    const hotelValue = details.preferredHotels || details.hotel || "";
+                    const airlineValue = details.preferredAirlines || details.airline || "";
                     setBookingData(prev => ({
                         ...prev,
+                        quotationId: id,
                         packageName: quotation?.packageName,
-                        travelDate: details.travelDate || details.date || null,
-                        travelDatePrice: details.pricePerPax || details.totalPrice || 0,
-                        travelersCount: details.travelers || 1,
-                        travelers: Array.from({ length: details.travelers || 1 }, (_, index) => ({
+                        travelDate: travelDateValue,
+                        travelDatePrice: priceValue,
+                        travelersCount: travelersValue,
+                        travelers: Array.from({ length: travelersValue }, (_, index) => ({
                             id: index + 1
                         })),
-                        hotelOptions: details.preferredHotels ? [{ name: details.preferredHotels }] : [],
-                        airlineOptions: details.preferredAirlines ? [{ name: details.preferredAirlines }] : [],
+                        hotelOptions: hotelValue ? [{ name: hotelValue }] : [],
+                        airlineOptions: airlineValue ? [{ name: airlineValue }] : [],
                         inclusions: details.inclusions || [],
                         exclusions: details.exclusions || [],
                         itinerary: details.itinerary || {},
@@ -272,7 +285,7 @@ export default function UserQuotationRequest() {
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 className="quotation-input-request"
-                                disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
+                                disabled={isDisabled}
                                 required
                             />
 
@@ -281,13 +294,14 @@ export default function UserQuotationRequest() {
                                     className="acceptbutton-userquotationrequest"
                                     type="primary"
                                     onClick={handleAccept}
+                                    disabled={isDisabled}
                                 >
                                     Accept
                                 </Button>
                                 <Button
                                     className="revisebutton-userquotationrequest"
                                     onClick={handleRevise}
-                                    disabled={quotation.status === "Revision Requested" || quotation.status === "Approved"}
+                                    disabled={isDisabled}
                                 >
                                     Request Revision
                                 </Button>

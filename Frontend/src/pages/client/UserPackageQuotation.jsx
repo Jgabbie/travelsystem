@@ -24,15 +24,24 @@ export default function UserPackageQuotation() {
             try {
                 const response = await axiosInstance.get('/quotation/my-quotations');
 
-                const quotations = response.data.map(q => ({
-                    key: q._id || q.id,
-                    reference: q.reference,
-                    packageName: q.packageId?.packageName || "N/A",
-                    travelers: q.quotationDetails?.travelers ?? 0,
-                    requestedDate: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
-                    status: q.status,
-                    createdAt: q.createdAt
-                }));
+                const quotations = response.data.map(q => {
+                    const travelersValue = q.quotationDetails?.travelers;
+                    const totalTravelers = typeof travelersValue === 'number'
+                        ? travelersValue
+                        : (Number(travelersValue?.adult) || 0)
+                        + (Number(travelersValue?.child) || 0)
+                        + (Number(travelersValue?.infant) || 0);
+
+                    return {
+                        key: q._id || q.id,
+                        reference: q.reference,
+                        packageName: q.packageId?.packageName || "N/A",
+                        travelers: totalTravelers,
+                        requestedDate: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
+                        status: q.status,
+                        createdAt: q.createdAt
+                    };
+                });
 
                 console.log('Fetched quotations:', quotations);
 

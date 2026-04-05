@@ -12,6 +12,51 @@ export default function QuotationFormDetails({
     formErrors
 }) {
 
+
+    const parseTravelerCounts = (value) => {
+        if (!value) return { adult: 0, child: 0, infant: 0, total: 0 };
+
+        if (typeof value === 'number') {
+            return { adult: value, child: 0, infant: 0, total: value };
+        }
+
+        if (typeof value === 'object') {
+            const adult = Number(value.adult) || 0;
+            const child = Number(value.child) || 0;
+            const infant = Number(value.infant) || 0;
+            return { adult, child, infant, total: adult + child + infant };
+        }
+
+        const raw = String(value).trim();
+        if (!raw) return { adult: 0, child: 0, infant: 0, total: 0 };
+
+        if (/^\d+$/.test(raw)) {
+            const total = Number(raw) || 0;
+            return { adult: total, child: 0, infant: 0, total };
+        }
+
+        const adultMatch = raw.match(/adult\s*:\s*(\d+)/i);
+        const childMatch = raw.match(/child\s*:\s*(\d+)/i);
+        const infantMatch = raw.match(/infant\s*:\s*(\d+)/i);
+        const adult = adultMatch ? Number(adultMatch[1]) : 0;
+        const child = childMatch ? Number(childMatch[1]) : 0;
+        const infant = infantMatch ? Number(infantMatch[1]) : 0;
+
+        return { adult, child, infant, total: adult + child + infant };
+    };
+
+    //total price calculation
+    const calculateTotalPrice = () => {
+        const totalRate = parseFloat(formData.totalRate) || 0;
+        const totalChildRate = parseFloat(formData.totalChildRate) || 0;
+        const totalInfantRate = parseFloat(formData.totalInfantRate) || 0;
+        const counts = parseTravelerCounts(formData.travelers);
+
+        return (totalRate * counts.adult)
+            + (totalChildRate * counts.child)
+            + (totalInfantRate * counts.infant);
+    };
+
     if (!formData.dynamicRows) setFormData(prev => ({ ...prev, dynamicRows: [] }));
 
     const handleImageUpload = (file, key) => {
@@ -69,8 +114,46 @@ export default function QuotationFormDetails({
 
     const packageRows = [
         { label: 'TRAVEL PACKAGE', value: quotationData.packageName, emphasis: true },
-        { label: 'TRAVEL DATES', value: formatTravelDates(quotationData.travelDates) },
-        { label: 'HOTEL', value: quotationData.hotel },
+        {
+            label: 'TRAVEL DATES',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder={formatTravelDates(quotationData.travelDates)}
+                        value={formData.travelDates || ''}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, travelDates: e.target.value }))
+                        }
+                        style={formErrors.travelDates ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.travelDates ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.travelDates}</div>
+                    ) : null}
+                </div>
+            )
+        },
+        {
+            label: 'HOTEL',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder={quotationData.hotel || 'Hotel name'}
+                        value={formData.hotel || ''}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, hotel: e.target.value }))
+                        }
+                        style={formErrors.hotel ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.hotel ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.hotel}</div>
+                    ) : null}
+                </div>
+            )
+        },
         {
             label: 'ROOM/S (NO./TYPE)',
             value: (
@@ -91,7 +174,26 @@ export default function QuotationFormDetails({
                 </div>
             )
         },
-        { label: 'AIRLINE', value: quotationData.airline },
+        {
+            label: 'AIRLINE',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder={quotationData.airline || 'Airline'}
+                        value={formData.airline || ''}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, airline: e.target.value }))
+                        }
+                        style={formErrors.airline ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.airline ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.airline}</div>
+                    ) : null}
+                </div>
+            )
+        },
         {
             label: 'BAGGAGE ALLOWANCE',
             value: (
@@ -115,13 +217,33 @@ export default function QuotationFormDetails({
         { label: 'PH TRAVEL TAX OF PHP 1620', value: 'EXCLUDED', danger: true },
         { label: 'AIRPORT TERMINAL FEE', value: 'INCLUDED' },
         {
-            label: 'TOTAL RATE PER PERSON (QUOTED FOR A MINIMUM OF 3 | VAT EXCLUSIVE)',
+            label: 'TRAVELERS',
             value: (
                 <div>
                     <Input
                         size="small"
                         className="mrc-tour-details-input"
-                        placeholder="ADULTS: PHP 46,888/PAX"
+                        placeholder="TOTAL"
+                        value={formData.travelers}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, travelers: e.target.value }))
+                        }
+                        style={formErrors.travelers ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.travelers ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.travelers}</div>
+                    ) : null}
+                </div>
+            ),
+        },
+        {
+            label: 'TOTAL RATE PER ADULT',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder="ADULTS PRICE"
                         value={formData.totalRate}
                         onChange={(e) =>
                             setFormData(prev => ({ ...prev, totalRate: e.target.value }))
@@ -133,7 +255,86 @@ export default function QuotationFormDetails({
                     ) : null}
                 </div>
             ),
-            emphasis: true,
+        },
+        {
+            label: 'TOTAL RATE PER CHILD',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder="CHILDREN PRICE"
+                        value={formData.totalChildRate}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, totalChildRate: e.target.value }))
+                        }
+                        style={formErrors.totalChildRate ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.totalChildRate ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalChildRate}</div>
+                    ) : null}
+                </div>
+            ),
+        },
+        {
+            label: 'TOTAL RATE PER INFANT',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder="INFANTS PRICE"
+                        value={formData.totalInfantRate}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, totalInfantRate: e.target.value }))
+                        }
+                        style={formErrors.totalInfantRate ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.totalInfantRate ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalInfantRate}</div>
+                    ) : null}
+                </div>
+            ),
+        },
+        {
+            label: 'TOTAL PRICE',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder="TOTAL"
+                        value={formData.totalPrice || calculateTotalPrice()}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, totalPrice: e.target.value }))
+                        }
+                        style={formErrors.totalPrice ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.totalPrice ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalPrice}</div>
+                    ) : null}
+                </div>
+            ),
+        },
+        {
+            label: 'IF DEPOSIT',
+            value: (
+                <div>
+                    <Input
+                        size="small"
+                        className="mrc-tour-details-input"
+                        placeholder="DEPOSIT AMOUNT"
+                        value={formData.totalDeposit}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, totalDeposit: e.target.value }))
+                        }
+                        style={formErrors.totalDeposit ? { borderColor: '#ff4d4f' } : undefined}
+                    />
+                    {formErrors.totalDeposit ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalDeposit}</div>
+                    ) : null}
+                </div>
+            ),
         },
     ];
 
@@ -227,7 +428,7 @@ export default function QuotationFormDetails({
                             </div>
                         ))}
                         {flights.length === 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', flexDirection: 'row', gap: 40, flexWrap: 'wrap' }}>
                                 <div>
                                     {formData.flightImageA ? (
                                         <img

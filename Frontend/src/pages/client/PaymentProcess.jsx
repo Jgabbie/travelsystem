@@ -9,9 +9,6 @@ import '../../style/components/modals/displayinvoicemodal.css';
 import '../../style/client/paymentprocees.css';
 import axiosInstance from '../../config/axiosConfig';
 
-//temporary
-const SUCCESS_TOKEN_KEY = 'paymongoSuccessToken';
-
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -52,9 +49,6 @@ export default function PaymentProcess() {
     useEffect(() => {
         if (!bookingData) {
             navigate('/home', { replace: true });
-        }
-        if (searchParams.get('status') === 'cancel') {
-            localStorage.removeItem(SUCCESS_TOKEN_KEY);
         }
         const methodParam = searchParams.get('method');
         if (methodParam === 'manual' || methodParam === 'paymongo') {

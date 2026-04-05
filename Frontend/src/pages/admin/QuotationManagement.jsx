@@ -43,6 +43,15 @@ export default function QuotationManagement() {
     const isEmployee = auth?.role === 'Employee'
     const basePath = isEmployee ? '/employee' : ''
 
+    const sumTravelers = (travelers) => {
+        if (typeof travelers === "number") return travelers;
+        if (!travelers || typeof travelers !== "object") return 0;
+        const adult = Number(travelers.adult) || 0;
+        const child = Number(travelers.child) || 0;
+        const infant = Number(travelers.infant) || 0;
+        return adult + child + infant;
+    };
+
     useEffect(() => {
         const fetchQuotations = async () => {
             setLoading(true);
@@ -54,7 +63,7 @@ export default function QuotationManagement() {
                     packageName: q.packageId?.packageName || "Package",
                     customerName: q.userId?.username || "Unknown",
                     dateRequested: q.createdAt ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
-                    travelers: q.quotationDetails?.travelers ?? 0,
+                    travelers: sumTravelers(q.quotationDetails?.travelers),
                     status: q.status
                 }))
                 setData(quotations);

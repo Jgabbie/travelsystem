@@ -5,16 +5,16 @@ import { useBooking } from '../../context/BookingContext';
 import dayjs from 'dayjs';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import axiosInstance from '../../config/axiosConfig';
 import '../../style/components/modals/bookingsummarymodal.css'
 import '../../style/components/modals/uploadpassportmodal.css'
 import '../../style/components/modals/travelersmodal.css'
 import '../../style/components/modals/soloorgroupedmodal.css'
 import '../../style/client/bookingprocess.css'
-import BookingRegistrationDiet from '../../components/form/BookingRegistrationDiet';
-import BookingRegistrationTravelers from '../../components/form/BookingRegistrationTravelers';
-import BookingRegistrationTermsPart1 from '../../components/form/BookingRegistrationTermsPart1';
-import BookingRegistrationTermsPart2 from '../../components/form/BookingRegistrationTermsPart2';
-
+import BookingRegistrationDietQuote from '../../components/form_quotationbooking/BookingRegistrationDietQuote';
+import BookingRegistrationTermsQuotePart1 from '../../components/form_quotationbooking/BookingRegistrationTermsQuotePart1';
+import BookingRegistrationTermsQuotePart2 from '../../components/form_quotationbooking/BookingRegistrationTermsQuotePart2';
+import BookingRegistrationTravelersQuote from '../../components/form_quotationbooking/BookingRegistrationTravelersQuote';
 
 const getDisplayDate = (value) => {
     if (!value) return ''
@@ -29,14 +29,6 @@ const getDisplayDate = (value) => {
     return String(value)
 }
 
-const toBase64 = (file) =>
-    new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-
 export default function QuotationBookingProcess() {
     const [form] = Form.useForm();
     const { bookingData, setBookingData } = useBooking();
@@ -46,17 +38,26 @@ export default function QuotationBookingProcess() {
     //get summary data
     const summary = bookingData || {}
     const data = summary
-    const travelers = data.travelers?.length ? data.travelers : ['None selected']
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : []
     const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : []
-    const travelDate = getDisplayDate(data.travelDate)
-    const travelersCount = data.travelers?.length || data.travelersCount || 1
+    const travelersCount = (() => {
+        if (Array.isArray(data.travelers)) return data.travelers.length || 1;
+        if (typeof data.travelersCount === 'number') return data.travelersCount;
+        if (data.travelersCount && typeof data.travelersCount === 'object') {
+            const adult = Number(data.travelersCount.adult) || 0;
+            const child = Number(data.travelersCount.child) || 0;
+            const infant = Number(data.travelersCount.infant) || 0;
+            return Math.max(1, adult + child + infant);
+        }
+        return 1;
+    })();
     const travelerCounts = { adult: travelersCount, child: 0, infant: 0 }
 
     const packagePricePerPax = data.travelDatePrice || 0
     const totalPrice = packagePricePerPax * travelersCount
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
+    const bookingType = travelersCount === 1 ? 'Solo Booking' : 'Group Booking'
     const images = data.images || []
 
     //inclusions, exclusions and itinerary
@@ -64,15 +65,33 @@ export default function QuotationBookingProcess() {
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
 
+    console.log("Booking Data in QuotationBookingProcess:", data)
+
     const itineraryEntries = (() => {
+        const formatItineraryItem = (item) => {
+            if (typeof item === 'string') return item;
+            if (!item) return '';
+
+            const activity = item.activity || item.optionalActivity || item.item || '';
+            const optionalPrice = Number.isFinite(Number(item.optionalPrice))
+                ? Number(item.optionalPrice).toLocaleString()
+                : null;
+
+            if (item.isOptional && item.optionalActivity) {
+                return `${activity} (Optional: ${item.optionalActivity}${optionalPrice ? ` - ₱${optionalPrice}` : ''})`;
+            }
+
+            return activity;
+        };
+
         if (Array.isArray(itinerary)) {
             return itinerary.map((items, index) => ({
                 key: `day-${index + 1}`,
                 label: `Day ${index + 1}`,
                 items: Array.isArray(items)
-                    ? items
+                    ? items.map(formatItineraryItem).filter(Boolean)
                     : items
-                        ? [String(items)]
+                        ? [formatItineraryItem(items)].filter(Boolean)
                         : []
             }))
         }
@@ -89,12 +108,21 @@ export default function QuotationBookingProcess() {
                 key: dayKey,
                 label: String(dayKey).replace('day', 'Day '),
                 items: Array.isArray(itinerary[dayKey])
-                    ? itinerary[dayKey]
+                    ? itinerary[dayKey].map(formatItineraryItem).filter(Boolean)
                     : itinerary[dayKey]
-                        ? [String(itinerary[dayKey])]
+                        ? [formatItineraryItem(itinerary[dayKey])].filter(Boolean)
                         : []
             }))
     })()
+
+    const [photoFileLists, setPhotoFileLists] = useState(
+        Array.from({ length: travelersCount || 1 }, () => [])
+    );
+
+    const [photoPreviews, setPhotoPreviews] = useState(
+        Array.from({ length: travelersCount || 1 }, () => null)
+    );
+
 
     const [fileLists, setFileLists] = useState(
         Array.from({ length: travelersCount || 1 }, () => [])
@@ -107,11 +135,109 @@ export default function QuotationBookingProcess() {
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+    useEffect(() => {
+        setFileLists(Array.from({ length: travelersCount || 1 }, () => []));
+        setPreviews(Array.from({ length: travelersCount || 1 }, () => null));
+        setPhotoFileLists(Array.from({ length: travelersCount || 1 }, () => []));
+        setPhotoPreviews(Array.from({ length: travelersCount || 1 }, () => null));
+    }, [travelersCount]);
+
+    useEffect(() => {
+        if (!bookingData?.quotationId) return;
+
+        let isMounted = true;
+
+        const fetchLatestTravelDetails = async () => {
+            try {
+                const response = await axiosInstance.get(`/quotation/get-quotation/${bookingData.quotationId}`);
+                const latestDetails = response.data?.latestPdfRevision?.travelDetails;
+
+                const packageId = response.data?.packageId?._id
+                const packageResponse = await axiosInstance.get(`/package/get-package/${packageId}`);
+
+
+                const quoteTravelers = latestDetails?.travelers || [];
+                const computeTotalTravelers = typeof quoteTravelers === 'number'
+                    ? quoteTravelers
+                    : (Number(quoteTravelers?.adult) || 0)
+                    + (Number(quoteTravelers?.child) || 0)
+                    + (Number(quoteTravelers?.infant) || 0);
+
+                console.log("Response from API:", response.data);
+                console.log("Package Response:", packageResponse.data);
+                console.log("Computed Total Travelers:", computeTotalTravelers);
+                console.log("Quote Travelers Data:", quoteTravelers);
+
+                const packageType = packageResponse.data?.packageType || 'fixed';
+                const packageImages = packageResponse.data?.images || packageResponse.data?.packageImages || [];
+
+                if (!latestDetails || !isMounted) return;
+
+                const travelDateValue = latestDetails.travelDate || latestDetails.travelDates || latestDetails.date || null;
+                const priceValue = latestDetails.totalPrice || "N/A"
+                const travelersValue = latestDetails.travelers || bookingData.travelersCount || 1;
+                const hotelValue = latestDetails.preferredHotels || latestDetails.hotel || "";
+                const airlineValue = latestDetails.preferredAirlines || latestDetails.airline || "";
+
+                const totalTravelers = typeof travelersValue === 'number'
+                    ? travelersValue
+                    : (Number(travelersValue?.adult) || 0)
+                    + (Number(travelersValue?.child) || 0)
+                    + (Number(travelersValue?.infant) || 0);
+
+                setBookingData((prev) => ({
+                    ...prev,
+                    travelDate: prev.travelDate || travelDateValue,
+                    travelDatePrice: prev.travelDatePrice || priceValue,
+                    travelerCounts: prev.travelerCounts || travelersValue,
+                    travelers: prev.travelers?.length
+                        ? prev.travelers
+                        : Array.from({ length: totalTravelers || travelersValue || 1 }, (_, index) => ({ id: index + 1 })),
+                    hotelOptions: prev.hotelOptions?.length
+                        ? prev.hotelOptions
+                        : hotelValue
+                            ? [{ name: hotelValue }]
+                            : [],
+                    airlineOptions: prev.airlineOptions?.length
+                        ? prev.airlineOptions
+                        : airlineValue
+                            ? [{ name: airlineValue }]
+                            : [],
+                    inclusions: prev.inclusions?.length ? prev.inclusions : latestDetails.inclusions || [],
+                    exclusions: prev.exclusions?.length ? prev.exclusions : latestDetails.exclusions || [],
+                    packageType: prev.packageType || packageType,
+                    itinerary: Object.keys(prev.itinerary || {}).length
+                        ? prev.itinerary
+                        : latestDetails.itinerary || {},
+                    images: prev.images?.length
+                        ? prev.images
+                        : (latestDetails.images && latestDetails.images.length)
+                            ? latestDetails.images
+                            : packageImages
+                }));
+            } catch (error) {
+                console.error("Failed to load latest travel details:", error);
+            }
+        };
+
+        fetchLatestTravelDetails();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [bookingData?.quotationId, bookingData?.travelersCount, setBookingData]);
+
     const next = async () => {
         try {
             await form.validateFields();
 
             const missingUploads = fileLists.some(list => !list || list.length === 0);
+            const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
+
+            if (missingPhotos) {
+                message.error("Please upload 2x2 photo for all travelers.");
+                return;
+            }
 
             if (missingUploads) {
                 message.error("Please upload passport for all travelers.");
@@ -120,28 +246,41 @@ export default function QuotationBookingProcess() {
 
             const currentFormValues = form.getFieldsValue();
 
-            const passportFilesFormatted = await Promise.all(
-                fileLists.map(async (list) => {
-                    const fileObj = list?.[0]?.originFileObj;
+            const photoFilesFormatted = photoFileLists.map((list) => {
+                const fileObj = list?.[0]?.originFileObj;
 
-                    if (!fileObj) {
-                        throw new Error("Invalid file upload");
-                    }
+                if (!fileObj) {
+                    throw new Error("Invalid photo upload");
+                }
 
-                    return {
-                        name: fileObj.name,
-                        type: fileObj.type,
-                        base64: await toBase64(fileObj),
-                    };
-                })
-            );
+                return {
+                    name: fileObj.name,
+                    type: fileObj.type,
+                    file: fileObj,
+                };
+            });
+
+            const passportFilesFormatted = fileLists.map((list) => {
+                const fileObj = list?.[0]?.originFileObj;
+
+                if (!fileObj) {
+                    throw new Error("Invalid file upload");
+                }
+
+                return {
+                    name: fileObj.name,
+                    type: fileObj.type,
+                    file: fileObj,
+                };
+            });
 
             setBookingData(prev => ({
                 ...prev,
                 ...currentFormValues,
                 travelerCounts,
                 totalPrice: totalPrice,
-                passportFiles: passportFilesFormatted
+                passportFiles: passportFilesFormatted,
+                photoFiles: photoFilesFormatted
             }));
 
             setCurrentStep(currentStep + 1);
@@ -152,7 +291,8 @@ export default function QuotationBookingProcess() {
                 ...currentFormValues,
                 travelerCounts,
                 totalPrice: totalPrice,
-                passportFiles: fileLists
+                passportFiles: passportFilesFormatted,
+                photoFiles: photoFilesFormatted
             });
             console.log('Save Successful, moving to next step');
 
@@ -187,6 +327,25 @@ export default function QuotationBookingProcess() {
         }
 
         return false;
+    };
+
+    const handlePhotoChange = (info, index) => {
+        const newFileLists = [...photoFileLists];
+        newFileLists[index] = info.fileList;
+        setPhotoFileLists(newFileLists);
+
+        const file = info.file;
+        const newPreviews = [...photoPreviews];
+
+        if (file.status === 'removed') {
+            newPreviews[index] = null;
+        } else {
+            if (file instanceof File || (file.originFileObj instanceof File)) {
+                const previewUrl = URL.createObjectURL(file.originFileObj || file);
+                newPreviews[index] = previewUrl;
+            }
+        }
+        setPhotoPreviews(newPreviews);
     };
 
     const handleFinalSubmit = async () => {
@@ -341,14 +500,14 @@ export default function QuotationBookingProcess() {
                                 <div className="booking-summary-row">
                                     <span className="booking-summary-label">Booking Type</span>
                                     <span className="booking-summary-value">
-                                        Quotation Booking
+                                        {bookingType}
                                     </span>
                                 </div>
 
                                 <div className="booking-summary-row">
                                     <span className="booking-summary-label">Travel Date</span>
                                     <span className="booking-summary-value">
-                                        {travelDate ? dayjs(travelDate).format('MMMM D, YYYY') : 'Not set'}
+                                        {bookingData.travelDate}
                                     </span>
                                 </div>
 
@@ -477,6 +636,9 @@ export default function QuotationBookingProcess() {
 
                                 <div className='upload-passport-left'>
                                     <h4>Traveler {index + 1}</h4>
+                                    <p style={{ fontSize: 12, color: '#888' }}>
+                                        Upload passport and 2x2 ID photo
+                                    </p>
                                     <Upload
                                         fileList={fileLists[index]}
                                         beforeUpload={validateFile}
@@ -487,6 +649,19 @@ export default function QuotationBookingProcess() {
                                     >
                                         <Button type="default">
                                             {fileLists[index]?.length > 0 ? 'Change File' : 'Upload File'}
+                                        </Button>
+                                    </Upload>
+
+                                    <Upload
+                                        fileList={photoFileLists[index]}
+                                        beforeUpload={validateFile}
+                                        onChange={(info) => handlePhotoChange(info, index)}
+                                        accept="image/jpeg,image/png"
+                                        maxCount={1}
+                                        style={{ marginTop: 10 }}
+                                    >
+                                        <Button>
+                                            {photoFileLists[index]?.length > 0 ? 'Change 2x2 Photo' : 'Upload 2x2 Photo'}
                                         </Button>
                                     </Upload>
                                 </div>
@@ -501,19 +676,45 @@ export default function QuotationBookingProcess() {
                                             />
                                         </div>
                                     )}
+
+                                    {photoPreviews[index] && (
+                                        <div style={{ marginTop: '10px' }}>
+                                            <img
+                                                src={photoPreviews[index]}
+                                                alt={`2x2 Preview ${index + 1}`}
+                                                style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                             </div>
                         ))}
                     </div>
                     <div className='upload-passport-notes'>
-                        <strong>Note:</strong>
-                        <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                            <li>Upload a clear image of the passport bio page</li>
-                            <li>Accepted formats: JPG, PNG</li>
-                            <li>Maximum file size: 5MB</li>
-                            <li>Blurry or cropped images may delay booking confirmation</li>
-                        </ul>
+                        <div>
+                            <strong>Note:</strong>
+                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                <li>Upload a clear image of the passport bio page</li>
+                                <li>Accepted formats: JPG, PNG</li>
+                                <li>Maximum file size: 5MB</li>
+                                <li>Blurry or cropped images may delay booking confirmation</li>
+                            </ul>
+                        </div>
+
+                        <div style={{ marginTop: 10 }}>
+                            <strong >Note for 2x2 ID Photos:</strong>
+                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                <li>Upload a clear image of the 2x2 ID photo</li>
+                                <li>The photo must have a white plain background</li>
+                                <li>Face should be clearly visible and not covered by any accessories (e.g., glasses, hat)</li>
+                                <li>No Fullnames or any names printed in the photo</li>
+                                <li>Accepted formats: JPG, PNG</li>
+                                <li>Maximum file size: 5MB</li>
+                                <li>Blurry or cropped images may delay booking confirmation</li>
+                            </ul>
+                        </div>
+
                     </div>
                 </div>
 
@@ -536,7 +737,7 @@ export default function QuotationBookingProcess() {
 
                     <div className="form-content-wrapper pdf-capture" ref={pdfStepRef}>
                         {currentStep === 0 && (
-                            <BookingRegistrationTravelers
+                            <BookingRegistrationTravelersQuote
                                 form={form}
                                 onValuesChange={handleValuesChange}
                                 summary={summary}
@@ -545,7 +746,7 @@ export default function QuotationBookingProcess() {
                         )}
 
                         {currentStep === 1 && (
-                            <BookingRegistrationDiet
+                            <BookingRegistrationDietQuote
                                 form={form}
                                 onValuesChange={handleValuesChange}
                                 summary={summary}
@@ -553,7 +754,7 @@ export default function QuotationBookingProcess() {
                         )}
 
                         {currentStep === 2 && (
-                            <BookingRegistrationTermsPart1
+                            <BookingRegistrationTermsQuotePart1
                                 form={form}
                                 onValuesChange={handleValuesChange}
                                 summary={summary}
@@ -561,7 +762,7 @@ export default function QuotationBookingProcess() {
                         )}
 
                         {currentStep === 3 && (
-                            <BookingRegistrationTermsPart2
+                            <BookingRegistrationTermsQuotePart2
                                 form={form}
                                 onValuesChange={handleValuesChange}
                                 summary={summary}
