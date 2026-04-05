@@ -8,6 +8,7 @@ import axiosInstance from "../../config/axiosConfig";
 import QuotationFormDetails from "../../components/quotationform/QuotationFormDetails";
 import QuotationFormInEx from "../../components/quotationform/QuotationFormInEx";
 import QuotationFormTermsConditions from "../../components/quotationform/QuotationFormTermsConditions";
+import '../../style/components/mrcquotation.css';
 
 export default function QuotationRequest() {
     const location = useLocation();
@@ -22,6 +23,16 @@ export default function QuotationRequest() {
     const [previewStep, setPreviewStep] = useState(0);
     const [autoUploaded, setAutoUploaded] = useState(false);
     const pdfContainerRef = useRef(null);
+
+    const [formData, setFormData] = useState({
+        roomType: '',
+        baggageAllowance: '',
+        totalRate: '',
+        flightImageA: '',
+        flightImageB: ''
+    });
+
+    const [formErrors, setFormErrors] = useState({});
 
     useEffect(() => {
         const fetchQuotation = async () => {
@@ -55,15 +66,13 @@ export default function QuotationRequest() {
         getAdminName();
     }, [id]);
 
-
-
     console.log("Fetched quotation:", quotation);
 
     const packageName = quotation?.packageId?.packageName || "N/A";
     const customerName = quotation?.userId?.username || "N/A";
     const hotel = quotation?.quotationDetails?.preferredHotels || "N/A";
     const airline = quotation?.quotationDetails?.preferredAirlines || "N/A";
-    const travelDates = quotation?.quotationDetails?.preferredDates || "N/A";
+    const travelDates = quotation?.quotationDetails?.preferredDates || quotation?.quotationDetails?.prefferedDate || "N/A";
     const budgetRange = Array.isArray(quotation?.quotationDetails?.budgetRange)
         ? `₱${quotation.quotationDetails.budgetRange.join(" - ")}`
         : "N/A";
@@ -124,6 +133,9 @@ export default function QuotationRequest() {
             title: "Quotation Form Preview",
             content: <QuotationFormDetails
                 quotationData={quotationData}
+                formData={formData}
+                setFormData={setFormData}
+                formErrors={formErrors}
             />,
         },
         {
@@ -140,6 +152,34 @@ export default function QuotationRequest() {
             />,
         },
     ];
+
+    const validateForm = () => {
+        const errors = {};
+
+        if (!formData.roomType.trim()) {
+            errors.roomType = "Room/Type is required.";
+        }
+
+        if (!formData.baggageAllowance.trim()) {
+            errors.baggageAllowance = "Baggage allowance is required.";
+        }
+
+        if (!formData.totalRate.trim()) {
+            errors.totalRate = "Total rate is required.";
+        }
+
+        if (!formData.flightImageA) {
+            errors.flightImageA = "Flight image 1 is required.";
+        }
+
+        if (!formData.flightImageB) {
+            errors.flightImageB = "Flight image 2 is required.";
+        }
+
+        setFormErrors(errors);
+
+        return Object.keys(errors).length === 0;
+    };
 
     // When a file is selected
     const handleFileSelect = (file) => {
@@ -183,35 +223,34 @@ export default function QuotationRequest() {
     const generateAndUploadPdf = async () => {
         if (!pdfContainerRef.current) return;
 
-        const pages = Array.from(pdfContainerRef.current.querySelectorAll("[data-quotation-page]"));
-        if (!pages.length) return;
-
         setUploading(true);
+
         try {
-            const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+            const element = pdfContainerRef.current;
 
-            for (let i = 0; i < pages.length; i += 1) {
-                const canvas = await html2canvas(pages[i], {
-                    scale: 1,
-                    useCORS: true,
-                    backgroundColor: "#ffffff"
-                });
+            // Capture the full height canvas
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+            const imgData = canvas.toDataURL("image/jpeg", 1.0);
 
-                const imgData = canvas.toDataURL("image/jpeg", 1.0);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-                const renderHeight = Math.min(imgHeight, pdfHeight);
+            const pdf = new jsPDF("p", "pt", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
 
-                pdf.setFillColor(255, 255, 255);
-                pdf.rect(0, 0, pdfWidth, pdfHeight, "F");
-                pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, renderHeight);
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-                if (i < pages.length - 1) {
+            let position = 0;
+
+            while (position < imgHeight) {
+                pdf.addImage(imgData, "JPEG", 0, -position, imgWidth, imgHeight);
+                position += pdfHeight;
+
+                if (position < imgHeight) {
                     pdf.addPage();
                 }
             }
 
+            // Save or upload
             const pdfBlob = pdf.output("blob");
             const formData = new FormData();
             formData.append("pdf", pdfBlob, `quotation-${id}.pdf`);
@@ -220,34 +259,33 @@ export default function QuotationRequest() {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
-            //download the generated PDF for preview
-            const downloadUrl = URL.createObjectURL(pdfBlob);
+            const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement("a");
-            link.href = downloadUrl;
+            link.href = url;
             link.download = `quotation-${id}.pdf`;
-            document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(downloadUrl);
+            URL.revokeObjectURL(url);
 
-            setAutoUploaded(true);
-            message.success("Quotation PDF generated and uploaded.");
-        } catch (error) {
-            console.error("Auto upload error:", error);
-            message.error("Failed to auto-upload PDF.");
+            message.success("PDF generated with auto page breaks!");
+        } catch (err) {
+            console.error(err);
+            message.error("Failed to generate PDF");
         } finally {
             setUploading(false);
         }
     };
 
-    const handleNextPreview = async () => {
-        const nextStep = Math.min(previewItems.length - 1, previewStep + 1);
+    const handleNextPreview = () => {
+        if (previewStep === 0) {
+            const isValid = validateForm();
 
-        if (nextStep === previewItems.length - 1 && !autoUploaded) {
-            await generateAndUploadPdf();
+            if (!isValid) {
+                message.error("Please complete required fields.");
+                return;
+            }
         }
 
-        setPreviewStep(nextStep);
+        setPreviewStep((prev) => Math.min(previewItems.length - 1, prev + 1));
     };
 
     return (
@@ -276,6 +314,7 @@ export default function QuotationRequest() {
                                     <Descriptions.Item label="Travelers">{travelers || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Preferred Airlines">{airline || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Preferred Hotels">{hotel || "N/A"}</Descriptions.Item>
+                                    <Descriptions.Item label="Preferred Date">{travelDates || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Budget Range">{budgetRange}</Descriptions.Item>
                                     <Descriptions.Item label="Itinerary Notes">
                                         {itineraryNotes.length === 0
@@ -286,9 +325,21 @@ export default function QuotationRequest() {
                                         }
                                     </Descriptions.Item>
                                     <Descriptions.Item label="Package Category">{details.packageCategory || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Flight Airline">{flightDetails.flightAirline || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Flight Date">{flightDetails.flightDate || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Flight Time">{flightDetails.flightTime || "N/A"}</Descriptions.Item>
+                                    {["flightAirline", "flightDate", "flightTime"].map((key) => {
+                                        const value = flightDetails[key];
+                                        if (!value || value === "N/A") return null; // skip N/A or empty values
+
+                                        // Convert key to readable label
+                                        const label = key
+                                            .replace(/([A-Z])/g, " $1") // add space before capital letters
+                                            .replace(/^./, (str) => str.toUpperCase()); // capitalize first letter
+
+                                        return (
+                                            <Descriptions.Item key={key} label={label}>
+                                                {value}
+                                            </Descriptions.Item>
+                                        );
+                                    })}
                                     <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
                                     <Descriptions.Item label="Status">{quotation.status}</Descriptions.Item>
                                 </Descriptions>
@@ -370,20 +421,34 @@ export default function QuotationRequest() {
 
                         <Card title={previewItems[previewStep].title} style={{ margin: 20 }}>
                             {previewItems[previewStep].content}
-                            <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between" }}>
-                                <Button
-                                    onClick={() => setPreviewStep((prev) => Math.max(0, prev - 1))}
-                                    disabled={previewStep === 0}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    type="primary"
-                                    onClick={handleNextPreview}
-                                    disabled={previewStep === previewItems.length - 1}
-                                >
-                                    Next
-                                </Button>
+                            <div
+                                style={{
+                                    marginTop: 16,
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    minHeight: 40, // ensures the container keeps its height even if buttons disappear
+                                }}
+                            >
+                                <div>
+                                    {previewStep > 0 && (
+                                        <Button onClick={() => setPreviewStep((prev) => prev - 1)}>
+                                            Previous
+                                        </Button>
+                                    )}
+                                </div>
+
+                                <div>
+                                    {previewStep < previewItems.length - 1 && (
+                                        <Button type="primary" onClick={handleNextPreview}>
+                                            Next
+                                        </Button>
+                                    )}
+                                    {previewStep === previewItems.length - 1 && (
+                                        <Button type="primary" onClick={generateAndUploadPdf} loading={uploading}>
+                                            Generate & Upload PDF
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         </Card>
                     </div>
@@ -392,13 +457,14 @@ export default function QuotationRequest() {
                         ref={pdfContainerRef}
                         style={{ position: "absolute", left: -9999, top: 0, width: 800 }}
                     >
-                        <div data-quotation-page>
-                            <QuotationFormDetails quotationData={quotationData} />
-                        </div>
-                        <div data-quotation-page>
+                        <div className="pdf-content">
+                            <QuotationFormDetails
+                                quotationData={quotationData}
+                                formData={formData}
+                                setFormData={setFormData}
+                                formErrors={formErrors}
+                            />
                             <QuotationFormInEx quotationData={quotationData} />
-                        </div>
-                        <div data-quotation-page>
                             <QuotationFormTermsConditions quotationData={quotationData} />
                         </div>
                     </div>

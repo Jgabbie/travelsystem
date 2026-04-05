@@ -42,27 +42,25 @@ export default function QuotationFormInEx({ quotationData }) {
         if (typeof item === 'string') return item;
         if (!item) return '';
 
-        const activity = item.activity || item.optionalActivity || item.item || '';
+        const activity = item.activity || item.item || '';
         const optionalPrice = Number.isFinite(Number(item.optionalPrice))
             ? Number(item.optionalPrice).toLocaleString()
             : null;
 
-        return (
-            <>
-                <div>{activity}</div>
-                {item.isOptional && item.optionalActivity && (
-                    <div>
-                        Optional: {item.optionalActivity}
-                        {optionalPrice ? ` - ₱${optionalPrice}` : ''}
-                    </div>
-                )}
-            </>
-        );
+        let text = activity;
+
+        if (item.isOptional && item.optionalActivity) {
+            text += ` (Optional: ${item.optionalActivity}${optionalPrice ? ` - ₱${optionalPrice}` : ''})`;
+        }
+
+        return text;
     };
 
     return (
         <div className="mrc-overlay-wrapper">
-            <div className="mrc-form-page mrc-quotation-page">
+
+            {/* PAGE 1 */}
+            <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
                 <div className="mrc-form-header">
                     <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" />
                 </div>
@@ -84,23 +82,41 @@ export default function QuotationFormInEx({ quotationData }) {
                         ))}
                     </ul>
                 </div>
+            </div>
 
-                <div className="mrc-quotation-section">
+            {/* PAGE 2 */}
+            <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
+                <div className="mrc-form-header">
+                    <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" />
+                </div>
+
+                <div className="mrc-quotation-section page-break">
                     <div className="mrc-quotation-subtitle">SUGGESTED ITINERARY:</div>
                     <div className="mrc-quotation-itinerary">
-                        {itinerary.map((entry) => (
-                            <div key={`${entry.day}`} className="mrc-quotation-itinerary-row">
-                                <div className="mrc-quotation-itinerary-date">
-                                    {entry.date ? `${entry.date} | ${entry.day}` : entry.day}
+                        {itinerary.map((entry, index) => (
+                            <React.Fragment key={entry.day}>
+
+                                {index !== 0 && index % 3 === 0 && (
+                                    <div className="page-break" />
+                                )}
+
+                                <div className="mrc-quotation-itinerary-row">
+                                    <div className="mrc-quotation-itinerary-date">
+                                        {entry.date ? `${entry.date} | ${entry.day}` : entry.day}
+                                    </div>
+
+                                    <div className="mrc-quotation-itinerary-body">
+                                        <ul className="mrc-quotation-list is-bulleted">
+                                            {(entry.bullets.length ? entry.bullets : ['N/A']).map((item, i) => (
+                                                <li key={`${entry.day}-${i}`}>
+                                                    {renderItineraryItem(item) || '--'}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div className="mrc-quotation-itinerary-body">
-                                    <ul className="mrc-quotation-list is-bulleted">
-                                        {(entry.bullets.length ? entry.bullets : ['N/A']).map((item, index) => (
-                                            <li key={`${entry.day}-${index}`}>{renderItineraryItem(item) || '--'}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
+
+                            </React.Fragment>
                         ))}
                     </div>
                 </div>
@@ -118,6 +134,7 @@ export default function QuotationFormInEx({ quotationData }) {
                     NOTE: ALL RATES &amp; AVAILABILITY ARE STILL SUBJECT TO CHANGE WITHOUT PRIOR NOTICE.
                 </div>
             </div>
+
         </div>
     );
 }

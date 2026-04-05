@@ -5,16 +5,16 @@ import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
-export default function QuotationFormDetails({ quotationData }) {
-    const [flightImageA, setFlightImageA] = useState('');
-    const [flightImageB, setFlightImageB] = useState('');
-    const [roomType, setRoomType] = useState('');
-    const [baggageAllowance, setBaggageAllowance] = useState('');
-    const [totalRate, setTotalRate] = useState('');
-    const [fieldErrors, setFieldErrors] = useState({});
+export default function QuotationFormDetails({
+    quotationData,
+    formData,
+    setFormData,
+    formErrors
+}) {
 
-    const handleImageUpload = (file, setImage) => {
+    const handleImageUpload = (file, key) => {
         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+
         if (!isJpgOrPng) {
             message.error('Only JPG or PNG files are allowed.');
             return Upload.LIST_IGNORE;
@@ -22,8 +22,14 @@ export default function QuotationFormDetails({ quotationData }) {
 
         const reader = new FileReader();
         reader.onload = () => {
-            setImage(reader.result?.toString() || '');
+            const base64 = reader.result?.toString() || '';
+
+            setFormData(prev => ({
+                ...prev,
+                [key]: base64
+            }));
         };
+
         reader.readAsDataURL(file);
 
         return false;
@@ -58,13 +64,6 @@ export default function QuotationFormDetails({ quotationData }) {
         return formatDateValue(value);
     };
 
-    const validateField = (key, value, label) => {
-        const isEmpty = !String(value || '').trim();
-        setFieldErrors((prev) => ({ ...prev, [key]: isEmpty ? `${label} is required.` : '' }));
-        if (isEmpty) {
-            message.error(`${label} is required.`);
-        }
-    };
 
     const packageRows = [
         { label: 'TRAVEL PACKAGE', value: quotationData.packageName, emphasis: true },
@@ -78,13 +77,14 @@ export default function QuotationFormDetails({ quotationData }) {
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder="1 STUDIO TWIN ROOM"
-                        value={roomType}
-                        onChange={(e) => setRoomType(e.target.value)}
-                        onBlur={() => validateField('roomType', roomType, 'Room/Type')}
-                        style={fieldErrors.roomType ? { borderColor: '#ff4d4f' } : undefined}
+                        value={formData.roomType}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, roomType: e.target.value }))
+                        }
+                        style={formErrors.roomType ? { borderColor: '#ff4d4f' } : undefined}
                     />
-                    {fieldErrors.roomType ? (
-                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{fieldErrors.roomType}</div>
+                    {formErrors.roomType ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.roomType}</div>
                     ) : null}
                 </div>
             )
@@ -98,13 +98,14 @@ export default function QuotationFormDetails({ quotationData }) {
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder="HANDCARRY: 1PC. 7KGS/PERSON | CHECK IN: N/A"
-                        value={baggageAllowance}
-                        onChange={(e) => setBaggageAllowance(e.target.value)}
-                        onBlur={() => validateField('baggageAllowance', baggageAllowance, 'Baggage allowance')}
-                        style={fieldErrors.baggageAllowance ? { borderColor: '#ff4d4f' } : undefined}
+                        value={formData.baggageAllowance}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, baggageAllowance: e.target.value }))
+                        }
+                        style={formErrors.baggageAllowance ? { borderColor: '#ff4d4f' } : undefined}
                     />
-                    {fieldErrors.baggageAllowance ? (
-                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{fieldErrors.baggageAllowance}</div>
+                    {formErrors.baggageAllowance ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.baggageAllowance}</div>
                     ) : null}
                 </div>
             )
@@ -119,13 +120,14 @@ export default function QuotationFormDetails({ quotationData }) {
                         size="small"
                         className="mrc-tour-details-input"
                         placeholder="ADULTS: PHP 46,888/PAX"
-                        value={totalRate}
-                        onChange={(e) => setTotalRate(e.target.value)}
-                        onBlur={() => validateField('totalRate', totalRate, 'Total rate')}
-                        style={fieldErrors.totalRate ? { borderColor: '#ff4d4f' } : undefined}
+                        value={formData.totalRate}
+                        onChange={(e) =>
+                            setFormData(prev => ({ ...prev, totalRate: e.target.value }))
+                        }
+                        style={formErrors.totalRate ? { borderColor: '#ff4d4f' } : undefined}
                     />
-                    {fieldErrors.totalRate ? (
-                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{fieldErrors.totalRate}</div>
+                    {formErrors.totalRate ? (
+                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalRate}</div>
                     ) : null}
                 </div>
             ),
@@ -182,41 +184,51 @@ export default function QuotationFormDetails({ quotationData }) {
                         {flights.length === 0 && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flexWrap: 'wrap' }}>
                                 <div>
-                                    {flightImageA ? (
+                                    {formData.flightImageA ? (
                                         <img
-                                            src={flightImageA}
+                                            src={formData.flightImageA}
                                             alt="Flight Upload 1"
                                             style={{ width: 240, height: 150, objectFit: 'cover', borderRadius: 8 }}
                                         />
                                     ) : (
                                         <Upload
                                             showUploadList={false}
-                                            beforeUpload={(file) => handleImageUpload(file, setFlightImageA)}
+                                            beforeUpload={(file) => handleImageUpload(file, 'flightImageA')}
                                             accept=".jpg,.jpeg,.png"
                                         >
                                             <Button icon={<UploadOutlined />}>
                                                 Upload Flight Image 1
                                             </Button>
+                                            {formErrors.flightImageA && (
+                                                <div style={{ color: '#ff4d4f', fontSize: 11 }}>
+                                                    {formErrors.flightImageA}
+                                                </div>
+                                            )}
                                         </Upload>
                                     )}
                                 </div>
 
                                 <div>
-                                    {flightImageB ? (
+                                    {formData.flightImageB ? (
                                         <img
-                                            src={flightImageB}
+                                            src={formData.flightImageB}
                                             alt="Flight Upload 2"
                                             style={{ width: 240, height: 150, objectFit: 'cover', borderRadius: 8 }}
                                         />
                                     ) : (
                                         <Upload
                                             showUploadList={false}
-                                            beforeUpload={(file) => handleImageUpload(file, setFlightImageB)}
+                                            beforeUpload={(file) => handleImageUpload(file, 'flightImageB')}
                                             accept=".jpg,.jpeg,.png"
                                         >
                                             <Button icon={<UploadOutlined />}>
                                                 Upload Flight Image 2
                                             </Button>
+                                            {formErrors.flightImageB && (
+                                                <div style={{ color: '#ff4d4f', fontSize: 11 }}>
+                                                    {formErrors.flightImageB}
+                                                </div>
+                                            )}
                                         </Upload>
                                     )}
                                 </div>

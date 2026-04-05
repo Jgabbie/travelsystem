@@ -1,6 +1,22 @@
+.pdf-content {
+    width: 794px;
+    background: white;
+}
+
 .mrc-quotation-page {
     max-width: 760px;
-    padding: 26px 28px 30px;
+    padding: 16px 18px 24px;
+    position: relative;
+}
+
+.mrc-form-page {
+    width: 794px;
+    min-height: 1123px;
+    background: white;
+}
+
+.page-break {
+    page-break-inside: avoid;
 }
 
 .mrc-quotation-page::before {
@@ -25,11 +41,11 @@
 }
 
 .mrc-quotation-page::before {
-    top: -24px;
+    top: -10px;
 }
 
 .mrc-quotation-page::after {
-    bottom: -24px;
+    bottom: -10px;
 }
 
 .mrc-quotation-intro {
@@ -166,7 +182,7 @@
 
 .mrc-quotation-list {
     margin: 0;
-    padding-left: 18px;
+    padding-left: 2px;
     list-style: none;
     display: grid;
     gap: 4px;
@@ -194,7 +210,7 @@
 .mrc-quotation-itinerary-row {
     display: grid;
     grid-template-columns: 130px 1fr;
-    gap: 10px;
+    gap: 2px;
 }
 
 .mrc-quotation-itinerary-date {
@@ -240,7 +256,7 @@
 
 .mrc-quotation-terms-list {
     margin: 0 0 18px;
-    padding-left: 18px;
+    padding-left: 2px;
     display: grid;
     gap: 6px;
 }

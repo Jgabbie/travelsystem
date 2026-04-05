@@ -20,6 +20,7 @@ export default function UserQuotationRequest() {
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [pdfLoading, setPdfLoading] = useState(false);
+    const [signedPdfUrl, setSignedPdfUrl] = useState(null);
 
 
     useEffect(() => {
@@ -135,7 +136,7 @@ export default function UserQuotationRequest() {
         }
         console.log("Revision requested with notes:", notes);
         setActionLoading(true);
-        axiosInstance.post(`/quotation/${id}/request-revision`, {
+        axiosInstance.post(`upload/quotation/${id}/request-revision`, {
             notes
         }).then(res => {
             message.success("Revision requested successfully.");
@@ -148,13 +149,15 @@ export default function UserQuotationRequest() {
         });
     };
 
-    const latestPdfUrl = quotation?.pdfRevisions?.filter((rev) => rev?.url).slice(-1)[0]?.url;
 
     useEffect(() => {
-        if (latestPdfUrl) {
-            setPdfLoading(true);
+        const latestRevision = quotation?.pdfRevisions?.filter(rev => rev?.url).slice(-1)[0];
+        if (latestRevision) {
+            setSignedPdfUrl(latestRevision.url); // directly use the URL from DB
+        } else {
+            setSignedPdfUrl(null);
         }
-    }, [latestPdfUrl]);
+    }, [quotation]);
 
     return (
         <ConfigProvider
@@ -217,15 +220,8 @@ export default function UserQuotationRequest() {
                             </div>
 
                             <h1>Latest Revision</h1>
-                            <div
-                                style={{
-                                    border: "1px solid #ccc",
-                                    height: "600px",
-                                    marginBottom: "20px",
-                                    position: "relative",
-                                }}
-                            >
-                                {latestPdfUrl ? (
+                            <div style={{ border: "1px solid #ccc", height: "600px", marginBottom: "20px", position: "relative" }}>
+                                {signedPdfUrl ? (
                                     <>
                                         {pdfLoading && (
                                             <div style={{
@@ -241,7 +237,7 @@ export default function UserQuotationRequest() {
                                             </div>
                                         )}
                                         <iframe
-                                            src={latestPdfUrl}
+                                            src={signedPdfUrl}
                                             title="Quotation PDF"
                                             width="100%"
                                             height="100%"
