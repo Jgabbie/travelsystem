@@ -128,7 +128,14 @@ const getQuotation = async (req, res) => {
 
         if (!quotation) return res.status(404).json({ message: "Quotation not found" })
 
-        res.status(200).json(quotation)
+        const latestPdfRevision = quotation.pdfRevisions?.length
+            ? quotation.pdfRevisions[quotation.pdfRevisions.length - 1]
+            : null
+
+        res.status(200).json({
+            ...quotation.toObject(),
+            latestPdfRevision
+        })
     } catch (error) {
         res.status(500).json({ message: 'Error fetching quotation', error })
     }
@@ -176,22 +183,9 @@ const uploadQuotationPDF = async (req, res) => {
             url: pdfUrl,
             version: quotation.pdfRevisions.length + 1,
             uploaderName: userName.username,
-            uploadedBy: req.userId,
-            uploadedAt: new Date()
+            uploadedBy: req.userId, uploadedAt: new Date()
         });
 
-
-
-
-        // const updatedQuotation = await QuotationModel.findByIdAndUpdate(
-        //     id,
-        //     { pdfUrl, pdfRevisions: quotation.pdfRevisions, status: 'Under Review' },
-        //     { new: true }
-        // );
-
-        // if (!updatedQuotation) {
-        //     return res.status(404).json({ message: "Quotation not found" });
-        // }
         await quotation.save();
 
         try {
@@ -214,6 +208,27 @@ const uploadQuotationPDF = async (req, res) => {
         res.status(500).json({ message: 'Error uploading PDF', error });
     }
 };
+
+const uploadTravelDetails = async (req, res) => {
+    const { id } = req.params
+    const { travelDetails } = req.body
+
+    try {
+        const quotation = await QuotationModel.findById(id)
+
+        if (!quotation) {
+            return res.status(404).json({ message: "Quotation not found" })
+        }
+
+        quotation.pdfRevisions[quotation.pdfRevisions.length - 1].travelDetails = travelDetails
+        const updatedQuotation = await quotation.save()
+
+        res.status(200).json({ message: "Travel details updated successfully", quotation: updatedQuotation });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating travel details', error });
+    }
+};
+
 
 const requestRevision = async (req, res) => {
     const { id } = req.params
@@ -252,5 +267,6 @@ module.exports = {
     deleteQuotation,
     getQuotation,
     uploadQuotationPDF,
-    requestRevision
+    requestRevision,
+    uploadTravelDetails
 }

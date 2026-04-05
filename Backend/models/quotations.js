@@ -29,8 +29,10 @@ const PdfRevisionSchema = new mongoose.Schema({
     uploadedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'users',
-        required: true
+        required: true,
     },
+
+    travelDetails: { type: Object },
 
     uploaderName: { type: String, required: true },
 
