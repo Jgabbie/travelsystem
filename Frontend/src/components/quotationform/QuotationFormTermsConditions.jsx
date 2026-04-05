@@ -17,11 +17,7 @@ export default function QuotationFormTermsConditions({ quotationData }) {
 
     return (
         <div className="mrc-overlay-wrapper">
-            <div className="mrc-form-page mrc-quotation-page">
-                <div className="mrc-form-header">
-                    <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" />
-                </div>
-
+            <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
                 <div className="mrc-quotation-terms-box">
                     <div className="mrc-quotation-terms-title">TERMS AND CONDITIONS:</div>
                     <ul className="mrc-quotation-terms-list">
@@ -36,8 +32,6 @@ export default function QuotationFormTermsConditions({ quotationData }) {
                         <p>Travel coordinator.</p>
                     </div>
                 </div>
-
-                <div style={{ height: 300 }} />
             </div>
         </div>
     );

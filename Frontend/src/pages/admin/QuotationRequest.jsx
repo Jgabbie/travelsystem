@@ -13,15 +13,16 @@ import '../../style/components/mrcquotation.css';
 export default function QuotationRequest() {
     const location = useLocation();
     const { quotationId } = location.state || {};
-    const id = quotationId; // quotation ID from location state
+    const id = quotationId;
+
     const [quotation, setQuotation] = useState(null);
     const [adminName, setAdminName] = useState(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewURL, setPreviewURL] = useState(null);
     const [previewStep, setPreviewStep] = useState(0);
-    const [autoUploaded, setAutoUploaded] = useState(false);
     const pdfContainerRef = useRef(null);
 
     const [formData, setFormData] = useState({
@@ -98,6 +99,32 @@ export default function QuotationRequest() {
 
     console.log("Constructed quotationData for form components:", quotationData); // Debug log to check constructed data
 
+    const [editableItinerary, setEditableItinerary] = useState(
+        Object.entries(quotationData.itinerary || {}).map(([dayKey, activities], index) => ({
+            day: dayKey || `Day ${index + 1}`,
+            date: quotationData.itineraryDate || '',
+            text: Array.isArray(activities) ? activities.map(item => {
+                if (typeof item === 'string') return item;
+                return item.activity || item.optionalActivity || item.item || '';
+            }).join('\n') : '',
+        }))
+    );
+
+    useEffect(() => {
+        if (!quotation) return;
+
+        const itineraryObj = quotation.packageId?.packageItineraries || {};
+        const newEditableItinerary = Object.entries(itineraryObj).map(([dayKey, activities], index) => ({
+            day: dayKey || `Day ${index + 1}`,
+            date: quotation.quotationDetails?.itineraryDate || '',
+            text: Array.isArray(activities)
+                ? activities.map(item => (typeof item === 'string' ? item : item.activity || item.optionalActivity || item.item || '')).join('\n')
+                : '',
+        }));
+
+        setEditableItinerary(newEditableItinerary);
+    }, [quotation]);
+
     const formatPackageItem = (item) => {
         if (typeof item === "string") return item;
         if (!item) return "N/A";
@@ -142,7 +169,9 @@ export default function QuotationRequest() {
             title: "Quotation Inclusions & Itinerary",
             content: <QuotationFormInEx
                 quotationData={quotationData}
-
+                editableItinerary={editableItinerary}
+                setEditableItinerary={setEditableItinerary}
+                pdfMode={previewStep === 2}
             />,
         },
         {
@@ -227,27 +256,26 @@ export default function QuotationRequest() {
 
         try {
             const element = pdfContainerRef.current;
-
-            // Capture the full height canvas
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-            const imgData = canvas.toDataURL("image/jpeg", 1.0);
+            const pages = element.querySelectorAll("[data-quotation-page]");
 
             const pdf = new jsPDF("p", "pt", "a4");
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
 
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+            for (let i = 0; i < pages.length; i += 1) {
+                const pageEl = pages[i];
+                const canvas = await html2canvas(pageEl, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff",
+                });
+                const imgData = canvas.toDataURL("image/jpeg", 1.0);
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            let position = 0;
-
-            while (position < imgHeight) {
-                pdf.addImage(imgData, "JPEG", 0, -position, imgWidth, imgHeight);
-                position += pdfHeight;
-
-                if (position < imgHeight) {
+                if (i > 0) {
                     pdf.addPage();
                 }
+
+                pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeight);
             }
 
             // Save or upload
@@ -287,6 +315,27 @@ export default function QuotationRequest() {
 
         setPreviewStep((prev) => Math.min(previewItems.length - 1, prev + 1));
     };
+
+
+    //add rows in quotation form details
+    if (!formData.dynamicRows) setFormData(prev => ({ ...prev, dynamicRows: [] }));
+
+    const addPackageRow = () => {
+        setFormData(prev => ({
+            ...prev,
+            dynamicRows: [...(prev.dynamicRows || []), { label: '', value: '' }]
+        }));
+    };
+
+    const updateDynamicRow = (index, field, value) => {
+        setFormData(prev => {
+            const newRows = [...(prev.dynamicRows || [])];
+            newRows[index][field] = value;
+            return { ...prev, dynamicRows: newRows };
+        });
+    };
+
+
 
     return (
         <ConfigProvider
@@ -345,7 +394,7 @@ export default function QuotationRequest() {
                                 </Descriptions>
                             </Card>
 
-                            <Card
+                            {/* <Card
                                 title="Package Details"
                                 style={{ margin: 0 }}
                             >
@@ -403,30 +452,41 @@ export default function QuotationRequest() {
                                         )}
                                     </Descriptions.Item>
                                 </Descriptions>
-                            </Card>
+                            </Card> */}
                         </div>
-
-                        <Card title="Quotation Input" style={{ margin: 20 }}>
-                            <div>
-                                <Input.TextArea placeholder="Enter quotation details..." rows={4} />
-                                <Input placeholder="Bag in allowance" rows={4} style={{ marginTop: 10 }} />
-                                <Upload>
-                                    <Button icon={<UploadOutlined />} style={{ marginTop: 10 }}>
-                                        Upload Ticket Images
-                                    </Button>
-                                </Upload>
-                            </div>
-                        </Card>
-
 
                         <Card title={previewItems[previewStep].title} style={{ margin: 20 }}>
                             {previewItems[previewStep].content}
+
+                            {previewStep === 0 && (
+                                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                                    <Button type="dashed" onClick={addPackageRow}>
+                                        Add Row
+                                    </Button>
+
+                                    {formData.dynamicRows && formData.dynamicRows.length > 0 && (
+                                        <Button
+                                            type="default"
+                                            danger
+                                            onClick={() =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    dynamicRows: prev.dynamicRows.slice(0, -1), // removes last row
+                                                }))
+                                            }
+                                        >
+                                            Remove Last Row
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+
                             <div
                                 style={{
                                     marginTop: 16,
                                     display: "flex",
                                     justifyContent: "space-between",
-                                    minHeight: 40, // ensures the container keeps its height even if buttons disappear
+                                    minHeight: 40,
                                 }}
                             >
                                 <div>
@@ -463,8 +523,15 @@ export default function QuotationRequest() {
                                 formData={formData}
                                 setFormData={setFormData}
                                 formErrors={formErrors}
+                                dynamicRows={formData.dynamicRows}
+                                updateDynamicRow={updateDynamicRow}
                             />
-                            <QuotationFormInEx quotationData={quotationData} />
+                            <QuotationFormInEx
+                                quotationData={quotationData}
+                                editableItinerary={editableItinerary}
+                                setEditableItinerary={setEditableItinerary}
+                                pdfMode={true}
+                            />
                             <QuotationFormTermsConditions quotationData={quotationData} />
                         </div>
                     </div>

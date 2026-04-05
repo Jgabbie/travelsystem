@@ -1,28 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
 
-export default function QuotationFormInEx({ quotationData }) {
+
+export default function QuotationFormInEx({ quotationData, editableItinerary, setEditableItinerary, pdfMode = false }) {
 
     console.log('Received quotationData in QuotationFormInEx:', quotationData); // Debug log to check received data
+    const [isEditing, setIsEditing] = useState(true);
 
     const inclusions = quotationData.inclusions || [];
-
     const exclusions = quotationData.exclusions || [];
 
-    const itinerary = Object.entries(quotationData.itinerary || {}).map(
-        ([dayKey, activities], index) => {
-            const normalizedDay = String(dayKey || '').toLowerCase().startsWith('day')
-                ? dayKey.replace(/day/i, 'Day ')
-                : `Day ${index + 1}`;
-
-            return {
-                day: normalizedDay,
-                date: quotationData.itineraryDate || '',
-                bullets: Array.isArray(activities) ? activities : [],
-            };
-        }
-    );
+    const handleItineraryChange = (index, value) => {
+        const newItinerary = [...editableItinerary];
+        newItinerary[index].text = value;
+        setEditableItinerary(newItinerary);
+    };
 
     const remarks = [
         'Air and Land Arrangement is on a BOOK AND BUY basis. No room space and seats reserved.',
@@ -58,13 +51,8 @@ export default function QuotationFormInEx({ quotationData }) {
 
     return (
         <div className="mrc-overlay-wrapper">
-
             {/* PAGE 1 */}
             <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
-                <div className="mrc-form-header">
-                    <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" />
-                </div>
-
                 <div className="mrc-quotation-section">
                     <div className="mrc-quotation-subtitle">INCLUSIONS:</div>
                     <ul className="mrc-quotation-list">
@@ -86,37 +74,33 @@ export default function QuotationFormInEx({ quotationData }) {
 
             {/* PAGE 2 */}
             <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
-                <div className="mrc-form-header">
-                    <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" />
-                </div>
-
                 <div className="mrc-quotation-section page-break">
                     <div className="mrc-quotation-subtitle">SUGGESTED ITINERARY:</div>
                     <div className="mrc-quotation-itinerary">
-                        {itinerary.map((entry, index) => (
-                            <React.Fragment key={entry.day}>
-
-                                {index !== 0 && index % 3 === 0 && (
-                                    <div className="page-break" />
-                                )}
-
-                                <div className="mrc-quotation-itinerary-row">
-                                    <div className="mrc-quotation-itinerary-date">
-                                        {entry.date ? `${entry.date} | ${entry.day}` : entry.day}
-                                    </div>
-
-                                    <div className="mrc-quotation-itinerary-body">
+                        {editableItinerary.map((entry, index) => (
+                            <div key={entry.day} className="mrc-quotation-itinerary-row">
+                                <div className="mrc-quotation-itinerary-date">
+                                    {entry.date ? `${entry.date} | ${entry.day}` : entry.day}
+                                </div>
+                                <div className="mrc-quotation-itinerary-body">
+                                    {pdfMode ? (
+                                        // PDF preview: always bullets
                                         <ul className="mrc-quotation-list is-bulleted">
-                                            {(entry.bullets.length ? entry.bullets : ['N/A']).map((item, i) => (
-                                                <li key={`${entry.day}-${i}`}>
-                                                    {renderItineraryItem(item) || '--'}
-                                                </li>
+                                            {entry.text.split('\n').filter(line => line.trim()).map((line, i) => (
+                                                <li key={i}>{line}</li>
                                             ))}
                                         </ul>
-                                    </div>
+                                    ) : (
+                                        // Editable UI
+                                        <textarea
+                                            value={entry.text}
+                                            onChange={(e) => handleItineraryChange(index, e.target.value)}
+                                            rows={Math.max(3, entry.text.split('\n').length)}
+                                            style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
+                                        />
+                                    )}
                                 </div>
-
-                            </React.Fragment>
+                            </div>
                         ))}
                     </div>
                 </div>

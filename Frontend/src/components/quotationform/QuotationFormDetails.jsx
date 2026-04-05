@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Input, Upload, Button, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css';
 import '../../style/components/mrcquotation.css';
@@ -11,6 +11,8 @@ export default function QuotationFormDetails({
     setFormData,
     formErrors
 }) {
+
+    if (!formData.dynamicRows) setFormData(prev => ({ ...prev, dynamicRows: [] }));
 
     const handleImageUpload = (file, key) => {
         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
@@ -135,11 +137,29 @@ export default function QuotationFormDetails({
         },
     ];
 
+    const addPackageRow = () => {
+        setFormData(prev => ({
+            ...prev,
+            dynamicRows: [
+                ...prev.dynamicRows,
+                { label: '', value: '' } // empty new row
+            ]
+        }));
+    };
+
+    const updateDynamicRow = (index, field, value) => {
+        setFormData(prev => {
+            const newRows = [...(prev.dynamicRows || [])];
+            newRows[index][field] = value;
+            return { ...prev, dynamicRows: newRows };
+        });
+    };
+
     const flights = [];
 
     return (
         <div className="mrc-overlay-wrapper">
-            <div className="mrc-form-page mrc-quotation-page">
+            <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
                 <div className="mrc-form-header">
                     <img src="/images/Logo.png" alt="MRC Travel Logo" className="mrc-logo" />
                 </div>
@@ -162,6 +182,31 @@ export default function QuotationFormDetails({
                             <div className="mrc-quotation-value">{row.value}</div>
                         </div>
                     ))}
+
+                    {/* Dynamic rows */}
+                    {formData.dynamicRows?.map((row, index) => (
+                        <div key={index} className="mrc-quotation-row">
+                            <div className="mrc-quotation-label">
+                                <Input
+                                    size="small"
+                                    placeholder="Label"
+                                    className="mrc-quotation-inline-input"
+                                    value={row.label}
+                                    onChange={(e) => updateDynamicRow(index, 'label', e.target.value)}
+                                />
+                            </div>
+                            <div className="mrc-quotation-value">
+                                <Input
+                                    size="small"
+                                    placeholder="Value"
+                                    className="mrc-quotation-inline-input"
+                                    value={row.value}
+                                    onChange={(e) => updateDynamicRow(index, 'value', e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    ))}
+
                 </div>
 
                 <div className="mrc-flight-details">
@@ -188,7 +233,7 @@ export default function QuotationFormDetails({
                                         <img
                                             src={formData.flightImageA}
                                             alt="Flight Upload 1"
-                                            style={{ width: 240, height: 150, objectFit: 'cover', borderRadius: 8 }}
+                                            style={{ width: 300, height: 220, objectFit: 'cover', borderRadius: 8 }}
                                         />
                                     ) : (
                                         <Upload
@@ -213,7 +258,7 @@ export default function QuotationFormDetails({
                                         <img
                                             src={formData.flightImageB}
                                             alt="Flight Upload 2"
-                                            style={{ width: 240, height: 150, objectFit: 'cover', borderRadius: 8 }}
+                                            style={{ width: 300, height: 220, objectFit: 'cover', borderRadius: 8 }}
                                         />
                                     ) : (
                                         <Upload

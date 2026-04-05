@@ -208,10 +208,9 @@
 .mrc-tour-details-input {
     border-radius: 0;
     height: 22px;
-    border-bottom: 1px solid black;
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
+    border: 0;
+    box-shadow: none;
+    outline: none;
 }
 
 .mrc-lead-guest-section-header,

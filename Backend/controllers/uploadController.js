@@ -219,4 +219,23 @@ const uploadCancellationProof = async (req, res) => {
     }
 }
 
-module.exports = { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof };
+const viewQuotationPdf = async (req, res) => {
+    console.log('Received request to view quotation PDF');
+    try {
+        const publicId = req.params.publicId;
+
+        // generate temporary signed URL
+        const url = cloudinary.url(publicId, {
+            resource_type: "raw",
+            type: "authenticated",
+            sign_url: true,
+        });
+
+        return res.json({ url });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to generate signed URL" });
+    }
+}
+
+module.exports = { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof, viewQuotationPdf };

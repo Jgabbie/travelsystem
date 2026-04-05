@@ -3,9 +3,32 @@
     background: white;
 }
 
+.pdf-content .mrc-overlay-wrapper {
+    margin-top: 0;
+    padding: 0;
+}
+
+.pdf-content .mrc-form-page {
+    box-shadow: none;
+    border-radius: 0;
+    min-height: auto;
+    padding: 12px 18px 24px;
+}
+
+.pdf-content .mrc-quotation-section:first-child {
+    margin-top: 8px;
+}
+
+.pdf-content .mrc-quotation-page::before,
+.pdf-content .mrc-quotation-page::after {
+    content: none;
+    display: none;
+    background: transparent;
+}
+
 .mrc-quotation-page {
     max-width: 760px;
-    padding: 16px 18px 24px;
+    padding: 4px 18px 24px;
     position: relative;
 }
 
@@ -15,18 +38,21 @@
     background: white;
 }
 
+.mrc-quotation-section:first-child .mrc-quotation-list {
+    margin-top: 0;
+    padding-left: 0;
+}
+
 .page-break {
     page-break-inside: avoid;
 }
 
 .mrc-quotation-page::before {
-    height: 70px;
     background: #1f6aa5;
     border-radius: 0 0 50% 50% / 0 0 100% 100%;
 }
 
 .mrc-quotation-page::after {
-    height: 70px;
     background: #1f6aa5;
     border-radius: 50% 50% 0 0 / 100% 100% 0 0;
 }
@@ -38,14 +64,6 @@
     width: 100%;
     left: 0;
     z-index: -1;
-}
-
-.mrc-quotation-page::before {
-    top: -10px;
-}
-
-.mrc-quotation-page::after {
-    bottom: -10px;
 }
 
 .mrc-quotation-intro {
@@ -65,7 +83,9 @@
     display: grid;
     grid-template-columns: 38% 62%;
     border-bottom: 1px solid #3a3a3a;
-    background: #f2f2f2;
+    background: #ffffff;
+    align-items: stretch;
+    min-height: 28px;
 }
 
 .mrc-quotation-row:last-child {
@@ -76,22 +96,76 @@
     background: #2f4f78;
     color: #fff;
     font-weight: 700;
-    font-size: 11px;
-    padding: 6px 8px;
+    font-size: 10px;
+    padding: 7px 8px;
     border-right: 1px solid #3a3a3a;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.mrc-quotation-label input,
+.mrc-quotation-label .ant-input {
+    background: transparent;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    border: 0;
+    box-shadow: none;
+    outline: none;
+    line-height: 1.2;
+    padding: 0;
+    width: 100%;
+    display: block;
 }
 
 .mrc-quotation-value {
-    font-size: 11px;
-    padding: 6px 8px;
+    font-size: 10px;
+    padding: 7px 8px;
+    color: #222;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.mrc-quotation-value input,
+.mrc-quotation-value .ant-input {
+    font-size: 10px;
+    line-height: 1.2;
+    padding: 0;
+    width: 100%;
+    display: block;
+}
+
+.mrc-quotation-inline-input {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    padding: 0 0 2px;
+    line-height: 1.2;
+}
+
+.mrc-quotation-label .mrc-quotation-inline-input {
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.mrc-quotation-value .mrc-quotation-inline-input {
     color: #222;
     font-weight: 600;
     text-transform: uppercase;
 }
 
 .mrc-quotation-row.is-emphasis .mrc-quotation-value {
-    background: #f7e04f;
+    background: #ffffff;
     color: #1a1a1a;
     font-weight: 800;
 }
