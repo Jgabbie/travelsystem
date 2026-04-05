@@ -149,7 +149,7 @@ export default function UserQuotationRequest() {
         }
         console.log("Revision requested with notes:", notes);
         setActionLoading(true);
-        axiosInstance.post(`upload/quotation/${id}/request-revision`, {
+        axiosInstance.post(`quotation/${id}/request-revision`, {
             notes
         }).then(res => {
             message.success("Revision requested successfully.");
