@@ -151,106 +151,112 @@ export default function ProfilePage() {
         }
         return fallback ? fallback[0].toUpperCase() : 'U'
     }
-    // Fetch user data on component mount
+    // Fetch user data on component moun
+
     useEffect(() => {
+        const fetchPreferences = async () => {
+            try {
+                const response = await axiosInstance.get("/preferences/me", { withCredentials: true });
+                if (response.status === 200) {
+                    const data = response.data.preferrences;
+                    setPreferences({
+                        moods: data.moods || [],
+                        tours: data.tours || []
+                    });
+
+                    console.log("Fetched preferences:", data);
+                    console.log("Set preferences state:", preferences);
+                }
+            } catch (error) {
+                console.error('Error fetching preferences:', error);
+                setPreferences({ moods: [], tours: [] });
+            }
+        };
+
+        const fetchUserData = async () => {
+            try {
+                const response = await axiosInstance.get('/user/data', {
+                    withCredentials: true
+                })
+
+                if (response.status === 200) {
+                    const data = response.data
+                    setUserData(data.userData)
+                    setProfileImage(
+                        data.userData?.profileImageUrl ||
+                        data.userData?.profileImage ||
+                        data.userData?.avatarUrl ||
+                        ''
+                    )
+                    setValues({
+                        username: data.userData.username,
+                        firstname: data.userData.firstname,
+                        lastname: data.userData.lastname,
+                        email: data.userData.email,
+                        phone: data.userData.phone,
+                        homeAddress: data.userData.homeAddress || '',
+                        gender: data.userData.gender || '',
+                        birthdate: data.userData.birthdate || '',
+                        nationality: data.userData.nationality || ''
+                    })
+                } else if (response.status === 401) {
+                    message.error('Please login to view your profile')
+                } else {
+                    message.error('Failed to fetch user data')
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error)
+                message.error('Error fetching profile')
+            }
+        }
+
+        const fetchRecentBookings = async () => {
+            try {
+                const response = await axiosInstance.get('/booking/my-bookings')
+                const bookings = response.data.map((b) => ({
+                    key: b._id,
+                    ref: b.reference || b._id,
+                    packageName: b.packageId?.packageName || 'Tour Package',
+                    packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
+                    travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM D, YYYY') : dayjs(b.travelDate).format('MMM D, YYYY'),
+                    bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
+                    travelersCount: b.travelers || {},
+                    status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
+                }))
+
+                console.log('Fetched bookings:', bookings)
+
+                setRecentBookings(bookings)
+            } catch (error) {
+                setRecentBookings([])
+            }
+        }
+
+        const fetchRecentReviews = async () => {
+            try {
+                const response = await axiosInstance.get('/rating/my-ratings')
+                const reviews = response.data.map((r) => ({
+                    key: r._id,
+                    packageName: r.packageId?.packageName || 'Untitled Review',
+                    rating: r.rating || 0,
+                    date: dayjs(r.createdAt).format('MMM D, YYYY'),
+                    review: r.review
+                }))
+
+                setRecentReviews(reviews)
+            } catch (error) {
+                setRecentReviews([])
+            }
+        }
+
         fetchUserData()
         fetchRecentBookings()
         fetchRecentReviews()
         fetchPreferences()
     }, [])
 
-    const fetchPreferences = async () => {
-        try {
-            const response = await axiosInstance.get("/preferences/me", { withCredentials: true });
-            if (response.status === 200) {
-                const data = response.data.preferrences;
-                setPreferences({
-                    moods: data.moods || [],
-                    tours: data.tours || []
-                });
 
-                console.log("Fetched preferences:", data);
-                console.log("Set preferences state:", preferences);
-            }
-        } catch (error) {
-            console.error('Error fetching preferences:', error);
-            setPreferences({ moods: [], tours: [] });
-        }
-    };
 
-    const fetchUserData = async () => {
-        try {
-            const response = await axiosInstance.get('/user/data', {
-                withCredentials: true
-            })
-
-            if (response.status === 200) {
-                const data = response.data
-                setUserData(data.userData)
-                setProfileImage(
-                    data.userData?.profileImageUrl ||
-                    data.userData?.profileImage ||
-                    data.userData?.avatarUrl ||
-                    ''
-                )
-                setValues({
-                    username: data.userData.username,
-                    firstname: data.userData.firstname,
-                    lastname: data.userData.lastname,
-                    email: data.userData.email,
-                    phone: data.userData.phone,
-                    homeAddress: data.userData.homeAddress || '',
-                    gender: data.userData.gender || '',
-                    birthdate: data.userData.birthdate || '',
-                    nationality: data.userData.nationality || ''
-                })
-            } else if (response.status === 401) {
-                message.error('Please login to view your profile')
-            } else {
-                message.error('Failed to fetch user data')
-            }
-        } catch (error) {
-            console.error('Error fetching user data:', error)
-            message.error('Error fetching profile')
-        }
-    }
-
-    const fetchRecentBookings = async () => {
-        try {
-            const response = await axiosInstance.get('/booking/my-bookings')
-            const bookings = response.data.map((b) => ({
-                key: b._id,
-                ref: b.reference || b._id,
-                packageName: b.packageId?.packageName || 'Tour Package',
-                packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
-                travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM D, YYYY') : dayjs(b.travelDate).format('MMM D, YYYY'),
-                bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
-                travelersCount: b.travelers || {},
-                status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
-            }))
-
-            setRecentBookings(bookings)
-        } catch (error) {
-            setRecentBookings([])
-        }
-    }
-
-    const fetchRecentReviews = async () => {
-        try {
-            const response = await axiosInstance.get('/rating/my-ratings')
-            const reviews = response.data.map((r) => ({
-                key: r._id,
-                packageName: r.packageId?.packageName || 'Untitled Review',
-                rating: r.rating || 0,
-                date: dayjs(r.createdAt).format('MMM D, YYYY'),
-                review: r.review
-            }))
-
-            setRecentReviews(reviews)
-        } catch (error) {
-            setRecentReviews([])
-        }
-    }
 
     const handleEdit = () => {
         setEditing(true)

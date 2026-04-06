@@ -262,7 +262,7 @@ export default function Wishlist() {
                                                 </Text>
                                                 <div className="wishlist-card-actions">
                                                     <Button
-                                                        type="primary"
+                                                        className='wishlist-view-button'
                                                         onClick={() => navigate(`/package/${pkg.packageId}`)}
                                                     >
                                                         View details

@@ -3,7 +3,7 @@ import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message, S
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useBooking } from '../../context/BookingContext';
+import { useQuotationBooking } from '../../context/BookingQuotationContext';
 import dayjs from "dayjs";
 import '../../style/components/modals/displayinvoicemodal.css';
 import '../../style/client/paymentprocees.css';
@@ -18,7 +18,7 @@ const getBase64 = (file) =>
     });
 
 export default function QuotationsPaymentProcess() {
-    const { bookingData } = useBooking();
+    const { quotationBookingData } = useQuotationBooking();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -36,25 +36,22 @@ export default function QuotationsPaymentProcess() {
     const [monthBookingsCount, setMonthBookingsCount] = useState(0);
 
     const [fileList, setFileList] = useState([]);
-    const [previewOpen, setPreviewOpen] = useState(false);
-    const [previewImage, setPreviewImage] = useState('');
-    const [previewTitle, setPreviewTitle] = useState('');
 
-    const passportFiles = bookingData?.passportFiles || [];
-    const photoFiles = bookingData?.photoFiles || [];
+    const passportFiles = quotationBookingData?.passportFiles || [];
+    const photoFiles = quotationBookingData?.photoFiles || [];
 
     console.log("Passport Files:", passportFiles);
     console.log("Photo Files:", photoFiles);
 
     useEffect(() => {
-        if (!bookingData) {
+        if (!quotationBookingData) {
             navigate('/home', { replace: true });
         }
         const methodParam = searchParams.get('method');
         if (methodParam === 'manual' || methodParam === 'paymongo') {
             setMethod(methodParam);
         }
-    }, [bookingData, navigate, searchParams]);
+    }, [quotationBookingData, navigate, searchParams]);
 
 
     //upload files functions
@@ -102,11 +99,11 @@ export default function QuotationsPaymentProcess() {
         const formData = new FormData();
 
         const passportFileObjs = passportFiles.map(file =>
-            base64ToFile(file.base64, file.name, file.type)
+            base64ToFile(file.file, file.name, file.type)
         );
 
         const photoFileObjs = photoFiles.map(file =>
-            base64ToFile(file.base64, file.name, file.type)
+            base64ToFile(file.file, file.name, file.type)
         );
 
         [...passportFileObjs, ...photoFileObjs].forEach(file => formData.append("files", file));
@@ -137,19 +134,21 @@ export default function QuotationsPaymentProcess() {
     const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
 
-    console.log("Booking Data in PaymentProcess:", bookingData);
+    console.log("Booking Data in PaymentProcess:", quotationBookingData);
 
-    const travelerCountAdult = bookingData?.travelerCounts?.adult || 0;
-    const travelerCountChild = bookingData?.travelerCounts?.child || 0;
-    const travelerCountInfant = bookingData?.travelerCounts?.infant || 0;
+    const travelerCountAdult = quotationBookingData?.travelersCount?.adult || 0;
+    const travelerCountChild = quotationBookingData?.travelersCount?.child || 0;
+    const travelerCountInfant = quotationBookingData?.travelersCount?.infant || 0;
     const travelerTotal = travelerCountAdult + travelerCountChild + travelerCountInfant || 0;
 
-    const packagePricePerPax = bookingData?.packagePricePerPax || 0;
-    const soloRate = bookingData?.packageSoloRate || 0;
-    const childRate = bookingData?.packageChildRate || 0;
-    const infantRate = bookingData?.packageInfantRate || 0;
+    const packagePricePerPax = quotationBookingData?.adultRate || 0;
+    const soloRate = quotationBookingData?.adultRate || 0;
+    const childRate = quotationBookingData?.childRate || 0;
+    const infantRate = quotationBookingData?.infantRate || 0;
 
-    const bookingType = bookingData?.bookingType || 'Group Booking';
+    console.log("Rates - Adult:", packagePricePerPax, "Child:", childRate, "Infant:", infantRate);
+
+    const bookingType = quotationBookingData?.bookingType || 'Group Booking';
     const computedTotalAmount =
         travelerCountAdult * packagePricePerPax +
         travelerCountChild * childRate +
@@ -157,52 +156,52 @@ export default function QuotationsPaymentProcess() {
 
     const totalAmount = bookingType === 'Solo Booking'
         ? travelerCountAdult * soloRate
-        : bookingData?.totalPrice ?? computedTotalAmount;
+        : quotationBookingData?.totalPrice ?? computedTotalAmount;
 
-    const packageId = bookingData?.packageId;
-    const packageName = bookingData?.packageName || 'Tour Package';
+    const packageId = quotationBookingData?.packageId;
+    const packageName = quotationBookingData?.packageName || 'Tour Package';
 
-    const startTravelDate = dayjs(bookingData?.travelDate?.startDate).format("MMM D, YYYY") || 'TBD';
-    const endTravelDate = dayjs(bookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
+    const startTravelDate = dayjs(quotationBookingData?.travelDate?.startDate).format("MMM D, YYYY") || 'TBD';
+    const endTravelDate = dayjs(quotationBookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
 
     const travelDate = startTravelDate === 'TBD' ? 'TBD' : `${startTravelDate} - ${endTravelDate}`;
 
     console.log("Booking Data in PaymentProcess:", travelDate);
 
-    const name = bookingData?.leadFullName || 'Customer';
-    const email = bookingData?.leadEmail || 'Email'
-    const phone = bookingData?.leadContact || 'Phone Number';
+    const name = quotationBookingData?.leadFullName || 'Customer';
+    const email = quotationBookingData?.leadEmail || 'Email'
+    const phone = quotationBookingData?.leadContact || 'Phone Number';
 
     //payload for bookings
     const paymentDetails = {
         paymentType,
         frequency,
-        depositAmount: bookingData?.packageDeposit ? (bookingData.packageDeposit * travelerTotal) : 0,
+        depositAmount: quotationBookingData?.deposit ? (quotationBookingData.deposit * travelerTotal) : 0,
     }
 
     const bookingDetails = {
-        dateOfRegistration: bookingData.dateOfRegistration,
-        travelDate: bookingData?.travelDate,
-        tourPackageTitle: bookingData.tourPackageTitle,
-        tourPackageVia: bookingData.tourPackageVia,
-        leadTitle: bookingData.leadTitle,
-        leadFullName: bookingData.leadFullName,
-        leadEmail: bookingData.leadEmail,
-        leadContact: bookingData.leadContact,
-        leadAddress: bookingData.leadAddress,
-        travelers: bookingData.travelers,
-        dietaryDetails: bookingData.dietaryDetails,
-        dietaryRequest: bookingData.dietaryRequest,
-        medicalDetails: bookingData.medicalDetails,
-        medicalRequest: bookingData.medicalRequest,
-        ownInsurance: bookingData.ownInsurance,
-        purchaseInsurance: bookingData.purchaseInsurance,
+        dateOfRegistration: quotationBookingData.dateOfRegistration,
+        travelDate: quotationBookingData?.travelDate,
+        tourPackageTitle: quotationBookingData.tourPackageTitle,
+        tourPackageVia: quotationBookingData.tourPackageVia,
+        leadTitle: quotationBookingData.leadTitle,
+        leadFullName: quotationBookingData.leadFullName,
+        leadEmail: quotationBookingData.leadEmail,
+        leadContact: quotationBookingData.leadContact,
+        leadAddress: quotationBookingData.leadAddress,
+        travelers: quotationBookingData.travelers,
+        dietaryDetails: quotationBookingData.dietaryDetails,
+        dietaryRequest: quotationBookingData.dietaryRequest,
+        medicalDetails: quotationBookingData.medicalDetails,
+        medicalRequest: quotationBookingData.medicalRequest,
+        ownInsurance: quotationBookingData.ownInsurance,
+        purchaseInsurance: quotationBookingData.purchaseInsurance,
         totalPrice: totalAmount,
-        emergencyContact: bookingData.emergencyContact,
-        emergencyEmail: bookingData.emergencyEmail,
-        emergencyName: bookingData.emergencyName,
-        emergencyRelation: bookingData.emergencyRelation,
-        emergencyTitle: bookingData.emergencyTitle,
+        emergencyContact: quotationBookingData.emergencyContact,
+        emergencyEmail: quotationBookingData.emergencyEmail,
+        emergencyName: quotationBookingData.emergencyName,
+        emergencyRelation: quotationBookingData.emergencyRelation,
+        emergencyTitle: quotationBookingData.emergencyTitle,
         paymentDetails: paymentDetails
     }
 
@@ -242,8 +241,8 @@ export default function QuotationsPaymentProcess() {
             const bookingRes = await axiosInstance.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,
-                    travelDate: bookingData?.travelDate,
-                    travelers: bookingData?.travelerCounts.adult + bookingData?.travelerCounts.child + bookingData?.travelerCounts.infant || 0,
+                    travelDate: quotationBookingData?.travelDate,
+                    travelers: quotationBookingData?.travelersCount.adult + quotationBookingData?.travelersCount.child + quotationBookingData?.travelersCount.infant || 0,
                     bookingDetails,
                     paymentType,
                     passportFiles: passportUrls,
@@ -343,10 +342,10 @@ export default function QuotationsPaymentProcess() {
 
     const today = dayjs();
 
-    const travelDateComputation = bookingData?.travelDate?.startDate
-        ? dayjs(bookingData.travelDate.startDate)
-        : today;
+    const travelDateStart = quotationBookingData?.travelDate.split(" - ")?.[0] || today;
+    const travelDateComputation = travelDateStart ? dayjs(travelDateStart, "MMM D, YYYY") : today;
 
+    console.log("Travel Date for Computation:", travelDateComputation);
     // ✅ Limit to 45 days from today
     const maxAllowedDate = today.add(45, 'day');
 
@@ -355,7 +354,7 @@ export default function QuotationsPaymentProcess() {
         ? travelDateComputation
         : maxAllowedDate;
 
-    const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal;
+    const depositAmount = (quotationBookingData?.deposit || 0) * travelerTotal;
     const remainingAmount = Math.max(totalAmount - depositAmount, 0);
 
     const installmentWindowDays = dueCutoffDate.diff(today, 'day');
@@ -620,7 +619,7 @@ export default function QuotationsPaymentProcess() {
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
-                            className='payment-process-backbutton'
+                            className='payment-process-back-button'
                             onClick={() => navigate(-1)}
                             style={{ display: 'flex', alignItems: 'center' }}
                         >
@@ -829,7 +828,7 @@ export default function QuotationsPaymentProcess() {
                                         beforeUpload={beforeUpload}
                                         accept=".jpg,.jpeg,.png"
                                     >
-                                        <Button icon={<UploadOutlined />} className="upload-btn">
+                                        <Button icon={<UploadOutlined />} className="payment-process-upload-button">
                                             Select Receipt Image
                                         </Button>
                                     </Upload>
@@ -857,7 +856,7 @@ export default function QuotationsPaymentProcess() {
 
                     <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
                         <Button
-                            type="primary"
+                            className='payment-process-proceed-button'
                             onClick={() => setIsProceedModalOpen(true)}
                             disabled={
                                 !paymentType ||

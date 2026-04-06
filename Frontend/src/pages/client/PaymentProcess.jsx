@@ -29,16 +29,9 @@ export default function PaymentProcess() {
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
 
-    const onCancelModal = () => {
-        setIsProceedModalOpen(false);
-    };
-
     const [monthBookingsCount, setMonthBookingsCount] = useState(0);
 
     const [fileList, setFileList] = useState([]);
-    const [previewOpen, setPreviewOpen] = useState(false);
-    const [previewImage, setPreviewImage] = useState('');
-    const [previewTitle, setPreviewTitle] = useState('');
 
     const passportFiles = bookingData?.passportFiles || [];
     const photoFiles = bookingData?.photoFiles || [];
@@ -58,7 +51,6 @@ export default function PaymentProcess() {
 
 
     //upload files functions
-
     const base64ToFile = (base64Data, fileName, fileType) => {
         const arr = base64Data.split(',');
         const mime = arr[0].match(/:(.*?);/)[1] || fileType;
@@ -172,11 +164,6 @@ export default function PaymentProcess() {
     const name = bookingData?.leadFullName || 'Customer';
     const email = bookingData?.leadEmail || 'Email'
     const phone = bookingData?.leadContact || 'Phone Number';
-
-    const [bookingReference, setBookingReference] = useState(null);
-
-
-
 
     //payload for bookings
     const paymentDetails = {
@@ -625,7 +612,7 @@ export default function PaymentProcess() {
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
-                            className='payment-process-backbutton'
+                            className='payment-process-back-button'
                             onClick={() => navigate(-1)}
                             style={{ display: 'flex', alignItems: 'center' }}
                         >
@@ -834,7 +821,7 @@ export default function PaymentProcess() {
                                         beforeUpload={beforeUpload}
                                         accept=".jpg,.jpeg,.png"
                                     >
-                                        <Button icon={<UploadOutlined />} className="upload-btn">
+                                        <Button icon={<UploadOutlined />} className="payment-process-upload-button">
                                             Select Receipt Image
                                         </Button>
                                     </Upload>
@@ -862,7 +849,7 @@ export default function PaymentProcess() {
 
                     <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
                         <Button
-                            type="primary"
+                            className='payment-process-proceed-button'
                             onClick={() => setIsProceedModalOpen(true)}
                             disabled={
                                 !paymentType ||

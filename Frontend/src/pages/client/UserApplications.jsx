@@ -160,7 +160,7 @@ export default function UserApplications() {
                             columns={columns}
                             dataSource={filteredData}
                             loading={loading}
-                            pagination={{ pageSize: 5 }}
+                            pagination={{ pageSize: 10 }}
                             scroll={{ x: 'max-content' }}
                         />
                     </div>

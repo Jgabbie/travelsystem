@@ -1,7 +1,4 @@
-.bookingprocess-container {
-    padding: 40px;
-}
-
+/* LOADING CSS */
 .booking-loading-overlay {
     position: fixed;
     top: 0;
@@ -20,45 +17,10 @@
     color: #305797;
 }
 
-.bookingprocess-sologroup-container {
-    margin-bottom: 30px;
-    padding-right: 40px;
-    padding-left: 40px;
-}
 
-.booking-form-stepper-container {
+/* PAGE CONTAINER AND WHOLE PAGE CSS */
+.bookingprocess-container {
     padding: 40px;
-    clear: both;
-}
-
-.booking-form-stepper-title {
-    font-family: "Montserrat", sans-serif;
-    font-size: 30px;
-    color: #1f2a44;
-    margin: 0;
-    text-align: center;
-    padding-bottom: 10px;
-}
-
-.booking-form-stepper-text {
-    font-size: 14px;
-    color: #555;
-    text-align: center;
-}
-
-.pdf-capture {
-    width: 794px;
-    min-height: 1123px;
-    margin: 0 auto;
-}
-
-.itinerary-inclusions-exclusions {
-    margin: 40px;
-    padding: 32px;
-    border-radius: 24px;
-    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
-    border: 1px solid #e0e7ff;
-    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
 }
 
 .booking-section {
@@ -93,6 +55,40 @@
     max-width: 520px;
 }
 
+.card-title {
+    margin-bottom: 20px;
+}
+
+.card-title h3 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    color: #1f2a44;
+    margin: 8px 0 6px;
+}
+
+.card-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7486;
+}
+
+.card-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #305797;
+    background: rgba(48, 87, 151, 0.12);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+
+
+
+/* BOOKING SUMMARY */
 .booking-section .booking-summary-wrapper {
     text-align: left;
 }
@@ -133,54 +129,12 @@
     background: #f7f9ff;
 }
 
-.booking-section .travelers-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-}
 
-.booking-section .traveler-card {
-    border-radius: 16px;
-    border: 1px solid #e7ecf7;
-    background: #ffffff;
-    padding: 16px;
-    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
-}
-
-.booking-section .traveler-counter {
-    justify-content: flex-start;
-}
-
-.booking-section .upload-passport-wrapper {
-    text-align: left;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(320px, 625px));
-    gap: 20px;
-    justify-content: start;
-    justify-items: start;
-}
-
-.booking-section .upload-card {
-    width: 100%;
-    max-width: 625px;
-    height: auto;
-    min-height: 240px;
-    border-radius: 16px;
-    border: 1px solid #e7ecf7;
-    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
-}
-
-.booking-section .upload-passport-left {
-    align-items: flex-start;
-}
-
-.booking-section .upload-passport-right {
-    align-items: center;
-}
-
-.booking-section .upload-passport-notes {
-    border-radius: 12px;
-    border: 1px solid #f5d37a;
+/* SOLO AND GROUP SELECTION */
+.bookingprocess-sologroup-container {
+    margin-bottom: 30px;
+    padding-right: 40px;
+    padding-left: 40px;
 }
 
 .booking-section .solo-group-cards {
@@ -210,6 +164,111 @@
 .booking-section .solo-group-image {
     height: 180px;
     border-radius: 14px;
+}
+
+
+/* TRAVELERS COUNTER */
+.booking-section .travelers-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.booking-section .traveler-card {
+    border-radius: 16px;
+    border: 1px solid #e7ecf7;
+    background: #ffffff;
+    padding: 16px;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section .traveler-counter {
+    justify-content: flex-start;
+}
+
+
+
+/* UPLOAD PASSPORT AND 2BY2 IMAGE UPLOAD */
+.booking-section .upload-passport-wrapper {
+    text-align: left;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(320px, 625px));
+    gap: 40px;
+    justify-content: start;
+    justify-items: start;
+}
+
+.booking-section .upload-card {
+    width: 100%;
+    max-width: 625px;
+    height: auto;
+    min-height: 240px;
+    border-radius: 16px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section .upload-passport-left {
+    align-items: flex-start;
+}
+
+.booking-section .upload-passport-right {
+    align-items: center;
+}
+
+.booking-section .upload-passport-notes {
+    border-radius: 12px;
+    border: 1px solid #f5d37a;
+}
+
+.upload-passport-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff !important;
+    border-radius: 10px;
+    width: 160px;
+    height: 24px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.upload-passport-remove-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff !important;
+    border-radius: 10px;
+    width: 160px;
+    height: 24px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.upload-passport-remove-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #992A46 !important;
+}
+
+.upload-passport-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
+
+
+
+
+/* ITINERARY AND INCLUSIONS/EXCLUSIONS */
+.itinerary-inclusions-exclusions {
+    margin: 40px;
+    padding: 32px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    border: 1px solid #e0e7ff;
+    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
 }
 
 .itinerary-section-header {
@@ -248,36 +307,6 @@
     padding: 24px;
     border: 1px solid #e7ecf7;
     box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
-}
-
-.card-title {
-    margin-bottom: 20px;
-}
-
-.card-title h3 {
-    font-family: "Montserrat", sans-serif;
-    font-size: 20px;
-    color: #1f2a44;
-    margin: 8px 0 6px;
-}
-
-.card-subtitle {
-    margin: 0;
-    font-size: 13px;
-    color: #6b7486;
-}
-
-.card-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #305797;
-    background: rgba(48, 87, 151, 0.12);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
 }
 
 .itinerary-list {
@@ -362,6 +391,82 @@
     margin: 0 0 12px;
     font-size: 16px;
     color: #1f2a44;
+}
+
+
+/* PDF RENDERING AND CAPTURE */
+.pdf-capture {
+    width: 794px;
+    min-height: 1123px;
+    margin: 0 auto;
+}
+
+.booking-form-stepper-container {
+    padding: 40px;
+    clear: both;
+}
+
+.booking-form-stepper-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 30px;
+    color: #1f2a44;
+    margin: 0;
+    text-align: center;
+    padding-bottom: 10px;
+}
+
+.booking-form-stepper-text {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+}
+
+
+/* BUTTONS CSS */
+
+.booking-form-button-controls {
+    padding: 20px 40px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 40px;
+}
+
+.booking-form-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 180px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.booking-form-button-proceed {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #1f8f3a;
+    color: #fff;
+    border-radius: 10px;
+    width: 180px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.booking-form-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
+.booking-form-button-proceed:hover {
+    background-color: #e9e9e9 !important;
+    color: #1f8f3a !important;
 }
 
 @media (max-width: 840px) {

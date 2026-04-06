@@ -110,7 +110,6 @@ export default function PassAndVisaService() {
                                             </div>
                                             <div className="visa-actions">
                                                 <Button
-                                                    type="primary"
                                                     className="visa-apply-btn"
                                                     onClick={() => navigate('/apply-visa', {
                                                         state: { serviceId: visa._id }

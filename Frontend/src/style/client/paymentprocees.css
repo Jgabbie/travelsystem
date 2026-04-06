@@ -1,7 +1,4 @@
-.payment-process-container {
-    padding: 40px;
-}
-
+/* LOADING CSS */
 .payment-loading-overlay {
     position: fixed;
     top: 0;
@@ -20,12 +17,20 @@
     color: #305797;
 }
 
+
+/* PAGE CONTAINER AND WHOLE PAGE CSS */
+.payment-process-container {
+    padding: 40px;
+}
+
 .payment-process-backbutton {
     display: flex;
     justify-content: flex-start;
     margin: 40px 40px;
 }
 
+
+/* MODE OF PAYMENT AND INVOICE */
 .payment-top-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
@@ -173,6 +178,10 @@
     color: #8a4b1b;
 }
 
+
+
+
+/* PAYMENT METHOD CARDS */
 .payment-section .payment-methods-cards .ant-radio-wrapper {
     width: 100%;
     align-items: stretch;
@@ -223,12 +232,80 @@
     border-radius: 8px;
 }
 
+
+/* BUTTONS CSS */
+.payment-process-back-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 130px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+    margin: 40px;
+}
+
+.payment-process-back-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
+.payment-process-proceed-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 130px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.payment-process-proceed-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
+.payment-process-proceed-button:disabled {
+    background-color: #e9e9e9 !important;
+    color: #94a3b8 !important;
+}
+
+.payment-process-upload-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 200px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    margin-top: 20px;
+}
+
+.payment-process-upload-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
+
+
+
+
+
 @media (max-width: 840px) {
     .payment-process-container {
         padding: 20px;
     }
 
-    .payment-process-backbutton {
+    .payment-process-back-button {
         margin: 16px 16px 0;
     }
 

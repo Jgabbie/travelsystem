@@ -337,6 +337,17 @@ body {
     flex-direction: row;
 }
 
+.explore-local-packages .ant-card {
+    width: 100%;
+    max-width: 320px;
+}
+
+.explore-local-packages .ant-card-cover img {
+    width: 100% !important;
+    height: 200px !important;
+    object-fit: cover;
+}
+
 .explore-text {
     font-family: "Montserrat", sans-serif;
     font-size: 35px;
@@ -357,6 +368,10 @@ body {
     gap: 10px;
     margin-left: 40px;
     margin-bottom: 20px;
+}
+
+.explore-text-center-mobile {
+    text-align: left;
 }
 
 .explore-local-packages-section-right img {
@@ -469,30 +484,74 @@ body {
 
 .aboutus-text {
     font-family: "Montserrat", sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     color: #000000;
-    margin-left: 40px;
+    margin-left: 24px;
+    margin-right: 24px;
     margin-bottom: 20px;
     line-height: 1.7;
     text-align: justify;
-    width: 95%;
+    width: 100%;
+    max-width: 640px;
+}
+
+.aboutus-row {
+    display: flex;
+    flex-direction: row;
+    margin-top: 50px;
+    gap: 40px;
+    align-items: center;
+}
+
+.aboutus-text-col {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.aboutus-text-wrap {
+    padding-left: 40px;
+    max-width: 700px;
+}
+
+.aboutus-image-col {
+    display: flex;
+    flex-direction: column;
+    width: 45%;
+    align-items: center;
+    margin-left: 40px;
+}
+
+.aboutus-image-col-left {
+    margin-left: 40px;
+}
+
+.aboutus-image {
+    width: 700px;
+    height: 400px;
+    object-fit: cover;
+}
+
+.aboutus-image-offset {
+    margin-top: 120px;
+    margin-left: 50px;
 }
 
 .aboutus-vision-mission {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     margin-top: 40px;
-    align-items: center;
-    justify-content: center;
-    width: 98%;
-    gap: 60px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 50%;
+    gap: 24px;
 }
 
 .aboutus-vision-mision-block {
     display: flex;
     flex-direction: column;
-    width: 50%;
+    width: 100%;
 }
 
 .aboutus-accreditation {
@@ -501,6 +560,11 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.aboutus-accreditation img {
+    max-width: 100%;
+    height: auto;
 }
 
 
@@ -524,11 +588,11 @@ body {
 
 .contactus-text {
     font-family: "Montserrat", sans-serif;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     color: #000000;
-    margin-left: 40px;
-    margin-right: 40px;
+    margin-left: 24px;
+    margin-right: 24px;
     width: 700px;
     text-align: justify;
     line-height: 1.5;
@@ -802,6 +866,7 @@ body {
     .explore-local-packages {
         flex-wrap: wrap;
         gap: 16px;
+        justify-content: center;
     }
 
     .explore-local-packages-section-right img {
@@ -905,6 +970,8 @@ body {
 
     .explore-local-packages {
         margin-left: 20px;
+        margin-right: 20px;
+        justify-content: center;
     }
 
     .explore-world-section {
@@ -929,8 +996,88 @@ body {
     }
 
     .aboutus-text {
-        margin-left: 20px;
-        margin-right: 20px;
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .explore-text-center-mobile {
+        text-align: center;
+        margin-left: 0;
+    }
+
+    .aboutus-row {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+        margin-top: 30px;
+    }
+
+    .aboutus-text-col,
+    .aboutus-image-col {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .aboutus-text-wrap {
+        padding-left: 0;
+    }
+
+    .aboutus-image {
+        width: 100%;
+        max-width: 520px;
+        height: auto;
+    }
+
+    .aboutus-image-offset {
+        margin: 0;
+    }
+
+    .aboutus-accreditation>div {
+        flex-direction: column !important;
+        align-items: center;
+        gap: 32px !important;
+    }
+
+    .aboutus-accreditation p {
+        width: 100% !important;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    .aboutus-accreditation img {
+        width: 160px !important;
+        height: 160px !important;
+    }
+
+    .aboutus-vision-mission {
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .aboutus-vision-mision-block {
+        width: 100% !important;
+    }
+
+    .aboutus-vision-mision-block,
+    .aboutus-vision-mision-block p {
+        max-width: 100%;
+    }
+
+    .contactus-section {
+        align-items: stretch;
+    }
+
+    .contactus-section-left,
+    .contactus-section-right {
+        width: 100%;
+    }
+
+    .contactus-section-right-card {
+        width: 100%;
+        max-width: 520px;
+        margin: 0 auto 20px;
     }
 
     .chatbot-modal .ant-modal {
@@ -981,6 +1128,15 @@ body {
         height: 44px;
         padding: 0 16px;
     }
+
+    .explore-local-packages .ant-card {
+        max-width: 100%;
+    }
+
+    .aboutus-accreditation img {
+        width: 140px !important;
+        height: 140px !important;
+    }
 }
 
 @media (max-width: 900px) {
@@ -1007,7 +1163,7 @@ body {
 
     .contactus-text {
         width: 100%;
-        margin: 0 20px;
+        margin: 0 16px;
     }
 
     .contactus-section-right-card {
@@ -1052,5 +1208,79 @@ body {
         height: auto;
         padding: 24px 16px;
         gap: 16px;
+    }
+}
+
+/* Mobile responsiveness for screens 768px and below */
+@media screen and (max-width: 768px) {
+
+    /* About Us section */
+    .aboutus-row {
+        flex-direction: column !important;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .aboutus-text-col,
+    .aboutus-image-col {
+        width: 100% !important;
+        display: flex;
+        justify-content: center;
+    }
+
+    .aboutus-text-wrap {
+        padding: 0 10px;
+    }
+
+    .aboutus-image {
+        max-width: 100%;
+        height: auto !important;
+    }
+
+    /* Mission & Vision blocks */
+    .aboutus-vision-mission {
+        flex-direction: column !important;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .aboutus-vision-mision-block {
+        width: 100%;
+        padding: 0 10px;
+    }
+
+    /* Contact Us section */
+    .contactus-section {
+        flex-direction: column !important;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .contactus-section-left,
+    .contactus-section-right {
+        width: 100% !important;
+    }
+
+    .contactus-section-right-card {
+        width: 100%;
+        padding: 0 10px;
+    }
+
+    .contact-input,
+    .contact-textarea {
+        width: 100% !important;
+    }
+
+    /* Footer adjustments */
+    .landingpage-footer .footer-section-top {
+        flex-direction: column !important;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .footer-section-socials-icons {
+        flex-direction: column !important;
+        align-items: center;
+        gap: 5px;
     }
 }

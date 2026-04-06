@@ -13,7 +13,6 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const labelStyle = { fontSize: '11px', fontWeight: 'bold', color: '#000' };
 
-
     useEffect(() => {
         const fetchUserData = async () => {
             try {

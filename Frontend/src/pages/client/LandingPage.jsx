@@ -346,7 +346,7 @@ export default function LandingPage() {
                 <div ref={exploreRef} style={{ paddingTop: '100px', marginTop: '50px' }}>
                     <div className='explore-container'>
                         <div className='explore-local-packages-section'>
-                            <h1 className='explore-text'>Local Tour Packages</h1>
+                            <h1 className='explore-text explore-text-center-mobile'>Local Tour Packages</h1>
                             <div className='explore-local-packages'>
                                 <Card
                                     hoverable
@@ -453,50 +453,53 @@ export default function LandingPage() {
                             </div>
 
 
-                            <div style={{ display: 'flex', flexDirection: 'row', marginTop: '50px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>
-                                    <h1 className='explore-text'>About Us</h1>
+                            <div className='aboutus-row'>
+                                <div className='aboutus-text-col'>
+                                    <div className='aboutus-text-wrap'>
+                                        <h1 className='explore-text'>About Us</h1>
 
-                                    <p className='aboutus-text'>
-                                        M&RC Travel and Tours humbly started travel business in July 2018 when two vibrant entrepreneur, traveler,
-                                        Maricar Carle and Rhon Carle decided to turn their passion into business. Office is located at #1 Cor Fatima Street
-                                        San antonio Avenue Valley 1, Brgy. San Antonio Paranaque City with over thousand of agents worldwide and travel partners.
-                                    </p>
+                                        <p className='aboutus-text'>
+                                            M&RC Travel and Tours humbly started travel business in July 2018 when two vibrant entrepreneur, traveler,
+                                            Maricar Carle and Rhon Carle decided to turn their passion into business. Office is located at #1 Cor Fatima Street
+                                            San antonio Avenue Valley 1, Brgy. San Antonio Paranaque City with over thousand of agents worldwide and travel partners.
+                                        </p>
 
-                                    <p className='aboutus-text'>
-                                        We commit to adapt the changing needs of business sectors and become a major player through satisfying specialized requirements of the small, medium and large organizations.
-                                    </p>
+                                        <p className='aboutus-text'>
+                                            We commit to adapt the changing needs of business sectors and become a major player through satisfying specialized requirements of the small, medium and large organizations.
+                                        </p>
 
-                                    <p className='aboutus-text'>
-                                        We value honesty and integrity.
-                                        M&RC Travel and Tours continuously develop other line of services with the primary objective of extending wide range of quality and excellent service.
-                                    </p>
+                                        <p className='aboutus-text'>
+                                            We value honesty and integrity.
+                                            M&RC Travel and Tours continuously develop other line of services with the primary objective of extending wide range of quality and excellent service.
+                                        </p>
+                                    </div>
+
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', width: '45%', alignItems: 'center', marginLeft: 40 }}>
+                                <div className='aboutus-image-col'>
                                     <img
-                                        style={{ width: 250, height: 250, borderRadius: '55%' }}
+                                        className='aboutus-image'
                                         draggable={false}
                                         alt="example"
-                                        src="/images/owners.jpg"
+                                        src="/images/Homepage1.png"
                                     />
                                 </div>
 
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'row', marginTop: '50px' }}>
+                            <div className='aboutus-row'>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', width: '45%', alignItems: 'center', marginLeft: 40 }}>
+                                <div className='aboutus-image-col aboutus-image-col-left'>
                                     <img
-                                        style={{ width: 250, height: 250, borderRadius: '55%' }}
+                                        className='aboutus-image aboutus-image-offset'
                                         draggable={false}
                                         alt="example"
-                                        src="/images/owners.jpg"
+                                        src="/images/Homepage2.png"
                                     />
                                 </div>
 
-                                <div className='aboutus-vision-mission' style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>
-                                    <div className='aboutus-vision-mision-block' style={{ width: 550 }}>
+                                <div className='aboutus-vision-mission'>
+                                    <div className='aboutus-vision-mision-block'>
                                         <h2 className='explore-text'>Our Vision</h2>
                                         <p className='aboutus-text'>
                                             Our Vision is to be the preferred travel
@@ -505,19 +508,9 @@ export default function LandingPage() {
                                             efficient travel solutions at all times,
                                             anywhere, everywhere.
                                         </p>
-
-
-                                        <div>
-                                            <img
-                                                style={{ width: 200, height: 200 }}
-                                                draggable={false}
-                                                alt="example"
-                                                src="/images/philgeps.png"
-                                            />
-                                        </div>
                                     </div>
 
-                                    <div className='aboutus-vision-mision-block' style={{ width: 550 }}>
+                                    <div className='aboutus-vision-mision-block'>
                                         <h2 className='explore-text'>Our Mission</h2>
                                         <p className='aboutus-text'>
                                             We are committed to provide value-added travel
@@ -541,15 +534,6 @@ export default function LandingPage() {
 
                                             community and our environment.
                                         </p>
-
-                                        <div>
-                                            <img
-                                                style={{ width: 200, height: 200 }}
-                                                draggable={false}
-                                                alt="example"
-                                                src="/images/philgeps.png"
-                                            />
-                                        </div>
                                     </div>
                                 </div>
                             </div>
