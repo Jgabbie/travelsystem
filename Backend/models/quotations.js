@@ -54,8 +54,7 @@ const QuotationSchema = new mongoose.Schema({
             'Pending',
             'Under Review',
             'Revision Requested',
-            'Revised',
-            'Approved',
+            'Booked',
             'Rejected'
         ],
         default: 'Pending'

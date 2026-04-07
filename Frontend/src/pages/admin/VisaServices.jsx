@@ -17,6 +17,14 @@ export default function VisaServices() {
     const [searchText, setSearchText] = useState("");
     const [selectedService, setSelectedService] = useState(null);
 
+    const formatListItem = (item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object") {
+            return item.req || item.desc || "";
+        }
+        return "";
+    };
+
     useEffect(() => {
         const getServices = async () => {
             try {
@@ -232,7 +240,7 @@ export default function VisaServices() {
                                         <h4>Requirements</h4>
                                         <ul className="visa-details-list">
                                             {selectedService.visaRequirements?.map((item, index) => (
-                                                <li key={`req-${index}`}>{item}</li>
+                                                <li key={`req-${index}`}>{formatListItem(item)}</li>
                                             ))}
                                         </ul>
                                     </div>
@@ -241,7 +249,7 @@ export default function VisaServices() {
                                         <h4>Process</h4>
                                         <ol className="visa-details-list">
                                             {selectedService.visaProcessSteps?.map((item, index) => (
-                                                <li key={`step-${index}`}>{item}</li>
+                                                <li key={`step-${index}`}>{formatListItem(item)}</li>
                                             ))}
                                         </ol>
                                     </div>

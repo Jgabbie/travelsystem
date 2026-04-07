@@ -4,11 +4,13 @@ const paymentController = require("../controllers/paymentController");
 const userAuth = require("../middleware/userAuth");
 
 router.post("/create-checkout-session", userAuth, paymentController.createCheckoutSession);
+router.post("/create-checkout-session-quotation", userAuth, paymentController.createCheckoutSessionQuotation);
 router.post("/create-checkout-session-passport", userAuth, paymentController.createCheckoutSessionPassport);
 router.post("/create-checkout-session-visa", userAuth, paymentController.createCheckoutSessionVisa);
 router.post("/create-checkout-session-deposit", userAuth, paymentController.createCheckoutSessionDeposit);
 router.post("/create-checkout-token", userAuth, paymentController.createCheckoutToken);
 router.post("/manual", userAuth, paymentController.createManualPayment);
+router.post("/manual-quotation", userAuth, paymentController.createManualPaymentQuotation);
 router.post("/manual-deposit", userAuth, paymentController.createManualPaymentDeposit);
 router.post("/manual-visa", userAuth, paymentController.createManualPaymentVisa);
 router.post("/manual-passport", userAuth, paymentController.createManualPaymentPassport);

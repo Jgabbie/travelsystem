@@ -13,6 +13,7 @@ const UserModel = require("../models/user");
 const NotificationModel = require("../models/notification");
 const PassportModel = require("../models/passport");
 const VisaModel = require("../models/visas");
+const QuotationModel = require("../models/quotations")
 
 
 
@@ -85,6 +86,7 @@ const parsePayMongoSignature = (signatureHeader) => {
     return { timestamp: signatureMap.t, signature };
 };
 
+//MANUAL PAYMENT FOR NORMAL FIXED BOOKINGS
 const createManualPayment = async (req, res) => {
     const userId = req.userId;
     try {
@@ -241,6 +243,166 @@ const createManualPayment = async (req, res) => {
     }
 };
 
+
+//MANUAL PAYMENT FOR QUOTATION BOOKINGS
+const createManualPaymentQuotation = async (req, res) => {
+    const userId = req.userId;
+    try {
+        const {
+            bookingId,
+            packageId,
+            amount,
+            proofImage,
+            proofImageType,
+            proofFileName,
+        } = req.body;
+
+        console.log("Manual payment request body:", req.body);
+
+        const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+        const token = uuidv4();
+
+        const tokenCheckout = await TokenCheckoutModel.create({
+            token,
+            userId,
+            bookingId,
+            amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+        console.log("Token checkout created for manual deposit:", tokenCheckout);
+
+        const reference = generateTransactionReference();
+
+        if (!proofImage || !proofImageType) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const transaction = await TransactionModel.create({
+            bookingId,
+            packageId,
+            userId,
+            reference,
+            amount,
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+            proofImageType,
+            proofFileName,
+        });
+
+        const booking = await BookingModel.findById(bookingId);
+
+        const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
+        const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+
+        booking.status = 'Pending'
+        booking.statusHistory.push({ status: 'Pending', changedAt: new Date() });
+
+        console.log("Start Date:", bookingStart);
+        console.log("End Date:", bookingEnd);
+
+        const packageDoc = await PackageModel.findById(packageId);
+        console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
+
+        const updateResult = await PackageModel.updateOne(
+            {
+                _id: packageId,
+                packageSpecificDate: {
+                    $elemMatch: {
+                        startdaterange: { $lte: booking.travelDate.startDate },
+                        enddaterange: { $gte: booking.travelDate.endDate },
+                        slots: { $gt: 0 }
+                    }
+                }
+            },
+            {
+                $inc: { 'packageSpecificDate.$.slots': -1 }
+            }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            console.log('No matching date range found or no slots remaining.');
+        } else if (updateResult.modifiedCount === 1) {
+            console.log('Slot successfully decremented.');
+        }
+
+        console.log('Manual payment deposit created:', transaction);
+
+        const user = await UserModel.findById(userId).select('email username');
+        console.log('userId for email:', user.email);
+        console.log('username for email:', user.username);
+
+        await NotificationModel.create({
+            userId: user._id,
+            title: 'Booking Confirmed',
+            message: `Your manual payment for booking ${booking.reference} has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!`,
+            type: 'booking',
+            link: '/user-bookings',
+        });
+
+
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Booking ${booking.reference} Confirmed`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Booking Confirmed!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your manual payment has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${booking.reference} <br/>
+                                <b>Package:</b> ${packageDoc.packageName} <br/>
+                                <b>Travel Dates:</b> ${bookingStart} to ${bookingEnd} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not book this trip, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send booking email:', emailError);
+        }
+
+        return res.status(200).json({
+            redirectUrl: `/booking-payment/success?token=${token}`
+        });
+
+    } catch (error) {
+        console.error('Manual payment error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment.' });
+    }
+};
+
+
+//MANUAL PAYMENT FOR DEPOSIT OR INSTALLMENTS
 const createManualPaymentDeposit = async (req, res) => {
     const userId = req.userId;
     try {
@@ -364,6 +526,8 @@ const createManualPaymentDeposit = async (req, res) => {
     }
 };
 
+
+//MANUAL PAYMENT FOR PASSPORT APPLICATIONS
 const createManualPaymentPassport = async (req, res) => {
     const userId = req.userId;
 
@@ -473,6 +637,8 @@ const createManualPaymentPassport = async (req, res) => {
     }
 };
 
+
+//MANUAL PAYMENT FOR VISA APPLICATIONS
 const createManualPaymentVisa = async (req, res) => {
     const userId = req.userId;
 
@@ -897,10 +1063,12 @@ const createCheckoutSessionDeposit = async (req, res) => {
     }
 }
 
-//paymongo
+//CHECKOUT FOR NORMAL FIXED BOOKINGS
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+    const paymentType = "qr_ph"
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -994,6 +1162,118 @@ const createCheckoutSession = async (req, res) => {
             }
         );
 
+
+        if (response.status !== 200) {
+            console.error("PayMongo API Error:", response.data);
+            return res.status(500).json({ error: "Failed to create checkout session" });
+        }
+
+        res.json(response.data);
+    } catch (error) {
+        console.error("PayMongo error:", error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+};
+
+//CHECKOUT FOR QUOTATION BOOKINGS
+const createCheckoutSessionQuotation = async (req, res) => {
+    const userId = req.userId;
+    const FRONTEND_URL = "http://localhost:3000";
+
+    const paymentType = "qr_ph"
+
+    try {
+        if (!process.env.PAYMONGO_SECRET_KEY) {
+            return res.status(500).json({ error: "PayMongo secret key is not configured." });
+        }
+
+        const { quotationId, paymentToken } = req.body;
+
+        const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${paymentToken}`;
+        const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
+
+        if (!paymentToken) {
+            return res.status(400).json({ error: "Missing payment token" });
+        }
+
+        const tokenDoc = await TokenCheckoutModel.findOne({ token: paymentToken });
+        if (!tokenDoc) return res.status(404).json({ error: "Invalid payment token" });
+
+        console.log("Found token document:", tokenDoc);
+
+        if (dayjs().isAfter(dayjs(tokenDoc.expiresAt))) {
+            return res.status(400).json({ error: "Payment token expired" });
+        }
+
+        const booking = await BookingModel.findById(tokenDoc.bookingId).populate('packageId');
+        if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+        if (dayjs().isAfter(dayjs(booking.expiresAt))) {
+            return res.status(400).json({ error: "Booking expired" });
+        }
+
+        const packageName = booking.packageId.packageName;
+        const totalPrice = tokenDoc.amount;
+
+        console.log("Booking details:", { packageName, totalPrice });
+
+        const baseAmountCents = Math.round(totalPrice * 100);
+        const convenienceFeeCents = Math.round(baseAmountCents * 0.035 + 1500);
+        const finalTotalCents = baseAmountCents + convenienceFeeCents;
+
+        const metadata = {
+            userId: tokenDoc.userId,
+            bookingId: booking._id,
+            quotationId,
+            bookingReference: booking.reference,
+            transactionType: "Quotation Payment",
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents,
+        };
+
+        console.log("Creating PayMongo checkout session with metadata:", metadata);
+
+        const response = await axios.post(
+            "https://api.paymongo.com/v1/checkout_sessions",
+            {
+                data: {
+                    attributes: {
+                        billing: {
+                            name: "Test User",
+                            email: "test@example.com",
+                        },
+                        line_items: [
+                            {
+                                name: packageName || 'Tour Package',
+                                quantity: 1,
+                                amount: baseAmountCents,
+                                currency: "PHP",
+                            },
+                            {
+                                name: "Convenience Fee",
+                                description: "Payment processing and service fee",
+                                quantity: 1,
+                                amount: convenienceFeeCents,
+                                currency: "PHP",
+                            }
+                        ],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"],
+                        success_url: successUrl,
+                        cancel_url: cancelUrl,
+                        metadata,
+                        show_description: true,
+                        show_line_items: true,
+                    },
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64")}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (response.status !== 200) {
             console.error("PayMongo API Error:", response.data);
@@ -1291,6 +1571,7 @@ const handlePayMongoWebhook = async (req, res) => {
             return res.status(200).send('Passport handled');
         }
 
+        //INSTALLMENT PAYMENT --------------------------------------------------------------------------
         if (metadata.transactionType === "Installment Payment") {
             console.log('💰 Installment payment detected');
 
@@ -1384,6 +1665,7 @@ const handlePayMongoWebhook = async (req, res) => {
             return res.status(200).send('Installment handled');
         }
 
+        //BOOKING PAYMENT ----------------------------------------------------------------------------------------
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
         if (metadata.bookingId && metadata.transactionType === "Booking Payment") {
             console.log('🛫 Booking payment detected');
@@ -1521,6 +1803,148 @@ const handlePayMongoWebhook = async (req, res) => {
             return res.status(200).send('Booking handled');
         }
 
+
+        //QUOTATION PAYMENT -----------------------------------------------------------------------------
+        if (metadata.bookingId && metadata.transactionType === "Quotation Payment") {
+            console.log('🛫 Quotation Booking payment detected');
+            console.log('PackageId in metadata:', metadata.packageId);
+            let booking = await BookingModel.findById(metadata.bookingId);
+
+            if (!booking) {
+                console.warn('Booking not found for ID:', metadata.bookingId);
+                return res.status(404).send('Booking not found');
+            }
+
+            const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
+            const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
+            const packageId = booking.packageId.toString();
+
+            console.log("Start Date:", bookingStart);
+            console.log("End Date:", bookingEnd);
+
+            const packageDoc = await PackageModel.findById(packageId);
+            console.log("Fetched package document:", packageDoc);
+            console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
+
+            const updateResult = await PackageModel.updateOne(
+                {
+                    _id: packageDoc._id,
+                    packageSpecificDate: {
+                        $elemMatch: {
+                            startdaterange: { $lte: booking.travelDate.startDate },
+                            enddaterange: { $gte: booking.travelDate.endDate },
+                            slots: { $gt: 0 }
+                        }
+                    }
+                },
+                {
+                    $inc: { 'packageSpecificDate.$.slots': -1 }
+                }
+            );
+
+            if (updateResult.matchedCount === 0) {
+                console.log('No matching date range found or no slots remaining.');
+            } else if (updateResult.modifiedCount === 1) {
+                console.log('Slot successfully decremented.');
+            }
+
+            const amount = metadata.baseAmountCents
+                ? Number(metadata.baseAmountCents || 0) / 100
+                : normalizePaymongoAmount(
+                    Number(metadata.totalAmountCents || 0) / 100 ||
+                    Number(sessionAttributes?.amount_total || 0) / 100
+                );
+
+            await TransactionModel.create({
+                bookingId: booking._id,
+                packageId: booking.packageId,
+                userId: user._id,
+                reference: generateTransactionReference(),
+                amount,
+                method: 'Paymongo',
+                status: 'Successful',
+            });
+
+            const quotation = await QuotationModel.findOne({ quotationId: metadata.quotation });
+            quotation.status = 'Booked'
+            await quotation.save();
+
+            const paymentType = booking?.bookingDetails?.paymentDetails?.paymentType || null;
+            if (paymentType === 'deposit') {
+                if (booking.status !== 'Pending') {
+                    booking.status = 'Pending';
+                    if (!Array.isArray(booking.statusHistory)) {
+                        booking.statusHistory = [];
+                    }
+                    booking.statusHistory.push({ status: 'Pending', changedAt: new Date() });
+                    await booking.save();
+                }
+            } else {
+                await updateBookingPaymentStatus(booking._id);
+            }
+
+            await NotificationModel.create({
+                userId: user._id,
+                title: 'Booking Quotation Confirmed',
+                message: `Your booking Quotation ${booking.reference} has been confirmed.`,
+                type: 'booking',
+                link: '/user-bookings',
+                metadata: { bookingId: booking._id },
+            });
+
+            // Send booking confirmation email
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Booking Quotation ${booking.reference} Confirmed`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Booking Quotation Confirmed!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your booking for your quotation has been successfully confirmed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${booking.reference} <br/>
+                                <b>Package:</b> ${packageDoc.packageName} <br/>
+                                <b>Travel Dates:</b> ${bookingStart} to ${bookingEnd} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not book this trip, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <p style="color:#aaa; font-size:12px;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
+                                Making your travel dreams come true.
+                            </p>
+
+                        </div>
+                    </div>
+                    `
+                });
+            } catch (emailError) {
+                console.error('Failed to send booking email:', emailError);
+            }
+
+            return res.status(200).send('Booking handled');
+        }
+
         // if we reach this point, it means we received a valid webhook with correct signature and metadata, but it doesn't match our expected structure for either passport or booking payments. We log this as a warning for further investigation but still return a 200 response to acknowledge receipt of the webhook. This way we avoid unnecessary retries from PayMongo while we investigate the unexpected payload structure.
         console.warn('Received unhandled webhook event with valid signature but missing expected metadata:', metadata);
         res.status(200).send('Event received');
@@ -1548,4 +1972,4 @@ const createCheckoutToken = async (req, res) => {
 };
 
 
-module.exports = { createCheckoutSession, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentDeposit, createManualPaymentVisa, createManualPaymentPassport };
+module.exports = { createCheckoutSession, createCheckoutSessionQuotation, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentQuotation, createManualPaymentDeposit, createManualPaymentVisa, createManualPaymentPassport };

@@ -120,6 +120,8 @@ export default function QuotationBookingProcess() {
                 const childRate = latestDetails.totalChildRate || 0;
                 const infantRate = latestDetails.totalInfantRate || 0;
 
+                const quotationId = quotationBookingData.quotationId
+
 
                 const totalTravelers = typeof travelersValue === 'number'
                     ? travelersValue
@@ -130,6 +132,7 @@ export default function QuotationBookingProcess() {
                 setQuotationBookingData((prev) => ({
                     ...prev,
                     packageId: packageId,
+                    quotationId: quotationId,
                     travelDate: prev.travelDate || travelDateValue,
                     travelDatePrice: prev.travelDatePrice || priceValue,
                     travelersCount: prev.travelersCount || travelersValue,

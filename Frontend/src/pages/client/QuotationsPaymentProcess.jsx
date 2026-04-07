@@ -305,9 +305,16 @@ export default function QuotationsPaymentProcess() {
                 return;
             }
 
+            const paymongoPayload = {
+                quotationId: quotationBookingData.quotationId,
+                paymentToken: paymentToken
+            }
+
+            console.log(paymongoPayload)
+
             const paymongoResponse = await axiosInstance.post(
-                '/payment/create-checkout-session',
-                { paymentToken }
+                '/payment/create-checkout-session-quotation',
+                paymongoPayload
             );
 
             const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
