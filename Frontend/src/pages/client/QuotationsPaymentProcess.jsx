@@ -238,10 +238,17 @@ export default function QuotationsPaymentProcess() {
             const passportUrls = allUrls.slice(0, passportFiles.length);
             const photoUrls = allUrls.slice(passportFiles.length);
 
+            const startDate = quotationBookingData?.travelDate.split(" - ")?.[0] || dayjs().format("MMM D, YYYY");
+            const endDate = quotationBookingData?.travelDate.split(" - ")?.[1] || dayjs().format("MMM D, YYYY");
+
+
             const bookingRes = await axiosInstance.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,
-                    travelDate: quotationBookingData?.travelDate,
+                    travelDate: {
+                        startDate,
+                        endDate
+                    },
                     travelers: quotationBookingData?.travelersCount.adult + quotationBookingData?.travelersCount.child + quotationBookingData?.travelersCount.infant || 0,
                     bookingDetails,
                     paymentType,
