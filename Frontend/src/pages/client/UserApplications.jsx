@@ -4,6 +4,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
+import '../../style/client/userapplications.css'
 import { useNavigate } from 'react-router-dom';
 
 export default function UserApplications() {
@@ -78,11 +79,7 @@ export default function UserApplications() {
         { title: 'Reference', dataIndex: 'ref', key: 'ref' },
         { title: 'Name', dataIndex: 'name', key: 'name' },
         {
-            title: 'Type', dataIndex: 'type', key: 'type', filters: [
-                { text: 'Passport', value: 'Passport' },
-                { text: 'Visa', value: 'Visa' },
-            ],
-            onFilter: (value, record) => record.type === value
+            title: 'Type', dataIndex: 'type', key: 'type'
         },
         { title: 'Status', dataIndex: 'status', key: 'status', render: (value) => <Tag>{value}</Tag> },
         { title: 'Application Date', dataIndex: 'date', key: 'date', render: (value) => dayjs(value).format('MMM D, YYYY') },
@@ -90,7 +87,7 @@ export default function UserApplications() {
             title: 'Actions', key: 'actions', render: (_, record) => (
                 <Space>
                     <Button
-                        type="primary"
+                        className='userapplications-action-primary'
                         onClick={() => {
                             if (record.type === 'Passport') {
                                 navigate('/passport-application', { state: { applicationId: record.key } });
@@ -109,14 +106,14 @@ export default function UserApplications() {
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
-            <div className="user-bookings-page">
+            <div className="userapplications-page">
                 <TopNavUser />
-                <div className="user-bookings-container">
-                    <div className="user-bookings-header">
+                <div className="userapplications-container">
+                    <div className="userapplications-header">
                         <h2>My Applications</h2>
                         <p>Track your latest visa and passport applications.</p>
                     </div>
-                    <div className="booking-actions">
+                    <div className="userapplications-actions">
                         <Input
                             prefix={<SearchOutlined />}
                             placeholder="Search reference, type or status..."
@@ -126,20 +123,19 @@ export default function UserApplications() {
                             allowClear
                         />
                         <Select
-                            className="booking-select"
+                            className="userapplications-select"
                             placeholder="Type"
                             style={{ width: 120 }}
                             allowClear
                             value={typeFilter || undefined}
                             onChange={v => setTypeFilter(v || "")}
                             options={[
-                                { value: 'New Passport', label: 'New Passport' },
-                                { value: 'Renew Passport', label: 'Renew Passport' },
+                                { value: 'Passport', label: 'Passport' },
                                 { value: 'Visa', label: 'Visa' },
                             ]}
                         />
                         <Select
-                            className="booking-select"
+                            className="userapplications-select"
                             placeholder="Status"
                             style={{ width: 140 }}
                             allowClear
@@ -148,14 +144,14 @@ export default function UserApplications() {
                             options={Array.from(new Set(applications.map(a => a.status))).map(s => ({ value: s, label: s }))}
                         />
                         <DatePicker
-                            className="booking-date-filter"
+                            className="userapplications-date-filter"
                             placeholder="Application Date"
                             value={dateFilter}
                             onChange={d => setDateFilter(d)}
                             allowClear
                         />
                     </div>
-                    <div className="user-bookings-table">
+                    <div className="userapplications-table">
                         <Table
                             columns={columns}
                             dataSource={filteredData}
