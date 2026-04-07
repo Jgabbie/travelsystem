@@ -3,15 +3,15 @@ import { Button, ConfigProvider, message } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
+import { useQuotationBooking } from '../../context/BookingQuotationContext';
 import axiosInstance from '../../config/axiosConfig';
 
-const REGISTRATION_PDF_KEY = 'bookingRegistrationPdf';
-const REGISTRATION_PDF_NAME_KEY = 'bookingRegistrationPdfName';
 
 export default function SuccessfulBooking() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { setBookingData } = useBooking();
+    const { clearQuotationBookingData } = useQuotationBooking();
 
     const [countdown, setCountdown] = useState(10);
 
@@ -43,8 +43,7 @@ export default function SuccessfulBooking() {
                 message.error('Unable to verify booking.');
             });
 
-        sessionStorage.removeItem(REGISTRATION_PDF_KEY);
-        sessionStorage.removeItem(REGISTRATION_PDF_NAME_KEY);
+        clearQuotationBookingData();
         setBookingData(null);
 
         const timer = setInterval(() => {
