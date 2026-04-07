@@ -26,17 +26,7 @@ export default function SuccessfulBooking() {
         // Call backend API to verify payment using token
         axiosInstance.post(`/booking/verify-payment`, { token })
             .then(res => {
-                const pdfDataUri = sessionStorage.getItem(REGISTRATION_PDF_KEY);
-                const pdfFileName = sessionStorage.getItem(REGISTRATION_PDF_NAME_KEY) || 'booking-registration.pdf';
-
-                if (pdfDataUri) {
-                    const link = document.createElement('a');
-                    link.href = pdfDataUri;
-                    link.download = pdfFileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
+                clearQuotationBookingData();
             })
             .catch(err => {
                 console.error(err);
