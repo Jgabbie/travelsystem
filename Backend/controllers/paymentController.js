@@ -819,7 +819,7 @@ const createCheckoutSessionPassport = async (req, res) => {
                                 currency: "PHP",
                             }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"], // start with card first
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
@@ -921,7 +921,7 @@ const createCheckoutSessionVisa = async (req, res) => {
                                 currency: "PHP",
                             }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"], // start with card first
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
@@ -1033,7 +1033,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
                                 currency: "PHP",
                             }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
@@ -1145,7 +1145,7 @@ const createCheckoutSession = async (req, res) => {
                                 currency: "PHP",
                             }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
@@ -1258,7 +1258,7 @@ const createCheckoutSessionQuotation = async (req, res) => {
                                 currency: "PHP",
                             }
                         ],
-                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya"],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
                         success_url: successUrl,
                         cancel_url: cancelUrl,
                         metadata,
@@ -1865,7 +1865,9 @@ const handlePayMongoWebhook = async (req, res) => {
                 status: 'Successful',
             });
 
-            const quotation = await QuotationModel.findOne({ quotationId: metadata.quotation });
+            console.log('Created transaction for Quotation:', metadata.quotationId);
+
+            const quotation = await QuotationModel.findOne({ quotationId: metadata.quotationId });
             quotation.status = 'Booked'
             await quotation.save();
 
