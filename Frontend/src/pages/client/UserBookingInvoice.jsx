@@ -177,6 +177,7 @@ export default function UserBookingInvoice() {
     const customerName = bookingDetails.leadFullName || booking?.leadFullName || "Customer";
     const customerPhone = bookingDetails.leadContact || booking?.leadContact || "--";
     const remainingBalance = (Math.round(Math.max(totalPrice - paidAmount, 0) * 100) / 100).toFixed(2);
+    const paymentMode = bookingDetails?.paymentMode || (bookingDetails?.paymentDetails?.paymentType === 'deposit' ? 'Deposit' : 'Full Payment');
 
     const handleSelectPaymentMethod = (selectedMethod) => {
         setMethod(selectedMethod);
@@ -354,7 +355,9 @@ export default function UserBookingInvoice() {
                 const manualDepositRes = await axiosInstance.post('/payment/manual-deposit', {
                     bookingId: booking?._id,
                     packageId: booking?.packageId._id,
-                    amount: currentUnpaidInstallment,
+                    amount: paymentMode === 'Deposit'
+                        ? currentUnpaidInstallment
+                        : { amount: Number(totalPrice) },
                     proofImage: imageUrl,
                     proofImageType: file?.type,
                     proofFileName: file?.name
@@ -371,7 +374,9 @@ export default function UserBookingInvoice() {
                 bookingId: booking?._id,
                 bookingReference: reference,
                 packageId: booking?.packageId._id,
-                totalPrice: currentUnpaidInstallment?.amount,
+                totalPrice: paymentMode === 'Deposit'
+                    ? currentUnpaidInstallment?.amount
+                    : Number(totalPrice),
             };
 
             const paymongoResponse = await axiosInstance.post(
@@ -539,6 +544,27 @@ export default function UserBookingInvoice() {
     invoice.invoice.dueDate = lastInstallmentDate ? dayjs(lastInstallmentDate).format("MMMM D, YYYY") : null;
 
     useEffect(() => {
+        if (paymentMode !== 'Deposit') {
+            const fullPayment = {
+                label: 'Full Payment',
+                amount: Number(totalPrice),
+                status: 'PENDING',
+                dueDate: lastInstallmentDate
+            };
+
+            const shouldUpdate =
+                !currentUnpaidInstallment ||
+                currentUnpaidInstallment.label !== fullPayment.label ||
+                Number(currentUnpaidInstallment.amount || 0) !== fullPayment.amount ||
+                currentUnpaidInstallment.status !== fullPayment.status ||
+                currentUnpaidInstallment.dueDate !== fullPayment.dueDate;
+
+            if (shouldUpdate) {
+                setCurrentUnpaidInstallment(fullPayment);
+            }
+            return;
+        }
+
         const next = installmentData.nextUnpaid;
 
         if (!next && !currentUnpaidInstallment) return;
@@ -557,7 +583,7 @@ export default function UserBookingInvoice() {
                     : null
             );
         }
-    }, [installmentData.nextUnpaid, lastInstallmentDate])
+    }, [currentUnpaidInstallment, installmentData.nextUnpaid, lastInstallmentDate, paymentMode, totalPrice])
 
     const calculateTotals = (items) => {
         const subtotal = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
@@ -644,7 +670,7 @@ export default function UserBookingInvoice() {
                     ))}
                 </View>
 
-                {paymentType === "deposit" && (
+                {paymentMode === "Deposit" && (
                     <View style={{ marginTop: 20 }}>
                         <Text style={[styles.label, { marginBottom: 8 }]}>
                             PAYMENT SCHEDULE ({paymentFrequency.toUpperCase()})

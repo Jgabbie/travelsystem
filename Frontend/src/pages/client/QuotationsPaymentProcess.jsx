@@ -242,6 +242,8 @@ export default function QuotationsPaymentProcess() {
             const endDate = quotationBookingData?.travelDate.split(" - ")?.[1] || dayjs().format("MMM D, YYYY");
 
 
+            const paymentMode = paymentType === 'deposit' ? 'Deposit' : 'Full Payment';
+
             const bookingRes = await axiosInstance.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,
@@ -252,6 +254,7 @@ export default function QuotationsPaymentProcess() {
                     travelers: quotationBookingData?.travelersCount.adult + quotationBookingData?.travelersCount.child + quotationBookingData?.travelersCount.infant || 0,
                     bookingDetails,
                     paymentType,
+                    paymentMode,
                     passportFiles: passportUrls,
                     photoFiles: photoUrls,
                     amount: amountToCharge //for checkoutToken
@@ -296,8 +299,9 @@ export default function QuotationsPaymentProcess() {
 
                 console.log("Booking data from new booking:", bookingRes);
 
-                const manualDepositRes = await axiosInstance.post('/payment/manual', {
+                const manualDepositRes = await axiosInstance.post('/payment/manual-quotation', {
                     bookingId: bookingRes.data.booking._id,
+                    quotationId: quotationBookingData.quotationId,
                     packageId,
                     amount: amountToCharge,
                     proofImage: imageUrl,

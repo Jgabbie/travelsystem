@@ -43,10 +43,17 @@ export default function UserBookings() {
                     travelDate: b.travelDate ? `${dayjs(b.travelDate.startDate).format('MMM D, YYYY')} - ${dayjs(b.travelDate.endDate).format('MMM D, YYYY')}` : 'TBD',
                     bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
                     travelersCount: b.travelers || {},
+                    paidAmount: Number(b.paidAmount || 0),
                     status: (() => {
                         const rawStatus = b.status || '';
                         const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
                         const normalized = formatted.toLowerCase();
+                        if (normalized === 'cancelled' || normalized === 'cancellation requested') {
+                            return formatted || 'Cancelled';
+                        }
+                        if (Number(b.paidAmount || 0) <= 0) {
+                            return 'Not Paid';
+                        }
                         if (normalized === 'successful' || normalized === 'fully paid') {
                             return 'Fully Paid';
                         }

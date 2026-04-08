@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
@@ -29,6 +29,12 @@ export default function LandingPage() {
 
     const [openModalSuccess, setOpenModalSuccess] = useState(false)
     const [openModalError, setOpenModalError] = useState(false)
+
+    const [popularPackages, setPopularPackages] = useState([])
+    const [fallbackPopularPackages, setFallbackPopularPackages] = useState([])
+    const [domesticPackages, setDomesticPackages] = useState([])
+    const [isPopularLoading, setIsPopularLoading] = useState(false)
+    const [isDomesticLoading, setIsDomesticLoading] = useState(false)
 
 
     const [contactValues, setContactValues] = useState({
@@ -94,6 +100,99 @@ export default function LandingPage() {
         } catch (error) {
             setOpenModalError(true)
         }
+    }
+
+    useEffect(() => {
+        const fetchPopularPackages = async () => {
+            setIsPopularLoading(true)
+            try {
+                const response = await axiosInstance.get('/package/popular-packages', {
+                    params: { limit: 3 }
+                })
+
+                const packages = (response.data || []).map((pkg) => ({
+                    id: pkg._id,
+                    packageName: pkg.packageName,
+                    packageDescription: pkg.packageDescription,
+                    image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : '',
+                    bookingCount: pkg.bookingCount || 0
+                }))
+
+                const trimmed = packages.slice(0, 3)
+                setPopularPackages(trimmed)
+
+                if (trimmed.length === 0) {
+                    const fallbackResponse = await axiosInstance.get('/package/get-packages')
+                    const fallbackPackages = (fallbackResponse.data || [])
+                        .slice(0, 3)
+                        .map((pkg) => ({
+                            id: pkg._id,
+                            packageName: pkg.packageName,
+                            packageDescription: pkg.packageDescription,
+                            image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : ''
+                        }))
+
+                    setFallbackPopularPackages(fallbackPackages)
+                } else {
+                    setFallbackPopularPackages([])
+                }
+            } catch (error) {
+                console.error('Failed to load popular packages:', error)
+                setPopularPackages([])
+                try {
+                    const fallbackResponse = await axiosInstance.get('/package/get-packages')
+                    const fallbackPackages = (fallbackResponse.data || [])
+                        .slice(0, 3)
+                        .map((pkg) => ({
+                            id: pkg._id,
+                            packageName: pkg.packageName,
+                            packageDescription: pkg.packageDescription,
+                            image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : ''
+                        }))
+
+                    setFallbackPopularPackages(fallbackPackages)
+                } catch (fallbackError) {
+                    console.error('Failed to load fallback packages:', fallbackError)
+                    setFallbackPopularPackages([])
+                }
+            } finally {
+                setIsPopularLoading(false)
+            }
+        }
+
+        fetchPopularPackages()
+    }, [])
+
+    useEffect(() => {
+        const fetchDomesticPackages = async () => {
+            setIsDomesticLoading(true)
+            try {
+                const response = await axiosInstance.get('/package/get-packages')
+                const packages = (response.data || [])
+                    .filter((pkg) => String(pkg.packageType).toLowerCase() === 'domestic')
+                    .map((pkg) => ({
+                        id: pkg._id,
+                        packageName: pkg.packageName,
+                        packageDescription: pkg.packageDescription,
+                        image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : ''
+                    }))
+
+                setDomesticPackages(packages)
+            } catch (error) {
+                console.error('Failed to load domestic packages:', error)
+                setDomesticPackages([])
+            } finally {
+                setIsDomesticLoading(false)
+            }
+        }
+
+        fetchDomesticPackages()
+    }, [])
+
+    const formatDescription = (text, maxLength = 160) => {
+        if (!text) return 'No description available.'
+        if (text.length <= maxLength) return text
+        return `${text.slice(0, maxLength).trim()}...`
     }
 
     return (
@@ -260,86 +359,47 @@ export default function LandingPage() {
 
                     <h1 className='popular-packages-text'>Popular Packages</h1>
 
-                    {/* if data for popular packages is available, just map it */}
                     <div className='popular-packages'>
-
-                        <Card
-                            hoverable
-                            style={{ width: 350 }}
-                            cover={
-                                <img style={{ height: 250 }}
-                                    draggable={false}
-                                    alt="example"
-                                    src="https://www.nagoya-info.jp/assets/otherlan/img/nagoya/main_sp.jpg"
-                                    className="footer-logo-img"
-                                />
-                            }
-                        >
-                            <h2>
-                                Nagoya Tour Package
-                            </h2>
-                            <p>
-                                Explore the perfect balance of tradition and modern life in Nagoya, Japan’s vibrant industrial and cultural hub. This tour takes you through historic landmarks, modern cityscapes, and authentic local experiences that reveal a side of Japan often missed by first-time visitors.
-                            </p>
-                        </Card>
-
-                        <Card
-                            hoverable
-                            style={{ width: 350 }}
-                            cover={
-                                <img style={{ height: 250 }}
-                                    draggable={false}
-                                    alt="example"
-                                    src="https://static.toiimg.com/photo/111258550.cms"
-                                />
-                            }
-                        >
-                            <h2>
-                                Seoul Tour Package
-                            </h2>
-                            <p>
-                                Experience the dynamic heart of Seoul, where ancient palaces stand beside futuristic skylines and vibrant street culture. This tour takes you through South Korea’s rich history, cutting-edge trends, and world-famous cuisine—all in one unforgettable journey.
-                            </p>
-                        </Card>
-
-                        <Card
-                            hoverable
-                            style={{ width: 350 }}
-                            cover={
-                                <img style={{ height: 250 }}
-                                    draggable={false}
-                                    alt="example"
-                                    src="https://media.istockphoto.com/id/533554773/photo/white-beach-boracay-philippines.jpg?s=612x612&w=0&k=20&c=BVCgea8yLM6WBJrCgbntaRGFHU_hCotyg4QWMZ_32ps="
-                                />
-                            }
-                        >
-                            <h2>
-                                Boracay Tour Package
-                            </h2>
-                            <p>
-                                Escape to the world-famous island of Boracay, known for its powdery white sand, crystal-clear waters, and breathtaking sunsets. This tropical paradise offers the perfect mix of relaxation, adventure, and vibrant island life.
-                            </p>
-                        </Card>
-
-                        <Card
-                            hoverable
-                            style={{ width: 350 }}
-                            cover={
-                                <img style={{ height: 250 }}
-                                    draggable={false}
-                                    alt="example"
-                                    src="https://www.elnidoparadise.com/wp-content/uploads/entalula-beach-el-nido-palawan-2.jpg"
-                                />
-                            }
-                        >
-                            <h2>
-                                El Nido Tour Package
-                            </h2>
-                            <p>
-                                Discover the breathtaking beauty of El Nido, Palawan—famous for its dramatic limestone cliffs, hidden lagoons, and crystal-clear turquoise waters. This tour offers a perfect tropical escape surrounded by some of the most stunning seascapes in the Philippines.
-                            </p>
-                        </Card>
-
+                        {isPopularLoading ? (
+                            <p>Loading popular packages...</p>
+                        ) : popularPackages.length === 0 && fallbackPopularPackages.length === 0 ? (
+                            <p>No popular packages available yet.</p>
+                        ) : (
+                            (popularPackages.length > 0 ? popularPackages : fallbackPopularPackages).map((pkg) => (
+                                <Card
+                                    key={pkg.id}
+                                    hoverable
+                                    style={{ width: 350 }}
+                                    onClick={() => navigate(`/package/${pkg.id}`)}
+                                    cover={
+                                        pkg.image ? (
+                                            <img
+                                                style={{ height: 250 }}
+                                                draggable={false}
+                                                alt={pkg.packageName}
+                                                src={pkg.image}
+                                            />
+                                        ) : (
+                                            <div
+                                                style={{
+                                                    height: 250,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: '#f5f5f5',
+                                                    color: '#777'
+                                                }}
+                                            >
+                                                No Image
+                                            </div>
+                                        )
+                                    }
+                                >
+                                    <h2>{pkg.packageName}</h2>
+                                    <p>{formatDescription(pkg.packageDescription)}</p>
+                                </Card>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -348,63 +408,46 @@ export default function LandingPage() {
                         <div className='explore-local-packages-section'>
                             <h1 className='explore-text explore-text-center-mobile'>Local Tour Packages</h1>
                             <div className='explore-local-packages'>
-                                <Card
-                                    hoverable
-                                    style={{ width: 300 }}
-                                    cover={
-                                        <img style={{ height: 200 }}
-                                            draggable={false}
-                                            alt="example"
-                                            src="https://pinayodyssey.com/wp-content/uploads/2023/12/img_5850.jpg"
-                                        />
-                                    }
-                                >
-                                    <h2>
-                                        Baguio City Tour Package
-                                    </h2>
-                                    <p>
-                                        Baguio City is the "Summer Capital of the Philippines," perched in the Cordillera Mountains and celebrated for its refreshing pine-scented air and cool highland climate.
-                                    </p>
-                                </Card>
-
-                                <Card
-                                    hoverable
-                                    style={{ width: 300 }}
-                                    cover={
-                                        <img style={{ height: 200 }}
-                                            draggable={false}
-                                            alt="example"
-                                            src="https://www.beyondmydoor.com/wp-content/uploads/2024/03/Kalesa-Ride-Calle-Crisologo%E2%80%8B-Vigan-Philippines-1024x776.webp"
-                                        />
-                                    }
-                                >
-                                    <h2>
-                                        Vigan City Tour Package
-                                    </h2>
-                                    <p>
-                                        Step back in time and experience the rich history and cultural charm of Vigan City, a UNESCO World Heritage Site.
-                                    </p>
-                                </Card>
-
-                                <Card
-                                    hoverable
-                                    style={{ width: 300 }}
-                                    cover={
-                                        <img style={{ height: 200 }}
-                                            draggable={false}
-                                            alt="example"
-                                            src="https://media.philstar.com/photos/2025/03/29/4_2025-03-29_22-14-19.jpg"
-                                        />
-                                    }
-                                >
-                                    <h2>
-                                        Batanes Tour Package
-                                    </h2>
-                                    <p>
-                                        Discover the untouched beauty of Batanes, the northernmost paradise of the Philippines, where rolling hills meet endless seas and time seems to slow down.
-                                    </p>
-                                </Card>
-
+                                {isDomesticLoading ? (
+                                    <p>Loading domestic packages...</p>
+                                ) : domesticPackages.length === 0 ? (
+                                    <p>No domestic packages available yet.</p>
+                                ) : (
+                                    domesticPackages.map((pkg) => (
+                                        <Card
+                                            key={pkg.id}
+                                            hoverable
+                                            style={{ width: 300 }}
+                                            onClick={() => navigate(`/package/${pkg.id}`)}
+                                            cover={
+                                                pkg.image ? (
+                                                    <img
+                                                        style={{ height: 200 }}
+                                                        draggable={false}
+                                                        alt={pkg.packageName}
+                                                        src={pkg.image}
+                                                    />
+                                                ) : (
+                                                    <div
+                                                        style={{
+                                                            height: 200,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            background: '#f5f5f5',
+                                                            color: '#777'
+                                                        }}
+                                                    >
+                                                        No Image
+                                                    </div>
+                                                )
+                                            }
+                                        >
+                                            <h2>{pkg.packageName}</h2>
+                                            <p>{formatDescription(pkg.packageDescription)}</p>
+                                        </Card>
+                                    ))
+                                )}
                             </div>
 
                             <h1 className='explore-text'>Explore the World</h1>

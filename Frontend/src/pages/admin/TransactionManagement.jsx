@@ -679,6 +679,7 @@ export default function TransactionManagement() {
 
                 <Button
                   type="primary"
+                  disabled={proofTransaction.status === "Successful"}
                   onClick={() => handleProofDecision(proofTransaction, "Successful")}
                 >
                   Accept Proof
@@ -686,6 +687,7 @@ export default function TransactionManagement() {
 
                 <Button
                   danger
+                  disabled={proofTransaction.status === "Failed"}
                   onClick={() => handleProofDecision(proofTransaction, "Failed")}
                 >
                   Reject Proof

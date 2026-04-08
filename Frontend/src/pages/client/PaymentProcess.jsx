@@ -231,6 +231,8 @@ export default function PaymentProcess() {
             const passportUrls = allUrls.slice(0, passportFiles.length);
             const photoUrls = allUrls.slice(passportFiles.length);
 
+            const paymentMode = paymentType === 'deposit' ? 'Deposit' : 'Full Payment';
+
             const bookingRes = await axiosInstance.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,
@@ -238,6 +240,7 @@ export default function PaymentProcess() {
                     travelers: bookingData?.travelerCounts.adult + bookingData?.travelerCounts.child + bookingData?.travelerCounts.infant || 0,
                     bookingDetails,
                     paymentType,
+                    paymentMode,
                     passportFiles: passportUrls,
                     photoFiles: photoUrls,
                     amount: amountToCharge //for checkoutToken
