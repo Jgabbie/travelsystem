@@ -68,6 +68,22 @@ export default function AdminDashboard() {
 
   const bookingTrend = bookingTrendData;
 
+  const durationCountMap = {};
+
+  bookings.forEach((booking) => {
+    const duration = booking.packageId?.packageDuration;
+    if (!duration) return;
+    durationCountMap[duration] = (durationCountMap[duration] || 0) + 1;
+  });
+
+  const topDurationEntries = Object.entries(durationCountMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([duration, count]) => ({
+      label: `${duration} Days`,
+      count
+    }));
+
 
   // package type amount
   const bookingTypeCount = {
@@ -365,6 +381,27 @@ export default function AdminDashboard() {
             </Col>
           ))}
         </Row>
+
+        <div style={{ marginTop: 24 }}>
+          <h2>Most Booked Durations</h2>
+          {topDurationEntries.length ? (
+            <Row gutter={[16, 16]}>
+              {topDurationEntries.map((entry, idx) => (
+                <Col xs={24} sm={12} md={8} key={entry.label}>
+                  <Card className="top-duration-card">
+                    <div className="top-duration-content">
+                      <h3 className="top-duration-name">{entry.label}</h3>
+                      <p className="top-duration-count">{entry.count} bookings</p>
+                      <div className="top-duration-rank">#{idx + 1}</div>
+                    </div>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <div style={{ marginTop: 8, fontWeight: 600 }}>N/A</div>
+          )}
+        </div>
       </div>
 
     </div>

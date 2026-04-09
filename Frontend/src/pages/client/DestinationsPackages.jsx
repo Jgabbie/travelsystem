@@ -37,6 +37,9 @@ export default function DestinationsPackages() {
 
                 const packages = response.data.map((pkg) => {
                     const rating = ratingMap.get(String(pkg._id)) || 0
+                    const availableSlots = Array.isArray(pkg.packageSpecificDate)
+                        ? pkg.packageSpecificDate.reduce((sum, entry) => sum + (Number(entry?.slots) || 0), 0)
+                        : (pkg.packageAvailableSlots || 0)
 
                     return {
                         id: pkg._id,
@@ -44,7 +47,7 @@ export default function DestinationsPackages() {
                         packageType: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
                         budget: pkg.packagePricePerPax,
-                        availableSlots: pkg.packageAvailableSlots || 0,
+                        availableSlots,
                         images: pkg.images && pkg.images.length > 0 ? pkg.images[0] : '',
                         tags: pkg.packageTags || [],
                         rating
@@ -375,11 +378,17 @@ export default function DestinationsPackages() {
                                                     </Title>
                                                     <Text type="secondary">{pkg.packageType}</Text>
                                                 </div>
-                                                <Tag className="destinations-rating">⭐ {pkg.rating}</Tag>
+                                                <Tag className="destinations-rating">⭐ {pkg.rating.toFixed(1)}</Tag>
                                             </div>
                                             <div className="destinations-card-meta">
                                                 <Tag className="destinations-type">{pkg.packageType}</Tag>
+                                                <Tag color={pkg.availableSlots > 0 ? 'green' : 'red'}>
+                                                    {pkg.availableSlots > 0 ? 'AVAILABLE' : 'UNAVAILABLE'}
+                                                </Tag>
                                                 <Text type="secondary">{pkg.days} days</Text>
+                                            </div>
+                                            <div className="destinations-card-meta">
+                                                <Text type="secondary">Slots: {pkg.availableSlots}</Text>
                                             </div>
                                             <div className="destinations-card-activities">
                                                 {pkg.tags?.map((tag) => (

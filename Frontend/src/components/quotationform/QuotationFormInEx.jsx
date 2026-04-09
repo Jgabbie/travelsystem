@@ -46,13 +46,13 @@ export default function QuotationFormInEx({
     const ensureArray = (value) => {
         if (Array.isArray(value)) return value;
         if (typeof value === 'string') {
-            return value
-                .split('\n')
-                .map((line) => line.trim())
-                .filter(Boolean);
+            return value.split('\n').map((line) => line.trim());
         }
         return [];
     };
+
+    const stripEmptyLines = (lines) =>
+        (lines || []).map((line) => line.trim()).filter(Boolean);
 
     useEffect(() => {
         if (!setFormData) return;
@@ -85,6 +85,12 @@ export default function QuotationFormInEx({
         ? ensureArray(formData.exclusions)
         : normalizeList(exclusions);
 
+    const displayInclusionLines = stripEmptyLines(inclusionLines);
+    const displayExclusionLines = stripEmptyLines(exclusionLines);
+
+    const inclusionText = ensureArray(inclusionLines).join('\n');
+    const exclusionText = ensureArray(exclusionLines).join('\n');
+
     const renderItineraryItem = (item) => {
         if (typeof item === 'string') return item;
         if (!item) return '';
@@ -111,20 +117,20 @@ export default function QuotationFormInEx({
                     <div className="mrc-quotation-subtitle">INCLUSIONS:</div>
                     {pdfMode ? (
                         <ul className="mrc-quotation-list">
-                            {(inclusionLines.length ? inclusionLines : ['--']).map((item, index) => (
+                            {(displayInclusionLines.length ? displayInclusionLines : ['--']).map((item, index) => (
                                 <li key={`inclusion-${index}`}>{item}</li>
                             ))}
                         </ul>
                     ) : (
                         <textarea
-                            value={ensureArray(formData?.inclusions).join('\n')}
+                            value={inclusionText}
                             onChange={(e) =>
                                 setFormData((prev) => ({
                                     ...prev,
                                     inclusions: ensureArray(e.target.value),
                                 }))
                             }
-                            rows={Math.max(4, ensureArray(formData?.inclusions).length)}
+                            rows={Math.max(4, inclusionLines.length)}
                             style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
                             placeholder="Add one inclusion per line"
                         />
@@ -138,20 +144,20 @@ export default function QuotationFormInEx({
                     <div className="mrc-quotation-subtitle">EXCLUSIONS:</div>
                     {pdfMode ? (
                         <ul className="mrc-quotation-list is-bulleted">
-                            {(exclusionLines.length ? exclusionLines : ['--']).map((item, index) => (
+                            {(displayExclusionLines.length ? displayExclusionLines : ['--']).map((item, index) => (
                                 <li key={`exclusion-${index}`}>{item}</li>
                             ))}
                         </ul>
                     ) : (
                         <textarea
-                            value={ensureArray(formData?.exclusions).join('\n')}
+                            value={exclusionText}
                             onChange={(e) =>
                                 setFormData((prev) => ({
                                     ...prev,
                                     exclusions: ensureArray(e.target.value),
                                 }))
                             }
-                            rows={Math.max(4, ensureArray(formData?.exclusions).length)}
+                            rows={Math.max(4, exclusionLines.length)}
                             style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
                             placeholder="Add one exclusion per line"
                         />

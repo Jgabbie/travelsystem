@@ -8,7 +8,6 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
-
 .page-header {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
@@ -47,6 +46,76 @@
     min-width: 180px;
 }
 
+/* BUTTONS CSS */
+.cancellations-view-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.cancellations-export-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 150px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.cancellations-reject-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff;
+    border-radius: 10px;
+    width: 110px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.cancellations-approve-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #1f8f3a;
+    color: #fff;
+    border-radius: 10px;
+    width: 110px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.cancellations-approve-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #1f8f3a !important;
+}
+
+.cancellations-reject-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #992A46 !important;
+}
+
+.cancellations-view-button:hover,
+.cancellations-export-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
+
 @media (max-width: 768px) {
     .user-actions {
         flex-direction: column;
@@ -57,52 +126,6 @@
     .ant-picker {
         width: 100%;
     }
-}
-
-/* Buttons */
-.adduser-usermanagement,
-.savebutton-usermanagement,
-.cancelbutton-usermanagement {
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: none !important;
-}
-
-
-.viewbutton-cancellation {
-    border-color: #305797;
-    background-color: #fff !important;
-    color: #305797 !important;
-}
-
-.viewbutton-cancellation:hover {
-    background-color: #305797 !important;
-    color: #fff !important;
-}
-
-.approve-cancellation {
-    border-color: #167a30;
-    background-color: #fff !important;
-    color: #167a30 !important;
-}
-
-.approve-cancellation:hover {
-    background-color: #167a30 !important;
-    color: #fff !important;
-}
-
-.reject-cancellation {
-    border-color: #d93025;
-    background-color: #fff !important;
-    color: #d93025 !important;
-}
-
-.reject-cancellation:hover {
-    background-color: #d93025 !important;
-    color: #fff !important;
 }
 
 /* View modal */

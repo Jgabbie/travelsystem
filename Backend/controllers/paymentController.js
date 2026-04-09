@@ -101,7 +101,7 @@ const createManualPayment = async (req, res) => {
 
         console.log("Manual payment request body:", req.body);
 
-        const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+        const FRONTEND_URL = "http://localhost:3000";
         const token = uuidv4();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -146,29 +146,6 @@ const createManualPayment = async (req, res) => {
 
         const packageDoc = await PackageModel.findById(packageId);
         console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
-
-        const updateResult = await PackageModel.updateOne(
-            {
-                _id: packageId,
-                packageSpecificDate: {
-                    $elemMatch: {
-                        startdaterange: { $lte: booking.travelDate.startDate },
-                        enddaterange: { $gte: booking.travelDate.endDate },
-                        slots: { $gt: 0 }
-                    }
-                }
-            },
-            {
-                $inc: { 'packageSpecificDate.$.slots': -1 }
-            }
-        );
-
-        if (updateResult.matchedCount === 0) {
-            console.log('No matching date range found or no slots remaining.');
-        } else if (updateResult.modifiedCount === 1) {
-            console.log('Slot successfully decremented.');
-        }
-
         console.log('Manual payment deposit created:', transaction);
 
         const user = await UserModel.findById(userId).select('email username');
@@ -250,6 +227,7 @@ const createManualPaymentQuotation = async (req, res) => {
     try {
         const {
             bookingId,
+            quotationId,
             packageId,
             amount,
             proofImage,
@@ -257,9 +235,11 @@ const createManualPaymentQuotation = async (req, res) => {
             proofFileName,
         } = req.body;
 
+        console.log("Quotation ID: ", quotationId);
+
         console.log("Manual payment request body:", req.body);
 
-        const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+        const FRONTEND_URL = "http://localhost:3000";
         const token = uuidv4();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -292,40 +272,21 @@ const createManualPaymentQuotation = async (req, res) => {
         });
 
         const booking = await BookingModel.findById(bookingId);
-
         const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
         const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
-
         booking.status = 'Pending'
         booking.statusHistory.push({ status: 'Pending', changedAt: new Date() });
+
+        const quotation = await QuotationModel.findById(quotationId);
+        console.log("Quotation found:", quotation);
+        quotation.status = 'Booked';
+        await quotation.save();
 
         console.log("Start Date:", bookingStart);
         console.log("End Date:", bookingEnd);
 
         const packageDoc = await PackageModel.findById(packageId);
         console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
-
-        const updateResult = await PackageModel.updateOne(
-            {
-                _id: packageId,
-                packageSpecificDate: {
-                    $elemMatch: {
-                        startdaterange: { $lte: booking.travelDate.startDate },
-                        enddaterange: { $gte: booking.travelDate.endDate },
-                        slots: { $gt: 0 }
-                    }
-                }
-            },
-            {
-                $inc: { 'packageSpecificDate.$.slots': -1 }
-            }
-        );
-
-        if (updateResult.matchedCount === 0) {
-            console.log('No matching date range found or no slots remaining.');
-        } else if (updateResult.modifiedCount === 1) {
-            console.log('Slot successfully decremented.');
-        }
 
         console.log('Manual payment deposit created:', transaction);
 
@@ -335,7 +296,7 @@ const createManualPaymentQuotation = async (req, res) => {
 
         await NotificationModel.create({
             userId: user._id,
-            title: 'Booking Confirmed',
+            title: 'Booking Quotation Confirmed',
             message: `Your manual payment for booking ${booking.reference} has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!`,
             type: 'booking',
             link: '/user-bookings',
@@ -346,13 +307,13 @@ const createManualPaymentQuotation = async (req, res) => {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: `Booking ${booking.reference} Confirmed`,
+                subject: `Booking Quotation ${booking.reference} Confirmed`,
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
                             <h2 style="color:#305797; margin-bottom:10px;">
-                                Booking Confirmed!
+                                Booking Quotation Confirmed!
                             </h2>
 
                             <p style="color:#555; font-size:16px;">
@@ -415,7 +376,7 @@ const createManualPaymentDeposit = async (req, res) => {
             proofFileName,
         } = req.body;
 
-        const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+        const FRONTEND_URL = "http://localhost:3000";
         const token = uuidv4();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -750,7 +711,7 @@ const createManualPaymentVisa = async (req, res) => {
 
 const createCheckoutSessionPassport = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -852,7 +813,7 @@ const createCheckoutSessionPassport = async (req, res) => {
 
 const createCheckoutSessionVisa = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -954,7 +915,7 @@ const createCheckoutSessionVisa = async (req, res) => {
 
 const createCheckoutSessionDeposit = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -1066,7 +1027,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //CHECKOUT FOR NORMAL FIXED BOOKINGS
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     const paymentType = "qr_ph"
 
@@ -1178,7 +1139,7 @@ const createCheckoutSession = async (req, res) => {
 //CHECKOUT FOR QUOTATION BOOKINGS
 const createCheckoutSessionQuotation = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     const paymentType = "qr_ph"
 
@@ -1693,8 +1654,8 @@ const handlePayMongoWebhook = async (req, res) => {
                     _id: packageDoc._id,
                     packageSpecificDate: {
                         $elemMatch: {
-                            startdaterange: { $lte: booking.travelDate.startDate },
-                            enddaterange: { $gte: booking.travelDate.endDate },
+                            startdaterange: bookingStart,
+                            enddaterange: bookingEnd,
                             slots: { $gt: 0 }
                         }
                     }
@@ -1708,6 +1669,10 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.log('No matching date range found or no slots remaining.');
             } else if (updateResult.modifiedCount === 1) {
                 console.log('Slot successfully decremented.');
+                if (!booking.slotDecremented) {
+                    booking.slotDecremented = true;
+                    await booking.save();
+                }
             }
 
             const amount = metadata.baseAmountCents
@@ -1826,13 +1791,14 @@ const handlePayMongoWebhook = async (req, res) => {
             console.log("Fetched package document:", packageDoc);
             console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
 
+
             const updateResult = await PackageModel.updateOne(
                 {
-                    _id: packageDoc._id,
+                    _id: booking.packageId,
                     packageSpecificDate: {
                         $elemMatch: {
-                            startdaterange: { $lte: booking.travelDate.startDate },
-                            enddaterange: { $gte: booking.travelDate.endDate },
+                            startdaterange: bookingStart,
+                            enddaterange: bookingEnd,
                             slots: { $gt: 0 }
                         }
                     }
@@ -1840,12 +1806,16 @@ const handlePayMongoWebhook = async (req, res) => {
                 {
                     $inc: { 'packageSpecificDate.$.slots': -1 }
                 }
-            );
+            )
 
             if (updateResult.matchedCount === 0) {
                 console.log('No matching date range found or no slots remaining.');
             } else if (updateResult.modifiedCount === 1) {
                 console.log('Slot successfully decremented.');
+                if (!booking.slotDecremented) {
+                    booking.slotDecremented = true;
+                    await booking.save();
+                }
             }
 
             const amount = metadata.baseAmountCents
@@ -1867,8 +1837,9 @@ const handlePayMongoWebhook = async (req, res) => {
 
             console.log('Created transaction for Quotation:', metadata.quotationId);
 
-            const quotation = await QuotationModel.findOne({ quotationId: metadata.quotationId });
-            quotation.status = 'Booked'
+            const quotation = await QuotationModel.findById(metadata.quotationId);
+            console.log("Quotation found:", quotation);
+            quotation.status = 'Booked';
             await quotation.save();
 
             const paymentType = booking?.bookingDetails?.paymentDetails?.paymentType || null;

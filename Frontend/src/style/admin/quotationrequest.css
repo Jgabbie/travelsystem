@@ -1,0 +1,110 @@
+.quotationrequest-selection-card {
+    width: 590px;
+    border: 1px solid #f0f0f0;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+    transition: all 0.3s ease;
+}
+
+.quotationrequest-selection-card:hover {
+    border: 2px solid #305797;
+    box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.15);
+}
+
+.quotationrequest-selection-card.selected {
+    border: 2px solid #305797;
+    box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.15);
+}
+
+.quotationrequest-formremove-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff !important;
+    border-radius: 10px;
+    width: 160px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.quotationrequest-formremove-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #992A46 !important;
+}
+
+
+.quotationrequest-form-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 100px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.quotationrequest-formgenerate-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 200px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.quotationrequest-sendquotation-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 160px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.quotationrequest-upload-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 150px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.quotationrequest-viewpdf-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.quotationrequest-viewpdf-button:hover,
+.quotationrequest-upload-button:hover,
+.quotationrequest-form-button:hover,
+.quotationrequest-formgenerate-button:hover,
+.quotationrequest-sendquotation-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}

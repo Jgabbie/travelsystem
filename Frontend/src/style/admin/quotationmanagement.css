@@ -20,39 +20,37 @@
     width: 240px;
 }
 
+.quotation-export {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 150px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .quotation-view {
-    border-color: #305797;
-    background-color: #fff !important;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.quotation-view:hover,
+.quotation-export:hover {
+    background-color: #e9e9e9 !important;
     color: #305797 !important;
 }
-
-.quotation-view:hover {
-    background-color: #305797 !important;
-    color: #fff !important;
-}
-
-.quotation-approve {
-    border-color: #1f8f3a;
-    background-color: #1f8f3a !important;
-    color: #fff !important;
-}
-
-.quotation-approve:hover {
-    background-color: #167a30 !important;
-    color: #fff !important;
-}
-
-.quotation-reject {
-    border-color: #d93025;
-    background-color: #fff !important;
-    color: #d93025 !important;
-}
-
-.quotation-reject:hover {
-    background-color: #d93025 !important;
-    color: #fff !important;
-}
-
 
 @media (max-width: 768px) {
     .quotation-management-actions {

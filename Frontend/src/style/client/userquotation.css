@@ -7,7 +7,7 @@
 
 .user-quotation-container {
     flex: 1;
-    padding: 120px 32px 40px;
+    padding: 60px 32px 40px;
     max-width: 1320px;
     width: 100%;
     margin: 0 auto;
@@ -46,20 +46,6 @@
     width: 240px;
 }
 
-.user-quotation-actions .ant-input:hover,
-.user-quotation-actions .ant-input:focus,
-.user-quotation-actions .ant-input-focused,
-.user-quotation-actions .ant-input-affix-wrapper:hover,
-.user-quotation-actions .ant-input-affix-wrapper-focused,
-.user-quotation-actions .ant-input-affix-wrapper:focus-within {
-    border-color: #305797 !important;
-}
-
-.user-quotation-select:hover,
-.user-quotation-select:focus-within {
-    border-color: #305797 !important;
-}
-
 .user-quotation-table {
     background: #ffffff;
     border-radius: 12px;
@@ -84,28 +70,22 @@
     font-weight: 600;
 }
 
-.user-quotation-action {
+.user-quotation-view-button {
     font-family: "Roboto", sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    border-radius: 8px;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
     border: none !important;
-    padding: 0 14px;
-    height: 34px;
-    transition: background-color 0.2s ease;
-    box-shadow: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.user-quotation-action-primary {
-    background-color: #305797 !important;
-    color: #fff !important;
-}
-
-.user-quotation-action-primary:hover {
-    background-color: #e5e7eb !important;
+.user-quotation-view-button:hover {
+    background-color: #e9e9e9 !important;
     color: #305797 !important;
-    border: none !important;
-    box-shadow: none !important;
 }
 
 @media (max-width: 768px) {

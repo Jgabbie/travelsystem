@@ -1,10 +1,13 @@
 const TransactionModel = require('../models/transactions')
 const BookingModel = require('../models/booking')
+const PackageModel = require('../models/package')
 const VisaModel = require('../models/visas')
+const PassportModel = require('../models/passport')
 const NotificationModel = require('../models/notification')
 const UserModel = require('../models/user')
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger')
+const dayjs = require('dayjs')
 
 const parseAmount = (value) => {
     if (value == null) return 0
@@ -18,6 +21,72 @@ const generateTransactionReference = () => {
     return `TX-${timestamp}${random}`
 }
 
+const decrementPackageSlotsForBooking = async (booking) => {
+    if (!booking?.packageId || !booking?.travelDate) return false
+
+    console.log('Slot decrement booking dates:', booking.travelDate)
+    const packageDoc = await PackageModel.findById(booking.packageId).select('packageSpecificDate')
+    console.log('Slot decrement package dates:', packageDoc?.packageSpecificDate)
+
+    const normalizedStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD')
+    const normalizedEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD')
+
+    const updateResult = await PackageModel.updateOne(
+        {
+            _id: booking.packageId,
+            packageSpecificDate: {
+                $elemMatch: {
+                    startdaterange: normalizedStart,
+                    enddaterange: normalizedEnd,
+                    slots: { $gt: 0 }
+                }
+            }
+        },
+        {
+            $inc: { 'packageSpecificDate.$.slots': -1 }
+        }
+    )
+
+    if (updateResult.modifiedCount === 1) {
+        booking.slotDecremented = true
+        await booking.save()
+        return true
+    }
+
+    return false
+}
+
+const incrementPackageSlotsForBooking = async (booking) => {
+    if (!booking?.packageId || !booking?.travelDate) return false
+
+    const normalizedStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD')
+    const normalizedEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD')
+
+    const updateResult = await PackageModel.updateOne(
+        {
+            _id: booking.packageId,
+            packageSpecificDate: {
+                $elemMatch: {
+                    startdaterange: normalizedStart,
+                    enddaterange: normalizedEnd
+                }
+            }
+        },
+        {
+            $inc: { 'packageSpecificDate.$.slots': 1 }
+        }
+    )
+
+    if (updateResult.modifiedCount === 1) {
+        booking.slotDecremented = false
+        await booking.save()
+        return true
+    }
+
+    return false
+}
+
+//CREATE TRANSACTION --------------------------------------------------------------------------
 const createTransaction = async (req, res) => {
     const { transactionPayload } = req.body
     const userId = req.userId
@@ -56,6 +125,7 @@ const createTransaction = async (req, res) => {
     }
 }
 
+//GET USER TRANSACTIONS --------------------------------------------------------------------------
 const getUserTransactions = async (req, res) => {
     const userId = req.userId
     try {
@@ -68,6 +138,7 @@ const getUserTransactions = async (req, res) => {
     }
 }
 
+//GET ALL TRANSACTIONS --------------------------------------------------------------------------
 const getAllTransactions = async (_req, res) => {
     try {
         const transactions = await TransactionModel.find({})
@@ -83,6 +154,7 @@ const getAllTransactions = async (_req, res) => {
     }
 }
 
+//UPDATE TRANSACTIONS --------------------------------------------------------------------------
 const updateTransaction = async (req, res) => {
     const { id } = req.params
     const { status, method, amount, packageName } = req.body
@@ -109,10 +181,21 @@ const updateTransaction = async (req, res) => {
             const user = await UserModel.findById(updatedTransaction.userId).select('email username')
             const bookingReference = booking?.reference || updatedTransaction.reference
 
+            console.log('This is the bookingL:', booking)
+
+
             if (updatedTransaction.applicationType === 'Visa Application' && updatedTransaction.applicationId) {
                 await VisaModel.findByIdAndUpdate(
                     updatedTransaction.applicationId,
                     { status: ["Payment Complete"], currentStepIndex: 1 },
+                    { new: true }
+                )
+            }
+
+            if (updatedTransaction.applicationType === 'Passport Application' && updatedTransaction.applicationId) {
+                await PassportModel.findByIdAndUpdate(
+                    updatedTransaction.applicationId,
+                    { status: 'Payment complete' },
                     { new: true }
                 )
             }
@@ -178,6 +261,22 @@ const updateTransaction = async (req, res) => {
                 ])
                 const totalPaid = paidAgg?.[0]?.totalPaid || 0
 
+                const successfulCount = await TransactionModel.countDocuments({
+                    bookingId: booking._id,
+                    status: 'Successful'
+                })
+
+                const paymentType = booking?.bookingDetails?.paymentDetails?.paymentType || null
+                const paymentMode = booking?.bookingDetails?.paymentMode || null
+                const isDepositPayment = paymentType === 'deposit' || paymentMode === 'Deposit'
+
+                if (isDepositPayment && successfulCount === 1 && !booking.slotDecremented) {
+                    const slotDecremented = await decrementPackageSlotsForBooking(booking)
+                    if (!slotDecremented) {
+                        console.warn('No matching date range found or no slots remaining for booking:', booking._id)
+                    }
+                }
+
                 const nextStatus = totalPrice > 0 && totalPaid >= totalPrice
                     ? 'Fully Paid'
                     : 'Pending'
@@ -189,6 +288,23 @@ const updateTransaction = async (req, res) => {
                     }
                     booking.statusHistory.push({ status: nextStatus, changedAt: new Date() })
                     await booking.save()
+                }
+            }
+        }
+
+        if (updatedTransaction.bookingId && (status === 'Failed' || status === 'Pending')) {
+            const booking = await BookingModel.findById(updatedTransaction.bookingId)
+            if (booking && booking.slotDecremented) {
+                const successfulCount = await TransactionModel.countDocuments({
+                    bookingId: booking._id,
+                    status: 'Successful'
+                })
+
+                if (successfulCount === 0) {
+                    const slotIncremented = await incrementPackageSlotsForBooking(booking)
+                    if (!slotIncremented) {
+                        console.warn('No matching date range found for slot increment:', booking._id)
+                    }
                 }
             }
         }
@@ -292,6 +408,23 @@ const rejectTransaction = async (req, res) => {
                     })
                 } catch (emailError) {
                     console.error('Failed to send manual payment rejection email:', emailError)
+                }
+            }
+        }
+
+        if (updatedTransaction.bookingId) {
+            const booking = await BookingModel.findById(updatedTransaction.bookingId)
+            if (booking && booking.slotDecremented) {
+                const successfulCount = await TransactionModel.countDocuments({
+                    bookingId: booking._id,
+                    status: 'Successful'
+                })
+
+                if (successfulCount === 0) {
+                    const slotIncremented = await incrementPackageSlotsForBooking(booking)
+                    if (!slotIncremented) {
+                        console.warn('No matching date range found for slot increment:', booking._id)
+                    }
                 }
             }
         }

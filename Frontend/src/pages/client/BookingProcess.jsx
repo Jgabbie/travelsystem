@@ -75,13 +75,21 @@ export default function BookingProcess() {
         ? { adult: 1, child: 0, infant: 0 }
         : { adult: counts.adult, child: counts.child, infant: counts.infant }
 
-    const soloRate = data.packageSoloRate || 0
-    const soloExtraRate = Math.max(0, soloRate - (data.travelDatePrice || 0))
-    const dateSurcharge = data.travelDateRate || 0
+    const discountPercent = Number(data.packageDiscountPercent) || 0
+    const discountMultiplier = discountPercent > 0 ? 1 - (discountPercent / 100) : 1
 
-    const childRate = data.packageChildRate || 0
-    const infantRate = data.packageInfantRate || 0
-    const packagePricePerPax = data.travelDatePrice || 0
+    const basePackagePricePerPax = data.travelDatePrice || 0
+    const baseSoloRate = data.packageSoloRate || 0
+    const baseChildRate = data.packageChildRate || 0
+    const baseInfantRate = data.packageInfantRate || 0
+
+    const packagePricePerPax = basePackagePricePerPax * discountMultiplier
+    const soloRate = baseSoloRate * discountMultiplier
+    const childRate = baseChildRate * discountMultiplier
+    const infantRate = baseInfantRate * discountMultiplier
+
+    const soloExtraRate = Math.max(0, soloRate - packagePricePerPax)
+    const dateSurcharge = data.travelDateRate || 0
 
     const totalPrice =
         travelersCount.adult * packagePricePerPax +
@@ -102,6 +110,11 @@ export default function BookingProcess() {
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
     const images = data.images || []
+    const requiresVisa = Boolean(
+        data.requiresVisa ??
+        data.packageRequiresVisa ??
+        data.visaRequired
+    )
 
     //inclusions, exclusions and itinerary
     const inclusions = data.inclusions || []
@@ -426,6 +439,8 @@ export default function BookingProcess() {
 
             <div className='bookingprocess-container'>
                 <Button
+                    className='booking-back-button'
+                    type='primary'
                     onClick={() => navigate(-1)}
                     style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
                 >
@@ -498,6 +513,8 @@ export default function BookingProcess() {
                                         {travelersDisplay}
                                     </span>
                                 </div>
+
+
                             </div>
 
                             {/* Right Column: Pricing Summary Card */}
@@ -517,6 +534,14 @@ export default function BookingProcess() {
                                         </span>
                                     )}
                                 </h2>
+                                {discountPercent > 0 && (
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Discount per pax</span>
+                                        <span className="booking-summary-value">
+                                            {discountPercent}%
+                                        </span>
+                                    </div>
+                                )}
                                 {selectedSoloGrouped === 'solo' && (
                                     <div style={{ marginBottom: '12px' }}>
                                         <div className="booking-summary-row">
@@ -569,6 +594,8 @@ export default function BookingProcess() {
                                         )}
                                     </div>
                                 )}
+
+
                                 <div className='booking-summary-total-amount-note'>
                                     *All inclusions fees for this package are already factored in the total price, execpt for Visas and other additionals. For solo booking, rate has already been applied in the total price.
                                 </div>
@@ -581,9 +608,6 @@ export default function BookingProcess() {
                         </div>
                     </div>
                 </div>
-
-
-
 
                 {/* SOLO AND GROUP SELECTION */}
                 <div className='bookingprocess-sologroup-container booking-section'>
@@ -707,8 +731,6 @@ export default function BookingProcess() {
                     </div>
                 )}
 
-
-
                 {/* ITINERARY, INCLUSIONS AND EXCLUSIONS */}
                 <div className='itinerary-inclusions-exclusions'>
                     <div className='itinerary-section-header'>
@@ -764,7 +786,7 @@ export default function BookingProcess() {
                         <div className='inclusions-exclusions-card'>
                             <div className='card-title'>
                                 <span className='card-pill'>Package</span>
-                                <h3>Inclusions & Exclusions</h3>
+                                <h3>Inclusions, Exclusions, Requirements and Policies</h3>
                                 <p className='card-subtitle'>Know what is covered and what is not.</p>
                             </div>
 
@@ -794,6 +816,24 @@ export default function BookingProcess() {
                                         <p className='itinerary-empty'>No exclusions listed.</p>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className='exclusions-card' style={{ marginTop: '20px' }}>
+                                <h2 >Visa Requirement</h2>
+                                <p className='booking-section-subtitle'>
+                                    {requiresVisa
+                                        ? 'Please be informed that this package requires a visa. Please ensure you have a valid visa before travel.'
+                                        : 'This package does not require a visa.'}
+                                </p>
+                            </div>
+
+                            <div className='exclusions-card' style={{ marginTop: '20px' }}>
+                                <h2 >Cancellation Policy</h2>
+                                <p className='booking-section-subtitle'>
+                                    Please be informed that cancellation request with medical reasons are only accepted and refundable with valid medical certificate.
+                                    Cancellation request without medical reasons are non-refundable.
+                                    For any cancellation request, please reach out to us through the Contact Us section on our Home page.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -833,7 +873,7 @@ export default function BookingProcess() {
                                                 maxCount={1}
                                                 showUploadList={false} // Hidden because you have a custom preview
                                             >
-                                                <Button className='upload-passport-button' type="default">Upload Passport</Button>
+                                                <Button className='upload-passport-button' type='primary'>Upload Passport</Button>
                                             </Upload>
                                         )}
 
@@ -847,12 +887,13 @@ export default function BookingProcess() {
                                                 maxCount={1}
                                                 showUploadList={false}
                                             >
-                                                <Button className='upload-passport-button' type="default">Upload 2x2 Photo</Button>
+                                                <Button className='upload-passport-button' type='primary'>Upload 2x2 Photo</Button>
                                             </Upload>
                                         )}
 
                                         {(fileLists[index]?.length > 0 || photoFileLists[index]?.length > 0) && (
                                             <Button
+                                                type='primary'
                                                 className='upload-passport-remove-button'
                                                 size="small"
                                                 onClick={() => handleResetUploads(index)}
@@ -978,6 +1019,7 @@ export default function BookingProcess() {
                         <div className='booking-form-button-controls'>
                             {currentStep > 0 && (
                                 <Button
+                                    type='primary'
                                     className='booking-form-button'
                                     size="large"
                                     onClick={prev}
@@ -989,6 +1031,7 @@ export default function BookingProcess() {
 
                             {currentStep < 3 ? (
                                 <Button
+                                    type='primary'
                                     className='booking-form-button'
                                     size="large"
                                     onClick={next}
@@ -998,6 +1041,7 @@ export default function BookingProcess() {
                                 </Button>
                             ) : (
                                 <Button
+                                    type='primary'
                                     className='booking-form-button-proceed'
                                     size="large"
                                     onClick={() => setIsProceedModalOpen(true)}
@@ -1043,6 +1087,7 @@ export default function BookingProcess() {
 
                 <div className='signup-actions'>
                     <Button
+                        type='primary'
                         id='signup-success-button'
                         onClick={handleFinalSubmit}
                     >
@@ -1050,6 +1095,7 @@ export default function BookingProcess() {
                     </Button>
 
                     <Button
+                        type='primary'
                         id='signup-success-button-cancel'
                         onClick={onCancelModal}
                     >

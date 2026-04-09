@@ -95,6 +95,21 @@ const deleteRating = async (req, res) => {
     }
 }
 
+const adminDeleteRating = async (req, res) => {
+    const { id } = req.params
+    try {
+        const rating = await Rating.findById(id)
+        if (!rating) {
+            return res.status(404).json({ message: "Rating not found" })
+        }
+        await rating.deleteOne()
+        res.status(200).json({ message: "Rating deleted" })
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting rating", error })
+    }
+}
+
+
 const updateRating = async (req, res) => {
     const { id } = req.params
     const { rating, review } = req.body
@@ -184,4 +199,4 @@ const getAverageRatings = async (_req, res) => {
     }
 };
 
-module.exports = { submitRating, getPackageRatings, deleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings }
+module.exports = { submitRating, getPackageRatings, deleteRating, adminDeleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings }

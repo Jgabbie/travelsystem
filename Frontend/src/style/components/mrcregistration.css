@@ -243,6 +243,45 @@
     font-size: 11px;
 }
 
+
+
+/* DATE PICKER CSS */
+
+.mrc-date-picker.ant-picker {
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 0;
+    border: 1px solid #d9d9d9;
+    box-shadow: none;
+    min-width: 0;
+}
+
+.mrc-date-picker .ant-picker-input>input {
+    height: 16px;
+    font-size: 12px;
+    line-height: 1;
+    padding: 0;
+    min-width: 0;
+}
+
+.mrc-date-picker .ant-picker-suffix {
+    font-size: 10px;
+    margin-left: 2px;
+    margin-right: 0;
+}
+
+.mrc-date-picker .ant-picker-clear {
+    right: 2px;
+}
+
+
+
+
+
+
+
+
+
 @media (max-width: 900px) {
     .mrc-overlay-wrapper {
         padding: 12px;

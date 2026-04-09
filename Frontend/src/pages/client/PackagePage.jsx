@@ -26,6 +26,7 @@ export default function PackagePage() {
     //states for modals
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
 
     //states for booking details
@@ -289,6 +290,7 @@ export default function PackagePage() {
         packageSoloRate: packageData?.packageSoloRate + selectedDateRate || 0,
         packageChildRate: packageData?.packageChildRate + selectedDateRate || 0,
         packageInfantRate: packageData?.packageInfantRate + selectedDateRate || 0,
+        packageDiscountPercent: packageData?.packageDiscountPercent || 0,
         packageDeposit: packageData?.packageDeposit || 0,
         packageType: packageData?.packageType || 'fixed',
         travelers: travelerSummary,
@@ -351,6 +353,52 @@ export default function PackagePage() {
             setIsSubmittingReview(false);
         }
     };
+
+    const handleDeleteReview = async () => {
+        if (!auth) {
+            setIsLoginVisible(true)
+            return
+        }
+
+        if (!userReview?.id) {
+            message.error('No review to delete.')
+            return
+        }
+
+        setIsSubmittingReview(true)
+
+        try {
+            await axiosInstance.delete(`/rating/${userReview.id}`)
+            message.success('Review deleted')
+
+            await fetchRatings()
+
+            setReviewForm({
+                rating: 0,
+                comment: ''
+            })
+            setIsEditingReview(false)
+            setIsDeleteModalOpen(false)
+        } catch (error) {
+            message.error('Unable to delete review')
+        } finally {
+            setIsSubmittingReview(false)
+        }
+    }
+
+    const handleOpenDeleteModal = () => {
+        if (!auth) {
+            setIsLoginVisible(true)
+            return
+        }
+
+        if (!userReview?.id) {
+            message.error('No review to delete.')
+            return
+        }
+
+        setIsDeleteModalOpen(true)
+    }
 
     const handleProceedDate = () => {
         setIsDateModalOpen(false)
@@ -509,22 +557,33 @@ export default function PackagePage() {
                                                                 <p className="package-review-comment">{review.comment}</p>
 
                                                                 {isUserReview && (
-                                                                    <Button
-                                                                        type="link"
-                                                                        style={{ padding: 0, marginTop: 4, border: 'none' }}
-                                                                        onClick={() => {
-                                                                            setReviewForm({
-                                                                                rating: review.rating,
-                                                                                comment: review.comment,
-                                                                                fullName: review.name,
-                                                                                email: review.email || ''
-                                                                            });
-                                                                            setIsEditingReview(true); // <-- mark as editing
-                                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                                        }}
-                                                                    >
-                                                                        Edit
-                                                                    </Button>
+                                                                    <div>
+                                                                        <Button
+                                                                            type="link"
+                                                                            style={{ padding: 0, marginTop: 4, border: 'none' }}
+                                                                            onClick={() => {
+                                                                                setReviewForm({
+                                                                                    rating: review.rating,
+                                                                                    comment: review.comment,
+                                                                                    fullName: review.name,
+                                                                                    email: review.email || ''
+                                                                                });
+                                                                                setIsEditingReview(true); // <-- mark as editing
+                                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                                            }}
+                                                                        >
+                                                                            Edit
+                                                                        </Button>
+                                                                        <Button
+                                                                            type="link"
+                                                                            danger
+                                                                            style={{ padding: 0, marginTop: 4, marginLeft: 12, border: 'none' }}
+                                                                            disabled={isSubmittingReview}
+                                                                            onClick={handleOpenDeleteModal}
+                                                                        >
+                                                                            Delete
+                                                                        </Button>
+                                                                    </div>
                                                                 )}
 
                                                             </div>
@@ -571,6 +630,17 @@ export default function PackagePage() {
                                                 >
                                                     {isEditingReview ? "Update Review" : "Submit Review"}
                                                 </Button>
+                                                {userReview && (
+                                                    <Button
+                                                        danger
+                                                        disabled={isSubmittingReview}
+                                                        className="package-action-secondary"
+                                                        onClick={handleOpenDeleteModal}
+                                                        style={{ marginTop: 10 }}
+                                                    >
+                                                        Delete Review
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </Card>
@@ -597,21 +667,6 @@ export default function PackagePage() {
                             </div>
                         </div>
                     </div>
-
-                    <Modal
-                        className="package-wishlist-modal"
-                        open={isWishlistModalOpen}
-                        footer={null}
-                        onCancel={() => setIsWishlistModalOpen(false)}
-                    >
-                        <h2 className="package-wishlist-title">Added to Wishlist</h2>
-                        <p className="package-wishlist-text">This package has been successfully added to your wishlist.</p>
-                        <div className="package-wishlist-actions">
-                            <Button className="package-action-secondary" onClick={() => setIsWishlistModalOpen(false)}>
-                                Close
-                            </Button>
-                        </div>
-                    </Modal>
 
                     <AllInOrLandArrangementModal
                         open={isArrangementModalOpen}
@@ -644,6 +699,50 @@ export default function PackagePage() {
                             setIsLoginVisible(false);
                         }}
                     />
+
+                    <Modal
+                        className="package-delete-review-modal"
+                        open={isDeleteModalOpen}
+                        onCancel={() => setIsDeleteModalOpen(false)}
+                        footer={null}
+                    >
+                        <h2 className="package-delete-review-title">Delete review?</h2>
+                        <p className="package-delete-review-text">
+                            This will permanently remove your review for this package.
+                        </p>
+                        <div className="package-delete-review-actions">
+                            <Button
+                                className="package-action-secondary"
+                                onClick={() => setIsDeleteModalOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                danger
+                                className="package-action-secondary"
+                                loading={isSubmittingReview}
+                                onClick={handleDeleteReview}
+                                style={{ marginLeft: 10 }}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </Modal>
+
+                    <Modal
+                        className="package-wishlist-modal"
+                        open={isWishlistModalOpen}
+                        footer={null}
+                        onCancel={() => setIsWishlistModalOpen(false)}
+                    >
+                        <h2 className="package-wishlist-title">Added to Wishlist</h2>
+                        <p className="package-wishlist-text">This package has been successfully added to your wishlist.</p>
+                        <div className="package-wishlist-actions">
+                            <Button className="package-action-secondary" onClick={() => setIsWishlistModalOpen(false)}>
+                                Close
+                            </Button>
+                        </div>
+                    </Modal>
                 </Spin>
             </div>
         </ConfigProvider >

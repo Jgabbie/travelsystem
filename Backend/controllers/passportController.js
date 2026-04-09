@@ -2,13 +2,17 @@
 const PassportModel = require("../models/passport");
 const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
 const UserModel = require("../models/user");
+const NotificationModel = require("../models/notification");
+const transporter = require("../config/nodemailer");
 const logAction = require('../utils/logger');
 
-
+//GENERATE RANDOM APPLICATION NUMBER -----------------------------------------------------
 const randomApplicationNumber = () => {
     return 'APP-PASS-' + Math.floor(100000000 + Math.random() * 900000000);
 }
 
+
+//APPLY FOR PASSPORT ----------------------------------------------------------------------
 const applyPassport = async (req, res) => {
     try {
         const userId = req.userId
@@ -51,6 +55,7 @@ const applyPassport = async (req, res) => {
     }
 };
 
+//UPDATE PASSPORT APPLICATION WITH DOCUMENTS ------------------------------------------------
 const updatePassportApplicationWithDocs = async (req, res) => {
     console.log('Received request to update passport application with documents');
 
@@ -114,7 +119,7 @@ const updatePassportApplicationWithDocs = async (req, res) => {
     }
 };
 
-
+//GET PASSPORT APPLICATIONS ----------------------------------------------------------------
 const getPassportApplications = async (req, res) => {
     try {
 
@@ -129,6 +134,8 @@ const getPassportApplications = async (req, res) => {
     }
 };
 
+
+//GET USER'S PASSPORT APPLICATIONS ------------------------------------------------------
 const getUserPassportApplications = async (req, res) => {
     try {
         const userId = req.userId
@@ -140,6 +147,8 @@ const getUserPassportApplications = async (req, res) => {
     }
 }
 
+
+//GET PASSPORT APPLICATION BY ID ------------------------------------------------------
 const getPassportApplicationById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -155,6 +164,101 @@ const getPassportApplicationById = async (req, res) => {
     }
 };
 
+
+//SUGGEST APPOINTMENT SCHEDULES ------------------------------------------------------
+const suggestAppointmentSchedules = async (req, res) => {
+    const { id } = req.params;
+    const { slots } = req.body;
+
+    try {
+        if (!Array.isArray(slots) || slots.length === 0) {
+            return res.status(400).json({ message: "Suggested appointment slots are required" });
+        }
+
+        const cleanedSlots = slots
+            .filter((slot) => slot && slot.date && slot.time)
+            .map((slot) => ({ date: slot.date, time: slot.time }));
+
+        if (cleanedSlots.length === 0) {
+            return res.status(400).json({ message: "All suggested slots must have date and time" });
+        }
+
+        const application = await PassportModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+
+        application.suggestedAppointmentSchedules = cleanedSlots;
+
+        await application.save();
+
+        const user = await UserModel.findById(application.userId);
+        if (user) {
+            const summary = cleanedSlots
+                .map((slot, index) => `Option ${index + 1}: ${slot.date} ${slot.time}`)
+                .join(" | ");
+
+            await NotificationModel.create({
+                userId: user._id,
+                title: "Passport appointment options",
+                message: `We suggested appointment options for your passport application. ${summary}`,
+                type: "passport",
+                link: "/passport",
+                metadata: { applicationId: application._id }
+            });
+
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: "Passport appointment options available",
+                html: `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #305797;">Passport appointment options</h2>
+                        <p>Hello ${user.firstname || user.username},</p>
+                        <p>We have suggested appointment options for your passport application.</p>
+                        <ul>
+                            ${cleanedSlots
+                        .map((slot, index) => `<li>Option ${index + 1}: ${slot.date} ${slot.time}</li>`)
+                        .join("")}
+                        </ul>
+                        <p>Please log in to review and confirm your preferred schedule.</p>
+                    </div>
+                `
+            });
+        }
+
+        res.status(200).json({ message: "Suggested appointment schedules updated", application });
+    } catch (error) {
+        console.error("Error suggesting appointment schedules:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+//CHOSEN SUGGESTED APPOINTMENT SCHEDULE ------------------------------------------------------
+const chosenSuggestedSchedule = async (req, res) => {
+    const { id } = req.params;
+    const { date, time } = req.body;
+    try {
+        if (!date || !time) {
+            return res.status(400).json({ message: "Chosen appointment date and time are required" });
+        }
+        const application = await PassportModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+        application.preferredDate = date;
+        application.preferredTime = time;
+        await application.save();
+        res.status(200).json({ message: "Preferred appointment schedule updated", application });
+    } catch (error) {
+        console.error("Error updating preferred appointment schedule:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+//UPDATE PASSPORT APPLICATION STATUS ------------------------------------------------------
 const updatePassportStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -186,6 +290,8 @@ const updatePassportStatus = async (req, res) => {
     }
 };
 
+
+//VERIFY TOKEN CHECKOUT FOR PASSPORT PAYMENT ------------------------------------------------------
 const verifyTokenCheckout = async (req, res) => {
     const { token } = req.body;
     try {
@@ -210,4 +316,4 @@ const verifyTokenCheckout = async (req, res) => {
     }
 }
 
-module.exports = { applyPassport, getPassportApplications, getUserPassportApplications, getPassportApplicationById, updatePassportStatus, updatePassportApplicationWithDocs, verifyTokenCheckout };
+module.exports = { applyPassport, getPassportApplications, getUserPassportApplications, getPassportApplicationById, updatePassportStatus, updatePassportApplicationWithDocs, suggestAppointmentSchedules, chosenSuggestedSchedule, verifyTokenCheckout };

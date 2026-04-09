@@ -214,11 +214,18 @@ export default function ProfilePage() {
             try {
                 const response = await axiosInstance.get('/booking/my-bookings')
                 const bookings = response.data.map((b) => ({
+                    _id: b._id,
                     key: b._id,
                     ref: b.reference || b._id,
                     packageName: b.packageId?.packageName || 'Tour Package',
                     packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
-                    travelDate: b.travelDate ? dayjs(b.travelDate.split(' - ')[0]).format('MMM D, YYYY') : dayjs(b.travelDate).format('MMM D, YYYY'),
+                    travelDate: b.travelDate
+                        ? dayjs(
+                            typeof b.travelDate === 'string'
+                                ? b.travelDate.split(' - ')[0]
+                                : b.travelDate.startDate || b.travelDate.endDate
+                        ).format('MMM D, YYYY')
+                        : 'N/A',
                     bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
                     travelersCount: b.travelers || {},
                     status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',

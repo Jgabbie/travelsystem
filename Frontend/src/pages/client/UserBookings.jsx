@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, ConfigProvider, Spin } from 'antd'
-import { UploadOutlined, SearchOutlined } from '@ant-design/icons'
+import { UploadOutlined, SearchOutlined, EyeOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig'
 import TopNavUser from '../../components/TopNavUser'
@@ -247,13 +247,19 @@ export default function UserBookings() {
             render: (_, record) => (
                 <Space>
                     <Button
-                        className="user-bookings-action user-bookings-action-primary"
+                        className="user-bookings-view-button"
+                        type='primary'
                         onClick={() => viewBookingInvoice(record)}
-                    >View</Button>
+                    >
+                        <EyeOutlined />
+                        View
+                    </Button>
                     <Button
-                        className="user-bookings-action user-bookings-action-danger"
+                        className="user-bookings-cancel-button"
+                        type='primary'
                         onClick={() => openCancelModal(record.key)}
                     >
+                        <CloseCircleOutlined />
                         Cancel
                     </Button>
                 </Space>

@@ -202,12 +202,9 @@ export default function PassportApplications() {
                             type="primary"
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`view/${record.key}`)}
-                        />
-                        <Button
-                            className="reject-passport-application"
-                            type="primary"
-                            icon={<CloseOutlined />}
-                        />
+                        >
+                            View
+                        </Button>
                     </Space>
                 </>
             ),
@@ -303,7 +300,7 @@ export default function PassportApplications() {
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
-                            className='export-pdf-button'
+                            className='passportapplications-export'
                             type="primary"
                             icon={<FilePdfOutlined />}
                             onClick={generatePDF}

@@ -8,7 +8,8 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   EyeOutlined,
-  FilePdfOutlined
+  FilePdfOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -227,28 +228,34 @@ export default function UserManagement() {
       render: (_, record) => (
         <Space>
           <Button
-            className='viewbutton-usermanagement'
+            className='usermanagement-view-button'
             type='primary'
             icon={<EyeOutlined />}
             onClick={() => {
               setSelectedUser(record);
               setIsViewModalOpen(true);
             }}
-          />
+          >
+            View
+          </Button>
 
           <Button
-            className='editbutton-usermanagement'
+            className='usermanagement-edit-button'
             type="primary"
             icon={<EditOutlined />}
             onClick={() => edit(record)}
-          />
+          >
+            Edit
+          </Button>
 
           <Button
-            className='deletebutton-usermanagement'
+            className='usermanagement-remove-button'
             type='primary'
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.id)}
-          />
+          >
+            Delete
+          </Button>
         </Space>
       )
     }
@@ -273,8 +280,8 @@ export default function UserManagement() {
 
           <Space style={{ marginLeft: 'auto' }}>
             {/* RESTORED original classes */}
-            <Button className='adduser-usermanagement' type="primary" onClick={() => setIsModalOpen(true)}>Add User</Button>
-            <Button className='export-pdf-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+            <Button className='usermanagement-add-button' type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>Add User</Button>
+            <Button className='usermanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
           </Space>
         </div>
 

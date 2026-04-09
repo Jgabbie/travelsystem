@@ -1,12 +1,79 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Tag, Typography, message } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Document, Image, Page, PDFViewer, StyleSheet, Text, View } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import axiosInstance from "../../config/axiosConfig";
 import "../../style/admin/uploadbookinginvoice.css";
 
 const { Title, Text: AntText } = Typography;
+
+const getFrequencyWeeks = (value) => {
+    if (value === "Every week") return 1;
+    if (value === "Every 3 weeks") return 3;
+    return 2;
+};
+
+const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
+    const items = invoice?.items || [];
+    const subtotal = items.reduce((sum, item) => {
+        const qty = Number(item.qty) || 0;
+        const rate = Number(item.rate) || 0;
+        return sum + (qty * rate);
+    }, 0);
+
+    const totalAmount = subtotal;
+    const today = dayjs();
+    const travelDateValue = bookingDetails?.travelDate?.startDate;
+    const travelDateComputation = travelDateValue ? dayjs(travelDateValue) : today;
+    const maxAllowedDate = today.add(45, "day");
+    const dueCutoffDate = travelDateComputation.isBefore(maxAllowedDate)
+        ? travelDateComputation
+        : maxAllowedDate;
+
+    const depositAmount = Number(bookingDetails?.paymentDetails?.depositAmount) || 0;
+    const remainingAmount = Math.max(totalAmount - depositAmount, 0);
+
+    const frequencyWeeks = getFrequencyWeeks(bookingDetails?.paymentDetails?.frequency);
+    const paymentDates = [];
+    let nextDate = dayjs(today).add(frequencyWeeks, "week");
+
+    while (nextDate.isBefore(dueCutoffDate) || nextDate.isSame(dueCutoffDate)) {
+        paymentDates.push(nextDate);
+        nextDate = nextDate.add(frequencyWeeks, "week");
+    }
+
+    if (paymentDates.length === 0) {
+        paymentDates.push(dueCutoffDate.subtract(1, "day"));
+    }
+
+    const installmentCount = paymentDates.length;
+    const installmentAmount = installmentCount
+        ? remainingAmount / installmentCount
+        : 0;
+
+    const paymentSchedule = [
+        {
+            label: "Deposit",
+            amount: depositAmount,
+            date: today,
+            status: paidAmount >= (depositAmount - 0.01) ? "PAID" : "PENDING"
+        },
+        ...paymentDates.map((date, index) => {
+            const cumulativeTarget = depositAmount + (installmentAmount * (index + 1));
+            return {
+                label: `Installment ${index + 1}`,
+                amount: installmentAmount,
+                date: date,
+                status: paidAmount >= (cumulativeTarget - 0.01) ? "PAID" : "PENDING"
+            };
+        })
+    ];
+
+    const nextUnpaid = paymentSchedule.find((item) => item.status === "PENDING");
+    return { paymentSchedule, totalAmount, subtotal, nextUnpaid };
+};
 
 export default function UploadBookingInvoice() {
     const { id } = useParams();
@@ -16,6 +83,8 @@ export default function UploadBookingInvoice() {
     const [booking, setBooking] = useState(location.state?.booking || null);
     const [loading, setLoading] = useState(false);
     const [invoiceNumber, setInvoiceNumber] = useState("");
+    const [transactions, setTransactions] = useState([]);
+    const reference = booking?.reference || booking?.ref || booking?._id || "--";
 
     useEffect(() => {
         if (!id) return;
@@ -24,9 +93,36 @@ export default function UploadBookingInvoice() {
         const fetchBooking = async () => {
             setLoading(true);
             try {
-                const response = await axiosInstance.get("/booking/all-bookings");
-                const found = (response.data || []).find((item) => item._id === id);
-                setBooking(found || null);
+                const bookingRes = await axiosInstance.get(`/booking/by-reference/${reference}`);
+                const fetchedBooking = bookingRes.data?.booking || null;
+                const fetchedTransactions = bookingRes.data?.transactions || [];
+
+                setBooking(fetchedBooking);
+                setTransactions(fetchedTransactions);
+
+                console.log("Fetched booking for invoice:", fetchedBooking);
+
+                if (fetchedBooking?._id) {
+                    try {
+                        const allBookingsRes = await axiosInstance.get("/booking/all-bookings");
+                        const number = buildInvoiceNumber(allBookingsRes.data || [], fetchedBooking);
+
+                        if (number) {
+                            setInvoiceNumber(number);
+                        } else {
+
+                            const createdAtValue = fetchedBooking.createdAt || fetchedBooking.bookingDate;
+                            const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
+                            if (createdAt?.isValid()) {
+                                setInvoiceNumber(`${createdAt.format("MM")}01`);
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Error fetching invoice number list:", err);
+
+                    }
+                }
+
             } catch (error) {
                 message.error("Unable to load booking details");
             } finally {
@@ -35,7 +131,7 @@ export default function UploadBookingInvoice() {
         };
 
         fetchBooking();
-    }, [booking, id]);
+    }, [reference]);
 
 
     const formatCurrency = useMemo(
@@ -47,12 +143,36 @@ export default function UploadBookingInvoice() {
     const totalPrice = Number(
         bookingDetails.totalPrice || bookingDetails.amount || booking?.totalPrice || 0
     );
-    const paidAmount = Number(bookingDetails.paidAmount || bookingDetails.amountPaid || 0);
+    const paidAmountFromTransactions = Math.round(transactions
+        .filter((txn) => txn.status === "Paid" || txn.status === "Successful" || txn.status === "Fully Paid")
+        .reduce((sum, txn) => sum + Number(txn.amount || 0), 0) * 100) / 100;
+    const paidAmountFallback = Number(bookingDetails.paidAmount || bookingDetails.amountPaid || 0);
+    const paidAmount = paidAmountFromTransactions > 0 ? paidAmountFromTransactions : paidAmountFallback;
     const remainingBalance = Math.max(totalPrice - paidAmount, 0);
-    const travelDateValue = bookingDetails.travelDate || booking?.travelDate;
-    const travelDate = travelDateValue
-        ? dayjs(travelDateValue).format("MMM D, YYYY")
+    const packageName =
+        bookingDetails.tourPackageTitle ||
+        bookingDetails.packageName ||
+        booking?.packageId?.packageName ||
+        booking?.pkg ||
+        "Package";
+    const travelDateValue =
+        bookingDetails.travelDate ||
+        booking?.travelDate ||
+        bookingDetails.packageTravelDate;
+    const travelStart = travelDateValue?.startDate
+        || (typeof travelDateValue === "string" ? travelDateValue.split(" - ")[0] : null)
+        || travelDateValue
+        || null;
+    const travelEnd = travelDateValue?.endDate || null;
+    const travelDate = travelStart && dayjs(travelStart).isValid()
+        ? (travelEnd && dayjs(travelEnd).isValid()
+            ? `${dayjs(travelStart).format("MMM D, YYYY")} - ${dayjs(travelEnd).format("MMM D, YYYY")}`
+            : dayjs(travelStart).format("MMM D, YYYY"))
         : "--";
+    const issueDate = booking?.createdAt ? dayjs(booking.createdAt) : dayjs();
+    const paymentMode = bookingDetails?.paymentMode
+        || (bookingDetails?.paymentDetails?.paymentType === "deposit" ? "Deposit" : "Full Payment");
+    const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
 
     const buildInvoiceNumber = (allBookings, currentBooking) => {
         if (!currentBooking) return "";
@@ -100,6 +220,29 @@ export default function UploadBookingInvoice() {
         fetchInvoiceNumber();
     }, [booking]);
 
+    useEffect(() => {
+        if (!reference || reference === "--") return;
+
+        const fetchBookingWithTransactions = async () => {
+            try {
+                const bookingRes = await axiosInstance.get(`/booking/by-reference/${reference}`);
+                const fetchedBooking = bookingRes.data?.booking || null;
+                const fetchedTransactions = bookingRes.data?.transactions || [];
+
+                if (fetchedBooking?._id) {
+                    setBooking(fetchedBooking);
+                }
+                setTransactions(fetchedTransactions);
+            } catch (error) {
+                message.error("Failed to load booking transactions.");
+            }
+        };
+
+        fetchBookingWithTransactions();
+    }, [reference]);
+
+    console.log("Booking details for invoice:", booking);
+
     const invoice = {
         company: {
             name: "M&RC Travel and Tours",
@@ -111,24 +254,22 @@ export default function UploadBookingInvoice() {
         },
         invoice: {
             number: invoiceNumber || "----",
-            issueDate: booking?.createdAt ? dayjs(booking.createdAt).format("MMMM D, YYYY") : dayjs().format("MMMM D, YYYY"),
-            dueDate: booking?.createdAt
-                ? dayjs(booking.createdAt).add(45, "day").format("MMMM D, YYYY")
-                : dayjs().add(45, "day").format("MMMM D, YYYY")
+            issueDate: issueDate.format("MMMM D, YYYY"),
+            dueDate: null
         },
         customer: {
             name: bookingDetails.leadFullName || booking?.leadFullName || "Customer",
             phone: bookingDetails.leadContact || booking?.leadContact || "--"
         },
         booking: {
-            packageName: bookingDetails.packageName || booking?.pkg || "Package",
+            packageName,
             travelDate
         },
         items: [
             {
-                date: booking?.createdAt ? dayjs(booking.createdAt).format("MMMM D, YYYY") : dayjs().format("MMMM D, YYYY"),
+                date: issueDate.format("MMMM D, YYYY"),
                 activity: "Package",
-                description: bookingDetails.packageName || booking?.pkg || "Package",
+                description: packageName,
                 qty: 1,
                 rate: totalPrice
             }
@@ -143,6 +284,26 @@ export default function UploadBookingInvoice() {
     };
 
     const totals = calculateTotals(invoice.items);
+
+    const installmentData = useMemo(() => {
+        return runInstallmentLogic(invoice, bookingDetails, paidAmount);
+    }, [invoice, bookingDetails, paidAmount]);
+
+    const installmentsOnly = installmentData.paymentSchedule?.filter((item) =>
+        item.label.toLowerCase().includes("installment")
+    );
+
+    const lastInstallment = installmentsOnly?.length
+        ? installmentsOnly[installmentsOnly.length - 1]
+        : null;
+
+    const lastInstallmentDate = lastInstallment
+        ? dayjs(lastInstallment.date).format("MMMM D, YYYY")
+        : null;
+
+    invoice.invoice.dueDate = lastInstallmentDate
+        ? dayjs(lastInstallmentDate).format("MMMM D, YYYY")
+        : null;
 
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: "#333", fontFamily: "Helvetica" },
@@ -203,7 +364,7 @@ export default function UploadBookingInvoice() {
                         <Text style={styles.label}>BILL TO</Text>
                         <Text style={styles.customerName}>{invoice.customer.name.toUpperCase()}</Text>
                         <Text style={styles.muted}>{invoice.customer.phone}</Text>
-                        <Text style={styles.muted}>Reference: {booking?.reference || booking?.ref || booking?._id || "--"}</Text>
+                        <Text style={styles.muted}>Reference: {reference}</Text>
                         <Text style={styles.muted}>Travel Date: {invoice.booking.travelDate}</Text>
                     </View>
 
@@ -250,6 +411,46 @@ export default function UploadBookingInvoice() {
                     ))}
                 </View>
 
+                {paymentMode === "Deposit" && (
+                    <View style={{ marginTop: 20 }}>
+                        <Text style={[styles.label, { marginBottom: 8 }]}>
+                            PAYMENT SCHEDULE ({paymentFrequency.toUpperCase()})
+                        </Text>
+
+                        <View style={[styles.tableHeader, { backgroundColor: "#F3F4F6" }]}
+                        >
+                            <Text style={[styles.cell, { flex: 2 }]}>DESCRIPTION</Text>
+                            <Text style={[styles.cell, { flex: 2 }]}>DUE DATE</Text>
+                            <Text style={[styles.cell, { flex: 2, textAlign: "right" }]}>AMOUNT</Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>STATUS</Text>
+                        </View>
+
+                        {installmentData.paymentSchedule.map((item, index) => (
+                            <View key={index} style={styles.tableRow}>
+                                <Text style={[styles.cell, { flex: 2 }]}>{item.label}</Text>
+                                <Text style={[styles.cell, { flex: 2 }]}>
+                                    {item.date.format("MMM D, YYYY")}
+                                </Text>
+                                <Text style={[styles.cell, { flex: 2, textAlign: "right" }]}
+                                >
+                                    {formatCurrency.format(item.amount)}
+                                </Text>
+                                <Text style={[
+                                    styles.cell,
+                                    {
+                                        flex: 1.5,
+                                        textAlign: "right",
+                                        color: item.status === "PAID" ? "#059669" : "#D97706",
+                                        fontFamily: "Helvetica-Bold"
+                                    }
+                                ]}>
+                                    {item.status}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+
                 <View style={styles.footerSection}>
                     <View style={styles.bankInfo}>
                         <Text style={styles.muted}>Payment to be deposited in below bank details:</Text>
@@ -270,6 +471,9 @@ export default function UploadBookingInvoice() {
         </Document>
     );
 
+    const passportFiles = booking?.passportFiles || [];
+    const photoFiles = booking?.photoFiles || [];
+
     return (
         <ConfigProvider
             theme={{
@@ -279,6 +483,10 @@ export default function UploadBookingInvoice() {
             }}
         >
             <div className="upload-invoice-page">
+                <Button className="upload-invoice-back-button" onClick={() => navigate("/bookings")}>
+                    <ArrowLeftOutlined />
+                    Back
+                </Button>
                 <div className="upload-invoice-header">
                     <div>
                         <Title level={2} className="page-header">Upload Booking Invoice</Title>
@@ -286,9 +494,6 @@ export default function UploadBookingInvoice() {
                             Review the remaining balance and attach the final invoice for this booking.
                         </AntText>
                     </div>
-                    <Button onClick={() => navigate("/bookings")}>
-                        Back to bookings
-                    </Button>
                 </div>
 
                 {loading ? (
@@ -308,7 +513,7 @@ export default function UploadBookingInvoice() {
                                 <div>
                                     <AntText type="secondary">Package</AntText>
                                     <div className="upload-invoice-value">
-                                        {bookingDetails.packageName || booking?.pkg || "Package"}
+                                        {packageName || "Package"}
                                     </div>
                                 </div>
                                 <div>
@@ -356,6 +561,101 @@ export default function UploadBookingInvoice() {
                                 </div>
                             </div>
                         </div>
+
+                        <Card title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
+                            <div style={{
+                                backgroundColor: "#f0f5ff",
+                                border: "1px solid #adc6ff",
+                                padding: "8px 12px",
+                                borderRadius: "6px",
+                                marginBottom: "16px",
+                                fontSize: "13px",
+                                color: "#2f54eb"
+                            }}>
+                                <AntText>
+                                    <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
+                                </AntText>
+                            </div>
+
+                            {transactions.length === 0 ? (
+                                <AntText type="secondary">No transactions yet.</AntText>
+                            ) : (
+                                <Space direction="vertical" style={{ width: "100%" }}>
+                                    {transactions.map((txn, index) => (
+                                        <Card key={index} size="small">
+                                            <Row justify="space-between">
+                                                <Col>
+                                                    <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
+                                                    <div><strong>Method:</strong> {txn.method || "N/A"}</div>
+                                                </Col>
+                                                <Col style={{ textAlign: "right" }}>
+                                                    <div><strong>₱{txn.amount}</strong></div>
+                                                    <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
+                                                        {txn.status}
+                                                    </Tag>
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    ))}
+                                </Space>
+                            )}
+                        </Card>
+
+                        <Card title="Documents" style={{ marginTop: 24 }}>
+                            {passportFiles.length === 0 && photoFiles.length === 0 ? (
+                                <AntText type="secondary">No documents uploaded yet.</AntText>
+                            ) : (
+                                <div>
+                                    <h4>Traveler 1</h4>
+
+                                    <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
+                                        {passportFiles.length > 0 && (
+                                            <div style={{ marginBottom: 16 }}>
+                                                <AntText strong>Passport Files:</AntText>
+                                                <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+                                                    {passportFiles.map((url, index) => (
+                                                        <img
+                                                            key={index}
+                                                            src={url}
+                                                            alt={`Traveler 1 Passport ${index + 1}`}
+                                                            style={{
+                                                                width: 350,
+                                                                height: 340,
+                                                                objectFit: "cover",
+                                                                borderRadius: 8,
+                                                                border: "1px solid #ccc"
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {photoFiles.length > 0 && (
+                                            <div style={{ marginBottom: 16 }}>
+                                                <AntText strong>Photo Files:</AntText>
+                                                <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+                                                    {photoFiles.map((url, index) => (
+                                                        <img
+                                                            key={index}
+                                                            src={url}
+                                                            alt={`Traveler 1 Photo ${index + 1}`}
+                                                            style={{
+                                                                width: 200,
+                                                                height: 200,
+                                                                objectFit: "cover",
+                                                                borderRadius: 8,
+                                                                border: "1px solid #ccc"
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </Card>
                     </>
                 )}
             </div>

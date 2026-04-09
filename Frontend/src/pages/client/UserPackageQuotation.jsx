@@ -35,6 +35,7 @@ export default function UserPackageQuotation() {
                     return {
                         key: q._id || q.id,
                         reference: q.reference,
+                        packageType: q.packageId?.packageType.toUpperCase() || "N/A",
                         packageName: q.packageId?.packageName || "N/A",
                         travelers: totalTravelers,
                         requestedDate: new Date(q.createdAt).toLocaleDateString() ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
@@ -88,6 +89,11 @@ export default function UserPackageQuotation() {
             key: 'packageName'
         },
         {
+            title: 'Package Type',
+            dataIndex: 'packageType',
+            key: 'packageType'
+        },
+        {
             title: 'Travelers',
             dataIndex: 'travelers',
             key: 'travelers'
@@ -103,7 +109,7 @@ export default function UserPackageQuotation() {
             key: 'status',
             render: (value) => {
                 let color = 'default'
-                if (value === 'Approved') color = 'green'
+                if (value === 'Booked') color = 'green'
                 if (value === 'Pending') color = 'gold'
                 if (value === 'Rejected') color = 'red'
                 if (value === 'Under Review') color = 'blue'
@@ -116,7 +122,7 @@ export default function UserPackageQuotation() {
             key: 'actions',
             render: (_, record) => (
                 <Space>
-                    <Button className="user-quotation-action user-quotation-action-primary" icon={<EyeOutlined />} onClick={() => viewQuotation(record.key)}>
+                    <Button type="primary" className="user-quotation-view-button" icon={<EyeOutlined />} onClick={() => viewQuotation(record.key)}>
                         View
                     </Button>
                 </Space>

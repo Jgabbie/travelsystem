@@ -337,23 +337,29 @@ export default function BookingManagement() {
       render: (_, record) => (
         <Space>
           <Button
-            className='viewbutton-bookingmanagement'
+            className='bookingmanagement-view-button'
             type="primary"
             icon={<EyeOutlined />}
             onClick={() => handleView(record.key)}
-          />
+          >
+            View
+          </Button>
           <Button
-            className='editbutton-bookingmanagement'
+            className='bookingmanagement-edit-button'
             type="primary"
             icon={<EditOutlined />}
             onClick={() => edit(record)}
-          />
+          >
+            Edit
+          </Button>
           <Button
-            className='deletebutton-bookingmanagement'
+            className='bookingmanagement-remove-button'
             type='primary'
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record.key)}
-          />
+          >
+            Delete
+          </Button>
         </Space>
       )
     }
@@ -434,7 +440,7 @@ export default function BookingManagement() {
             allowClear
           />
           <Space style={{ marginLeft: 'auto' }}>
-            <Button className='export-pdf-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+            <Button className='bookingmanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
           </Space>
         </div>
 

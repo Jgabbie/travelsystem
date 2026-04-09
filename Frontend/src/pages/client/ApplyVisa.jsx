@@ -112,8 +112,18 @@ export default function ApplyVisa() {
     }
 
     const disableDates = (current) => {
-        return current && current < dayjs().startOf('day') || current.day() === 0 || current.day() === 6;
-    }
+        const today = dayjs().startOf('day');
+        const twoWeeksFromNow = today.add(14, 'day');
+
+        return (
+            current &&
+            (
+                current < twoWeeksFromNow ||
+                current.day() === 0 ||
+                current.day() === 6
+            )
+        );
+    };
 
     const disabledHours = () => {
         const hours = [];

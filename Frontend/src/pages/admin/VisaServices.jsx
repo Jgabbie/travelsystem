@@ -150,7 +150,7 @@ export default function VisaServices() {
 
                     <Space style={{ marginLeft: 'auto' }}>
                         <Button
-                            className="add-package-button"
+                            className="visaservices-add-button"
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={() => navigate(`${basePath}/visa-services/add`)}
@@ -174,23 +174,29 @@ export default function VisaServices() {
 
                         <div className="package-actions">
                             <Button
-                                className="viewdetails-package-button"
+                                className="visaservices-view-button"
                                 type="primary"
                                 icon={<EyeOutlined />}
                                 onClick={() => showModal(service)}
-                            />
+                            >
+                                View
+                            </Button>
                             <Button
-                                className="edit-package-button"
+                                className="visaservices-edit-button"
                                 type="primary"
                                 icon={<EditOutlined />}
                                 onClick={() => navigate(`${basePath}/visa-services/edit/${service._id}`)}
-                            />
+                            >
+                                Edit
+                            </Button>
                             <Button
-                                className="delete-package-button"
+                                className="visaservices-remove-button"
                                 type="primary"
                                 icon={<DeleteOutlined />}
                                 onClick={() => removeService(service._id)}
-                            />
+                            >
+                                Delete
+                            </Button>
                         </div>
                     </Card>
                 )) : <Empty description="No Visa Services" />}

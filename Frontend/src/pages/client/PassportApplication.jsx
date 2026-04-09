@@ -5,6 +5,7 @@ import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, 
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
+import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
 
 // Status color mapping for passport application statuses
@@ -49,7 +50,6 @@ const PASSPORT_STEPS = [
 ];
 
 
-
 export default function PassportApplication() {
     const location = useLocation();
     const { applicationId } = location.state || {};
@@ -70,6 +70,8 @@ export default function PassportApplication() {
     const [fileList, setFileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
+    const [selectedSuggestedIndex, setSelectedSuggestedIndex] = useState(null);
+    const [confirmingSuggested, setConfirmingSuggested] = useState(false);
 
     const fetchPassportApplication = `/passport/applications/${id}`;
 
@@ -223,6 +225,14 @@ export default function PassportApplication() {
         }
     };
 
+    const withPreview = (newList) =>
+        newList.map((file) => {
+            if (!file.preview && file.originFileObj) {
+                file.preview = URL.createObjectURL(file.originFileObj);
+            }
+            return file;
+        });
+
     const handleSubmit = async () => {
         if (uploading) {
             message.warning("Please wait until uploads finish");
@@ -250,7 +260,6 @@ export default function PassportApplication() {
                 formData.append("files", file.originFileObj);
             });
 
-            // 🔥 ONE request only
             const res = await axiosInstance.post(
                 '/upload/upload-passport-requirements',
                 formData,
@@ -288,6 +297,35 @@ export default function PassportApplication() {
         }
     };
 
+    const handleConfirmSuggested = async () => {
+        if (!application?.suggestedAppointmentSchedules || selectedSuggestedIndex === null) {
+            message.warning('Please select an appointment option first.');
+            return;
+        }
+
+        const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
+        if (!selected?.date || !selected?.time) {
+            message.error('Selected option is missing date or time.');
+            return;
+        }
+
+        try {
+            setConfirmingSuggested(true);
+            await axiosInstance.put(`/passport/applications/${id}/choose-appointment`, {
+                date: selected.date,
+                time: selected.time
+            });
+
+            const refreshed = await axiosInstance.get(`/passport/applications/${id}`);
+            setApplication(refreshed.data);
+            message.success('Appointment schedule confirmed.');
+        } catch (error) {
+            message.error('Failed to confirm appointment schedule.');
+        } finally {
+            setConfirmingSuggested(false);
+        }
+    };
+
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
@@ -295,6 +333,8 @@ export default function PassportApplication() {
                 <TopNavUser />
                 <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
                     <Button
+                        type='primary'
+                        className='passportapplication-back-button'
                         icon={<ArrowLeftOutlined />}
                         style={{ marginTop: 24, marginBottom: 8 }}
                         onClick={() => navigate('/user-applications')}
@@ -308,14 +348,14 @@ export default function PassportApplication() {
                                 <div style={{ display: 'flex', flexDirection: 'row', gap: 24 }}>
                                     <Card style={{ marginBottom: 32, width: '100%' }}>
                                         <Descriptions title="Application Info" bordered column={1}>
-                                            <Descriptions.Item label="Reference">{application.applicationId || application._id}</Descriptions.Item>
+                                            <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
                                             <Descriptions.Item label="Status">
                                                 <Tag color={getStatusColor(application.status)}>{application.status}</Tag>
                                             </Descriptions.Item>
                                             <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
                                             <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
                                             <Descriptions.Item label="DFA Location">{application.dfaLocation}</Descriptions.Item>
-                                            <Descriptions.Item label="Preferred Date">{application.preferredDate}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Date">{dayjs(application.preferredDate).format('MMM D, YYYY')}</Descriptions.Item>
                                             <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
                                             <Descriptions.Item label="Application Type">{application.applicationType}</Descriptions.Item>
                                             <Descriptions.Item label="Total Price">₱2,000</Descriptions.Item>
@@ -351,6 +391,50 @@ export default function PassportApplication() {
                                         </div>
                                     </Card>
                                 </div>
+
+                                {application.status && application.status.toLowerCase() === 'application submitted' && (
+                                    <Card title="Suggested Appointment Options" style={{ marginBottom: 32 }}>
+                                        {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
+                                            <>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                                                    {application.suggestedAppointmentSchedules.map((slot, index) => {
+                                                        const isSelected = selectedSuggestedIndex === index;
+
+                                                        return (
+                                                            <Card
+                                                                key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
+                                                                hoverable
+                                                                onClick={() => setSelectedSuggestedIndex(index)}
+                                                                style={{
+                                                                    border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
+                                                                    boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
+                                                                }}
+                                                            >
+                                                                <Tag color="blue">Option {index + 1}</Tag>
+                                                                <div style={{ marginTop: 8, fontWeight: 600 }}>
+                                                                    {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
+                                                                </div>
+                                                                <div style={{ color: '#6b7280' }}>{slot.time || 'Time TBD'}</div>
+                                                            </Card>
+                                                        );
+                                                    })}
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                                    <Button
+                                                        type="primary"
+                                                        onClick={handleConfirmSuggested}
+                                                        loading={confirmingSuggested}
+                                                        disabled={selectedSuggestedIndex === null}
+                                                    >
+                                                        Confirm selected date
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p style={{ margin: 0, color: '#6b7280' }}>No suggested dates yet. Please check back later.</p>
+                                        )}
+                                    </Card>
+                                )}
 
                                 {application ? (
                                     <>
@@ -441,6 +525,8 @@ export default function PassportApplication() {
                                                                 <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
 
                                                                 <Upload
+                                                                    className='passportapplication-upload-button'
+                                                                    type='primary'
                                                                     listType="picture"
                                                                     maxCount={1}
                                                                     fileList={fileList}
@@ -450,7 +536,7 @@ export default function PassportApplication() {
                                                                     customRequest={({ onSuccess }) => onSuccess("ok")}
                                                                     action={undefined}
                                                                 >
-                                                                    <Button icon={<UploadOutlined />} className="upload-btn">
+                                                                    <Button icon={<UploadOutlined />} className='passportapplication-uploadreceipt-button' type='primary'>
                                                                         Select Receipt Image
                                                                     </Button>
                                                                 </Upload>
@@ -513,91 +599,147 @@ export default function PassportApplication() {
                                             <Card title="Upload Requirements">
                                                 <div style={{ marginBottom: 24 }}>
                                                     <b>PSA-issued Birth Certificate</b>
-                                                    <Upload.Dragger
-                                                        name="birthCert"
-                                                        fileList={birthCertList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setBirthCertList(newList)}
-                                                        showUploadList
-                                                        accept="image/*"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false} // stops auto upload
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
-                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
-                                                    >
-                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                        <p className="ant-upload-text">Upload PSA-issued Birth Certificate</p>
-                                                    </Upload.Dragger>
-                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                    <div style={{ marginTop: 8 }}>
+                                                        {birthCertList.length === 0 && (
+                                                            <Upload
+                                                                name="birthCert"
+                                                                fileList={birthCertList}
+                                                                onPreview={handlePreview}
+                                                                onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
+                                                                showUploadList={false}
+                                                                accept="image/*"
+                                                                maxCount={1}
+                                                                disabled={uploading}
+                                                                beforeUpload={() => false}
+                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                action={undefined}
+                                                            >
+                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                    Upload Birth Certificate
+                                                                </Button>
+                                                            </Upload>
+                                                        )}
+
+                                                        {birthCertList[0]?.preview && (
+                                                            <div style={{ marginTop: 12 }}>
+                                                                <img
+                                                                    src={birthCertList[0].preview}
+                                                                    alt="Birth Certificate Preview"
+                                                                    style={{ maxWidth: 220, cursor: 'pointer' }}
+                                                                    onClick={() => handlePreview({ url: birthCertList[0].preview })}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 {/* Repeat for other uploads */}
                                                 <div style={{ marginBottom: 24 }}>
                                                     <b>Application Form</b>
-                                                    <Upload.Dragger
-                                                        name="applicationForm"
-                                                        fileList={applicationFormList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setApplicationFormList(newList)}
-                                                        showUploadList
-                                                        accept="image/*"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false} // stops auto upload
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
-                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
-                                                    >
-                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                        <p className="ant-upload-text">Upload Accomplished Application Form</p>
-                                                    </Upload.Dragger>
-                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                    <div style={{ marginTop: 8 }}>
+                                                        {applicationFormList.length === 0 && (
+                                                            <Upload
+                                                                name="applicationForm"
+                                                                fileList={applicationFormList}
+                                                                onPreview={handlePreview}
+                                                                onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
+                                                                showUploadList={false}
+                                                                accept="image/*"
+                                                                maxCount={1}
+                                                                disabled={uploading}
+                                                                beforeUpload={() => false}
+                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                action={undefined}
+                                                            >
+                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                    Upload Application Form
+                                                                </Button>
+                                                            </Upload>
+                                                        )}
+
+                                                        {applicationFormList[0]?.preview && (
+                                                            <div style={{ marginTop: 12 }}>
+                                                                <img
+                                                                    src={applicationFormList[0].preview}
+                                                                    alt="Application Form Preview"
+                                                                    style={{ maxWidth: 220, cursor: 'pointer' }}
+                                                                    onClick={() => handlePreview({ url: applicationFormList[0].preview })}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div style={{ marginBottom: 24 }}>
                                                     <b>One Government-issued ID</b>
-                                                    <Upload.Dragger
-                                                        name="govId"
-                                                        fileList={govIdList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setGovIdList(newList)}
-                                                        showUploadList
-                                                        accept="image/*"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false} // stops auto upload
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
-                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
-                                                    >
-                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                        <p className="ant-upload-text">Upload Government-issued ID</p>
-                                                    </Upload.Dragger>
-                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                    <div style={{ marginTop: 8 }}>
+                                                        {govIdList.length === 0 && (
+                                                            <Upload
+                                                                name="govId"
+                                                                fileList={govIdList}
+                                                                onPreview={handlePreview}
+                                                                onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
+                                                                showUploadList={false}
+                                                                accept="image/*"
+                                                                maxCount={1}
+                                                                disabled={uploading}
+                                                                beforeUpload={() => false}
+                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                action={undefined}
+                                                            >
+                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                    Upload Government ID
+                                                                </Button>
+                                                            </Upload>
+                                                        )}
+
+                                                        {govIdList[0]?.preview && (
+                                                            <div style={{ marginTop: 12 }}>
+                                                                <img
+                                                                    src={govIdList[0].preview}
+                                                                    alt="Government ID Preview"
+                                                                    style={{ maxWidth: 220, cursor: 'pointer' }}
+                                                                    onClick={() => handlePreview({ url: govIdList[0].preview })}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <b>Additional Documents (optional)</b>
-                                                    <Upload.Dragger
-                                                        name="additionalDocs"
-                                                        fileList={additionalDocsList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setAdditionalDocsList(newList)}
-                                                        showUploadList
-                                                        accept="image/*"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        style={{ marginTop: 8 }}
-                                                        beforeUpload={() => false} // stops auto upload
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")} // fakes success so it never POSTs
-                                                        action={undefined} // VERY IMPORTANT: prevents default POST to localhost
-                                                    >
-                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                        <p className="ant-upload-text">Upload Additional Documents (optional)</p>
-                                                    </Upload.Dragger>
-                                                    <p style={{ fontSize: 12, color: '#999' }}>Click on the file to preview</p>
+                                                    <div style={{ marginTop: 8 }}>
+                                                        {additionalDocsList.length === 0 && (
+                                                            <Upload
+                                                                name="additionalDocs"
+                                                                fileList={additionalDocsList}
+                                                                onPreview={handlePreview}
+                                                                onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
+                                                                showUploadList={false}
+                                                                accept="image/*"
+                                                                maxCount={1}
+                                                                disabled={uploading}
+                                                                beforeUpload={() => false}
+                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                action={undefined}
+                                                            >
+                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                    Upload Additional Document
+                                                                </Button>
+                                                            </Upload>
+                                                        )}
+
+                                                        {additionalDocsList[0]?.preview && (
+                                                            <div style={{ marginTop: 12 }}>
+                                                                <img
+                                                                    src={additionalDocsList[0].preview}
+                                                                    alt="Additional Document Preview"
+                                                                    style={{ maxWidth: 220, cursor: 'pointer' }}
+                                                                    onClick={() => handlePreview({ url: additionalDocsList[0].preview })}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
 
-                                                <Button style={{ marginTop: 20 }} type="primary" onClick={handleSubmit}>
+                                                <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={handleSubmit}>
                                                     Submit Documents
                                                 </Button>
                                             </Card>

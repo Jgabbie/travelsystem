@@ -1,0 +1,120 @@
+.faq-page {
+    min-height: 100vh;
+    background: #f7f8fb;
+}
+
+.faq-hero {
+    position: relative;
+    padding: 80px 24px 60px;
+    background: linear-gradient(135deg, #e9f1ff, #f9fbff);
+    overflow: hidden;
+}
+
+.faq-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, rgba(48, 87, 151, 0.15), transparent 60%);
+}
+
+.faq-hero-content {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.faq-hero-content h1 {
+    margin-bottom: 12px;
+    font-size: 40px;
+    color: #1e3a68;
+}
+
+.faq-hero-content p {
+    margin: 0 auto;
+    max-width: 640px;
+    color: #4b5563;
+    font-size: 16px;
+}
+
+.faq-container {
+    max-width: 900px;
+    margin: -30px auto 60px;
+    padding: 0 24px 40px;
+}
+
+.faq-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.faq-filter-button {
+    border-radius: 999px;
+    border: 1px solid #d8e1f0;
+    color: #1f3b66;
+    background: #ffffff;
+    font-weight: 600;
+}
+
+.faq-filter-button--active {
+    background: #305797;
+    border-color: #305797;
+    color: #ffffff;
+}
+
+.faq-search {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(30, 58, 104, 0.08);
+    margin-bottom: 20px;
+}
+
+.faq-collapse {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(30, 58, 104, 0.08);
+    padding: 8px 0;
+}
+
+.faq-collapse .ant-collapse-item {
+    border-bottom: 1px solid #edf1f7;
+}
+
+.faq-collapse .ant-collapse-header {
+    font-weight: 600;
+    color: #1f3b66;
+}
+
+.faq-collapse .ant-collapse-content-box {
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.faq-empty {
+    text-align: center;
+    padding: 32px;
+    color: #6b7280;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(30, 58, 104, 0.08);
+}
+
+.faq-empty p {
+    margin-bottom: 12px;
+}
+
+.faq-contact-button {
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .faq-hero-content h1 {
+        font-size: 32px;
+    }
+
+    .faq-container {
+        margin-top: -20px;
+    }
+}

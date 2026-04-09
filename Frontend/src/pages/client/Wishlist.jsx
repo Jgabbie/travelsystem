@@ -62,9 +62,11 @@ export default function Wishlist() {
                 location: pkg.packageCode || pkg.packageType || 'Package',
                 duration: pkg.packageDuration ? `${pkg.packageDuration} DAYS` : 'N/A',
                 price: pkg.packagePricePerPax ?? 0,
+                discountPercent: Number(pkg.packageDiscountPercent) || 0,
                 category: pkg.packageType ? pkg.packageType.toUpperCase() : 'Other',
                 availability: availabilityLabel,
                 typeLabel: pkg.packageType ? pkg.packageType.toUpperCase() : 'Package',
+                availableSlots,
                 image: pkg.images?.[0] || ''
             }
         })
@@ -255,6 +257,12 @@ export default function Wishlist() {
                                                 <Tag className={`wishlist-badge ${pkg.availability.replace(' ', '-')}`}>
                                                     {pkg.availability}
                                                 </Tag>
+                                                {pkg.discountPercent > 0 ? (
+                                                    <Tag color="green">{pkg.discountPercent}% OFF</Tag>
+                                                ) : null}
+                                            </div>
+                                            <div className="wishlist-card-meta">
+                                                <Text type="secondary">Slots: {pkg.availableSlots}</Text>
                                             </div>
                                             <div className="wishlist-card-footer">
                                                 <Text className="wishlist-price">

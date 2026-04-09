@@ -107,6 +107,26 @@
     background: #f9fafb;
 }
 
+/* BUTTONS CSS */
+.upload-invoice-back-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 130px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+    margin-bottom: 24px;
+}
+
+.upload-invoice-back-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
 @media (max-width: 900px) {
     .upload-invoice-meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));

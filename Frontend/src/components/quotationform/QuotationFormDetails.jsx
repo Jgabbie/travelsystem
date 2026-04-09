@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Input, Upload, Button, message } from 'antd';
 import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -111,6 +111,20 @@ export default function QuotationFormDetails({
         return formatDateValue(value);
     };
 
+
+    const travelerCounts = parseTravelerCounts(formData.travelers);
+    const isSoloTraveler = travelerCounts.total <= 1 && travelerCounts.child === 0 && travelerCounts.infant === 0;
+    const isLandArrangement = (quotationData.packageCategory || '').toLowerCase() === 'land arrangement';
+
+    useEffect(() => {
+        if (!isLandArrangement) return;
+
+        setFormData(prev => ({
+            ...prev,
+            flightImageA: prev.flightImageA || 'No Image, Land Arrangement',
+            flightImageB: prev.flightImageB || 'No Image, Land Arrangement'
+        }));
+    }, [isLandArrangement, setFormData]);
 
     const packageRows = [
         { label: 'TRAVEL PACKAGE', value: quotationData.packageName, emphasis: true },
@@ -239,16 +253,38 @@ export default function QuotationFormDetails({
         {
             label: 'TOTAL RATE PER ADULT',
             value: (
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Input
                         size="small"
-                        className="mrc-tour-details-input"
+                        maxLength={6}
+                        className="mrc-tour-details-input mrc-currency-input"
                         placeholder="ADULTS PRICE"
                         value={formData.totalRate}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, totalRate: e.target.value }))
-                        }
+                        prefix={<span className="mrc-peso-prefix">₱</span>}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9.]/g, '');
+
+                            setFormData(prev => ({
+                                ...prev,
+                                totalRate: value
+                            }));
+                        }}
                         style={formErrors.totalRate ? { borderColor: '#ff4d4f' } : undefined}
+                        onKeyDown={(e) => {
+                            if (
+                                ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+                            ) {
+                                return;
+                            }
+
+                            if (e.ctrlKey || e.metaKey) {
+                                return;
+                            }
+
+                            if (!/^[0-9.]$/.test(e.key)) {
+                                e.preventDefault();
+                            }
+                        }}
                     />
                     {formErrors.totalRate ? (
                         <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalRate}</div>
@@ -257,58 +293,36 @@ export default function QuotationFormDetails({
             ),
         },
         {
-            label: 'TOTAL RATE PER CHILD',
-            value: (
-                <div>
-                    <Input
-                        size="small"
-                        className="mrc-tour-details-input"
-                        placeholder="CHILDREN PRICE"
-                        value={formData.totalChildRate}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, totalChildRate: e.target.value }))
-                        }
-                        style={formErrors.totalChildRate ? { borderColor: '#ff4d4f' } : undefined}
-                    />
-                    {formErrors.totalChildRate ? (
-                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalChildRate}</div>
-                    ) : null}
-                </div>
-            ),
-        },
-        {
-            label: 'TOTAL RATE PER INFANT',
-            value: (
-                <div>
-                    <Input
-                        size="small"
-                        className="mrc-tour-details-input"
-                        placeholder="INFANTS PRICE"
-                        value={formData.totalInfantRate}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, totalInfantRate: e.target.value }))
-                        }
-                        style={formErrors.totalInfantRate ? { borderColor: '#ff4d4f' } : undefined}
-                    />
-                    {formErrors.totalInfantRate ? (
-                        <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalInfantRate}</div>
-                    ) : null}
-                </div>
-            ),
-        },
-        {
             label: 'TOTAL PRICE',
             value: (
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Input
                         size="small"
-                        className="mrc-tour-details-input"
+                        maxLength={7}
+                        className="mrc-tour-details-input mrc-currency-input"
                         placeholder="TOTAL"
                         value={formData.totalPrice || calculateTotalPrice()}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, totalPrice: e.target.value }))
-                        }
+                        prefix={<span className="mrc-peso-prefix">₱</span>}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9.]/g, '');
+                            setFormData(prev => ({ ...prev, totalPrice: value }))
+                        }}
                         style={formErrors.totalPrice ? { borderColor: '#ff4d4f' } : undefined}
+                        onKeyDown={(e) => {
+                            if (
+                                ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+                            ) {
+                                return;
+                            }
+
+                            if (e.ctrlKey || e.metaKey) {
+                                return;
+                            }
+
+                            if (!/^[0-9.]$/.test(e.key)) {
+                                e.preventDefault();
+                            }
+                        }}
                     />
                     {formErrors.totalPrice ? (
                         <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalPrice}</div>
@@ -319,16 +333,34 @@ export default function QuotationFormDetails({
         {
             label: 'IF DEPOSIT',
             value: (
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Input
                         size="small"
-                        className="mrc-tour-details-input"
+                        maxLength={6}
+                        className="mrc-tour-details-input mrc-currency-input"
                         placeholder="DEPOSIT AMOUNT"
                         value={formData.totalDeposit}
-                        onChange={(e) =>
-                            setFormData(prev => ({ ...prev, totalDeposit: e.target.value }))
-                        }
+                        prefix={<span className="mrc-peso-prefix">₱</span>}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9.]/g, '');
+                            setFormData(prev => ({ ...prev, totalDeposit: value }));
+                        }}
                         style={formErrors.totalDeposit ? { borderColor: '#ff4d4f' } : undefined}
+                        onKeyDown={(e) => {
+                            if (
+                                ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+                            ) {
+                                return;
+                            }
+
+                            if (e.ctrlKey || e.metaKey) {
+                                return;
+                            }
+
+                            if (!/^[0-9.]$/.test(e.key)) {
+                                e.preventDefault();
+                            }
+                        }}
                     />
                     {formErrors.totalDeposit ? (
                         <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalDeposit}</div>
@@ -338,15 +370,88 @@ export default function QuotationFormDetails({
         },
     ];
 
-    const addPackageRow = () => {
-        setFormData(prev => ({
-            ...prev,
-            dynamicRows: [
-                ...prev.dynamicRows,
-                { label: '', value: '' } // empty new row
-            ]
-        }));
-    };
+    if (!isSoloTraveler) {
+        packageRows.splice(
+            packageRows.findIndex((row) => row.label === 'TOTAL PRICE'),
+            0,
+            {
+                label: 'TOTAL RATE PER CHILD',
+                value: (
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <Input
+                            size="small"
+                            maxLength={6}
+                            className="mrc-tour-details-input mrc-currency-input"
+                            placeholder="CHILDREN PRICE"
+                            value={formData.totalChildRate}
+                            prefix={<span className="mrc-peso-prefix">₱</span>}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9.]/g, '');
+                                setFormData(prev => ({ ...prev, totalChildRate: value }));
+                            }}
+                            style={formErrors.totalChildRate ? { borderColor: '#ff4d4f' } : undefined}
+                            onKeyDown={(e) => {
+                                if (
+                                    ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+                                ) {
+                                    return;
+                                }
+
+                                if (e.ctrlKey || e.metaKey) {
+                                    return;
+                                }
+
+                                if (!/^[0-9.]$/.test(e.key)) {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
+                        {formErrors.totalChildRate ? (
+                            <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalChildRate}</div>
+                        ) : null}
+                    </div>
+                ),
+            },
+            {
+                label: 'TOTAL RATE PER INFANT',
+                value: (
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <Input
+                            size="small"
+                            maxLength={6}
+                            className="mrc-tour-details-input mrc-currency-input"
+                            placeholder="INFANTS PRICE"
+                            value={formData.totalInfantRate}
+                            prefix={<span className="mrc-peso-prefix">₱</span>}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9.]/g, '');
+                                setFormData(prev => ({ ...prev, totalInfantRate: value }));
+                            }}
+                            style={formErrors.totalInfantRate ? { borderColor: '#ff4d4f' } : undefined}
+                            onKeyDown={(e) => {
+                                if (
+                                    ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+                                ) {
+                                    return;
+                                }
+
+                                if (e.ctrlKey || e.metaKey) {
+                                    return;
+                                }
+
+                                if (!/^[0-9.]$/.test(e.key)) {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
+                        {formErrors.totalInfantRate ? (
+                            <div style={{ color: '#ff4d4f', fontSize: 11 }}>{formErrors.totalInfantRate}</div>
+                        ) : null}
+                    </div>
+                ),
+            }
+        );
+    }
 
     const updateDynamicRow = (index, field, value) => {
         setFormData(prev => {
@@ -394,7 +499,13 @@ export default function QuotationFormDetails({
                                     className="mrc-quotation-inline-input"
                                     value={row.label}
                                     onChange={(e) => updateDynamicRow(index, 'label', e.target.value)}
+                                    style={formErrors.dynamicRows?.[index]?.label ? { borderColor: '#ff4d4f' } : undefined}
                                 />
+                                {formErrors.dynamicRows?.[index]?.label ? (
+                                    <div style={{ color: '#ff4d4f', fontSize: 11 }}>
+                                        {formErrors.dynamicRows[index].label}
+                                    </div>
+                                ) : null}
                             </div>
                             <div className="mrc-quotation-value">
                                 <Input
@@ -403,7 +514,13 @@ export default function QuotationFormDetails({
                                     className="mrc-quotation-inline-input"
                                     value={row.value}
                                     onChange={(e) => updateDynamicRow(index, 'value', e.target.value)}
+                                    style={formErrors.dynamicRows?.[index]?.value ? { borderColor: '#ff4d4f' } : undefined}
                                 />
+                                {formErrors.dynamicRows?.[index]?.value ? (
+                                    <div style={{ color: '#ff4d4f', fontSize: 11 }}>
+                                        {formErrors.dynamicRows[index].value}
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
                     ))}
@@ -430,7 +547,9 @@ export default function QuotationFormDetails({
                         {flights.length === 0 && (
                             <div style={{ display: 'flex', flexDirection: 'row', gap: 40, flexWrap: 'wrap' }}>
                                 <div>
-                                    {formData.flightImageA ? (
+                                    {isLandArrangement ? (
+                                        <div>No Image, Land Arrangement</div>
+                                    ) : formData.flightImageA ? (
                                         <img
                                             src={formData.flightImageA}
                                             alt="Flight Upload 1"
@@ -442,12 +561,12 @@ export default function QuotationFormDetails({
                                             beforeUpload={(file) => handleImageUpload(file, 'flightImageA')}
                                             accept=".jpg,.jpeg,.png"
                                         >
-                                            <Button icon={<UploadOutlined />}>
+                                            <Button icon={<UploadOutlined />} className='quotationformdetails-button'>
                                                 Upload Flight Image 1
                                             </Button>
                                             {formErrors.flightImageA && (
                                                 <div style={{ color: '#ff4d4f', fontSize: 11 }}>
-                                                    {formErrors.flightImageA}
+                                                    {formErrors.flightImageA.toUpperCase()}
                                                 </div>
                                             )}
                                         </Upload>
@@ -455,7 +574,9 @@ export default function QuotationFormDetails({
                                 </div>
 
                                 <div>
-                                    {formData.flightImageB ? (
+                                    {isLandArrangement ? (
+                                        <div>No Image, Land Arrangement</div>
+                                    ) : formData.flightImageB ? (
                                         <img
                                             src={formData.flightImageB}
                                             alt="Flight Upload 2"
@@ -467,12 +588,12 @@ export default function QuotationFormDetails({
                                             beforeUpload={(file) => handleImageUpload(file, 'flightImageB')}
                                             accept=".jpg,.jpeg,.png"
                                         >
-                                            <Button icon={<UploadOutlined />}>
+                                            <Button icon={<UploadOutlined />} className='quotationformdetails-button'>
                                                 Upload Flight Image 2
                                             </Button>
                                             {formErrors.flightImageB && (
                                                 <div style={{ color: '#ff4d4f', fontSize: 11 }}>
-                                                    {formErrors.flightImageB}
+                                                    {formErrors.flightImageB.toUpperCase()}
                                                 </div>
                                             )}
                                         </Upload>

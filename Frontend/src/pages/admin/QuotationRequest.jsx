@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Input } from "antd";
-import { UploadOutlined, SendOutlined } from "@ant-design/icons";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Tag } from "antd";
+import { UploadOutlined, SendOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import dayjs from "dayjs";
@@ -11,10 +11,13 @@ import QuotationFormInEx from "../../components/quotationform/QuotationFormInEx"
 import QuotationFormTermsConditions from "../../components/quotationform/QuotationFormTermsConditions";
 import QuotationFormItineraries from "../../components/quotationform/QuotationFormItineraries";
 import '../../style/components/mrcquotation.css';
+import '../../style/admin/quotationrequest.css';
+
 
 
 export default function QuotationRequest() {
     const location = useLocation();
+    const navigate = useNavigate()
     const { quotationId } = location.state || {};
     const id = quotationId;
 
@@ -27,6 +30,7 @@ export default function QuotationRequest() {
     const [previewURL, setPreviewURL] = useState(null);
     const [previewStep, setPreviewStep] = useState(0);
     const pdfContainerRef = useRef(null);
+    const [viewMode, setViewMode] = useState("form");
 
     const [formData, setFormData] = useState({
         roomType: '',
@@ -39,8 +43,8 @@ export default function QuotationRequest() {
         baggageAllowance: '',
         travelers: '',
         totalRate: '',
-        totalChildRate: '',
-        totalInfantRate: '',
+        totalChildRate: '0',
+        totalInfantRate: '0',
         totalPrice: '',
         totalDeposit: '',
         flightImageA: '',
@@ -182,6 +186,7 @@ export default function QuotationRequest() {
     const exclusions = quotation?.packageId?.packageExclusions || [];
     const itinerary = quotation?.packageId?.packageItineraries || {};
     const quotationReference = quotation?.reference || "N/A";
+    const packageCategory = quotation?.quotationDetails?.packageCategory || quotation?.packageId?.packageType || "";
 
     const coordinatorName = adminName || "N/A";
 
@@ -195,8 +200,11 @@ export default function QuotationRequest() {
         inclusions,
         exclusions,
         itinerary,
-        coordinatorName
+        coordinatorName,
+        packageCategory
     };
+
+    const isBooked = quotation?.status?.toLowerCase() === 'booked';
 
     console.log("Fetched quotation:", quotation);
 
@@ -256,9 +264,7 @@ export default function QuotationRequest() {
         setEditableItinerary(newEditableItinerary);
     }, [quotation]);
 
-    if (!quotation) return <p>Quotation not found.</p>;
-
-    const details = quotation.quotationDetails || {};
+    const details = quotation?.quotationDetails || {};
     const itineraryNotes = details.itineraryNotes || [];
     const flightDetails = details.flightDetails || {};
     const previewItems = [
@@ -351,6 +357,23 @@ export default function QuotationRequest() {
 
         if (!formData.flightImageB) {
             errors.flightImageB = "Flight image 2 is required.";
+        }
+
+        if (formData.dynamicRows && formData.dynamicRows.length > 0) {
+            const rowErrors = formData.dynamicRows.map((row) => {
+                const rowError = {};
+                if (!row.label || !row.label.trim()) {
+                    rowError.label = "Label is required.";
+                }
+                if (!row.value || !row.value.trim()) {
+                    rowError.value = "Value is required.";
+                }
+                return rowError;
+            });
+
+            if (rowErrors.some((rowError) => Object.keys(rowError).length > 0)) {
+                errors.dynamicRows = rowErrors;
+            }
         }
 
         setFormErrors(errors);
@@ -526,131 +549,116 @@ export default function QuotationRequest() {
                 }
             }}
         >
-            <div>
-                <Spin
-                    spinning={loading || uploading}
-                    tip={loading ? "Loading quotation..." : "Uploading..."}
-                    size="large">
-                    <div>
-                        <h1 style={{ margin: 20 }}>Initial Quotation Request</h1>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 20, margin: 20 }}>
-                            <Card
-                                title={`Quotation Details - ${quotation.reference}`}
-                                style={{ margin: 0 }}
-                            >
-                                <Descriptions bordered column={1}>
-                                    <Descriptions.Item label="Package Name">{packageName}</Descriptions.Item>
-                                    <Descriptions.Item label="Customer Name">{customerName}</Descriptions.Item>
-                                    <Descriptions.Item label="Travelers">
-                                        {formatTravelers(travelers)}
-                                    </Descriptions.Item>
-                                    <Descriptions.Item label="Preferred Airlines">{airline || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Preferred Hotels">{hotel || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Preferred Date">{travelDates || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Budget Range">{budgetRange}</Descriptions.Item>
-                                    <Descriptions.Item label="Itinerary Notes">
-                                        {itineraryNotes.length === 0
-                                            ? "N/A"
-                                            : itineraryNotes.map((note, index) => (
-                                                <div key={index}><strong>Day {index + 1}:</strong> {note}</div>
-                                            ))
-                                        }
-                                    </Descriptions.Item>
-                                    <Descriptions.Item label="Package Category">{details.packageCategory || "N/A"}</Descriptions.Item>
-                                    {["flightAirline", "flightDate", "flightTime"].map((key) => {
-                                        const value = flightDetails[key];
-                                        if (!value || value === "N/A") return null; // skip N/A or empty values
-
-                                        // Convert key to readable label
-                                        const label = key
-                                            .replace(/([A-Z])/g, " $1") // add space before capital letters
-                                            .replace(/^./, (str) => str.toUpperCase()); // capitalize first letter
-
-                                        return (
-                                            <Descriptions.Item key={key} label={label}>
-                                                {value}
-                                            </Descriptions.Item>
-                                        );
-                                    })}
-                                    <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
-                                    <Descriptions.Item label="Status">{quotation.status}</Descriptions.Item>
-                                </Descriptions>
-                            </Card>
-
-                            {/* <Card
-                                title="Package Details"
-                                style={{ margin: 0 }}
-                            >
-                                <Descriptions bordered column={1}>
-                                    <Descriptions.Item label="Itineraries">
-                                        {quotation.packageId?.packageItineraries ? (
-                                            Object.entries(quotation.packageId.packageItineraries).map(
-                                                ([day, activities], index) => (
-                                                    <div key={index}>
-                                                        <strong>{day.toUpperCase()}:</strong>
-                                                        {(activities || []).map((act, i) => {
-                                                            const { activity, optional } = getItineraryActivity(act);
-                                                            return (
-                                                                <div key={i} style={{ marginLeft: "10px", marginTop: 6 }}>
-                                                                    <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                                                                        <span style={{ minWidth: 16 }}>&bull;</span>
-                                                                        <span>{activity}</span>
-                                                                    </div>
-                                                                    {optional && (
-                                                                        <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
-                                                                            <span style={{ minWidth: 16 }} />
-                                                                            <span>{optional}</span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )
-                                            )
-                                        ) : (
-                                            "N/A"
-                                        )}
-                                    </Descriptions.Item>
-                                    <Descriptions.Item label="Inclusions">
-                                        {quotation.packageId?.packageInclusions?.length > 0 ? (
-                                            <ul style={{ margin: 0, paddingLeft: 18 }}>
-                                                {quotation.packageId.packageInclusions.map((inclusion, index) => (
-                                                    <li key={index}>{formatPackageItem(inclusion)}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            "N/A"
-                                        )}
-                                    </Descriptions.Item>
-                                    <Descriptions.Item label="Exclusions">
-                                        {quotation.packageId?.packageExclusions?.length > 0 ? (
-                                            <ul style={{ margin: 0, paddingLeft: 18 }}>
-                                                {quotation.packageId.packageExclusions.map((exclusion, index) => (
-                                                    <li key={index}>{formatPackageItem(exclusion)}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            "N/A"
-                                        )}
-                                    </Descriptions.Item>
-                                </Descriptions>
-                            </Card> */}
+            {loading || !quotation ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
+                    <Spin description={"Loading quotation..."} size="large" />
+                </div>
+            ) : (
+                <div>
+                    {uploading && (
+                        <div className="booking-loading-overlay">
+                            <Spin description={"Uploading quotation..."} size="large" />
                         </div>
+                    )}
 
+                    <Button onClick={() => navigate(-1)} style={{ marginBottom: 16, marginLeft: 20 }} type="primary" className="viewvisaapplication-back-button">
+                        <ArrowLeftOutlined />
+                        Back
+                    </Button>
+                    <h1 style={{ margin: 20 }}>Initial Quotation Request</h1>
+                    {/* BOOKED OR COMPLETE STATUS */}
+                    {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
+                        <Card
+                            style={{ margin: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                            className={`quotationrequest-status-card${isBooked ? ' is-booked' : ''}`}
+                            title={<Tag color="green">Quotation {quotation.status}</Tag>}
+                        >
+                            <p style={{ margin: 0, fontSize: 14 }}>
+                                This quotation has been successfully booked.
+                            </p>
+                        </Card>
+                    ) : null}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20, margin: 20 }}>
+                        <Card
+                            title={`Quotation Details - ${quotation.reference || "N/A"}`}
+                            style={{ margin: 0 }}
+                        >
+                            <Descriptions bordered column={1}>
+                                <Descriptions.Item label="Package Name">{packageName}</Descriptions.Item>
+                                <Descriptions.Item label="Customer Name">{customerName}</Descriptions.Item>
+                                <Descriptions.Item label="Travelers">
+                                    {formatTravelers(travelers)}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Preferred Airlines">{airline || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Preferred Hotels">{hotel || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Preferred Date">{travelDates || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Budget Range">{budgetRange}</Descriptions.Item>
+                                <Descriptions.Item label="Itinerary Notes">
+                                    {itineraryNotes.length === 0
+                                        ? "N/A"
+                                        : itineraryNotes.map((note, index) => (
+                                            <div key={index}><strong>Day {index + 1}:</strong> {note}</div>
+                                        ))
+                                    }
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Package Category">{details.packageCategory || "N/A"}</Descriptions.Item>
+                                {["flightAirline", "flightDate", "flightTime"].map((key) => {
+                                    const value = flightDetails[key];
+                                    if (!value || value === "N/A") return null; // skip N/A or empty values
+
+                                    // Convert key to readable label
+                                    const label = key
+                                        .replace(/([A-Z])/g, " $1") // add space before capital letters
+                                        .replace(/^./, (str) => str.toUpperCase()); // capitalize first letter
+
+                                    return (
+                                        <Descriptions.Item key={key} label={label}>
+                                            {value}
+                                        </Descriptions.Item>
+                                    );
+                                })}
+                                <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
+                                <Descriptions.Item label="Status">{quotation.status || "N/A"}</Descriptions.Item>
+                            </Descriptions>
+                        </Card>
+                    </div>
+
+                    {!isBooked && (
+                        <div style={{ margin: 20, display: "flex", gap: 16, flexWrap: "wrap" }}>
+                            <Card
+                                hoverable
+                                onClick={() => setViewMode("form")}
+                                className={`quotationrequest-selection-card ${viewMode === "form" ? "selected" : ""}`}
+                            >
+                                <h3 style={{ margin: 0 }}>Quotation Form</h3>
+                                <p style={{ marginTop: 8, color: "#6b7280" }}>Create and preview the quotation form.</p>
+                            </Card>
+                            <Card
+                                hoverable
+                                onClick={() => setViewMode("upload")}
+                                className={`quotationrequest-selection-card ${viewMode === "upload" ? "selected" : ""}`}
+                            >
+                                <h3 style={{ margin: 0 }}>Upload Quotation</h3>
+                                <p style={{ marginTop: 8, color: "#6b7280" }}>Upload a prepared quotation PDF.</p>
+                            </Card>
+                        </div>
+                    )}
+
+
+                    {viewMode === "form" && !isBooked && (
                         <Card title={previewItems[previewStep].title} style={{ margin: 20 }}>
                             {previewItems[previewStep].content}
 
                             {previewStep === 0 && (
                                 <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                                    <Button type="dashed" onClick={addPackageRow}>
+                                    <Button className="quotationrequest-form-button" type="primary" onClick={addPackageRow}>
                                         Add Row
                                     </Button>
 
                                     {formData.dynamicRows && formData.dynamicRows.length > 0 && (
                                         <Button
-                                            type="default"
-                                            danger
+                                            className="quotationrequest-formremove-button"
+                                            type="primary"
                                             onClick={() =>
                                                 setFormData((prev) => ({
                                                     ...prev,
@@ -674,7 +682,7 @@ export default function QuotationRequest() {
                             >
                                 <div>
                                     {previewStep > 0 && (
-                                        <Button onClick={() => setPreviewStep((prev) => prev - 1)}>
+                                        <Button className="quotationrequest-form-button" onClick={() => setPreviewStep((prev) => prev - 1)}>
                                             Previous
                                         </Button>
                                     )}
@@ -682,121 +690,133 @@ export default function QuotationRequest() {
 
                                 <div>
                                     {previewStep < previewItems.length - 1 && (
-                                        <Button type="primary" onClick={handleNextPreview}>
+                                        <Button className="quotationrequest-form-button" type="primary" onClick={handleNextPreview}>
                                             Next
                                         </Button>
                                     )}
                                     {previewStep === previewItems.length - 1 && (
-                                        <Button type="primary" onClick={generateAndUploadPdf} loading={uploading}>
+                                        <Button className="quotationrequest-formgenerate-button" type="primary" onClick={generateAndUploadPdf} loading={uploading}>
                                             Generate & Upload PDF
                                         </Button>
                                     )}
                                 </div>
                             </div>
                         </Card>
-                    </div>
+                    )}
 
-                    <div
-                        ref={pdfContainerRef}
-                        style={{ position: "absolute", left: -9999, top: 0, width: 800 }}
-                    >
-                        <div className="pdf-content">
-                            <QuotationFormDetails
-                                quotationData={quotationData}
-                                formData={formData}
-                                setFormData={setFormData}
-                                formErrors={formErrors}
-                                dynamicRows={formData.dynamicRows}
-                                updateDynamicRow={updateDynamicRow}
-                            />
-                            <QuotationFormInEx
-                                quotationData={quotationData}
-                                formData={formData}
-                                setFormData={setFormData}
-                                formErrors={formErrors}
-                                pdfMode={true}
-                            />
-                            <QuotationFormItineraries
-                                quotationData={quotationData}
-                                editableItinerary={editableItinerary}
-                                setEditableItinerary={setEditableItinerary}
-                                formData={formData}
-                                setFormData={setFormData}
-                                formErrors={formErrors}
-                                pdfMode={true}
-                            />
-                            <QuotationFormTermsConditions quotationData={quotationData} />
-                        </div>
-                    </div>
-
-
-                    <Card title="Upload Quotation PDF" style={{ margin: 20 }}>
-
-                        <Upload
-                            name="pdf"
-                            showUploadList={false}
-                            beforeUpload={handleFileSelect}
+                    {viewMode === "form" && !isBooked && (
+                        <div
+                            ref={pdfContainerRef}
+                            style={{ position: "absolute", left: -9999, top: 0, width: 800 }}
                         >
-                            <Button icon={<UploadOutlined />}>
-                                Select PDF
-                            </Button>
-                        </Upload>
-
-                        {previewURL && (
-                            <div style={{ marginTop: 16 }}>
-                                <iframe
-                                    src={previewURL}
-                                    title="PDF Preview"
-                                    width="100%"
-                                    height="450px"
-                                    style={{ border: "1px solid #ddd", borderRadius: 8 }}
+                            <div className="pdf-content">
+                                <QuotationFormDetails
+                                    quotationData={quotationData}
+                                    formData={formData}
+                                    setFormData={setFormData}
+                                    formErrors={formErrors}
+                                    dynamicRows={formData.dynamicRows}
+                                    updateDynamicRow={updateDynamicRow}
                                 />
-
-                                <Button
-                                    type="primary"
-                                    icon={<SendOutlined />}
-                                    onClick={handleSend}
-                                    loading={uploading}
-                                    style={{ marginTop: 12 }}
-                                >
-                                    Send Quotation
-                                </Button>
+                                <QuotationFormInEx
+                                    quotationData={quotationData}
+                                    formData={formData}
+                                    setFormData={setFormData}
+                                    formErrors={formErrors}
+                                    pdfMode={true}
+                                />
+                                <QuotationFormItineraries
+                                    quotationData={quotationData}
+                                    editableItinerary={editableItinerary}
+                                    setEditableItinerary={setEditableItinerary}
+                                    formData={formData}
+                                    setFormData={setFormData}
+                                    formErrors={formErrors}
+                                    pdfMode={true}
+                                />
+                                <QuotationFormTermsConditions quotationData={quotationData} />
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                    </Card>
+                    {viewMode === "upload" && !isBooked && (
+                        <Card title="Upload Quotation PDF" style={{ margin: 20 }}>
+                            <Upload
+                                name="pdf"
+                                showUploadList={false}
+                                beforeUpload={handleFileSelect}
+                            >
+                                <Button icon={<UploadOutlined />} className="quotationrequest-upload-button" type="primary">
+                                    Select PDF
+                                </Button>
+                            </Upload>
 
-                    <Card title="Quotation Revision History" style={{ margin: 20 }}>
-                        {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
-                            <p>No PDF revisions uploaded yet.</p>
-                        ) : (
-                            quotation.pdfRevisions
-                                .filter((rev) => rev?.url)
-                                .map((rev, index) => (
-                                    <div key={index} style={{ marginBottom: "10px" }}>
-                                        <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
-                                        <a href={rev.url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                            {previewURL && (
+                                <div style={{ marginTop: 16 }}>
+                                    <iframe
+                                        src={previewURL}
+                                        title="PDF Preview"
+                                        width="100%"
+                                        height="450px"
+                                        style={{ border: "1px solid #ddd", borderRadius: 8 }}
+                                    />
+
+                                    <Button
+                                        className="quotationrequest-sendquotation-button"
+                                        type="primary"
+                                        icon={<SendOutlined />}
+                                        onClick={handleSend}
+                                        loading={uploading}
+                                        style={{ marginTop: 12 }}
+                                    >
+                                        Send Quotation
+                                    </Button>
+                                </div>
+                            )}
+
+                        </Card>
+                    )}
+                    <div flexDirection="column" gap={20} style={{ display: "flex", marginBottom: 20 }}>
+                        <Card title="Quotation Revision History" style={{ margin: 20, width: 600 }}>
+                            {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
+                                <p>No PDF revisions uploaded yet.</p>
+                            ) : (
+                                quotation.pdfRevisions
+                                    .filter((rev) => rev?.url)
+                                    .map((rev, index) => (
+                                        <div key={index} style={{ marginBottom: "10px" }}>
+                                            <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
+                                            <Button
+                                                href={rev.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="quotationrequest-viewpdf-button"
+                                                type="primary"
+                                            >
+                                                View PDF
+                                            </Button>
+                                        </div>
+                                    ))
+                            )}
+                        </Card>
+
+
+                        <Card title="Revision Comments" style={{ margin: 20, width: 600 }}>
+                            {quotation.revisionComments?.length === 0 ? (
+                                <p>No revision comments.</p>
+                            ) : (
+                                quotation.revisionComments.map((comment, index) => (
+                                    <div key={index} style={{ marginBottom: 15 }}>
+                                        <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
+                                        <br />
+                                        <small>{new Date(comment.createdAt).toLocaleString()}</small>
                                     </div>
                                 ))
-                        )}
-                    </Card>
-
-
-                    <Card title="Revision Comments" style={{ margin: 20 }}>
-                        {quotation.revisionComments.length === 0 ? (
-                            <p>No revision comments.</p>
-                        ) : (
-                            quotation.revisionComments.map((comment, index) => (
-                                <div key={index} style={{ marginBottom: 15 }}>
-                                    <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
-                                    <br />
-                                    <small>{new Date(comment.createdAt).toLocaleString()}</small>
-                                </div>
-                            ))
-                        )}
-                    </Card>
-                </Spin>
-            </div>
+                            )}
+                        </Card>
+                    </div>
+                </div>
+            )}
         </ConfigProvider>
     );
 }

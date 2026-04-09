@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Row, Col, ConfigProvider } from 'antd';
+import { Form, Input, Select, Row, Col, ConfigProvider, DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css'
 import axiosInstance from '../../config/axiosConfig';
@@ -29,6 +29,17 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                     { value: 'TRIPLE', label: 'TRIPLE' },
                 ];
 
+    const computeAge = (birthDate) => {
+        if (!birthDate || !dayjs(birthDate).isValid()) return ''
+        const today = dayjs()
+        const normalized = dayjs(birthDate)
+        let age = today.diff(normalized, 'year')
+        if (normalized.add(age, 'year').isAfter(today)) {
+            age -= 1
+        }
+        return age < 0 ? '' : age
+    }
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -46,6 +57,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                 }
 
                 form.setFieldsValue({
+                    leadTitle: form.getFieldValue('leadTitle') || 'MR',
                     leadFullName: user.fullName,
                     leadEmail: user.email,
                     leadContact: user.phone,
@@ -326,8 +338,8 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                             const isFirstRow = index === 0;
                                             // Shared style for all inputs to keep code clean
                                             const inputStyle = {
-                                                fontSize: '10px',
-                                                height: '20px',
+                                                fontSize: '12px',
+                                                height: '32px',
                                                 lineHeight: '1',
                                                 padding: '0 4px',
                                                 borderRadius: '0px',
@@ -369,19 +381,67 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                     </Col>
 
                                                     <Col span={4}>
-                                                        <Form.Item {...restField} name={[name, 'firstName']} noStyle>
-                                                            <Input disabled={isFirstRow} style={inputStyle} />
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'firstName']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter first name' },
+                                                                { pattern: /^[A-Za-z\s-]+$/, message: 'First name must contain letters only' }
+                                                            ]}
+                                                        >
+                                                            <Input
+                                                                disabled={isFirstRow}
+                                                                style={inputStyle}
+                                                                onChange={(e) => {
+                                                                    const { value } = e.target;
+                                                                    const regex = /^[A-Za-z\s-]*$/;
+                                                                    if (regex.test(value)) {
+                                                                        form.setFieldsValue({
+                                                                            travelers: form.getFieldValue('travelers').map((t, i) =>
+                                                                                i === index ? { ...t, lastName: value } : t
+                                                                            )
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={4}>
-                                                        <Form.Item {...restField} name={[name, 'lastName']} noStyle>
-                                                            <Input disabled={isFirstRow} style={inputStyle} />
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'lastName']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter last name' },
+                                                                { pattern: /^[A-Za-z\s-]+$/, message: 'Last name must contain letters only' }
+                                                            ]}
+                                                        >
+                                                            <Input
+                                                                disabled={isFirstRow}
+                                                                style={inputStyle}
+                                                                onChange={(e) => {
+                                                                    const { value } = e.target;
+                                                                    const regex = /^[A-Za-z\s-]*$/;
+                                                                    if (regex.test(value)) {
+                                                                        form.setFieldsValue({
+                                                                            travelers: form.getFieldValue('travelers').map((t, i) =>
+                                                                                i === index ? { ...t, lastName: value } : t
+                                                                            )
+                                                                        });
+                                                                    }
+                                                                }} />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={3}>
-                                                        <Form.Item {...restField} name={[name, 'roomType']} noStyle>
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'roomType']}
+                                                            noStyle
+                                                            rules={[{ required: true, message: 'Please select a room type' }]}
+                                                        >
                                                             <Select
                                                                 size="small"
                                                                 style={{ ...inputStyle, width: '100%', padding: 0 }}
@@ -403,17 +463,36 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                 { required: true, message: 'Please enter birthday' },
                                                                 {
                                                                     validator: (_, value) => {
-                                                                        if (!value) return Promise.reject('Please enter birthday');
-                                                                        // Basic MM/DD/YY format check
-                                                                        const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{2}$/;
-                                                                        return regex.test(value)
-                                                                            ? Promise.resolve()
-                                                                            : Promise.reject(new Error('Birthday must be in MM/DD/YY format'));
+                                                                        if (!value || !dayjs(value).isValid()) {
+                                                                            return Promise.reject('Please enter birthday');
+                                                                        }
+                                                                        return Promise.resolve();
                                                                     },
                                                                 },
                                                             ]}
                                                         >
-                                                            <Input placeholder="MM/DD/YY" style={inputStyle} />
+                                                            <DatePicker
+                                                                placeholder="MM/DD/YY"
+                                                                size="small"
+                                                                className="mrc-date-picker"
+                                                                style={{ width: '100%' }}
+                                                                format="MM/DD/YY"
+                                                                defaultPickerValue={dayjs('2000-01-01')}
+                                                                variant="borderless"
+                                                                disabledDate={(current) => current && current.isAfter(dayjs(), 'day')}
+                                                                onChange={(date) => {
+                                                                    const travelers = form.getFieldValue('travelers') || []
+                                                                    const next = travelers.map((t, i) =>
+                                                                        i === index
+                                                                            ? {
+                                                                                ...t,
+                                                                                age: date ? computeAge(date) : undefined
+                                                                            }
+                                                                            : t
+                                                                    )
+                                                                    form.setFieldsValue({ travelers: next })
+                                                                }}
+                                                            />
                                                         </Form.Item>
                                                     </Col>
 
@@ -433,7 +512,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                 },
                                                             ]}
                                                         >
-                                                            <Input style={{ ...inputStyle, textAlign: 'center', padding: 0 }} />
+                                                            <Input style={{ ...inputStyle, textAlign: 'center', padding: 0 }} readOnly />
                                                         </Form.Item>
                                                     </Col>
 
@@ -450,7 +529,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                 },
                                                             ]}
                                                         >
-                                                            <Input style={inputStyle} />
+                                                            <Input style={inputStyle} maxLength={7} />
                                                         </Form.Item>
                                                     </Col>
 
@@ -463,16 +542,30 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                 { required: true, message: 'Please enter passport expiry date' },
                                                                 {
                                                                     validator: (_, value) => {
-                                                                        if (!value) return Promise.reject('Please enter passport expiry date');
-                                                                        const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{2}$/;
-                                                                        return regex.test(value)
-                                                                            ? Promise.resolve()
-                                                                            : Promise.reject(new Error('Expiry must be in MM/DD/YY format'));
+                                                                        if (!value || !dayjs(value).isValid()) {
+                                                                            return Promise.reject('Please enter passport expiry date');
+                                                                        }
+                                                                        const year = dayjs(value).year()
+                                                                        if (year <= dayjs().year()) {
+                                                                            return Promise.reject(new Error('Expiry must be after the current year'))
+                                                                        }
+                                                                        return Promise.resolve();
                                                                     },
                                                                 },
                                                             ]}
                                                         >
-                                                            <Input placeholder="MM/DD/YY" style={inputStyle} />
+                                                            <DatePicker
+                                                                placeholder="MM/DD/YY"
+                                                                size="small"
+                                                                className="mrc-date-picker"
+                                                                style={{ width: '100%' }}
+                                                                format="MM/DD/YY"
+                                                                variant="borderless"
+                                                                disabledDate={(current) => {
+                                                                    if (!current) return false
+                                                                    return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                                }}
+                                                            />
                                                         </Form.Item>
                                                     </Col>
                                                 </Row>

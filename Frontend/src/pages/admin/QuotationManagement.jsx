@@ -30,9 +30,8 @@ export default function QuotationManagement() {
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [dateFilter, setDateFilter] = useState(null)
-    const [activeTab, setActiveTab] = useState("all");
+    const [packageTypeFilter, setPackageTypeFilter] = useState("");
 
-    const [editingKey, setEditingKey] = useState("");
     const [form] = Form.useForm();
 
     const [loading, setLoading] = useState(false);
@@ -61,11 +60,14 @@ export default function QuotationManagement() {
                     key: q._id,
                     ref: q.reference,
                     packageName: q.packageId?.packageName || "Package",
+                    packageType: q.packageId?.packageType?.toUpperCase() || "N/A",
                     customerName: q.userId?.username || "Unknown",
                     dateRequested: q.createdAt ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
                     travelers: sumTravelers(q.quotationDetails?.travelers),
                     status: q.status
                 }))
+
+                console.log("Fetched quotations:", quotations);
                 setData(quotations);
             } catch (error) {
                 console.error("Error fetching quotations:", error);
@@ -84,6 +86,7 @@ export default function QuotationManagement() {
             (item.packageName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
             (item.status?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
             (item.travelers?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
+            (item.packageType?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
             dayjs(item.dateRequested).format('MMM DD, YYYY').toLowerCase().includes(searchText.toLowerCase());
 
         const matchesStatus = statusFilter === "" || item.status === statusFilter;
@@ -91,13 +94,13 @@ export default function QuotationManagement() {
         const matchesDate = !dateFilter ||
             (item.dateRequested && dayjs(item.dateRequested).isSame(dateFilter, "day"));
 
-        return matchesSearch && matchesStatus && matchesDate;
+        const normalizedFilter = (packageTypeFilter || '').toLowerCase();
+        const normalizedType = (item.packageType || '').toLowerCase();
+        const matchesPackageType = normalizedFilter === "" || normalizedFilter === "all types" || normalizedType === normalizedFilter;
+
+        return matchesSearch && matchesStatus && matchesDate && matchesPackageType;
     });
 
-    const totals = data.length
-    const pending = data.filter((item) => item.status === 'Pending').length
-    const approved = data.filter((item) => item.status === 'Approved').length
-    const rejected = data.filter((item) => item.status === 'Rejected').length
 
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -184,6 +187,11 @@ export default function QuotationManagement() {
             key: "packageName"
         },
         {
+            title: "Package Type",
+            dataIndex: "packageType",
+            key: "packageType"
+        },
+        {
             title: "Customer Name",
             dataIndex: "customerName",
             key: "customerName"
@@ -203,7 +211,7 @@ export default function QuotationManagement() {
             dataIndex: "status",
             render: (status) => {
                 const color =
-                    status === "Accepted" ? "green" :
+                    status === "Booked" ? "green" :
                         status === "Pending" ? "orange" :
                             status === "Under Review" ? "blue" :
                                 status === "Revision Requested" ? "purple" :
@@ -221,65 +229,13 @@ export default function QuotationManagement() {
                         type="primary"
                         icon={<EyeOutlined />}
                         onClick={() => handleView(record.key)}
-                        disabled={editingKey !== ""}
-                    />
-                    <Button
-                        className="quotation-reject"
-                        type="primary"
-                        icon={<CloseCircleOutlined />}
-                        onClick={() => edit(record)}
-                        disabled={editingKey !== ""}
-                    />
+                    >
+                        View
+                    </Button>
                 </Space>
             )
         }
     ];
-
-    const isEditing = (record) => record.key === editingKey;
-
-    const edit = (record) => {
-        form.setFieldsValue({
-            pkgName: record.packageName,
-            custName: record.customerName,
-            travelers: record.travelers,
-            status: record.status,
-        })
-    }
-
-    const cancel = () => {
-        setEditingKey("");
-    }
-
-    const handleDeleted = (key) => {
-        Modal.confirm({
-            className: "logout-confirm-modal",
-            icon: null,
-            title: (
-                <div className="logout-confirm-title" style={{ textAlign: "center" }}>
-                    Deny Quotation Request
-                </div>
-            ),
-            content: (
-                <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-                    <p className="logout-confirm-text">Are you sure you want to deny this quotation request?</p>
-                </div>
-            ),
-            okText: "Deny",
-            cancelText: "Cancel",
-            okButtonProps: { className: "logout-confirm-btn" },
-            cancelButtonProps: { className: "logout-cancel-btn" },
-            onOk: async () => {
-                try {
-                    await axiosInstance.delete(`/quotations/${key}`);
-                    setData((prev) => prev.filter((item) => item.key !== key));
-                    message.success("Quotation denied successfully");
-                } catch (error) {
-                    console.error("Error denying quotation:", error);
-                    message.error("Failed to deny quotation");
-                }
-            }
-        });
-    }
 
     const handleView = (key) => {
         const quotation = data.find((item) => item.key === key);
@@ -290,24 +246,9 @@ export default function QuotationManagement() {
     }
 
     const totalRequests = filteredData.length;
-    const totalPending = filteredData.filter((item) => item.status === "Pending").length;
     const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
     const totalAccepted = filteredData.filter(item => item.status === "Accepted").length;
     const totalExpired = filteredData.filter(item => item.status === "Expired").length;
-
-    const mergedColumns = columns.map((col) => {
-        if (!col.editable) {
-            return col;
-        }
-        return {
-            ...col,
-            onCell: (record) => ({
-                record,
-                dataIndex: col.dataIndex,
-                title: col.title,
-            })
-        }
-    });
 
     const EditableCell = ({
         editing,
@@ -342,17 +283,6 @@ export default function QuotationManagement() {
         >
             <div className="quotation-management-container">
                 <h1 className="page-header">Quotation Management</h1>
-
-                <Tabs
-                    activeKey={activeTab}
-                    onChange={setActiveTab}
-                    style={{ marginBottom: 16 }}
-                    items={[
-                        { key: "all", label: "All Requests" },
-                        { key: "domestic", label: "Domestic" },
-                        { key: "international", label: "International" },
-                    ]}
-                />
 
                 <Row gutter={16} style={{ marginBottom: 20 }}>
                     <Col xs={24} sm={6}>
@@ -413,9 +343,23 @@ export default function QuotationManagement() {
                         options={[
                             { value: "Pending", label: "Pending" },
                             { value: "Under Review", label: "Under Review" },
-                            { value: "Accepted", label: "Accepted" },
+                            { value: "Booked", label: "Booked" },
                             { value: "Revision Requested", label: "Revision Requested" },
                             { value: "Expired", label: "Expired" }
+                        ]}
+                    />
+
+                    <Select
+                        className="quotation-select"
+                        placeholder="Package Type"
+                        style={{ width: 160 }}
+                        allowClear
+                        value={packageTypeFilter || undefined}
+                        onChange={(value) => setPackageTypeFilter(value || "")}
+                        options={[
+                            { value: "All Types", label: "All Types" },
+                            { value: "Domestic", label: "Domestic" },
+                            { value: "International", label: "International" },
                         ]}
                     />
 
@@ -428,7 +372,7 @@ export default function QuotationManagement() {
 
                     <Space style={{ marginLeft: 'auto' }}>
                         <Button
-                            className='export-pdf-button'
+                            className='quotation-export'
                             type="primary"
                             icon={<FilePdfOutlined />}
                             onClick={generatePDF}

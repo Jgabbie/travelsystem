@@ -46,6 +46,7 @@ export default function VisaApplications() {
                     applicantName: a.applicantName,
                     serviceName: a.serviceName,
                     preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
+                    preferredTime: a.preferredTime ? dayjs(a.preferredTime, 'HH:mm').format('hh:mm A') : 'Not Set',
                     status: a.status,
                 }))
 
@@ -160,6 +161,11 @@ export default function VisaApplications() {
             key: "preferredDate",
         },
         {
+            title: "Preferred Time",
+            dataIndex: "preferredTime",
+            key: "preferredTime",
+        },
+        {
             title: "Status",
             dataIndex: "status",
             key: "status",
@@ -184,12 +190,9 @@ export default function VisaApplications() {
                             type="primary"
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`/visa-applications/view/${record.key}`)}
-                        />
-                        <Button
-                            className="reject-visa-application"
-                            type="primary"
-                            icon={<CloseOutlined />}
-                        />
+                        >
+                            View
+                        </Button>
                     </Space>
                 </>
             ),
@@ -272,7 +275,7 @@ export default function VisaApplications() {
 
                     <DatePicker
                         className="transaction-date-filter"
-                        placeholder="Submission Date"
+                        placeholder="Preferred Date"
                         value={submissionDateFilter}
                         onChange={(d) => setSubmissionDateFilter(d)}
                         allowClear
@@ -281,7 +284,7 @@ export default function VisaApplications() {
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
-                            className='export-pdf-button'
+                            className='visaapplications-export'
                             type="primary"
                             icon={<FilePdfOutlined />}
                             onClick={generatePDF}

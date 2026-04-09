@@ -178,6 +178,7 @@ export default function TopNavUser() {
         { label: 'HOME', route: '/home' },
         { label: 'DESTINATIONS', route: '/destinations-packages' },
         { label: 'SERVICES', route: '/passandvisa-service' },
+        { label: 'FAQ', route: '/general-faq' },
     ];
 
 
@@ -220,6 +221,8 @@ export default function TopNavUser() {
 
                     </div>
                 </nav>
+
+                <div className="navbar-spacer" />
 
                 {/* open login modal */}
                 <LoginModal

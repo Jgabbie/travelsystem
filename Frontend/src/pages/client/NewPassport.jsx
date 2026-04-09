@@ -81,8 +81,18 @@ export default function NewPassport() {
     }
 
     const disableDates = (current) => {
-        return current && current < dayjs().startOf('day') || current.day() === 0 || current.day() === 6;
-    }
+        const today = dayjs().startOf('day');
+        const twoWeeksFromNow = today.add(14, 'day');
+
+        return (
+            current &&
+            (
+                current < twoWeeksFromNow ||
+                current.day() === 0 ||
+                current.day() === 6
+            )
+        );
+    };
 
     const disabledHours = () => {
         const hours = [];
@@ -226,6 +236,7 @@ export default function NewPassport() {
                                     <DatePicker
                                         value={preferredDate ? dayjs(preferredDate) : null}
                                         disabledDate={disableDates}
+                                        showNow={false}
                                         onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
                                         className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
                                     />

@@ -11,38 +11,34 @@
     flex-wrap: wrap;
 }
 
-
-.approve-passport-application {
-    border-color: #167a30;
-    background-color: #fff !important;
-    color: #167a30 !important;
-}
-
-.approve-passport-application:hover {
-    background-color: #167a30 !important;
-    border-color: #167a30 !important;
-    color: #fff !important;
-}
-
-.reject-passport-application {
-    border-color: #d93025 !important;
-    background-color: #fff !important;
-    color: #d93025 !important;
-}
-
-.reject-passport-application:hover {
-    background-color: #d93025 !important;
-    border-color: #d93025 !important;
-    color: #fff !important;
+.passportapplications-export {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 150px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
 .viewbutton-passport-application {
-    border-color: #305797 !important;
-    background-color: #fff !important;
-    color: #305797 !important;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.viewbutton-passport-application:hover {
-    background-color: #305797 !important;
-    color: #fff !important;
+.viewbutton-passport-application:hover,
+.passportapplications-export:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
 }

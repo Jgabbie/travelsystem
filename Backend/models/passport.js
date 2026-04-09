@@ -7,6 +7,10 @@ const PassportSchema = new mongoose.Schema({
     preferredDate: { type: String, required: true },
     preferredTime: { type: String, required: true },
     applicationType: { type: String, required: true },
+    suggestedAppointmentSchedules: [{
+        date: { type: String },
+        time: { type: String }
+    }],
     submittedDocuments: {
         birthCertificate: { type: String },
         applicationForm: { type: String },

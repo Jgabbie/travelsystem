@@ -17,6 +17,7 @@ const BookingSchema = new mongoose.Schema({
             changedAt: { type: Date, default: Date.now }
         }
     ],
+    slotDecremented: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now, index: true },
     expiresAt: { type: Date, required: true, index: true }
 }, { timestamps: true })

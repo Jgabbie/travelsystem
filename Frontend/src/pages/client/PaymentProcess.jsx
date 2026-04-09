@@ -136,10 +136,18 @@ export default function PaymentProcess() {
     const travelerCountInfant = bookingData?.travelerCounts?.infant || 0;
     const travelerTotal = travelerCountAdult + travelerCountChild + travelerCountInfant || 0;
 
-    const packagePricePerPax = bookingData?.packagePricePerPax || 0;
-    const soloRate = bookingData?.packageSoloRate || 0;
-    const childRate = bookingData?.packageChildRate || 0;
-    const infantRate = bookingData?.packageInfantRate || 0;
+    const discountPercent = Number(bookingData?.packageDiscountPercent) || 0;
+    const discountMultiplier = discountPercent > 0 ? 1 - (discountPercent / 100) : 1;
+
+    const basePackagePricePerPax = bookingData?.packagePricePerPax || 0;
+    const baseSoloRate = bookingData?.packageSoloRate || 0;
+    const baseChildRate = bookingData?.packageChildRate || 0;
+    const baseInfantRate = bookingData?.packageInfantRate || 0;
+
+    const packagePricePerPax = basePackagePricePerPax * discountMultiplier;
+    const soloRate = baseSoloRate * discountMultiplier;
+    const childRate = baseChildRate * discountMultiplier;
+    const infantRate = baseInfantRate * discountMultiplier;
 
     const bookingType = bookingData?.bookingType || 'Group Booking';
     const computedTotalAmount =
@@ -149,7 +157,7 @@ export default function PaymentProcess() {
 
     const totalAmount = bookingType === 'Solo Booking'
         ? travelerCountAdult * soloRate
-        : bookingData?.totalPrice ?? computedTotalAmount;
+        : (bookingData?.totalPrice ?? computedTotalAmount);
 
     const packageId = bookingData?.packageId;
     const packageName = bookingData?.packageName || 'Tour Package';
@@ -615,6 +623,7 @@ export default function PaymentProcess() {
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
+                            type='primary'
                             className='payment-process-back-button'
                             onClick={() => navigate(-1)}
                             style={{ display: 'flex', alignItems: 'center' }}
@@ -824,7 +833,7 @@ export default function PaymentProcess() {
                                         beforeUpload={beforeUpload}
                                         accept=".jpg,.jpeg,.png"
                                     >
-                                        <Button icon={<UploadOutlined />} className="payment-process-upload-button">
+                                        <Button icon={<UploadOutlined />} type='primary' className="payment-process-upload-button">
                                             Select Receipt Image
                                         </Button>
                                     </Upload>
@@ -852,6 +861,7 @@ export default function PaymentProcess() {
 
                     <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
                         <Button
+                            type='primary'
                             className='payment-process-proceed-button'
                             onClick={() => setIsProceedModalOpen(true)}
                             disabled={
@@ -882,6 +892,7 @@ export default function PaymentProcess() {
 
                     <div className='signup-actions'>
                         <Button
+                            type='primary'
                             id='signup-success-button'
                             onClick={proceedBooking}
                         >
@@ -889,6 +900,7 @@ export default function PaymentProcess() {
                         </Button>
 
                         <Button
+                            type='primary'
                             id='signup-success-button-cancel'
                             onClick={() => setIsProceedModalOpen(false)}
                         >

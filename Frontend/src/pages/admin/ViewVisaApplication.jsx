@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox } from "antd";
+import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import axiosInstance from "../../config/axiosConfig";
@@ -14,13 +15,16 @@ export default function ViewVisaApplication() {
     const [application, setApplication] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [progressEditable, setProgressEditable] = useState(false);
+    const [alternateSlots, setAlternateSlots] = useState([
+        { date: null, time: null },
+        { date: null, time: null },
+        { date: null, time: null }
+    ]);
 
-    const testSteps = [
-        { title: "Application Submitted" },
-        { title: "Under Review" },
-        { title: "Approved" },
-        { title: "Visa Issued" }
-    ]
+    const handleSubmitAlternateSlots = () => {
+        message.success("Suggested appointment options submitted.");
+    };
+
 
     useEffect(() => {
         const fetchApplicationAndService = async () => {
@@ -39,7 +43,11 @@ export default function ViewVisaApplication() {
                     return acc;
                 }, {});
 
-                setCurrentStep(statusMap[appData.status] ?? 0);
+                const normalizedStatus = Array.isArray(appData.status)
+                    ? appData.status[appData.status.length - 1]
+                    : appData.status;
+
+                setCurrentStep(statusMap[normalizedStatus] ?? 0);
 
                 // 3. Fetch the service using serviceId from application
                 if (appData.serviceId) {
@@ -56,6 +64,7 @@ export default function ViewVisaApplication() {
                             visaName: serviceData.visaName,
                             visaPrice: serviceData.visaPrice,
                             visaProcessSteps: serviceData.visaProcessSteps,
+                            visaRequirements: serviceData.visaRequirements,
                             serviceName: serviceData.visaName // for your Tag
                         });
                     } catch (err) {
@@ -78,26 +87,109 @@ export default function ViewVisaApplication() {
 
     console.log("Fetched application details:", application);
 
-    // if (loading) {
-    //     return (
-    //         <div
-    //             style={{
-    //                 display: "flex",
-    //                 justifyContent: "center",
-    //                 alignItems: "center",
-    //                 height: "80vh"
-    //             }}
-    //         >
-    //             <Spin size="large" description="Loading application details..." />
-    //         </div>
-    //     );
-    // }
+    const statusText = Array.isArray(application?.status)
+        ? application.status[application.status.length - 1]
+        : application?.status;
+
+    const normalizeLabel = (value) => (
+        String(value)
+            .replace(/_/g, " ")
+            .replace(/([A-Z])/g, " $1")
+            .trim()
+    );
+
+    const requirements = application?.visaRequirements || [];
+
+    const requirementLabelMap = requirements.reduce((acc, req, idx) => {
+        const mapKey = req.key || req.req || req.label || `Requirement ${idx + 1}`;
+        acc[mapKey] = req.req || req.label || mapKey;
+        return acc;
+    }, {});
+
+    const getRequirementLabel = (key, fallbackIndex) => {
+        if (requirementLabelMap[key]) {
+            return requirementLabelMap[key];
+        }
+
+        const keyMatch = String(key || '').match(/-(\d+)$/);
+        const indexFromKey = keyMatch ? Number(keyMatch[1]) : Number(fallbackIndex);
+        const requirementByIndex = requirements[indexFromKey];
+
+        if (requirementByIndex?.req) {
+            return requirementByIndex.req;
+        }
+
+        if (requirementByIndex?.label) {
+            return requirementByIndex.label;
+        }
+
+        return key;
+    };
+
+    const buildDocumentList = (docs) => {
+        if (!docs) return [];
+
+        const list = [];
+
+        if (Array.isArray(docs)) {
+            docs.forEach((doc, index) => {
+                if (!doc) return;
+                if (typeof doc === "string") {
+                    list.push({ url: doc, name: `Document ${index + 1}` });
+                    return;
+                }
+                if (doc.url) {
+                    list.push({ url: doc.url, name: doc.name || doc.label || `Document ${index + 1}` });
+                }
+            });
+            return list;
+        }
+
+        if (typeof docs === "object") {
+            Object.entries(docs).forEach(([key, value], entryIndex) => {
+                if (!value) return;
+
+                if (Array.isArray(value)) {
+                    value.forEach((item, index) => {
+                        if (!item) return;
+                        if (typeof item === "string") {
+                            list.push({ url: item, name: `${getRequirementLabel(key, entryIndex)} ${index + 1}` });
+                            return;
+                        }
+                        if (item.url) {
+                            list.push({
+                                url: item.url,
+                                name: item.name || item.label || `${getRequirementLabel(key, entryIndex)} ${index + 1}`
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                if (typeof value === "string") {
+                    list.push({ url: value, name: getRequirementLabel(key, entryIndex) });
+                    return;
+                }
+
+                if (value.url) {
+                    list.push({
+                        url: value.url,
+                        name: value.name || value.label || getRequirementLabel(key, entryIndex)
+                    });
+                }
+            });
+        }
+
+        return list;
+    };
+
+    const submittedDocuments = buildDocumentList(application?.submittedDocuments || application?.documents);
 
     if (!application) {
         return null;
     }
 
-    // Handler to update status (simulate backend update)
+    // STATUS UPDATE HANDLER ---------------------------------------------------------------
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable) return;
         // Map step index to status string
@@ -117,53 +209,30 @@ export default function ViewVisaApplication() {
         }
     };
 
-    // Improved custom progress dot renderer with better spacing and wrapping
-    const customProgressDot = (dot, { index }) => (
-        <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', textAlign: 'center', minWidth: 110, padding: '0 8px' }}>
-            <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: index <= currentStep ? '#305797' : '#222',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: 18,
-                margin: '0 auto',
-                border: index === currentStep ? '2.5px solid #1890ff' : '2.5px solid #bbb',
-                boxShadow: index === currentStep ? '0 0 0 2px #e6f7ff' : undefined,
-                zIndex: 2
-            }}>
-                {index < currentStep ? <span style={{ fontSize: 20 }}>✓</span> : index + 1}
-            </div>
-            <div style={{ marginTop: 10, fontWeight: index === currentStep ? 700 : 500, color: index === currentStep ? '#305797' : '#222', fontSize: 15, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.2 }}>
-                {application.visaProcessSteps[index]}
-            </div>
-            <div style={{ color: '#888', fontSize: 13, marginTop: 2, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.2 }}>{application.visaProcessSteps[index]}</div>
-            <div style={{ marginTop: 10, marginBottom: 8 }}>
-                <Checkbox
-                    checked={index <= currentStep}
-                    disabled={!progressEditable}
-                    style={{ fontSize: 14 }}
-                    onChange={(e) => {
-                        if (!progressEditable) return;
-                        if (e.target.checked) {
-                            if (index === currentStep + 1) {
-                                handleStepChange(index);
-                            }
-                        } else {
-                            if (index === currentStep) {
-                                handleStepChange(index - 1 >= 0 ? index - 1 : 0);
-                            }
-                        }
-                    }}
-                >Done
-                </Checkbox>
-            </div>
-        </div>
-    );
+    // DISABLE PAST DATES AND WEEKENDS IN DATE PICKER ------------------------------------------------------
+    const disableDates = (current) => {
+        const today = dayjs().startOf('day');
+        const twoWeeksFromNow = today.add(14, 'day');
+
+        return (
+            current &&
+            (
+                current < twoWeeksFromNow ||
+                current.day() === 0 ||
+                current.day() === 6
+            )
+        );
+    };
+
+    const disabledHours = () => {
+        const hours = [];
+        for (let i = 0; i < 24; i++) {
+            if (i < 8 || i > 17) {
+                hours.push(i);
+            }
+        }
+        return hours;
+    }
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
@@ -180,7 +249,8 @@ export default function ViewVisaApplication() {
                 </div>) :
                 (
                     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
-                        <Button onClick={() => navigate(-1)} style={{ marginBottom: 16 }}>
+                        <Button onClick={() => navigate(-1)} style={{ marginBottom: 16 }} className="viewvisaapplication-back-button">
+                            <ArrowLeftOutlined />
                             Back
                         </Button>
                         <Title level={2} style={{ marginBottom: 16 }}>Visa Application Details</Title>
@@ -192,18 +262,18 @@ export default function ViewVisaApplication() {
                                         <Descriptions.Item label="Applicant Name">{application.applicantName}</Descriptions.Item>
                                         <Descriptions.Item label="Purpose of Travel">{application.purposeOfTravel}</Descriptions.Item>
                                         <Descriptions.Item label="Preferred Date">{application.preferredDate ? dayjs(application.preferredDate).format("MMM DD, YYYY") : "Not Set"}</Descriptions.Item>
-                                        <Descriptions.Item label="Preferred Time">{application.preferredTime || "Not Set"}</Descriptions.Item>
+                                        <Descriptions.Item label="Preferred Time">{application.preferredTime || "Not Set"} </Descriptions.Item>
                                         <Descriptions.Item label="Visa Type">
                                             <Tag color="blue">{application.serviceName}</Tag>
                                         </Descriptions.Item>
                                         <Descriptions.Item label="Status">
                                             <Tag color={
-                                                application.status === "Pending" ? "orange" :
-                                                    application.status === "Approved" ? "green" :
-                                                        application.status === "Rejected" ? "red" :
-                                                            application.status === "Processing" ? "blue" : "default"
+                                                statusText === "Pending" ? "orange" :
+                                                    statusText === "Approved" ? "green" :
+                                                        statusText === "Rejected" ? "red" :
+                                                            statusText === "Processing" ? "blue" : "default"
                                             }>
-                                                {application.status}
+                                                {statusText}
                                             </Tag>
                                         </Descriptions.Item>
                                         <Descriptions.Item label="Date Submitted">{application.createdAt ? dayjs(application.createdAt).format("MMM DD, YYYY hh:mm A") : "N/A"}</Descriptions.Item>
@@ -213,20 +283,73 @@ export default function ViewVisaApplication() {
                                     </Descriptions>
                                 </Card>
 
+                                {statusText && String(statusText).toLowerCase() === "application submitted" && (
+                                    <Card title="Suggested Appointment Options" style={{ marginTop: 16 }}>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                            {alternateSlots.map((slot, idx) => (
+                                                <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                                    <span style={{ minWidth: 20 }}>{idx + 1}.</span>
+                                                    <DatePicker
+                                                        disabledDate={disableDates}
+                                                        placeholder="Select date"
+                                                        value={slot.date}
+                                                        onChange={(date) => {
+                                                            const next = [...alternateSlots];
+                                                            next[idx] = { ...next[idx], date };
+                                                            setAlternateSlots(next);
+                                                        }}
+                                                    />
+                                                    <TimePicker
+                                                        format="h:mm A"
+                                                        use12Hours
+                                                        showNow={false}
+                                                        minuteStep={30}
+                                                        disabledTime={() => ({
+                                                            disabledHours
+                                                        })}
+                                                        placeholder="Select time"
+                                                        value={slot.time}
+                                                        onChange={(time) => {
+                                                            const next = [...alternateSlots];
+                                                            next[idx] = { ...next[idx], time };
+                                                            setAlternateSlots(next);
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                                <Button type="primary" onClick={handleSubmitAlternateSlots}>
+                                                    Submit Options
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                )}
+
                                 <Divider orientation="left">Submitted Documents</Divider>
                                 <Card>
-                                    {application.documents && application.documents.length > 0 ? (
-                                        <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
-                                            {application.documents.map((doc, idx) => (
-                                                <div key={idx} style={{ textAlign: "center" }}>
+                                    {submittedDocuments.length > 0 ? (
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                            {submittedDocuments.map((doc, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "space-between",
+                                                        gap: 16
+                                                    }}
+                                                >
+                                                    <div style={{ fontWeight: 600 }}>
+                                                        {doc.name || `Document ${idx + 1}`}
+                                                    </div>
                                                     <Image
                                                         src={doc.url}
                                                         alt={doc.name || `Document ${idx + 1}`}
                                                         width={180}
-                                                        style={{ borderRadius: 8, marginBottom: 8 }}
+                                                        style={{ borderRadius: 8 }}
                                                         fallback="/images/file-placeholder.png"
                                                     />
-                                                    <div>{doc.name || `Document ${idx + 1}`}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -237,9 +360,9 @@ export default function ViewVisaApplication() {
 
                             </div>
 
-                            <div style={{ display: "flex", flexDirection: "column", minWidth: 400 }}>
-                                <div style={{ maxWidth: 300, margin: "0 auto 0 auto", overflowX: 'auto', paddingBottom: 12 }}>
-                                    <Card title="Progress Tracker" style={{ minWidth: 300, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                            <div style={{ display: "flex", flexDirection: "column", minWidth: 300 }}>
+                                <div style={{ maxWidth: 300, margin: "0 auto 0 auto", paddingBottom: 12 }}>
+                                    <Card title="Progress Tracker" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                         <div className="steps-vertical-line">
                                             <Steps
                                                 direction="vertical"
@@ -280,16 +403,9 @@ export default function ViewVisaApplication() {
                                                                 >Done
                                                                 </Checkbox>
                                                             </div>
-
-
-
-
                                                         )
                                                     }))
                                                 }
-                                                style={{
-                                                    minWidth: 1100,
-                                                }}
                                                 className="no-line"
                                             />
                                         </div>

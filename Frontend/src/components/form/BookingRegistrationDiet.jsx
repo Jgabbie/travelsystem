@@ -293,7 +293,10 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                         <Form.Item
                                             name="emergencyName"
                                             noStyle
-                                            rules={[{ required: true, message: 'Full name is required' }]}
+                                            rules={[
+                                                { required: true, message: 'Full name is required' },
+                                                { pattern: /^[A-Za-z\s-]+$/, message: 'Full name must contain letters only' }
+                                            ]}
                                         >
                                             <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
                                         </Form.Item>
@@ -343,7 +346,10 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                                 <Form.Item
                                                     name="emergencyRelation"
                                                     noStyle
-                                                    rules={[{ required: true, message: 'Relation is required' }]}
+                                                    rules={[
+                                                        { required: true, message: 'Relation is required' },
+                                                        { pattern: /^[A-Za-z\s-]+$/, message: 'Relation must contain letters only' }
+                                                    ]}
                                                 >
                                                     <Input variant="borderless" size="small" style={{ fontSize: '10px', padding: '4px' }} />
                                                 </Form.Item>

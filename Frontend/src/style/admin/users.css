@@ -10,6 +10,86 @@
   margin-bottom: 16px;
 }
 
+/* BUTTONS CSS */
+.usermanagement-view-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 85px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.usermanagement-edit-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 85px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.usermanagement-add-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 100px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.usermanagement-export-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 150px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.usermanagement-view-button:hover,
+.usermanagement-edit-button:hover,
+.usermanagement-export-button:hover,
+.usermanagement-add-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #305797 !important;
+}
+
+.usermanagement-remove-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #992A46;
+  color: #fff;
+  border-radius: 10px;
+  width: 110px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.usermanagement-remove-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #992A46 !important;
+}
+
+
 /* CHANGED: Added background-color and fixed the selector typo */
 .search-input,
 .user-select .ant-select-selector {
@@ -54,108 +134,8 @@
   }
 }
 
-.adduser-usermanagement,
-.savebutton-usermanagement,
-.cancelbutton-usermanagement {
-  box-shadow: none !important;
-  padding: 0 12px;
-}
 
-.adduser-usermanagement:hover,
-.savebutton-usermanagement:hover,
-.cancelbutton-usermanagement:hover {
-  box-shadow: none !important;
-}
-
-.adduser-usermanagement {
-  border-color: #305797;
-  color: #305797 !important;
-  background-color: #fff !important;
-  margin-left: auto;
-}
-
-.adduser-usermanagement:hover {
-  background-color: #305797 !important;
-  color: #fff !important;
-}
-
-.viewbutton-usermanagement {
-  border-color: #305797;
-  background-color: #fff !important;
-  color: #305797 !important;
-}
-
-.viewbutton-usermanagement:hover {
-  background-color: #305797 !important;
-  color: #fff !important;
-}
-
-.editbutton-usermanagement {
-  border-color: #305797;
-  background-color: #fff !important;
-  color: #305797 !important;
-}
-
-.editbutton-usermanagement:hover {
-  background-color: #305797 !important;
-  color: #fff !important;
-}
-
-.savebutton-usermanagement {
-  border-color: #1f8f3a;
-  background-color: #1f8f3a !important;
-  color: #fff !important;
-}
-
-.savebutton-usermanagement:hover {
-  background-color: #167a30 !important;
-  color: #fff !important;
-}
-
-.cancelbutton-usermanagement {
-  border-color: #d93025;
-  color: #d93025 !important;
-  background-color: #fff !important;
-}
-
-.cancelbutton-usermanagement:hover {
-  background-color: #d93025 !important;
-  color: #fff !important;
-}
-
-.deletebutton-usermanagement {
-  border-color: #d93025;
-  background-color: #fff !important;
-  color: #d93025 !important;
-}
-
-.deletebutton-usermanagement:hover {
-  background-color: #d93025 !important;
-  color: #fff !important;
-}
-
-.approve-cancellation {
-  border-color: #1f8f3a;
-  background-color: #1f8f3a !important;
-  color: #fff !important;
-}
-
-.approve-cancellation:hover {
-  background-color: #167a30 !important;
-  color: #fff !important;
-}
-
-.reject-cancellation {
-  border-color: #d93025;
-  background-color: #fff !important;
-  color: #d93025 !important;
-}
-
-.reject-cancellation:hover {
-  background-color: #d93025 !important;
-  color: #fff !important;
-}
-
+/* MODAL STYLES */
 .users-manage-confirm-modal .ant-modal-content {
   border-radius: 16px;
   padding: 24px;

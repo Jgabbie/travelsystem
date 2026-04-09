@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -325,32 +325,39 @@ export default function TransactionManagement() {
       render: (_, record) => (
         <Space>
           <Button
-            className='viewbutton-transactionmanagement'
+            className='transactionmanagement-view-button'
             type="primary"
             icon={<EyeOutlined />}
             onClick={() => openViewModal(record)}
-          />
+          >
+            View
+          </Button>
+          <Button
+            className="transactionmanagement-edit-button"
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => edit(record)}
+          >
+            Edit
+          </Button>
+          <Button
+            className="transactionmanagement-remove-button"
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.key)}
+          >
+            Delete
+          </Button>
           {record.methodRaw === "Manual" && record.proofImage && (
             <Button
-              className="viewbutton-transactionmanagement"
+              className="transactionmanagement-viewproof-button"
               type="primary"
+              icon={<FileOutlined />}
               onClick={() => openProofModal(record)}
             >
               View Proof
             </Button>
           )}
-          <Button
-            className="editbutton-transactionmanagement"
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => edit(record)}
-          />
-          <Button
-            className="deletebutton-transactionmanagement"
-            type="primary"
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key)}
-          />
         </Space>
       )
     }
@@ -460,7 +467,7 @@ export default function TransactionManagement() {
 
           <Space style={{ marginLeft: 'auto' }}>
             <Button
-              className='export-pdf-button'
+              className='transactionmanagement-export-button'
               type="primary"
               icon={<FilePdfOutlined />}
               onClick={generatePDF}

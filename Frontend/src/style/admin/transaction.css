@@ -31,56 +31,87 @@
   box-shadow: none !important;
 }
 
-.editbutton-transactionmanagement,
-.viewbutton-transactionmanagement {
-  border-color: #305797;
-  background-color: #fff !important;
+/* BUTTONS CSS */
+.transactionmanagement-view-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 85px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.transactionmanagement-edit-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 85px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.transactionmanagement-viewproof-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 110px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.transactionmanagement-export-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 150px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.transactionmanagement-remove-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #992A46;
+  color: #fff;
+  border-radius: 10px;
+  width: 110px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.transactionmanagement-remove-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #992A46 !important;
+}
+
+.transactionmanagement-edit-button:hover,
+.transactionmanagement-view-button:hover,
+.transactionmanagement-viewproof-button:hover,
+.transactionmanagement-export-button:hover {
+  background-color: #e9e9e9 !important;
   color: #305797 !important;
 }
 
-.editbutton-transactionmanagement:hover,
-.viewbutton-transactionmanagement:hover {
-  background-color: #305797 !important;
-  color: #fff !important;
-}
 
-.savebutton-transactionmanagement {
-  border-color: #1f8f3a;
-  background-color: #1f8f3a !important;
-  color: #fff !important;
-}
 
-.savebutton-transactionmanagement:hover {
-  background-color: #167a30 !important;
-  color: #fff !important;
-}
-
-.cancelbutton-transactionmanagement {
-  border-color: #d93025;
-  color: #d93025 !important;
-  background-color: #fff !important;
-}
-
-.cancelbutton-transactionmanagement:hover {
-  background-color: #d93025 !important;
-  color: #fff !important;
-}
-
-.deletebutton-transactionmanagement {
-  border-color: #d93025;
-  background-color: #fff !important;
-  color: #d93025 !important;
-}
-
-.deletebutton-transactionmanagement:hover {
-  background-color: #d93025 !important;
-  color: #fff !important;
-}
-
-.savebutton-transactionmanagement,
-.cancelbutton-transactionmanagement {
-  box-shadow: none !important;
-}
 
 /* View modal */
 .transaction-view-modal .ant-modal-content {

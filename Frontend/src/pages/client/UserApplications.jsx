@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Tag, Input, Select, DatePicker, Button, Space, ConfigProvider, message } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
@@ -87,7 +87,9 @@ export default function UserApplications() {
             title: 'Actions', key: 'actions', render: (_, record) => (
                 <Space>
                     <Button
-                        className='userapplications-action-primary'
+                        className='userapplications-view-button'
+                        icon={<EyeOutlined />}
+                        type='primary'
                         onClick={() => {
                             if (record.type === 'Passport') {
                                 navigate('/passport-application', { state: { applicationId: record.key } });

@@ -4,6 +4,7 @@ import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigPr
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
 import TopNavUser from '../../components/TopNavUser';
+import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
 
 const VISA_STEPS = [
@@ -313,8 +314,8 @@ export default function VisaApplication() {
     };
 
     const requirementLabelMap = requirements.reduce((acc, req, idx) => {
-        const mapKey = req.key || `${req.label}-${idx}`;
-        acc[mapKey] = req.label || mapKey;
+        const mapKey = req.key || req.req || req.label || `Requirement ${idx + 1}`;
+        acc[mapKey] = req.req || req.label || mapKey;
         return acc;
     }, {});
 
@@ -326,6 +327,10 @@ export default function VisaApplication() {
         const keyMatch = String(key || '').match(/-(\d+)$/);
         const indexFromKey = keyMatch ? Number(keyMatch[1]) : Number(fallbackIndex);
         const requirementByIndex = requirements[indexFromKey];
+
+        if (requirementByIndex?.req) {
+            return requirementByIndex.req;
+        }
 
         if (requirementByIndex?.label) {
             return requirementByIndex.label;
@@ -340,6 +345,8 @@ export default function VisaApplication() {
                 <TopNavUser />
                 <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
                     <Button
+                        className='visaapplication-back-button'
+                        type='primary'
                         icon={<ArrowLeftOutlined />}
                         style={{ marginTop: 24, marginBottom: 8 }}
                         onClick={() => navigate('/user-applications')}
@@ -359,7 +366,7 @@ export default function VisaApplication() {
                                             </Descriptions.Item>
                                             <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
                                             <Descriptions.Item label="Applicant Name">{application.applicantName || application.user?.name}</Descriptions.Item>
-                                            <Descriptions.Item label="Preferred Date">{application.preferredDate}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Date">{dayjs(application.preferredDate).format('MMM D, YYYY')}</Descriptions.Item>
                                             <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
                                             <Descriptions.Item label="Application Type">{application.serviceName}</Descriptions.Item>
                                             <Descriptions.Item label="Total Price">₱{servicePrice.toFixed(2)}</Descriptions.Item>
@@ -402,46 +409,46 @@ export default function VisaApplication() {
                                         )}
                                         {requirements.map((req, idx) => {
                                             const requirementKey = req.key || `${req.label}-${idx}`;
+                                            const uploadedFile = requirementFiles[requirementKey]?.[0];
 
                                             return (
                                                 <div style={{ marginBottom: 24 }} key={requirementKey}>
                                                     <b>{req.label || `Requirement ${idx + 1}`}</b>
+                                                    <div style={{ marginTop: 8 }}>
+                                                        {!uploadedFile && (
+                                                            <Upload
+                                                                key={requirementKey}
+                                                                name={requirementKey}
+                                                                customRequest={handleUpload(requirementKey)}
+                                                                fileList={requirementFiles[requirementKey] || []}
+                                                                listType="text"
+                                                                accept="image/*"
+                                                                disabled={uploading}
+                                                                onPreview={handlePreview}
+                                                                maxCount={1}
+                                                                showUploadList={false}
+                                                            >
+                                                                <Button icon={<UploadOutlined />} className='visaapplication-upload-button' type='primary'>
+                                                                    Upload {req.label || `Requirement ${idx + 1}`}
+                                                                </Button>
+                                                            </Upload>
+                                                        )}
 
-                                                    <Upload.Dragger
-                                                        key={requirementKey} // 🔥 VERY IMPORTANT (forces isolation)
-                                                        name={requirementKey}
-                                                        customRequest={handleUpload(requirementKey)}
-                                                        fileList={requirementFiles[requirementKey] || []}
-                                                        listType="text"
-                                                        accept="image/*"
-                                                        disabled={uploading}
-                                                        onPreview={handlePreview}
-                                                        maxCount={1}
-                                                        showUploadList={{
-                                                            showPreviewIcon: true,
-                                                            showRemoveIcon: true,
-                                                        }}
-                                                        onRemove={() => {
-                                                            setRequirementFiles(prev => {
-                                                                const updated = { ...prev };
-                                                                delete updated[requirementKey];
-                                                                return updated;
-                                                            });
-                                                        }}
-                                                    >
-                                                        <p className="ant-upload-drag-icon"><UploadOutlined /></p>
-                                                        <p className="ant-upload-text">
-                                                            Upload {req.label || `Requirement ${idx + 1}`}
-                                                        </p>
-                                                    </Upload.Dragger>
-
-                                                    <p style={{ fontSize: 12, color: '#999' }}>
-                                                        Click on the file to preview
-                                                    </p>
+                                                        {uploadedFile?.url && (
+                                                            <div style={{ marginTop: 12 }}>
+                                                                <img
+                                                                    src={uploadedFile.url}
+                                                                    alt={req.label || `Requirement ${idx + 1}`}
+                                                                    style={{ maxWidth: 220, cursor: 'pointer' }}
+                                                                    onClick={() => handlePreview({ url: uploadedFile.url })}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             );
                                         })}
-                                        <Button style={{ marginTop: 20 }} type="primary" onClick={confirmSubmitDocuments}>
+                                        <Button style={{ marginTop: 20 }} type="primary" className='visaapplication-submit-button' onClick={confirmSubmitDocuments}>
                                             Submit Documents
                                         </Button>
                                     </Card>
@@ -545,7 +552,7 @@ export default function VisaApplication() {
                                                     action={undefined}
                                                     accept=".jpg,.jpeg,.png"
                                                 >
-                                                    <Button icon={<UploadOutlined />} className="upload-btn">
+                                                    <Button icon={<UploadOutlined />} className="visaapplication-uploadreceipt-button" type="primary">
                                                         Select Receipt Image
                                                     </Button>
                                                 </Upload>
@@ -569,6 +576,7 @@ export default function VisaApplication() {
 
                                     <Button
                                         style={{ marginTop: 20 }}
+                                        className='visaapplication-submit-button'
                                         type="primary"
                                         onClick={handleSubmitPayment}
                                         disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}

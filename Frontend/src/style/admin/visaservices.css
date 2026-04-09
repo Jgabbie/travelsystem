@@ -107,32 +107,89 @@
     margin-bottom: 4px;
 }
 
-.viewdetails-package-button,
-.edit-package-button {
-    border-color: #305797;
-    background-color: #fff !important;
+/* BUTTONS CSS */
+.visaservices-view-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaservices-edit-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaservices-remove-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff;
+    border-radius: 10px;
+    width: 110px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaservices-add-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 150px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaservices-remove-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #992A46 !important;
+}
+
+.visaservices-edit-button:hover,
+.visaservices-view-button:hover,
+.visaservices-add-button:hover {
+    background-color: #e9e9e9 !important;
     color: #305797 !important;
 }
 
-.viewdetails-package-button:hover,
-.edit-package-button:hover {
-    background-color: #1c3f72 !important;
-    color: #fff !important;
-}
 
-.delete-package-button {
-    background-color: #fff !important;
-    color: #d93025 !important;
-}
 
-.delete-package-button:hover {
-    background-color: #d93025 !important;
-    color: #fff !important;
-}
 
+/* MODAL CSS */
 .package-details-modal .ant-modal-content {
     border-radius: 16px;
     padding: 16px;
+}
+
+.visa-details-modal .ant-modal-content {
+    background: #ffffff;
+    box-shadow: 0 16px 40px rgba(31, 42, 68, 0.18);
+}
+
+.visa-details-modal .ant-modal-title {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    color: #1f2a44;
 }
 
 .package-details-modal .ant-modal-header {
@@ -146,6 +203,13 @@
     align-items: flex-start;
     gap: 16px;
     margin-bottom: 16px;
+}
+
+.visa-details-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
 }
 
 .package-details-code {
@@ -175,10 +239,24 @@
     white-space: nowrap;
 }
 
+.visa-details-price {
+    background: #fef3c7;
+    color: #8a5b00;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
 .package-details-body {
     display: grid;
     grid-template-columns: 240px 1fr;
     gap: 22px;
+}
+
+.visa-details-modal .package-details-body {
+    grid-template-columns: 1fr;
 }
 
 .package-details-media {
@@ -222,6 +300,10 @@
     gap: 14px;
 }
 
+.visa-details-modal .package-details-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .package-details-stat {
     background: #f8fafc;
     border: 1px solid #e5e7eb;
@@ -243,6 +325,35 @@
     font-size: 15px;
     font-weight: 600;
     color: #1f2a44;
+}
+
+.visa-details-section {
+    margin-top: 18px;
+}
+
+.visa-details-section h4 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2a44;
+    font-family: "Montserrat", sans-serif;
+}
+
+.visa-details-list {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 8px;
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.visa-details-list li {
+    padding: 8px 10px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 }
 
 
@@ -272,5 +383,9 @@
 
     .package-details-stats {
         grid-template-columns: 1fr;
+    }
+
+    .visa-details-meta {
+        align-items: flex-start;
     }
 }

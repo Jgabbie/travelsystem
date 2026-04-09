@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal } from 'antd'
-import { SearchOutlined } from '@ant-design/icons/lib/icons'
+import { SearchOutlined, EyeOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
 import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/usertransactions.css'
@@ -101,8 +101,8 @@ export default function UserTransactions() {
             render: (value) => {
                 let color = 'default'
                 if (value === 'Successful') color = 'green'
-                if (value === 'Processing') color = 'gold'
-                if (value === 'Refunded') color = 'red'
+                if (value === 'Pending') color = 'gold'
+                if (value === 'Failed') color = 'red'
                 return <Tag color={color}>{value}</Tag>
             }
         },
@@ -112,7 +112,9 @@ export default function UserTransactions() {
             render: (_, record) => (
                 <Space>
                     <Button
-                        className="user-transactions-action user-transactions-action-primary"
+                        className="user-transactions-view-button"
+                        type='primary'
+                        icon={<EyeOutlined />}
                         onClick={() => {
                             setSelectedTransaction(record);
                             setIsViewModalOpen(true);

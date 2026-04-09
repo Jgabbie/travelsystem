@@ -233,23 +233,29 @@ export default function CancellationRequests() {
             render: (_, record) => (
                 <Space>
                     <Button
-                        className='viewbutton-cancellation'
+                        className='cancellations-view-button'
                         type="primary"
                         icon={<EyeOutlined />}
                         onClick={() => openViewModal(record)}
-                    />
+                    >
+                        View
+                    </Button>
                     <Button
-                        className="approve-cancellation"
+                        className="cancellations-approve-button"
                         type="primary"
                         icon={<CheckOutlined />}
                         onClick={() => handleAction(record.key, 'Approved')}
-                    />
+                    >
+                        Approve
+                    </Button>
                     <Button
-                        className="reject-cancellation"
+                        className="cancellations-reject-button"
                         type="primary"
                         icon={<CloseOutlined />}
                         onClick={() => handleAction(record.key, 'Disapproved')}
-                    />
+                    >
+                        Reject
+                    </Button>
                 </Space>
             )
         }
@@ -331,7 +337,7 @@ export default function CancellationRequests() {
 
                     <Space style={{ marginLeft: 'auto' }}>
                         <Button
-                            className='export-pdf-button'
+                            className='cancellations-export-button'
                             type="primary"
                             icon={<FilePdfOutlined />}
                             onClick={generatePDF}

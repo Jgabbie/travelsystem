@@ -7,7 +7,7 @@
 
 .user-bookings-container {
     flex: 1;
-    padding: 120px 32px 40px;
+    padding: 60px 32px 40px;
     max-width: 1320px;
     width: 100%;
     margin: 0 auto;
@@ -58,65 +58,48 @@
     font-weight: 600;
 }
 
-.user-bookings-table .ant-pagination .ant-pagination-item a,
-.user-bookings-table .ant-pagination .ant-pagination-prev a,
-.user-bookings-table .ant-pagination .ant-pagination-next a {
-    color: #305797 !important;
-}
-
-.user-bookings-table .ant-pagination .ant-pagination-item-active {
-    border-color: #305797 !important;
-    background: transparent !important;
-}
-
-.user-bookings-table .ant-pagination .ant-pagination-item-active a {
-    color: #305797 !important;
-}
-
-.user-bookings-table .ant-pagination .ant-pagination-item:hover {
-    border-color: #305797 !important;
-}
-
-.user-bookings-table .ant-pagination .ant-pagination-item:hover a,
-.user-bookings-table .ant-pagination .ant-pagination-prev:hover a,
-.user-bookings-table .ant-pagination .ant-pagination-next:hover a {
-    color: #305797 !important;
-}
-
 .user-bookings-action {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.user-bookings-view-button {
     font-family: "Roboto", sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    border-radius: 8px;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
     border: none !important;
-    padding: 0 14px;
-    height: 34px;
-    transition: background-color 0.2s ease;
-    box-shadow: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.user-bookings-action-primary {
-    background-color: #305797 !important;
-    color: #fff !important;
-}
-
-.user-bookings-action-primary:hover {
-    background-color: #e5e7eb !important;
+.user-bookings-view-button:hover {
+    background-color: #e9e9e9 !important;
     color: #305797 !important;
+}
+
+.user-bookings-cancel-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff;
+    border-radius: 10px;
+    width: 85px;
+    height: 30px;
     border: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.user-bookings-action-danger {
-    background-color: #992A46 !important;
-    color: #fff !important;
-}
-
-.user-bookings-action-danger:hover {
-    background-color: #e5e7eb !important;
+.user-bookings-cancel-button:hover {
+    background-color: #e9e9e9 !important;
     color: #992A46 !important;
-    border: none !important;
-    box-shadow: none !important;
 }
 
 .user-bookings-upload {
@@ -167,15 +150,15 @@
         height: 40px;
     }
 
-    .booking-actions {
+    .user-bookings-actions {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
     }
 
-    .booking-actions .search-input,
-    .booking-actions .booking-select,
-    .booking-actions .booking-date-filter {
+    .user-bookings-actions .search-input,
+    .user-bookings-actions .booking-select,
+    .user-bookings-actions .booking-date-filter {
         width: 100% !important;
     }
 }

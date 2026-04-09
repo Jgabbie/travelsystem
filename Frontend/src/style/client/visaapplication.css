@@ -1,0 +1,59 @@
+.visaapplication-back-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 130px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.visaapplication-uploadreceipt-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 180px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaapplication-upload-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 220px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaapplication-submit-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 220px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.visaapplication-back-button:hover,
+.visaapplication-upload-button:hover,
+.visaapplication-uploadreceipt-button:hover,
+.visaapplication-submit-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}

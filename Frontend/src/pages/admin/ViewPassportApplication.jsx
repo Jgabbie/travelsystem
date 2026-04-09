@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox } from "antd";
+import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../../config/axiosConfig";
+import "../../style/admin/viewpassportapplication.css";
 import dayjs from "dayjs";
 
 const { Title } = Typography;
@@ -23,10 +25,43 @@ export default function ViewPassportApplication() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [isSubmittingSlots, setIsSubmittingSlots] = useState(false);
     const [application, setApplication] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [progressEditable, setProgressEditable] = useState(false);
+    const [alternateSlots, setAlternateSlots] = useState([
+        { date: null, time: null },
+        { date: null, time: null },
+        { date: null, time: null }
+    ]);
 
+    //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
+    const handleSubmitAlternateSlots = async () => {
+        setIsSubmittingSlots(true);
+        try {
+            const slots = alternateSlots
+                .map((slot) => ({
+                    date: slot.date ? dayjs(slot.date).format("YYYY-MM-DD") : null,
+                    time: slot.time ? dayjs(slot.time).format("h:mm A") : null
+                }))
+                .filter((slot) => slot.date && slot.time);
+
+            if (slots.length === 0) {
+                message.error("Please select date and time for at least one option.");
+                return;
+            }
+
+            await axiosInstance.put(`/passport/applications/${id}/suggest-appointments`, { slots });
+
+            setIsSubmittingSlots(false);
+            message.success("Suggested appointment options submitted.");
+        } catch (error) {
+            setIsSubmittingSlots(false);
+            message.error("Failed to submit appointment options.");
+        }
+    };
+
+    //GET PASSPORT APPLICATION DETAILS ON COMPONENT MOUNT ------------------------------------------------------
     useEffect(() => {
         const fetchApplication = async () => {
             try {
@@ -52,7 +87,73 @@ export default function ViewPassportApplication() {
         return null;
     }
 
-    // Handler to update status (simulate backend update)
+    const normalizeLabel = (value) => (
+        String(value)
+            .replace(/_/g, " ")
+            .replace(/([A-Z])/g, " $1")
+            .trim()
+    );
+
+    const buildDocumentList = (docs) => {
+        if (!docs) return [];
+
+        const list = [];
+
+        if (Array.isArray(docs)) {
+            docs.forEach((doc, index) => {
+                if (!doc) return;
+                if (typeof doc === "string") {
+                    list.push({ url: doc, name: `Document ${index + 1}` });
+                    return;
+                }
+                if (doc.url) {
+                    list.push({ url: doc.url, name: doc.name || doc.label || `Document ${index + 1}` });
+                }
+            });
+            return list;
+        }
+
+        if (typeof docs === "object") {
+            Object.entries(docs).forEach(([key, value]) => {
+                if (!value) return;
+
+                if (Array.isArray(value)) {
+                    value.forEach((item, index) => {
+                        if (!item) return;
+                        if (typeof item === "string") {
+                            list.push({ url: item, name: `${normalizeLabel(key)} ${index + 1}` });
+                            return;
+                        }
+                        if (item.url) {
+                            list.push({
+                                url: item.url,
+                                name: item.name || item.label || `${normalizeLabel(key)} ${index + 1}`
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                if (typeof value === "string") {
+                    list.push({ url: value, name: normalizeLabel(key) });
+                    return;
+                }
+
+                if (value.url) {
+                    list.push({
+                        url: value.url,
+                        name: value.name || value.label || normalizeLabel(key)
+                    });
+                }
+            });
+        }
+
+        return list;
+    };
+
+    const submittedDocuments = buildDocumentList(application?.submittedDocuments || application?.documents);
+
+    // STATUS UPDATE HANDLER ------------------------------------------------------
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable) return;
         // Map step index to status string
@@ -69,57 +170,35 @@ export default function ViewPassportApplication() {
         }
     };
 
-    // Improved custom progress dot renderer with better spacing and wrapping
-    const customProgressDot = (dot, { index }) => (
-        <div style={{ position: 'relative', textAlign: 'center', minWidth: 110, padding: '0 8px' }}>
-            <div style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: index <= currentStep ? '#305797' : '#222',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: 18,
-                margin: '0 auto',
-                border: index === currentStep ? '2.5px solid #1890ff' : '2.5px solid #bbb',
-                boxShadow: index === currentStep ? '0 0 0 2px #e6f7ff' : undefined,
-                zIndex: 2
-            }}>
-                {index < currentStep ? <span style={{ fontSize: 20 }}>✓</span> : index + 1}
-            </div>
-            <div style={{ marginTop: 10, fontWeight: index === currentStep ? 700 : 500, color: index === currentStep ? '#305797' : '#222', fontSize: 15, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.2 }}>
-                {statusSteps[index].title}
-            </div>
-            <div style={{ color: '#888', fontSize: 13, marginTop: 2, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.2 }}>{statusSteps[index].summary}</div>
-            <div style={{ marginTop: 10, marginBottom: 8 }}>
-                <Checkbox
-                    checked={index <= currentStep}
-                    disabled={!progressEditable}
-                    style={{ fontSize: 14 }}
-                    onChange={(e) => {
-                        if (!progressEditable) return;
-                        if (e.target.checked) {
-                            if (index === currentStep + 1) {
-                                handleStepChange(index);
-                            }
-                        } else {
-                            if (index === currentStep) {
-                                handleStepChange(index - 1 >= 0 ? index - 1 : 0);
-                            }
-                        }
-                    }}
-                >Done</Checkbox>
-            </div>
-        </div>
-    );
+    // DISABLE PAST DATES AND WEEKENDS IN DATE PICKER ------------------------------------------------------
+    const disableDates = (current) => {
+        const today = dayjs().startOf('day');
+        const twoWeeksFromNow = today.add(14, 'day');
+
+        return (
+            current &&
+            (
+                current < twoWeeksFromNow ||
+                current.day() === 0 ||
+                current.day() === 6
+            )
+        );
+    };
+
+    const disabledHours = () => {
+        const hours = [];
+        for (let i = 0; i < 24; i++) {
+            if (i < 8 || i > 17) {
+                hours.push(i);
+            }
+        }
+        return hours;
+    }
 
     return (
         <ConfigProvider
             theme={{ token: { colorPrimary: "#305797" } }}>
-            {loading ? (
+            {loading || isSubmittingSlots ? (
                 <div
                     style={{
                         display: "flex",
@@ -128,20 +207,23 @@ export default function ViewPassportApplication() {
                         height: "80vh"
                     }}
                 >
-                    <Spin size="large" description="Loading application details..." />
+                    <Spin size="large" description={loading ? "Loading application details..." : "Submitting suggested appointment options..."} />
                 </div>
             ) : (
                 <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
-                    <Button onClick={() => navigate(-1)} style={{ marginBottom: 16 }}>
+                    <Button onClick={() => navigate(-1)} style={{ marginBottom: 16 }} className="viewpassportapplication-back-button">
+                        <ArrowLeftOutlined />
                         Back
                     </Button>
                     <Title level={2} style={{ marginBottom: 16 }}>Passport Application Details</Title>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: 32 }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: 24, minWidth: 800 }}>
+
+                            {/* APPLICATION DETAILS */}
                             <Card >
                                 <Descriptions bordered column={2} size="middle">
-                                    <Descriptions.Item label="Application Number">{application.applicationId}</Descriptions.Item>
+                                    <Descriptions.Item label="Application Number">{application.applicationNumber}</Descriptions.Item>
                                     <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
                                     <Descriptions.Item label="DFA Location">{application.dfaLocation}</Descriptions.Item>
                                     <Descriptions.Item label="Preferred Date">{application.preferredDate ? dayjs(application.preferredDate).format("MMM DD, YYYY") : "Not Set"}</Descriptions.Item>
@@ -166,20 +248,76 @@ export default function ViewPassportApplication() {
                                 </Descriptions>
                             </Card>
 
+                            {/* SUGGEST APPOINTMENT DATES AND TIMES IF APPLICATION IS STILL SUBMITTED */}
+                            {application.status && application.status.toLowerCase() === "application submitted" && (
+                                <Card title="Suggested Appointment Options" style={{ marginTop: 16 }}>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                        {alternateSlots.map((slot, idx) => (
+                                            <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                                <span style={{ minWidth: 20 }}>{idx + 1}.</span>
+                                                <DatePicker
+                                                    disabledDate={disableDates}
+                                                    placeholder="Select date"
+                                                    value={slot.date}
+                                                    onChange={(date) => {
+                                                        const next = [...alternateSlots];
+                                                        next[idx] = { ...next[idx], date };
+                                                        setAlternateSlots(next);
+                                                    }}
+                                                />
+                                                <TimePicker
+                                                    format="h:mm A"
+                                                    use12Hours
+                                                    showNow={false}
+                                                    minuteStep={30}
+                                                    disabledTime={() => ({
+                                                        disabledHours
+                                                    })}
+                                                    placeholder="Select time"
+                                                    value={slot.time}
+                                                    onChange={(time) => {
+                                                        const next = [...alternateSlots];
+                                                        next[idx] = { ...next[idx], time };
+                                                        setAlternateSlots(next);
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                            <Button type="primary" onClick={handleSubmitAlternateSlots}>
+                                                Submit Options
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Card>
+                            )}
+
+
+                            {/* VIEW SUBMITTED DOCUMENTS */}
                             <Divider orientation="left">Submitted Documents</Divider>
                             <Card>
-                                {application.documents && application.documents.length > 0 ? (
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
-                                        {application.documents.map((doc, idx) => (
-                                            <div key={idx} style={{ textAlign: "center" }}>
+                                {submittedDocuments.length > 0 ? (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                        {submittedDocuments.map((doc, idx) => (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "space-between",
+                                                    gap: 16
+                                                }}
+                                            >
+                                                <div style={{ fontWeight: 600 }}>
+                                                    {doc.name || `Document ${idx + 1}`}
+                                                </div>
                                                 <Image
                                                     src={doc.url}
                                                     alt={doc.name || `Document ${idx + 1}`}
                                                     width={180}
-                                                    style={{ borderRadius: 8, marginBottom: 8 }}
+                                                    style={{ borderRadius: 8 }}
                                                     fallback="/images/file-placeholder.png"
                                                 />
-                                                <div>{doc.name || `Document ${idx + 1}`}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -191,9 +329,11 @@ export default function ViewPassportApplication() {
                         </div>
 
 
-                        <div style={{ display: "flex", flexDirection: "column", minWidth: 400 }}>
-                            <div style={{ maxWidth: 300, margin: "0 auto 0 auto", overflowX: 'auto', paddingBottom: 12 }}>
-                                <Card title="Progress Tracker" style={{ minWidth: 300, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+
+                        {/* PROGRESS TRACKER */}
+                        <div style={{ display: "flex", flexDirection: "column", minWidth: 300 }}>
+                            <div style={{ maxWidth: 300, margin: "0 auto 0 auto", paddingBottom: 12 }}>
+                                <Card title="Progress Tracker" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                     <Steps
                                         direction="vertical"
                                         current={currentStep}
@@ -235,7 +375,6 @@ export default function ViewPassportApplication() {
                                                     </div>
                                                 )
                                             }))}
-                                        style={{ minWidth: 1100 }}
                                     />
                                 </Card>
                             </div>
@@ -243,11 +382,15 @@ export default function ViewPassportApplication() {
 
 
 
-                    </div>
 
+
+
+
+
+
+                    </div>
                 </div>
-            )
-            }
+            )}
 
         </ConfigProvider >
     );

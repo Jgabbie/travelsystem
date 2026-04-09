@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, message, Button, Input, Card, ConfigProvider, Spin } from "antd"
+import { Modal, message, Button, Input, Card, ConfigProvider, Spin, Tag } from "antd"
 import { ArrowLeftOutlined } from "@ant-design/icons"
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../../config/axiosConfig";
@@ -159,6 +159,18 @@ export default function UserQuotationRequest() {
                                 Back
                             </Button>
 
+                            {/* BOOKED OR COMPLETE STATUS */}
+                            {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
+                                <Card
+                                    style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                    title={<Tag color="green">Quotation {quotation.status}</Tag>}
+                                >
+                                    <p style={{ margin: 0, fontSize: 14 }}>
+                                        Your quotation is marked as {quotation.status.toLowerCase()}. If you need help, contact support.
+                                    </p>
+                                </Card>
+                            ) : null}
+
                             {/* HEADER */}
                             <div className="quotation-card">
                                 <div className="quotation-content">
@@ -253,40 +265,43 @@ export default function UserQuotationRequest() {
 
 
                             {/* INPUT REVISION REQUEST AND BUTTONS */}
-                            <div className="quotation-feedback-section">
-                                <div className="input-wrapper">
-                                    <Input.TextArea
-                                        maxLength={200}
-                                        rows={4}
-                                        placeholder="Kindly provide any notes for revision (max 200 characters). Please be as detailed as possible."
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        className="quotation-input-request"
-                                        disabled={isDisabled}
-                                    />
+                            {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? null : (
+                                <div className="quotation-feedback-section">
+                                    <div className="input-wrapper">
+                                        <Input.TextArea
+                                            maxLength={200}
+                                            rows={4}
+                                            placeholder="Kindly provide any notes for revision (max 200 characters). Please be as detailed as possible."
+                                            value={notes}
+                                            onChange={(e) => setNotes(e.target.value)}
+                                            className="quotation-input-request"
+                                            disabled={isDisabled}
+                                        />
 
-                                    <div className={`char-counter ${notes.length >= 200 ? 'limit' : ''}`}>
-                                        {notes.length}/200
+                                        <div className={`char-counter ${notes.length >= 200 ? 'limit' : ''}`}>
+                                            {notes.length}/200
+                                        </div>
+                                    </div>
+
+                                    <div className="buttons-container-userquotationrequest">
+                                        <Button
+                                            className="acceptbutton-userquotationrequest"
+                                            onClick={() => setIsAcceptModalOpen(true)}
+                                            disabled={isDisabled}
+                                        >
+                                            Accept Quotation
+                                        </Button>
+                                        <Button
+                                            className="revisebutton-userquotationrequest"
+                                            onClick={handleRevise}
+                                            disabled={isDisabled || !notes.trim()}
+                                        >
+                                            Request Revision
+                                        </Button>
                                     </div>
                                 </div>
+                            )}
 
-                                <div className="buttons-container-userquotationrequest">
-                                    <Button
-                                        className="acceptbutton-userquotationrequest"
-                                        onClick={() => setIsAcceptModalOpen(true)}
-                                        disabled={isDisabled}
-                                    >
-                                        Accept Quotation
-                                    </Button>
-                                    <Button
-                                        className="revisebutton-userquotationrequest"
-                                        onClick={handleRevise}
-                                        disabled={isDisabled || !notes.trim()}
-                                    >
-                                        Request Revision
-                                    </Button>
-                                </div>
-                            </div>
 
                             {/* REVISION REQUEST MODAL */}
                             <Modal

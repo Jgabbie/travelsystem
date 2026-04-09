@@ -10,8 +10,6 @@ import "../../style/admin/reviewratings.css";
 
 dayjs.extend(isBetween);
 
-const { RangePicker } = DatePicker;
-
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -36,7 +34,7 @@ export default function ReviewRatings() {
     const [ratingFilter, setRatingFilter] = useState(null);
     const [dateFilter, setDateFilter] = useState(null);
 
-    // Fetch ratings
+    // GET ALL RATINGS FOR ADMIN ----------------------------------------------------------------------------
     useEffect(() => {
         const fetchRatings = async () => {
             setLoading(true);
@@ -69,7 +67,7 @@ export default function ReviewRatings() {
         fetchRatings();
     }, []);
 
-    // Filtered ratings
+    // FILTERING RATINGS ----------------------------------------------------------------------------
     const filteredRatings = ratings.filter((item) => {
         const matchesSearch =
             (item.user.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -86,6 +84,8 @@ export default function ReviewRatings() {
         return matchesSearch && matchesRating && matchesDate;
     });
 
+
+    // CALCULATE AVERAGE RATING AND LATEST REVIEW DATE ----------------------------------------------------------------------------
     const averageRating = useMemo(() => {
         if (!ratings.length) return null;
         const total = ratings.reduce((sum, item) => sum + (item.rating || 0), 0);
@@ -101,6 +101,8 @@ export default function ReviewRatings() {
         return latest ? dayjs(latest).format("MMM D, YYYY") : "—";
     }, [ratings]);
 
+
+    // GENERATE RATING REPORT PDF ----------------------------------------------------------------------------
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["User", "Package", "Rating", "Comment", "Date"];
@@ -163,7 +165,8 @@ export default function ReviewRatings() {
         message.success("Report exported to PDF successfully.");
     };
 
-    // Delete review
+
+    // DELETE RATING ----------------------------------------------------------------------------
     const handleDelete = (id) => {
         Modal.confirm({
             title: "Confirm Delete",
@@ -183,7 +186,8 @@ export default function ReviewRatings() {
         });
     };
 
-    // Table columns
+
+    // TABLE COLUMNS ----------------------------------------------------------------------------
     const columns = [
         {
             title: "Customer Name",
@@ -220,11 +224,13 @@ export default function ReviewRatings() {
             key: "actions",
             render: (_, record) => (
                 <Button
-                    className='deletebutton-usermanagement'
+                    className='reviewratings-remove-button'
                     type='primary'
                     icon={<DeleteOutlined />}
                     onClick={() => handleDelete(record.id)}
-                />
+                >
+                    Delete
+                </Button>
             ),
         },
     ];
@@ -300,7 +306,7 @@ export default function ReviewRatings() {
 
                     <Space style={{ marginLeft: 'auto' }}>
                         <Button
-                            className='export-pdf-button'
+                            className='reviewratings-export-button'
                             type="primary"
                             icon={<FilePdfOutlined />}
                             onClick={generatePDF}

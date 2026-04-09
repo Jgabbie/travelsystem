@@ -94,9 +94,6 @@ const getBase64 = (file) =>
         reader.onerror = (error) => reject(error);
     });
 
-
-
-
 export default function UserBookingInvoice() {
     const location = useLocation();
     const navigate = useNavigate();

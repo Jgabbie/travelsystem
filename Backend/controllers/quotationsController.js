@@ -4,12 +4,16 @@ const UserModel = require('../models/user')
 const NotificationModel = require('../models/notification')
 const logAction = require('../utils/logger')
 
+
+//GENERATE UNIQUE QUOTATION REFERENCE -----------------------------------------------------
 const generateQuotationReference = () => {
     const timestamp = Date.now().toString().slice(-6)
     const random = Math.floor(1000 + Math.random() * 9000)
     return `QT-${timestamp}${random}`
 }
 
+
+//CREATE QUOTATION ------------------------------------------------------------------------
 const createQuotation = async (req, res) => {
     const { packageId, quotationDetails } = req.body
     const userId = req.userId
@@ -59,28 +63,36 @@ const createQuotation = async (req, res) => {
     }
 }
 
+
+//GET USER QUOTATIONS ---------------------------------------------------------------------
 const getUserQuotations = async (req, res) => {
     const userId = req.userId
     try {
         const quotations = await QuotationModel.find({ userId }).sort({ createdAt: -1 })
-            .populate('packageId', 'packageName')
+            .populate('packageId', 'packageName packageType')
         res.status(200).json(quotations)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching quotations', error })
     }
 }
 
+
+//GET ALL QUOTATIONS (ADMIN) --------------------------------------------------------------
 const getAllQuotations = async (_req, res) => {
     try {
         const quotations = await QuotationModel.find({}).sort({ createdAt: -1 })
             .populate('userId', 'username')
-            .populate('packageId', 'packageName')
+            .populate('packageId', 'packageName packageType')
+
+        console.log("Fetched all quotations for admin:", quotations)
         res.status(200).json(quotations)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching quotations', error })
     }
 }
 
+
+//UPDATE QUOTATION ------------------------------------------------------------------------
 const updateQuotation = async (req, res) => {
     const { id } = req.params
     const { status, travelDetails } = req.body
@@ -103,6 +115,8 @@ const updateQuotation = async (req, res) => {
     }
 }
 
+
+//DELETE QUOTATION ------------------------------------------------------------------------
 const deleteQuotation = async (req, res) => {
     const { id } = req.params
 
@@ -119,6 +133,8 @@ const deleteQuotation = async (req, res) => {
     }
 }
 
+
+//GET SINGLE QUOTATION -------------------------------------------------------------------
 const getQuotation = async (req, res) => {
     try {
         const { id } = req.params
@@ -141,6 +157,8 @@ const getQuotation = async (req, res) => {
     }
 }
 
+
+//UPLOAD QUOTATION PDF -------------------------------------------------------------------
 const uploadQuotationPDF = async (req, res) => {
     const { id } = req.params;
     const file = req.file;
@@ -209,6 +227,8 @@ const uploadQuotationPDF = async (req, res) => {
     }
 };
 
+
+//UPLOAD TRAVEL DETAILS (ADMIN) ---------------------------------------------------------
 const uploadTravelDetails = async (req, res) => {
     const { id } = req.params
     const { travelDetails } = req.body
@@ -229,7 +249,7 @@ const uploadTravelDetails = async (req, res) => {
     }
 };
 
-
+//REQUEST REVISION (ADMIN) ----------------------------------------------------------------
 const requestRevision = async (req, res) => {
     const { id } = req.params
     const { notes } = req.body
@@ -258,6 +278,8 @@ const requestRevision = async (req, res) => {
         res.status(500).json({ message: 'Error requesting revision', error })
     }
 }
+
+
 
 module.exports = {
     createQuotation,

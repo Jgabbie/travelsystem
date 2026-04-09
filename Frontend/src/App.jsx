@@ -26,6 +26,7 @@ import SuccessfulPaymentVisa from "./pages/client/SuccessfulPaymentVisa";
 import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
 import PackageInternationalQuotation from "./pages/client/PackageInternationalQuotation";
 import UserPreference1 from "./pages/client/newuser/UserPreference1";
+import FAQsPage from "./pages/client/FAQsPage";
 
 import UserApplications from "./pages/client/UserApplications";
 import PassportApplication from "./pages/client/PassportApplication";
@@ -88,6 +89,7 @@ function App() {
               <Route path='/renew-passport' element={<RenewPassport />} />
               <Route path='/package' element={<PackagePage />} />
               <Route path='/package/:id' element={<PackagePage />} />
+              <Route path='/general-faq' element={<FAQsPage />} />
             </Route>
 
 

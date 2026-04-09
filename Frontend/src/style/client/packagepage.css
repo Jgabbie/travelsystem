@@ -3,7 +3,7 @@
 
 .packagepage-container {
     min-height: 100vh;
-    padding: 120px 32px 48px;
+    padding: 50px 32px 48px;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     font-family: "Roboto", sans-serif;
 }
@@ -163,7 +163,7 @@
 }
 
 .package-tabs {
-    height: 400px;
+    height: 345px;
     width: 100%;
     background: #ffffff;
     border-radius: 16px;
@@ -172,28 +172,12 @@
 }
 
 .package-tabs .ant-tabs-nav {
-    margin-bottom: 16px;
-}
-
-.package-tabs.ant-tabs-nav-animated .ant-tabs-nav-list {
-    color: #305797;
-}
-
-.package-tabs .ant-tabs-nav {
-    margin-bottom: 16px;
+    margin-bottom: 2px;
 }
 
 .package-tabs .ant-tabs-nav .ant-tabs-tab {
     color: #305797;
     transition: color 0.3s;
-}
-
-.package-tabs .ant-tabs-nav .ant-tabs-tab:hover {
-    color: #305797;
-}
-
-.package-tabs .ant-tabs-ink-bar {
-    background-color: #305797;
 }
 
 .package-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
@@ -204,14 +188,15 @@
 .package-reviews {
     display: grid;
     gap: 16px;
+    max-height: 515px;
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
 .package-tab-content-scroll {
     height: 260px;
-    /* or any height you prefer */
     overflow-y: auto;
     padding-right: 8px;
-    /* optional: prevents content from being hidden behind scrollbar */
 }
 
 

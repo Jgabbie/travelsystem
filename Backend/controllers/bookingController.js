@@ -19,6 +19,8 @@ const generateCancellationReference = () => {
     return `CN-${Math.floor(100000000 + Math.random() * 900000000)}`
 }
 
+
+//CREATE BOOKING -----------------------------------------------------------------
 const createBooking = async (req, res) => {
     const { bookingPayload } = req.body
     const userId = req.userId
@@ -91,18 +93,40 @@ const createBooking = async (req, res) => {
     }
 }
 
+
+//GET USER BOOKINGS -----------------------------------------------------------------
 const getUserBookings = async (req, res) => {
     const userId = req.userId
     try {
         const bookings = await BookingModel.find({ userId }).sort({ createdAt: -1 })
             .populate('userId', 'username')
             .populate('packageId', 'packageName packageType')
-        res.status(200).json(bookings)
+            .lean()
+
+        const bookingIds = bookings.map((booking) => booking._id)
+        const paidAgg = await TransactionModel.aggregate([
+            { $match: { bookingId: { $in: bookingIds }, status: 'Successful' } },
+            { $group: { _id: '$bookingId', totalPaid: { $sum: '$amount' } } }
+        ])
+
+        const paidMap = paidAgg.reduce((acc, entry) => {
+            acc[entry._id.toString()] = entry.totalPaid
+            return acc
+        }, {})
+
+        const enriched = bookings.map((booking) => ({
+            ...booking,
+            paidAmount: paidMap[booking._id.toString()] || 0
+        }))
+
+        res.status(200).json(enriched)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching bookings', error })
     }
 }
 
+
+//GET BOOKINGS TOTAL BASED ON MONTH -----------------------------------------------------------------
 const getBookingsTotalBaseOnMonth = async (req, res) => {
     const userId = req.userId;
 
@@ -122,6 +146,7 @@ const getBookingsTotalBaseOnMonth = async (req, res) => {
 };
 
 
+//GET ALL BOOKINGS (ADMIN) -----------------------------------------------------------------
 const getAllBookings = async (_req, res) => {
     try {
         const bookings = await BookingModel.find({})
@@ -137,6 +162,8 @@ const getAllBookings = async (_req, res) => {
     }
 }
 
+
+//GET BOOKING BY REFERENCE (USER) -----------------------------------------------------------------
 const getBookingByReference = async (req, res) => {
     const userId = req.userId
     const { reference } = req.params
@@ -146,7 +173,12 @@ const getBookingByReference = async (req, res) => {
     }
 
     try {
-        const booking = await BookingModel.findOne({ reference, userId })
+        const user = await UserModel.findById(userId).select('role').lean()
+        const isAdmin = user?.role === 'Admin' || user?.role === 'Employee'
+
+        const booking = await BookingModel.findOne(
+            isAdmin ? { reference } : { reference, userId }
+        )
             .populate('packageId', 'packageName packageType')
 
         if (!booking) {
@@ -163,6 +195,7 @@ const getBookingByReference = async (req, res) => {
     }
 }
 
+//UPDATE BOOKING (ADMIN) -----------------------------------------------------------------
 const updateBooking = async (req, res) => {
     const { id } = req.params
     const { status, bookingDetails } = req.body
@@ -188,6 +221,7 @@ const updateBooking = async (req, res) => {
     }
 }
 
+//DELETE BOOKING (ADMIN) -----------------------------------------------------------------
 const deleteBooking = async (req, res) => {
     const { id } = req.params
 
@@ -204,6 +238,7 @@ const deleteBooking = async (req, res) => {
     }
 }
 
+//CANCEL BOOKING (USER) -----------------------------------------------------------------
 const cancelBooking = async (req, res) => {
     console.log('Received cancellation request with data')
 
@@ -262,6 +297,8 @@ const cancelBooking = async (req, res) => {
     }
 }
 
+
+//APPROVE CANCELLATION (ADMIN) -----------------------------------------------------------------
 const approveCancellation = async (req, res) => {
     const { id } = req.params
     try {
@@ -283,13 +320,15 @@ const approveCancellation = async (req, res) => {
 
             const packageDoc = await PackageModel.findById(booking.packageId)
             if (packageDoc) {
+                const normalizedStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD')
+                const normalizedEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD')
                 const updateResult = await PackageModel.updateOne(
                     {
                         _id: packageDoc._id,
                         packageSpecificDate: {
                             $elemMatch: {
-                                startdaterange: { $lte: booking.travelDate.startDate },
-                                enddaterange: { $gte: booking.travelDate.endDate }
+                                startdaterange: normalizedStart,
+                                enddaterange: normalizedEnd
                             }
                         }
                     },
@@ -364,6 +403,8 @@ const approveCancellation = async (req, res) => {
     }
 }
 
+
+//DISAPPROVE CANCELLATION (ADMIN) -----------------------------------------------------------------
 const disApproveCancellation = async (req, res) => {
     const { id } = req.params
     try {
@@ -458,7 +499,7 @@ const disApproveCancellation = async (req, res) => {
     }
 }
 
-
+//GET CANCELLATIONS (ADMIN) -----------------------------------------------------------------
 const getcancellations = async (req, res) => {
     try {
         const cancellations = await CancellationModel.find({})
