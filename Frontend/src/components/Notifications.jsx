@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Badge, Button, Dropdown, List, Typography, Empty } from 'antd'
+import { Badge, Button, List, Typography, Empty, Popover } from 'antd'
 import { BellOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../config/axiosConfig'
@@ -93,22 +93,22 @@ export default function Notifications() {
     )
 
     return (
-        <Dropdown
-            dropdownRender={() => notificationMenu}
+        <Popover
+            content={notificationMenu}
+            trigger="click"
             placement="bottomRight"
-            trigger={['click']}
-            overlayClassName="notification-dropdown"
+            className="notification-dropdown"
             onOpenChange={(open) => {
-                if (open) {
-                    fetchNotifications()
-                }
+                if (open) fetchNotifications()
             }}
         >
-            <Button className="notification-bell" type="text" aria-label="Notifications">
-                <Badge count={unreadCount} size="small">
-                    <BellOutlined />
-                </Badge>
-            </Button>
-        </Dropdown>
+            <span>
+                <Button className="notification-bell" type="text">
+                    <Badge count={unreadCount} size="small">
+                        <BellOutlined />
+                    </Badge>
+                </Button>
+            </span>
+        </Popover>
     )
 }

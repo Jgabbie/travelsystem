@@ -471,6 +471,9 @@ export default function UploadBookingInvoice() {
         </Document>
     );
 
+    const travelersWithDocs = bookingDetails?.travelers?.length
+        ? bookingDetails.travelers
+        : booking?.travelers || []
     const passportFiles = booking?.passportFiles || [];
     const photoFiles = booking?.photoFiles || [];
 
@@ -489,7 +492,7 @@ export default function UploadBookingInvoice() {
                 </Button>
                 <div className="upload-invoice-header">
                     <div>
-                        <Title level={2} className="page-header">Upload Booking Invoice</Title>
+                        <Title level={2} className="page-header">Booking Invoice</Title>
                         <AntText className="upload-invoice-subtitle">
                             Review the remaining balance and attach the final invoice for this booking.
                         </AntText>
@@ -602,12 +605,68 @@ export default function UploadBookingInvoice() {
                         </Card>
 
                         <Card title="Documents" style={{ marginTop: 24 }}>
-                            {passportFiles.length === 0 && photoFiles.length === 0 ? (
+                            {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
                                 <AntText type="secondary">No documents uploaded yet.</AntText>
+                            ) : travelersWithDocs.length ? (
+                                <div>
+                                    {travelersWithDocs.map((traveler, index) => (
+                                        <div key={index} style={{ marginBottom: 24 }}>
+                                            <h4 style={{ marginBottom: 8 }}>
+                                                Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
+                                            </h4>
+                                            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13 }}>
+                                                <div><strong>Title:</strong> {traveler?.title || "N/A"}</div>
+                                                <div><strong>Room:</strong> {traveler?.roomType || "N/A"}</div>
+                                                <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format("MMM D, YYYY") : "N/A"}</div>
+                                                <div><strong>Age:</strong> {traveler?.age ?? "N/A"}</div>
+                                                <div><strong>Passport #:</strong> {traveler?.passportNo || "N/A"}</div>
+                                                <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format("MMM D, YYYY") : "N/A"}</div>
+                                            </div>
+
+                                            <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
+                                                {traveler?.passportFile && (
+                                                    <div style={{ marginBottom: 16 }}>
+                                                        <AntText strong>Passport / Valid ID:</AntText>
+                                                        <div style={{ marginTop: 8 }}>
+                                                            <img
+                                                                src={traveler.passportFile}
+                                                                alt={`Traveler ${index + 1} Passport`}
+                                                                style={{
+                                                                    width: 350,
+                                                                    height: 340,
+                                                                    objectFit: "cover",
+                                                                    borderRadius: 8,
+                                                                    border: "1px solid #ccc"
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {traveler?.photoFile && (
+                                                    <div style={{ marginBottom: 16 }}>
+                                                        <AntText strong>2x2 Photo:</AntText>
+                                                        <div style={{ marginTop: 8 }}>
+                                                            <img
+                                                                src={traveler.photoFile}
+                                                                alt={`Traveler ${index + 1} Photo`}
+                                                                style={{
+                                                                    width: 200,
+                                                                    height: 200,
+                                                                    objectFit: "cover",
+                                                                    borderRadius: 8,
+                                                                    border: "1px solid #ccc"
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
                                 <div>
-                                    <h4>Traveler 1</h4>
-
                                     <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
                                         {passportFiles.length > 0 && (
                                             <div style={{ marginBottom: 16 }}>
@@ -617,7 +676,7 @@ export default function UploadBookingInvoice() {
                                                         <img
                                                             key={index}
                                                             src={url}
-                                                            alt={`Traveler 1 Passport ${index + 1}`}
+                                                            alt={`Traveler Passport ${index + 1}`}
                                                             style={{
                                                                 width: 350,
                                                                 height: 340,
@@ -639,7 +698,7 @@ export default function UploadBookingInvoice() {
                                                         <img
                                                             key={index}
                                                             src={url}
-                                                            alt={`Traveler 1 Photo ${index + 1}`}
+                                                            alt={`Traveler Photo ${index + 1}`}
                                                             style={{
                                                                 width: 200,
                                                                 height: 200,

@@ -438,6 +438,7 @@
 @media (max-width: 480px) {
     .navbar {
         padding: 8px 12px;
+        width: 100%;
     }
 
     .logo-section span {

@@ -101,7 +101,6 @@ app.use("/api/upload", uploadRoutes);
 
 //might remove later
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 app.use('/api/contactlimit', contactLimiter);
 
 app.get('/api/test', (_req, res) => {

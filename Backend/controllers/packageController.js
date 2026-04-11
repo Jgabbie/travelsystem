@@ -3,6 +3,8 @@ const BookingModel = require("../models/booking");
 const logAction = require("../utils/logger");
 const dayjs = require("dayjs");
 
+
+//ADD PACKAGE
 const addPackage = async (req, res) => {
     const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags } = req.body;
     try {
@@ -81,10 +83,43 @@ const addPackage = async (req, res) => {
     }
 };
 
+
+//GET PACKAGES (ADMIN)
 const getPackages = async (req, res) => {
     try {
         const packages = await PackageModel.find();
         res.status(200).json(packages);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const getPackagesForUsers = async (req, res) => {
+    try {
+        const packages = await PackageModel.find();
+
+        const packagePayload = packages.map(pkg => {
+
+            const availableSlots = (pkg.packageSpecificDate || [])
+                .reduce((total, dateRange) => {
+                    return total + (dateRange?.slots || 0);
+                }, 0);
+
+            return {
+                _id: pkg._id,
+                packageName: pkg.packageName,
+                packageDescription: pkg.packageDescription,
+                packageDuration: pkg.packageDuration,
+                packagePricePerPax: pkg.packagePricePerPax,
+                packageAvailableSlots: availableSlots,
+                packageType: pkg.packageType,
+                packageImages: pkg.images || [],
+                packageTags: pkg.packageTags || []
+            };
+        });
+
+        res.status(200).json(packagePayload);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -282,4 +317,4 @@ const updateDiscount = async (req, res) => {
     }
 };
 
-module.exports = { addPackage, getPackages, removePackage, getPackage, updatePackage, getPopularPackages, updateSlots, updateDiscount };
+module.exports = { addPackage, getPackages, getPackagesForUsers, removePackage, getPackage, updatePackage, getPopularPackages, updateSlots, updateDiscount };

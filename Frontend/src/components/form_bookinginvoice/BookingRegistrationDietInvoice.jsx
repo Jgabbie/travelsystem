@@ -13,6 +13,20 @@ export default function BookingRegistrationDietInvoice({ form, onValuesChange, s
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const labelStyle = { fontSize: '11px', fontWeight: 'bold', color: '#000' };
 
+    const formatTravelDate = (value) => {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        const start = value.startDate ? dayjs(value.startDate) : null;
+        const end = value.endDate ? dayjs(value.endDate) : null;
+        if (start?.isValid() && end?.isValid()) {
+            return `${start.format('MMM D, YYYY')} - ${end.format('MMM D, YYYY')}`;
+        }
+        if (start?.isValid()) {
+            return start.format('MMM D, YYYY');
+        }
+        return '';
+    };
+
     useEffect(() => {
 
         if (!summaryInvoice) return
@@ -20,7 +34,7 @@ export default function BookingRegistrationDietInvoice({ form, onValuesChange, s
         const diet = {
             fullName: summaryInvoice.leadFullName,
             tourPackageTitle: summaryInvoice.tourPackageTitle,
-            travelDate: summaryInvoice.travelDate,
+            travelDate: formatTravelDate(summaryInvoice.travelDate),
             dietaryDetails: summaryInvoice.dietaryDetails,
             dietaryRequest: summaryInvoice.dietaryRequest,
             medicalDetails: summaryInvoice.medicalDetails,
@@ -82,7 +96,7 @@ export default function BookingRegistrationDietInvoice({ form, onValuesChange, s
                     {/* Read-Only Package Info */}
                     <div style={{ marginBottom: '15px' }}>
                         <div style={{ fontSize: '11px' }}><strong>TOUR PACKAGE TITLE:</strong> {summaryInvoice?.packageName || '____________________'}</div>
-                        <div style={{ fontSize: '11px' }}><strong>PACKAGE TRAVEL DATE:</strong> {summaryInvoice?.travelDate || '____________________'}</div>
+                        <div style={{ fontSize: '11px' }}><strong>PACKAGE TRAVEL DATE:</strong> {formatTravelDate(summaryInvoice?.travelDate) || '____________________'}</div>
                     </div>
 
                     {/* Dietary Section */}

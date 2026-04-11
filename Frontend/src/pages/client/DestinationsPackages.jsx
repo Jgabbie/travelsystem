@@ -25,7 +25,7 @@ export default function DestinationsPackages() {
         const fetchPackages = async () => {
             setLoading(true)
             try {
-                const response = await axiosInstance.get('/package/get-packages')
+                const response = await axiosInstance.get('/package/get-packages-for-users')
                 const ratingResponse = await axiosInstance.get('/rating/average-ratings')
 
                 const ratingMap = new Map(
@@ -37,9 +37,9 @@ export default function DestinationsPackages() {
 
                 const packages = response.data.map((pkg) => {
                     const rating = ratingMap.get(String(pkg._id)) || 0
-                    const availableSlots = Array.isArray(pkg.packageSpecificDate)
-                        ? pkg.packageSpecificDate.reduce((sum, entry) => sum + (Number(entry?.slots) || 0), 0)
-                        : (pkg.packageAvailableSlots || 0)
+                    // const availableSlots = Array.isArray(pkg.packageSpecificDate)
+                    //     ? pkg.packageSpecificDate.reduce((sum, entry) => sum + (Number(entry?.slots) || 0), 0)
+                    //     : (pkg.packageAvailableSlots || 0)
 
                     return {
                         id: pkg._id,
@@ -47,8 +47,8 @@ export default function DestinationsPackages() {
                         packageType: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
                         budget: pkg.packagePricePerPax,
-                        availableSlots,
-                        images: pkg.images && pkg.images.length > 0 ? pkg.images[0] : '',
+                        availableSlots: pkg.packageAvailableSlots || 0,
+                        images: pkg.packageImages && pkg.packageImages.length > 0 ? pkg.packageImages[0] : '',
                         tags: pkg.packageTags || [],
                         rating
                     };

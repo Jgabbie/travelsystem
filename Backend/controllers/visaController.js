@@ -2,6 +2,8 @@ const VisaModel = require('../models/visas')
 const TokenCheckoutVisaModel = require('../models/tokencheckoutvisa')
 const ServiceModel = require('../models/service')
 const UserModel = require('../models/user')
+const NotificationModel = require('../models/notification')
+const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger')
 
 
@@ -152,7 +154,7 @@ const updateVisaApplicationStatus = async (req, res) => {
         const { status } = req.body;
 
         // Get the serviceId from the visa application
-        const visaDoc = await VisaModel.findById(id).select('serviceId');
+        const visaDoc = await VisaModel.findById(id).select('serviceId userId');
         if (!visaDoc || !visaDoc.serviceId) {
             return res.status(404).json({ message: 'Visa application or service not found' });
         }
@@ -172,6 +174,36 @@ const updateVisaApplicationStatus = async (req, res) => {
         const updated = await VisaModel.findByIdAndUpdate(id, { status }, { new: true });
         if (!updated) {
             return res.status(404).json({ message: 'Visa application not found' });
+        }
+
+        try {
+            const user = await UserModel.findById(updated.userId);
+            if (user) {
+                await NotificationModel.create({
+                    userId: user._id,
+                    title: 'Visa application status updated',
+                    message: `Your visa application status is now ${status}.`,
+                    type: 'visa',
+                    link: '/visa',
+                    metadata: { applicationId: updated._id, status }
+                });
+
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: 'Visa application status update',
+                    html: `
+                        <div style="font-family: Arial, sans-serif; color: #333;">
+                            <h2 style="color: #305797;">Visa application status update</h2>
+                            <p>Hello ${user.firstname || user.username},</p>
+                            <p>Your visa application status is now <strong>${status}</strong>.</p>
+                            <p>Please log in to your account to view the latest details.</p>
+                        </div>
+                    `
+                });
+            }
+        } catch (notifyError) {
+            console.error('Failed to send visa status notification:', notifyError);
         }
 
         res.status(200).json({ message: 'Status updated', application: updated });

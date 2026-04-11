@@ -230,18 +230,21 @@
     align-items: center;
     gap: 12px;
     margin-top: auto;
+    flex-wrap: wrap;
 }
 
 .wishlist-card-actions {
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .wishlist-price {
     font-size: 16px;
     font-weight: 700;
     color: #1f2a44;
+    white-space: nowrap;
 }
 
 .wishlist-remove-button {
@@ -303,5 +306,22 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
+    }
+
+    .wishlist-card-footer {
+        align-items: flex-start;
+    }
+
+    .wishlist-price {
+        font-size: 14px;
+    }
+
+    .wishlist-card-actions {
+        width: 100%;
+    }
+
+    .wishlist-view-button,
+    .wishlist-remove-button {
+        width: 100%;
     }
 }

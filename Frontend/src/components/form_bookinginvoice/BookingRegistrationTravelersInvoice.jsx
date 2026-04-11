@@ -9,6 +9,20 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const [userProfile, setUserProfile] = useState({})
 
+    const formatTravelDate = (value) => {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        const start = value.startDate ? dayjs(value.startDate) : null;
+        const end = value.endDate ? dayjs(value.endDate) : null;
+        if (start?.isValid() && end?.isValid()) {
+            return `${start.format('MM/DD/YYYY')} - ${end.format('MM/DD/YYYY')}`;
+        }
+        if (start?.isValid()) {
+            return start.format('MM/DD/YYYY');
+        }
+        return '';
+    };
+
     console.log("summary in travelers:", summaryInvoice);
 
     const bookingType = summaryInvoice.bookingType || 'No Booking';
@@ -88,7 +102,7 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
             dateOfRegistration: dayjs().format('MM/DD/YYYY'),
             tourPackageTitle: summaryInvoice.tourPackageTitle || 'N/A',
             tourPackageVia: summaryInvoice.tourPackageVia || 'N/A',
-            packageTravelDate: dayjs(summaryInvoice.travelDate).format('MM/DD/YYYY'),
+            packageTravelDate: formatTravelDate(summaryInvoice.travelDate),
             travelersDate: dayjs().format('MMMM DD, YYYY'),
         });
 
@@ -290,15 +304,15 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
                                 textAlign: 'center'
                             }}>
                                 <colgroup>
-                                    <col style={{ width: '4%' }} />   {/* NO */}
-                                    <col style={{ width: '8%' }} />   {/* TITLE */}
-                                    <col style={{ width: '18%' }} />  {/* FIRST NAME */}
-                                    <col style={{ width: '18%' }} />  {/* LAST NAME */}
-                                    <col style={{ width: '12%' }} />  {/* ROOM */}
-                                    <col style={{ width: '12%' }} />  {/* BIRTHDAY */}
-                                    <col style={{ width: '5%' }} />   {/* AGE */}
-                                    <col style={{ width: '12%' }} />  {/* PASSPORT # */}
-                                    <col style={{ width: '11%' }} />  {/* EXPIRY */}
+                                    <col style={{ width: '4%' }} />
+                                    <col style={{ width: '8%' }} />
+                                    <col style={{ width: '18%' }} />
+                                    <col style={{ width: '18%' }} />
+                                    <col style={{ width: '12%' }} />
+                                    <col style={{ width: '12%' }} />
+                                    <col style={{ width: '5%' }} />
+                                    <col style={{ width: '12%' }} />
+                                    <col style={{ width: '11%' }} />
                                 </colgroup>
                                 <thead>
                                     <tr style={{ background: '#e6f7ff', height: '26px' }}>

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image } from 'antd';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
-import TopNavUser from '../../components/topnav/TopNavUser';
 
+//PLACE HOLDER FOR VISA PROCESS STEPS - these should ideally come from the backend based on the service
 const VISA_STEPS = [
     { title: 'Application submitted', description: 'Application submitted', },
     { title: 'Application approved', description: 'Application approved', },
@@ -44,12 +44,15 @@ export default function VisaApplication() {
 
     const fetchVisaApplication = `/visa/applications/${id}`;
 
+    //IF NO ID IN URL, GO BACK TO USER APPLICATIONS
     useEffect(() => {
         if (!id) {
             navigate('/user-applications');
         }
     }, [id, navigate]);
 
+
+    //FETCH APPLICATION DETAILS
     useEffect(() => {
         const fetchApplication = async () => {
             setLoading(true);
@@ -86,7 +89,7 @@ export default function VisaApplication() {
         fetchApplication();
     }, [id]);
 
-    // Find the current step index based on status
+    // FIND CURRENT STEP INDEX BASED ON APPLICATION STATUS
     const statusValue = Array.isArray(application?.status) ? application.status[0] : application?.status;
     const currentStep = statusValue
         ? Math.max(
@@ -97,7 +100,15 @@ export default function VisaApplication() {
         )
         : 0;
 
+    const beforeUpload = (file) => {
+        const isLt5M = file.size / 1024 / 1024 < 5;
+        if (!isLt5M) {
+            message.error('Image/PDF must be smaller than 5MB!');
+        }
+        return isLt5M || Upload.LIST_IGNORE;
+    };
 
+    //SUBMIT DOCUMENTS
     const handleSubmitDocuments = async () => {
         if (uploading) {
             message.warning("Please wait until uploads finish");
@@ -168,9 +179,7 @@ export default function VisaApplication() {
         }
     };
 
-
-
-    //for payment
+    // DYNAMIC UPLOAD HANDLER FOR REQUIREMENTS
     const handleUploadChange = ({ fileList: newFileList }) => {
         if (newFileList.length > 1) {
             newFileList = [newFileList[newFileList.length - 1]];
@@ -186,6 +195,7 @@ export default function VisaApplication() {
         setFileList(newFileList);
     };
 
+    // HANDLE PAYMENT SUBMISSION
     const handleSubmitPayment = async () => {
         if (method === 'manual' && fileList.length === 0) {
             message.warning('Please upload a receipt first.');
@@ -263,29 +273,42 @@ export default function VisaApplication() {
         }
     };
 
+    // HANDLE FILE PREVIEW
     const handlePreview = async (file) => {
+        // Get the source URL
         const src = file.url || (file.originFileObj && await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file.originFileObj);
             reader.onload = () => resolve(reader.result);
             reader.onerror = (err) => reject(err);
         }));
-        const imgWindow = window.open(src);
-        if (imgWindow) {
-            imgWindow.document.write(`<img src="${src}" style="width:100%"/>`);
+
+        const isPDF = file.name?.toLowerCase().endsWith('.pdf') ||
+            file.url?.toLowerCase().endsWith('.pdf') ||
+            (file.originFileObj && file.originFileObj.type === 'application/pdf');
+
+        const previewWindow = window.open(src);
+
+        if (previewWindow) {
+            previewWindow.document.write('<html><head><title>Document Preview</title></head><body style="margin:0; display:flex; justify-content:center; align-items:center; background:#525659;">');
+
+            if (isPDF) {
+                previewWindow.document.write(`<iframe src="${src}" width="100%" height="100%" style="border:none;"></iframe>`);
+            } else {
+                previewWindow.document.write(`<img src="${src}" style="max-width:100%; max-height:100%; object-fit:contain;"/>`);
+            }
+
+            previewWindow.document.write('</body></html>');
+            previewWindow.document.close();
         }
     };
 
-
-    const handleSubmit = async () => {
-        await handleSubmitDocuments();
-    };
-
+    // CONFIRM DOCUMENT SUBMISSION
     const confirmSubmitDocuments = () => {
         setIsConfirmDocumentsOpen(true);
     };
 
-    // Generalized upload handler for dynamic requirements
+    // HANDLE REQUIREMENT UPLOAD
     const handleUpload = (requirementKey) => async ({ file, onSuccess, onError }) => {
         setUploading(true);
         try {
@@ -313,6 +336,7 @@ export default function VisaApplication() {
         }
     };
 
+    // MAP REQUIREMENT KEYS TO LABELS FOR DISPLAY
     const requirementLabelMap = requirements.reduce((acc, req, idx) => {
         const mapKey = req.key || req.req || req.label || `Requirement ${idx + 1}`;
         acc[mapKey] = req.req || req.label || mapKey;
@@ -416,12 +440,13 @@ export default function VisaApplication() {
                                                     <div style={{ marginTop: 8 }}>
                                                         {!uploadedFile && (
                                                             <Upload
+                                                                beforeUpload={beforeUpload}
                                                                 key={requirementKey}
                                                                 name={requirementKey}
                                                                 customRequest={handleUpload(requirementKey)}
                                                                 fileList={requirementFiles[requirementKey] || []}
                                                                 listType="text"
-                                                                accept="image/*"
+                                                                accept="image/*,application/pdf"
                                                                 disabled={uploading}
                                                                 onPreview={handlePreview}
                                                                 maxCount={1}
@@ -434,13 +459,23 @@ export default function VisaApplication() {
                                                         )}
 
                                                         {uploadedFile?.url && (
-                                                            <div style={{ marginTop: 12 }}>
-                                                                <img
-                                                                    src={uploadedFile.url}
-                                                                    alt={req.label || `Requirement ${idx + 1}`}
-                                                                    style={{ maxWidth: 220, cursor: 'pointer' }}
-                                                                    onClick={() => handlePreview({ url: uploadedFile.url })}
-                                                                />
+                                                            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                                {uploadedFile.name?.toLowerCase().endsWith('.pdf') || (uploadedFile.originFileObj?.type === 'application/pdf') ? (
+                                                                    <Button
+                                                                        onClick={() => handlePreview(uploadedFile)}
+                                                                        icon={<UploadOutlined />}
+                                                                    >
+                                                                        Preview PDF: {uploadedFile.name}
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Image
+                                                                        src={uploadedFile.url}
+                                                                        alt={req.label || `Requirement ${idx + 1}`}
+                                                                        style={{ maxWidth: 220, cursor: 'pointer' }}
+                                                                        preview={false}
+                                                                        onClick={() => handlePreview(uploadedFile)}
+                                                                    />
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
@@ -549,7 +584,7 @@ export default function VisaApplication() {
                                                     beforeUpload={() => false}
                                                     customRequest={({ onSuccess }) => onSuccess("ok")}
                                                     action={undefined}
-                                                    accept=".jpg,.jpeg,.png"
+                                                    accept=".jpg,.jpeg,.png,.pdf"
                                                 >
                                                     <Button icon={<UploadOutlined />} className="visaapplication-uploadreceipt-button" type="primary">
                                                         Select Receipt Image
@@ -561,7 +596,7 @@ export default function VisaApplication() {
                                                         <h4 className="section-subtitle">Preview</h4>
 
                                                         <div className="upload-preview-box">
-                                                            <img
+                                                            <Image
                                                                 src={fileList[0].preview}
                                                                 alt="Receipt Preview"
                                                                 className="upload-preview-image"
@@ -593,34 +628,54 @@ export default function VisaApplication() {
                                         {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
                                             if (!value) return null;
                                             const label = getRequirementLabel(key, entryIndex);
-                                            if (Array.isArray(value)) {
+
+                                            const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
+
+                                            const renderFilePreview = (url, identifier) => {
+                                                if (isPdf(url)) {
+                                                    return (
+                                                        <Button
+                                                            type="dashed"
+                                                            icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
+                                                            onClick={() => window.open(url, '_blank')}
+                                                            style={{
+                                                                height: 150, width: 150,
+                                                                display: 'flex', flexDirection: 'column',
+                                                                alignItems: 'center', justifyContent: 'center',
+                                                                borderRadius: 8,
+                                                                backgroundColor: '#fafafa'
+                                                            }}
+                                                        >
+                                                            <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
+                                                        </Button>
+                                                    );
+                                                }
                                                 return (
-                                                    <div key={key}>
-                                                        <b>{label}:</b>
-                                                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
-                                                            {value.map((url, idx) => (
-                                                                <img
-                                                                    key={`${key}-${idx}`}
-                                                                    src={url}
-                                                                    alt={`${label} ${idx + 1}`}
-                                                                    style={{ maxWidth: '150px', cursor: 'pointer' }}
-                                                                    onClick={() => window.open(url)}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    </div>
+                                                    <Image
+                                                        src={url}
+                                                        alt={`${label}-${identifier}`}
+                                                        width={150}
+                                                        height={150}
+                                                        style={{ borderRadius: 8, objectFit: 'cover' }}
+                                                    />
                                                 );
-                                            }
+                                            };
+
                                             return (
                                                 <div key={key}>
-                                                    <b>{label}:</b>
-                                                    <div>
-                                                        <img
-                                                            src={value}
-                                                            alt={label}
-                                                            style={{ maxWidth: '200px', marginTop: 8, cursor: 'pointer' }}
-                                                            onClick={() => window.open(value)}
-                                                        />
+                                                    <b style={{ display: 'block', marginBottom: 8 }}>{label}:</b>
+                                                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                                        {Array.isArray(value) ? (
+                                                            <Image.PreviewGroup>
+                                                                {value.map((url, idx) => (
+                                                                    <div key={`${key}-${idx}`}>
+                                                                        {renderFilePreview(url, idx)}
+                                                                    </div>
+                                                                ))}
+                                                            </Image.PreviewGroup>
+                                                        ) : (
+                                                            renderFilePreview(value, 'single')
+                                                        )}
                                                     </div>
                                                 </div>
                                             );

@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Button, message, Upload, Form, Steps, ConfigProvider, Spin, Modal } from 'antd'
+import { Button, message, Upload, Form, Steps, ConfigProvider, Spin, Modal, Input, Select, DatePicker } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import dayjs from 'dayjs';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import '../../style/components/modals/bookingsummarymodal.css'
 import '../../style/components/modals/uploadpassportmodal.css'
 import '../../style/components/modals/travelersmodal.css'
@@ -18,6 +16,7 @@ import BookingRegistrationTermsPart1 from '../../components/form/BookingRegistra
 import BookingRegistrationTermsPart2 from '../../components/form/BookingRegistrationTermsPart2';
 
 
+//FORMAT DATE FOR DISPLAY
 const getDisplayDate = (value) => {
     if (!value) return ''
     if (typeof value === 'string') return value
@@ -31,13 +30,14 @@ const getDisplayDate = (value) => {
     return String(value)
 }
 
+//INITIAL COUNT FOR GROUP BOOKING
 const INITIAL_COUNTS = {
     adult: 2,
     child: 0,
     infant: 0,
 }
 
-//convert file to base64 string
+//CONVERT FILE TO BASE64 STRING
 const toBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -45,6 +45,18 @@ const toBase64 = (file) =>
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+
+//FOR COMPUTING AGE OF TRAVELERS BASED ON BIRTHDATE
+const computeAge = (birthDate) => {
+    if (!birthDate || !dayjs(birthDate).isValid()) return ''
+    const today = dayjs()
+    const normalized = dayjs(birthDate)
+    let age = today.diff(normalized, 'year')
+    if (normalized.add(age, 'year').isAfter(today)) {
+        age -= 1
+    }
+    return age < 0 ? '' : age
+}
 
 
 export default function BookingProcess() {
@@ -57,14 +69,14 @@ export default function BookingProcess() {
     const [selectedSoloGrouped, setSelectedSoloGrouped] = useState("solo")
     const [counts, setCounts] = useState(INITIAL_COUNTS)
 
-    //close modal
+    //CLOSE MODAL
     const onCancelModal = () => {
         setIsProceedModalOpen(false);
     }
 
     console.log('Booking Data in BookingProcess:', bookingData);
 
-    //get summary data
+    //GET SUMMARY DATA
     const summary = bookingData || {}
     const data = summary
     const travelers = data.travelers?.length ? data.travelers : ['None selected']
@@ -105,10 +117,12 @@ export default function BookingProcess() {
         ? '1 Person'
         : `${travelersTotal} Person(s)${travelerBreakdownParts.length ? ` (${travelerBreakdownParts.join(', ')})` : ''}`
 
-
     const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
+    const isDomesticPackage = String(packageType || '').toLowerCase().includes('domestic')
+    const travelDocumentLabel = isDomesticPackage ? 'Valid ID' : 'Passport'
+    const travelDocumentShortLabel = isDomesticPackage ? 'valid ID' : 'passport'
     const images = data.images || []
     const requiresVisa = Boolean(
         data.requiresVisa ??
@@ -116,7 +130,7 @@ export default function BookingProcess() {
         data.visaRequired
     )
 
-    //inclusions, exclusions and itinerary
+    //INCLUSIONS, EXCLUSIONS AND ITINERARY
     const inclusions = data.inclusions || []
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
@@ -153,12 +167,69 @@ export default function BookingProcess() {
             }))
     })()
 
-    //travelers
-    const maxAdults = data.maxAdults || 10
+
+    //TRAVELERS COUNTER MAX LIMITS
+    const maxAdults = data.maxAdults || 20
     const maxChildren = data.maxChildren || 10
     const maxInfants = data.maxInfants || 10
 
+    const uploadTravelerCount = selectedSoloGrouped === 'solo'
+        ? 1
+        : travelersTotal
 
+    const groupRoomOptions = (() => {
+        if (travelersTotal === 2) {
+            return [
+                { value: 'TWIN', label: 'TWIN' },
+                { value: 'DOUBLE', label: 'DOUBLE' }
+            ]
+        }
+
+        if (travelersTotal === 3) {
+            return [{ value: 'TRIPLE', label: 'TRIPLE' }]
+        }
+
+        if (travelersTotal === 4) {
+            return [
+                { value: 'TWIN', label: 'TWIN' },
+                { value: 'DOUBLE', label: 'DOUBLE' }
+            ]
+        }
+
+        return [
+            { value: 'TWIN', label: 'TWIN' },
+            { value: 'DOUBLE', label: 'DOUBLE' },
+            { value: 'TRIPLE', label: 'TRIPLE' }
+        ]
+    })()
+
+
+    //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
+    const roomOptions = bookingType === 'Solo Booking'
+        ? [{ value: 'SINGLE', label: 'SINGLE' }]
+        : bookingType === 'Group Booking'
+            ? groupRoomOptions
+            : [
+                { value: 'TWIN', label: 'TWIN' },
+                { value: 'DOUBLE', label: 'DOUBLE' },
+                { value: 'SINGLE', label: 'SINGLE' },
+                { value: 'TRIPLE', label: 'TRIPLE' },
+            ]
+
+    //TRAVELER TYPE LABELS FOR DISPLAY
+    const travelerTypeLabels = (() => {
+        if (selectedSoloGrouped === 'solo') {
+            return ['Adult']
+        }
+
+        const labels = []
+        labels.push(...Array(travelersCount.adult).fill('Adult'))
+        labels.push(...Array(travelersCount.child).fill('Child'))
+        labels.push(...Array(travelersCount.infant).fill('Infant'))
+        return labels
+    })()
+
+    //STATE FOR UPLOADED FILES AND PREVIEWS
     const [fileLists, setFileLists] = useState(
         Array.from({ length: travelers.length || 1 }, () => [])
     );
@@ -175,9 +246,11 @@ export default function BookingProcess() {
         Array.from({ length: travelers.length || 1 }, () => null)
     );
 
+    //STATE FOR CURRENT STEP AND PDF GENERATION
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+    //UPDATE BOOKING TYPE IN CONTEXT WHEN SOLO/GROUP SELECTION CHANGES
     useEffect(() => {
         setBookingData(prev => ({
             ...prev,
@@ -185,7 +258,36 @@ export default function BookingProcess() {
         }));
     }, [selectedSoloGrouped]);
 
-    //go next step
+    //ADJUST TRAVELERS ARRAY IN FORM BASED ON UPLOAD COUNT
+    useEffect(() => {
+        const currentTravelers = form.getFieldValue('travelers') || []
+        if (currentTravelers.length === uploadTravelerCount) return
+
+        const nextTravelers = [...currentTravelers]
+        if (nextTravelers.length < uploadTravelerCount) {
+            nextTravelers.push(...Array(uploadTravelerCount - nextTravelers.length).fill({}))
+        } else {
+            nextTravelers.length = uploadTravelerCount
+        }
+        form.setFieldsValue({ travelers: nextTravelers })
+        setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [form, uploadTravelerCount, setBookingData])
+
+    //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM
+    useEffect(() => {
+        if (bookingType !== 'Solo Booking') return
+        const travelers = form.getFieldValue('travelers') || []
+        if (!travelers.length) return
+
+        const nextTravelers = travelers.map((traveler) => ({
+            ...traveler,
+            roomType: 'SINGLE'
+        }))
+        form.setFieldsValue({ travelers: nextTravelers })
+        setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [bookingType, form, setBookingData])
+
+    //GO TO NEXT PAGE OF REGISTRATION
     const next = async () => {
         try {
             await form.validateFields();
@@ -200,56 +302,78 @@ export default function BookingProcess() {
                 }
 
                 if (missingUploads) {
-                    message.error("Please upload passport for all travelers.");
+                    message.error(`Please upload ${travelDocumentShortLabel} for all travelers.`);
                     return;
                 }
             }
 
             let currentFormValues = form.getFieldsValue();
+            const currentTravelers = form.getFieldValue('travelers') || []
+            const fallbackTravelers = bookingData?.travelers || []
+            const baseTravelers = currentTravelers.length
+                ? currentTravelers
+                : Array.isArray(currentFormValues.travelers) && currentFormValues.travelers.length
+                    ? currentFormValues.travelers
+                    : fallbackTravelers
 
             if (bookingType === 'Solo Booking') {
-                currentFormValues.travelers = (currentFormValues.travelers || []).map(t => ({
+                currentFormValues.travelers = (baseTravelers || []).map(t => ({
                     ...t,
                     roomType: 'SINGLE'
                 }));
+            } else {
+                currentFormValues.travelers = baseTravelers
             }
 
-            const photoFilesFormatted = await Promise.all(
-                photoFileLists.map(async (list) => {
-                    const fileObj = list?.[0]?.originFileObj;
+            let photoFilesFormatted = bookingData?.photoFiles || [];
+            let passportFilesFormatted = bookingData?.passportFiles || [];
 
-                    if (!fileObj) {
-                        throw new Error("Invalid photo upload");
-                    }
+            if (currentStep === 2) {
+                photoFilesFormatted = await Promise.all(
+                    photoFileLists.map(async (list) => {
+                        const fileObj = list?.[0]?.originFileObj;
 
-                    return {
-                        name: fileObj.name,
-                        type: fileObj.type,
-                        base64: await toBase64(fileObj),
-                    };
-                })
-            );
+                        if (!fileObj) {
+                            throw new Error("Invalid photo upload");
+                        }
 
-            const passportFilesFormatted = await Promise.all(
-                fileLists.map(async (list) => {
-                    const fileObj = list?.[0]?.originFileObj;
+                        return {
+                            name: fileObj.name,
+                            type: fileObj.type,
+                            base64: await toBase64(fileObj),
+                        };
+                    })
+                );
 
-                    if (!fileObj) {
-                        throw new Error("Invalid file upload");
-                    }
+                passportFilesFormatted = await Promise.all(
+                    fileLists.map(async (list) => {
+                        const fileObj = list?.[0]?.originFileObj;
 
-                    return {
-                        name: fileObj.name,
-                        type: fileObj.type,
-                        base64: await toBase64(fileObj),
-                    };
-                })
-            );
+                        if (!fileObj) {
+                            throw new Error("Invalid file upload");
+                        }
+
+                        return {
+                            name: fileObj.name,
+                            type: fileObj.type,
+                            base64: await toBase64(fileObj),
+                        };
+                    })
+                );
+            }
+
+            const travelersWithDocuments = (currentFormValues.travelers || []).map((traveler, index) => ({
+                ...traveler,
+                passportFile: passportFilesFormatted[index] || null,
+                photoFile: photoFilesFormatted[index] || null
+            }));
+
+            form.setFieldsValue({ travelers: travelersWithDocuments });
 
             setBookingData(prev => ({
                 ...prev,
                 ...currentFormValues,
-                travelers: prev.travelers,
+                travelers: travelersWithDocuments.length ? travelersWithDocuments : prev.travelers,
                 travelerCounts: travelersCount,
                 bookingType: bookingType,
                 totalPrice: totalPrice,
@@ -273,20 +397,27 @@ export default function BookingProcess() {
 
 
         } catch (error) {
+            console.error('Validation error:', error);
             const firstError = error?.errorFields?.[0];
             if (firstError?.name) {
                 form.scrollToField(firstError.name);
-                message.error(firstError.errors?.[0] || "Please complete all required fields before proceeding.");
+                const fieldPath = Array.isArray(firstError.name)
+                    ? firstError.name.join(' > ')
+                    : String(firstError.name)
+                const errorMessage = firstError.errors?.[0]
+                    ? `${firstError.errors[0]} (${fieldPath})`
+                    : `Please complete all required fields before proceeding. (${fieldPath})`
+                message.error(errorMessage);
                 return;
             }
-            message.error("Please complete all required fields before proceeding.");
+            message.error("Please complete all required fields before proceeding. Check the console for details.");
         }
     };
 
-    //go to previous step
+    //GO TO PREVIOUS PAGE OF REGISTRATION
     const prev = () => setCurrentStep(currentStep - 1);
 
-
+    //VALIDATE UPLOADED FILES
     const validateFile = (file) => {
         const isValidType =
             file.type === 'image/jpeg' ||
@@ -306,16 +437,31 @@ export default function BookingProcess() {
         return false;
     };
 
+    //FINAL SUBMISSION OF REGISTRATION
     const handleFinalSubmit = async () => {
         setIsProceedModalOpen(false);
 
         try {
             await form.validateFields();
             const finalFormValues = form.getFieldsValue();
+            const fallbackTravelers = bookingData?.travelers || []
+            const finalTravelers = Array.isArray(finalFormValues.travelers) && finalFormValues.travelers.length
+                ? finalFormValues.travelers
+                : fallbackTravelers
+            const finalPassportFiles = bookingData?.passportFiles || []
+            const finalPhotoFiles = bookingData?.photoFiles || []
+            const travelersWithDocuments = finalTravelers.map((traveler, index) => ({
+                ...traveler,
+                passportFile: traveler?.passportFile || finalPassportFiles[index] || null,
+                photoFile: traveler?.photoFile || finalPhotoFiles[index] || null
+            }))
 
             setBookingData(prev => ({
                 ...prev,
                 ...finalFormValues,
+                travelers: travelersWithDocuments,
+                passportFiles: finalPassportFiles,
+                photoFiles: finalPhotoFiles,
                 status: 'pending_payment',
                 submittedAt: new Date().toISOString()
             }));
@@ -333,6 +479,8 @@ export default function BookingProcess() {
         }
     };
 
+
+    //HANDLE FORM VALUE CHANGES
     const handleValuesChange = (changedValues, allValues) => {
         console.log('Form values changed:', changedValues);
         console.log('All current form values:', allValues);
@@ -346,6 +494,7 @@ export default function BookingProcess() {
         }
     };
 
+    //HANDLE FILE UPLOAD CHANGES
     const handleChange = (info, index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = info.fileList;
@@ -365,24 +514,7 @@ export default function BookingProcess() {
         setPreviews(newPreviews);
     };
 
-    const handleResetUploads = (index) => {
-        const newFileLists = [...fileLists];
-        newFileLists[index] = [];
-        setFileLists(newFileLists);
-
-        const newPhotoFileLists = [...photoFileLists];
-        newPhotoFileLists[index] = [];
-        setPhotoFileLists(newPhotoFileLists);
-
-        const newPreviews = [...previews];
-        newPreviews[index] = null;
-        setPreviews(newPreviews);
-
-        const newPhotoPreviews = [...photoPreviews];
-        newPhotoPreviews[index] = null;
-        setPhotoPreviews(newPhotoPreviews);
-    };
-
+    //HANDLE 2BY2 PHOTO UPLOAD CHANGES
     const handlePhotoChange = (info, index) => {
         const newFileLists = [...photoFileLists];
         newFileLists[index] = info.fileList;
@@ -402,6 +534,38 @@ export default function BookingProcess() {
         setPhotoPreviews(newPreviews);
     };
 
+    //HANDLE RESET OF UPLOADED FILES
+    const handleResetUploads = (index) => {
+        const newFileLists = [...fileLists];
+        newFileLists[index] = [];
+        setFileLists(newFileLists);
+
+        const newPhotoFileLists = [...photoFileLists];
+        newPhotoFileLists[index] = [];
+        setPhotoFileLists(newPhotoFileLists);
+
+        const newPreviews = [...previews];
+        newPreviews[index] = null;
+        setPreviews(newPreviews);
+
+        const newPhotoPreviews = [...photoPreviews];
+        newPhotoPreviews[index] = null;
+        setPhotoPreviews(newPhotoPreviews);
+    };
+
+    //UPDATE TRAVELER FIELD IN FORM AND CONTEXT
+    const updateTravelerField = (index, field, value, extras = {}) => {
+        const travelers = form.getFieldValue('travelers') || []
+        const nextTravelers = travelers.map((traveler, travelerIndex) =>
+            travelerIndex === index
+                ? { ...traveler, [field]: value, ...extras }
+                : traveler
+        )
+        form.setFieldsValue({ travelers: nextTravelers })
+        setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }
+
+    //CLEAN UP OBJECT URLS TO PREVENT MEMORY LEAKS
     useEffect(() => {
         return () => {
             [...previews, ...photoPreviews].forEach(url => {
@@ -410,6 +574,8 @@ export default function BookingProcess() {
         };
     }, [previews, photoPreviews]);
 
+
+    //FUNCTIONS TO INCREASE AND DECREASE TRAVELER COUNTS WITHIN MAX LIMITS
     const increaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.min(prev.adult + 1, maxAdults) }));
     const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(2, prev.adult - 1) }));
     const increaseChild = () => setCounts(prev => ({ ...prev, child: Math.min(prev.child + 1, maxChildren) }));
@@ -417,6 +583,7 @@ export default function BookingProcess() {
     const increaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.min(prev.infant + 1, maxInfants) }));
     const decreaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.max(0, prev.infant - 1) }));
 
+    //REDIRECT TO HOME IF NO BOOKING DATA
     useEffect(() => {
         if (!bookingData) {
             navigate('/home', { replace: true });
@@ -842,25 +1009,127 @@ export default function BookingProcess() {
                 {/* UPLOAD PASSPORT AND 2BY2 PHOTO */}
                 <div className='upload-passport-container booking-section'>
                     <div className="booking-section-header">
-                        <h2 className="upload-passport-title booking-section-title">Upload Passport</h2>
+                        <h2 className="upload-passport-title booking-section-title">Upload {travelDocumentLabel}</h2>
                         <p className="upload-passport-text booking-section-subtitle">
-                            Please upload a clear image of your passport bio page for each traveler.
+                            Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
                         </p>
                     </div>
                     <div className="upload-passport-wrapper">
                         {Array.from({
-                            length:
-                                selectedSoloGrouped === 'solo'
-                                    ? 1
-                                    : counts.adult + counts.child + counts.infant
+                            length: uploadTravelerCount
                         }).map((_, index) => (
                             <div key={index} className="upload-card">
 
                                 <div className='upload-passport-left'>
-                                    <h4>Traveler {index + 1}</h4>
+                                    <h4>
+                                        Traveler {index + 1} - {travelerTypeLabels[index] || 'Traveler'}
+                                    </h4>
                                     <p style={{ fontSize: 12, color: '#888' }}>
-                                        Upload passport and 2x2 ID photo
+                                        Upload {travelDocumentShortLabel} and 2x2 ID photo
                                     </p>
+                                    <div className="upload-passport-traveler-fields">
+                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
+                                            <Select
+                                                size="small"
+                                                placeholder="Title"
+                                                value={form.getFieldValue(['travelers', index, 'title'])}
+                                                onChange={(value) => updateTravelerField(index, 'title', value)}
+                                                options={[
+                                                    { value: 'MR', label: 'MR' },
+                                                    { value: 'MS', label: 'MS' },
+                                                ]}
+                                            />
+                                            <Input
+                                                maxLength={50}
+                                                size="small"
+                                                placeholder="First name"
+                                                value={form.getFieldValue(['travelers', index, 'firstName'])}
+                                                onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
+                                                onKeyDown={(e) => {
+                                                    const regex = /^[A-Za-z\s'-]$/;
+
+                                                    if (
+                                                        e.key.length === 1 &&
+                                                        !regex.test(e.key)
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                            <Input
+                                                maxLength={50}
+                                                size="small"
+                                                placeholder="Last name"
+                                                value={form.getFieldValue(['travelers', index, 'lastName'])}
+                                                onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
+                                                onKeyDown={(e) => {
+                                                    const regex = /^[A-Za-z\s'-]$/;
+
+                                                    if (
+                                                        e.key.length === 1 &&
+                                                        !regex.test(e.key)
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                            <Select
+                                                size="small"
+                                                placeholder="Room type"
+                                                value={form.getFieldValue(['travelers', index, 'roomType'])}
+                                                onChange={(value) => updateTravelerField(index, 'roomType', value)}
+                                                options={roomOptions}
+                                                disabled={bookingType === 'Solo Booking'}
+                                            />
+                                            <DatePicker
+                                                size="small"
+                                                placeholder="Birthdate"
+                                                defaultPickerValue={dayjs('2000-01-01')}
+                                                format="MMMM D, YYYY"
+                                                value={form.getFieldValue(['travelers', index, 'birthday'])}
+                                                onChange={(date) => {
+                                                    const age = date ? computeAge(date) : ''
+                                                    updateTravelerField(index, 'birthday', date, { age })
+                                                }}
+                                                disabledDate={(current) => current && current.isAfter(dayjs(), 'day')}
+                                            />
+                                        </div>
+                                        {!isDomesticPackage && (
+                                            <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                                <Input
+                                                    maxLength={7}
+                                                    size="small"
+                                                    placeholder="Passport number"
+                                                    value={form.getFieldValue(['travelers', index, 'passportNo'])}
+                                                    onChange={(event) => updateTravelerField(index, 'passportNo', event.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        const regex = /^[0-9]$/;
+
+                                                        if (
+                                                            e.key.length === 1 &&
+                                                            !regex.test(e.key)
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                />
+                                                <DatePicker
+                                                    size="small"
+                                                    placeholder="Passport expiry"
+                                                    format="MMMM D, YYYY"
+                                                    value={form.getFieldValue(['travelers', index, 'passportExpiry'])}
+                                                    onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
+                                                    disabledDate={(current) => {
+                                                        if (!current) return false
+                                                        return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                    }}
+                                                    defaultPickerValue={dayjs().add(1, 'year')}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 
                                         {/* PASSPORT UPLOAD - Hidden if file exists */}
@@ -873,7 +1142,7 @@ export default function BookingProcess() {
                                                 maxCount={1}
                                                 showUploadList={false} // Hidden because you have a custom preview
                                             >
-                                                <Button className='upload-passport-button' type='primary'>Upload Passport</Button>
+                                                <Button className='upload-passport-button' type='primary'>Upload {travelDocumentLabel}</Button>
                                             </Upload>
                                         )}
 
@@ -914,14 +1183,24 @@ export default function BookingProcess() {
                                             />
                                         </div>
                                     )}
+                                    {!previews[index] && (
+                                        <div className="passport-preview image-placeholder" aria-hidden="true">
+                                            <span>{travelDocumentLabel} preview</span>
+                                        </div>
+                                    )}
 
                                     {photoPreviews[index] && (
-                                        <div style={{ marginTop: '10px' }}>
+                                        <div className="photo-preview">
                                             <img
                                                 src={photoPreviews[index]}
                                                 alt={`2x2 Preview ${index + 1}`}
-                                                style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
+                                                className="photo-preview-image"
                                             />
+                                        </div>
+                                    )}
+                                    {!photoPreviews[index] && (
+                                        <div className="photo-preview image-placeholder" aria-hidden="true">
+                                            <span>2x2 photo</span>
                                         </div>
                                     )}
                                 </div>
@@ -933,7 +1212,12 @@ export default function BookingProcess() {
                         <div>
                             <strong>Note:</strong>
                             <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                                <li>Upload a clear image of the passport bio page</li>
+
+                                {isDomesticPackage ? (
+                                    <li>Upload a clear image of the valid ID</li>
+                                ) : (
+                                    <li>Upload a clear image of the passport bio page</li>
+                                )}
                                 <li>Accepted formats: JPG, PNG</li>
                                 <li>Maximum file size: 5MB</li>
                                 <li>Blurry or cropped images may delay booking confirmation</li>
@@ -961,7 +1245,7 @@ export default function BookingProcess() {
                     <div className="booking-form-stepper-container">
                         <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                         <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
-                            Please upload a clear image of your passport bio page for each traveler.
+                            Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
                         </p>
                         <Steps
                             current={currentStep}

@@ -151,8 +151,8 @@
     }
 
     .userapplications-actions .search-input,
-    .userapplications-actions .booking-select,
-    .userapplications-actions .booking-date-filter {
+    .userapplications-actions .userapplications-select,
+    .userapplications-actions .userapplications-date-filter {
         width: 100% !important;
     }
 }

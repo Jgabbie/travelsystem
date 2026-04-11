@@ -283,6 +283,36 @@ const updatePassportStatus = async (req, res) => {
         if (!updated) {
             return res.status(404).json({ message: "Passport application not found" });
         }
+
+        try {
+            const user = await UserModel.findById(updated.userId);
+            if (user) {
+                await NotificationModel.create({
+                    userId: user._id,
+                    title: 'Passport application status updated',
+                    message: `Your passport application status is now ${status}.`,
+                    type: 'passport',
+                    link: '/passport',
+                    metadata: { applicationId: updated._id, status }
+                });
+
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: 'Passport application status update',
+                    html: `
+                        <div style="font-family: Arial, sans-serif; color: #333;">
+                            <h2 style="color: #305797;">Passport application status update</h2>
+                            <p>Hello ${user.firstname || user.username},</p>
+                            <p>Your passport application status is now <strong>${status}</strong>.</p>
+                            <p>Please log in to your account to view the latest details.</p>
+                        </div>
+                    `
+                });
+            }
+        } catch (notifyError) {
+            console.error('Failed to send passport status notification:', notifyError);
+        }
         res.status(200).json({ message: "Status updated", application: updated });
     } catch (error) {
         console.error("Error updating passport status:", error);

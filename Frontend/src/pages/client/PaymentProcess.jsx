@@ -33,12 +33,27 @@ export default function PaymentProcess() {
 
     const [fileList, setFileList] = useState([]);
 
-    const passportFiles = bookingData?.passportFiles || [];
-    const photoFiles = bookingData?.photoFiles || [];
+    const travelerDocuments = (bookingData?.travelers || []).reduce(
+        (acc, traveler) => {
+            if (traveler?.passportFile) acc.passport.push(traveler.passportFile)
+            if (traveler?.photoFile) acc.photo.push(traveler.photoFile)
+            return acc
+        },
+        { passport: [], photo: [] }
+    )
+
+    const passportFiles = (bookingData?.passportFiles?.length
+        ? bookingData.passportFiles
+        : travelerDocuments.passport) || []
+    const photoFiles = (bookingData?.photoFiles?.length
+        ? bookingData.photoFiles
+        : travelerDocuments.photo) || []
 
     console.log("Passport Files:", passportFiles);
     console.log("Photo Files:", photoFiles);
 
+
+    //REDIRECT IF NO BOOKING DATA
     useEffect(() => {
         if (!bookingData) {
             navigate('/home', { replace: true });
@@ -50,7 +65,7 @@ export default function PaymentProcess() {
     }, [bookingData, navigate, searchParams]);
 
 
-    //upload files functions
+    //CONVERT THE BASE64 BACK TO FILE OBJECT
     const base64ToFile = (base64Data, fileName, fileType) => {
         const arr = base64Data.split(',');
         const mime = arr[0].match(/:(.*?);/)[1] || fileType;
@@ -65,6 +80,7 @@ export default function PaymentProcess() {
         return new File([u8arr], fileName, { type: mime });
     };
 
+    //HANDLE UPLOAD CHANGE FOR PROOF OF PAYMENT
     const handleUploadChange = async ({ fileList: newFileList }) => {
         const file = newFileList[0];
 
@@ -75,6 +91,7 @@ export default function PaymentProcess() {
         setFileList(newFileList.slice(-1));
     };
 
+    //VALIDATE FILE BEFORE UPLOAD
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
@@ -90,16 +107,17 @@ export default function PaymentProcess() {
         return false;
     };
 
+    //UPLOAD ALL FILES (PASSPORT, PHOTO, PROOF) AND RETURN THEIR URLS
     const uploadAllFiles = async (passportFiles, photoFiles) => {
         const formData = new FormData();
 
-        const passportFileObjs = passportFiles.map(file =>
-            base64ToFile(file.base64, file.name, file.type)
-        );
+        const passportFileObjs = passportFiles
+            .filter((file) => file?.base64 && file?.name)
+            .map(file => base64ToFile(file.base64, file.name, file.type));
 
-        const photoFileObjs = photoFiles.map(file =>
-            base64ToFile(file.base64, file.name, file.type)
-        );
+        const photoFileObjs = photoFiles
+            .filter((file) => file?.base64 && file?.name)
+            .map(file => base64ToFile(file.base64, file.name, file.type));
 
         [...passportFileObjs, ...photoFileObjs].forEach(file => formData.append("files", file));
 
@@ -112,8 +130,7 @@ export default function PaymentProcess() {
         return res.data.urls;
     };
 
-
-    //get invoice number
+    //GET THE INVOICE NUMBER
     useEffect(() => {
         const fetchMonthBookings = async () => {
             try {
@@ -131,6 +148,7 @@ export default function PaymentProcess() {
 
     console.log("Booking Data in PaymentProcess:", bookingData);
 
+    //COMPUTATION OF AMOUNT FOR INVOICE DISPLAY AND PAYMENT PAYLOAD
     const travelerCountAdult = bookingData?.travelerCounts?.adult || 0;
     const travelerCountChild = bookingData?.travelerCounts?.child || 0;
     const travelerCountInfant = bookingData?.travelerCounts?.infant || 0;
@@ -173,13 +191,14 @@ export default function PaymentProcess() {
     const email = bookingData?.leadEmail || 'Email'
     const phone = bookingData?.leadContact || 'Phone Number';
 
-    //payload for bookings
+    //PAYLOAD FOR PAYMENT
     const paymentDetails = {
         paymentType,
         frequency,
         depositAmount: bookingData?.packageDeposit ? (bookingData.packageDeposit * travelerTotal) : 0,
     }
 
+    //PAYLOAD FOR BOOKINGS
     const bookingDetails = {
         dateOfRegistration: bookingData.dateOfRegistration,
         travelDate: bookingData?.travelDate,
@@ -239,6 +258,17 @@ export default function PaymentProcess() {
             const passportUrls = allUrls.slice(0, passportFiles.length);
             const photoUrls = allUrls.slice(passportFiles.length);
 
+            const travelersWithUrls = (bookingData?.travelers || []).map((traveler, index) => ({
+                ...traveler,
+                passportFile: passportUrls[index] || traveler?.passportFile || null,
+                photoFile: photoUrls[index] || traveler?.photoFile || null
+            }))
+
+            const bookingDetailsWithUrls = {
+                ...bookingDetails,
+                travelers: travelersWithUrls
+            }
+
             const paymentMode = paymentType === 'deposit' ? 'Deposit' : 'Full Payment';
 
             const bookingRes = await axiosInstance.post('/booking/create-booking', {
@@ -246,7 +276,7 @@ export default function PaymentProcess() {
                     packageId,
                     travelDate: bookingData?.travelDate,
                     travelers: bookingData?.travelerCounts.adult + bookingData?.travelerCounts.child + bookingData?.travelerCounts.infant || 0,
-                    bookingDetails,
+                    bookingDetails: bookingDetailsWithUrls,
                     paymentType,
                     paymentMode,
                     passportFiles: passportUrls,

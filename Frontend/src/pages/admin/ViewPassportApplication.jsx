@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 
+//STATUS STEPS FOR PASSPORT APPLICATION
 const statusSteps = [
     { title: "Application submitted", summary: "Application submitted" },
     { title: "Application approved", summary: "Application approved" },
@@ -29,6 +30,7 @@ export default function ViewPassportApplication() {
     const [application, setApplication] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [progressEditable, setProgressEditable] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
     const [alternateSlots, setAlternateSlots] = useState([
         { date: null, time: null },
         { date: null, time: null },
@@ -155,11 +157,13 @@ export default function ViewPassportApplication() {
 
     // STATUS UPDATE HANDLER ------------------------------------------------------
     const handleStepChange = async (stepIdx) => {
-        if (!progressEditable) return;
+        if (!progressEditable || isUpdatingStatus) return;
         // Map step index to status string
         const statusArr = statusSteps.map(step => step.title);
         const newStatus = statusArr[stepIdx];
+        if (!newStatus || newStatus === application.status) return;
         try {
+            setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
             await axiosInstance.put(`/passport/applications/${id}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
@@ -167,6 +171,8 @@ export default function ViewPassportApplication() {
             message.success(`Status updated to ${newStatus}`);
         } catch (err) {
             message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
         }
     };
 
@@ -184,7 +190,6 @@ export default function ViewPassportApplication() {
             )
         );
     };
-
     const disabledHours = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {
@@ -247,6 +252,7 @@ export default function ViewPassportApplication() {
                                     </Descriptions.Item>
                                 </Descriptions>
                             </Card>
+
 
                             {/* SUGGEST APPOINTMENT DATES AND TIMES IF APPLICATION IS STILL SUBMITTED */}
                             {application.status && application.status.toLowerCase() === "application submitted" && (
@@ -335,46 +341,37 @@ export default function ViewPassportApplication() {
                             <div style={{ maxWidth: 300, margin: "0 auto 0 auto", paddingBottom: 12 }}>
                                 <Card title="Progress Tracker" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                     <Steps
-                                        direction="vertical"
+                                        orientation="vertical"
                                         current={currentStep}
-                                        onChange={progressEditable ? handleStepChange : undefined}
-                                        items={
-                                            statusSteps.map((step, idx) => ({
-                                                title: (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '0 8px' }}>
-                                                        <span style={{
-                                                            fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                            fontSize: 16,
-                                                            color: "#305797",
-                                                            textAlign: 'center',
-                                                            whiteSpace: 'nowrap',
-                                                        }}>
-                                                            {step.title}
-                                                        </span>
+                                        // This single handler manages everything
+                                        onChange={progressEditable && !isUpdatingStatus ? handleStepChange : undefined}
+                                        items={statusSteps.map((step, idx) => ({
+                                            title: (
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '0 8px' }}>
+                                                    <span style={{
+                                                        fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                        fontSize: 16,
+                                                        color: "#305797",
+                                                        textAlign: 'center',
+                                                        whiteSpace: 'nowrap',
+                                                    }}>
+                                                        {step.title}
+                                                    </span>
 
-                                                        <p style={{ fontSize: 10, color: '#555' }}>Description for {step.title}</p>
+                                                    <p style={{ fontSize: 10, color: '#555' }}>Description for {step.title}</p>
 
-                                                        <Checkbox
-                                                            checked={idx <= currentStep}
-                                                            disabled={!progressEditable}
-                                                            style={{ fontSize: 14 }}
-                                                            onChange={(e) => {
-                                                                if (!progressEditable) return;
-                                                                if (e.target.checked) {
-                                                                    if (idx === currentStep + 1) {
-                                                                        handleStepChange(idx);
-                                                                    }
-                                                                } else {
-                                                                    if (idx === currentStep) {
-                                                                        handleStepChange(idx - 1 >= 0 ? idx - 1 : 0);
-                                                                    }
-                                                                }
-                                                            }}
-                                                        >Done
-                                                        </Checkbox>
-                                                    </div>
-                                                )
-                                            }))}
+                                                    <Checkbox
+                                                        checked={idx <= currentStep}
+                                                        disabled={!progressEditable}
+                                                        style={{ fontSize: 14, pointerEvents: 'none' }}
+                                                    // REMOVE the internal onChange logic
+                                                    // pointerEvents: 'none' ensures the click goes to the Step item
+                                                    >
+                                                        Done
+                                                    </Checkbox>
+                                                </div>
+                                            )
+                                        }))}
                                     />
                                 </Card>
                             </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, message, Steps, Form, Upload, Spin, Modal } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -134,7 +134,6 @@ export default function UserBookingInvoice() {
             ? "Fully Paid"
             : "Partial";
 
-    console.log("Price data", totalPrice, paidAmount)
 
     const getPaymentStatus = () => {
         if (transactionStatus === "Fully Paid" || transactionStatus === "Paid") {
@@ -187,14 +186,12 @@ export default function UserBookingInvoice() {
 
     const summaryInvoice = bookingDetails
 
-
-
     //documents
+    const travelersWithDocs = bookingDetails?.travelers?.length
+        ? bookingDetails.travelers
+        : booking?.travelers || []
     const passportFiles = booking.passportFiles || [];
     const photoFiles = booking.photoFiles || [];
-    console.log("Passport Files:", passportFiles);
-    console.log("Photo Files:", photoFiles);
-
 
     //pdf registration section
     const [form] = Form.useForm();
@@ -328,9 +325,6 @@ export default function UserBookingInvoice() {
                 const formData = new FormData();
                 formData.append("file", file); // 
 
-                console.log("Uploading file:", file);
-                console.log("FormData file:", formData.get("file"));
-
                 const uploadRes = await axiosInstance.post(
                     "/upload/upload-receipt",
                     formData,
@@ -401,11 +395,6 @@ export default function UserBookingInvoice() {
     }
 
 
-
-
-
-
-
     //booking invoice
     const buildInvoiceNumber = (allBookings, currentBooking) => {
         if (!currentBooking) return "";
@@ -443,7 +432,6 @@ export default function UserBookingInvoice() {
                 setBooking(fetchedBooking);
                 setTransactions(fetchedTransactions);
 
-                console.log("Fetched booking for invoice:", fetchedBooking);
 
                 if (fetchedBooking?._id) {
                     try {
@@ -533,10 +521,6 @@ export default function UserBookingInvoice() {
     const lastInstallmentDate = lastInstallment
         ? dayjs(lastInstallment.date).format("MMMM D, YYYY")
         : null;
-
-    console.log("Last Installment Date:", lastInstallmentDate);
-    console.log("Formatted Last Installment Date:", lastInstallment);
-    console.log("Installment Data:", installmentData);
 
     invoice.invoice.dueDate = lastInstallmentDate ? dayjs(lastInstallmentDate).format("MMMM D, YYYY") : null;
 
@@ -778,19 +762,25 @@ export default function UserBookingInvoice() {
                 {(loading || isGeneratingPdf) && (
                     <div className="booking-loading-overlay">
                         <Spin
-                            tip={isGeneratingPdf ? "Preparing your PDF..." : "Loading invoice..."}
+                            description={isGeneratingPdf ? "Preparing your PDF..." : "Loading invoice..."}
                             size="large"
                         />
                     </div>
                 )}
                 <div className="user-invoice-header">
+
+
                     <div>
+                        <Button className="user-invoice-back-button" type="primary" onClick={() => navigate("/user-bookings")}>
+                            <ArrowLeftOutlined />
+                            Back
+                        </Button>
                         <Title level={2} className="page-header">Booking Invoice</Title>
                         <AntText className="user-invoice-subtitle">
                             Review your balance and download the booking invoice.
                         </AntText>
                     </div>
-                    <Button onClick={() => navigate("/user-bookings")}>Back to bookings</Button>
+
                 </div>
 
                 <Card className="user-invoice-card" style={{ marginBottom: 40 }}>
@@ -811,20 +801,20 @@ export default function UserBookingInvoice() {
 
                     <Row gutter={[16, 16]} className="user-invoice-summary">
                         <Col xs={24} md={8}>
-                            <Card className="user-invoice-stat" bordered={false}>
+                            <Card className="user-invoice-stat" variant={false}>
                                 <AntText type="secondary">Total Price</AntText>
                                 <div className="user-invoice-amount"> ₱{totalPrice}</div>
                             </Card>
                         </Col>
                         <Col xs={24} md={8}>
-                            <Card className="user-invoice-stat" bordered={false}>
+                            <Card className="user-invoice-stat" variant={false}>
                                 <AntText type="secondary">Paid Amount</AntText>
                                 <div className="user-invoice-amount"> ₱{paidAmount}</div>
                             </Card>
                         </Col>
                         <Col xs={24} md={8}>
-                            <Card className="user-invoice-stat user-invoice-highlight" bordered={false}>
-                                <Space direction="vertical" size={4}>
+                            <Card className="user-invoice-stat user-invoice-highlight" variant={false}>
+                                <Space orientation="vertical" size={4}>
                                     <AntText type="secondary">Remaining Balance</AntText>
                                     <div className="user-invoice-amount"> ₱{remainingBalance}</div>
                                     <Tag color={paymentStatus.color}>
@@ -857,7 +847,7 @@ export default function UserBookingInvoice() {
                         fontSize: '13px',
                         color: '#2f54eb'
                     }}>
-                        <AntText info>
+                        <AntText data-info>
                             <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
                         </AntText>
                     </div>
@@ -865,7 +855,7 @@ export default function UserBookingInvoice() {
                     {transactions.length === 0 ? (
                         <AntText type="secondary">No transactions yet.</AntText>
                     ) : (
-                        <Space direction="vertical" style={{ width: "100%" }}>
+                        <Space orientation="vertical" style={{ width: "100%" }}>
                             {transactions.map((txn, index) => (
                                 <Card key={index} size="small">
                                     <Row justify="space-between">
@@ -1026,7 +1016,7 @@ export default function UserBookingInvoice() {
                 )}
 
 
-                {/* booking registration section */}
+                {/* BOOKING REGISTRATION SECTION */}
                 <div className="booking-form-stepper-container">
                     <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                     <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
@@ -1043,6 +1033,8 @@ export default function UserBookingInvoice() {
                         style={{ marginBottom: '30px' }}
                     />
 
+
+                    {/* PAGES FOR PDF GENERATION */}
                     <div
                         className="form-content-wrapper pdf-capture"
                         ref={pdfStepRef}
@@ -1081,6 +1073,7 @@ export default function UserBookingInvoice() {
                         )}
                     </div>
 
+                    {/* BUTTONS FOR BOOKING REGISTRATION */}
                     {!isGeneratingPdf && (
                         <div className="form-navigation-buttons" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
                             {currentStep > 0 && (
@@ -1107,15 +1100,69 @@ export default function UserBookingInvoice() {
                 </div>
 
                 <Card title="Documents" style={{ marginTop: 24 }}>
-                    {passportFiles.length === 0 && photoFiles.length === 0 ? (
+                    {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
                         <AntText type="secondary">No documents uploaded yet.</AntText>
-                    ) : (
-                        <div >
-                            {/* Traveler 1 Label */}
-                            <h4>Traveler 1</h4>
+                    ) : travelersWithDocs.length ? (
+                        <div>
+                            {travelersWithDocs.map((traveler, index) => (
+                                <div key={index} style={{ marginBottom: 24 }}>
+                                    <h4 style={{ marginBottom: 8 }}>
+                                        Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
+                                    </h4>
+                                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
+                                        <div><strong>Title:</strong> {traveler?.title || 'N/A'}</div>
+                                        <div><strong>Room:</strong> {traveler?.roomType || 'N/A'}</div>
+                                        <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format('MMM D, YYYY') : 'N/A'}</div>
+                                        <div><strong>Age:</strong> {traveler?.age ?? 'N/A'}</div>
+                                        <div><strong>Passport #:</strong> {traveler?.passportNo || 'N/A'}</div>
+                                        <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format('MMM D, YYYY') : 'N/A'}</div>
+                                    </div>
 
+                                    <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
+                                        {traveler?.passportFile && (
+                                            <div style={{ marginBottom: 16 }}>
+                                                <AntText strong>Passport / Valid ID:</AntText>
+                                                <div style={{ marginTop: 8 }}>
+                                                    <img
+                                                        src={traveler.passportFile}
+                                                        alt={`Traveler ${index + 1} Passport`}
+                                                        style={{
+                                                            width: 380,
+                                                            height: 450,
+                                                            objectFit: 'cover',
+                                                            borderRadius: 8,
+                                                            border: '1px solid #ccc'
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {traveler?.photoFile && (
+                                            <div style={{ marginBottom: 16 }}>
+                                                <AntText strong>2x2 Photo:</AntText>
+                                                <div style={{ marginTop: 8 }}>
+                                                    <img
+                                                        src={traveler.photoFile}
+                                                        alt={`Traveler ${index + 1} Photo`}
+                                                        style={{
+                                                            width: 200,
+                                                            height: 200,
+                                                            objectFit: 'cover',
+                                                            borderRadius: 8,
+                                                            border: '1px solid #ccc'
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div>
                             <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
-                                {/* Passport Files */}
                                 {passportFiles.length > 0 && (
                                     <div style={{ marginBottom: 16 }}>
                                         <AntText strong>Passport Files:</AntText>
@@ -1124,22 +1171,20 @@ export default function UserBookingInvoice() {
                                                 <img
                                                     key={index}
                                                     src={url}
-                                                    alt={`Traveler 1 Passport ${index + 1}`}
+                                                    alt={`Traveler Passport ${index + 1}`}
                                                     style={{
-                                                        width: 350,        // bigger width
-                                                        height: 340,       // maintain aspect ratio
+                                                        width: 350,
+                                                        height: 340,
                                                         objectFit: 'cover',
                                                         borderRadius: 8,
                                                         border: '1px solid #ccc'
                                                     }}
-                                                    preview={{ mask: <div>Click to Preview</div> }}
                                                 />
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Photo Files */}
                                 {photoFiles.length > 0 && (
                                     <div style={{ marginBottom: 16 }}>
                                         <AntText strong>Photo Files:</AntText>
@@ -1148,7 +1193,7 @@ export default function UserBookingInvoice() {
                                                 <img
                                                     key={index}
                                                     src={url}
-                                                    alt={`Traveler 1 Photo ${index + 1}`}
+                                                    alt={`Traveler Photo ${index + 1}`}
                                                     style={{
                                                         width: 200,
                                                         height: 200,
@@ -1156,14 +1201,12 @@ export default function UserBookingInvoice() {
                                                         borderRadius: 8,
                                                         border: '1px solid #ccc'
                                                     }}
-                                                    preview={{ mask: <div>Click to Preview</div> }}
                                                 />
                                             ))}
                                         </div>
                                     </div>
                                 )}
                             </div>
-
                         </div>
                     )}
                 </Card>

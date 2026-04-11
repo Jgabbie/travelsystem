@@ -15,6 +15,7 @@ export default function ViewVisaApplication() {
     const [application, setApplication] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [progressEditable, setProgressEditable] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
     const [alternateSlots, setAlternateSlots] = useState([
         { date: null, time: null },
         { date: null, time: null },
@@ -191,14 +192,17 @@ export default function ViewVisaApplication() {
 
     // STATUS UPDATE HANDLER ---------------------------------------------------------------
     const handleStepChange = async (stepIdx) => {
-        if (!progressEditable) return;
+        if (!progressEditable || isUpdatingStatus) return;
         // Map step index to status string
         const statusArr = application.visaProcessSteps.map(step => step);
         const newStatus = statusArr[stepIdx];
 
+        if (!newStatus || newStatus === statusText) return;
+
         console.log("Attempting to update visa application status to:", newStatus);
 
         try {
+            setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
             await axiosInstance.put(`/visa/applications/${id}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
@@ -206,6 +210,8 @@ export default function ViewVisaApplication() {
             message.success(`Status updated to ${newStatus}`);
         } catch (err) {
             message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
         }
     };
 
@@ -365,47 +371,33 @@ export default function ViewVisaApplication() {
                                     <Card title="Progress Tracker" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                         <div className="steps-vertical-line">
                                             <Steps
-                                                direction="vertical"
+                                                orientation="vertical"
                                                 current={currentStep}
-                                                onChange={progressEditable ? handleStepChange : undefined}
-                                                items={
-                                                    application.visaProcessSteps.map((step, idx) => ({
-                                                        title: (
-                                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '0 8px' }}>
-                                                                <span style={{
-                                                                    fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                    fontSize: 16,
-                                                                    color: "#305797",
-                                                                    textAlign: 'center',
-                                                                    whiteSpace: 'nowrap',
-                                                                }}>
-                                                                    {step}
-                                                                </span>
-
-                                                                <p style={{ fontSize: 10, color: '#555' }}>Description for {step}</p>
-
-                                                                <Checkbox
-                                                                    checked={idx <= currentStep}
-                                                                    disabled={!progressEditable}
-                                                                    style={{ fontSize: 14 }}
-                                                                    onChange={(e) => {
-                                                                        if (!progressEditable) return;
-                                                                        if (e.target.checked) {
-                                                                            if (idx === currentStep + 1) {
-                                                                                handleStepChange(idx);
-                                                                            }
-                                                                        } else {
-                                                                            if (idx === currentStep) {
-                                                                                handleStepChange(idx - 1 >= 0 ? idx - 1 : 0);
-                                                                            }
-                                                                        }
-                                                                    }}
-                                                                >Done
-                                                                </Checkbox>
-                                                            </div>
-                                                        )
-                                                    }))
-                                                }
+                                                // This is the only place that should handle the click
+                                                onChange={progressEditable && !isUpdatingStatus ? handleStepChange : undefined}
+                                                items={application.visaProcessSteps.map((step, idx) => ({
+                                                    title: (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                            <span style={{
+                                                                fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                                color: "#305797",
+                                                            }}>
+                                                                {step}
+                                                            </span>
+                                                            <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
+                                                                Description for {step}
+                                                            </p>
+                                                            <Checkbox
+                                                                checked={idx <= currentStep}
+                                                                disabled={!progressEditable}
+                                                                // REMOVE the onChange from here entirely
+                                                                style={{ pointerEvents: 'none' }}
+                                                            >
+                                                                Done
+                                                            </Checkbox>
+                                                        </div>
+                                                    )
+                                                }))}
                                                 className="no-line"
                                             />
                                         </div>

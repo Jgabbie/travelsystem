@@ -11,7 +11,7 @@
 .profile-container {
     display: flex;
     flex-direction: row;
-    padding-top: 100px;
+    padding-top: 50px;
     gap: 24px;
     justify-content: center;
     padding-left: 24px;
@@ -325,6 +325,7 @@
     .profile-container {
         flex-direction: column;
         align-items: center;
+        padding-top: 50px;
     }
 
     .profile-content,
@@ -366,24 +367,6 @@
         align-items: flex-start;
         gap: 12px;
     }
-}
-
-@media (max-width: 480px) {
-    .profile-container {
-        padding: 12px;
-        padding-top: 90px;
-    }
-
-    .profile-avatar {
-        width: 84px;
-        height: 84px;
-    }
-}
-
-@media (max-width: 768px) {
-    .profile-container {
-        padding: 10px;
-    }
 
     .profile-content {
         grid-template-columns: 1fr;
@@ -409,5 +392,17 @@
 
     .profile-fields {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 12px;
+        padding-top: 100px;
+    }
+
+    .profile-avatar {
+        width: 84px;
+        height: 84px;
     }
 }

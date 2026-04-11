@@ -191,29 +191,37 @@
 /* UPLOAD PASSPORT AND 2BY2 IMAGE UPLOAD */
 .booking-section .upload-passport-wrapper {
     text-align: left;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(320px, 625px));
-    gap: 40px;
-    justify-content: start;
-    justify-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
 }
 
 .booking-section .upload-card {
     width: 100%;
-    max-width: 625px;
     height: auto;
-    min-height: 240px;
+    min-height: 500px;
     border-radius: 16px;
     border: 1px solid #e7ecf7;
     box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+    display: flex;
+    gap: 28px;
+    align-items: stretch;
+    padding: 20px;
 }
 
 .booking-section .upload-passport-left {
+    width: 100%;
     align-items: flex-start;
+    gap: 10px;
 }
 
 .booking-section .upload-passport-right {
+    width: 100%;
     align-items: center;
+    gap: 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
 }
 
 .booking-section .upload-passport-notes {
@@ -398,6 +406,12 @@
     margin: 0 auto;
 }
 
+.pdf-capture .mrc-form-page {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 794px;
+}
+
 .booking-form-stepper-container {
     padding: 40px;
     clear: both;
@@ -536,5 +550,105 @@
 @media (max-width: 540px) {
     .booking-section .booking-summary-image {
         max-height: 180px;
+    }
+}
+
+.booking-section .upload-passport-traveler-fields {
+    width: 100%;
+    display: grid;
+    gap: 10px;
+}
+
+.booking-section .upload-passport-traveler-fields .ant-select,
+.booking-section .upload-passport-traveler-fields .ant-input,
+.booking-section .upload-passport-traveler-fields .ant-picker {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.booking-section .upload-passport-traveler-fields .ant-select-selector,
+.booking-section .upload-passport-traveler-fields .ant-picker {
+    height: 32px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+}
+
+.booking-section .upload-passport-traveler-fields .ant-picker-input>input {
+    font-size: 12px;
+}
+
+.booking-section .passport-preview {
+    width: 320px;
+    height: auto;
+    max-height: 600px;
+    min-height: 360px;
+}
+
+.booking-section .passport-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.booking-section .photo-preview {
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid #e7ecf7;
+    background: #ffffff;
+    padding: 10px;
+}
+
+.booking-section .photo-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.booking-section .image-placeholder {
+    border: 1px dashed #cfd8ee;
+    background: linear-gradient(135deg, #f6f8ff 0%, #ffffff 100%);
+    color: #7c8799;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.booking-section .passport-preview.image-placeholder {
+    height: 400px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+    .booking-section .upload-card {
+        flex-direction: column;
+    }
+
+    .booking-section .upload-passport-right {
+        align-items: flex-start;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .booking-section .passport-preview {
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+    }
+
+    .booking-section .photo-preview {
+        width: 180px;
+        height: 180px;
     }
 }
