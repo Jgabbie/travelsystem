@@ -624,7 +624,7 @@ export default function VisaApplication() {
                         {statusValue && statusValue.toLowerCase() === 'documents uploaded' && (
                             <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
                                 {application.submittedDocuments && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'row', gap: 50, flexWrap: 'wrap' }}>
                                         {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
                                             if (!value) return null;
                                             const label = getRequirementLabel(key, entryIndex);
@@ -639,7 +639,7 @@ export default function VisaApplication() {
                                                             icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
                                                             onClick={() => window.open(url, '_blank')}
                                                             style={{
-                                                                height: 150, width: 150,
+                                                                height: 250, width: 250,
                                                                 display: 'flex', flexDirection: 'column',
                                                                 alignItems: 'center', justifyContent: 'center',
                                                                 borderRadius: 8,
@@ -654,8 +654,8 @@ export default function VisaApplication() {
                                                     <Image
                                                         src={url}
                                                         alt={`${label}-${identifier}`}
-                                                        width={150}
-                                                        height={150}
+                                                        width={250}
+                                                        height={250}
                                                         style={{ borderRadius: 8, objectFit: 'cover' }}
                                                     />
                                                 );

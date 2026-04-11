@@ -303,32 +303,58 @@ export default function ViewPassportApplication() {
                             <Divider orientation="left">Submitted Documents</Divider>
                             <Card>
                                 {submittedDocuments.length > 0 ? (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                                        {submittedDocuments.map((doc, idx) => (
-                                            <div
-                                                key={idx}
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "space-between",
-                                                    gap: 16
-                                                }}
-                                            >
-                                                <div style={{ fontWeight: 600 }}>
-                                                    {doc.name || `Document ${idx + 1}`}
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                        {submittedDocuments.map((doc, idx) => {
+                                            const isPDF = doc.url?.toLowerCase().endsWith(".pdf");
+
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    style={{
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        gap: 12,
+                                                        padding: "16px",
+                                                        border: "1px solid #f0f0f0",
+                                                        borderRadius: "8px"
+                                                    }}
+                                                >
+                                                    <div style={{ fontWeight: 600, fontSize: "16px" }}>
+                                                        {doc.name || `Document ${idx + 1}`}
+                                                    </div>
+
+                                                    {isPDF ? (
+                                                        <div style={{ width: "100%", height: "500px", overflow: "hidden", borderRadius: "8px" }}>
+                                                            <iframe
+                                                                src={`${doc.url}#toolbar=0`}
+                                                                title={doc.name}
+                                                                width="100%"
+                                                                height="100%"
+                                                                style={{ border: "none" }}
+                                                            />
+                                                            <div style={{ marginTop: 8 }}>
+                                                                <Button type="link" href={doc.url} target="_blank" rel="noopener noreferrer">
+                                                                    Open PDF in New Tab
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <Image
+                                                            src={doc.url}
+                                                            alt={doc.name || `Document ${idx + 1}`}
+                                                            width={300}
+                                                            style={{ borderRadius: 8, cursor: "pointer" }}
+                                                            fallback="/images/file-placeholder.png"
+                                                        />
+                                                    )}
                                                 </div>
-                                                <Image
-                                                    src={doc.url}
-                                                    alt={doc.name || `Document ${idx + 1}`}
-                                                    width={180}
-                                                    style={{ borderRadius: 8 }}
-                                                    fallback="/images/file-placeholder.png"
-                                                />
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
-                                    <div>No documents submitted.</div>
+                                    <div style={{ padding: "20px", textAlign: "center", color: "#999" }}>
+                                        No documents submitted.
+                                    </div>
                                 )}
                             </Card>
 

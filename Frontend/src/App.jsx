@@ -165,6 +165,7 @@ function App() {
 
 
             <Route element={<ProtectedRoute />}>
+              <Route path="/user-preferences" element={<UserPreference />} />
               <Route element={<Layout />}>
                 <Route path='/profile' element={<ProfilePage />} />
                 <Route path='/user-bookings' element={<UserBookings />} />
@@ -182,7 +183,6 @@ function App() {
                 <Route path="/user-applications/success/visa" element={<SuccessfulPaymentVisa />} />
                 <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
                 <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
-                <Route path="/user-preferences" element={<UserPreference />} />
                 <Route path="/user-applications" element={<UserApplications />} />
                 <Route path="/passport-application" element={<PassportApplication />} />
                 <Route path="/visa-application" element={<VisaApplication />} />

@@ -134,6 +134,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     //submit OTP for verification
     const submitOTP = async (e) => {
         e.preventDefault()
+
         try {
             const response = await axiosInstance.post('auth/verify-account', { otp: getOTP, email: email, username: values.username, password: values.password }, { withCredentials: true })
 
@@ -239,13 +240,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             <h1 className='emailverify-heading-modal'>Verify OTP</h1>
                             <p className='emailverify-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
-                            <form onSubmit={async (e) => {
-                                e.preventDefault();
-                                const ok = await submitOTP({ otp: getOTP, values });
-                                if (ok) {
-                                    clearForm();
-                                }
-                            }}>
+                            <form onSubmit={submitOTP}>
                                 <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
                                     if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                         e.preventDefault()
@@ -260,8 +255,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             {
                                 timer > 0 ? <p id='emailverify-footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                                     :
-                                    <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={() => {
-                                        resendOTP();
+                                    <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={(e) => {
+                                        resendOTP(e);
                                         setTimer(60);
                                     }}>Click here</Button></p>
                             }

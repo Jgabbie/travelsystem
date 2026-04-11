@@ -265,7 +265,7 @@ export default function PassportApplication() {
                         icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
                         onClick={() => window.open(url, '_blank')}
                         style={{
-                            height: 150, width: 150,
+                            height: 250, width: 250,
                             display: 'flex', flexDirection: 'column',
                             alignItems: 'center', justifyContent: 'center',
                             borderRadius: 8,
@@ -278,8 +278,8 @@ export default function PassportApplication() {
                     <Image
                         src={url}
                         alt={label}
-                        width={150}
-                        height={150}
+                        width={250}
+                        height={250}
                         style={{
                             borderRadius: 8,
                             objectFit: 'cover',
@@ -802,7 +802,7 @@ export default function PassportApplication() {
                                     application.status.toLowerCase() !== 'application approved' &&
                                     application.status.toLowerCase() !== 'payment complete' && (
                                         <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'row', gap: 160, flexWrap: 'wrap' }}>
                                                 {(() => {
                                                     const docs = application.submittedDocuments || {
                                                         birthCertificate: application.birthCertificate,
