@@ -1,13 +1,12 @@
 import React from 'react'
-import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/userpassportassistance.css'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 
 export default function UserPassportAssistance() {
 
     return (
         <div>
-            <TopNavUser />
             <div className="passport-assistance">
                 <h2>Passport Assistance</h2>
                 <div className="passport-card-grid">

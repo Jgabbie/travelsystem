@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal } from 'antd'
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
-import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/usertransactions.css'
 import '../../style/admin/transaction.css'
 import axiosInstance from '../../config/axiosConfig'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function UserTransactions() {
     const [transactions, setTransactions] = useState([])
@@ -151,7 +151,6 @@ export default function UserTransactions() {
             }}
         >
             <div className="user-transactions-page">
-                <TopNavUser />
                 <div className="user-transactions-container">
                     <div className="user-transactions-header">
                         <h2>My Transactions</h2>

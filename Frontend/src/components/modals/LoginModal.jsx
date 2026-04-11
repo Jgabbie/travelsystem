@@ -1,180 +1,224 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, message, Spin, ConfigProvider } from 'antd';
+import { Button, Modal, Input, Spin, ConfigProvider } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
 import { useAuth } from '../../hooks/useAuth';
-import axiosInstance from '../../config/axiosConfig';
+import { useLogin } from '../../hooks/login/useLogin';
+
 
 export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, onOpenSignup }) {
 
     const navigate = useNavigate();
     const { setAuth } = useAuth();
 
-    const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
-    const [email, setEmail] = useState('');
+    // const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
+    // const [email, setEmail] = useState('');
 
     const [values, setValues] = useState({
         username: '',
         password: ''
     });
 
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    // const [error, setError] = useState('');
+    // const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [timer, setTimer] = useState(0);
+    const [getOTP, setOTP] = useState('');
 
-    const [timer, setTimer] = useState(0)
-    const [errorOTP, setErrorOTP] = useState("")
-    const [getOTP, setOTP] = useState("")
-    const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
+    // const [timer, setTimer] = useState(0)
+    // const [errorOTP, setErrorOTP] = useState("")
+    // const [getOTP, setOTP] = useState("")
+    // const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
 
-    //start timer when OTP modal opens
-    useEffect(() => {
-        if (isOTPModalVisible) {
-            setTimer(60)
-        }
-    }, [isOTPModalVisible])
+    const {
+        isLoading,
+        error,
+        otpError,
+        isOTPModalVisible,
+        handleLogin,
+        submitOTP,
+        resendOTP
+    } = useLogin({ setAuth, navigate, onLoginSuccess });
 
-    //decrease timer every second until it reaches 0
-    useEffect(() => {
-        let interval = null
-        if (timer > 0) {
-            interval = setInterval(() => {
-                setTimer((prev) => prev - 1)
-            }, 1000)
-        }
-        return () => clearInterval(interval)
-    }, [timer])
-
-    //clear form function
     const clearForm = () => {
         setValues({
             username: '',
             password: ''
         });
-        setError('');
-        setIsOTPModalVisible(false);
-        setOTP("");
-        setErrorOTP("");
+        setOTP('');
+        setTimer(0);
+
         isCloseLogin();
-    }
+    };
+
+    //start timer when OTP modal opens
+    useEffect(() => {
+        if (isOTPModalVisible) {
+            setTimer(60);
+        }
+    }, [isOTPModalVisible]);
+
+    //decrease timer every second until it reaches 0
+    useEffect(() => {
+        let interval = null;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [timer]);
+
+
+
+    // //start timer when OTP modal opens
+    // useEffect(() => {
+    //     if (isOTPModalVisible) {
+    //         setTimer(60)
+    //     }
+    // }, [isOTPModalVisible])
+
+    // //decrease timer every second until it reaches 0
+    // useEffect(() => {
+    //     let interval = null
+    //     if (timer > 0) {
+    //         interval = setInterval(() => {
+    //             setTimer((prev) => prev - 1)
+    //         }, 1000)
+    //     }
+    //     return () => clearInterval(interval)
+    // }, [timer])
+
+    //clear form function
+    // const clearForm = () => {
+    //     setValues({
+    //         username: '',
+    //         password: ''
+    //     });
+    //     setError('');
+    //     setIsOTPModalVisible(false);
+    //     setOTP("");
+    //     setErrorOTP("");
+    //     isCloseLogin();
+    // }
 
     //login function
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        try {
-            const response = await axiosInstance.post(
-                '/auth/loginUser',
-                { username: values.username, password: values.password }
-            )
-            if (onLoginSuccess) {
-                const userData = response.data.user;
-                const userRole = userData?.role;
-                console.log("userRole:", userRole)
-                setIsLoading(false);
+    // const handleLogin = async (e) => {
+    //     e.preventDefault();
+    //     setIsLoading(true);
+    //     try {
+    //         const response = await axiosInstance.post(
+    //             '/auth/loginUser',
+    //             { username: values.username, password: values.password }
+    //         )
+    //         if (onLoginSuccess) {
+    //             const userData = response.data.user;
+    //             const userRole = userData?.role;
+    //             console.log("userRole:", userRole)
+    //             setIsLoading(false);
 
-                if (userData) {
-                    setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
-                }
+    //             if (userData) {
+    //                 setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
+    //             }
 
-                message.success('Login successful');
-                if (userRole === 'Admin') {
-                    navigate('/dashboard')
-                } else if (userRole === 'Employee') {
-                    navigate('/employee/dashboard')
-                } else if (userData && !userData.loginOnce) {
-                    navigate('/user-preferences')
-                } else {
-                    navigate('/home')
-                }
+    //             message.success('Login successful');
+    //             if (userRole === 'Admin') {
+    //                 navigate('/dashboard')
+    //             } else if (userRole === 'Employee') {
+    //                 navigate('/employee/dashboard')
+    //             } else if (userData && !userData.loginOnce) {
+    //                 navigate('/user-preferences')
+    //             } else {
+    //                 navigate('/home')
+    //             }
 
-                isCloseLogin()
-                onLoginSuccess()
-                clearForm()
-            }
+    //             isCloseLogin()
+    //             onLoginSuccess()
+    //             clearForm()
+    //         }
 
-            setIsLoading(false);
+    //         setIsLoading(false);
 
-        } catch (err) {
+    //     } catch (err) {
 
-            const status = err.response?.status;
-            const data = err.response?.data;
+    //         const status = err.response?.status;
+    //         const data = err.response?.data;
 
-            if (status === 403) {
-                try {
-                    const email = data.email
-                    await axiosInstance.post('auth/send-verify-otp', { email: email })
-                    setEmail(email)
-                    setIsLoading(false);
-                    setIsOTPModalVisible(true)
-                    return
-                } catch (error) {
-                    const errorMsg = error.response?.data?.message || "Verification failed"
-                    console.error("Error: ", errorMsg)
-                    setError(errorMsg)
-                    setIsLoading(false);
-                    return
-                }
-            }
-            const errorMsg = err.response?.data?.message || 'Login failed';
-            console.error("Error: ", errorMsg)
-            setError(errorMsg)
-            message.error(errorMsg);
-            setIsLoading(false);
-        }
-    }
+    //         if (status === 403) {
+    //             try {
+    //                 const email = data.email
+    //                 await axiosInstance.post('auth/send-verify-otp', { email: email })
+    //                 setEmail(email)
+    //                 setIsLoading(false);
+    //                 setIsOTPModalVisible(true)
+    //                 return
+    //             } catch (error) {
+    //                 const errorMsg = error.response?.data?.message || "Verification failed"
+    //                 console.error("Error: ", errorMsg)
+    //                 setError(errorMsg)
+    //                 setIsLoading(false);
+    //                 return
+    //             }
+    //         }
+    //         const errorMsg = err.response?.data?.message || 'Login failed';
+    //         console.error("Error: ", errorMsg)
+    //         setError(errorMsg)
+    //         message.error(errorMsg);
+    //         setIsLoading(false);
+    //     }
+    // }
 
-    //submit OTP for verification
-    const submitOTP = async (e) => {
-        e.preventDefault()
-        try {
-            const response = await axiosInstance.post('auth/verify-account', { otp: getOTP, email: email, username: values.username, password: values.password }, { withCredentials: true })
+    // //submit OTP for verification
+    // const submitOTP = async (e) => {
+    //     e.preventDefault()
+    //     try {
+    //         const response = await axiosInstance.post('auth/verify-account', { otp: getOTP, email: email, username: values.username, password: values.password }, { withCredentials: true })
 
-            if (response.data.success || response.status === 200) {
-                setOTP("")
-                setIsOTPModalVisible(false)
-                setIsVerifiedModalOpen(false)
+    //         if (response.data.success || response.status === 200) {
+    //             setOTP("")
+    //             setIsOTPModalVisible(false)
+    //             setIsVerifiedModalOpen(false)
 
-                try {
-                    const loginResponse = await axiosInstance.post(
-                        '/auth/loginUser',
-                        { username: values.username, password: values.password }
-                    )
-                    const userData = loginResponse.data.user
-                    if (userData) {
-                        setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce })
-                        clearForm()
-                        isCloseLogin()
-                        onLoginSuccess()
-                        navigate('/user-preferences')
-                    }
-                } catch (loginError) {
-                    console.error("Auto login after verification failed:", loginError.response?.data?.message || loginError.message)
-                }
+    //             try {
+    //                 const loginResponse = await axiosInstance.post(
+    //                     '/auth/loginUser',
+    //                     { username: values.username, password: values.password }
+    //                 )
+    //                 const userData = loginResponse.data.user
+    //                 if (userData) {
+    //                     setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce })
+    //                     clearForm()
+    //                     isCloseLogin()
+    //                     onLoginSuccess()
+    //                     navigate('/user-preferences')
+    //                 }
+    //             } catch (loginError) {
+    //                 console.error("Auto login after verification failed:", loginError.response?.data?.message || loginError.message)
+    //             }
 
 
-            }
-        } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
-            console.error("Error: ", errorMsg)
-            setErrorOTP(errorMsg)
-        }
-    }
+    //         }
+    //     } catch (err) {
+    //         const errorMsg = err.response?.data?.message || "Verification failed"
+    //         console.error("Error: ", errorMsg)
+    //         setErrorOTP(errorMsg)
+    //     }
+    // }
 
-    //resend OTP and restart timer
-    const resendOTP = async (e) => {
-        e.preventDefault()
-        try {
-            await axiosInstance.post('auth/send-verify-otp', { email: email })
-            alert("OTP sent!")
-            setTimer(60)
-        } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
-            console.error("Error: ", errorMsg)
-            alert(errorMsg)
-        }
-    }
+    // //resend OTP and restart timer
+    // const resendOTP = async (e) => {
+    //     e.preventDefault()
+    //     try {
+    //         await axiosInstance.post('auth/send-verify-otp', { email: email })
+    //         alert("OTP sent!")
+    //         setTimer(60)
+    //     } catch (err) {
+    //         const errorMsg = err.response?.data?.message || "Verification failed"
+    //         console.error("Error: ", errorMsg)
+    //         alert(errorMsg)
+    //     }
+    // }
 
     //go to signup page
     const goToSignup = (e) => {
@@ -233,14 +277,20 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             <h1 className='emailverify-heading-modal'>Verify OTP</h1>
                             <p className='emailverify-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
-                            <form onSubmit={submitOTP}>
-                                <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                const ok = await submitOTP({ otp: getOTP, values });
+                                if (ok) {
+                                    clearForm();
+                                }
+                            }}>
+                                <Input.OTP status={otpError ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
                                     if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
                                 }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
 
-                                <p id='error-message-modal'>{errorOTP}</p>
+                                <p id='error-message-modal'>{otpError}</p>
 
                                 <Button id='emailverify-submit-otp-button' htmlType="submit">Submit</Button>
                             </form>
@@ -248,7 +298,10 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             {
                                 timer > 0 ? <p id='emailverify-footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                                     :
-                                    <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={resendOTP}>Click here</Button></p>
+                                    <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={() => {
+                                        resendOTP();
+                                        setTimer(60);
+                                    }}>Click here</Button></p>
                             }
                         </div>
                     ) : (
@@ -256,7 +309,13 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             <h1 id='login-heading-modal'>Welcome</h1>
                             <p id='login-secondary-heading-modal'>Login Account</p>
 
-                            <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
+                            <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={async (e) => {
+                                e.preventDefault();
+                                const ok = await handleLogin(values); //this line calls the handleLogin function in the useLogin hook
+                                if (ok) {
+                                    clearForm();
+                                }
+                            }}>
                                 <div className='login-div-input-fields-modal'>
                                     <label className='login-labels-modal' htmlFor="username">Username</label>
                                     <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
@@ -292,28 +351,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
                     )}
                 </Modal>
-
-                <Modal
-                    open={isVerifiedModalOpen}
-                    className='emailverify-success-modal'
-                    footer={null}
-                    closable={false}
-                >
-                    <div className='emailverify-container-modal'>
-                        <h1 className='emailverify-heading-modal'>Account has been verified</h1>
-                        <p className='emailverify-secondary-heading-modal'>You can now proceed to your account.</p>
-                        <Button
-                            id='emailverify-success-button'
-                            onClick={() => {
-                                setIsVerifiedModalOpen(false)
-                                navigate('/user-preferences')
-                            }}
-                        >
-                            Continue
-                        </Button>
-                    </div>
-                </Modal>
-
             </div >
         </ConfigProvider>
     )

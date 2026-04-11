@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin } from 'antd'
 import { useNavigate } from 'react-router-dom'
-import TopNavUser from '../../components/TopNavUser'
 import axiosInstance from '../../config/axiosConfig'
 import '../../style/client/wishlist.css'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function Wishlist() {
     const navigate = useNavigate()
@@ -140,8 +140,6 @@ export default function Wishlist() {
         >
 
             <div>
-                <TopNavUser />
-
                 <div className="destinations-hero-section">
                     <div className="destinations-hero-overlay"></div>
                     <div className="destinations-hero-content">

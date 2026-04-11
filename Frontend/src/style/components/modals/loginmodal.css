@@ -131,12 +131,16 @@ body {
 
 #login-button-modal {
     font-family: "Roboto", sans-serif;
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 600;
     background-color: #305797;
-    color: #FFF;
-    width: 240px;
-    height: 50px;
-    margin-top: 20px;
+    color: #fff;
+    border-radius: 10px;
+    width: 250px;
+    height: 45px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+    margin-top: 40px;
     margin-bottom: 20px;
 }
 

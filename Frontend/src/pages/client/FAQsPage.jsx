@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react'
 import { Button, Collapse, ConfigProvider, Input } from 'antd'
 import { useNavigate } from 'react-router-dom'
-import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/faqspage.css'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 const { Panel } = Collapse
 
@@ -71,7 +71,6 @@ export default function FAQsPage() {
             }}
         >
             <div className="faq-page">
-                <TopNavUser />
 
                 <div className="faq-hero">
                     <div className="faq-hero-overlay"></div>

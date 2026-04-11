@@ -4,9 +4,9 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
-import TopNavUser from '../../components/TopNavUser';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
+import TopNavUser from '../../components/topnav/TopNavUser';
 
 // Status color mapping for passport application statuses
 const getStatusColor = (status) => {
@@ -330,7 +330,7 @@ export default function PassportApplication() {
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
             <div className="user-bookings-page">
-                <TopNavUser />
+
                 <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
                     <Button
                         type='primary'

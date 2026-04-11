@@ -3,9 +3,9 @@ import { Select, Input, Button, ConfigProvider, DatePicker, TimePicker, Modal } 
 import { useAuth } from '../../hooks/useAuth'
 import dayjs from 'dayjs'
 import LoginModal from '../../components/modals/LoginModal'
-import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/passport.css'
 import axiosInstance from '../../config/axiosConfig'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 
 const dfaLocations = [
@@ -151,7 +151,7 @@ export default function RenewPassport() {
             </Modal>
 
             <div className="passport-page">
-                <TopNavUser />
+
                 <div className="passport-container">
                     <header className="passport-header">
                         <h2>Passport Renewal Assistance</h2>

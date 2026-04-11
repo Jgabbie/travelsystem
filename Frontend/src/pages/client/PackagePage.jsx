@@ -7,10 +7,10 @@ import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
 import '../../style/client/packagepage.css'
 
-import TopNavUser from '../../components/TopNavUser'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
+import TopNavUser from '../../components/topnav/TopNavUser';
 
 
 export default function PackagePage() {
@@ -441,7 +441,6 @@ export default function PackagePage() {
 
             <div>
                 <Spin spinning={packageLoading} tip="Loading package details..." size="large">
-                    <TopNavUser />
                     <div className="packagepage-container">
                         <div className="package-box">
                             <div className="package-left">

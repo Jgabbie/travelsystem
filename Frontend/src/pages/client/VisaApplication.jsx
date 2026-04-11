@@ -3,9 +3,9 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
-import TopNavUser from '../../components/TopNavUser';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
+import TopNavUser from '../../components/topnav/TopNavUser';
 
 const VISA_STEPS = [
     { title: 'Application submitted', description: 'Application submitted', },
@@ -342,7 +342,6 @@ export default function VisaApplication() {
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
             <div className="user-bookings-page">
-                <TopNavUser />
                 <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
                     <Button
                         className='visaapplication-back-button'

@@ -25,7 +25,7 @@ import SuccessfulPaymentPassport from "./pages/client/SuccessfulPaymentPassport"
 import SuccessfulPaymentVisa from "./pages/client/SuccessfulPaymentVisa";
 import PackageDomesticQuotation from "./pages/client/PackageDomesticQuotation";
 import PackageInternationalQuotation from "./pages/client/PackageInternationalQuotation";
-import UserPreference1 from "./pages/client/newuser/UserPreference1";
+import UserPreference from "./pages/client/newuser/UserPreference";
 import FAQsPage from "./pages/client/FAQsPage";
 
 import UserApplications from "./pages/client/UserApplications";
@@ -35,8 +35,6 @@ import VisaApplication from "./pages/client/VisaApplication";
 import Logging from './pages/admin/Logging';
 import Auditing from './pages/admin/Auditing';
 
-import AdminLayout from "./components/AdminLayout";
-import EmployeeLayout from "./components/EmployeeLayout";
 import BookingManagement from "./pages/admin/BookingManagement";
 import UploadBookingInvoice from "./pages/admin/UploadBookingInvoice";
 import UserManagement from "./pages/admin/UserManagement";
@@ -64,11 +62,13 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestsUsersRoute from "./routes/GuestsUsersRoute";
 import EmployeeRoute from "./routes/EmployeeRoute";
 
+import AdminLayout from "./components/layout/AdminLayout";
+import EmployeeLayout from "./components/layout/EmployeeLayout";
+import Layout from "./components/layout/Layout";
 
 import "antd/dist/reset.css";
 import { BookingProvider } from "./context/BookingContext";
 import { QuotationBookingProvider } from "./context/BookingQuotationContext";
-
 
 
 function App() {
@@ -81,15 +81,17 @@ function App() {
             <Route path='/' element={<Navigate to="/home" replace />} />
 
             <Route element={<GuestsUsersRoute />}>
-              <Route path='/home' element={<LandingPage />} />
-              <Route path='/destinations-packages' element={<DestinationsPackages />} />
-              <Route path='/passandvisa-service' element={<PassAndVisaService />} />
-              <Route path='/apply-visa' element={<ApplyVisa />} />
-              <Route path='/new-passport' element={<NewPassport />} />
-              <Route path='/renew-passport' element={<RenewPassport />} />
-              <Route path='/package' element={<PackagePage />} />
-              <Route path='/package/:id' element={<PackagePage />} />
-              <Route path='/general-faq' element={<FAQsPage />} />
+              <Route element={<Layout />}>
+                <Route path='/home' element={<LandingPage />} />
+                <Route path='/destinations-packages' element={<DestinationsPackages />} />
+                <Route path='/passandvisa-service' element={<PassAndVisaService />} />
+                <Route path='/apply-visa' element={<ApplyVisa />} />
+                <Route path='/new-passport' element={<NewPassport />} />
+                <Route path='/renew-passport' element={<RenewPassport />} />
+                <Route path='/package' element={<PackagePage />} />
+                <Route path='/package/:id' element={<PackagePage />} />
+                <Route path='/general-faq' element={<FAQsPage />} />
+              </Route>
             </Route>
 
 
@@ -163,27 +165,28 @@ function App() {
 
 
             <Route element={<ProtectedRoute />}>
-              <Route path='/profile' element={<ProfilePage />} />
-              <Route path='/user-bookings' element={<UserBookings />} />
-              <Route path='/user-transactions' element={<UserTransactions />} />
-              <Route path='/wishlist' element={<Wishlist />} />
-              <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
-              <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
-              <Route path='/user-quotation-request' element={<UserQuotationRequest />} />
-              <Route path='/booking-process' element={<BookingProcess />} />
-              <Route path='/quotation-booking-process' element={<QuotationBookingProcess />} />
-              <Route path='/quotation-payment-process' element={<QuotationsPaymentProcess />} />
-              <Route path='/booking-payment' element={<PaymentProcess />} />
-              <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
-              <Route path="/user-applications/success/passport" element={<SuccessfulPaymentPassport />} />
-              <Route path="/user-applications/success/visa" element={<SuccessfulPaymentVisa />} />
-              <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
-              <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
-              <Route path="/user-preferences" element={<UserPreference1 />} />
-              <Route path="/user-applications" element={<UserApplications />} />
-              <Route path="/passport-application" element={<PassportApplication />} />
-              <Route path="/visa-application" element={<VisaApplication />} />
-
+              <Route element={<Layout />}>
+                <Route path='/profile' element={<ProfilePage />} />
+                <Route path='/user-bookings' element={<UserBookings />} />
+                <Route path='/user-transactions' element={<UserTransactions />} />
+                <Route path='/wishlist' element={<Wishlist />} />
+                <Route path='/user-package-quotation' element={<UserPackageQuotation />} />
+                <Route path='/user-booking-invoice' element={<UserBookingInvoice />} />
+                <Route path='/user-quotation-request' element={<UserQuotationRequest />} />
+                <Route path='/booking-process' element={<BookingProcess />} />
+                <Route path='/quotation-booking-process' element={<QuotationBookingProcess />} />
+                <Route path='/quotation-payment-process' element={<QuotationsPaymentProcess />} />
+                <Route path='/booking-payment' element={<PaymentProcess />} />
+                <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
+                <Route path="/user-applications/success/passport" element={<SuccessfulPaymentPassport />} />
+                <Route path="/user-applications/success/visa" element={<SuccessfulPaymentVisa />} />
+                <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
+                <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
+                <Route path="/user-preferences" element={<UserPreference />} />
+                <Route path="/user-applications" element={<UserApplications />} />
+                <Route path="/passport-application" element={<PassportApplication />} />
+                <Route path="/visa-application" element={<VisaApplication />} />
+              </Route>
             </Route>
 
             <Route path='*' element={<Navigate to="/home" replace />} />

@@ -3,9 +3,9 @@ import { Table, Tag, Input, Select, DatePicker, Button, Space, ConfigProvider, m
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import axiosInstance from '../../config/axiosConfig';
-import TopNavUser from '../../components/TopNavUser';
 import '../../style/client/userapplications.css'
 import { useNavigate } from 'react-router-dom';
+import TopNavUser from '../../components/topnav/TopNavUser';
 
 export default function UserApplications() {
     const [applications, setApplications] = useState([]);
@@ -109,7 +109,6 @@ export default function UserApplications() {
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
             <div className="userapplications-page">
-                <TopNavUser />
                 <div className="userapplications-container">
                     <div className="userapplications-header">
                         <h2>My Applications</h2>

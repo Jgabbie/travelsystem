@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled } from '@ant-design/icons';
-import { useAuth } from '../../hooks/useAuth';
+import { usePopularPackages } from '../../hooks/landingpage/usePopularPackages';
+import { useDomesticPackages } from '../../hooks/landingpage/useDomesticPackages';
+import { useContact } from '../../hooks/landingpage/useContact';
 import { useNavigate } from 'react-router-dom';
-import TopNavUser from '../../components/TopNavUser';
 import LoginModal from '../../components/modals/LoginModal';
 import '../../style/client/landingpage.css'
 import axiosInstance from '../../config/axiosConfig';
@@ -11,7 +12,6 @@ import axiosInstance from '../../config/axiosConfig';
 
 export default function LandingPage() {
     const navigate = useNavigate()
-    const { auth } = useAuth()
 
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
@@ -29,13 +29,12 @@ export default function LandingPage() {
 
     const [openModalSuccess, setOpenModalSuccess] = useState(false)
     const [openModalError, setOpenModalError] = useState(false)
+    const [fallbackPopularPackages, setFallbackPopularPackages] = useState([])
 
     const [popularPackages, setPopularPackages] = useState([])
-    const [fallbackPopularPackages, setFallbackPopularPackages] = useState([])
     const [domesticPackages, setDomesticPackages] = useState([])
     const [isPopularLoading, setIsPopularLoading] = useState(false)
     const [isDomesticLoading, setIsDomesticLoading] = useState(false)
-
 
     const [contactValues, setContactValues] = useState({
         name: '',
@@ -43,14 +42,7 @@ export default function LandingPage() {
         message: '',
     })
 
-    const handleBrowsePackages = () => {
-        if (auth) {
-            navigate('/destinations-packages')
-            return
-        }
-        setIsLoginVisible(true)
-    }
-
+    //SEARCH BAR -------------------------------------------------------------
     const handleSearch = () => {
         const params = new URLSearchParams();
         const trimmed = searchTerm.trim();
@@ -88,6 +80,10 @@ export default function LandingPage() {
         navigate(query ? `/destinations-packages?${query}` : '/destinations-packages');
     }
 
+
+
+
+    // SEND MESSAGE ---------------------------------------------------------------------
     const sendMessage = async () => {
         try {
             await axiosInstance.post('/email/contact', contactValues)
@@ -102,6 +98,7 @@ export default function LandingPage() {
         }
     }
 
+    //FETCH PACKAGES
     useEffect(() => {
         const fetchPopularPackages = async () => {
             setIsPopularLoading(true)
@@ -163,6 +160,7 @@ export default function LandingPage() {
         fetchPopularPackages()
     }, [])
 
+    //FETCH DOMESTIC PACKAGES -----------------------------------------------
     useEffect(() => {
         const fetchDomesticPackages = async () => {
             setIsDomesticLoading(true)
@@ -210,15 +208,15 @@ export default function LandingPage() {
             }}
         >
             <div className="landing-container">
-                <TopNavUser />
 
+
+                {/* FIRST SECTION */}
                 <div className="hero-section">
                     <div className="hero-overlay"></div>
                     <div className="hero-content">
                         <h1>Your Link to the World</h1>
                         <p>Discover affordable vacation travel and tours. Book your dream activities and start exploring the world!</p>
                     </div>
-
 
                     <div className="search-widget">
 
@@ -345,6 +343,8 @@ export default function LandingPage() {
                     <Button className='page-link-buttons' type='link' onClick={() => aboutusRef.current?.scrollIntoView({ behavior: 'smooth' })} >About Us</Button>
                 </div>
 
+
+                {/* SECOND SECTION */}
                 <div ref={packagesRef} style={{ paddingTop: '50px', marginTop: '30px' }}>
                     <div className="hero-section-packages">
                         <div className="hero-overlay-packages"></div>
@@ -353,57 +353,61 @@ export default function LandingPage() {
                             <p>
                                 Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
                             </p>
-                            <Button className='packages-button' onClick={handleBrowsePackages}>BROWSE TOUR PACKAGES</Button>
+                            <Button className='packages-button' onClick={() => { navigate('/destinations-packages') }}>BROWSE TOUR PACKAGES</Button>
                         </div>
                     </div>
 
-                    <h1 className='popular-packages-text'>Popular Packages</h1>
+                    <div className='popular-packages-section'>
+                        <h1 className='popular-packages-text'>Popular Packages</h1>
 
-                    <div className='popular-packages'>
-                        {isPopularLoading ? (
-                            <p>Loading popular packages...</p>
-                        ) : popularPackages.length === 0 && fallbackPopularPackages.length === 0 ? (
-                            <p>No popular packages available yet.</p>
-                        ) : (
-                            (popularPackages.length > 0 ? popularPackages : fallbackPopularPackages).map((pkg) => (
-                                <Card
-                                    key={pkg.id}
-                                    hoverable
-                                    style={{ width: 350 }}
-                                    onClick={() => navigate(`/package/${pkg.id}`)}
-                                    cover={
-                                        pkg.image ? (
-                                            <img
-                                                style={{ height: 250 }}
-                                                draggable={false}
-                                                alt={pkg.packageName}
-                                                src={pkg.image}
-                                            />
-                                        ) : (
-                                            <div
-                                                style={{
-                                                    height: 250,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    background: '#f5f5f5',
-                                                    color: '#777'
-                                                }}
-                                            >
-                                                No Image
-                                            </div>
-                                        )
-                                    }
-                                >
-                                    <h2>{pkg.packageName}</h2>
-                                    <p>{formatDescription(pkg.packageDescription)}</p>
-                                </Card>
-                            ))
-                        )}
+                        <div className='popular-packages'>
+                            {isPopularLoading ? (
+                                <p>Loading popular packages...</p>
+                            ) : popularPackages.length === 0 && fallbackPopularPackages.length === 0 ? (
+                                <p>No popular packages available yet.</p>
+                            ) : (
+                                (popularPackages.length > 0 ? popularPackages : fallbackPopularPackages).map((pkg) => (
+                                    <Card
+                                        className='package-card'
+                                        key={pkg.id}
+                                        hoverable
+                                        onClick={() => navigate(`/package/${pkg.id}`)}
+                                        cover={
+                                            pkg.image ? (
+                                                <img
+                                                    style={{ height: 250 }}
+                                                    draggable={false}
+                                                    alt={pkg.packageName}
+                                                    src={pkg.image}
+                                                />
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        height: 250,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        background: '#f5f5f5',
+                                                        color: '#777'
+                                                    }}
+                                                >
+                                                    No Image
+                                                </div>
+                                            )
+                                        }
+                                    >
+                                        <h2>{pkg.packageName}</h2>
+                                        <p>{formatDescription(pkg.packageDescription)}</p>
+                                    </Card>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div ref={exploreRef} style={{ paddingTop: '100px', marginTop: '50px' }}>
+
+                {/* THIRD SECTION */}
+                <div ref={exploreRef} style={{ marginTop: '50px', paddingTop: '110px' }}>
                     <div className='explore-container'>
                         <div className='explore-local-packages-section'>
                             <h1 className='explore-text explore-text-center-mobile'>Local Tour Packages</h1>
@@ -449,172 +453,138 @@ export default function LandingPage() {
                                     ))
                                 )}
                             </div>
-
-                            <h1 className='explore-text'>Explore the World</h1>
-                            <div className='explore-world-section'>
-                                <img style={{ height: 250, width: 400, marginLeft: 40, marginBottom: 40 }}
-                                    draggable={false}
-                                    alt="example"
-                                    src="https://www.hertz.com/content/dam/hertz/global/blog-articles/planning-a-trip/kyoto-japan/kyoto-header.jpg"
-                                />
-                                <div className='explore-world-text'>
-                                    <h2 className='explore-world-text-heading'>Kyoto, Japan</h2>
-                                    <p className='explore-world-text-description'>
-                                        Experience the cultural heart of Japan with our Kyoto tour package, featuring ancient temples, serene gardens, and traditional tea houses. Explore iconic landmarks such as Kiyomizu-dera, Fushimi Inari Shrine, and the Arashiyama Bamboo Grove. Enjoy comfortable accommodations and guided experiences throughout your journey. Perfect for travelers seeking history, culture, and unforgettable memories.
-                                    </p>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div className='explore-local-packages-section-right'>
-                            <img
-                                draggable={false}
-                                alt="example"
-                                src="https://i.pinimg.com/736x/0c/57/3e/0c573eba9d6beacea2a2c6b59874a138.jpg"
-                            />
-                            <Button>VIEW MORE</Button>
                         </div>
                     </div>
                 </div>
 
-
+                {/* ABOUTUS SECTION */}
                 <div ref={aboutusRef} style={{ paddingTop: '100px', marginTop: '50px' }}>
-                    <div className='explore-container'>
+
+                    <div className="hero-section-aboutus">
+                        <div className="hero-overlay-aboutus"></div>
+                        <div className="hero-content-aboutus">
+                            <h1>M&RC Travel and Tours</h1>
+                            <p>
+                                Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
+                            </p>
+                        </div>
+                    </div>
 
 
-                        <div className='explore-local-packages-section'>
+                    <div className='aboutus-row'>
+                        <div className='aboutus-text-col'>
+                            <div className='aboutus-text-wrap'>
+                                <h1 className='explore-text'>About Us</h1>
 
-                            <div className="hero-section-aboutus">
-                                <div className="hero-overlay-aboutus"></div>
-                                <div className="hero-content-aboutus">
-                                    <h1>M&RC Travel and Tours</h1>
-                                    <p>
-                                        Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
-                                    </p>
-                                </div>
-                            </div>
+                                <p className='aboutus-text'>
+                                    M&RC Travel and Tours humbly started travel business in July 2018 when two vibrant entrepreneur, traveler,
+                                    Maricar Carle and Rhon Carle decided to turn their passion into business. Office is located at #1 Cor Fatima Street
+                                    San antonio Avenue Valley 1, Brgy. San Antonio Paranaque City with over thousand of agents worldwide and travel partners.
+                                </p>
 
+                                <p className='aboutus-text'>
+                                    We commit to adapt the changing needs of business sectors and become a major player through satisfying specialized requirements of the small, medium and large organizations.
+                                </p>
 
-                            <div className='aboutus-row'>
-                                <div className='aboutus-text-col'>
-                                    <div className='aboutus-text-wrap'>
-                                        <h1 className='explore-text'>About Us</h1>
-
-                                        <p className='aboutus-text'>
-                                            M&RC Travel and Tours humbly started travel business in July 2018 when two vibrant entrepreneur, traveler,
-                                            Maricar Carle and Rhon Carle decided to turn their passion into business. Office is located at #1 Cor Fatima Street
-                                            San antonio Avenue Valley 1, Brgy. San Antonio Paranaque City with over thousand of agents worldwide and travel partners.
-                                        </p>
-
-                                        <p className='aboutus-text'>
-                                            We commit to adapt the changing needs of business sectors and become a major player through satisfying specialized requirements of the small, medium and large organizations.
-                                        </p>
-
-                                        <p className='aboutus-text'>
-                                            We value honesty and integrity.
-                                            M&RC Travel and Tours continuously develop other line of services with the primary objective of extending wide range of quality and excellent service.
-                                        </p>
-                                    </div>
-
-                                </div>
-
-                                <div className='aboutus-image-col'>
-                                    <img
-                                        className='aboutus-image'
-                                        draggable={false}
-                                        alt="example"
-                                        src="/images/Homepage1.png"
-                                    />
-                                </div>
-
-                            </div>
-
-                            <div className='aboutus-row'>
-
-                                <div className='aboutus-image-col aboutus-image-col-left'>
-                                    <img
-                                        className='aboutus-image aboutus-image-offset'
-                                        draggable={false}
-                                        alt="example"
-                                        src="/images/Homepage2.png"
-                                    />
-                                </div>
-
-                                <div className='aboutus-vision-mission'>
-                                    <div className='aboutus-vision-mision-block'>
-                                        <h2 className='explore-text'>Our Vision</h2>
-                                        <p className='aboutus-text'>
-                                            Our Vision is to be the preferred travel
-                                            and tours agency in the country offering
-                                            specialized, high quality and cost-
-                                            efficient travel solutions at all times,
-                                            anywhere, everywhere.
-                                        </p>
-                                    </div>
-
-                                    <div className='aboutus-vision-mision-block'>
-                                        <h2 className='explore-text'>Our Mission</h2>
-                                        <p className='aboutus-text'>
-                                            We are committed to provide value-added travel
-                                            solutions to our Customers by offering good service
-                                            and meaningful experience through the help of our
-                                            reliable and service- oriented travel partners.
-                                            We aim to grow and profit with the knowledge that
-
-                                            each customer we served is fully satisfied.
-
-                                            We adhere to the notion of reliability, competence,
-
-                                            competitiveness and integrity.
-
-                                            We are committed to be updated with the latest
-                                            technology to keep up with the demands of the global
-
-                                            market.
-
-                                            We care for the well-being of our employees, our
-
-                                            community and our environment.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <div className='aboutus-accreditation'>
-                                <h2 className='explore-text'>Accreditations</h2>
-
-                                <div style={{ display: 'flex', gap: '70px', flexDirection: 'row' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-                                        <img
-                                            style={{ width: 200, height: 200 }}
-                                            draggable={false}
-                                            alt="example"
-                                            src="/images/philgeps.png"
-                                        />
-
-                                        <p style={{ textAlign: "center", width: 600 }} className='aboutus-text'>
-                                            M&RC Travel and Tours is accredited by the Philippine Government Electronic Procurement System (PhilGEPS), ensuring that we meet the highest standards of quality, reliability, and professionalism in providing travel services. Our accreditation reflects our commitment to excellence and our dedication to delivering exceptional travel experiences to our customers.
-                                        </p>
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-                                        <img
-                                            style={{ width: 200, height: 200 }}
-                                            draggable={false}
-                                            alt="example"
-                                            src="/images/dotseal.png"
-                                        />
-
-                                        <p style={{ textAlign: "center", width: 600 }} className='aboutus-text'>
-                                            M&RC Travel and Tours is accredited by the Department of Tourism (DOT) of the Philippines, ensuring that we meet the highest standards of quality, safety, and customer service in the travel industry. Our accreditation reflects our commitment to providing exceptional travel experiences and our dedication to upholding the integrity and professionalism of our services.
-                                        </p>
-                                    </div>
-                                </div>
+                                <p className='aboutus-text'>
+                                    We value honesty and integrity.
+                                    M&RC Travel and Tours continuously develop other line of services with the primary objective of extending wide range of quality and excellent service.
+                                </p>
                             </div>
 
                         </div>
+
+                        <div className='aboutus-image-col'>
+                            <img
+                                className='aboutus-image'
+                                draggable={false}
+                                alt="example"
+                                src="/images/Homepage1.png"
+                            />
+                        </div>
+
+                    </div>
+
+                    <div className='aboutus-row'>
+
+                        <div className='aboutus-image-col aboutus-image-col-left'>
+                            <img
+                                className='aboutus-image aboutus-image-offset'
+                                draggable={false}
+                                alt="example"
+                                src="/images/Homepage2.png"
+                            />
+                        </div>
+
+                        <div className='aboutus-vision-mission'>
+                            <h2 className='explore-text'>Our Vision</h2>
+                            <p className='aboutus-text'>
+                                Our Vision is to be the preferred travel
+                                and tours agency in the country offering
+                                specialized, high quality and cost-
+                                efficient travel solutions at all times,
+                                anywhere, everywhere.
+                            </p>
+
+                            <h2 className='explore-text'>Our Mission</h2>
+                            <p className='aboutus-text'>
+                                We are committed to provide value-added travel
+                                solutions to our Customers by offering good service
+                                and meaningful experience through the help of our
+                                reliable and service- oriented travel partners.
+                                We aim to grow and profit with the knowledge that
+
+                                each customer we served is fully satisfied.
+
+                                We adhere to the notion of reliability, competence,
+
+                                competitiveness and integrity.
+
+                                We are committed to be updated with the latest
+                                technology to keep up with the demands of the global
+
+                                market.
+
+                                We care for the well-being of our employees, our
+
+                                community and our environment.
+                            </p>
+
+                        </div>
+                    </div>
+
+
+                    <div className='aboutus-accreditation'>
+                        <h2 className='explore-text'>Accreditations</h2>
+
+                        <div style={{ display: 'flex', gap: '70px', flexDirection: 'row' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                                <img
+                                    style={{ width: 200, height: 200 }}
+                                    draggable={false}
+                                    alt="example"
+                                    src="/images/philgeps.png"
+                                />
+
+                                <p style={{ textAlign: "center", width: 600 }} className='aboutus-text'>
+                                    M&RC Travel and Tours is accredited by the Philippine Government Electronic Procurement System (PhilGEPS), ensuring that we meet the highest standards of quality, reliability, and professionalism in providing travel services. Our accreditation reflects our commitment to excellence and our dedication to delivering exceptional travel experiences to our customers.
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                                <img
+                                    style={{ width: 200, height: 200 }}
+                                    draggable={false}
+                                    alt="example"
+                                    src="/images/dotseal.png"
+                                />
+
+                                <p style={{ textAlign: "center", width: 600 }} className='aboutus-text'>
+                                    M&RC Travel and Tours is accredited by the Department of Tourism (DOT) of the Philippines, ensuring that we meet the highest standards of quality, safety, and customer service in the travel industry. Our accreditation reflects our commitment to providing exceptional travel experiences and our dedication to upholding the integrity and professionalism of our services.
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 

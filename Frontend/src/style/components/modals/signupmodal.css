@@ -122,11 +122,15 @@ body {
 
 #signup-button-modal {
     font-family: "Roboto", sans-serif;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 600;
     background-color: #305797;
-    color: #FFF;
-    width: 240px;
-    height: 40px;
+    color: #fff;
+    border-radius: 10px;
+    width: 250px;
+    height: 45px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
 }
 
 #signup-button-modal:hover {

@@ -4,9 +4,9 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
-import TopNavUser from '../../components/TopNavUser'
 import axiosInstance from '../../config/axiosConfig'
 import '../../style/client/userquotation.css'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function UserPackageQuotation() {
     const [searchText, setSearchText] = useState('')
@@ -139,7 +139,6 @@ export default function UserPackageQuotation() {
             }}
         >
             <div className="user-quotation-page">
-                <TopNavUser />
                 <div className="user-quotation-container">
                     <div className="user-quotation-header">
                         <h2>My Quotation Requests</h2>

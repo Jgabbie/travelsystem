@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
-import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/destinationspackages.css'
 import axiosInstance from '../../config/axiosConfig'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 
 export default function DestinationsPackages() {
@@ -163,9 +163,6 @@ export default function DestinationsPackages() {
             }}
         >
             <div>
-
-                <TopNavUser />
-
                 <div className="destinations-hero-section">
                     <div className="destinations-hero-overlay"></div>
                     <div className="destinations-hero-content">

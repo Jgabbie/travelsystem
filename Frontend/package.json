@@ -2,6 +2,7 @@
   "name": "travelsystem",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8000",
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
     "@emotion/react": "^11.14.0",

@@ -3,9 +3,9 @@ import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigPr
 import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig';
-import TopNavUser from '../../components/TopNavUser';
 import '../../style/client/profilepage.css'
 import '../../style/client/userpreference.css';
+import TopNavUser from '../../components/topnav/TopNavUser';
 
 
 export default function ProfilePage() {
@@ -408,7 +408,6 @@ export default function ProfilePage() {
             }}
         >
             <div className="profile-page" >
-                <TopNavUser />
 
                 {/* profile */}
                 <div className="profile-container" style={{ marginBottom: 40 }}>

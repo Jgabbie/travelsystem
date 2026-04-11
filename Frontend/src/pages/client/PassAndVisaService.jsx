@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Input, Typography, ConfigProvider, Empty } from 'antd'
-import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../../config/axiosConfig'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function PassAndVisaService() {
     const [search, setSearch] = useState('')
@@ -61,8 +61,6 @@ export default function PassAndVisaService() {
             }}
         >
             <div>
-                <TopNavUser />
-
                 <div className="passandvisa-hero-section">
                     <div className="passandvisa-hero-overlay"></div>
                     <div className="passandvisa-hero-content">

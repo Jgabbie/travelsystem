@@ -3,9 +3,9 @@ import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, C
 import { UploadOutlined, SearchOutlined, EyeOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import axiosInstance from '../../config/axiosConfig'
-import TopNavUser from '../../components/TopNavUser'
 import '../../style/client/userbookings.css'
 import { useNavigate } from 'react-router-dom'
+import TopNavUser from '../../components/topnav/TopNavUser'
 
 
 export default function UserBookings() {
@@ -283,7 +283,6 @@ export default function UserBookings() {
 
 
                 <div className="user-bookings-page">
-                    <TopNavUser />
                     <div className="user-bookings-container">
                         <div className="user-bookings-header">
                             <h2>My Bookings</h2>
