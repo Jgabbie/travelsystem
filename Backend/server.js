@@ -38,7 +38,8 @@ const contactLimiter = rateLimit({
 const app = express()
 const allowedOrigins = [
     "http://localhost:3000",
-    "https://mrctravelntoursapi.vercel.app"
+    "https://mrctravelntoursapi.vercel.app",
+    "https://mrctraveltours-qa72u.ondigitalocean.app"
 ];
 
 app.use(cors({
