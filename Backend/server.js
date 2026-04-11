@@ -126,11 +126,13 @@ if (!isServerless) {
 
     app.set('io', io);
 
-    if (process.env.NODE_ENV !== 'production') {
-        server.listen(8000, () => {
-            console.log('Server is up and running');
-        });
-    }
+    // Use the PORT variable provided by the host, default to 8080
+    const PORT = 8080;
+
+    // Remove the 'production' check so it actually runs on the cloud
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is up and running on port ${PORT}`);
+    });
 }
 
 module.exports = app;
