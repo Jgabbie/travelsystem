@@ -39,7 +39,7 @@ const app = express()
 const allowedOrigins = [
     "http://localhost:3000",
     "https://mrctravelntoursapi.vercel.app",
-    "https://mrctraveltours-qa72u.ondigitalocean.app"
+    "https://lively-smoke-07f042800.7.azurestaticapps.net"
 ];
 
 app.use(cors({
