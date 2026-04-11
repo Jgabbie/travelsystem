@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
@@ -630,34 +630,68 @@ export default function VisaApplication() {
                                             const label = getRequirementLabel(key, entryIndex);
 
                                             const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
+                                            const getDownloadUrl = (originalUrl) => {
+                                                if (!originalUrl.includes('cloudinary.com')) return originalUrl;
+                                                return originalUrl.replace('/upload/', '/upload/fl_attachment/');
+                                            };
 
                                             const renderFilePreview = (url, identifier) => {
-                                                if (isPdf(url)) {
-                                                    return (
+                                                const isPdfFile = isPdf(url);
+
+                                                return (
+                                                    <div key={identifier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                        <div style={{
+                                                            width: 250,
+                                                            height: 250,
+                                                            border: '1px solid #d9d9d9',
+                                                            borderRadius: 8,
+                                                            overflow: 'hidden',
+                                                            backgroundColor: '#f5f5f5',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            {isPdfFile ? (
+                                                                <Button
+                                                                    type="dashed"
+                                                                    icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
+                                                                    onClick={() => window.open(url, '_blank')}
+                                                                    style={{
+                                                                        height: 250, width: 250,
+                                                                        display: 'flex', flexDirection: 'column',
+                                                                        alignItems: 'center', justifyContent: 'center',
+                                                                        borderRadius: 8,
+                                                                        backgroundColor: '#fafafa'
+                                                                    }}
+                                                                >
+                                                                    <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
+                                                                </Button>
+                                                            ) : (
+                                                                <Image
+                                                                    src={url}
+                                                                    alt={`${label}-${identifier}`}
+                                                                    width="100%"
+                                                                    height="100%"
+                                                                    style={{ objectFit: 'cover' }}
+                                                                />
+                                                            )}
+                                                        </div>
+
+                                                        {/* DOWNLOAD BUTTON */}
                                                         <Button
-                                                            type="dashed"
-                                                            icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
-                                                            onClick={() => window.open(url, '_blank')}
-                                                            style={{
-                                                                height: 250, width: 250,
-                                                                display: 'flex', flexDirection: 'column',
-                                                                alignItems: 'center', justifyContent: 'center',
-                                                                borderRadius: 8,
-                                                                backgroundColor: '#fafafa'
+                                                            className='visaapplication-download-button'
+                                                            type="default"
+                                                            icon={<DownloadOutlined />}
+                                                            size="small"
+                                                            block
+                                                            onClick={() => {
+                                                                const downloadUrl = getDownloadUrl(url);
+                                                                window.location.href = downloadUrl; // Directly triggers the attachment download
                                                             }}
                                                         >
-                                                            <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
+                                                            Download {isPdfFile ? 'PDF' : 'Image'}
                                                         </Button>
-                                                    );
-                                                }
-                                                return (
-                                                    <Image
-                                                        src={url}
-                                                        alt={`${label}-${identifier}`}
-                                                        width={250}
-                                                        height={250}
-                                                        style={{ borderRadius: 8, objectFit: 'cover' }}
-                                                    />
+                                                    </div>
                                                 );
                                             };
 

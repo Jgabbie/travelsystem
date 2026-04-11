@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import axiosInstance from '../../config/axiosConfig';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
@@ -257,6 +257,14 @@ export default function PassportApplication() {
         // Check if the URL contains '.pdf' (case insensitive)
         const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
 
+        const handleDownload = () => {
+            if (!url) return;
+            const downloadUrl = url.includes('cloudinary.com')
+                ? url.replace('/upload/', '/upload/fl_attachment/')
+                : url;
+            window.location.href = downloadUrl;
+        };
+
         return (
             <div style={{ width: 150 }}>
                 {isPdf ? (
@@ -288,8 +296,22 @@ export default function PassportApplication() {
                         placeholder={<div style={{ width: 150, height: 150, background: '#eee' }} />}
                     />
                 )}
+
+                <Button
+                    className='passportapplication-download-button'
+                    type="default"
+                    icon={<DownloadOutlined />}
+                    size="small"
+                    onClick={handleDownload}
+                >
+                    Download {isPdf ? 'PDF' : 'Image'}
+                </Button>
             </div>
+
+
         );
+
+
     };
 
     //HANDLE PREVIEW FOR UPLOADED FILES

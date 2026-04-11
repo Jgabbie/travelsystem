@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Button, message, Upload, Form, Steps, ConfigProvider, Modal } from 'antd'
+import { Button, message, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker } from 'antd'
 import { useNavigate } from 'react-router-dom';
 import { useQuotationBooking } from '../../context/BookingQuotationContext';
 import axiosInstance from '../../config/axiosConfig';
+import dayjs from 'dayjs';
 import '../../style/components/modals/bookingsummarymodal.css'
 import '../../style/components/modals/uploadpassportmodal.css'
 import '../../style/components/modals/travelersmodal.css'
@@ -21,6 +22,17 @@ const toBase64 = (file) =>
         reader.onerror = error => reject(error);
     });
 
+const computeAge = (birthDate) => {
+    if (!birthDate || !dayjs(birthDate).isValid()) return ''
+    const today = dayjs()
+    const normalized = dayjs(birthDate)
+    let age = today.diff(normalized, 'year')
+    if (normalized.add(age, 'year').isAfter(today)) {
+        age -= 1
+    }
+    return age < 0 ? '' : age
+}
+
 export default function QuotationBookingProcess() {
     const [form] = Form.useForm();
     const { quotationBookingData, setQuotationBookingData, clearQuotationBookingData } = useQuotationBooking();
@@ -29,11 +41,12 @@ export default function QuotationBookingProcess() {
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
 
+    //CLOSE MODAL
     const onCancelModal = () => {
         setIsProceedModalOpen(false);
     }
 
-    //get summary data
+    //GET SUMMARY DATA FROM BOOKING QUOTATION CONTEXT
     const summary = quotationBookingData || {}
     const data = summary
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : []
@@ -59,6 +72,9 @@ export default function QuotationBookingProcess() {
         return { adult: 1, child: 0, infant: 0 };
     })();
 
+    const travelersTotal = travelersCount.adult + travelersCount.child + travelersCount.infant
+    const uploadTravelerCount = travelersTotal || 1
+
     const totalTravelersCount = Math.max(
         1,
         (Number(travelersCount.adult) || 0)
@@ -66,19 +82,70 @@ export default function QuotationBookingProcess() {
         + (Number(travelersCount.infant) || 0)
     );
 
-    const packagePricePerPax = data.travelDatePrice || 0
-    const totalPrice = packagePricePerPax * totalTravelersCount
+    const rawPrice = data?.travelDatePrice;
+    const totalPrice = Number(rawPrice) || 0;
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
+    const isDomesticPackage = String(packageType || '').toLowerCase().includes('domestic')
+    const travelDocumentLabel = isDomesticPackage ? 'Valid ID' : 'Passport'
+    const travelDocumentShortLabel = isDomesticPackage ? 'valid ID' : 'passport'
     const bookingType = totalTravelersCount === 1 ? 'Solo Booking' : 'Group Booking'
     const images = data.images || []
 
-    //inclusions, exclusions and itinerary
+    //INCLUSIONS, EXCLUSIONS, ITINERARY
     const inclusions = data.inclusions || []
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
 
-    //fetch details
+    const itineraryEntries = (() => {
+        const formatItineraryItem = (item) => {
+            if (typeof item === 'string') return item;
+            if (!item) return '';
+
+            const activity = item.activity || item.optionalActivity || item.item || '';
+            const optionalPrice = Number.isFinite(Number(item.optionalPrice))
+                ? Number(item.optionalPrice).toLocaleString()
+                : null;
+
+            if (item.isOptional && item.optionalActivity) {
+                return `${activity} (Optional: ${item.optionalActivity}${optionalPrice ? ` - ₱${optionalPrice}` : ''})`;
+            }
+
+            return activity;
+        };
+
+        if (Array.isArray(itinerary)) {
+            return itinerary.map((items, index) => ({
+                key: `day-${index + 1}`,
+                label: `Day ${index + 1}`,
+                items: Array.isArray(items)
+                    ? items.map(formatItineraryItem).filter(Boolean)
+                    : items
+                        ? [formatItineraryItem(items)].filter(Boolean)
+                        : []
+            }))
+        }
+
+        if (!itinerary || typeof itinerary !== 'object') return []
+
+        return Object.keys(itinerary)
+            .sort((a, b) => {
+                const aNum = Number(String(a).replace(/\D/g, ''))
+                const bNum = Number(String(b).replace(/\D/g, ''))
+                return (Number.isNaN(aNum) ? 0 : aNum) - (Number.isNaN(bNum) ? 0 : bNum)
+            })
+            .map((dayKey) => ({
+                key: dayKey,
+                label: String(dayKey).replace('day', 'Day '),
+                items: Array.isArray(itinerary[dayKey])
+                    ? itinerary[dayKey].map(formatItineraryItem).filter(Boolean)
+                    : itinerary[dayKey]
+                        ? [formatItineraryItem(itinerary[dayKey])].filter(Boolean)
+                        : []
+            }))
+    })()
+
+    //FETCH DETAILS FROM QUOTATION
     useEffect(() => {
         if (!quotationBookingData?.quotationId) return;
 
@@ -177,55 +244,55 @@ export default function QuotationBookingProcess() {
 
     console.log("Booking Data in QuotationBookingProcess:", data)
 
-
-    const itineraryEntries = (() => {
-        const formatItineraryItem = (item) => {
-            if (typeof item === 'string') return item;
-            if (!item) return '';
-
-            const activity = item.activity || item.optionalActivity || item.item || '';
-            const optionalPrice = Number.isFinite(Number(item.optionalPrice))
-                ? Number(item.optionalPrice).toLocaleString()
-                : null;
-
-            if (item.isOptional && item.optionalActivity) {
-                return `${activity} (Optional: ${item.optionalActivity}${optionalPrice ? ` - ₱${optionalPrice}` : ''})`;
-            }
-
-            return activity;
-        };
-
-        if (Array.isArray(itinerary)) {
-            return itinerary.map((items, index) => ({
-                key: `day-${index + 1}`,
-                label: `Day ${index + 1}`,
-                items: Array.isArray(items)
-                    ? items.map(formatItineraryItem).filter(Boolean)
-                    : items
-                        ? [formatItineraryItem(items)].filter(Boolean)
-                        : []
-            }))
+    //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
+    const groupRoomOptions = (() => {
+        if (travelersTotal === 2) {
+            return [
+                { value: 'TWIN', label: 'TWIN' },
+                { value: 'DOUBLE', label: 'DOUBLE' }
+            ]
         }
 
-        if (!itinerary || typeof itinerary !== 'object') return []
+        if (travelersTotal === 3) {
+            return [{ value: 'TRIPLE', label: 'TRIPLE' }]
+        }
 
-        return Object.keys(itinerary)
-            .sort((a, b) => {
-                const aNum = Number(String(a).replace(/\D/g, ''))
-                const bNum = Number(String(b).replace(/\D/g, ''))
-                return (Number.isNaN(aNum) ? 0 : aNum) - (Number.isNaN(bNum) ? 0 : bNum)
-            })
-            .map((dayKey) => ({
-                key: dayKey,
-                label: String(dayKey).replace('day', 'Day '),
-                items: Array.isArray(itinerary[dayKey])
-                    ? itinerary[dayKey].map(formatItineraryItem).filter(Boolean)
-                    : itinerary[dayKey]
-                        ? [formatItineraryItem(itinerary[dayKey])].filter(Boolean)
-                        : []
-            }))
+        if (travelersTotal === 4) {
+            return [
+                { value: 'TWIN', label: 'TWIN' },
+                { value: 'DOUBLE', label: 'DOUBLE' }
+            ]
+        }
+
+        return [
+            { value: 'TWIN', label: 'TWIN' },
+            { value: 'DOUBLE', label: 'DOUBLE' },
+            { value: 'TRIPLE', label: 'TRIPLE' }
+        ]
     })()
 
+    const roomOptions = bookingType === 'Solo Booking'
+        ? [{ value: 'SINGLE', label: 'SINGLE' }]
+        : bookingType === 'Group Booking'
+            ? groupRoomOptions
+            : [
+                { value: 'TWIN', label: 'TWIN' },
+                { value: 'DOUBLE', label: 'DOUBLE' },
+                { value: 'SINGLE', label: 'SINGLE' },
+                { value: 'TRIPLE', label: 'TRIPLE' },
+            ]
+
+    //TRAVELER TYPE LABELS FOR DISPLAY
+    const travelerTypeLabels = (() => {
+        const labels = []
+        labels.push(...Array(travelersCount.adult).fill('Adult'))
+        labels.push(...Array(travelersCount.child).fill('Child'))
+        labels.push(...Array(travelersCount.infant).fill('Infant'))
+        return labels
+    })()
+
+
+    //STATE FOR UPLOADED FILES AND PREVIEWS
     const [photoFileLists, setPhotoFileLists] = useState(
         Array.from({ length: totalTravelersCount || 1 }, () => [])
     );
@@ -242,6 +309,7 @@ export default function QuotationBookingProcess() {
         Array.from({ length: totalTravelersCount || 1 }, () => null)
     );
 
+    //STATE FOR CURRENT STEP AND PDF GENERATION
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -252,79 +320,166 @@ export default function QuotationBookingProcess() {
         setPhotoPreviews(Array.from({ length: totalTravelersCount || 1 }, () => null));
     }, [totalTravelersCount]);
 
+    useEffect(() => {
+        const currentTravelers = form.getFieldValue('travelers') || []
+        if (currentTravelers.length === uploadTravelerCount) return
 
+        const nextTravelers = [...currentTravelers]
+        if (nextTravelers.length < uploadTravelerCount) {
+            nextTravelers.push(...Array(uploadTravelerCount - nextTravelers.length).fill({}))
+        } else {
+            nextTravelers.length = uploadTravelerCount
+        }
+        form.setFieldsValue({ travelers: nextTravelers })
+        setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [form, uploadTravelerCount, setQuotationBookingData])
 
+    //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM
+    useEffect(() => {
+        if (bookingType !== 'Solo Booking') return
+        const travelers = form.getFieldValue('travelers') || []
+        if (!travelers.length) return
+
+        const nextTravelers = travelers.map((traveler) => ({
+            ...traveler,
+            roomType: 'SINGLE'
+        }))
+        form.setFieldsValue({ travelers: nextTravelers })
+        setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [bookingType, form, setQuotationBookingData])
+
+    //GO TO THE NEXT PAGE OF REGISTRATION
     const next = async () => {
         try {
             await form.validateFields();
 
-            const missingUploads = fileLists.some(list => !list || list.length === 0);
-            const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
+            if (currentStep === 2) {
+                const missingUploads = fileLists.some(list => !list || list.length === 0);
+                const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
-            if (missingPhotos) {
-                message.error("Please upload 2x2 photo for all travelers.");
-                return;
-            }
-
-            if (missingUploads) {
-                message.error("Please upload passport for all travelers.");
-                return;
-            }
-
-            const currentFormValues = form.getFieldsValue();
-
-            const photoFilesFormatted = await Promise.all(photoFileLists.map(async (list) => {
-                const fileObj = list?.[0]?.originFileObj;
-
-                if (!fileObj) {
-                    throw new Error("Invalid photo upload");
+                if (missingPhotos) {
+                    message.error("Please upload 2x2 photo for all travelers.");
+                    return;
                 }
 
-                return {
-                    name: fileObj.name,
-                    type: fileObj.type,
-                    file: await toBase64(fileObj),
-                };
-            }));
-
-
-            const passportFilesFormatted = await Promise.all(fileLists.map(async (list) => {
-                const fileObj = list?.[0]?.originFileObj;
-
-                if (!fileObj) {
-                    throw new Error("Invalid file upload");
+                if (missingUploads) {
+                    message.error(`Please upload ${travelDocumentShortLabel} for all travelers.`);
+                    return;
                 }
+            }
 
-                return {
-                    name: fileObj.name,
-                    type: fileObj.type,
-                    file: await toBase64(fileObj),
-                };
+            let currentFormValues = form.getFieldsValue();
+            const currentTravelers = form.getFieldValue('travelers') || []
+            const fallbackTravelers = quotationBookingData?.travelers || []
+            const baseTravelers = currentTravelers.length
+                ? currentTravelers
+                : Array.isArray(currentFormValues.travelers) && currentFormValues.travelers.length
+                    ? currentFormValues.travelers
+                    : fallbackTravelers
+
+            if (bookingType === 'Solo Booking') {
+                currentFormValues.travelers = (baseTravelers || []).map(t => ({
+                    ...t,
+                    roomType: 'SINGLE'
+                }));
+            } else {
+                currentFormValues.travelers = baseTravelers
+            }
+
+            let photoFilesFormatted = quotationBookingData?.photoFiles || [];
+            let passportFilesFormatted = quotationBookingData?.passportFiles || [];
+
+            if (currentStep === 2) {
+                photoFilesFormatted = await Promise.all(
+                    photoFileLists.map(async (list) => {
+                        const fileObj = list?.[0]?.originFileObj;
+
+                        if (!fileObj) {
+                            throw new Error("Invalid photo upload");
+                        }
+
+                        return {
+                            name: fileObj.name,
+                            type: fileObj.type,
+                            base64: await toBase64(fileObj),
+                        };
+                    })
+                );
+
+                passportFilesFormatted = await Promise.all(
+                    fileLists.map(async (list) => {
+                        const fileObj = list?.[0]?.originFileObj;
+
+                        if (!fileObj) {
+                            throw new Error("Invalid file upload");
+                        }
+
+                        return {
+                            name: fileObj.name,
+                            type: fileObj.type,
+                            base64: await toBase64(fileObj),
+                        };
+                    })
+                );
+            }
+
+            const travelersWithDocuments = (currentFormValues.travelers || []).map((traveler, index) => ({
+                ...traveler,
+                passportFile: passportFilesFormatted[index] || null,
+                photoFile: photoFilesFormatted[index] || null
             }));
+
+            form.setFieldsValue({ travelers: travelersWithDocuments });
 
             setQuotationBookingData(prev => ({
                 ...prev,
                 ...currentFormValues,
-                travelersCount,
+                travelers: travelersWithDocuments.length ? travelersWithDocuments : prev.travelers,
+                travelerCounts: travelersCount,
+                bookingType: bookingType,
                 totalPrice: totalPrice,
                 passportFiles: passportFilesFormatted,
                 photoFiles: photoFilesFormatted
             }));
 
             setCurrentStep(currentStep + 1);
+
+            console.log('Current Form Values on Next:', currentFormValues);
+            console.log('Updated Booking Data on Next:', {
+                ...quotationBookingData,
+                ...currentFormValues,
+                travelerCounts: travelersCount,
+                bookingType: bookingType,
+                totalPrice: totalPrice,
+                passportFiles: passportFilesFormatted,
+                photoFiles: photoFilesFormatted
+            });
+            console.log('Save Successful, moving to next step');
+
+
         } catch (error) {
+            console.error('Validation error:', error);
             const firstError = error?.errorFields?.[0];
             if (firstError?.name) {
                 form.scrollToField(firstError.name);
-                message.error(firstError.errors?.[0] || "Please complete all required fields before proceeding.");
+                const fieldPath = Array.isArray(firstError.name)
+                    ? firstError.name.join(' > ')
+                    : String(firstError.name)
+                const errorMessage = firstError.errors?.[0]
+                    ? `${firstError.errors[0]} (${fieldPath})`
+                    : `Please complete all required fields before proceeding. (${fieldPath})`
+                message.error(errorMessage);
                 return;
             }
-            message.error("Please complete all required fields before proceeding.");
+            message.error("Please complete all required fields before proceeding. Check the console for details.");
         }
     };
 
+
+    //GO TO THE PREVIOUS PAGE OF REGISTRATION
     const prev = () => setCurrentStep(currentStep - 1);
 
+    //VALIDATE UPLOADED FILES
     const validateFile = (file) => {
         const isValidType =
             file.type === 'image/jpeg' ||
@@ -344,45 +499,7 @@ export default function QuotationBookingProcess() {
         return false;
     };
 
-
-    const handleResetUploads = (index) => {
-        const newFileLists = [...fileLists];
-        newFileLists[index] = [];
-        setFileLists(newFileLists);
-
-        const newPhotoFileLists = [...photoFileLists];
-        newPhotoFileLists[index] = [];
-        setPhotoFileLists(newPhotoFileLists);
-
-        const newPreviews = [...previews];
-        newPreviews[index] = null;
-        setPreviews(newPreviews);
-
-        const newPhotoPreviews = [...photoPreviews];
-        newPhotoPreviews[index] = null;
-        setPhotoPreviews(newPhotoPreviews);
-    };
-
-
-    const handlePhotoChange = (info, index) => {
-        const newFileLists = [...photoFileLists];
-        newFileLists[index] = info.fileList;
-        setPhotoFileLists(newFileLists);
-
-        const file = info.file;
-        const newPreviews = [...photoPreviews];
-
-        if (file.status === 'removed') {
-            newPreviews[index] = null;
-        } else {
-            if (file instanceof File || (file.originFileObj instanceof File)) {
-                const previewUrl = URL.createObjectURL(file.originFileObj || file);
-                newPreviews[index] = previewUrl;
-            }
-        }
-        setPhotoPreviews(newPreviews);
-    };
-
+    //FINAL SUBMISSION OF REGISTRATION
     const handleFinalSubmit = async () => {
         try {
             await form.validateFields();
@@ -410,12 +527,14 @@ export default function QuotationBookingProcess() {
         }
     };
 
+    //HANDLE FORM VALUE CHANGES
     const handleValuesChange = (changedValues, allValues) => {
         console.log('Form values changed:', changedValues);
         console.log('All current form values:', allValues);
         console.log("Current Form Data:", allValues.travelers);
     };
 
+    //HANDLE FILE UPLOAD CHANGES
     const handleChange = (info, index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = info.fileList;
@@ -435,6 +554,57 @@ export default function QuotationBookingProcess() {
         setPreviews(newPreviews);
     };
 
+    //HANDLE 2BY2 PHOTO UPLOAD CHANGES
+    const handlePhotoChange = (info, index) => {
+        const newFileLists = [...photoFileLists];
+        newFileLists[index] = info.fileList;
+        setPhotoFileLists(newFileLists);
+
+        const file = info.file;
+        const newPreviews = [...photoPreviews];
+
+        if (file.status === 'removed') {
+            newPreviews[index] = null;
+        } else {
+            if (file instanceof File || (file.originFileObj instanceof File)) {
+                const previewUrl = URL.createObjectURL(file.originFileObj || file);
+                newPreviews[index] = previewUrl;
+            }
+        }
+        setPhotoPreviews(newPreviews);
+    };
+
+    //HANDLE RESET OF UPLOADED FILES
+    const handleResetUploads = (index) => {
+        const newFileLists = [...fileLists];
+        newFileLists[index] = [];
+        setFileLists(newFileLists);
+
+        const newPhotoFileLists = [...photoFileLists];
+        newPhotoFileLists[index] = [];
+        setPhotoFileLists(newPhotoFileLists);
+
+        const newPreviews = [...previews];
+        newPreviews[index] = null;
+        setPreviews(newPreviews);
+
+        const newPhotoPreviews = [...photoPreviews];
+        newPhotoPreviews[index] = null;
+        setPhotoPreviews(newPhotoPreviews);
+    };
+
+    const updateTravelerField = (index, field, value, extras = {}) => {
+        const travelers = form.getFieldValue('travelers') || []
+        const nextTravelers = travelers.map((traveler, travelerIndex) =>
+            travelerIndex === index
+                ? { ...traveler, [field]: value, ...extras }
+                : traveler
+        )
+        form.setFieldsValue({ travelers: nextTravelers })
+        setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }
+
+
     useEffect(() => {
         return () => {
             previews.forEach(url => {
@@ -443,6 +613,7 @@ export default function QuotationBookingProcess() {
         };
     }, [previews]);
 
+    //REDIRECT TO HOME IF NO QUOTATION DATA
     useEffect(() => {
         if (!quotationBookingData) {
             navigate('/home', { replace: true });
@@ -459,7 +630,7 @@ export default function QuotationBookingProcess() {
         >
             <div className='bookingprocess-container'>
 
-                {/* booking summary section */}
+                {/* BOOKING SUMMARY SECTION */}
                 <div className="booking-summary-container booking-section">
                     <div className="booking-section-header">
                         <h2 className='booking-summary-title booking-section-title'>Booking Summary</h2>
@@ -547,6 +718,7 @@ export default function QuotationBookingProcess() {
                     </div>
                 </div>
 
+                {/* ITINERARY, INCLUSIONS, EXCLUSIONS */}
                 <div className='itinerary-inclusions-exclusions'>
                     <div className='itinerary-section-header'>
                         <h2 className='itinerary-section-title'>Itinerary, Inclusions & Exclusions</h2>
@@ -621,24 +793,130 @@ export default function QuotationBookingProcess() {
                     </div>
                 </div>
 
-                {/* upload passport section */}
+                {/* UPLOAD PASSPORT AND 2BY2 PHOTO */}
                 <div className='upload-passport-container booking-section'>
                     <div className="booking-section-header">
-                        <h2 className="upload-passport-title booking-section-title">Upload Passport</h2>
+                        <h2 className="upload-passport-title booking-section-title">Upload {travelDocumentLabel}</h2>
                         <p className="upload-passport-text booking-section-subtitle">
-                            Please upload a clear image of your passport bio page for each traveler.
+                            Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
                         </p>
                     </div>
                     <div className="upload-passport-wrapper">
-                        {Array.from({ length: totalTravelersCount || 1 }).map((_, index) => (
+                        {Array.from({
+                            length: uploadTravelerCount
+                        }).map((_, index) => (
                             <div key={index} className="upload-card">
 
-                                <div className="upload-passport-left">
-                                    <h4>Traveler {index + 1}</h4>
+                                <div className='upload-passport-left'>
+                                    <h4>
+                                        Traveler {index + 1} - {travelerTypeLabels[index] || 'Traveler'}
+                                    </h4>
                                     <p style={{ fontSize: 12, color: '#888' }}>
-                                        Upload passport and 2x2 ID photo
+                                        Upload {travelDocumentShortLabel} and 2x2 ID photo
                                     </p>
+                                    <div className="upload-passport-traveler-fields">
+                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
+                                            <Select
+                                                size="small"
+                                                placeholder="Title"
+                                                value={form.getFieldValue(['travelers', index, 'title'])}
+                                                onChange={(value) => updateTravelerField(index, 'title', value)}
+                                                options={[
+                                                    { value: 'MR', label: 'MR' },
+                                                    { value: 'MS', label: 'MS' },
+                                                ]}
+                                            />
+                                            <Input
+                                                maxLength={50}
+                                                size="small"
+                                                placeholder="First name"
+                                                value={form.getFieldValue(['travelers', index, 'firstName'])}
+                                                onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
+                                                onKeyDown={(e) => {
+                                                    const regex = /^[A-Za-z\s'-]$/;
 
+                                                    if (
+                                                        e.key.length === 1 &&
+                                                        !regex.test(e.key)
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                            <Input
+                                                maxLength={50}
+                                                size="small"
+                                                placeholder="Last name"
+                                                value={form.getFieldValue(['travelers', index, 'lastName'])}
+                                                onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
+                                                onKeyDown={(e) => {
+                                                    const regex = /^[A-Za-z\s'-]$/;
+
+                                                    if (
+                                                        e.key.length === 1 &&
+                                                        !regex.test(e.key)
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                            <Select
+                                                size="small"
+                                                placeholder="Room type"
+                                                value={form.getFieldValue(['travelers', index, 'roomType'])}
+                                                onChange={(value) => updateTravelerField(index, 'roomType', value)}
+                                                options={roomOptions}
+                                                disabled={bookingType === 'Solo Booking'}
+                                            />
+                                            <DatePicker
+                                                size="small"
+                                                placeholder="Birthdate"
+                                                defaultPickerValue={dayjs('2000-01-01')}
+                                                format="MMMM D, YYYY"
+                                                value={form.getFieldValue(['travelers', index, 'birthday'])}
+                                                onChange={(date) => {
+                                                    const age = date ? computeAge(date) : ''
+                                                    updateTravelerField(index, 'birthday', date, { age })
+                                                }}
+                                                disabledDate={(current) => current && current >= dayjs().startOf('day')}
+                                            />
+                                        </div>
+                                        {!isDomesticPackage && (
+                                            <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                                <Input
+                                                    maxLength={7}
+                                                    size="small"
+                                                    placeholder="Passport number"
+                                                    value={form.getFieldValue(['travelers', index, 'passportNo'])}
+                                                    onChange={(event) => updateTravelerField(index, 'passportNo', event.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        const regex = /^[0-9]$/;
+
+                                                        if (
+                                                            e.key.length === 1 &&
+                                                            !regex.test(e.key)
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                />
+                                                <DatePicker
+                                                    size="small"
+                                                    placeholder="Passport expiry"
+                                                    format="MMMM D, YYYY"
+                                                    value={form.getFieldValue(['travelers', index, 'passportExpiry'])}
+                                                    onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
+                                                    disabledDate={(current) => {
+                                                        if (!current) return false
+                                                        return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                    }}
+                                                    defaultPickerValue={dayjs().add(1, 'year')}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
 
                                         {/* PASSPORT UPLOAD - Hidden if file exists */}
@@ -651,7 +929,7 @@ export default function QuotationBookingProcess() {
                                                 maxCount={1}
                                                 showUploadList={false} // Hidden because you have a custom preview
                                             >
-                                                <Button className='upload-passport-button' type="default">Upload Passport</Button>
+                                                <Button className='upload-passport-button' type='primary'>Upload {travelDocumentLabel}</Button>
                                             </Upload>
                                         )}
 
@@ -665,14 +943,15 @@ export default function QuotationBookingProcess() {
                                                 maxCount={1}
                                                 showUploadList={false}
                                             >
-                                                <Button className='upload-passport-button' type="default">Upload 2x2 Photo</Button>
+                                                <Button className='upload-passport-button' type='primary'>Upload 2x2 Photo</Button>
                                             </Upload>
                                         )}
 
-                                        {(fileLists[index]?.length > 0 && photoFileLists[index]?.length > 0) && (
+                                        {(fileLists[index]?.length > 0 || photoFileLists[index]?.length > 0) && (
                                             <Button
+                                                type='primary'
                                                 className='upload-passport-remove-button'
-                                                size='small'
+                                                size="small"
                                                 onClick={() => handleResetUploads(index)}
                                             >
                                                 Remove/Change Photos
@@ -680,7 +959,6 @@ export default function QuotationBookingProcess() {
                                         )}
                                     </div>
                                 </div>
-
 
                                 <div className="upload-passport-right">
                                     {previews[index] && (
@@ -692,14 +970,24 @@ export default function QuotationBookingProcess() {
                                             />
                                         </div>
                                     )}
+                                    {!previews[index] && (
+                                        <div className="passport-preview image-placeholder" aria-hidden="true">
+                                            <span>{travelDocumentLabel} preview</span>
+                                        </div>
+                                    )}
 
                                     {photoPreviews[index] && (
-                                        <div style={{ marginTop: '10px' }}>
+                                        <div className="photo-preview">
                                             <img
                                                 src={photoPreviews[index]}
                                                 alt={`2x2 Preview ${index + 1}`}
-                                                style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
+                                                className="photo-preview-image"
                                             />
+                                        </div>
+                                    )}
+                                    {!photoPreviews[index] && (
+                                        <div className="photo-preview image-placeholder" aria-hidden="true">
+                                            <span>2x2 photo</span>
                                         </div>
                                     )}
                                 </div>
@@ -711,7 +999,12 @@ export default function QuotationBookingProcess() {
                         <div>
                             <strong>Note:</strong>
                             <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
-                                <li>Upload a clear image of the passport bio page</li>
+
+                                {isDomesticPackage ? (
+                                    <li>Upload a clear image of the valid ID</li>
+                                ) : (
+                                    <li>Upload a clear image of the passport bio page</li>
+                                )}
                                 <li>Accepted formats: JPG, PNG</li>
                                 <li>Maximum file size: 5MB</li>
                                 <li>Blurry or cropped images may delay booking confirmation</li>
@@ -734,7 +1027,8 @@ export default function QuotationBookingProcess() {
                     </div>
                 </div>
 
-                {/* booking registration section */}
+
+                {/* BOOKING REGISTRATION */}
                 <div className='booking-form-container booking-section'>
                     <div className="booking-form-stepper-container">
                         <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>

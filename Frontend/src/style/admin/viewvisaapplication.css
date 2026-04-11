@@ -29,7 +29,36 @@
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
 }
 
-.viewvisaapplication-back-button:hover {
+.viewvisaapplication-submit-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 140px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.viewvisaapplication-download-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 250px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    margin-top: 7px;
+}
+
+.viewvisaapplication-back-button:hover,
+.viewvisaapplication-submit-button:hover,
+.viewvisaapplication-download-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
 }

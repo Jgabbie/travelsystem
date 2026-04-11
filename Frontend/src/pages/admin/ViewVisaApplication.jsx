@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import axiosInstance from "../../config/axiosConfig";
@@ -254,7 +254,7 @@ export default function ViewVisaApplication() {
                 </div>) :
                 (
                     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
-                        <Button onClick={() => navigate(-1)} style={{ marginBottom: 16 }} className="viewvisaapplication-back-button">
+                        <Button type="primary" onClick={() => navigate(-1)} style={{ marginBottom: 16 }} className="viewvisaapplication-back-button">
                             <ArrowLeftOutlined />
                             Back
                         </Button>
@@ -323,7 +323,7 @@ export default function ViewVisaApplication() {
                                                 </div>
                                             ))}
                                             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                                <Button type="primary" onClick={handleSubmitAlternateSlots}>
+                                                <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewvisaapplication-submit-button">
                                                     Submit Options
                                                 </Button>
                                             </div>
@@ -338,6 +338,13 @@ export default function ViewVisaApplication() {
                                             {submittedDocuments.map((doc, idx) => {
                                                 const isPDF = doc.url?.toLowerCase().endsWith(".pdf");
 
+                                                const handleDownload = () => {
+                                                    if (!doc.url) return;
+                                                    const downloadUrl = doc.url.includes('cloudinary.com')
+                                                        ? doc.url.replace('/upload/', '/upload/fl_attachment/')
+                                                        : doc.url;
+                                                    window.location.href = downloadUrl;
+                                                };
                                                 return (
                                                     <div
                                                         key={idx}
@@ -378,6 +385,15 @@ export default function ViewVisaApplication() {
                                                                 fallback="/images/file-placeholder.png"
                                                             />
                                                         )}
+
+                                                        <Button
+                                                            className="viewvisaapplication-download-button"
+                                                            type="primary"
+                                                            icon={<DownloadOutlined />}
+                                                            onClick={handleDownload}
+                                                        >
+                                                            Download {isPDF ? 'PDF' : 'Image'}
+                                                        </Button>
                                                     </div>
                                                 );
                                             })}

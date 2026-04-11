@@ -112,14 +112,16 @@ export default function PaymentProcess() {
         const formData = new FormData();
 
         const passportFileObjs = passportFiles
-            .filter((file) => file?.base64 && file?.name)
+            .filter(f => f.base64) // Safety check
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
         const photoFileObjs = photoFiles
-            .filter((file) => file?.base64 && file?.name)
+            .filter(f => f.base64) // Safety check
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
-        [...passportFileObjs, ...photoFileObjs].forEach(file => formData.append("files", file));
+        [...passportFileObjs, ...photoFileObjs].forEach(file => {
+            if (file) formData.append("files", file);
+        });
 
         const res = await axiosInstance.post(
             "/upload/upload-booking-documents",
@@ -380,18 +382,15 @@ export default function PaymentProcess() {
         ? dayjs(bookingData.travelDate.startDate)
         : today;
 
-    // ✅ Limit to 45 days from today
+
     const maxAllowedDate = today.add(45, 'day');
 
-    // ✅ Final cutoff = whichever comes FIRST
     const dueCutoffDate = travelDateComputation.isBefore(maxAllowedDate)
         ? travelDateComputation
         : maxAllowedDate;
 
     const depositAmount = (bookingData?.packageDeposit || 0) * travelerTotal;
     const remainingAmount = Math.max(totalAmount - depositAmount, 0);
-
-    const installmentWindowDays = dueCutoffDate.diff(today, 'day');
 
     const paymentDates = [];
 
@@ -415,7 +414,6 @@ export default function PaymentProcess() {
     const formatScheduleAmount = (value) =>
         value == null ? 'PHP TBD' : formatCurrency(value);
 
-    // ✅ Final payment schedule
     const paymentSchedule = [
         {
             label: 'Deposit',

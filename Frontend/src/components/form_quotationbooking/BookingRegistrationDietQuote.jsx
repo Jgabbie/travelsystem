@@ -70,13 +70,13 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                         packageTravelDate: `${dayjs(summary?.travelDate?.startDate).format('MMM D, YYYY')} - ${dayjs(summary?.travelDate?.endDate).format('MMM D, YYYY')}`
                     }}
                 >
-                    {/* Read-Only Package Info */}
+                    {/* PACKAGE INFO */}
                     <div style={{ marginBottom: '15px' }}>
                         <div style={{ fontSize: '11px' }}><strong>TOUR PACKAGE TITLE:</strong> {summary?.packageName || '____________________'}</div>
                         <div style={{ fontSize: '11px' }}><strong>PACKAGE TRAVEL DATE:</strong> {`${dayjs(summary?.travelDate?.startDate).format('MMM D, YYYY')} - ${dayjs(summary?.travelDate?.endDate).format('MMM D, YYYY')}` || '____________________'}</div>
                     </div>
 
-                    {/* Dietary Section */}
+                    {/* DIETARY SECTION */}
                     <div style={{ marginBottom: '15px' }}>
                         <Row align="middle">
                             <Col span={18} style={labelStyle}>Does anyone in your group have any dietary requests?</Col>
@@ -118,11 +118,11 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                 })
                             ]}
                         >
-                            <TextArea rows={2} style={boxStyle} />
+                            <TextArea maxLength={200} rows={2} style={boxStyle} />
                         </Form.Item>
                     </div>
 
-                    {/* Medical Section */}
+                    {/* MEDICAL SECTION */}
                     <div style={{ marginBottom: '15px' }}>
                         <Row align="middle">
                             <Col span={18} style={labelStyle}>Does anyone in your group have any Allergies/Medical conditions?</Col>
@@ -164,11 +164,11 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                 })
                             ]}
                         >
-                            <TextArea rows={2} style={boxStyle} />
+                            <TextArea maxLength={200} rows={2} style={boxStyle} />
                         </Form.Item>
                     </div>
 
-                    {/* Insurance Section */}
+                    {/* INSURANCE SECTION */}
                     <div className="mrc-insurance-section" style={{ borderTop: '1px solid #000', paddingTop: '10px' }}>
                         <h4 style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '5px' }}>TRAVEL INSURANCE</h4>
                         <p style={{ fontSize: '9px', lineHeight: '1.2' }}>
@@ -228,7 +228,6 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                         </Row>
                     </div>
 
-                    {/* ADDED DETAILS SECTION BASED ON IMAGE */}
                     <div style={{ marginTop: '10px' }}>
                         <Row>
                             <Col span={8} style={{ border: '1px solid #000', padding: '5px', fontSize: '10px', fontWeight: 'bold', textAlign: 'right', backgroundColor: '#f9f9f9' }}>
@@ -248,8 +247,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                         </Row>
                     </div>
 
-
-                    {/* Emergency Contact Grid */}
+                    {/* EMERGENCY CONTACT */}
                     <div style={{ marginTop: '15px' }}>
                         <div style={{ background: '#ADD8E6', padding: '2px 10px', fontSize: '10px', fontWeight: 'bold', border: '1px solid #000' }}>
                             EMERGENCY CONTACT <span style={{ fontWeight: 'normal', fontSize: '9px' }}>(i.e: the person to contact in the event of an emergency while you are away)</span>
@@ -291,9 +289,27 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                         <Form.Item
                                             name="emergencyName"
                                             noStyle
-                                            rules={[{ required: true, message: 'Full name is required' }]}
+                                            rules={[
+                                                { required: true, message: 'Full name is required' },
+                                                { pattern: /^[A-Za-z\s-]+$/, message: 'Full name must contain letters only' }
+                                            ]}
                                         >
-                                            <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
+                                            <Input
+                                                maxLength={50}
+                                                variant="borderless"
+                                                size="small"
+                                                style={{ fontSize: '10px' }}
+                                                onKeyDown={(e) => {
+                                                    const regex = /^[A-Za-z\s'-]$/;
+
+                                                    if (
+                                                        e.key.length === 1 &&
+                                                        !regex.test(e.key)
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
                                         </Form.Item>
                                     </td>
                                 </tr>
@@ -310,7 +326,22 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                                 { type: 'email', message: 'Invalid email format' }
                                             ]}
                                         >
-                                            <Input variant="borderless" size="small" style={{ fontSize: '10px' }} />
+                                            <Input
+                                                maxLength={50}
+                                                variant="borderless"
+                                                size="small"
+                                                style={{ fontSize: '10px' }}
+                                                onKeyDown={(e) => {
+                                                    const regex = /^[A-Za-z0-9\s'@.-]$/;
+
+                                                    if (
+                                                        e.key.length === 1 &&
+                                                        !regex.test(e.key)
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
                                         </Form.Item>
                                     </td>
                                     <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>Contact Number:</td>
@@ -331,7 +362,40 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                                         }
                                                     ]}
                                                 >
-                                                    <Input variant="borderless" size="small" style={{ fontSize: '10px', padding: '4px' }} />
+                                                    <Input
+                                                        maxLength={11}
+                                                        variant="borderless"
+                                                        size="small"
+                                                        style={{ fontSize: '10px', padding: '4px' }}
+                                                        onChange={(e) => {
+                                                            let value = e.target.value.replace(/\D/g, '');
+
+                                                            // auto prepend 09
+                                                            if (value.length > 0 && !value.startsWith('09')) {
+                                                                if (value.startsWith('9')) {
+                                                                    value = '0' + value;
+                                                                } else {
+                                                                    value = '09' + value;
+                                                                }
+                                                            }
+
+                                                            value = value.slice(0, 11);
+
+                                                            form.setFieldsValue({
+                                                                emergencyContact: value
+                                                            });
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            const regex = /^[0-9]$/;
+
+                                                            if (
+                                                                e.key.length === 1 &&
+                                                                !regex.test(e.key)
+                                                            ) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                    />
                                                 </Form.Item>
                                             </div>
 
@@ -341,9 +405,26 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                                 <Form.Item
                                                     name="emergencyRelation"
                                                     noStyle
-                                                    rules={[{ required: true, message: 'Relation is required' }]}
+                                                    rules={[
+                                                        { required: true, message: 'Relation is required' },
+                                                        { pattern: /^[A-Za-z\s-]+$/, message: 'Relation must contain letters only' }
+                                                    ]}
                                                 >
-                                                    <Input variant="borderless" size="small" style={{ fontSize: '10px', padding: '4px' }} />
+                                                    <Input
+                                                        variant="borderless"
+                                                        size="small"
+                                                        style={{ fontSize: '10px', padding: '4px' }}
+                                                        onKeyDown={(e) => {
+                                                            const regex = /^[A-Za-z\s-]+$/;
+
+                                                            if (
+                                                                e.key.length === 1 &&
+                                                                !regex.test(e.key)
+                                                            ) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                    />
                                                 </Form.Item>
                                             </div>
 
@@ -354,7 +435,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                         </table>
                     </div>
 
-                    {/* Signature Area */}
+                    {/* SIGNATURE AREA */}
                     <div style={{ marginTop: '30px' }}>
                         <Row gutter={40}>
                             <Col span={12}>

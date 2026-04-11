@@ -12,22 +12,24 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
     console.log("summary in travelers:", summary);
 
     const bookingType = summary.bookingType || 'No Booking';
+    const packageType = summary.packageType || 'fixed';
+    const isDomesticPackage = String(packageType).toLowerCase().includes('domestic');
 
-    const roomOptions =
-        bookingType === 'Solo Booking'
-            ? [{ value: 'SINGLE', label: 'SINGLE' }]
-            : bookingType === 'Group Booking'
-                ? [
-                    { value: 'TWIN', label: 'TWIN' },
-                    { value: 'DOUBLE', label: 'DOUBLE' },
-                    { value: 'TRIPLE', label: 'TRIPLE' },
-                ]
-                : [
-                    { value: 'TWIN', label: 'TWIN' },
-                    { value: 'DOUBLE', label: 'DOUBLE' },
-                    { value: 'SINGLE', label: 'SINGLE' },
-                    { value: 'TRIPLE', label: 'TRIPLE' },
-                ];
+
+
+    const getDisplayAge = (traveler) => {
+        if (traveler?.age !== undefined && traveler?.age !== null && traveler?.age !== '') {
+            return traveler.age
+        }
+        if (!traveler?.birthday || !dayjs(traveler.birthday).isValid()) return ''
+        const today = dayjs()
+        const birthDate = dayjs(traveler.birthday)
+        let age = today.diff(birthDate, 'year')
+        if (birthDate.add(age, 'year').isAfter(today)) {
+            age -= 1
+        }
+        return age < 0 ? '' : age
+    }
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -46,6 +48,7 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                 }
 
                 form.setFieldsValue({
+                    leadTitle: form.getFieldValue('leadTitle') || 'MR',
                     leadFullName: user.fullName,
                     leadEmail: user.email,
                     leadContact: user.phone,
@@ -107,8 +110,8 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
             travelers: updatedTravelers,
             dateOfRegistration: dayjs().format('MM/DD/YYYY'),
             tourPackageTitle: summary.packageName,
-            tourPackageVia: summary.airlineOptions[0].name,
-            packageTravelDate: summary.travelDate,
+            tourPackageVia: summary.airlineOptions?.[0]?.name || 'N/A',
+            packageTravelDate: `${dayjs(summary.travelDate.startDate).format('MMMM DD, YYYY')} - ${dayjs(summary.travelDate.endDate).format('MMMM DD, YYYY')}`,
             travelersDate: dayjs().format('MMMM DD, YYYY'),
         });
 
@@ -197,20 +200,11 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                         help={null}
                                         validateStatus={undefined}
                                     >
-                                        <Select
+                                        <Input
                                             size="small"
-                                            style={{ width: '100%', padding: 0 }}
-                                            // Select components need this to affect the inner box
-                                            variant="borderless"
-                                            placeholder="MR/MS"
                                             className="mrc-lead-guest-section-input"
-                                            options={[
-                                                { value: 'MR', label: 'MR' },
-                                                { value: 'MS', label: 'MS' },
-                                            ]}
-
-                                        >
-                                        </Select>
+                                            readOnly
+                                        />
                                     </Form.Item>
                                 </Col>
                                 <Col span={18}>
@@ -319,11 +313,10 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
 
                                         {/* 2. Data Rows */}
                                         {fields.map(({ key, name, ...restField }, index) => {
-                                            const isFirstRow = index === 0;
                                             // Shared style for all inputs to keep code clean
                                             const inputStyle = {
-                                                fontSize: '10px',
-                                                height: '20px',
+                                                fontSize: '12px',
+                                                height: '32px',
                                                 lineHeight: '1',
                                                 padding: '0 4px',
                                                 borderRadius: '0px',
@@ -349,44 +342,59 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                                             : Promise.reject(new Error('Title must be MR or MS')),
                                                                 },
                                                             ]}>
-                                                            <Select
+                                                            <Input
                                                                 size="small"
-                                                                style={{ ...inputStyle, width: '100%', padding: 0 }}
-                                                                disabled={isFirstRow}
-                                                                variant="borderless"
-                                                                placeholder="MR/MS"
-                                                                options={[
-                                                                    { value: 'MR', label: 'MR' },
-                                                                    { value: 'MS', label: 'MS' },
-                                                                ]}
-                                                            >
-                                                            </Select>
+                                                                style={{ ...inputStyle, width: '100%' }}
+                                                                readOnly
+                                                            />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={4}>
-                                                        <Form.Item {...restField} name={[name, 'firstName']} noStyle>
-                                                            <Input disabled={isFirstRow} style={inputStyle} />
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'firstName']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter first name' },
+                                                                { pattern: /^[A-Za-z\s-]+$/, message: 'First name must contain letters only' }
+                                                            ]}
+                                                        >
+                                                            <Input
+                                                                style={inputStyle}
+                                                                readOnly
+                                                            />
                                                         </Form.Item>
                                                     </Col>
-
                                                     <Col span={4}>
-                                                        <Form.Item {...restField} name={[name, 'lastName']} noStyle>
-                                                            <Input disabled={isFirstRow} style={inputStyle} />
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'lastName']}
+                                                            noStyle
+                                                            rules={[
+                                                                { required: true, message: 'Please enter last name' },
+                                                                { pattern: /^[A-Za-z\s-]+$/, message: 'Last name must contain letters only' }
+                                                            ]}
+                                                        >
+                                                            <Input
+                                                                style={inputStyle}
+                                                                readOnly
+                                                            />
                                                         </Form.Item>
                                                     </Col>
 
                                                     <Col span={3}>
-                                                        <Form.Item {...restField} name={[name, 'roomType']} noStyle>
-                                                            <Select
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'roomType']}
+                                                            noStyle
+                                                            rules={[{ required: true, message: 'Please select a room type' }]}
+                                                        >
+                                                            <Input
                                                                 size="small"
-                                                                style={{ ...inputStyle, width: '100%', padding: 0 }}
-                                                                // Select components need this to affect the inner box
-                                                                variant="borderless"
-                                                                className="mrc-select-flat"
-                                                                options={roomOptions}
-                                                            >
-                                                            </Select>
+                                                                style={{ ...inputStyle, width: '100%' }}
+                                                                readOnly
+                                                            />
                                                         </Form.Item>
                                                     </Col>
 
@@ -399,17 +407,22 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                                 { required: true, message: 'Please enter birthday' },
                                                                 {
                                                                     validator: (_, value) => {
-                                                                        if (!value) return Promise.reject('Please enter birthday');
-                                                                        // Basic MM/DD/YY format check
-                                                                        const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{2}$/;
-                                                                        return regex.test(value)
-                                                                            ? Promise.resolve()
-                                                                            : Promise.reject(new Error('Birthday must be in MM/DD/YY format'));
+                                                                        if (!value || !dayjs(value).isValid()) {
+                                                                            return Promise.reject('Please enter birthday');
+                                                                        }
+                                                                        return Promise.resolve();
                                                                     },
                                                                 },
                                                             ]}
+                                                            getValueProps={(value) => ({
+                                                                value: value ? dayjs(value).format('MMM DD, YYYY') : '',
+                                                            })}
                                                         >
-                                                            <Input placeholder="MM/DD/YY" style={inputStyle} />
+                                                            <Input
+                                                                size="small"
+                                                                style={inputStyle}
+                                                                readOnly
+                                                            />
                                                         </Form.Item>
                                                     </Col>
 
@@ -428,8 +441,16 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                                     message: 'Age must be a valid number between 0 and 120',
                                                                 },
                                                             ]}
+                                                            dependencies={[
+                                                                ['travelers', index, 'birthday'],
+                                                                ['travelers', index, 'age']
+                                                            ]}
+                                                            getValueProps={() => {
+                                                                const traveler = form.getFieldValue(['travelers', index]) || {}
+                                                                return { value: getDisplayAge(traveler) }
+                                                            }}
                                                         >
-                                                            <Input style={{ ...inputStyle, textAlign: 'center', padding: 0 }} />
+                                                            <Input style={{ ...inputStyle, textAlign: 'center', padding: 0 }} readOnly />
                                                         </Form.Item>
                                                     </Col>
 
@@ -438,15 +459,19 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                             {...restField}
                                                             name={[name, 'passportNo']}
                                                             noStyle
-                                                            rules={[
-                                                                { required: true, message: 'Please enter passport number' },
-                                                                {
-                                                                    pattern: /^[a-zA-Z0-9]{5,20}$/,
-                                                                    message: 'Passport number must be 5–20 alphanumeric characters',
-                                                                },
-                                                            ]}
+                                                            rules={
+                                                                isDomesticPackage
+                                                                    ? []
+                                                                    : [
+                                                                        { required: true, message: 'Please enter passport number' },
+                                                                        {
+                                                                            pattern: /^[a-zA-Z0-9]{5,20}$/,
+                                                                            message: 'Passport number must be 5–20 alphanumeric characters',
+                                                                        },
+                                                                    ]
+                                                            }
                                                         >
-                                                            <Input style={inputStyle} />
+                                                            <Input style={inputStyle} maxLength={7} readOnly />
                                                         </Form.Item>
                                                     </Col>
 
@@ -455,20 +480,34 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                             {...restField}
                                                             name={[name, 'passportExpiry']}
                                                             noStyle
-                                                            rules={[
-                                                                { required: true, message: 'Please enter passport expiry date' },
-                                                                {
-                                                                    validator: (_, value) => {
-                                                                        if (!value) return Promise.reject('Please enter passport expiry date');
-                                                                        const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{2}$/;
-                                                                        return regex.test(value)
-                                                                            ? Promise.resolve()
-                                                                            : Promise.reject(new Error('Expiry must be in MM/DD/YY format'));
-                                                                    },
-                                                                },
-                                                            ]}
+                                                            rules={
+                                                                isDomesticPackage
+                                                                    ? []
+                                                                    : [
+                                                                        { required: true, message: 'Please enter passport expiry date' },
+                                                                        {
+                                                                            validator: (_, value) => {
+                                                                                if (!value || !dayjs(value).isValid()) {
+                                                                                    return Promise.reject('Please enter passport expiry date');
+                                                                                }
+                                                                                const year = dayjs(value).year()
+                                                                                if (year <= dayjs().year()) {
+                                                                                    return Promise.reject(new Error('Expiry must be after the current year'))
+                                                                                }
+                                                                                return Promise.resolve();
+                                                                            },
+                                                                        },
+                                                                    ]
+                                                            }
+                                                            getValueProps={(value) => ({
+                                                                value: value ? dayjs(value).format('MMM DD, YYYY') : '',
+                                                            })}
                                                         >
-                                                            <Input placeholder="MM/DD/YY" style={inputStyle} />
+                                                            <Input
+                                                                size="small"
+                                                                style={inputStyle}
+                                                                readOnly
+                                                            />
                                                         </Form.Item>
                                                     </Col>
                                                 </Row>
@@ -477,6 +516,28 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                     </>
                                 )}
                             </Form.List>
+
+                            <Form.Item
+                                name="adultValidation"
+                                hidden
+                                dependencies={['travelers']}
+                                rules={[
+                                    {
+                                        validator: () => {
+                                            const travelers = form.getFieldValue('travelers') || []
+                                            const hasAdult = travelers.some((t) => {
+                                                const age = t?.age
+                                                return typeof age === 'number' ? age >= 18 : Number(age) >= 18
+                                            })
+                                            return hasAdult
+                                                ? Promise.resolve()
+                                                : Promise.reject(new Error('At least one passenger must be an adult.'))
+                                        }
+                                    }
+                                ]}
+                            >
+                                <Input />
+                            </Form.Item>
 
                             <Form.Item shouldUpdate>
                                 {() => {
@@ -490,18 +551,35 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                             !t.roomType ||
                                             !t.birthday ||
                                             !t.age ||
-                                            !t.passportNo ||
-                                            !t.passportExpiry;
+                                            (!isDomesticPackage && (!t.passportNo || !t.passportExpiry));
                                     });
 
-                                    return hasIncomplete ? (
+                                    const hasAdult = travelers.some((t) => {
+                                        const age = t?.age
+                                        return typeof age === 'number' ? age >= 18 : Number(age) >= 18
+                                    })
+
+                                    if (hasIncomplete) {
+                                        return (
+                                            <div style={{
+                                                color: '#ff4d4f',
+                                                fontSize: '11px',
+                                                fontWeight: 'bold',
+                                                marginTop: '8px'
+                                            }}>
+                                                Please complete all traveler details before proceeding.
+                                            </div>
+                                        )
+                                    }
+
+                                    return !hasAdult ? (
                                         <div style={{
                                             color: '#ff4d4f',
                                             fontSize: '11px',
                                             fontWeight: 'bold',
                                             marginTop: '8px'
                                         }}>
-                                            Please complete all traveler details before proceeding.
+                                            At least one passenger must be an adult.
                                         </div>
                                     ) : null;
                                 }}

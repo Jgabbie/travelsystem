@@ -43,6 +43,7 @@ export default function QuotationsPaymentProcess() {
     console.log("Passport Files:", passportFiles);
     console.log("Photo Files:", photoFiles);
 
+    //REDIRECT IF NO BOOKING DATA
     useEffect(() => {
         if (!quotationBookingData) {
             navigate('/home', { replace: true });
@@ -54,8 +55,7 @@ export default function QuotationsPaymentProcess() {
     }, [quotationBookingData, navigate, searchParams]);
 
 
-    //upload files functions
-
+    //CONVERT THE BASE64 BACK TO FILE OBJECT
     const base64ToFile = (base64Data, fileName, fileType) => {
         const arr = base64Data.split(',');
         const mime = arr[0].match(/:(.*?);/)[1] || fileType;
@@ -70,6 +70,7 @@ export default function QuotationsPaymentProcess() {
         return new File([u8arr], fileName, { type: mime });
     };
 
+    //HANDLE UPLOAD CHANGE FOR PROOF OF PAYMENT
     const handleUploadChange = async ({ fileList: newFileList }) => {
         const file = newFileList[0];
 
@@ -80,6 +81,7 @@ export default function QuotationsPaymentProcess() {
         setFileList(newFileList.slice(-1));
     };
 
+    //VALIDATE FILE BEFORE UPLOAD
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
@@ -95,18 +97,40 @@ export default function QuotationsPaymentProcess() {
         return false;
     };
 
+    //UPLOAD ALL FILES (PASSPORT, PHOTO, PROOF) AND RETURN THEIR URLS
     const uploadAllFiles = async (passportFiles, photoFiles) => {
         const formData = new FormData();
 
-        const passportFileObjs = passportFiles.map(file =>
-            base64ToFile(file.file, file.name, file.type)
-        );
+        // Helper to process arrays
+        const processFiles = (fileArray, label) => {
+            fileArray.forEach((file, index) => {
+                // Check if it's already a File object or needs conversion
+                let fileToAppend;
+                if (file.originFileObj) {
+                    fileToAppend = file.originFileObj;
+                } else if (file.base64) {
+                    fileToAppend = base64ToFile(file.base64, file.name || `${label}_${index}.jpg`, file.type);
+                }
 
-        const photoFileObjs = photoFiles.map(file =>
-            base64ToFile(file.file, file.name, file.type)
-        );
+                if (fileToAppend) {
+                    // IMPORTANT: Ensure the key matches what your backend expects (e.g., "files")
+                    formData.append("files", fileToAppend);
+                }
+            });
+        };
 
-        [...passportFileObjs, ...photoFileObjs].forEach(file => formData.append("files", file));
+        processFiles(passportFiles, 'passport');
+        processFiles(photoFiles, 'photo');
+
+        // DEBUG: Check if FormData is actually populated before sending
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+
+        // If no files were added, don't even make the request
+        if (!formData.has("files")) {
+            throw new Error("No files selected for upload");
+        }
 
         const res = await axiosInstance.post(
             "/upload/upload-booking-documents",
@@ -118,7 +142,7 @@ export default function QuotationsPaymentProcess() {
     };
 
 
-    //get invoice number
+    //GET THE INVOICE NUMBER
     useEffect(() => {
         const fetchMonthBookings = async () => {
             try {
@@ -136,6 +160,7 @@ export default function QuotationsPaymentProcess() {
 
     console.log("Booking Data in PaymentProcess:", quotationBookingData);
 
+    //COMPUTATION OF AMOUNT FOR INVOICE DISPLAY AND PAYMENT PAYLOAD
     const travelerCountAdult = quotationBookingData?.travelersCount?.adult || 0;
     const travelerCountChild = quotationBookingData?.travelersCount?.child || 0;
     const travelerCountInfant = quotationBookingData?.travelersCount?.infant || 0;
@@ -172,13 +197,14 @@ export default function QuotationsPaymentProcess() {
     const email = quotationBookingData?.leadEmail || 'Email'
     const phone = quotationBookingData?.leadContact || 'Phone Number';
 
-    //payload for bookings
+    //PAYLOAD FOR PAYMENT
     const paymentDetails = {
         paymentType,
         frequency,
         depositAmount: quotationBookingData?.deposit ? (quotationBookingData.deposit * travelerTotal) : 0,
     }
 
+    //PAYLOAD FOR BOOKINGS
     const bookingDetails = {
         dateOfRegistration: quotationBookingData.dateOfRegistration,
         travelDate: quotationBookingData?.travelDate,
@@ -238,6 +264,17 @@ export default function QuotationsPaymentProcess() {
             const passportUrls = allUrls.slice(0, passportFiles.length);
             const photoUrls = allUrls.slice(passportFiles.length);
 
+            const travelersWithUrls = (quotationBookingData?.travelers || []).map((traveler, index) => ({
+                ...traveler,
+                passportFile: passportUrls[index] || traveler?.passportFile || null,
+                photoFile: photoUrls[index] || traveler?.photoFile || null
+            }))
+
+            const bookingDetailsWithUrls = {
+                ...bookingDetails,
+                travelers: travelersWithUrls
+            }
+
             const startDate = quotationBookingData?.travelDate.split(" - ")?.[0] || dayjs().format("MMM D, YYYY");
             const endDate = quotationBookingData?.travelDate.split(" - ")?.[1] || dayjs().format("MMM D, YYYY");
 
@@ -252,7 +289,7 @@ export default function QuotationsPaymentProcess() {
                         endDate
                     },
                     travelers: quotationBookingData?.travelersCount.adult + quotationBookingData?.travelersCount.child + quotationBookingData?.travelersCount.infant || 0,
-                    bookingDetails,
+                    bookingDetails: bookingDetailsWithUrls,
                     paymentType,
                     paymentMode,
                     passportFiles: passportUrls,
@@ -364,18 +401,15 @@ export default function QuotationsPaymentProcess() {
     const travelDateComputation = travelDateStart ? dayjs(travelDateStart, "MMM D, YYYY") : today;
 
     console.log("Travel Date for Computation:", travelDateComputation);
-    // ✅ Limit to 45 days from today
+
     const maxAllowedDate = today.add(45, 'day');
 
-    // ✅ Final cutoff = whichever comes FIRST
     const dueCutoffDate = travelDateComputation.isBefore(maxAllowedDate)
         ? travelDateComputation
         : maxAllowedDate;
 
     const depositAmount = (quotationBookingData?.deposit || 0) * travelerTotal;
     const remainingAmount = Math.max(totalAmount - depositAmount, 0);
-
-    const installmentWindowDays = dueCutoffDate.diff(today, 'day');
 
     const paymentDates = [];
 
@@ -399,7 +433,6 @@ export default function QuotationsPaymentProcess() {
     const formatScheduleAmount = (value) =>
         value == null ? 'PHP TBD' : formatCurrency(value);
 
-    // ✅ Final payment schedule
     const paymentSchedule = [
         {
             label: 'Deposit',
@@ -457,14 +490,6 @@ export default function QuotationsPaymentProcess() {
         notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
 
-    const calculateTotals = (items) => {
-        const subtotal = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
-        const tax = subtotal * 0.12;
-        const total = subtotal + tax;
-        return { subtotal, tax, total };
-    };
-
-    const totals = calculateTotals(Invoice.items);
 
 
     const MyDocument = () => (
@@ -637,6 +662,7 @@ export default function QuotationsPaymentProcess() {
 
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
+                            type='primary'
                             className='payment-process-back-button'
                             onClick={() => navigate(-1)}
                             style={{ display: 'flex', alignItems: 'center' }}
@@ -846,7 +872,7 @@ export default function QuotationsPaymentProcess() {
                                         beforeUpload={beforeUpload}
                                         accept=".jpg,.jpeg,.png"
                                     >
-                                        <Button icon={<UploadOutlined />} className="payment-process-upload-button">
+                                        <Button type='primary' icon={<UploadOutlined />} className="payment-process-upload-button">
                                             Select Receipt Image
                                         </Button>
                                     </Upload>
@@ -874,6 +900,7 @@ export default function QuotationsPaymentProcess() {
 
                     <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
                         <Button
+                            type='primary'
                             className='payment-process-proceed-button'
                             onClick={() => setIsProceedModalOpen(true)}
                             disabled={
@@ -905,12 +932,14 @@ export default function QuotationsPaymentProcess() {
                     <div className='signup-actions'>
                         <Button
                             id='signup-success-button'
+                            type='primary'
                             onClick={proceedBooking}
                         >
                             Proceed
                         </Button>
 
                         <Button
+                            type='primary'
                             id='signup-success-button-cancel'
                             onClick={() => setIsProceedModalOpen(false)}
                         >

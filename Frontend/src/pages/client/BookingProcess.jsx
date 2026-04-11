@@ -58,7 +58,6 @@ const computeAge = (birthDate) => {
     return age < 0 ? '' : age
 }
 
-
 export default function BookingProcess() {
     const [form] = Form.useForm();
     const { bookingData, setBookingData } = useBooking();
@@ -177,6 +176,8 @@ export default function BookingProcess() {
         ? 1
         : travelersTotal
 
+
+    //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
     const groupRoomOptions = (() => {
         if (travelersTotal === 2) {
             return [
@@ -203,8 +204,6 @@ export default function BookingProcess() {
         ]
     })()
 
-
-    //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
     const roomOptions = bookingType === 'Solo Booking'
         ? [{ value: 'SINGLE', label: 'SINGLE' }]
         : bookingType === 'Group Booking'
@@ -1093,7 +1092,7 @@ export default function BookingProcess() {
                                                     const age = date ? computeAge(date) : ''
                                                     updateTravelerField(index, 'birthday', date, { age })
                                                 }}
-                                                disabledDate={(current) => current && current.isAfter(dayjs(), 'day')}
+                                                disabledDate={(current) => current && current >= dayjs().startOf('day')}
                                             />
                                         </div>
                                         {!isDomesticPackage && (
