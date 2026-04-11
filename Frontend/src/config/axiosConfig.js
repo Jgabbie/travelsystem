@@ -1,6 +1,6 @@
 import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8000/api';
-const VERCEL_BASE_URL = 'https://mrctravelntoursapi.vercel.app/api';
+const VERCEL_BASE_URL = 'https://mrctraveltours-qa72u.ondigitalocean.app/api';
 const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 const BASE_URL = isLocalhost ? API_BASE_URL : VERCEL_BASE_URL;
 
