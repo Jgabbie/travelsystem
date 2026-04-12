@@ -38,13 +38,13 @@ const contactLimiter = rateLimit({
 const app = express()
 const allowedOrigins = [
     "http://localhost:3000",
-    "https://mrctravelntoursapi.vercel.app",
+    "https://mrctravelandtours.com",
     "https://lively-smoke-07f042800.7.azurestaticapps.net"
 ];
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        if (!origin || allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
         return callback(new Error("Not allowed by CORS"));
@@ -129,7 +129,7 @@ if (!isServerless) {
 
     // Use the PORT variable provided by the host, default to 8080
     //const LOCAL_PORT = 8000
-    const PORT = 8080; //change to 8000 for local testing, 8080 for cloud deployment
+    const PORT = 8000; //change to 8000 for local testing, 8080 for cloud deployment
 
     // Remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {
