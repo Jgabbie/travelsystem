@@ -128,7 +128,8 @@ if (!isServerless) {
     app.set('io', io);
 
     // Use the PORT variable provided by the host, default to 8080
-    const PORT = 8000;
+    //const LOCAL_PORT = 8000
+    const PORT = 8080;
 
     // Remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {
