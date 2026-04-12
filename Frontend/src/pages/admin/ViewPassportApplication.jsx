@@ -238,8 +238,8 @@ export default function ViewPassportApplication() {
     const handleDFARejected = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${id}/status`, { status: "rejected" });
-            setApplication((prev) => ({ ...prev, status: "dfa rejected" }));
+            await apiFetch.put(`/passport/applications/${id}/status`, { status: "Rejected" });
+            setApplication((prev) => ({ ...prev, status: "Rejected" }));
             message.success("Application marked as DFA Rejected");
         } catch (err) {
             message.error("Failed to update status");

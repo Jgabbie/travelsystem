@@ -166,6 +166,9 @@ function App() {
 
             <Route element={<ProtectedRoute />}>
               <Route path="/user-preferences" element={<UserPreference />} />
+              <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
+              <Route path="/user-applications/success/passport" element={<SuccessfulPaymentPassport />} />
+              <Route path="/user-applications/success/visa" element={<SuccessfulPaymentVisa />} />
               <Route element={<Layout />}>
                 <Route path='/profile' element={<ProfilePage />} />
                 <Route path='/user-bookings' element={<UserBookings />} />
@@ -178,9 +181,6 @@ function App() {
                 <Route path='/quotation-booking-process' element={<QuotationBookingProcess />} />
                 <Route path='/quotation-payment-process' element={<QuotationsPaymentProcess />} />
                 <Route path='/booking-payment' element={<PaymentProcess />} />
-                <Route path='/booking-payment/success' element={<SuccessfulBooking />} />
-                <Route path="/user-applications/success/passport" element={<SuccessfulPaymentPassport />} />
-                <Route path="/user-applications/success/visa" element={<SuccessfulPaymentVisa />} />
                 <Route path="/domestic-quotation" element={<PackageDomesticQuotation />} />
                 <Route path="/international-quotation" element={<PackageInternationalQuotation />} />
                 <Route path="/user-applications" element={<UserApplications />} />
