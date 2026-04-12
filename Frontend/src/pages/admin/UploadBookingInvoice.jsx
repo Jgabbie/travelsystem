@@ -1,14 +1,21 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Tag, Typography, message } from "antd";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Form, Tag, Typography, message, Steps } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Document, Image, Page, PDFViewer, StyleSheet, Text, View } from "@react-pdf/renderer";
 import dayjs from "dayjs";
-import apiFetch from "../../config/fetchConfig";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import "../../style/admin/uploadbookinginvoice.css";
+import apiFetch from "../../config/fetchConfig";
+import BookingRegistrationTravelersInvoice from "../../components/form_bookinginvoice/BookingRegistrationTravelersInvoice";
+import BookingRegistrationDietInvoice from "../../components/form_bookinginvoice/BookingRegistrationDietInvoice";
+import BookingRegistrationTermsInvoicePart1 from "../../components/form_bookinginvoice/BookingRegistrationTermsInvoicePart1";
+import BookingRegistrationTermsInvoicePart2 from "../../components/form_bookinginvoice/BookingRegistrationTermsInvoicePart2";
 
 const { Title, Text: AntText } = Typography;
 
+//INSTALLMENT AND PAYMENT COMPUTATION LOGIC
 const getFrequencyWeeks = (value) => {
     if (value === "Every week") return 1;
     if (value === "Every 3 weeks") return 3;
@@ -76,18 +83,21 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
 };
 
 export default function UploadBookingInvoice() {
-    const { id } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
 
     const [booking, setBooking] = useState(location.state?.booking || null);
     const [loading, setLoading] = useState(false);
+    const bookingDetails = booking?.bookingDetails || {};
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
     const reference = booking?.reference || booking?.ref || booking?._id || "--";
 
+    const stepsToCapture = [0, 1, 2, 3];
+
+    //FETCH BOOKING DETAILS
     useEffect(() => {
-        if (!id) return;
+        if (!reference) return;
         if (booking && booking.bookingDetails) return;
 
         const fetchBooking = async () => {
@@ -134,12 +144,91 @@ export default function UploadBookingInvoice() {
     }, [reference]);
 
 
+    //DOCUMENTS
+    const summaryInvoice = bookingDetails
+
+    const [form] = Form.useForm();
+    const pdfStepRef = useRef(null);
+    const [currentStep, setCurrentStep] = useState(0);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    const next = async () => {
+        try {
+            await form.validateFields();
+
+            setCurrentStep(prev => prev + 1);
+        } catch (error) {
+            message.error("Please complete required fields.");
+        }
+    };
+
+    //go to previous step
+    const prev = () => setCurrentStep(currentStep - 1);
+
+    const handleFinalSubmit = async () => {
+        try {
+
+            setIsGeneratingPdf(true);
+
+            const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+
+            const waitForRender = (ms = 450) => new Promise((resolve) => {
+                requestAnimationFrame(() => {
+                    setTimeout(resolve, ms);
+                });
+            });
+
+            for (let i = 0; i < stepsToCapture.length; i += 1) {
+                const step = stepsToCapture[i];
+                setCurrentStep(step);
+                await waitForRender();
+
+                if (!pdfStepRef.current) {
+                    continue;
+                }
+
+                const canvas = await html2canvas(pdfStepRef.current, {
+                    scale: 1.5,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                const renderHeight = Math.min(imgHeight, pdfHeight);
+
+
+                pdf.setFillColor(255, 255, 255);
+                pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderHeight);
+
+                if (i < stepsToCapture.length - 1) {
+                    pdf.addPage();
+                }
+            }
+
+            pdf.save(`Booking_${reference}.pdf`);
+            message.success("Booking Registration PDF downloaded successfully.");
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+
+        } catch (err) {
+            message.error("Submission failed.");
+            console.error("Error during PDF generation:", err);
+        }
+    };
+
+
     const formatCurrency = useMemo(
         () => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }),
         []
     );
 
-    const bookingDetails = booking?.bookingDetails || {};
+
     const totalPrice = Number(
         bookingDetails.totalPrice || bookingDetails.amount || booking?.totalPrice || 0
     );
@@ -486,7 +575,7 @@ export default function UploadBookingInvoice() {
             }}
         >
             <div className="upload-invoice-page">
-                <Button className="upload-invoice-back-button" onClick={() => navigate("/bookings")}>
+                <Button type="primary" className="upload-invoice-back-button" onClick={() => navigate("/bookings")}>
                     <ArrowLeftOutlined />
                     Back
                 </Button>
@@ -565,7 +654,7 @@ export default function UploadBookingInvoice() {
                             </div>
                         </div>
 
-                        <Card title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
+                        <Card className="upload-invoice-card" title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
                             <div style={{
                                 backgroundColor: "#f0f5ff",
                                 border: "1px solid #adc6ff",
@@ -604,7 +693,7 @@ export default function UploadBookingInvoice() {
                             )}
                         </Card>
 
-                        <Card title="Documents" style={{ marginTop: 24 }}>
+                        <Card className="upload-invoice-card" title="Booking Documents" style={{ marginTop: 24 }}>
                             {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
                                 <AntText type="secondary">No documents uploaded yet.</AntText>
                             ) : travelersWithDocs.length ? (
@@ -714,6 +803,98 @@ export default function UploadBookingInvoice() {
                                     </div>
                                 </div>
                             )}
+                        </Card>
+
+
+                        {/* BOOKING REGISTRATION SECTION */}
+                        <Card className="upload-invoice-card" style={{ marginTop: 25 }}>
+                            <div className="booking-form-stepper-container">
+                                <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                                <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                                    Please upload a clear image of your passport bio page for each traveler.
+                                </p>
+                                <Steps
+                                    current={currentStep}
+                                    items={[
+                                        { title: 'Traveler Info' },
+                                        { title: 'Dietary & Insurance' },
+                                        { title: 'General Package Disclaimer' },
+                                        { title: 'Terms & Conditions' }
+                                    ]}
+                                    style={{ marginBottom: '30px' }}
+                                />
+
+
+                                {/* PAGES FOR PDF GENERATION */}
+                                <div
+                                    className="form-content-wrapper pdf-capture"
+                                    ref={pdfStepRef}
+                                    style={{
+                                        position: isGeneratingPdf ? "absolute" : "relative",
+                                        left: isGeneratingPdf ? "-9999px" : "0"
+                                    }}
+                                >
+                                    {currentStep === 0 && (
+                                        <BookingRegistrationTravelersInvoice
+                                            form={form}
+                                            summaryInvoice={summaryInvoice}
+                                            totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                        />
+                                    )}
+
+                                    {currentStep === 1 && (
+                                        <BookingRegistrationDietInvoice
+                                            form={form}
+                                            summaryInvoice={summaryInvoice}
+                                        />
+                                    )}
+
+                                    {currentStep === 2 && (
+                                        <BookingRegistrationTermsInvoicePart1
+                                            form={form}
+                                            summaryInvoice={summaryInvoice}
+                                        />
+                                    )}
+
+                                    {currentStep === 3 && (
+                                        <BookingRegistrationTermsInvoicePart2
+                                            form={form}
+                                            summaryInvoice={summaryInvoice}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* BUTTONS FOR BOOKING REGISTRATION */}
+                                {!isGeneratingPdf && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                                        <div>
+                                            {currentStep > 0 && (
+                                                <Button type="primary" className="upload-invoice-form-button" onClick={prev}>
+                                                    Back
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            {currentStep < 3 ? (
+                                                <Button type="primary" className="upload-invoice-form-button" onClick={next}>
+                                                    Next Step
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    type="primary"
+                                                    className="upload-invoice-form-button"
+                                                    onClick={handleFinalSubmit}
+                                                    loading={isGeneratingPdf}
+                                                >
+                                                    Download
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </Card>
                     </>
                 )}

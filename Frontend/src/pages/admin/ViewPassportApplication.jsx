@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/viewpassportapplication.css";
@@ -89,6 +89,64 @@ export default function ViewPassportApplication() {
         return null;
     }
 
+    //RENDER UPLOAD DOCUMENTS
+    const renderReadOnlyFile = (url, label) => {
+        // Check if the URL contains '.pdf' (case insensitive)
+        const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
+
+        const handleDownload = () => {
+            if (!url) return;
+            const downloadUrl = url.includes('cloudinary.com')
+                ? url.replace('/upload/', '/upload/fl_attachment/')
+                : url;
+            window.location.href = downloadUrl;
+        };
+
+        return (
+            <div style={{ width: 150 }}>
+                {isPdf ? (
+                    <Button
+                        type="dashed"
+                        icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
+                        onClick={() => window.open(url, '_blank')}
+                        style={{
+                            height: 250, width: 250,
+                            display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', justifyContent: 'center',
+                            borderRadius: 8,
+                            backgroundColor: '#fafafa'
+                        }}
+                    >
+                        <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
+                    </Button>
+                ) : (
+                    <Image
+                        src={url}
+                        alt={label}
+                        width={250}
+                        height={250}
+                        style={{
+                            borderRadius: 8,
+                            objectFit: 'cover',
+                            border: '1px solid #f0f0f0'
+                        }}
+                        placeholder={<div style={{ width: 150, height: 150, background: '#eee' }} />}
+                    />
+                )}
+
+                <Button
+                    className='passportapplication-download-button'
+                    type="primary"
+                    icon={<DownloadOutlined />}
+                    size="small"
+                    onClick={handleDownload}
+                >
+                    Download {isPdf ? 'PDF' : 'Image'}
+                </Button>
+            </div>
+        );
+    };
+
     const normalizeLabel = (value) => (
         String(value)
             .replace(/_/g, " ")
@@ -176,7 +234,35 @@ export default function ViewPassportApplication() {
         }
     };
 
-    // DISABLE PAST DATES AND WEEKENDS IN DATE PICKER ------------------------------------------------------
+    //DFA REJECTED HANDLER ------------------------------------------------------
+    const handleDFARejected = async () => {
+        try {
+            setIsUpdatingStatus(true);
+            await apiFetch.put(`/passport/applications/${id}/status`, { status: "rejected" });
+            setApplication((prev) => ({ ...prev, status: "dfa rejected" }));
+            message.success("Application marked as DFA Rejected");
+        } catch (err) {
+            message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    const handleDFAApproved = async () => {
+        try {
+            setIsUpdatingStatus(true);
+            await apiFetch.put(`/passport/applications/${id}/status`, { status: "DFA approved" });
+            setApplication((prev) => ({ ...prev, status: "DFA approved" }));
+            message.success("Application marked as DFA Approved");
+        } catch (err) {
+            message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    }
+
+
+    // DISABLE PAST DATES AND WEEKENDS IN DATE PICKER -----------------------------------------------------
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
         const twoWeeksFromNow = today.add(14, 'day');
@@ -199,6 +285,9 @@ export default function ViewPassportApplication() {
         }
         return hours;
     }
+
+
+
 
     return (
         <ConfigProvider
@@ -226,7 +315,7 @@ export default function ViewPassportApplication() {
                         <div style={{ display: "flex", flexDirection: "column", gap: 24, minWidth: 800 }}>
 
                             {/* APPLICATION DETAILS */}
-                            <Card >
+                            <Card style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                 <Descriptions bordered column={2} size="middle">
                                     <Descriptions.Item label="Application Number">{application.applicationNumber}</Descriptions.Item>
                                     <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
@@ -255,118 +344,140 @@ export default function ViewPassportApplication() {
 
 
                             {/* SUGGEST APPOINTMENT DATES AND TIMES IF APPLICATION IS STILL SUBMITTED */}
-                            {application.status && application.status.toLowerCase() === "application submitted" && (
-                                <Card title="Suggested Appointment Options" style={{ marginTop: 16 }}>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                        {alternateSlots.map((slot, idx) => (
-                                            <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                                                <span style={{ minWidth: 20 }}>{idx + 1}.</span>
-                                                <DatePicker
-                                                    disabledDate={disableDates}
-                                                    placeholder="Select date"
-                                                    value={slot.date}
-                                                    onChange={(date) => {
-                                                        const next = [...alternateSlots];
-                                                        next[idx] = { ...next[idx], date };
-                                                        setAlternateSlots(next);
-                                                    }}
-                                                />
-                                                <TimePicker
-                                                    format="h:mm A"
-                                                    use12Hours
-                                                    showNow={false}
-                                                    minuteStep={30}
-                                                    disabledTime={() => ({
-                                                        disabledHours
-                                                    })}
-                                                    placeholder="Select time"
-                                                    value={slot.time}
-                                                    onChange={(time) => {
-                                                        const next = [...alternateSlots];
-                                                        next[idx] = { ...next[idx], time };
-                                                        setAlternateSlots(next);
-                                                    }}
-                                                />
+                            {application.status && application.status.toLowerCase() === "application submitted" &&
+                                application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
+                                    <div>
+                                        <Card style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", marginTop: 16 }} title="Suggested Appointment Options" >
+                                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                {alternateSlots.map((slot, idx) => (
+                                                    <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                                        <span style={{ minWidth: 20 }}>{idx + 1}.</span>
+                                                        <DatePicker
+                                                            disabledDate={disableDates}
+                                                            placeholder="Select date"
+                                                            value={slot.date}
+                                                            onChange={(date) => {
+                                                                const next = [...alternateSlots];
+                                                                next[idx] = { ...next[idx], date };
+                                                                setAlternateSlots(next);
+                                                            }}
+                                                        />
+                                                        <TimePicker
+                                                            format="h:mm A"
+                                                            use12Hours
+                                                            showNow={false}
+                                                            minuteStep={30}
+                                                            disabledTime={() => ({
+                                                                disabledHours
+                                                            })}
+                                                            placeholder="Select time"
+                                                            value={slot.time}
+                                                            onChange={(time) => {
+                                                                const next = [...alternateSlots];
+                                                                next[idx] = { ...next[idx], time };
+                                                                setAlternateSlots(next);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                                    <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewpassportapplication-submit-button">
+                                                        Submit Options
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        ))}
-                                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                            <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewpassportapplication-submit-button">
-                                                Submit Options
-                                            </Button>
-                                        </div>
+                                        </Card>
+
                                     </div>
+                                )}
+
+                            {application.status && application.status.toLowerCase() === "application submitted" &&
+                                application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" && (
+                                    <Card style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}>
+                                        <Tag color="gold"><h2>AWAITING APPLICANT RESPONSE</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            You have suggested appointment schedules for this application. Kindly wait for the applicant's response. We will notify you once they have chosen an option.
+                                        </p>
+                                    </Card>
+                                )}
+
+                            {application.status && application.status.toLowerCase() === "application submitted" &&
+                                application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
+                                    <Card style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                        <Tag color="green"><h2>APPLICANT RESPONSE RECEIVED</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            The applicant has chosen their preferred appointment schedule.
+                                        </p>
+                                        <strong>
+                                            {dayjs(application.suggestedAppointmentScheduleChosen?.date).format("MMM DD, YYYY")} at {application.suggestedAppointmentScheduleChosen?.time}
+                                        </strong>
+                                    </Card>
+                                )}
+
+                            {application.status && application.status.toLowerCase() === "processing by dfa" && (
+                                <Card title="DFA Processing Actions" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                                    <Button type="primary" onClick={handleDFAApproved} className="viewpassportapplication-dfa-processing-button">
+                                        DFA Approved
+                                    </Button>
+                                    <Button type="primary" onClick={handleDFARejected} className="viewpassportapplication-passport-released-button" style={{ marginLeft: 8, backgroundColor: "#ff4d4f", borderColor: "#ff4d4f" }}>
+                                        DFA Rejected
+                                    </Button>
                                 </Card>
                             )}
 
 
                             {/* VIEW SUBMITTED DOCUMENTS */}
-                            <Divider orientation="left">Submitted Documents</Divider>
-                            <Card>
+                            <Card title="Submitted Documents" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                 {submittedDocuments.length > 0 ? (
                                     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                                        {submittedDocuments.map((doc, idx) => {
-                                            const isPDF = doc.url?.toLowerCase().endsWith(".pdf");
-
-                                            const handleDownload = () => {
-                                                if (!doc.url) return;
-                                                const downloadUrl = doc.url.includes('cloudinary.com')
-                                                    ? doc.url.replace('/upload/', '/upload/fl_attachment/')
-                                                    : doc.url;
-                                                window.location.href = downloadUrl;
+                                        {(() => {
+                                            const docs = application.submittedDocuments || {
+                                                birthCertificate: application.birthCertificate,
+                                                applicationForm: application.applicationForm,
+                                                govId: application.govId,
+                                                additionalDocs: application.additionalDocs
                                             };
 
                                             return (
-                                                <div
-                                                    key={idx}
-                                                    style={{
-                                                        display: "flex",
-                                                        flexDirection: "column",
-                                                        gap: 12,
-                                                        padding: "16px",
-                                                        border: "1px solid #f0f0f0",
-                                                        borderRadius: "8px"
-                                                    }}
-                                                >
-                                                    <div style={{ fontWeight: 600, fontSize: "16px" }}>
-                                                        {doc.name || `Document ${idx + 1}`}
-                                                    </div>
-
-                                                    {isPDF ? (
-                                                        <div style={{ width: "100%", height: "500px", overflow: "hidden", borderRadius: "8px" }}>
-                                                            <iframe
-                                                                src={`${doc.url}#toolbar=0`}
-                                                                title={doc.name}
-                                                                width="100%"
-                                                                height="100%"
-                                                                style={{ border: "none" }}
-                                                            />
-                                                            <div style={{ marginTop: 8 }}>
-                                                                <Button type="link" href={doc.url} target="_blank" rel="noopener noreferrer">
-                                                                    Open PDF in New Tab
-                                                                </Button>
-                                                            </div>
+                                                <>
+                                                    {docs.birthCertificate && (
+                                                        <div>
+                                                            <b style={{ display: 'block', marginBottom: 8 }}>PSA Birth Certificate:</b>
+                                                            {renderReadOnlyFile(docs.birthCertificate, "Birth Certificate")}
                                                         </div>
-                                                    ) : (
-                                                        <Image
-                                                            src={doc.url}
-                                                            alt={doc.name || `Document ${idx + 1}`}
-                                                            width={300}
-                                                            style={{ borderRadius: 8, cursor: "pointer" }}
-                                                            fallback="/images/file-placeholder.png"
-                                                        />
                                                     )}
 
-                                                    <Button
-                                                        className="viewpassportapplication-download-button"
-                                                        type="primary"
-                                                        icon={<DownloadOutlined />}
-                                                        onClick={handleDownload}
-                                                    >
-                                                        Download {isPDF ? 'PDF' : 'Image'}
-                                                    </Button>
-                                                </div>
+                                                    {docs.applicationForm && (
+                                                        <div>
+                                                            <b style={{ display: 'block', marginBottom: 8 }}>Application Form:</b>
+                                                            {renderReadOnlyFile(docs.applicationForm, "Application Form")}
+                                                        </div>
+                                                    )}
+
+                                                    {docs.govId && (
+                                                        <div>
+                                                            <b style={{ display: 'block', marginBottom: 8 }}>Government-issued ID:</b>
+                                                            {renderReadOnlyFile(docs.govId, "Government ID")}
+                                                        </div>
+                                                    )}
+
+                                                    {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
+                                                        <div>
+                                                            <b style={{ display: 'block', marginBottom: 8 }}>Additional Documents:</b>
+                                                            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                                                                <Image.PreviewGroup>
+                                                                    {docs.additionalDocs.map((url, idx) => (
+                                                                        <div key={`extra-${idx}`}>
+                                                                            {renderReadOnlyFile(url, `Additional Doc ${idx + 1}`)}
+                                                                        </div>
+                                                                    ))}
+                                                                </Image.PreviewGroup>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </>
                                             );
-                                        })}
+                                        })()}
                                     </div>
                                 ) : (
                                     <div style={{ padding: "20px", textAlign: "center", color: "#999" }}>

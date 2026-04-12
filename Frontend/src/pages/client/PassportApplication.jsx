@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image } from 'antd';
+import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
@@ -48,7 +48,6 @@ const PASSPORT_STEPS = [
     { title: 'Passport released', description: 'Passport released' },
 ];
 
-
 export default function PassportApplication() {
     const location = useLocation();
     const { applicationId } = location.state || {};
@@ -68,8 +67,12 @@ export default function PassportApplication() {
     const [fileList, setFileList] = useState([]);
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
+
     const [selectedSuggestedIndex, setSelectedSuggestedIndex] = useState(null);
+    const [customDateTime, setCustomDateTime] = useState({ date: null, time: null });
     const [confirmingSuggested, setConfirmingSuggested] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(null);
 
     const fetchPassportApplication = `/passport/applications/${id}`;
 
@@ -240,8 +243,7 @@ export default function PassportApplication() {
 
                 {/* The Remove Button */}
                 <Button
-                    type="link"
-                    danger
+                    type="primary"
                     icon={<DeleteOutlined />}
                     onClick={() => setter([])} // Clears the specific list
                     size="small"
@@ -299,7 +301,7 @@ export default function PassportApplication() {
 
                 <Button
                     className='passportapplication-download-button'
-                    type="default"
+                    type="primary"
                     icon={<DownloadOutlined />}
                     size="small"
                     onClick={handleDownload}
@@ -307,11 +309,7 @@ export default function PassportApplication() {
                     Download {isPdf ? 'PDF' : 'Image'}
                 </Button>
             </div>
-
-
         );
-
-
     };
 
     //HANDLE PREVIEW FOR UPLOADED FILES
@@ -403,28 +401,70 @@ export default function PassportApplication() {
             return;
         }
 
-        const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
-        if (!selected?.date || !selected?.time) {
-            message.error('Selected option is missing date or time.');
-            return;
+        if (selectedSuggestedIndex === 'others') {
+            if (!customDateTime.date || !customDateTime.time) {
+                message.warning('Please fill in all custom date and time fields.');
+                return;
+            }
+
+            setSelectedDate(dayjs(customDateTime.date).format('YYYY-MM-DD'));
+            setSelectedTime(customDateTime.time.format('h:mm A'));
+
+        } else if (typeof selectedSuggestedIndex === 'number') {
+            const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
+
+            if (!selected?.date || !selected?.time) {
+                message.error('Selected option is missing date or time.');
+                return;
+            }
+
+            setSelectedDate(dayjs(selected.date).format('YYYY-MM-DD'));
+            setSelectedTime(selected.time);
         }
+
+        console.log("Confirming appointment with date:", selectedDate, "and time:", selectedTime);
+
 
         try {
             setConfirmingSuggested(true);
             await apiFetch.put(`/passport/applications/${id}/choose-appointment`, {
-                date: selected.date,
-                time: selected.time
+                date: selectedDate,
+                time: selectedTime
             });
 
             const refreshed = await apiFetch.get(`/passport/applications/${id}`);
             setApplication(refreshed);
             message.success('Appointment schedule confirmed.');
+            window.location.reload();
         } catch (error) {
             message.error('Failed to confirm appointment schedule.');
         } finally {
             setConfirmingSuggested(false);
         }
     };
+
+    const disableDates = (current) => {
+        const today = dayjs().startOf('day');
+        const twoWeeksFromNow = today.add(14, 'day');
+
+        return (
+            current &&
+            (
+                current < twoWeeksFromNow ||
+                current.day() === 0 ||
+                current.day() === 6
+            )
+        );
+    };
+    const disabledHours = () => {
+        const hours = [];
+        for (let i = 0; i < 24; i++) {
+            if (i < 8 || i > 17) {
+                hours.push(i);
+            }
+        }
+        return hours;
+    }
 
 
     return (
@@ -492,7 +532,7 @@ export default function PassportApplication() {
                                     </Card>
                                 </div>
 
-                                {application.status && application.status.toLowerCase() === 'application submitted' && (
+                                {application.status.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen?.time === "" && (
                                     <Card title="Suggested Appointment Options" style={{ marginBottom: 32 }}>
                                         {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
                                             <>
@@ -518,13 +558,53 @@ export default function PassportApplication() {
                                                             </Card>
                                                         );
                                                     })}
+
+                                                    {/* "Others" Option Card */}
+                                                    <Card
+                                                        hoverable
+                                                        onClick={() => setSelectedSuggestedIndex('others')}
+                                                        style={{
+                                                            border: selectedSuggestedIndex === 'others' ? '2px solid #305797' : '1px solid #f0f0f0',
+                                                            boxShadow: selectedSuggestedIndex === 'others' ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
+                                                        }}
+                                                    >
+                                                        <Tag color="orange">Others</Tag>
+                                                        <div style={{ marginTop: 12 }}>
+                                                            <Space orientation="vertical" style={{ width: '100%' }}>
+                                                                <DatePicker
+                                                                    disabledDate={disableDates}
+                                                                    placeholder="Select Date"
+                                                                    style={{ width: '100%' }}
+                                                                    onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
+                                                                    onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
+                                                                />
+                                                                <TimePicker
+                                                                    format="h:mm A"
+                                                                    use12Hours
+                                                                    showNow={false}
+                                                                    minuteStep={30}
+                                                                    disabledTime={() => ({
+                                                                        disabledHours
+                                                                    })}
+                                                                    placeholder="Select Time"
+                                                                    style={{ width: '100%' }}
+                                                                    onChange={(time) => setCustomDateTime(prev => ({ ...prev, time }))}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                />
+                                                            </Space>
+                                                        </div>
+                                                    </Card>
                                                 </div>
+
                                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
                                                     <Button
                                                         type="primary"
                                                         onClick={handleConfirmSuggested}
                                                         loading={confirmingSuggested}
-                                                        disabled={selectedSuggestedIndex === null}
+                                                        disabled={
+                                                            selectedSuggestedIndex === null ||
+                                                            (selectedSuggestedIndex === 'others' && (!customDateTime.date || !customDateTime.time))
+                                                        }
                                                     >
                                                         Confirm selected date
                                                     </Button>
@@ -536,290 +616,357 @@ export default function PassportApplication() {
                                     </Card>
                                 )}
 
-                                {application ? (
-                                    <>
-                                        {application?.status && application.status.toLowerCase() === 'application approved' && !paymentCompleted && (
-                                            <Card title="Payment" style={{ marginBottom: 32 }}>
-                                                <div className='payment-methods-container payment-section'>
-                                                    <div className="payment-methods-wrapper">
-                                                        <div className="payment-section-header">
-                                                            <div>
-                                                                <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
-                                                                <p className="payment-methods-subtitle payment-section-subtitle">
-                                                                    Select a payment method to complete your booking.
-                                                                </p>
-                                                            </div>
-                                                        </div>
 
-                                                        <Radio.Group
-                                                            onChange={(e) => setMethod(e.target.value)}
-                                                            value={method}
-                                                            className="payment-methods-cards"
-                                                            style={{ width: '100%', display: 'flex', gap: '16px' }}
-                                                        >
-                                                            <Radio.Button
-                                                                value="paymongo"
-                                                                className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                style={{ flex: 1, height: 'auto', padding: '20px' }}
-                                                            >
-                                                                <div className="card-content">
-                                                                    <h3>Paymongo</h3>
-                                                                    <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
-                                                                </div>
-                                                            </Radio.Button>
+                                {application.status?.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                    >
+                                        <Tag color="green"><h2>SUGGESTED APPOINTMENT</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            You have successfully chosen your appointment schedule.
+                                            Kindly wait for its approval. We will notify you once the date is available.
+                                        </p>
+                                    </Card>
+                                )}
 
-                                                            <Radio.Button
-                                                                value="manual"
-                                                                className={`payment-card ${method === "manual" ? "selected" : ""}`}
-                                                                style={{ flex: 1, height: 'auto', padding: '20px' }}
-                                                            >
-                                                                <div className="card-content">
-                                                                    <h3>Manual Payment</h3>
-                                                                    <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
-                                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
-                                                                </div>
-                                                            </Radio.Button>
-                                                        </Radio.Group>
+
+
+                                {application.status && application.status.toLowerCase() === 'application approved' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                    >
+                                        <Tag color="green"><h2>YOUR APPOINTMENT DATE AND TIME</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your appointment has been scheduled for <strong>{dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY") || application.preferredDate}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
+                                        </p>
+                                    </Card>
+                                )}
+
+
+
+
+                                {application.status && application.status.toLowerCase() === 'application approved' && !paymentCompleted && (
+                                    <Card title="Payment" style={{ marginBottom: 32 }}>
+                                        <div className='payment-methods-container payment-section'>
+                                            <div className="payment-methods-wrapper">
+                                                <div className="payment-section-header">
+                                                    <div>
+                                                        <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
+                                                        <p className="payment-methods-subtitle payment-section-subtitle">
+                                                            Select a payment method to complete your booking.
+                                                        </p>
                                                     </div>
+                                                </div>
 
-                                                    {method === 'manual' && (
-
-                                                        <div className="manual-transfer-details">
-                                                            <div className="bank-accounts-section">
-                                                                <h4 className="section-subtitle">Available Bank Accounts</h4>
-                                                                <div className="bank-grid">
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">BDO Unibank</span>
-                                                                        <span className="account-number">0012-3456-7890</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">BPI</span>
-                                                                        <span className="account-number">9876-5432-10</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="bank-accounts-section">
-                                                                <div className="bank-grid">
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">Metro Bank</span>
-                                                                        <span className="account-number">0012-3456-7890</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">Land Bank</span>
-                                                                        <span className="account-number">9876-5432-10</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="upload-section">
-                                                                <h4 className="section-subtitle">Upload Proof of Payment</h4>
-                                                                <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
-                                                                <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
-
-                                                                <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
-
-                                                                <Upload
-                                                                    className='passportapplication-upload-button'
-                                                                    type='primary'
-                                                                    listType="picture"
-                                                                    maxCount={1}
-                                                                    fileList={fileList}
-                                                                    onChange={handleUploadChange}
-                                                                    accept=".jpg,.jpeg,.png,.pdf"
-                                                                    beforeUpload={() => false}
-                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    action={undefined}
-                                                                >
-                                                                    <Button icon={<UploadOutlined />} className='passportapplication-uploadreceipt-button' type='primary'>
-                                                                        Select Receipt Image
-                                                                    </Button>
-                                                                </Upload>
-
-                                                                {fileList.length > 0 && (
-                                                                    <div className="upload-preview-container">
-                                                                        <h4 className="section-subtitle">Preview</h4>
-
-                                                                        <div className="upload-preview-box">
-                                                                            <Image.PreviewGroup>
-                                                                                <Image
-                                                                                    src={fileList[0].preview}
-                                                                                    alt="Receipt Preview"
-                                                                                    className="upload-preview-image"
-                                                                                    style={{ borderRadius: '8px', border: '1px solid #d9d9d9' }}
-                                                                                />
-                                                                            </Image.PreviewGroup>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-
-
-                                                        </div>
-
-
-                                                    )}
-
-                                                    <Button style={{ marginTop: 20 }}
-                                                        type="primary"
-                                                        onClick={handleSubmitPayment}
-                                                        disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                <Radio.Group
+                                                    onChange={(e) => setMethod(e.target.value)}
+                                                    value={method}
+                                                    className="payment-methods-cards"
+                                                    style={{ width: '100%', display: 'flex', gap: '16px' }}
+                                                >
+                                                    <Radio.Button
+                                                        value="paymongo"
+                                                        className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
                                                     >
-                                                        {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
-                                                    </Button>
-                                                </div>
-                                            </Card>
-                                        )}
-                                    </>
-                                ) : null}
+                                                        <div className="card-content">
+                                                            <h3>Paymongo</h3>
+                                                            <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                                            <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
+                                                        </div>
+                                                    </Radio.Button>
 
-                                {/* //view documents section */}
-                                {application ? (
-                                    <>
-                                        {application?.status && application.status?.toLowerCase() === 'documents approved' && (
-                                            <Card
-                                                style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                                title={<Tag color="green">Documents Approved</Tag>}
+                                                    <Radio.Button
+                                                        value="manual"
+                                                        className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                                    >
+                                                        <div className="card-content">
+                                                            <h3>Manual Payment</h3>
+                                                            <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                                            <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                                        </div>
+                                                    </Radio.Button>
+                                                </Radio.Group>
+                                            </div>
+
+                                            {method === 'manual' && (
+
+                                                <div className="manual-transfer-details">
+                                                    <div className="bank-accounts-section">
+                                                        <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                                        <div className="bank-grid">
+                                                            <div className="bank-item">
+                                                                <span className="bank-name">BDO Unibank</span>
+                                                                <span className="account-number">0012-3456-7890</span>
+                                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                                            </div>
+                                                            <div className="bank-item">
+                                                                <span className="bank-name">BPI</span>
+                                                                <span className="account-number">9876-5432-10</span>
+                                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bank-accounts-section">
+                                                        <div className="bank-grid">
+                                                            <div className="bank-item">
+                                                                <span className="bank-name">Metro Bank</span>
+                                                                <span className="account-number">0012-3456-7890</span>
+                                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                                            </div>
+                                                            <div className="bank-item">
+                                                                <span className="bank-name">Land Bank</span>
+                                                                <span className="account-number">9876-5432-10</span>
+                                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="upload-section">
+                                                        <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                                        <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                                        <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                                        <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                                        <Upload
+                                                            className='passportapplication-upload-button'
+                                                            type='primary'
+                                                            listType="picture"
+                                                            maxCount={1}
+                                                            fileList={fileList}
+                                                            onChange={handleUploadChange}
+                                                            accept=".jpg,.jpeg,.png,.pdf"
+                                                            beforeUpload={() => false}
+                                                            customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                            action={undefined}
+                                                        >
+                                                            <Button icon={<UploadOutlined />} className='passportapplication-uploadreceipt-button' type='primary'>
+                                                                Select Receipt Image
+                                                            </Button>
+                                                        </Upload>
+
+                                                        {fileList.length > 0 && (
+                                                            <div className="upload-preview-container">
+                                                                <h4 className="section-subtitle">Preview</h4>
+
+                                                                <div className="upload-preview-box">
+                                                                    <Image.PreviewGroup>
+                                                                        <Image
+                                                                            src={fileList[0].preview}
+                                                                            alt="Receipt Preview"
+                                                                            className="upload-preview-image"
+                                                                            style={{ borderRadius: '8px', border: '1px solid #d9d9d9' }}
+                                                                        />
+                                                                    </Image.PreviewGroup>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+
+
+                                                </div>
+
+
+                                            )}
+
+                                            <Button style={{ marginTop: 20 }}
+                                                type="primary"
+                                                onClick={handleSubmitPayment}
+                                                disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
                                             >
-                                                <p style={{ margin: 0, fontSize: 14 }}>
-                                                    Your documents have now been approved, kindly deliver your documents to us immediately.
-                                                </p>
-                                            </Card>
-                                        )}
-                                    </>
-                                ) : null}
+                                                {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                )}
 
-                                {/* Only show upload requirements if status is "pending" */}
-                                {application ? (
-                                    <>
-                                        {application?.status && application.status?.toLowerCase() === 'payment complete' && (
-                                            <Card title="Upload Requirements">
+                                {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
+                                {application.status && application.status?.toLowerCase() === 'payment complete' && (
+                                    <Card title="Upload Requirements">
 
-                                                {/* 1. PSA Birth Certificate */}
-                                                <div style={{ marginBottom: 24 }}>
-                                                    <b>PSA-issued Birth Certificate</b>
-                                                    <div style={{ marginTop: 8 }}>
-                                                        {birthCertList.length === 0 ? (
-                                                            <Upload
-                                                                name="birthCert"
-                                                                fileList={birthCertList}
-                                                                onPreview={handlePreview}
-                                                                onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
-                                                                showUploadList={false}
-                                                                accept="image/*,application/pdf"
-                                                                maxCount={1}
-                                                                disabled={uploading}
-                                                                beforeUpload={() => false}
-                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                            >
-                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                    Upload Birth Certificate
-                                                                </Button>
-                                                            </Upload>
-                                                        ) : (
-                                                            renderFilePreview(birthCertList, setBirthCertList)
-                                                        )}
+                                        <div style={{ marginBottom: 24 }}>
+                                            <b>PSA-issued Birth Certificate</b>
+                                            <div style={{ marginTop: 8 }}>
+                                                {birthCertList.length === 0 ? (
+                                                    <Upload
+                                                        name="birthCert"
+                                                        fileList={birthCertList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
+                                                        showUploadList={false}
+                                                        accept="image/*,application/pdf"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                            Upload Birth Certificate
+                                                        </Button>
+                                                    </Upload>
+                                                ) : (
+                                                    renderFilePreview(birthCertList, setBirthCertList)
+                                                )}
 
 
-                                                    </div>
-                                                </div>
+                                            </div>
+                                        </div>
 
-                                                {/* 2. Application Form */}
-                                                <div style={{ marginBottom: 24 }}>
-                                                    <b>Application Form</b>
-                                                    <div style={{ marginTop: 8 }}>
-                                                        {applicationFormList.length === 0 ? (
-                                                            <Upload
-                                                                name="applicationForm"
-                                                                fileList={applicationFormList}
-                                                                onPreview={handlePreview}
-                                                                onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
-                                                                showUploadList={false}
-                                                                accept="image/*,application/pdf"
-                                                                maxCount={1}
-                                                                disabled={uploading}
-                                                                beforeUpload={() => false}
-                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                            >
-                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                    Upload Application Form
-                                                                </Button>
-                                                            </Upload>
-                                                        ) : (
-                                                            renderFilePreview(applicationFormList, setApplicationFormList)
-                                                        )}
-                                                    </div>
-                                                </div>
+                                        <div style={{ marginBottom: 24 }}>
+                                            <b>Application Form</b>
+                                            <div style={{ marginTop: 8 }}>
+                                                {applicationFormList.length === 0 ? (
+                                                    <Upload
+                                                        name="applicationForm"
+                                                        fileList={applicationFormList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
+                                                        showUploadList={false}
+                                                        accept="image/*,application/pdf"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                            Upload Application Form
+                                                        </Button>
+                                                    </Upload>
+                                                ) : (
+                                                    renderFilePreview(applicationFormList, setApplicationFormList)
+                                                )}
+                                            </div>
+                                        </div>
 
-                                                {/* 3. Government ID */}
-                                                <div style={{ marginBottom: 24 }}>
-                                                    <b>One Government-issued ID</b>
-                                                    <div style={{ marginTop: 8 }}>
-                                                        {govIdList.length === 0 ? (
-                                                            <Upload
-                                                                name="govId"
-                                                                fileList={govIdList}
-                                                                onPreview={handlePreview}
-                                                                onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
-                                                                showUploadList={false}
-                                                                accept="image/*,application/pdf"
-                                                                maxCount={1}
-                                                                disabled={uploading}
-                                                                beforeUpload={() => false}
-                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                            >
-                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                    Upload Government ID
-                                                                </Button>
-                                                            </Upload>
-                                                        ) : (
-                                                            renderFilePreview(govIdList, setGovIdList)
-                                                        )}
-                                                    </div>
-                                                </div>
+                                        <div style={{ marginBottom: 24 }}>
+                                            <b>One Government-issued ID</b>
+                                            <div style={{ marginTop: 8 }}>
+                                                {govIdList.length === 0 ? (
+                                                    <Upload
+                                                        name="govId"
+                                                        fileList={govIdList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
+                                                        showUploadList={false}
+                                                        accept="image/*,application/pdf"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                            Upload Government ID
+                                                        </Button>
+                                                    </Upload>
+                                                ) : (
+                                                    renderFilePreview(govIdList, setGovIdList)
+                                                )}
+                                            </div>
+                                        </div>
 
-                                                {/* 4. Additional Documents */}
-                                                <div style={{ marginBottom: 24 }}>
-                                                    <b>Additional Documents (optional)</b>
-                                                    <div style={{ marginTop: 8 }}>
-                                                        {additionalDocsList.length === 0 ? (
-                                                            <Upload
-                                                                name="additionalDocs"
-                                                                fileList={additionalDocsList}
-                                                                onPreview={handlePreview}
-                                                                onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
-                                                                showUploadList={false}
-                                                                accept="image/*,application/pdf"
-                                                                maxCount={1}
-                                                                disabled={uploading}
-                                                                beforeUpload={() => false}
-                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                            >
-                                                                <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                    Upload Additional Document
-                                                                </Button>
-                                                            </Upload>
-                                                        ) : (
-                                                            renderFilePreview(additionalDocsList, setAdditionalDocsList)
-                                                        )}
-                                                    </div>
-                                                </div>
+                                        <div style={{ marginBottom: 24 }}>
+                                            <b>Additional Documents (optional)</b>
+                                            <div style={{ marginTop: 8 }}>
+                                                {additionalDocsList.length === 0 ? (
+                                                    <Upload
+                                                        name="additionalDocs"
+                                                        fileList={additionalDocsList}
+                                                        onPreview={handlePreview}
+                                                        onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
+                                                        showUploadList={false}
+                                                        accept="image/*,application/pdf"
+                                                        maxCount={1}
+                                                        disabled={uploading}
+                                                        beforeUpload={() => false}
+                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                    >
+                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                            Upload Additional Document
+                                                        </Button>
+                                                    </Upload>
+                                                ) : (
+                                                    renderFilePreview(additionalDocsList, setAdditionalDocsList)
+                                                )}
+                                            </div>
+                                        </div>
 
-                                                <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={handleSubmit}>
-                                                    Submit Documents
-                                                </Button>
-                                            </Card>
-                                        )}
-                                    </>
-                                ) : null}
+                                        <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={handleSubmit}>
+                                            Submit Documents
+                                        </Button>
+                                    </Card>
+                                )}
 
-                                {/* Only show this section if status is 'Documents Uploaded' or beyond */}
+                                {/* DOCUMENTS APPROVED */}
+                                {application.status && application.status?.toLowerCase() === 'documents approved' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                    >
+                                        <Tag color="green"><h2>DOCUMENTS APPROVED</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your uploaded documents have been approved by our team.
+                                            You may now submit or deliver the physical copies of your documents to our office.
+                                        </p>
+                                    </Card>
+                                )}
+
+                                {/* THE REST OF THE PROCESS */}
+                                {application.status && application.status?.toLowerCase() === 'documents received' ||
+                                    application.status?.toLowerCase() === 'documents submitted' ||
+                                    application.status?.toLowerCase() === 'processing by dfa' && (
+                                        <Card
+                                            style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}
+                                        >
+                                            <Tag color="gold"><h2>PROGRESS TRACKER</h2></Tag>
+                                            <p style={{ margin: 0, fontSize: 14 }}>
+                                                Kindly refer to the progress tracker for the remaining steps of the process.
+                                                You will be also receiving email notifications and updates regarding the status of your application, so please stay tuned to your inbox.
+                                            </p>
+                                        </Card>
+                                    )}
+
+                                {/* APPLICATION DENIED */}
+                                {application.status && application.status?.toLowerCase() === 'application rejected' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0' }}
+                                    >
+                                        <Tag color="red"><h2>APPLICATION DENIED</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Unfortunately, your application has been denied.
+                                            You may contact our support team for further assistance or clarification regarding your application.
+                                            For now, your documents will be delivered back to you.
+                                            Please check your email for the details of the document return process.
+                                        </p>
+                                    </Card>
+                                )}
+
+                                {/* APPLICATION SUCCESS */}
+                                {application.status && application.status.toLowerCase() === 'application approved' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}>
+                                        <Tag color="gold"><h2>APPLICATION APPROVED</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Congratulations! Your application has been approved.
+                                            Your passport will be released and delivered to you once the process is complete.
+                                            Please check your email for the details of the passport return process.
+                                        </p>
+                                    </Card>
+                                )}
+
+
+
+
+
+
+
+
+
+
+
+                                {/* DOCUMENTS UPLOADED */}
                                 {application.status && application.status.toLowerCase() !== 'application submitted' &&
                                     application.status.toLowerCase() !== 'application approved' &&
                                     application.status.toLowerCase() !== 'payment complete' && (
@@ -842,17 +989,17 @@ export default function PassportApplication() {
                                                                 </div>
                                                             )}
 
-                                                            {docs.govId && (
-                                                                <div>
-                                                                    <b style={{ display: 'block', marginBottom: 8 }}>Government-issued ID:</b>
-                                                                    {renderReadOnlyFile(docs.govId, "Government ID")}
-                                                                </div>
-                                                            )}
-
                                                             {docs.applicationForm && (
                                                                 <div>
                                                                     <b style={{ display: 'block', marginBottom: 8 }}>Application Form:</b>
                                                                     {renderReadOnlyFile(docs.applicationForm, "Application Form")}
+                                                                </div>
+                                                            )}
+
+                                                            {docs.govId && (
+                                                                <div>
+                                                                    <b style={{ display: 'block', marginBottom: 8 }}>Government-issued ID:</b>
+                                                                    {renderReadOnlyFile(docs.govId, "Government ID")}
                                                                 </div>
                                                             )}
 
@@ -882,6 +1029,6 @@ export default function PassportApplication() {
                     </Spin>
                 </div>
             </div>
-        </ConfigProvider>
+        </ConfigProvider >
     );
 }

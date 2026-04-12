@@ -189,6 +189,7 @@ const suggestAppointmentSchedules = async (req, res) => {
         }
 
         application.suggestedAppointmentSchedules = cleanedSlots;
+        application.suggestedAppointmentScheduleChosen = { date: "", time: "" };
 
         await application.save();
 
@@ -247,9 +248,11 @@ const chosenSuggestedSchedule = async (req, res) => {
         if (!application) {
             return res.status(404).json({ message: "Passport application not found" });
         }
-        application.preferredDate = date;
-        application.preferredTime = time;
+
+        application.suggestedAppointmentSchedules = [];
+        application.suggestedAppointmentScheduleChosen = { date, time };
         await application.save();
+
         res.status(200).json({ message: "Preferred appointment schedule updated", application });
     } catch (error) {
         console.error("Error updating preferred appointment schedule:", error);

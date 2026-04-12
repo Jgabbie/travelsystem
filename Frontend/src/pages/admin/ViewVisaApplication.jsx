@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import apiFetch from "../../config/fetchConfig";
@@ -333,65 +333,92 @@ export default function ViewVisaApplication() {
                                 <Card>
                                     {submittedDocuments.length > 0 ? (
                                         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                                            {submittedDocuments.map((doc, idx) => {
-                                                const isPDF = doc.url?.toLowerCase().endsWith(".pdf");
+                                            {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
+                                                if (!value) return null;
+                                                const label = getRequirementLabel(key, entryIndex);
 
-                                                const handleDownload = () => {
-                                                    if (!doc.url) return;
-                                                    const downloadUrl = doc.url.includes('cloudinary.com')
-                                                        ? doc.url.replace('/upload/', '/upload/fl_attachment/')
-                                                        : doc.url;
-                                                    window.location.href = downloadUrl;
+                                                const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
+                                                const getDownloadUrl = (originalUrl) => {
+                                                    if (!originalUrl.includes('cloudinary.com')) return originalUrl;
+                                                    return originalUrl.replace('/upload/', '/upload/fl_attachment/');
                                                 };
-                                                return (
-                                                    <div
-                                                        key={idx}
-                                                        style={{
-                                                            display: "flex",
-                                                            flexDirection: "column",
-                                                            gap: 12,
-                                                            padding: "16px",
-                                                            border: "1px solid #f0f0f0",
-                                                            borderRadius: "8px"
-                                                        }}
-                                                    >
-                                                        <div style={{ fontWeight: 600, fontSize: "16px" }}>
-                                                            {doc.name || `Document ${idx + 1}`}
-                                                        </div>
 
-                                                        {isPDF ? (
-                                                            <div style={{ width: "100%", height: "500px", overflow: "hidden", borderRadius: "8px" }}>
-                                                                <iframe
-                                                                    src={`${doc.url}#toolbar=0`}
-                                                                    title={doc.name}
-                                                                    width="100%"
-                                                                    height="100%"
-                                                                    style={{ border: "none" }}
-                                                                />
-                                                                <div style={{ marginTop: 8 }}>
-                                                                    <Button type="link" href={doc.url} target="_blank" rel="noopener noreferrer">
-                                                                        Open PDF in New Tab
+                                                const renderFilePreview = (url, identifier) => {
+                                                    const isPdfFile = isPdf(url);
+
+                                                    return (
+                                                        <div key={identifier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                            <div style={{
+                                                                width: 250,
+                                                                height: 250,
+                                                                border: '1px solid #d9d9d9',
+                                                                borderRadius: 8,
+                                                                overflow: 'hidden',
+                                                                backgroundColor: '#f5f5f5',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center'
+                                                            }}>
+                                                                {isPdfFile ? (
+                                                                    <Button
+                                                                        type="dashed"
+                                                                        icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
+                                                                        onClick={() => window.open(url, '_blank')}
+                                                                        style={{
+                                                                            height: 250, width: 250,
+                                                                            display: 'flex', flexDirection: 'column',
+                                                                            alignItems: 'center', justifyContent: 'center',
+                                                                            borderRadius: 8,
+                                                                            backgroundColor: '#fafafa'
+                                                                        }}
+                                                                    >
+                                                                        <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
                                                                     </Button>
-                                                                </div>
+                                                                ) : (
+                                                                    <Image
+                                                                        src={url}
+                                                                        alt={`${label}-${identifier}`}
+                                                                        width="100%"
+                                                                        height="100%"
+                                                                        style={{ objectFit: 'cover' }}
+                                                                    />
+                                                                )}
                                                             </div>
-                                                        ) : (
-                                                            <Image
-                                                                src={doc.url}
-                                                                alt={doc.name || `Document ${idx + 1}`}
-                                                                width={300}
-                                                                style={{ borderRadius: 8, cursor: "pointer" }}
-                                                                fallback="/images/file-placeholder.png"
-                                                            />
-                                                        )}
 
-                                                        <Button
-                                                            className="viewvisaapplication-download-button"
-                                                            type="primary"
-                                                            icon={<DownloadOutlined />}
-                                                            onClick={handleDownload}
-                                                        >
-                                                            Download {isPDF ? 'PDF' : 'Image'}
-                                                        </Button>
+                                                            {/* DOWNLOAD BUTTON */}
+                                                            <Button
+                                                                className='visaapplication-download-button'
+                                                                type="default"
+                                                                icon={<DownloadOutlined />}
+                                                                size="small"
+                                                                block
+                                                                onClick={() => {
+                                                                    const downloadUrl = getDownloadUrl(url);
+                                                                    window.location.href = downloadUrl; // Directly triggers the attachment download
+                                                                }}
+                                                            >
+                                                                Download {isPdfFile ? 'PDF' : 'Image'}
+                                                            </Button>
+                                                        </div>
+                                                    );
+                                                };
+
+                                                return (
+                                                    <div key={key}>
+                                                        <b style={{ display: 'block', marginBottom: 8 }}>{label}:</b>
+                                                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                                            {Array.isArray(value) ? (
+                                                                <Image.PreviewGroup>
+                                                                    {value.map((url, idx) => (
+                                                                        <div key={`${key}-${idx}`}>
+                                                                            {renderFilePreview(url, idx)}
+                                                                        </div>
+                                                                    ))}
+                                                                </Image.PreviewGroup>
+                                                            ) : (
+                                                                renderFilePreview(value, 'single')
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}

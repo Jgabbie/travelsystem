@@ -99,7 +99,6 @@ const createManualPayment = async (req, res) => {
 
         console.log("Manual payment request body:", req.body);
 
-        const FRONTEND_URL = "http://localhost:3000";
         const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -237,7 +236,6 @@ const createManualPaymentQuotation = async (req, res) => {
 
         console.log("Manual payment request body:", req.body);
 
-        const FRONTEND_URL = "http://localhost:3000";
         const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -374,7 +372,6 @@ const createManualPaymentDeposit = async (req, res) => {
             proofFileName,
         } = req.body;
 
-        const FRONTEND_URL = "http://localhost:3000";
         const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -709,7 +706,7 @@ const createManualPaymentVisa = async (req, res) => {
 
 const createCheckoutSessionPassport = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -770,13 +767,13 @@ const createCheckoutSessionPassport = async (req, res) => {
                                 amount: baseAmountCents,
                                 currency: "PHP",
                             },
-                            {
-                                name: "Convenience Fee",
-                                description: "Payment processing and service fee",
-                                quantity: 1,
-                                amount: convenienceFeeCents,
-                                currency: "PHP",
-                            }
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
                         success_url: successUrl,
@@ -811,7 +808,7 @@ const createCheckoutSessionPassport = async (req, res) => {
 
 const createCheckoutSessionVisa = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -913,7 +910,7 @@ const createCheckoutSessionVisa = async (req, res) => {
 
 const createCheckoutSessionDeposit = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     try {
         if (!process.env.PAYMONGO_SECRET_KEY) {
@@ -1025,7 +1022,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //CHECKOUT FOR NORMAL FIXED BOOKINGS
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     const paymentType = "qr_ph"
 
@@ -1137,7 +1134,7 @@ const createCheckoutSession = async (req, res) => {
 //CHECKOUT FOR QUOTATION BOOKINGS
 const createCheckoutSessionQuotation = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     const paymentType = "qr_ph"
 

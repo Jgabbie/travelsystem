@@ -14,10 +14,10 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
         const start = value.startDate ? dayjs(value.startDate) : null;
         const end = value.endDate ? dayjs(value.endDate) : null;
         if (start?.isValid() && end?.isValid()) {
-            return `${start.format('MM/DD/YYYY')} - ${end.format('MM/DD/YYYY')}`;
+            return `${start.format('MMMM DD, YYYY')} - ${end.format('MMMM DD, YYYY')}`;
         }
         if (start?.isValid()) {
-            return start.format('MM/DD/YYYY');
+            return start.format('MMMM DD, YYYY');
         }
         return '';
     };
@@ -26,21 +26,6 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
 
     const bookingType = summaryInvoice.bookingType || 'No Booking';
 
-    const roomOptions =
-        bookingType === 'Solo Booking'
-            ? [{ value: 'SINGLE', label: 'SINGLE' }]
-            : bookingType === 'Group Booking'
-                ? [
-                    { value: 'TWIN', label: 'TWIN' },
-                    { value: 'DOUBLE', label: 'DOUBLE' },
-                    { value: 'TRIPLE', label: 'TRIPLE' },
-                ]
-                : [
-                    { value: 'TWIN', label: 'TWIN' },
-                    { value: 'DOUBLE', label: 'DOUBLE' },
-                    { value: 'SINGLE', label: 'SINGLE' },
-                    { value: 'TRIPLE', label: 'TRIPLE' },
-                ];
 
     useEffect(() => {
 
@@ -63,7 +48,7 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
             leadAddress: user.homeAddress,
             leadTitle: user.leadTitle,
             travelers: user.travelers,
-            travelersSignature: user.fullName
+            travelersSignature: user.fullName,
         });
 
         console.log("user data response:", user);
@@ -88,17 +73,18 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
 
         const updatedTravelers = travelers.map((t) => ({
             ...t,
-            roomType:
-                isSolo
-                    ? 'SINGLE'
-                    : isGroup && t?.roomType === 'SINGLE'
-                        ? undefined
-                        : t?.roomType
+            birthday: t.birthday ? dayjs(t.birthday).format('MMM D, YYYY') : 'N/A',
+            passportExpiry: t.passportExpiry ? dayjs(t.passportExpiry).format('MMM D, YYYY') : 'N/A',
+            passportNo: t.passportNumber || 'N/A',
+
+            roomType: isSolo
+                ? 'SINGLE'
+                : (isGroup && t?.roomType === 'SINGLE' ? undefined : t?.roomType)
         }));
 
         form.setFieldsValue({
             travelers: updatedTravelers,
-            dateOfRegistration: dayjs().format('MM/DD/YYYY'),
+            dateOfRegistration: dayjs().format('MMMM DD, YYYY'),
             tourPackageTitle: summaryInvoice.tourPackageTitle || 'N/A',
             tourPackageVia: summaryInvoice.tourPackageVia || 'N/A',
             packageTravelDate: formatTravelDate(summaryInvoice.travelDate),

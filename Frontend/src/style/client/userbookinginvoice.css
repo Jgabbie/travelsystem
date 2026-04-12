@@ -100,6 +100,8 @@
     font-weight: 500;
 }
 
+
+/* BUTTONS CSS */
 .user-invoice-back-button {
     font-family: "Roboto", sans-serif;
     font-size: 15px;
@@ -115,7 +117,21 @@
     margin-bottom: 20px;
 }
 
-.user-invoice-back-button:hover {
+.user-invoice-form-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 180px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.user-invoice-back-button:hover,
+.user-invoice-form-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
 }

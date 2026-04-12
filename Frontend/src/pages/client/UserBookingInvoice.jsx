@@ -18,6 +18,7 @@ import BookingRegistrationTermsInvoicePart2 from "../../components/form_bookingi
 
 const { Title, Text: AntText } = Typography;
 
+//INSTALLMENT AND PAYMENT COMPUTATION LOGIC
 const getFrequencyWeeks = (value) => {
     if (value === 'Every week') return 1;
     if (value === 'Every 3 weeks') return 3;
@@ -25,7 +26,6 @@ const getFrequencyWeeks = (value) => {
 };
 
 const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
-    // 1. Ensure items exists and rates are numbers
     const items = invoice?.items || [];
     const subtotal = items.reduce((sum, item) => {
         const qty = Number(item.qty) || 0;
@@ -42,7 +42,6 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
         ? travelDateComputation
         : maxAllowedDate;
 
-    // 2. Ensure deposit is a number
     const depositAmount = Number(bookingDetails?.paymentDetails?.depositAmount) || 0;
     const remainingAmount = Math.max(totalAmount - depositAmount, 0);
 
@@ -86,6 +85,7 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
     return { paymentSchedule, totalAmount, subtotal, nextUnpaid };
 };
 
+//CONVERT FILE TO BASE64 STRING
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -110,7 +110,7 @@ export default function UserBookingInvoice() {
 
     const stepsToCapture = [0, 1, 2, 3];
 
-    //payment display computation and transaction history
+    //PAYMENT STATUS COMPUTATION
     const formatCurrency = useMemo(
         () => new Intl.NumberFormat("en-PH", {
             style: "currency",
@@ -169,36 +169,27 @@ export default function UserBookingInvoice() {
         : "--";
 
     const issueDate = booking?.createdAt ? dayjs(booking.createdAt) : dayjs();
-    const dueDate = issueDate.add(45, "day");
     const customerName = bookingDetails.leadFullName || booking?.leadFullName || "Customer";
     const customerPhone = bookingDetails.leadContact || booking?.leadContact || "--";
     const remainingBalance = (Math.round(Math.max(totalPrice - paidAmount, 0) * 100) / 100).toFixed(2);
     const paymentMode = bookingDetails?.paymentMode || (bookingDetails?.paymentDetails?.paymentType === 'deposit' ? 'Deposit' : 'Full Payment');
 
-    const handleSelectPaymentMethod = (selectedMethod) => {
-        setMethod(selectedMethod);
-    };
-
-    const disablePayment = useMemo(() => {
-        if (!transactions || transactions.length === 0) return false; // No transactions yet
-        return transactions[0].status === "Pending";
-    }, [transactions]);
-
     const summaryInvoice = bookingDetails
 
-    //documents
+    //DOCUMENTS
     const travelersWithDocs = bookingDetails?.travelers?.length
         ? bookingDetails.travelers
         : booking?.travelers || []
     const passportFiles = booking.passportFiles || [];
     const photoFiles = booking.photoFiles || [];
 
-    //pdf registration section
+    //REGISTRATION FORM
     const [form] = Form.useForm();
     const pdfStepRef = useRef(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+    //GO NEXT PAGE
     const next = async () => {
         try {
             await form.validateFields();
@@ -209,7 +200,7 @@ export default function UserBookingInvoice() {
         }
     };
 
-    //go to previous step
+    //GO PREVIOUS PAGE
     const prev = () => setCurrentStep(currentStep - 1);
 
     const handleFinalSubmit = async () => {
@@ -270,7 +261,17 @@ export default function UserBookingInvoice() {
     };
 
 
-    //payment functions
+    //PAYMENT FUNCTIONS
+    const handleSelectPaymentMethod = (selectedMethod) => {
+        setMethod(selectedMethod);
+    };
+
+    const disablePayment = useMemo(() => {
+        if (!transactions || transactions.length === 0) return false; // No transactions yet
+        return transactions[0].status === "Pending";
+    }, [transactions]);
+
+
     const handleUploadChange = async ({ fileList: newFileList }) => {
         const file = newFileList[0];
 
@@ -293,11 +294,10 @@ export default function UserBookingInvoice() {
             message.error('Image must be smaller than 2MB');
             return Upload.LIST_IGNORE;
         }
-
         return false;
     };
 
-    //checkout function
+    //CHECKOUT FUNCTION
     const proceedBooking = async () => {
 
         if (!method) {
@@ -395,7 +395,7 @@ export default function UserBookingInvoice() {
     }
 
 
-    //booking invoice
+    //BOOKING INVOICE NUMBER LOGIC
     const buildInvoiceNumber = (allBookings, currentBooking) => {
         if (!currentBooking) return "";
         const createdAtValue = currentBooking.createdAt || currentBooking.bookingDate;
@@ -418,7 +418,6 @@ export default function UserBookingInvoice() {
     };
 
     useEffect(() => {
-
         if (!reference || reference === "--") return;
 
         const fetchAllData = async () => {
@@ -466,11 +465,8 @@ export default function UserBookingInvoice() {
         fetchAllData();
     }, [reference]);
 
-
-
-    //installment computation
+    //INSTALLMENT COMPUTATION
     const [currentUnpaidInstallment, setCurrentUnpaidInstallment] = useState(null);
-    const paymentType = bookingDetails?.paymentDetails?.paymentType || "Full";
     const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
 
     const invoice = {
@@ -559,7 +555,7 @@ export default function UserBookingInvoice() {
                 next
                     ? {
                         ...next,
-                        dueDate: lastInstallmentDate, // ✅ use formatted last installment date
+                        dueDate: lastInstallmentDate,
                     }
                     : null
             );
@@ -576,8 +572,7 @@ export default function UserBookingInvoice() {
     const totals = calculateTotals(invoice.items);
 
 
-
-    //invoice document
+    //INVOICE DOCUMENT
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -616,7 +611,12 @@ export default function UserBookingInvoice() {
                         </View>
                         <View style={[styles.summaryCol, styles.darkBg]}>
                             <Text style={[styles.label, { color: "#FFF" }]}>TOTAL PRICE</Text>
-                            <Text style={[styles.summaryValue, { color: "#FFF" }]}> {formatCurrency.format(totals.subtotal)}</Text>
+                            <Text style={[styles.summaryValue, { color: "#FFF" }]}>
+                                PHP {Number(totals.subtotal).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                         <View style={styles.summaryCol}>
                             <Text style={styles.label}>DUE DATE</Text>
@@ -645,8 +645,18 @@ export default function UserBookingInvoice() {
                             <Text style={[styles.cell, { flex: 2 }]}>{item.activity}</Text>
                             <Text style={[styles.cell, { flex: 4 }]}>{item.description}</Text>
                             <Text style={[styles.cell, { flex: 1, textAlign: "center" }]}>{item.qty}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}> {formatCurrency.format(item.rate)}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}> {formatCurrency.format(item.qty * item.rate)}</Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>
+                                PHP {Number(item.rate).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>
+                                PHP {Number(item.qty * item.rate).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                     ))}
                 </View>
@@ -671,7 +681,10 @@ export default function UserBookingInvoice() {
                                     {item.date.format("MMM D, YYYY")}
                                 </Text>
                                 <Text style={[styles.cell, { flex: 2, textAlign: "right" }]}>
-                                    {formatCurrency.format(item.amount)}
+                                    PHP {Number(item.amount).toLocaleString('en-PH', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}
                                 </Text>
                                 <Text style={[
                                     styles.cell,
@@ -700,16 +713,25 @@ export default function UserBookingInvoice() {
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL PRICE</Text>
-                            <Text style={styles.totalDueValue}>{formatCurrency.format(totalPrice)}</Text>
+                            <Text style={styles.totalDueValue}>PHP {Number(totalPrice).toLocaleString('en-PH', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}</Text>
                         </View>
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>PAID TO DATE</Text>
-                            <Text style={styles.totalDueValue}>{formatCurrency.format(paidAmount)}</Text>
+                            <Text style={styles.totalDueValue}>PHP {Number(paidAmount).toLocaleString('en-PH', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}</Text>
                         </View>
                         {/* Highlighting the Remaining Balance */}
                         <View style={[styles.totalDueRow, { backgroundColor: '#f3f4f6', padding: 5 }]}>
                             <Text style={[styles.totalDueLabel, { color: '#b91c1c' }]}>REMAINING BALANCE</Text>
-                            <Text style={[styles.totalDueValue, { color: '#b91c1c' }]}>{formatCurrency.format(remainingBalance)}</Text>
+                            <Text style={[styles.totalDueValue, { color: '#b91c1c' }]}>PHP {Number(remainingBalance).toLocaleString('en-PH', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}</Text>
                         </View>
                         <Text style={styles.thankYou}>THANK YOU.</Text>
                     </View>
@@ -718,6 +740,7 @@ export default function UserBookingInvoice() {
         </Document>
     );
 
+    //INVOICE STYLES
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: "#333", fontFamily: "Helvetica" },
         logo: { width: 85, height: 60 },
@@ -749,6 +772,9 @@ export default function UserBookingInvoice() {
         totalDueValue: { fontSize: 10, fontWeight: "bold" },
         thankYou: { fontSize: 9, fontWeight: "bold", color: "#555" }
     });
+
+
+
 
     return (
         <ConfigProvider
@@ -803,20 +829,39 @@ export default function UserBookingInvoice() {
                         <Col xs={24} md={8}>
                             <Card className="user-invoice-stat" variant={false}>
                                 <AntText type="secondary">Total Price</AntText>
-                                <div className="user-invoice-amount"> ₱{totalPrice}</div>
+                                <div className="user-invoice-amount">
+                                    {Number(totalPrice).toLocaleString('en-PH', {
+                                        style: 'currency',
+                                        currency: 'PHP',
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}</div>
                             </Card>
                         </Col>
                         <Col xs={24} md={8}>
                             <Card className="user-invoice-stat" variant={false}>
                                 <AntText type="secondary">Paid Amount</AntText>
-                                <div className="user-invoice-amount"> ₱{paidAmount}</div>
+                                <div className="user-invoice-amount">
+                                    {Number(paidAmount).toLocaleString('en-PH', {
+                                        style: 'currency',
+                                        currency: 'PHP',
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}</div>
                             </Card>
                         </Col>
                         <Col xs={24} md={8}>
                             <Card className="user-invoice-stat user-invoice-highlight" variant={false}>
                                 <Space orientation="vertical" size={4}>
                                     <AntText type="secondary">Remaining Balance</AntText>
-                                    <div className="user-invoice-amount"> ₱{remainingBalance}</div>
+                                    <div className="user-invoice-amount">
+                                        {Number(remainingBalance).toLocaleString('en-PH', {
+                                            style: 'currency',
+                                            currency: 'PHP',
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                    </div>
                                     <Tag color={paymentStatus.color}>
                                         {paymentStatus.label}
                                     </Tag>
@@ -837,7 +882,7 @@ export default function UserBookingInvoice() {
                     </div>
                 </div>
 
-                <Card title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
+                <Card className="user-invoice-card" title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
                     <div style={{
                         backgroundColor: '#f0f5ff',
                         border: '1px solid #adc6ff',
@@ -864,7 +909,14 @@ export default function UserBookingInvoice() {
                                             <div><strong>Method:</strong> {txn.method || "N/A"}</div>
                                         </Col>
                                         <Col style={{ textAlign: "right" }}>
-                                            <div><strong>₱{txn.amount}</strong></div>
+                                            <div><strong>
+                                                {txn.amount.toLocaleString('en-PH', {
+                                                    style: 'currency',
+                                                    currency: 'PHP',
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </strong></div>
                                             <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
                                                 {txn.status}
                                             </Tag>
@@ -1016,90 +1068,7 @@ export default function UserBookingInvoice() {
                 )}
 
 
-                {/* BOOKING REGISTRATION SECTION */}
-                <div className="booking-form-stepper-container">
-                    <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                    <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
-                        Please upload a clear image of your passport bio page for each traveler.
-                    </p>
-                    <Steps
-                        current={currentStep}
-                        items={[
-                            { title: 'Traveler Info' },
-                            { title: 'Dietary & Insurance' },
-                            { title: 'General Package Disclaimer' },
-                            { title: 'Terms & Conditions' }
-                        ]}
-                        style={{ marginBottom: '30px' }}
-                    />
-
-
-                    {/* PAGES FOR PDF GENERATION */}
-                    <div
-                        className="form-content-wrapper pdf-capture"
-                        ref={pdfStepRef}
-                        style={{
-                            position: isGeneratingPdf ? "absolute" : "relative",
-                            left: isGeneratingPdf ? "-9999px" : "0"
-                        }}
-                    >
-                        {currentStep === 0 && (
-                            <BookingRegistrationTravelersInvoice
-                                form={form}
-                                summaryInvoice={summaryInvoice}
-                                totalCount={bookingDetails?.travelerCounts?.total || 1}
-                            />
-                        )}
-
-                        {currentStep === 1 && (
-                            <BookingRegistrationDietInvoice
-                                form={form}
-                                summaryInvoice={summaryInvoice}
-                            />
-                        )}
-
-                        {currentStep === 2 && (
-                            <BookingRegistrationTermsInvoicePart1
-                                form={form}
-                                summaryInvoice={summaryInvoice}
-                            />
-                        )}
-
-                        {currentStep === 3 && (
-                            <BookingRegistrationTermsInvoicePart2
-                                form={form}
-                                summaryInvoice={summaryInvoice}
-                            />
-                        )}
-                    </div>
-
-                    {/* BUTTONS FOR BOOKING REGISTRATION */}
-                    {!isGeneratingPdf && (
-                        <div className="form-navigation-buttons" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                            {currentStep > 0 && (
-                                <Button onClick={prev}>
-                                    Back
-                                </Button>
-                            )}
-
-                            {currentStep < 3 ? (
-                                <Button type="primary" onClick={next}>
-                                    Next Step
-                                </Button>
-                            ) : (
-                                <Button
-                                    type="primary"
-                                    onClick={handleFinalSubmit}
-                                    loading={isGeneratingPdf}
-                                >
-                                    Download Booking Registration
-                                </Button>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                <Card title="Documents" style={{ marginTop: 24 }}>
+                <Card className="user-invoice-card" title="Documents" style={{ marginTop: 24 }}>
                     {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
                         <AntText type="secondary">No documents uploaded yet.</AntText>
                     ) : travelersWithDocs.length ? (
@@ -1209,6 +1178,102 @@ export default function UserBookingInvoice() {
                             </div>
                         </div>
                     )}
+                </Card>
+
+                {/* BOOKING REGISTRATION SECTION */}
+                <Card className="user-invoice-card" style={{ marginTop: 25 }}>
+                    <div className="booking-form-stepper-container">
+                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                            Please upload a clear image of your passport bio page for each traveler.
+                        </p>
+                        <Steps
+                            current={currentStep}
+                            items={[
+                                { title: 'Traveler Info' },
+                                { title: 'Dietary & Insurance' },
+                                { title: 'General Package Disclaimer' },
+                                { title: 'Terms & Conditions' }
+                            ]}
+                            style={{ marginBottom: '30px' }}
+                        />
+
+
+                        {/* PAGES FOR PDF GENERATION */}
+                        <div
+                            className="form-content-wrapper pdf-capture"
+                            ref={pdfStepRef}
+                            style={{
+                                position: isGeneratingPdf ? "absolute" : "relative",
+                                left: isGeneratingPdf ? "-9999px" : "0"
+                            }}
+                        >
+                            {currentStep === 0 && (
+                                <BookingRegistrationTravelersInvoice
+                                    form={form}
+                                    summaryInvoice={summaryInvoice}
+                                    totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                />
+                            )}
+
+                            {currentStep === 1 && (
+                                <BookingRegistrationDietInvoice
+                                    form={form}
+                                    summaryInvoice={summaryInvoice}
+                                />
+                            )}
+
+                            {currentStep === 2 && (
+                                <BookingRegistrationTermsInvoicePart1
+                                    form={form}
+                                    summaryInvoice={summaryInvoice}
+                                />
+                            )}
+
+                            {currentStep === 3 && (
+                                <BookingRegistrationTermsInvoicePart2
+                                    form={form}
+                                    summaryInvoice={summaryInvoice}
+                                />
+                            )}
+                        </div>
+
+                        {/* BUTTONS FOR BOOKING REGISTRATION */}
+                        {!isGeneratingPdf && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                                <div>
+                                    {currentStep > 0 && (
+                                        <Button type="primary"
+                                            className="user-invoice-form-button"
+                                            onClick={prev}>
+                                            Back
+                                        </Button>
+                                    )}
+                                </div>
+
+                                <div>
+                                    {currentStep < 3 ? (
+                                        <Button
+                                            type="primary"
+                                            className="user-invoice-form-button"
+                                            onClick={next}>
+                                            Next Step
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            type="primary"
+                                            className="user-invoice-form-button"
+                                            onClick={handleFinalSubmit}
+                                            loading={isGeneratingPdf}
+                                        >
+                                            Download
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </Card>
 
 

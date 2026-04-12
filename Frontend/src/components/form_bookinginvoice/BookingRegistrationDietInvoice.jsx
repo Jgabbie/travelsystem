@@ -69,7 +69,6 @@ export default function BookingRegistrationDietInvoice({ form, onValuesChange, s
         setDietInfo(diet);
     }, [summaryInvoice]);
 
-
     return (
         <div className="mrc-overlay-wrapper">
             <div className="mrc-form-page" style={{ padding: '20px', backgroundColor: '#fff' }}>
@@ -94,7 +93,7 @@ export default function BookingRegistrationDietInvoice({ form, onValuesChange, s
                 >
                     {/* Read-Only Package Info */}
                     <div style={{ marginBottom: '15px' }}>
-                        <div style={{ fontSize: '11px' }}><strong>TOUR PACKAGE TITLE:</strong> {summaryInvoice?.packageName || '____________________'}</div>
+                        <div style={{ fontSize: '11px' }}><strong>TOUR PACKAGE TITLE:</strong> {summaryInvoice?.tourPackageTitle || '____________________'}</div>
                         <div style={{ fontSize: '11px' }}><strong>PACKAGE TRAVEL DATE:</strong> {formatTravelDate(summaryInvoice?.travelDate) || '____________________'}</div>
                     </div>
 
