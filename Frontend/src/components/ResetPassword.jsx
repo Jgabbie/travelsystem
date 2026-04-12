@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { Input, Button, Modal, Spin, ConfigProvider } from 'antd';
-import axiosInstance from '../config/axiosConfig';
+import apiFetch from '../config/fetchConfig';
 import '../style/components/resetpasswordpage.css'
 import '../style/components/newpasswordpage.css'
 
@@ -45,14 +45,14 @@ export default function ResetPassword() {
 
         setIsLoading(true);
         try {
-            await axiosInstance.post('/auth/send-reset-otp', { email: getEmail })
+            await apiFetch.post('/auth/send-reset-otp', { email: getEmail })
             setIsLoading(false);
             console.log(getEmail)
             showModal()
             setTimer(60)
         } catch (err) {
             setIsLoading(false);
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorEmail(errorMsg)
         }
@@ -70,9 +70,9 @@ export default function ResetPassword() {
         setIsLoading(true);
 
         try {
-            const response = await axiosInstance.post('/auth/check-reset-otp', { email: getEmail, otp: getOTP })
-            if (response.data.success || response.status === 200) {
-                setResetToken(response.data.resetToken)
+            const response = await apiFetch.post('/auth/check-reset-otp', { email: getEmail, otp: getOTP })
+            if (response.success || response.status === 200) {
+                setResetToken(response.resetToken)
                 setIsLoading(false);
                 setIsModalOpen(false)
                 setIsOTPValid(true)
@@ -80,7 +80,7 @@ export default function ResetPassword() {
             }
         } catch (err) {
             setIsLoading(false);
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorOTP(errorMsg)
         }
@@ -90,10 +90,10 @@ export default function ResetPassword() {
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            await axiosInstance.post('/auth/send-reset-otp', { email: getEmail })
+            await apiFetch.post('/auth/send-reset-otp', { email: getEmail })
             setTimer(60)
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
         }
     }
@@ -200,18 +200,18 @@ export default function ResetPassword() {
         }
 
         try {
-            const response = await axiosInstance.post('/auth/reset-password', {
+            const response = await apiFetch.post('/auth/reset-password', {
                 newPassword: values.password,
                 token: resetToken
             })
 
-            if (response.data.success || response.status === 200) {
+            if (response.success || response.status === 200) {
                 setIsLoading(false);
                 setIsSuccessModalOpen(true);
             }
         } catch (err) {
             setIsLoading(false);
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
         }
     }

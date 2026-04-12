@@ -4,7 +4,7 @@ import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Tag, Typo
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Document, Image, Page, PDFViewer, StyleSheet, Text, View } from "@react-pdf/renderer";
 import dayjs from "dayjs";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/uploadbookinginvoice.css";
 
 const { Title, Text: AntText } = Typography;
@@ -93,9 +93,9 @@ export default function UploadBookingInvoice() {
         const fetchBooking = async () => {
             setLoading(true);
             try {
-                const bookingRes = await axiosInstance.get(`/booking/by-reference/${reference}`);
-                const fetchedBooking = bookingRes.data?.booking || null;
-                const fetchedTransactions = bookingRes.data?.transactions || [];
+                const bookingRes = await apiFetch.get(`/booking/by-reference/${reference}`);
+                const fetchedBooking = bookingRes?.booking || null;
+                const fetchedTransactions = bookingRes?.transactions || [];
 
                 setBooking(fetchedBooking);
                 setTransactions(fetchedTransactions);
@@ -104,8 +104,8 @@ export default function UploadBookingInvoice() {
 
                 if (fetchedBooking?._id) {
                     try {
-                        const allBookingsRes = await axiosInstance.get("/booking/all-bookings");
-                        const number = buildInvoiceNumber(allBookingsRes.data || [], fetchedBooking);
+                        const allBookingsRes = await apiFetch.get("/booking/all-bookings");
+                        const number = buildInvoiceNumber(allBookingsRes || [], fetchedBooking);
 
                         if (number) {
                             setInvoiceNumber(number);
@@ -200,8 +200,8 @@ export default function UploadBookingInvoice() {
 
         const fetchInvoiceNumber = async () => {
             try {
-                const response = await axiosInstance.get("/booking/all-bookings");
-                const number = buildInvoiceNumber(response.data || [], booking);
+                const response = await apiFetch.get("/booking/all-bookings");
+                const number = buildInvoiceNumber(response || [], booking);
                 if (number) {
                     setInvoiceNumber(number);
                     return;
@@ -225,9 +225,9 @@ export default function UploadBookingInvoice() {
 
         const fetchBookingWithTransactions = async () => {
             try {
-                const bookingRes = await axiosInstance.get(`/booking/by-reference/${reference}`);
-                const fetchedBooking = bookingRes.data?.booking || null;
-                const fetchedTransactions = bookingRes.data?.transactions || [];
+                const bookingRes = await apiFetch.get(`/booking/by-reference/${reference}`);
+                const fetchedBooking = bookingRes?.booking || null;
+                const fetchedTransactions = bookingRes?.transactions || [];
 
                 if (fetchedBooking?._id) {
                     setBooking(fetchedBooking);

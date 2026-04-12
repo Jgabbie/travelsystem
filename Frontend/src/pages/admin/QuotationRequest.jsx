@@ -5,7 +5,7 @@ import { UploadOutlined, SendOutlined, ArrowLeftOutlined } from "@ant-design/ico
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import dayjs from "dayjs";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import QuotationFormDetails from "../../components/quotationform/QuotationFormDetails";
 import QuotationFormInEx from "../../components/quotationform/QuotationFormInEx";
 import QuotationFormTermsConditions from "../../components/quotationform/QuotationFormTermsConditions";
@@ -57,9 +57,9 @@ export default function QuotationRequest() {
         const fetchQuotation = async () => {
             setLoading(true);
             try {
-                const response = await axiosInstance.get(`/quotation/get-quotation/${id}`);
-                console.log("Fetched quotation data:", response.data); // Debug log to check fetched data
-                setQuotation(response.data);
+                const response = await apiFetch.get(`/quotation/get-quotation/${id}`);
+                console.log("Fetched quotation data:", response); // Debug log to check fetched data
+                setQuotation(response);
             } catch (error) {
                 console.error("Error fetching quotation:", error);
             } finally {
@@ -69,9 +69,9 @@ export default function QuotationRequest() {
 
         const getAdminName = async () => {
             try {
-                const response = await axiosInstance.get(`/user/data`, { withCredentials: true })
-                const adminNameFirstName = response.data.userData.firstname;
-                const adminNameLastName = response.data.userData.lastname;
+                const response = await apiFetch.get(`/user/data`, { withCredentials: true })
+                const adminNameFirstName = response.userData.firstname;
+                const adminNameLastName = response.userData.lastname;
                 const adminName = `${adminNameFirstName} ${adminNameLastName}`;
 
                 setAdminName(adminName);
@@ -406,7 +406,7 @@ export default function QuotationRequest() {
 
         setUploading(true);
         try {
-            await axiosInstance.post(`/quotation/${id}/upload-pdf`, formData, {
+            await apiFetch.post(`/quotation/${id}/upload-pdf`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             message.success(`${selectedFile.name} uploaded successfully!`);
@@ -454,7 +454,7 @@ export default function QuotationRequest() {
             const pdfFormData = new FormData();
             pdfFormData.append("pdf", pdfBlob, `quotation-${quotationReference}.pdf`);
 
-            await axiosInstance.post(`/quotation/${id}/upload-pdf`, pdfFormData, {
+            await apiFetch.post(`/quotation/${id}/upload-pdf`, pdfFormData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
@@ -495,7 +495,7 @@ export default function QuotationRequest() {
                 }));
             }
 
-            await axiosInstance.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
+            await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
 
 
             message.success("Quotation has been sent successfully!");

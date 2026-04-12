@@ -1,7 +1,6 @@
 const axios = require("axios");
 const crypto = require('crypto');
 const transporter = require('../config/nodemailer')
-const { v4: uuidv4 } = require("uuid");
 const dayjs = require('dayjs');
 const TokenCheckoutModel = require("../models/tokencheckout");
 const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
@@ -14,7 +13,6 @@ const NotificationModel = require("../models/notification");
 const PassportModel = require("../models/passport");
 const VisaModel = require("../models/visas");
 const QuotationModel = require("../models/quotations")
-
 
 
 const parseAmount = (value) => {
@@ -102,7 +100,7 @@ const createManualPayment = async (req, res) => {
         console.log("Manual payment request body:", req.body);
 
         const FRONTEND_URL = "http://localhost:3000";
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
             token,
@@ -240,7 +238,7 @@ const createManualPaymentQuotation = async (req, res) => {
         console.log("Manual payment request body:", req.body);
 
         const FRONTEND_URL = "http://localhost:3000";
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
             token,
@@ -377,7 +375,7 @@ const createManualPaymentDeposit = async (req, res) => {
         } = req.body;
 
         const FRONTEND_URL = "http://localhost:3000";
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
             token,
@@ -503,7 +501,7 @@ const createManualPaymentPassport = async (req, res) => {
             return res.status(400).json({ error: "Proof of payment image is required." });
         }
 
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutPassportModel.create({
             token,
@@ -614,7 +612,7 @@ const createManualPaymentVisa = async (req, res) => {
             return res.status(400).json({ error: "Proof of payment image is required." });
         }
 
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutVisaModel.create({
             token,
@@ -724,7 +722,7 @@ const createCheckoutSessionPassport = async (req, res) => {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckoutVisa = await TokenCheckoutVisaModel.create({
             token,
@@ -826,7 +824,7 @@ const createCheckoutSessionVisa = async (req, res) => {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckoutVisa = await TokenCheckoutVisaModel.create({
             token,
@@ -927,7 +925,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 
         const bookingId = paymentPayload.bookingId;
         const totalPrice = paymentPayload.totalPrice
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
             token,
@@ -1932,7 +1930,7 @@ const createCheckoutToken = async (req, res) => {
     const { totalPrice } = req.body
 
 
-    const token = uuidv4();
+    const token = crypto.randomUUID();
 
     await TokenCheckoutModel.create({
         token,

@@ -3,7 +3,7 @@ import { Dropdown, Space, Button, Modal, Spin, ConfigProvider } from 'antd';
 import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import LoginModal from '../modals/LoginModal';
 import SignupModal from '../modals/SignupModal';
 import Notifications from '../Notifications'
@@ -73,7 +73,7 @@ export default function TopNavUser() {
         setIsModalOpen(false);
         try {
             setIsLoading(true);
-            await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
+            await apiFetch.post('/auth/logoutUser', {}, { withCredentials: true });
             setAuth(null);
             navigate('/home');
         } catch (err) {

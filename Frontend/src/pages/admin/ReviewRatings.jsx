@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/reviewratings.css";
 
 dayjs.extend(isBetween);
@@ -39,8 +39,8 @@ export default function ReviewRatings() {
         const fetchRatings = async () => {
             setLoading(true);
             try {
-                const response = await axiosInstance.get("/rating/all-ratings");
-                const mapped = (response.data || []).map((rating) => {
+                const response = await apiFetch.get("/rating/all-ratings");
+                const mapped = (response || []).map((rating) => {
                     const user = rating.userId || {};
                     const pkg = rating.packageId || {};
                     const fullName = [user.firstname, user.lastname].filter(Boolean).join(" ");
@@ -176,7 +176,7 @@ export default function ReviewRatings() {
             cancelText: "Cancel",
             onOk: async () => {
                 try {
-                    await axiosInstance.delete(`/rating/delete/${id}`);
+                    await apiFetch.delete(`/rating/delete/${id}`);
                     message.success("Review deleted successfully");
                     setRatings((prev) => prev.filter((r) => r.id !== id));
                 } catch {

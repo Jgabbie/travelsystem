@@ -2,7 +2,7 @@ import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Config
 import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/visaservices.css";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -28,9 +28,9 @@ export default function VisaServices() {
     useEffect(() => {
         const getServices = async () => {
             try {
-                const response = await axiosInstance.get("/services/services");
+                const response = await apiFetch.get("/services/services");
                 // Sort by createdAt descending if available, else by _id
-                const sorted = [...response.data].sort((a, b) => {
+                const sorted = [...response].sort((a, b) => {
                     if (a.createdAt && b.createdAt) {
                         return new Date(b.createdAt) - new Date(a.createdAt);
                     }
@@ -75,7 +75,7 @@ export default function VisaServices() {
             cancelButtonProps: { className: "logout-cancel-btn" },
             onOk: async () => {
                 try {
-                    await axiosInstance.delete(`/services/delete-service/${id}`);
+                    await apiFetch.delete(`/services/delete-service/${id}`);
                     setServicesData(prevData => prevData.filter(service => service._id !== id));
                     message.success("Visa service deleted successfully");
                 } catch (error) {

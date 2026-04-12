@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Tag, Input, Select, DatePicker, Button, Space, ConfigProvider, message } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/client/userapplications.css'
 import { useNavigate } from 'react-router-dom';
 import TopNavUser from '../../components/topnav/TopNavUser';
@@ -21,8 +21,8 @@ export default function UserApplications() {
             setLoading(true);
             try {
                 // Fetch passport applications
-                const passportRes = await axiosInstance.get('/passport/user-applications');
-                const passportApps = (passportRes.data || []).map(app => ({
+                const passportRes = await apiFetch.get('/passport/user-applications');
+                const passportApps = (passportRes || []).map(app => ({
                     key: app._id,
                     ref: app.applicationNumber,
                     type: 'Passport',
@@ -32,8 +32,8 @@ export default function UserApplications() {
                     details: app,
                 }));
                 // Fetch visa applications
-                const visaRes = await axiosInstance.get('/visa/user-applications');
-                const visaApps = (visaRes.data || []).map(app => ({
+                const visaRes = await apiFetch.get('/visa/user-applications');
+                const visaApps = (visaRes || []).map(app => ({
                     key: app._id,
                     ref: app.applicationNumber || app._id,
                     type: 'Visa',

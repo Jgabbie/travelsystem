@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Input, Typography, ConfigProvider, Empty } from 'antd'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function PassAndVisaService() {
@@ -16,8 +16,8 @@ export default function PassAndVisaService() {
     useEffect(() => {
         const loadServices = async () => {
             try {
-                const response = await axiosInstance.get('/services/services')
-                setServices(response.data || [])
+                const response = await apiFetch.get('/services/services')
+                setServices(response || [])
             } catch (error) {
                 console.error('Failed to fetch visa services:', error)
             }

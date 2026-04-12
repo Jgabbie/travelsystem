@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
 import dayjs from "dayjs";
 import autoTable from 'jspdf-autotable';
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/quotationmanagement.css";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -55,8 +55,8 @@ export default function QuotationManagement() {
         const fetchQuotations = async () => {
             setLoading(true);
             try {
-                const response = await axiosInstance.get("/quotation/all-quotations")
-                const quotations = response.data.map((q) => ({
+                const response = await apiFetch.get("/quotation/all-quotations")
+                const quotations = response.map((q) => ({
                     key: q._id,
                     ref: q.reference,
                     packageName: q.packageId?.packageName || "Package",

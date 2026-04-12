@@ -7,7 +7,7 @@ import { useBooking } from '../../context/BookingContext';
 import dayjs from "dayjs";
 import '../../style/components/modals/displayinvoicemodal.css';
 import '../../style/client/paymentprocees.css';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -123,21 +123,21 @@ export default function PaymentProcess() {
             if (file) formData.append("files", file);
         });
 
-        const res = await axiosInstance.post(
+        const res = await apiFetch.post(
             "/upload/upload-booking-documents",
             formData,
             { headers: { "Content-Type": "multipart/form-data" } }
         );
 
-        return res.data.urls;
+        return res.urls;
     };
 
     //GET THE INVOICE NUMBER
     useEffect(() => {
         const fetchMonthBookings = async () => {
             try {
-                const response = await axiosInstance.get('/booking/bookings-total-month');
-                setMonthBookingsCount(response.data.totalBookings || 0);
+                const response = await apiFetch.get('/booking/bookings-total-month');
+                setMonthBookingsCount(response.totalBookings || 0);
             } catch (error) {
                 console.error('Failed to fetch month bookings count', error);
             }
@@ -273,7 +273,7 @@ export default function PaymentProcess() {
 
             const paymentMode = paymentType === 'deposit' ? 'Deposit' : 'Full Payment';
 
-            const bookingRes = await axiosInstance.post('/booking/create-booking', {
+            const bookingRes = await apiFetch.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,
                     travelDate: bookingData?.travelDate,
@@ -287,7 +287,7 @@ export default function PaymentProcess() {
                 }
             });
 
-            const { paymentToken, expiresAt } = bookingRes.data;
+            const { paymentToken, expiresAt } = bookingRes;
 
             // Expiry check (extra safety)
             if (dayjs().isAfter(dayjs(expiresAt))) {
@@ -311,7 +311,7 @@ export default function PaymentProcess() {
                 console.log("Uploading file:", file);
                 console.log("FormData file:", formData.get("file"));
 
-                const uploadRes = await axiosInstance.post(
+                const uploadRes = await apiFetch.post(
                     "/upload/upload-receipt",
                     formData,
                     {
@@ -321,12 +321,12 @@ export default function PaymentProcess() {
                     }
                 );
 
-                const imageUrl = uploadRes.data?.url;
+                const imageUrl = uploadRes?.url;
 
                 console.log("Booking data from new booking:", bookingRes);
 
-                const manualDepositRes = await axiosInstance.post('/payment/manual', {
-                    bookingId: bookingRes.data.booking._id,
+                const manualDepositRes = await apiFetch.post('/payment/manual', {
+                    bookingId: bookingRes.booking._id,
                     packageId,
                     amount: amountToCharge,
                     proofImage: imageUrl,
@@ -334,25 +334,25 @@ export default function PaymentProcess() {
                     proofFileName: file?.name
                 });
                 setLoading(false);
-                if (manualDepositRes.data?.redirectUrl) {
-                    navigate(manualDepositRes.data.redirectUrl);
+                if (manualDepositRes?.redirectUrl) {
+                    navigate(manualDepositRes.redirectUrl);
                     return;
                 }
                 return;
             }
 
-            const paymongoResponse = await axiosInstance.post(
+            const paymongoResponse = await apiFetch.post(
                 '/payment/create-checkout-session',
                 { paymentToken }
             );
 
-            const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+            const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
             setLoading(false);
 
             if (checkoutUrl) {
                 window.location.href = checkoutUrl;
             } else {
-                console.error("PayMongo Response Structure:", paymongoResponse.data);
+                console.error("PayMongo Response Structure:", paymongoResponse);
                 throw new Error("Failed to create PayMongo checkout session - URL missing");
             }
 

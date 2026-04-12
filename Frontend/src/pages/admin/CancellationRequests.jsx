@@ -4,7 +4,7 @@ import { CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined,
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import '../../style/admin/cancellationrequests.css'
 
 const getBase64ImageFromURL = (url) => {
@@ -40,8 +40,8 @@ export default function CancellationRequests() {
 
     const getCancellationRequests = async () => {
         try {
-            const response = await axiosInstance.get('/booking/cancellations')
-            const cancellations = response.data.map((c) => ({
+            const response = await apiFetch.get('/booking/cancellations')
+            const cancellations = response.map((c) => ({
                 key: c._id,
                 ref: c.reference,
                 username: c.userId?.username || c.userId?.email || 'Unknown',
@@ -162,7 +162,7 @@ export default function CancellationRequests() {
         try {
             setLoading(true)
             const action = status === 'Approved' ? 'approve' : 'reject'
-            await axiosInstance.post(`/booking/cancellations/${key}/${action}`)
+            await apiFetch.post(`/booking/cancellations/${key}/${action}`)
             setRequests((prev) =>
                 prev.map((item) => (item.key === key ? { ...item, status } : item))
             )

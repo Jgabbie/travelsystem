@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Row, Col } from 'antd';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css';
-import axiosInstance from '../../config/axiosConfig';
 
 
 const { TextArea } = Input;

@@ -4,7 +4,7 @@ import { DollarCircleOutlined, ShoppingCartOutlined, UserOutlined, AppstoreOutli
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { ChartContainer, LinePlot, AreaPlot, ChartsXAxis, ChartsYAxis, ChartsTooltip } from "@mui/x-charts";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import '../../style/admin/admindashboard.css';
 
 export default function AdminDashboard() {
@@ -126,8 +126,8 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get("/admin/dashboard-stats");
-        setStats(response.data);
+        const response = await apiFetch.get("/admin/dashboard-stats");
+        setStats(response);
       } catch (error) {
         console.error("Failed to load dashboard stats:", error);
         message.error("Unable to load dashboard stats.");
@@ -142,10 +142,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axiosInstance.get("/transaction/all-transactions");
-        console.log("Fetched transactions:", response.data);
+        const response = await apiFetch.get("/transaction/all-transactions");
+        console.log("Fetched transactions:", response);
 
-        setTransactions(response.data);
+        setTransactions(response);
 
       } catch (error) {
         console.error("Failed to load transactions:", error);
@@ -155,10 +155,10 @@ export default function AdminDashboard() {
 
     const fetchBookings = async () => {
       try {
-        const response = await axiosInstance.get("/booking/all-bookings")
-        console.log("Fetched bookings:", response.data);
+        const response = await apiFetch.get("/booking/all-bookings")
+        console.log("Fetched bookings:", response);
 
-        setBookings(response.data);
+        setBookings(response);
 
       } catch (error) {
         console.error("Failed to load bookings:", error);

@@ -5,7 +5,7 @@ import { SearchOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCi
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/booking.css";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -49,9 +49,9 @@ export default function BookingManagement() {
     const fetchBookings = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get("/booking/all-bookings");
+        const response = await apiFetch.get("/booking/all-bookings");
 
-        const bookings = response.data.map((b) => {
+        const bookings = response.map((b) => {
           const rawTravel = b?.travelDate || b?.bookingDetails?.travelDate || null;
           const travelStart = rawTravel?.startDate
             || (typeof rawTravel === 'string' ? rawTravel.split(' - ')[0] : null)
@@ -230,7 +230,7 @@ export default function BookingManagement() {
       style: { top: 200 },
       onOk: async () => {
         try {
-          await axiosInstance.delete(`/booking/${key}`);
+          await apiFetch.delete(`/booking/${key}`);
           setData((prev) => prev.filter((item) => item.key !== key));
           message.success("Booking deleted");
         } catch (error) {
@@ -273,8 +273,7 @@ export default function BookingManagement() {
         }
       };
 
-      const response = await axiosInstance.put(`/booking/${editingBooking.key}`, payload);
-      const saved = response.data;
+      const saved = await apiFetch.put(`/booking/${editingBooking.key}`, payload);
       const savedDetails = saved.bookingDetails || {};
       const statusRaw = saved.status || values.status || "pending";
       const statusFormatted = statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);

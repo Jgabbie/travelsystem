@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/viewpassportapplication.css";
 import dayjs from "dayjs";
 
@@ -53,7 +53,7 @@ export default function ViewPassportApplication() {
                 return;
             }
 
-            await axiosInstance.put(`/passport/applications/${id}/suggest-appointments`, { slots });
+            await apiFetch.put(`/passport/applications/${id}/suggest-appointments`, { slots });
 
             setIsSubmittingSlots(false);
             message.success("Suggested appointment options submitted.");
@@ -67,14 +67,14 @@ export default function ViewPassportApplication() {
     useEffect(() => {
         const fetchApplication = async () => {
             try {
-                const response = await axiosInstance.get(`/passport/applications/${id}`);
-                setApplication(response.data);
+                const response = await apiFetch.get(`/passport/applications/${id}`);
+                setApplication(response);
                 // Determine step based on status
                 const statusMap = statusSteps.reduce((acc, step, idx) => {
                     acc[step.title] = idx;
                     return acc;
                 }, {});
-                setCurrentStep(statusMap[response.data.status] ?? 0);
+                setCurrentStep(statusMap[response.status] ?? 0);
             } catch (error) {
                 message.error("Failed to load application details.");
                 navigate(-1);
@@ -165,7 +165,7 @@ export default function ViewPassportApplication() {
         try {
             setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
-            await axiosInstance.put(`/passport/applications/${id}/status`, { status: newStatus });
+            await apiFetch.put(`/passport/applications/${id}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
             setCurrentStep(stepIdx);
             message.success(`Status updated to ${newStatus}`);

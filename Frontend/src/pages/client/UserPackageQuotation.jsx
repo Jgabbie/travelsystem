@@ -4,7 +4,7 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import '../../style/client/userquotation.css'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
@@ -22,9 +22,9 @@ export default function UserPackageQuotation() {
         const fetchQuotations = async () => {
             setLoading(true);
             try {
-                const response = await axiosInstance.get('/quotation/my-quotations');
+                const response = await apiFetch.get('/quotation/my-quotations');
 
-                const quotations = response.data.map(q => {
+                const quotations = response.map(q => {
                     const travelersValue = q.quotationDetails?.travelers;
                     const totalTravelers = typeof travelersValue === 'number'
                         ? travelersValue

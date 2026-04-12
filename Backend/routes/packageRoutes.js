@@ -10,14 +10,14 @@ const adminAuth = (req, res, next) => {
     next();
 };
 
-router.post('/add-package', adminAuth, packageController.addPackage);
+router.post('/add-package', userAuth, packageController.addPackage);
 router.get('/popular-packages', packageController.getPopularPackages);
 router.get('/get-packages', packageController.getPackages);
 router.get('/get-packages-for-users', packageController.getPackagesForUsers);
-router.delete('/remove-package/:id', adminAuth, packageController.removePackage);
+router.delete('/remove-package/:id', userAuth, packageController.removePackage);
 router.get('/get-package/:id', packageController.getPackage);
-router.put('/update-package/:id', adminAuth, packageController.updatePackage);
-router.put('/update-slots', adminAuth, packageController.updateSlots);
-router.put('/update-discount', adminAuth, packageController.updateDiscount);
+router.put('/update-package/:id', userAuth, packageController.updatePackage);
+router.put('/update-slots', userAuth, packageController.updateSlots);
+router.put('/update-discount', userAuth, packageController.updateDiscount);
 
 module.exports = router;

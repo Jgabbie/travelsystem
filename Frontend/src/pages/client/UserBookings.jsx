@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, ConfigProvider, Spin } from 'antd'
 import { UploadOutlined, SearchOutlined, EyeOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import '../../style/client/userbookings.css'
 import { useNavigate } from 'react-router-dom'
 import TopNavUser from '../../components/topnav/TopNavUser'
@@ -33,8 +33,8 @@ export default function UserBookings() {
         const fetchBookings = async () => {
             setLoading(true)
             try {
-                const response = await axiosInstance.get('/booking/my-bookings')
-                const bookings = response.data.map((b) => ({
+                const response = await apiFetch.get('/booking/my-bookings')
+                const bookings = response.map((b) => ({
                     key: b._id,
                     ref: b.reference || b._id,
                     reference: b.reference || b._id,
@@ -164,7 +164,7 @@ export default function UserBookings() {
                 const formData = new FormData();
                 formData.append("file", cancelImages[0]);
 
-                const res = await axiosInstance.post(
+                const res = await apiFetch.post(
                     "/upload/upload-cancel-proof",
                     formData,
                     {
@@ -173,8 +173,8 @@ export default function UserBookings() {
                     }
                 );
 
-                imageUrl = res.data.url;
-                console.log('Image uploaded to Cloudinary:', res.data);
+                imageUrl = res.url;
+                console.log('Image uploaded to Cloudinary:', res);
             }
 
             // Send cancellation payload
@@ -187,7 +187,7 @@ export default function UserBookings() {
             console.log('Cancel payload:', payload);
 
             const cancelEndpoint = `/booking/cancel/${cancelTargetKey}`;
-            await axiosInstance.post(cancelEndpoint, payload);
+            await apiFetch.post(cancelEndpoint, payload);
 
             setLoadingCancel(false)
             message.success('Booking cancelled');

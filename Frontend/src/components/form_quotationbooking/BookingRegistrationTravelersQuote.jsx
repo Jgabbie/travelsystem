@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Row, Col, ConfigProvider } from 'antd';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css'
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 export default function BookingRegistrationTravelersQuote({ form, onValuesChange, summary, totalCount }) {
 
@@ -34,9 +34,9 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axiosInstance.get('/user/data', { withCredentials: true });
+                const response = await apiFetch.get('/user/data', { withCredentials: true });
 
-                const u = response.data?.userData
+                const u = response?.userData
 
                 const user = {
                     firstName: u.firstname,

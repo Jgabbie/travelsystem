@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined } from '@ant-design/icons';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
 
@@ -57,18 +57,18 @@ export default function VisaApplication() {
         const fetchApplication = async () => {
             setLoading(true);
             try {
-                const res = await axiosInstance.get(fetchVisaApplication);
-                setApplication(res.data);
+                const res = await apiFetch.get(fetchVisaApplication);
+                setApplication(res);
                 // If the application has a serviceId, fetch the service for requirements
-                if (res.data && res.data.serviceId) {
+                if (res && res.serviceId) {
                     try {
-                        const serviceId = res.data.serviceId._id || res.data.serviceId;
+                        const serviceId = res.serviceId._id || res.serviceId;
                         const serviceResEndpoint = `/services/get-service/${serviceId}`;
-                        const serviceRes = await axiosInstance.get(serviceResEndpoint);
-                        console.log('Service details for requirements:', serviceRes.data);
-                        setRequirements(serviceRes.data.visaRequirements || []);
-                        setServicePrice(serviceRes.data.visaPrice || 0);
-                        setProcess(serviceRes.data.visaProcessSteps.map((step, idx) => ({
+                        const serviceRes = await apiFetch.get(serviceResEndpoint);
+                        console.log('Service details for requirements:', serviceRes);
+                        setRequirements(serviceRes.visaRequirements || []);
+                        setServicePrice(serviceRes.visaPrice || 0);
+                        setProcess(serviceRes.visaProcessSteps.map((step, idx) => ({
                             title: step,
                             description: step,
                             status: idx < VISA_STEPS.length ? 'process' : 'pending',
@@ -136,13 +136,13 @@ export default function VisaApplication() {
                 return;
             }
 
-            const uploadRes = await axiosInstance.post(
+            const uploadRes = await apiFetch.post(
                 '/upload/upload-visa-requirements',
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );
 
-            const uploaded = uploadRes.data.urls || [];
+            const uploaded = uploadRes.urls || [];
             const submittedDocuments = {};
             let uploadIndex = 0;
 
@@ -155,7 +155,7 @@ export default function VisaApplication() {
                 }
             });
 
-            await axiosInstance.put(`/visa/applications/${id}/documents`, {
+            await apiFetch.put(`/visa/applications/${id}/documents`, {
                 submittedDocuments
             });
 
@@ -163,14 +163,14 @@ export default function VisaApplication() {
                 step => String(step.title || '').toLowerCase() === 'documents uploaded'
             )?.title || 'Documents uploaded';
 
-            await axiosInstance.put(`/visa/applications/${id}/status`, {
+            await apiFetch.put(`/visa/applications/${id}/status`, {
                 status: documentsStatus
             });
 
             message.success("Documents submitted successfully");
 
-            const refreshed = await axiosInstance.get(`/visa/applications/${id}`);
-            setApplication(refreshed.data);
+            const refreshed = await apiFetch.get(`/visa/applications/${id}`);
+            setApplication(refreshed);
         } catch (err) {
             console.error(err);
             message.error("Failed to submit documents");
@@ -213,24 +213,24 @@ export default function VisaApplication() {
                 const formData = new FormData();
                 formData.append("file", file);
 
-                const uploadRes = await axiosInstance.post('/upload/upload-receipt', formData, {
+                const uploadRes = await apiFetch.post('/upload/upload-receipt', formData, {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
 
-                const imageUrl = uploadRes.data.url;
+                const imageUrl = uploadRes.url;
 
                 console.log("Uploaded receipt URL:", imageUrl);
 
-                const paymentRes = await axiosInstance.post('/payment/manual-visa', {
+                const paymentRes = await apiFetch.post('/payment/manual-visa', {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
                     amount: 2000,
                     proofImage: imageUrl,
                 });
 
-                console.log("Manual payment response:", paymentRes.data);
+                console.log("Manual payment response:", paymentRes);
 
-                navigate(paymentRes.data.redirectUrl);
+                navigate(paymentRes.redirectUrl);
                 message.success("Manual payment submitted successfully. Awaiting verification.");
                 setPaymentCompleted(true);
 
@@ -253,14 +253,14 @@ export default function VisaApplication() {
                 console.log("Creating checkout session with payload:", payload);
 
                 // Send request to create checkout session
-                const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session-visa', payload);
-                const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+                const paymongoResponse = await apiFetch.post('/payment/create-checkout-session-visa', payload);
+                const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
                 // Redirect user to PayMongo checkout
 
                 if (checkoutUrl) {
                     window.location.href = checkoutUrl;
                 } else {
-                    console.error("PayMongo Response Structure:", paymongoResponse.data);
+                    console.error("PayMongo Response Structure:", paymongoResponse);
                     throw new Error("Failed to create PayMongo checkout session - URL missing");
                 }
             }

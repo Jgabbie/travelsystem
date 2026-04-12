@@ -1,13 +1,22 @@
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from "../../config/fetchConfig";
 
 export const loginUser = (data) => { //data comes from authService in loginUser(values)
-    return axiosInstance.post('/auth/loginUser', data);
+    return apiFetch('/auth/loginUser', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
 };
 
 export const sendVerifyOTP = (email) => {
-    return axiosInstance.post('/auth/send-verify-otp', { email });
+    return apiFetch('/auth/send-verify-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+    });
 };
 
 export const verifyAccount = (data) => {
-    return axiosInstance.post('/auth/verify-account', data, { withCredentials: true });
+    return apiFetch('/auth/verify-account', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
 };

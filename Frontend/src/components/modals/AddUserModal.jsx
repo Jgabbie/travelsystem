@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, message } from 'antd';
-import axios from 'axios';
 import '../../style/components/modals/addusermodal.css';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }) {
     const [loading, setLoading] = useState(false);
@@ -148,9 +147,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                 delete payload.confirmPassword;
             }
 
-            await axiosInstance.post('/user/createUsers', payload, {
-                withCredentials: true
-            });
+            await apiFetch.post('/user/createUsers', payload, { withCredentials: true });
 
             message.success(`${values.role} created successfully!`);
             setValues({
@@ -166,7 +163,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             refreshData(); // Refresh the table
             onClose(); // Close modal
         } catch (err) {
-            const errorMsg = err.response?.data?.message || err.response?.data?.error || "Failed to create user";
+            const errorMsg = err.data?.message || err.data?.error || "Failed to create user";
             message.error(errorMsg);
         } finally {
             setLoading(false);

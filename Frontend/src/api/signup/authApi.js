@@ -1,9 +1,15 @@
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from "../../config/fetchConfig";
 
 export const signupUser = (data) => {
-    return axiosInstance.post('/auth/signupUser', data);
+    return apiFetch('/auth/signupUser', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
 };
 
 export const checkDuplicates = (data) => {
-    return axiosInstance.post('/auth/checkDups', data);
+    return apiFetch('/auth/checkDups', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
 };

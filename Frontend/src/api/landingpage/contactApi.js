@@ -1,4 +1,8 @@
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from "../../config/axiosConfig";
+
 
 export const sendContact = (data) =>
-    axiosInstance.post('/email/contact', data);
+    apiFetch('/email/contact', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });

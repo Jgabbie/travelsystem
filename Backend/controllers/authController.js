@@ -1,7 +1,6 @@
 const UserModel = require('../models/user');
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-const path = require("path")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
 const connectToDatabase = require('../utils/mongodb');

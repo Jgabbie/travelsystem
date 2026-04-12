@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import "../../style/admin/packages.css";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import { useAuth } from "../../hooks/useAuth";
 
 
@@ -93,7 +93,7 @@ export default function PackageManagement() {
         }))
       };
 
-      await axiosInstance.put('/package/update-slots', slotsPayload);
+      await apiFetch.put('/package/update-slots', slotsPayload);
 
     } catch (error) {
       console.error("Error updating slots:", error);
@@ -118,7 +118,7 @@ export default function PackageManagement() {
     if (!discountPackage) return;
 
     try {
-      await axiosInstance.put('/package/update-discount', {
+      await apiFetch.put('/package/update-discount', {
         packageId: discountPackage._id,
         discountPercent: Number(discountPercent) || 0
       });
@@ -168,7 +168,7 @@ export default function PackageManagement() {
       cancelButtonProps: { className: "logout-cancel-btn" },
       onOk: async () => {
         try {
-          const response = await axiosInstance.delete(`/package/remove-package/${id}`);
+          await apiFetch.delete(`/package/remove-package/${id}`);
           message.success("Package removed successfully");
           getPackages();
         } catch (error) {
@@ -183,9 +183,9 @@ export default function PackageManagement() {
   const getPackages = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get('/package/get-packages');
+      const response = await apiFetch.get('/package/get-packages');
 
-      const sortedPackages = response.data.sort((a, b) => {
+      const sortedPackages = response.sort((a, b) => {
         // Sort by creation date if you have it
         if (a.createdAt && b.createdAt) {
           return new Date(b.createdAt) - new Date(a.createdAt);

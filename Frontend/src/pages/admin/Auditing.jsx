@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Tag, Table, Input, ConfigProvider, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 export default function Auditing() {
     const [logs, setLogs] = useState([]);
@@ -13,11 +13,11 @@ export default function Auditing() {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const response = await axiosInstance.get('/logs/get-audits', {
+                const response = await apiFetch.get('/logs/get-audits', {
                     withCredentials: true
                 });
 
-                setLogs(response.data);
+                setLogs(response || []);
                 setLoading(false);
             } catch (err) {
                 console.error("Failed to fetch audit logs", err);

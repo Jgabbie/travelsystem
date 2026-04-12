@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
 
@@ -83,8 +83,8 @@ export default function PassportApplication() {
         const fetchApplication = async () => {
             setLoading(true);
             try {
-                const res = await axiosInstance.get(fetchPassportApplication);
-                setApplication(res.data);
+                const res = await apiFetch.get(fetchPassportApplication);
+                setApplication(res);
             } catch (err) {
                 message.error('Failed to load passport application details');
             } finally {
@@ -94,10 +94,10 @@ export default function PassportApplication() {
         const getUserEmail = async () => {
             setLoading(true);
             try {
-                const res = await axiosInstance.get('/user/data')
-                console.log("User data:", res.data);
-                console.log("User email:", res.data.userData.email);
-                setApplication(prev => ({ ...prev, email: res.data.userData.email }));
+                const res = await apiFetch.get('/user/data')
+                console.log("User data:", res);
+                console.log("User email:", res.userData.email);
+                setApplication(prev => ({ ...prev, email: res.userData.email }));
             } catch (err) {
                 message.error('Failed to load user data');
             } finally {
@@ -154,24 +154,24 @@ export default function PassportApplication() {
                 const formData = new FormData();
                 formData.append("file", file);
 
-                const uploadRes = await axiosInstance.post('/upload/upload-receipt', formData, {
+                const uploadRes = await apiFetch.post('/upload/upload-receipt', formData, {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
 
-                const imageUrl = uploadRes.data.url;
+                const imageUrl = uploadRes.url;
 
                 console.log("Uploaded receipt URL:", imageUrl);
 
-                const paymentRes = await axiosInstance.post('/payment/manual-passport', {
+                const paymentRes = await apiFetch.post('/payment/manual-passport', {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
                     amount: 2000,
                     proofImage: imageUrl,
                 });
 
-                console.log("Manual payment response:", paymentRes.data);
+                console.log("Manual payment response:", paymentRes);
 
-                navigate(paymentRes.data.redirectUrl);
+                navigate(paymentRes.redirectUrl);
                 message.success("Manual payment submitted successfully. Awaiting verification.");
                 setPaymentCompleted(true);
 
@@ -194,14 +194,14 @@ export default function PassportApplication() {
                 console.log("Creating checkout session with payload:", payload);
 
                 // Send request to create checkout session
-                const paymongoResponse = await axiosInstance.post('/payment/create-checkout-session-passport', payload);
-                const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+                const paymongoResponse = await apiFetch.post('/payment/create-checkout-session-passport', payload);
+                const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
                 // Redirect user to PayMongo checkout
 
                 if (checkoutUrl) {
                     window.location.href = checkoutUrl;
                 } else {
-                    console.error("PayMongo Response Structure:", paymongoResponse.data);
+                    console.error("PayMongo Response Structure:", paymongoResponse);
                     throw new Error("Failed to create PayMongo checkout session - URL missing");
                 }
             }
@@ -359,18 +359,18 @@ export default function PassportApplication() {
                 formData.append("files", file.originFileObj);
             });
 
-            const res = await axiosInstance.post(
+            const res = await apiFetch.post(
                 '/upload/upload-passport-requirements',
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );
 
-            const uploaded = res.data.urls;
+            const uploaded = res.urls;
 
             console.log("Uploaded document URLs:", uploaded);
 
             // Save URLs to your application
-            await axiosInstance.put(`/passport/applications/${id}/documents`, {
+            await apiFetch.put(`/passport/applications/${id}/documents`, {
                 birthCertificate: uploaded[0],
                 applicationForm: uploaded[1],
                 govId: uploaded[2],
@@ -385,8 +385,8 @@ export default function PassportApplication() {
             setGovIdList([]);
             setAdditionalDocsList([]);
 
-            const refreshed = await axiosInstance.get(`/passport/applications/${id}`);
-            setApplication(refreshed.data);
+            const refreshed = await apiFetch.get(`/passport/applications/${id}`);
+            setApplication(refreshed);
 
         } catch (err) {
             console.error(err);
@@ -411,13 +411,13 @@ export default function PassportApplication() {
 
         try {
             setConfirmingSuggested(true);
-            await axiosInstance.put(`/passport/applications/${id}/choose-appointment`, {
+            await apiFetch.put(`/passport/applications/${id}/choose-appointment`, {
                 date: selected.date,
                 time: selected.time
             });
 
-            const refreshed = await axiosInstance.get(`/passport/applications/${id}`);
-            setApplication(refreshed.data);
+            const refreshed = await apiFetch.get(`/passport/applications/${id}`);
+            setApplication(refreshed);
             message.success('Appointment schedule confirmed.');
         } catch (error) {
             message.error('Failed to confirm appointment schedule.');

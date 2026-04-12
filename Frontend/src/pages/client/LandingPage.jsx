@@ -1,14 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled } from '@ant-design/icons';
-import { usePopularPackages } from '../../hooks/landingpage/usePopularPackages';
-import { useDomesticPackages } from '../../hooks/landingpage/useDomesticPackages';
-import { useContact } from '../../hooks/landingpage/useContact';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
-import axiosInstance from '../../config/axiosConfig';
-
 
 export default function LandingPage() {
     const navigate = useNavigate()
@@ -81,12 +77,10 @@ export default function LandingPage() {
     }
 
 
-
-
     // SEND MESSAGE ---------------------------------------------------------------------
     const sendMessage = async () => {
         try {
-            await axiosInstance.post('/email/contact', contactValues)
+            await apiFetch.post('/email/contact', contactValues)
             setOpenModalSuccess(true)
             setContactValues({
                 name: '',
@@ -103,11 +97,11 @@ export default function LandingPage() {
         const fetchPopularPackages = async () => {
             setIsPopularLoading(true)
             try {
-                const response = await axiosInstance.get('/package/popular-packages', {
+                const response = await apiFetch.get('/package/popular-packages', {
                     params: { limit: 3 }
                 })
 
-                const packages = (response.data || []).map((pkg) => ({
+                const packages = (response || []).map((pkg) => ({
                     id: pkg._id,
                     packageName: pkg.packageName,
                     packageDescription: pkg.packageDescription,
@@ -119,8 +113,8 @@ export default function LandingPage() {
                 setPopularPackages(trimmed)
 
                 if (trimmed.length === 0) {
-                    const fallbackResponse = await axiosInstance.get('/package/get-packages')
-                    const fallbackPackages = (fallbackResponse.data || [])
+                    const fallbackResponse = await apiFetch.get('/package/get-packages')
+                    const fallbackPackages = (fallbackResponse || [])
                         .slice(0, 3)
                         .map((pkg) => ({
                             id: pkg._id,
@@ -137,8 +131,8 @@ export default function LandingPage() {
                 console.error('Failed to load popular packages:', error)
                 setPopularPackages([])
                 try {
-                    const fallbackResponse = await axiosInstance.get('/package/get-packages')
-                    const fallbackPackages = (fallbackResponse.data || [])
+                    const fallbackResponse = await apiFetch.get('/package/get-packages')
+                    const fallbackPackages = (fallbackResponse || [])
                         .slice(0, 3)
                         .map((pkg) => ({
                             id: pkg._id,
@@ -165,8 +159,8 @@ export default function LandingPage() {
         const fetchDomesticPackages = async () => {
             setIsDomesticLoading(true)
             try {
-                const response = await axiosInstance.get('/package/get-packages')
-                const packages = (response.data || [])
+                const response = await apiFetch.get('/package/get-packages')
+                const packages = (response || [])
                     .filter((pkg) => String(pkg.packageType).toLowerCase() === 'domestic')
                     .map((pkg) => ({
                         id: pkg._id,

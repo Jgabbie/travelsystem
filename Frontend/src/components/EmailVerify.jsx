@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axiosConfig';
+import apiFetch from '../config/fetchConfig';
 
 export default function EmailVerify() {
 
@@ -10,13 +10,13 @@ export default function EmailVerify() {
     const submitOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axiosInstance.post('/auth/verify-account', { otp: getOTP })
-            if (response.data.success || response.status === 200) {
+            const response = await apiFetch.post('/auth/verify-account', { otp: getOTP })
+            if (response.success || response.status === 200) {
                 alert("Account Verified")
                 navigate('/login')
             }
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             alert(errorMsg)
         }
@@ -25,10 +25,10 @@ export default function EmailVerify() {
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axiosInstance.post('/auth/send-verify-otp')
+            await apiFetch.post('/auth/send-verify-otp')
             alert("OTP sent!")
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             alert(errorMsg)
         }

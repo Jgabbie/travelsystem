@@ -4,7 +4,7 @@ import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircle
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/transaction.css";
 
 const getBase64ImageFromURL = (url) => {
@@ -45,9 +45,9 @@ export default function TransactionManagement() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axiosInstance.get("/transaction/all-transactions");
+        const response = await apiFetch.get("/transaction/all-transactions");
 
-        const transactions = response.data.map((t) => ({
+        const transactions = response.map((t) => ({
           key: t._id,
           ref: t.reference,
           username: t.userId?.username || "Unknown User",
@@ -198,9 +198,9 @@ export default function TransactionManagement() {
   const handleProofDecision = async (record, status) => {
     try {
       if (status === "Failed") {
-        await axiosInstance.put(`/transaction/${record.key}/reject`);
+        await apiFetch.put(`/transaction/${record.key}/reject`);
       } else {
-        await axiosInstance.put(`/transaction/${record.key}`, { status });
+        await apiFetch.put(`/transaction/${record.key}`, { status });
       }
       setData((prev) =>
         prev.map((item) =>
@@ -235,7 +235,7 @@ export default function TransactionManagement() {
       cancelButtonProps: { className: "logout-cancel-btn" },
       onOk: async () => {
         try {
-          await axiosInstance.delete(`/transaction/${key}`);
+          await apiFetch.delete(`/transaction/${key}`);
           setData((prev) => prev.filter((item) => item.key !== key));
           message.success("Transaction deleted");
         } catch (error) {
@@ -266,7 +266,7 @@ export default function TransactionManagement() {
         amount
       };
 
-      await axiosInstance.put(`/transaction/${editingTransaction.key}`, payload);
+      await apiFetch.put(`/transaction/${editingTransaction.key}`, payload);
 
       setData((prev) =>
         prev.map((item) =>

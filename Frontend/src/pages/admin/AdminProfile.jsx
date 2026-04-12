@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Input, Button, message, Spin, Card, Space, ConfigProvider } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 export default function AdminProfile() {
     const [userData, setUserData] = useState(null)
@@ -93,12 +93,11 @@ export default function AdminProfile() {
     const fetchUserData = async () => {
         try {
             setLoading(true)
-            const response = await axiosInstance.get('/user/data', {
+            const data = await apiFetch.get('/user/data', {
                 withCredentials: true
             })
 
-            if (response.status === 200) {
-                const data = response.data
+            if (data?.userData) {
                 setUserData(data.userData)
                 setProfileImage(
                     data.userData?.profileImageUrl ||
@@ -113,8 +112,6 @@ export default function AdminProfile() {
                     email: data.userData.email,
                     phone: data.userData.phone
                 })
-            } else if (response.status === 401) {
-                message.error('Please login to view your profile')
             } else {
                 message.error('Failed to fetch user data')
             }
@@ -128,8 +125,8 @@ export default function AdminProfile() {
 
     const fetchRecentActions = async () => {
         try {
-            const response = await axiosInstance.get('/logs/get-audits')
-            const audits = Array.isArray(response.data) ? response.data : []
+            const response = await apiFetch.get('/logs/get-audits')
+            const audits = Array.isArray(response) ? response : []
             const recent = audits.slice(0, 3).map((audit) => ({
                 _id: audit?._id,
                 title: audit?.action || 'Admin action',
@@ -150,8 +147,8 @@ export default function AdminProfile() {
 
     const fetchPendingApprovals = async () => {
         try {
-            const response = await axiosInstance.get('/booking/all-bookings')
-            const bookings = Array.isArray(response.data) ? response.data : [] //just make sure that it return an array, if not then empty array to avoid crashes
+            const response = await apiFetch.get('/booking/all-bookings')
+            const bookings = Array.isArray(response) ? response : [] //just make sure that it return an array, if not then empty array to avoid crashes
             const pending = bookings
                 .filter((booking) => (booking.status || '').toLowerCase() === 'pending')
                 .slice(0, 3) //just get 3 recent pending approvals
@@ -246,7 +243,7 @@ export default function AdminProfile() {
         }
         try {
             setSaving(true)
-            const response = await axiosInstance.put('/user/data', {
+            const response = await apiFetch.put('/user/data', {
                 firstname: values.firstname,
                 lastname: values.lastname,
                 email: values.email,
@@ -259,7 +256,7 @@ export default function AdminProfile() {
                 }
             })
 
-            const data = response.data
+            const data = response
             setUserData(data.userData)
             setProfileImage(
                 data.userData?.profileImageUrl ||
@@ -272,7 +269,7 @@ export default function AdminProfile() {
             message.success('Profile updated successfully!')
         } catch (error) {
             console.error('Error updating profile:', error)
-            const apiMessage = error?.response?.data?.message
+            const apiMessage = error?.data?.message
             message.error(apiMessage || 'Error updating profile')
         } finally {
             setSaving(false)

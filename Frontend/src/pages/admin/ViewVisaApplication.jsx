@@ -3,7 +3,7 @@ import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Imag
 import { ArrowLeftOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import dayjs from "dayjs";
 
 const { Title } = Typography;
@@ -31,8 +31,7 @@ export default function ViewVisaApplication() {
             try {
                 setLoading(true);
                 // 1. Fetch the application first
-                const appResponse = await axiosInstance.get(`/visa/applications/${id}`);
-                const appData = appResponse.data;
+                const appData = await apiFetch.get(`/visa/applications/${id}`);
 
                 // 2. Determine current step
                 const visaProcessSteps = appData.visaProcessSteps || []; // might be undefined if service not fetched yet
@@ -53,8 +52,7 @@ export default function ViewVisaApplication() {
                 if (appData.serviceId) {
                     try {
                         const serviceId = typeof appData.serviceId === "object" ? appData.serviceId._id : appData.serviceId;
-                        const serviceResponse = await axiosInstance.get(`/services/get-service/${serviceId}`);
-                        const serviceData = serviceResponse.data;
+                        const serviceData = await apiFetch.get(`/services/get-service/${serviceId}`);
 
                         console.log("Fetched visa service details:", serviceData);
 
@@ -203,7 +201,7 @@ export default function ViewVisaApplication() {
         try {
             setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
-            await axiosInstance.put(`/visa/applications/${id}/status`, { status: newStatus });
+            await apiFetch.put(`/visa/applications/${id}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
             setCurrentStep(stepIdx);
             message.success(`Status updated to ${newStatus}`);

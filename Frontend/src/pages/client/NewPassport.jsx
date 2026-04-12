@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import dayjs from 'dayjs'
 import LoginModal from '../../components/modals/LoginModal'
 import '../../style/client/passport.css'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
 
@@ -30,7 +30,6 @@ export default function NewPassport() {
     const { auth } = useAuth()
 
     const [error, setError] = useState({
-        location: '',
         preferredDate: '',
         preferredTime: ''
     });
@@ -42,7 +41,6 @@ export default function NewPassport() {
             preferredDate: '',
             preferredTime: ''
         }
-
         if (!location) {
             newErrors.location = 'Please select a DFA location';
         }
@@ -67,7 +65,7 @@ export default function NewPassport() {
         }
 
         try {
-            await axiosInstance.post('/passport/apply', {
+            await apiFetch.post('/passport/apply', {
                 dfaLocation: location,
                 preferredDate,
                 preferredTime,

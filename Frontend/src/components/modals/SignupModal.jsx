@@ -3,16 +3,15 @@ import { Button, Modal, Input, ConfigProvider, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/signupmodal.css';
 import { checkDuplicates } from '../../api/signup/authApi';
-import { useSignup } from '../../hooks/signup/useSignup';
-
+import apiFetch from '../../config/fetchConfig';
 
 
 export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }) {
 
     const navigate = useNavigate();
 
-    //const [email, setEmail] = useState("")
-    //const [isLoading, setIsLoading] = useState(false);
+    const [email, setEmail] = useState("")
+    const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isSignupSuccessVisible, setIsSignupSuccessVisible] = useState(false);
 
@@ -25,39 +24,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         username: '', firstname: '', lastname: '', password: '',
         confirmPassword: '', email: '', phone: ''
     });
-
-    const { errors: apiErrors, loading, signup } = useSignup();
-
-    useEffect(() => {
-        if (!apiErrors) return;
-        setError((prev) => ({
-            ...prev,
-            ...apiErrors,
-        }));
-    }, [apiErrors]);
-
-    const checkDuplicateField = async (field, value) => {
-        const frontEndError = validate(field, value, values);
-        if (frontEndError) {
-            return;
-        }
-
-        try {
-            await checkDuplicates({ [field]: value });
-            setError((prev) => ({
-                ...prev,
-                [field]: ''
-            }));
-        } catch (err) {
-            const apiMessage = err?.response?.data?.message;
-            if (apiMessage) {
-                setError((prev) => ({
-                    ...prev,
-                    [field]: apiMessage
-                }));
-            }
-        }
-    };
 
     //prevent clipboard and shortcut keys
     const blockClipboardKeys = (e) => {
@@ -164,104 +130,80 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
     const valueHandler = (field, value) => {
         const nextValues = { ...values, [field]: value };
-        const nextErrors = { ...error, [field]: validate(field, value, nextValues) };
+
+        const validationError = validate(field, value, nextValues);
+
+        const nextErrors = {
+            ...error,
+            [field]: validationError || ""
+        };
+
+        if (!validationError) {
+            nextErrors[field] = "";
+        }
 
         if (field === "password" || field === "confirmPassword") {
-            nextErrors.confirmPassword = validate("confirmPassword", nextValues.confirmPassword, nextValues);
+            nextErrors.confirmPassword = validate(
+                "confirmPassword",
+                nextValues.confirmPassword,
+                nextValues
+            );
         }
 
         setValues(nextValues);
         setError(nextErrors);
     };
 
-    // //check for duplicate username
-    // useEffect(() => {
-    //     const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
-    //     if (frontEndError) {
-    //         return
-    //     }
-    //     axiosInstance.post('/auth/checkDups', { username: values.username })
-    //         .then(() => {
-    //             return
-    //         })
-    //         .catch(error => {
-    //             if (error.response)
-    //                 setError(prev => ({ ...prev, username: error.response.data.message }));
-    //         });
-    // }, [values.username])
 
-    // //check for duplicate email
-    // useEffect(() => {
-    //     const frontEndError = validate("email", values.email)
-    //     if (frontEndError) {
-    //         return
-    //     }
-    //     axiosInstance.post('/auth/checkDups', { email: values.email })
-    //         .then(() => {
-    //             return
-    //         })
-    //         .catch(error => {
-    //             if (error.response)
-    //                 setError(prev => ({ ...prev, email: error.response.data.message }));
-    //         });
-    // }, [values.email])
+    //check for duplicate username
+    useEffect(() => {
+        const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
+        if (frontEndError) return;
 
-    // //signup function
-    // const handleSignup = async (e) => {
-    //     e.preventDefault();
+        apiFetch.post('/auth/checkDups', { username: values.username })
+            .then((data) => {
+                setError(prev => ({
+                    ...prev,
+                    username: ""
+                }));
+            })
+            .catch((err) => {
+                console.log("RAW ERROR:", err);
 
-    //     const fieldsToValidate = [
-    //         "username",
-    //         "firstname",
-    //         "lastname",
-    //         "email",
-    //         "phone",
-    //         "password",
-    //         "confirmPassword",
-    //     ];
+                const message = err?.data.message || "Username already exists";
 
-    //     const validationErrors = fieldsToValidate.reduce((acc, field) => {
-    //         acc[field] = validate(field, values[field]);
-    //         return acc;
-    //     }, {});
+                setError(prev => ({
+                    ...prev,
+                    username: message
+                }));
+            });
+    }, [values.username])
 
-    //     const combinedErrors = {
-    //         ...error,
-    //         ...validationErrors,
-    //     };
+    //check for duplicate email
+    useEffect(() => {
+        const frontEndError = validate("email", values.email);
+        if (frontEndError) return;
 
-    //     const hasErrors = Object.values(combinedErrors).some((message) =>
-    //         Array.isArray(message) ? message.length > 0 : Boolean(message)
-    //     );
-    //     if (hasErrors) {
-    //         setError(combinedErrors);
-    //         return;
-    //     }
+        apiFetch.post('/auth/checkDups', { email: values.email })
+            .then((data) => {
+                setError(prev => ({
+                    ...prev,
+                    email: ""
+                }));
+            })
+            .catch((err) => {
+                console.log("RAW ERROR:", err);
 
-    //     setIsLoading(true);
-    //     try {
-    //         const response = await axiosInstance.post('/auth/signupUser', values);
-    //         if (response) {
-    //             const userEmail = values.email
-    //             setEmail(userEmail)
-    //             setIsLoading(false)
-    //             isCloseSignup()
-    //             setIsSignupSuccessVisible(true)
-    //             setValues({
-    //                 username: '',
-    //                 firstname: '',
-    //                 lastname: '',
-    //                 email: '',
-    //                 phone: '',
-    //                 password: '',
-    //                 confirmPassword: '',
-    //             })
-    //         }
-    //     } catch (err) {
-    //         console.log("Invalid Inputs")
-    //     }
-    // };
+                const message = err?.data.message || "Email already exists";
 
+                setError(prev => ({
+                    ...prev,
+                    email: message
+                }));
+            });
+    }, [values.email]);
+
+    //signup function
     const handleSignup = async (e) => {
         e.preventDefault();
 
@@ -272,7 +214,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             "email",
             "phone",
             "password",
-            "confirmPassword"
+            "confirmPassword",
         ];
 
         const validationErrors = fieldsToValidate.reduce((acc, field) => {
@@ -293,28 +235,31 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             return;
         }
 
+        setIsLoading(true);
         try {
-            const data = await signup(values);
-            if (data) {
-                // const userEmail = values.email
-                // setEmail(userEmail)
+            const response = await apiFetch.post('/auth/signupUser', values);
+            if (response) {
+                const userEmail = values.email
+                setEmail(userEmail)
+                setIsLoading(false)
                 isCloseSignup()
                 setIsSignupSuccessVisible(true)
-                clearForms();
+                setValues({
+                    username: '',
+                    firstname: '',
+                    lastname: '',
+                    email: '',
+                    phone: '',
+                    password: '',
+                    confirmPassword: '',
+                })
+
             }
         } catch (err) {
+            setIsLoading(false);
             console.log("Invalid Inputs")
-
-            const apiErr = err?.response?.data;
-
-            setError(prev => ({
-                ...prev,
-                email: apiErr?.email || prev.email,
-                username: apiErr?.username || prev.username
-            }));
         }
     };
-
 
     //clear form and errors
     const clearForms = () => {
@@ -353,7 +298,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                 },
             }}
         >
-            {loading && (
+            {isLoading && (
                 <Spin fullscreen size="large" className="app-loading-spin" style={{ zIndex: 2000 }} />
             )}
             <div>
@@ -373,7 +318,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                         <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleSignup}>
                             <div className="signup-input-group-modal">
                                 <label className='signup-labels-modal'>Username</label>
-                                <Input status={hasFieldError(error.username) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} onBlur={() => checkDuplicateField("username", values.username)} autoComplete='off' onKeyDown={(e) => {
+                                <Input status={hasFieldError(error.username) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                     if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }
@@ -427,7 +372,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                             <div className="signup-input-group-modal">
                                 <label className='signup-labels-modal'>Email</label>
-                                <Input status={hasFieldError(error.email) ? "error" : ""} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} onBlur={() => checkDuplicateField("email", values.email)} autoComplete='off' onKeyDown={(e) => {
+                                <Input status={hasFieldError(error.email) ? "error" : ""} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                     if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault()
                                     }

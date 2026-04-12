@@ -4,7 +4,7 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
 import '../../style/client/usertransactions.css'
 import '../../style/admin/transaction.css'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function UserTransactions() {
@@ -23,8 +23,8 @@ export default function UserTransactions() {
         const fetchTransactions = async () => {
             setLoading(true)
             try {
-                const response = await axiosInstance.get('/transaction/user-transactions')
-                const transactions = response.data.map(t => ({
+                const response = await apiFetch.get('/transaction/user-transactions')
+                const transactions = response.map(t => ({
                     key: t.id,
                     reference: t.reference,
                     applicationType: t.applicationType || '--',

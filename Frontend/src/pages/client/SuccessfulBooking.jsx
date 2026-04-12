@@ -4,7 +4,7 @@ import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useQuotationBooking } from '../../context/BookingQuotationContext';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 
 export default function SuccessfulBooking() {
@@ -24,7 +24,7 @@ export default function SuccessfulBooking() {
         }
 
         // Call backend API to verify payment using token
-        axiosInstance.post(`/booking/verify-payment`, { token })
+        apiFetch.post(`/booking/verify-payment`, { token })
             .then(res => {
                 clearQuotationBookingData();
             })

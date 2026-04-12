@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, ConfigProvider, Spin, message } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 export default function SuccessfulPaymentVisa() {
     const navigate = useNavigate();
@@ -19,11 +19,11 @@ export default function SuccessfulPaymentVisa() {
         }
 
         // Call backend API to verify payment using token
-        axiosInstance.post(`/visa/verify-payment`, { token })
+        apiFetch.post(`/visa/verify-payment`, { token })
             .then(res => {
-                console.log("Payment verification response:", res.data);
+                console.log("Payment verification response:", res);
 
-                if (res.data.success) {
+                if (res.success) {
                     console.log("Payment verified successfully.");
                 } else {
                     console.log("Payment verification failed.");

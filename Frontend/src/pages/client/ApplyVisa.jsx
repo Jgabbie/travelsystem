@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import { useAuth } from '../../hooks/useAuth'
 import LoginModal from '../../components/modals/LoginModal'
 import '../../style/client/passport.css'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function ApplyVisa() {
@@ -33,9 +33,9 @@ export default function ApplyVisa() {
     useEffect(() => {
         const loadServices = async () => {
             try {
-                const response = await axiosInstance.get('/services/services')
-                console.log('Loaded visa services:', response.data)
-                setServices(response.data || [])
+                const response = await apiFetch.get('/services/services')
+                console.log('Loaded visa services:', response)
+                setServices(response || [])
             } catch (loadError) {
                 console.error('Failed to load visa services:', loadError)
             }
@@ -96,7 +96,7 @@ export default function ApplyVisa() {
         }
 
         try {
-            await axiosInstance.post('/visa/apply', {
+            await apiFetch.post('/visa/apply', {
                 serviceId: selectedServiceId,
                 preferredDate,
                 preferredTime,

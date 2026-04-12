@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/components/modals/emailverifymodal.css'
 
 
@@ -37,15 +36,19 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
     const submitOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axiosInstance.post('/auth/verify-account', { otp: getOTP, email: userEmail, username: userUsername, password: userPassword }, { withCredentials: true })
+            const response = await apiFetch.post(
+                '/auth/verify-account',
+                { otp: getOTP, email: userEmail, username: userUsername, password: userPassword },
+                { withCredentials: true }
+            )
 
-            if (response.data.success || response.status === 200) {
+            if (response.success || response.status === 200) {
                 setOTP("")
                 isCloseOTPModal()
                 setIsVerifiedModalOpen(true)
             }
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorOTP(errorMsg)
         }
@@ -55,11 +58,11 @@ export default function EmailVerifyModal({ isOpenOTPModal, isCloseOTPModal, user
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            const response = await axiosInstance.post('/auth/send-verify-otp', { email: userEmail })
+            await apiFetch.post('/auth/send-verify-otp', { email: userEmail })
             alert("OTP sent!")
             setTimer(60)
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             alert(errorMsg)
         }

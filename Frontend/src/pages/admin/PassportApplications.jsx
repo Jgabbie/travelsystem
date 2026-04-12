@@ -5,7 +5,7 @@ import { FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircle
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/passportapplications.css";
 
 const getBase64ImageFromURL = (url) => {
@@ -38,9 +38,9 @@ export default function PassportApplications() {
     useEffect(() => {
         const getPassportApplications = async () => {
             try {
-                const response = await axiosInstance.get('/passport/applications');
+                const response = await apiFetch.get('/passport/applications');
 
-                const applications = response.data.map((a) => ({
+                const applications = response.map((a) => ({
                     key: a._id,
                     applicationNumber: a.applicationNumber,
                     applicantName: a.username,

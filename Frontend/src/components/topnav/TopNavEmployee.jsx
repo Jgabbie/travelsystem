@@ -3,7 +3,7 @@ import { DownOutlined, HomeOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/components/topnav.css";
 
 const { Header } = Layout;
@@ -23,7 +23,7 @@ export default function TopNavEmployee() {
 
     const handleOk = async () => {
         setIsModalOpen(false);
-        await axiosInstance.post('/auth/logoutUser', {}, { withCredentials: true });
+        await apiFetch.post('/auth/logoutUser', {}, { withCredentials: true });
         setAuth(null);
     };
 

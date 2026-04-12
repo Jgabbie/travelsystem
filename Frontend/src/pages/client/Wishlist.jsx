@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin } from 'antd'
 import { useNavigate } from 'react-router-dom'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import '../../style/client/wishlist.css'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
@@ -20,15 +20,15 @@ export default function Wishlist() {
         const loadWishlist = async () => {
             try {
                 setIsLoading(true)
-                const response = await axiosInstance.get('/wishlist')
-                const wishlist = response?.data?.wishlist || []
+                const response = await apiFetch.get('/wishlist')
+                const wishlist = response?.wishlist || []
 
                 //console.log('Wishlist data:', wishlist)
 
                 setWishlistItems(wishlist)
             } catch (error) {
                 const errorMessage =
-                    error?.response?.data?.message || 'Unable to load wishlist.'
+                    error?.data?.message || 'Unable to load wishlist.'
                 message.error(errorMessage)
                 setWishlistItems([])
             } finally {
@@ -106,14 +106,14 @@ export default function Wishlist() {
     const handleRemove = async (wishlistId) => {
         if (!wishlistId) return
         try {
-            await axiosInstance.delete(`/wishlist/remove/${wishlistId}`)
+            await apiFetch.delete(`/wishlist/remove/${wishlistId}`)
             setWishlistItems((prev) =>
                 prev.filter((entry) => entry?._id !== wishlistId)
             )
             message.success('Removed from wishlist')
         } catch (error) {
             const errorMessage =
-                error?.response?.data?.message || 'Unable to remove wishlist item.'
+                error?.data?.message || 'Unable to remove wishlist item.'
             message.error(errorMessage)
         }
     }

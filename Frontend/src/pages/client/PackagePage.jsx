@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
 import dayjs from 'dayjs';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/client/packagepage.css'
 
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
@@ -74,8 +74,8 @@ export default function PackagePage() {
             }
             try {
                 setPackageLoading(true)
-                const response = await axiosInstance.get(`/package/get-package/${id}`)
-                setPackageData(response.data); //temp origin and destination for testing, replace with actual data from package when available
+                const response = await apiFetch.get(`/package/get-package/${id}`)
+                setPackageData(response); //temp origin and destination for testing, replace with actual data from package when available
                 setPackageError('')
             } catch (error) {
                 console.error('Failed to load package:', error)
@@ -92,8 +92,8 @@ export default function PackagePage() {
     const fetchRatings = useCallback(async () => {
         if (!id) return
         try {
-            const response = await axiosInstance.get(`/rating/package/${id}/ratings`)
-            const mapped = (response.data || []).map((rating) => ({
+            const response = await apiFetch.get(`/rating/package/${id}/ratings`)
+            const mapped = (response || []).map((rating) => ({
                 id: rating._id,
                 userId: rating.userId?._id,
                 name: rating.userId?.username || 'User',
@@ -256,11 +256,11 @@ export default function PackagePage() {
         }
 
         try {
-            await axiosInstance.post('/wishlist/add', { packageId })
+            await apiFetch.post('/wishlist/add', { packageId })
             setIsWishlistModalOpen(true)
         } catch (error) {
             const errorMessage =
-                error?.response?.data?.message || 'Unable to add to wishlist. Please try again.'
+                error?.data?.message || 'Unable to add to wishlist. Please try again.'
             message.error(errorMessage)
         }
     }
@@ -325,14 +325,14 @@ export default function PackagePage() {
         try {
             if (isEditingReview) {
                 // UPDATE review
-                await axiosInstance.put(`/rating/${userReview.id}`, {
+                await apiFetch.put(`/rating/${userReview.id}`, {
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
                 });
                 message.success("Review updated");
             } else {
                 // CREATE review
-                await axiosInstance.post('/rating/submit-rating', {
+                await apiFetch.post('/rating/submit-rating', {
                     packageId: id,
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
@@ -368,7 +368,7 @@ export default function PackagePage() {
         setIsSubmittingReview(true)
 
         try {
-            await axiosInstance.delete(`/rating/${userReview.id}`)
+            await apiFetch.delete(`/rating/${userReview.id}`)
             message.success('Review deleted')
 
             await fetchRatings()

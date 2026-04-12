@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Row, Col, Input, Form } from 'antd';
 import dayjs from 'dayjs';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/components/mrcregistration.css';
 
 
@@ -23,9 +23,9 @@ export default function BookingRegistrationTermsPart1({ form, onValuesChange }) 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axiosInstance.get('/user/data', { withCredentials: true });
+                const response = await apiFetch.get('/user/data', { withCredentials: true });
 
-                const u = response.data?.userData
+                const u = response?.userData
 
                 const user = {
                     firstName: u.firstname,

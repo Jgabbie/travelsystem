@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, message, Button, Input, Card, ConfigProvider, Spin, Tag } from "antd"
 import { ArrowLeftOutlined } from "@ant-design/icons"
 import { useNavigate, useLocation } from "react-router-dom";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import { useQuotationBooking } from "../../context/BookingQuotationContext";
 import '../../style/client/userquotationrequest.css'
 
@@ -35,8 +35,8 @@ export default function UserQuotationRequest() {
             setLoading(true);
             try {
                 console.log("Calling API for quotation ID:", id);
-                const response = await axiosInstance.get(`/quotation/get-quotation/${id}`);
-                const quotationData = response.data;
+                const response = await apiFetch.get(`/quotation/get-quotation/${id}`);
+                const quotationData = response;
 
                 console.log("Quotation data received from API:", quotationData);
 
@@ -103,13 +103,13 @@ export default function UserQuotationRequest() {
         }
         console.log("Revision requested with notes:", notes);
         setActionLoading(true);
-        axiosInstance.post(`quotation/${id}/request-revision`, {
+        apiFetch.post(`quotation/${id}/request-revision`, {
             notes
         }).then(res => {
             message.success("Revision requested successfully.");
             setNotes("");
         }).catch(err => {
-            console.error(err.response?.data || err.message);
+            console.error(err.data || err.message);
             message.error("Failed to request revision.");
         }).finally(() => {
             setActionLoading(false);

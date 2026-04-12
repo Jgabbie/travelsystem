@@ -15,7 +15,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import AddUserModal from "../../components/modals/AddUserModal";
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import "../../style/admin/users.css";
 
 
@@ -56,8 +56,8 @@ export default function UserManagement() {
   const getUsers = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get('/user/getUsers', { withCredentials: true });
-      const formattedData = response.data.map(user => ({
+      const response = await apiFetch.get('/user/getUsers', { withCredentials: true });
+      const formattedData = response.map(user => ({
         key: user._id,
         id: user._id,
         firstname: user.firstname,
@@ -155,7 +155,7 @@ export default function UserManagement() {
       okType: "danger",
       onOk: async () => {
         try {
-          await axiosInstance.delete('/user/deleteUsers', { data: { id }, withCredentials: true });
+          await apiFetch.delete('/user/deleteUsers', { data: { id }, withCredentials: true });
           message.success("User deleted");
           getUsers();
         } catch { message.error("Delete failed"); }
@@ -183,7 +183,7 @@ export default function UserManagement() {
     try {
       const values = await editForm.validateFields();
 
-      await axiosInstance.put(
+      await apiFetch.put(
         `/admin/editUser/${editingUser.id}`, // also fix this
         values,
         { withCredentials: true }

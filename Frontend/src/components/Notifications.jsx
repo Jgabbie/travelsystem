@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Badge, Button, List, Typography, Empty, Popover } from 'antd'
 import { BellOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import axiosInstance from '../config/axiosConfig'
+import apiFetch from '../config/fetchConfig'
 import { useAuth } from '../hooks/useAuth'
 
 export default function Notifications() {
@@ -17,10 +17,10 @@ export default function Notifications() {
         }
 
         try {
-            const response = await axiosInstance.get('/notifications/my', {
+            const response = await apiFetch.get('/notifications/my', {
                 params: { limit: 25 }
             })
-            setNotifications(response.data || [])
+            setNotifications(response || [])
         } catch (error) {
             console.error('Failed to fetch notifications:', error)
         }
@@ -44,7 +44,7 @@ export default function Notifications() {
         }
 
         try {
-            await axiosInstance.patch(`/notifications/${notification._id}/read`)
+            await apiFetch.patch(`/notifications/${notification._id}/read`)
             setNotifications((prev) =>
                 prev.map((item) =>
                     item._id === notification._id ? { ...item, isRead: true } : item

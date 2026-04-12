@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Input, Button, Card, Space, message, ConfigProvider } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addservice.css";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -143,9 +143,9 @@ export default function AddService() {
         };
 
         if (isEdit) {
-            await axiosInstance.put(`/services/update-service/${id}`, payload);
+            await apiFetch.put(`/services/update-service/${id}`, payload);
         } else {
-            await axiosInstance.post("/services/create-service", payload);
+            await apiFetch.post("/services/create-service", payload);
         }
         navigate(`${basePath}/visa-services`);
     };
@@ -159,8 +159,7 @@ export default function AddService() {
 
         const getService = async () => {
             try {
-                const response = await axiosInstance.get(`/services/get-service/${id}`);
-                const existing = response.data;
+                const existing = await apiFetch.get(`/services/get-service/${id}`);
 
                 setValues({
                     visaName: existing.visaName || "",

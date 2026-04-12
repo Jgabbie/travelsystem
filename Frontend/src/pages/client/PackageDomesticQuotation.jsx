@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import '../../style/components/modals/packagequotationmodal.css'
 import '../../style/components/modals/modaldesign.css'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 
 
 const buildItineraryLabels = (itinerary, days) => {
@@ -40,9 +40,9 @@ export default function PackageDomesticQuotation() {
 
         try {
             setLoading(true)
-            axiosInstance.get(`/package/get-package/${packageId}`)
+            apiFetch.get(`/package/get-package/${packageId}`)
                 .then((response) => {
-                    setPackageData(response.data)
+                    setPackageData(response)
                 })
                 .catch((error) => {
                     console.error('Failed to fetch package data:', error)
@@ -165,7 +165,7 @@ export default function PackageDomesticQuotation() {
     }
 
     //submit quotation request
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const missingItineraryNote = itineraryNotes.some((note) => !note.trim())
         const newErrors = {};
         const totalTravelers = travelerType === 'solo'
@@ -225,7 +225,7 @@ export default function PackageDomesticQuotation() {
                 ? { adult: 1, child: 0, infant: 0 }
                 : { adult: adultCount, child: childCount, infant: infantCount };
 
-            axiosInstance.post('/quotation/create-quotation', {
+            await apiFetch.post('/quotation/create-quotation', {
                 packageId: packageId,
                 quotationDetails: {
                     travelers: travelersPayload,

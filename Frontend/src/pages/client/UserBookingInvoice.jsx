@@ -9,7 +9,7 @@ import html2canvas from 'html2canvas';
 import "../../style/client/userbookinginvoice.css";
 import "../../style/client/paymentprocees.css";
 import "../../style/components/modals/displayinvoicemodal.css";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import BookingRegistrationTravelersInvoice from "../../components/form_bookinginvoice/BookingRegistrationTravelersInvoice";
 import BookingRegistrationDietInvoice from "../../components/form_bookinginvoice/BookingRegistrationDietInvoice";
 import BookingRegistrationTermsInvoicePart1 from "../../components/form_bookinginvoice/BookingRegistrationTermsInvoicePart1";
@@ -325,7 +325,7 @@ export default function UserBookingInvoice() {
                 const formData = new FormData();
                 formData.append("file", file); // 
 
-                const uploadRes = await axiosInstance.post(
+                const uploadRes = await apiFetch.post(
                     "/upload/upload-receipt",
                     formData,
                     {
@@ -335,7 +335,7 @@ export default function UserBookingInvoice() {
                     }
                 );
 
-                const imageUrl = uploadRes.data?.url;
+                const imageUrl = uploadRes?.url;
 
                 if (!imageUrl) {
                     message.error("Image upload failed.");
@@ -343,7 +343,7 @@ export default function UserBookingInvoice() {
                     return;
                 }
 
-                const manualDepositRes = await axiosInstance.post('/payment/manual-deposit', {
+                const manualDepositRes = await apiFetch.post('/payment/manual-deposit', {
                     bookingId: booking?._id,
                     packageId: booking?.packageId._id,
                     amount: paymentMode === 'Deposit'
@@ -355,8 +355,8 @@ export default function UserBookingInvoice() {
                 });
                 setLoading(false);
 
-                if (manualDepositRes.data?.redirectUrl) {
-                    navigate(manualDepositRes.data.redirectUrl);
+                if (manualDepositRes?.redirectUrl) {
+                    navigate(manualDepositRes.redirectUrl);
                     return;
                 }
             }
@@ -370,18 +370,18 @@ export default function UserBookingInvoice() {
                     : Number(totalPrice),
             };
 
-            const paymongoResponse = await axiosInstance.post(
+            const paymongoResponse = await apiFetch.post(
                 '/payment/create-checkout-session-deposit',
                 { paymentPayload }
             );
 
-            const checkoutUrl = paymongoResponse.data?.data?.attributes?.checkout_url;
+            const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
             setLoading(false);
 
             if (checkoutUrl) {
                 window.location.href = checkoutUrl;
             } else {
-                console.error("PayMongo Response Structure:", paymongoResponse.data);
+                console.error("PayMongo Response Structure:", paymongoResponse);
                 throw new Error("Failed to create PayMongo checkout session - URL missing");
             }
 
@@ -425,9 +425,9 @@ export default function UserBookingInvoice() {
             setLoading(true);
             try {
 
-                const bookingRes = await axiosInstance.get(`/booking/by-reference/${reference}`);
-                const fetchedBooking = bookingRes.data?.booking || null;
-                const fetchedTransactions = bookingRes.data?.transactions || [];
+                const bookingRes = await apiFetch.get(`/booking/by-reference/${reference}`);
+                const fetchedBooking = bookingRes?.booking || null;
+                const fetchedTransactions = bookingRes?.transactions || [];
 
                 setBooking(fetchedBooking);
                 setTransactions(fetchedTransactions);
@@ -435,8 +435,8 @@ export default function UserBookingInvoice() {
 
                 if (fetchedBooking?._id) {
                     try {
-                        const allBookingsRes = await axiosInstance.get("/booking/all-bookings");
-                        const number = buildInvoiceNumber(allBookingsRes.data || [], fetchedBooking);
+                        const allBookingsRes = await apiFetch.get("/booking/all-bookings");
+                        const number = buildInvoiceNumber(allBookingsRes || [], fetchedBooking);
 
                         if (number) {
                             setInvoiceNumber(number);

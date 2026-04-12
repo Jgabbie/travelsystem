@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import dayjs from 'dayjs'
 import LoginModal from '../../components/modals/LoginModal'
 import '../../style/client/passport.css'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
 
@@ -68,7 +68,7 @@ export default function RenewPassport() {
         }
 
         try {
-            await axiosInstance.post('/passport/apply', {
+            await apiFetch.post('/passport/apply', {
                 dfaLocation: location,
                 preferredDate,
                 preferredTime,

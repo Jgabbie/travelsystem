@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Button, message, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker } from 'antd'
 import { useNavigate } from 'react-router-dom';
 import { useQuotationBooking } from '../../context/BookingQuotationContext';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import dayjs from 'dayjs';
 import '../../style/components/modals/bookingsummarymodal.css'
 import '../../style/components/modals/uploadpassportmodal.css'
@@ -153,11 +153,11 @@ export default function QuotationBookingProcess() {
 
         const fetchLatestTravelDetails = async () => {
             try {
-                const response = await axiosInstance.get(`/quotation/get-quotation/${quotationBookingData.quotationId}`);
-                const latestDetails = response.data?.latestPdfRevision?.travelDetails;
+                const response = await apiFetch.get(`/quotation/get-quotation/${quotationBookingData.quotationId}`);
+                const latestDetails = response?.latestPdfRevision?.travelDetails;
 
-                const packageId = response.data?.packageId?._id
-                const packageResponse = await axiosInstance.get(`/package/get-package/${packageId}`);
+                const packageId = response?.packageId?._id
+                const packageResponse = await apiFetch.get(`/package/get-package/${packageId}`);
 
                 const quoteTravelers = latestDetails?.travelers || [];
                 const computeTotalTravelers = typeof quoteTravelers === 'number'
@@ -166,13 +166,13 @@ export default function QuotationBookingProcess() {
                     + (Number(quoteTravelers?.child) || 0)
                     + (Number(quoteTravelers?.infant) || 0);
 
-                console.log("Response from API:", response.data);
-                console.log("Package Response:", packageResponse.data);
+                console.log("Response from API:", response);
+                console.log("Package Response:", packageResponse);
                 console.log("Computed Total Travelers:", computeTotalTravelers);
                 console.log("Quote Travelers Data:", quoteTravelers);
 
-                const packageType = packageResponse.data?.packageType || 'fixed';
-                const packageImages = packageResponse.data?.images || packageResponse.data?.packageImages || [];
+                const packageType = packageResponse?.packageType || 'fixed';
+                const packageImages = packageResponse?.images || packageResponse?.packageImages || [];
 
                 if (!latestDetails || !isMounted) return;
 

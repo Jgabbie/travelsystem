@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message, Spin, ConfigProvider } from 'antd';
-import axiosInstance from '../../../config/axiosConfig';
+import apiFetch from '../../../config/fetchConfig';
 import '../../../style/client/userpreference.css';
 
 export default function UserPreference() {
@@ -58,14 +58,14 @@ export default function UserPreference() {
         if (!canContinue) return;
         setIsLoading(true);
         try {
-            await axiosInstance.post('/preferences/save', selections, { withCredentials: true });
-            await axiosInstance.post('/user/login-once', {}, { withCredentials: true });
+            await apiFetch.post('/preferences/save', selections, { withCredentials: true });
+            await apiFetch.post('/user/login-once', {}, { withCredentials: true });
             message.success('Preferences saved');
             console.log('Preferences saved:', selections);
             window.location.assign('/home');
             setIsLoading(false);
         } catch (error) {
-            const errorMsg = error?.response?.data?.message || 'Unable to save preferences.';
+            const errorMsg = error?.data?.message || 'Unable to save preferences.';
             message.error(errorMsg);
         } finally {
             setIsLoading(false);

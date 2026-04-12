@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Tag, Table, Input, ConfigProvider, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 export default function Logging() {
     const [logs, setLogs] = useState([]);
@@ -12,10 +12,10 @@ export default function Logging() {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const response = await axiosInstance.get('/logs/get-logs', {
+                const response = await apiFetch.get('/logs/get-logs', {
                     withCredentials: true
                 });
-                setLogs(response.data);
+                setLogs(response || []);
                 setLoading(false);
             } catch (err) {
                 console.error("Failed to fetch logs", err);

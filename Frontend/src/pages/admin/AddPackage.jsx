@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Input, Button, Card, DatePicker, Select, Space, message, ConfigProvider, Spin } from "antd";
 import { UploadOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addpackage.css";
 import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
@@ -474,7 +474,7 @@ export default function AddPackage() {
     });
 
     try {
-      const res = await axiosInstance.post(
+      const res = await apiFetch.post(
         "/upload/upload-package-images",
         formData,
         {
@@ -484,7 +484,7 @@ export default function AddPackage() {
         }
       );
 
-      return res.data.urls;
+      return res.urls;
     } catch (error) {
       console.error("Upload failed:", error);
       return [];
@@ -611,13 +611,13 @@ export default function AddPackage() {
 
     try {
       if (isEdit) {
-        await axiosInstance.put(`/package/update-package/${id}`, payload);
+        await apiFetch.put(`/package/update-package/${id}`, payload);
       } else {
-        await axiosInstance.post("/package/add-package", payload);
+        await apiFetch.post("/package/add-package", payload);
       }
       navigate(`${basePath}/packages`);
     } catch (err) {
-      setBackEndErrors(err.response?.data || err.message);
+      setBackEndErrors(err.data || err.message);
       console.error("Failed to save package:", err);
     } finally {
       setSavingPackage(false);
@@ -631,8 +631,7 @@ export default function AddPackage() {
     const getPackage = async () => {
       setLoadingPackage(true);
       try {
-        const res = await axiosInstance.get(`/package/get-package/${id}`);
-        const pkg = res.data;
+        const pkg = await apiFetch.get(`/package/get-package/${id}`);
 
         setValues((prev) => ({
           ...prev,
@@ -667,7 +666,7 @@ export default function AddPackage() {
 
       } catch (err) {
         console.error("Failed to load package", err);
-        setBackEndErrors(err.response?.data || err.message);
+        setBackEndErrors(err.data || err.message);
       } finally {
         setLoadingPackage(false);
       }

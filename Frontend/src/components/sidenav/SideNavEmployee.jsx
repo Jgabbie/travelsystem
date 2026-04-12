@@ -2,7 +2,7 @@ import { Layout } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import "../../style/components/sidenav.css";
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import socket, { isSocketEnabled } from "../../config/socket";
 
 const { Sider } = Layout;
@@ -60,22 +60,22 @@ export default function SideNavEmployee() {
                     passportResponse,
                     visaResponse,
                 ] = await Promise.all([
-                    axiosInstance.get("/booking/all-bookings"),
-                    axiosInstance.get("/booking/cancellations"),
-                    axiosInstance.get("/transaction/all-transactions"),
-                    axiosInstance.get("/quotation/all-quotations"),
-                    axiosInstance.get("/rating/all-ratings"),
-                    axiosInstance.get("/passport/applications"),
-                    axiosInstance.get("/visa/applications"),
+                    apiFetch.get("/booking/all-bookings"),
+                    apiFetch.get("/booking/cancellations"),
+                    apiFetch.get("/transaction/all-transactions"),
+                    apiFetch.get("/quotation/all-quotations"),
+                    apiFetch.get("/rating/all-ratings"),
+                    apiFetch.get("/passport/applications"),
+                    apiFetch.get("/visa/applications"),
                 ]);
 
-                const bookings = bookingResponse.data || [];
-                const cancellations = cancellationResponse.data || [];
-                const transactions = transactionResponse.data || [];
-                const quotations = quotationResponse.data || [];
-                const ratings = ratingResponse.data || [];
-                const passports = passportResponse.data || [];
-                const visas = visaResponse.data || [];
+                const bookings = bookingResponse || [];
+                const cancellations = cancellationResponse || [];
+                const transactions = transactionResponse || [];
+                const quotations = quotationResponse || [];
+                const ratings = ratingResponse || [];
+                const passports = passportResponse || [];
+                const visas = visaResponse || [];
 
                 const latestBooking = getLatestValue(bookings, "createdAt");
                 const latestCancellation = getLatestValue(cancellations, "cancellationDate");

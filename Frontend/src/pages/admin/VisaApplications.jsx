@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import axiosInstance from "../../config/axiosConfig";
+import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/visaapplications.css";
 
 
@@ -38,9 +38,9 @@ export default function VisaApplications() {
     useEffect(() => {
         const loadApplications = async () => {
             try {
-                const response = await axiosInstance.get('/visa/applications')
+                const response = await apiFetch.get('/visa/applications')
 
-                const applications = response.data.map((a) => ({
+                const applications = response.map((a) => ({
                     key: a._id,
                     applicationNumber: a.applicationNumber,
                     applicantName: a.applicantName,
@@ -52,7 +52,7 @@ export default function VisaApplications() {
 
                 setApplications(applications)
             } catch (error) {
-                const errorMessage = error?.response?.data?.message || 'Unable to load visa applications.'
+                const errorMessage = error?.data?.message || 'Unable to load visa applications.'
                 message.error(errorMessage)
                 setApplications([])
             }

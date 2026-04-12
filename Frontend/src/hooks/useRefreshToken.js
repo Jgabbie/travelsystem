@@ -1,16 +1,16 @@
-import axiosInstance from "../config/axiosConfig";
+import apiFetch from "../config/fetchConfig";
 import { useAuth } from "./useAuth";
 
 const useRefreshToken = () => {
     const { setAuth } = useAuth();
     const refresh = async () => {
-        const response = await axiosInstance.get('/auth/refresh', { withCredentials: true });
+        const response = await apiFetch.get('/auth/refresh', { withCredentials: true });
         setAuth(prev => {
             console.log("Prev auth:", prev);
-            console.log("New access token:", response.data.accessToken);
-            return { ...prev, accessToken: response.data.accessToken }
+            console.log("New access token:", response.accessToken);
+            return { ...prev, accessToken: response.accessToken }
         });
-        return response.data.accessToken;
+        return response.accessToken;
     }
     return refresh;
 }

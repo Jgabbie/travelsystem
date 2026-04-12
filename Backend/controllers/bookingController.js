@@ -6,7 +6,7 @@ const PackageModel = require('../models/package')
 const NotificationModel = require('../models/notification')
 const UserModel = require('../models/user')
 const transporter = require('../config/nodemailer')
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs');
 
@@ -61,7 +61,7 @@ const createBooking = async (req, res) => {
 
         console.log("New booking created:", newBooking)
 
-        const token = uuidv4();
+        const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
             token,

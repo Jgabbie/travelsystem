@@ -4,16 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
 import { useAuth } from '../../hooks/useAuth';
-import { useLogin } from '../../hooks/login/useLogin';
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 
 
 export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, onOpenSignup }) {
 
     const navigate = useNavigate();
     const { setAuth } = useAuth();
-
-
 
     const [values, setValues] = useState({
         username: '',
@@ -70,60 +67,68 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
         setIsLoading(true);
         try {
-            const response = await axiosInstance.post(
-                '/auth/loginUser',
-                { username: values.username, password: values.password }
-            )
-            if (onLoginSuccess) {
-                const userData = response.data.user;
-                const userRole = userData?.role;
-                console.log("userRole:", userRole)
+            const response = await apiFetch('/auth/loginUser', {
+                method: 'POST',
+                body: JSON.stringify({ username: values.username, password: values.password })
+            });
+
+            console.log("Login response:", response);
+
+            if (response) {
+                if (onLoginSuccess) {
+                    const userData = response.user;
+                    const userRole = userData?.role;
+                    console.log("userRole:", userRole)
+                    setIsLoading(false);
+
+                    if (userData) {
+                        setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
+                    }
+
+                    message.success('Login successful');
+                    if (userRole === 'Admin') {
+                        navigate('/dashboard')
+                    } else if (userRole === 'Employee') {
+                        navigate('/employee/dashboard')
+                    } else if (userData && !userData.loginOnce) {
+                        navigate('/user-preferences')
+                    } else {
+                        navigate('/home')
+                    }
+
+                    isCloseLogin()
+                    onLoginSuccess()
+                    clearForm()
+                }
+
                 setIsLoading(false);
-
-                if (userData) {
-                    setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
-                }
-
-                message.success('Login successful');
-                if (userRole === 'Admin') {
-                    navigate('/dashboard')
-                } else if (userRole === 'Employee') {
-                    navigate('/employee/dashboard')
-                } else if (userData && !userData.loginOnce) {
-                    navigate('/user-preferences')
-                } else {
-                    navigate('/home')
-                }
-
-                isCloseLogin()
-                onLoginSuccess()
-                clearForm()
             }
-
-            setIsLoading(false);
 
         } catch (err) {
 
-            const status = err.response?.status;
-            const data = err.response?.data;
+            const status = err.status;
+            const data = err.data;
 
             if (status === 403) {
                 try {
                     const email = data.email
-                    await axiosInstance.post('auth/send-verify-otp', { email: email })
+                    await apiFetch('/auth/send-verify-otp', {
+                        method: 'POST',
+                        body: JSON.stringify({ email: email })
+                    })
                     setEmail(email)
                     setIsLoading(false);
                     setIsOTPModalVisible(true)
                     return
                 } catch (error) {
-                    const errorMsg = error.response?.data?.message || "Verification failed"
+                    const errorMsg = error.data?.message || "Verification failed"
                     console.error("Error: ", errorMsg)
                     setError(errorMsg)
                     setIsLoading(false);
                     return
                 }
             }
-            const errorMsg = err.response?.data?.message || 'Login failed';
+            const errorMsg = err.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
             message.error(errorMsg);
@@ -136,19 +141,21 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         e.preventDefault()
 
         try {
-            const response = await axiosInstance.post('auth/verify-account', { otp: getOTP, email: email, username: values.username, password: values.password }, { withCredentials: true })
+            const response = await apiFetch('/auth/verify-account', {
+                method: 'POST',
+                body: JSON.stringify({ otp: getOTP, email: email, username: values.username, password: values.password })
+            });
 
-            if (response.data.success || response.status === 200) {
+            if (response?.success) {
                 setOTP("")
                 setIsOTPModalVisible(false)
                 setIsVerifiedModalOpen(false)
-
                 try {
-                    const loginResponse = await axiosInstance.post(
-                        '/auth/loginUser',
-                        { username: values.username, password: values.password }
-                    )
-                    const userData = loginResponse.data.user
+                    const loginResponse = await apiFetch('/auth/loginUser', {
+                        method: 'POST',
+                        body: JSON.stringify({ username: values.username, password: values.password })
+                    });
+                    const userData = loginResponse.user
                     if (userData) {
                         setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce })
                         clearForm()
@@ -157,13 +164,13 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                         navigate('/user-preferences')
                     }
                 } catch (loginError) {
-                    console.error("Auto login after verification failed:", loginError.response?.data?.message || loginError.message)
+                    console.error("Auto login after verification failed:", loginError.data?.message || loginError.message)
                 }
 
 
             }
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorOTP(errorMsg)
         }
@@ -173,11 +180,14 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            await axiosInstance.post('auth/send-verify-otp', { email: email })
+            await apiFetch('/auth/send-verify-otp', {
+                method: 'POST',
+                body: JSON.stringify({ email: email })
+            })
             alert("OTP sent!")
             setTimer(60)
         } catch (err) {
-            const errorMsg = err.response?.data?.message || "Verification failed"
+            const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             alert(errorMsg)
         }

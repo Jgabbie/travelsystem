@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import axiosInstance from '../config/axiosConfig';
+import apiFetch from '../config/fetchConfig';
 
 
 const AuthContext = createContext(null);
@@ -11,11 +11,11 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = useCallback(async () => {
         setAuthLoading(true);
         try {
-            const res = await axiosInstance.get('/auth/is-auth', {
+            const res = await apiFetch.get('/auth/is-auth', {
                 withCredentials: true
             });
 
-            const { user } = res.data;
+            const { user } = res;
             setAuth({
                 id: user.id,
                 username: user.username,

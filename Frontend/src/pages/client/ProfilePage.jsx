@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs'
-import axiosInstance from '../../config/axiosConfig';
+import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
 import '../../style/client/userpreference.css';
 import TopNavUser from '../../components/topnav/TopNavUser';
@@ -75,7 +75,7 @@ export default function ProfilePage() {
 
     const savePreferences = async () => {
         try {
-            await axiosInstance.post('/preferences/save', {
+            await apiFetch.post('/preferences/save', {
                 userId: userData._id,
                 moods: preferences.moods,
                 tours: preferences.tours
@@ -85,7 +85,7 @@ export default function ProfilePage() {
             message.success('Preferences saved successfully!');
         } catch (error) {
             console.error('Error saving preferences:', error);
-            const errorMsg = error?.response?.data?.message || 'Failed to save preferences';
+            const errorMsg = error?.data?.message || 'Failed to save preferences';
             message.error(errorMsg);
         }
     };
@@ -156,9 +156,9 @@ export default function ProfilePage() {
     useEffect(() => {
         const fetchPreferences = async () => {
             try {
-                const response = await axiosInstance.get("/preferences/me", { withCredentials: true });
-                if (response.status === 200) {
-                    const data = response.data.preferrences;
+                const response = await apiFetch.get("/preferences/me", { withCredentials: true });
+                if (response?.preferrences) {
+                    const data = response.preferrences;
                     setPreferences({
                         moods: data.moods || [],
                         tours: data.tours || []
@@ -175,12 +175,12 @@ export default function ProfilePage() {
 
         const fetchUserData = async () => {
             try {
-                const response = await axiosInstance.get('/user/data', {
+                const response = await apiFetch.get('/user/data', {
                     withCredentials: true
                 })
 
-                if (response.status === 200) {
-                    const data = response.data
+                if (response?.userData) {
+                    const data = response
                     setUserData(data.userData)
                     setProfileImage(
                         data.userData?.profileImageUrl ||
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                         birthdate: data.userData.birthdate || '',
                         nationality: data.userData.nationality || ''
                     })
-                } else if (response.status === 401) {
+                } else if (response?.status === 401) {
                     message.error('Please login to view your profile')
                 } else {
                     message.error('Failed to fetch user data')
@@ -212,8 +212,8 @@ export default function ProfilePage() {
 
         const fetchRecentBookings = async () => {
             try {
-                const response = await axiosInstance.get('/booking/my-bookings')
-                const bookings = response.data.map((b) => ({
+                const response = await apiFetch.get('/booking/my-bookings')
+                const bookings = response.map((b) => ({
                     _id: b._id,
                     key: b._id,
                     ref: b.reference || b._id,
@@ -241,8 +241,8 @@ export default function ProfilePage() {
 
         const fetchRecentReviews = async () => {
             try {
-                const response = await axiosInstance.get('/rating/my-ratings')
-                const reviews = response.data.map((r) => ({
+                const response = await apiFetch.get('/rating/my-ratings')
+                const reviews = response.map((r) => ({
                     key: r._id,
                     packageName: r.packageId?.packageName || 'Untitled Review',
                     rating: r.rating || 0,
@@ -317,7 +317,7 @@ export default function ProfilePage() {
             const formData = new FormData()
             formData.append("file", file)
 
-            const res = await axiosInstance.post(
+            const res = await apiFetch.post(
                 "/upload/upload-profile-picture",
                 formData,
                 {
@@ -326,7 +326,7 @@ export default function ProfilePage() {
                 }
             )
 
-            const imageUrl = res.data.url
+            const imageUrl = res.url
 
             // save Cloudinary URL
             setProfileImage(imageUrl)
@@ -355,7 +355,7 @@ export default function ProfilePage() {
         }
         try {
             setSaving(true)
-            const response = await axiosInstance.put('/user/data', {
+            const response = await apiFetch.put('/user/data', {
                 firstname: values.firstname,
                 lastname: values.lastname,
                 email: values.email,
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                 }
             })
 
-            const data = response.data
+            const data = response
             setUserData(data.userData)
             setProfileImage(
                 data.userData?.profileImageUrl ||
@@ -392,7 +392,7 @@ export default function ProfilePage() {
             message.success('Profile updated successfully!')
         } catch (error) {
             console.error('Error updating profile:', error)
-            const apiMessage = error?.response?.data?.message
+            const apiMessage = error?.data?.message
             message.error(apiMessage || 'Error updating profile')
         } finally {
             setSaving(false)

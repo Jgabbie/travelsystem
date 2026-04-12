@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
-import axiosInstance from '../../config/axiosConfig'
+import apiFetch from '../../config/fetchConfig'
 import TopNavUser from '../../components/topnav/TopNavUser'
 
 
@@ -25,17 +25,17 @@ export default function DestinationsPackages() {
         const fetchPackages = async () => {
             setLoading(true)
             try {
-                const response = await axiosInstance.get('/package/get-packages-for-users')
-                const ratingResponse = await axiosInstance.get('/rating/average-ratings')
+                const response = await apiFetch.get('/package/get-packages-for-users')
+                const ratingResponse = await apiFetch.get('/rating/average-ratings')
 
                 const ratingMap = new Map(
-                    (ratingResponse.data?.averages || []).map((item) => [
+                    (ratingResponse?.averages || []).map((item) => [
                         String(item.packageId),
                         Number(item.averageRating || 0)
                     ])
                 )
 
-                const packages = response.data.map((pkg) => {
+                const packages = response.map((pkg) => {
                     const rating = ratingMap.get(String(pkg._id)) || 0
                     // const availableSlots = Array.isArray(pkg.packageSpecificDate)
                     //     ? pkg.packageSpecificDate.reduce((sum, entry) => sum + (Number(entry?.slots) || 0), 0)
