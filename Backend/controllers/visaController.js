@@ -109,6 +109,53 @@ const updateVisaApplicationWithDocs = async (req, res) => {
     }
 
 }
+
+//REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------
+const requestVisaDocumentResubmission = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const application = await VisaModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Visa application not found" });
+        }
+
+        application.submittedDocuments = {};
+        application.status = "Payment complete";
+        await application.save();
+
+        const user = await UserModel.findById(application.userId);
+        if (user) {
+            await NotificationModel.create({
+                userId: user._id,
+                title: "Visa documents resubmission requested",
+                message: "Please resubmit your visa documents for your application.",
+                type: "visa",
+                link: "/user-applications",
+                metadata: { applicationId: application._id }
+            });
+
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: "Visa documents resubmission requested",
+                html: `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #305797;">Visa documents resubmission requested</h2>
+                        <p>Hello ${user.firstname || user.username},</p>
+                        <p>Our team needs you to resubmit your visa documents for your application.</p>
+                        <p>Please log in to your account to upload the updated documents.</p>
+                    </div>
+                `
+            });
+        }
+
+        res.status(200).json({ message: "Resubmission requested", application });
+    } catch (error) {
+        console.error("Error requesting visa document resubmission:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
 const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
@@ -383,6 +430,7 @@ module.exports = {
     getUserVisaApplications,
     getVisaApplicationById,
     updateVisaApplicationWithDocs,
+    requestVisaDocumentResubmission,
     suggestAppointmentSchedules,
     chosenSuggestedSchedule,
     passportReleaseOptionUpdate,

@@ -10,16 +10,16 @@ const { Title } = Typography;
 
 //STATUS STEPS FOR PASSPORT APPLICATION
 const statusSteps = [
-    { title: "Application submitted", summary: "Application submitted" },
-    { title: "Application approved", summary: "Application approved" },
-    { title: "Payment complete", summary: "Payment complete" },
-    { title: "Documents uploaded", summary: "Documents uploaded" },
-    { title: "Documents approved", summary: "Documents approved" },
-    { title: "Documents received", summary: "Documents received" },
-    { title: "Documents submitted", summary: "Documents submitted" },
+    { title: "Application Submitted", summary: "Application Submitted" },
+    { title: "Application Approved", summary: "Application Approved" },
+    { title: "Payment Complete", summary: "Payment Complete" },
+    { title: "Documents Uploaded", summary: "Documents Uploaded" },
+    { title: "Documents Approved", summary: "Documents Approved" },
+    { title: "Documents Received", summary: "Documents Received" },
+    { title: "Documents Submitted", summary: "Documents Submitted" },
     { title: "Processing by DFA", summary: "Processing by DFA" },
-    { title: "DFA approved", summary: "DFA approved" },
-    { title: "Passport released", summary: "Passport released" },
+    { title: "DFA Approved", summary: "DFA Approved" },
+    { title: "Passport Released", summary: "Passport Released" },
 ];
 
 export default function ViewPassportApplication() {
@@ -60,6 +60,30 @@ export default function ViewPassportApplication() {
         } catch (error) {
             setIsSubmittingSlots(false);
             message.error("Failed to submit appointment options.");
+        }
+    };
+
+    const handleResubmitDocuments = async () => {
+        if (isUpdatingStatus) return;
+
+        try {
+            setIsUpdatingStatus(true);
+            await apiFetch.put(`/passport/applications/${id}/resubmit-documents`);
+            setApplication((prev) => ({ ...prev, status: "Payment complete" }));
+
+            const statusMap = statusSteps.reduce((acc, step, idx) => {
+                acc[step.title] = idx;
+                return acc;
+            }, {});
+            if (statusMap["Payment complete"] !== undefined) {
+                setCurrentStep(statusMap["Payment complete"]);
+            }
+
+            message.success("Status updated to Payment complete");
+        } catch (error) {
+            message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
         }
     };
 
@@ -503,6 +527,15 @@ export default function ViewPassportApplication() {
                                         No documents submitted.
                                     </div>
                                 )}
+                                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                                    <Button
+                                        type="primary"
+                                        onClick={handleResubmitDocuments}
+                                        disabled={application?.status?.toLowerCase() === "payment complete" || isUpdatingStatus}
+                                    >
+                                        Resubmit Documents
+                                    </Button>
+                                </div>
                             </Card>
                         </div>
 

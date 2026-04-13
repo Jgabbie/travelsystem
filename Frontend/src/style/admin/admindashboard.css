@@ -11,7 +11,7 @@
 
 .dash-card h2 {
   font-size: 34px;
-  color: #1e3a8a;
+  color: #000000d2;
 }
 
 .dashboard-section {
@@ -37,6 +37,7 @@
 
 .dashboard-chart-card {
   border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .dashboard-chart-header h2 {
@@ -63,10 +64,10 @@
 .dash-card-content-horizontal {
   display: flex;
   align-items: center;
-  /* vertically center everything */
   justify-content: space-between;
-  /* push label and icon+number apart */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
+
 
 .dash-card {
   border-radius: 16px;
@@ -90,7 +91,7 @@
 
 .dash-icon {
   font-size: 32px;
-  color: #305797;
+  color: #000000d2;
   margin-bottom: 15px;
 }
 
@@ -103,7 +104,7 @@
 .dash-text-vertical h2 {
   margin: 0;
   font-size: 28px;
-  color: #1e3a8a;
+  color: #305797;
   line-height: 1.1;
 }
 
@@ -111,7 +112,7 @@
 
 .top-package-card {
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .top-package-card-number {
@@ -139,7 +140,7 @@
 
 .top-duration-card {
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .top-duration-name {

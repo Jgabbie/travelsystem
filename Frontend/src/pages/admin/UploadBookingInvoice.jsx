@@ -92,6 +92,9 @@ export default function UploadBookingInvoice() {
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
     const reference = booking?.reference || booking?.ref || booking?._id || "--";
+    const logoUrl = typeof window !== "undefined"
+        ? `${window.location.origin}/images/Logo.png`
+        : "/images/Logo.png";
 
     const stepsToCapture = [0, 1, 2, 3];
 
@@ -431,7 +434,7 @@ export default function UploadBookingInvoice() {
             <Page size="A4" style={styles.page}>
                 <View style={styles.header}>
                     <View style={styles.headerCompany}>
-                        <Image src={"images/Logo.png"} style={styles.logo} />
+                        <Image src={logoUrl} style={styles.logo} />
                         <View>
                             <Text style={styles.brand}>{invoice.company.name}</Text>
                             <Text style={styles.muted}>{invoice.company.address}</Text>

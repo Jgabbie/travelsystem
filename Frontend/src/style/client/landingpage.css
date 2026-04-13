@@ -1,19 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
-
-/* html,
-body {
-    background-color: #F5F8FF;
-    min-height: 100vh;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto !important;
-    scroll-behavior: smooth;
-    margin: 0;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-} */
-
 .landing-container {
     font-family: 'Arial', sans-serif;
     color: #333;
@@ -32,6 +19,7 @@ body {
     height: 600px;
     background-image: url('/public/images/LandingPage_Banner.png');
     background-position: center;
+    background-size: cover;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -118,7 +106,7 @@ body {
     color: #fff;
     border-radius: 10px;
     width: 70px;
-    height: 70px;
+    height: 50px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }

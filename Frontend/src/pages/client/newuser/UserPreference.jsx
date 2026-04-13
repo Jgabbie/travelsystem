@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message, Spin, ConfigProvider } from 'antd';
 import apiFetch from '../../../config/fetchConfig';
@@ -6,19 +6,7 @@ import '../../../style/client/userpreference.css';
 
 export default function UserPreference() {
     const navigate = useNavigate();
-    const moodOptions = useMemo(
-        () => [
-            'Beach',
-            'Island Hopping',
-            'Cultural',
-            'Summer',
-            'Winter',
-            'Sightseeing',
-            'Hiking',
-            'City'
-        ],
-        []
-    );
+    const [moodOptions, setMoodOptions] = useState([]);
 
     const tourOptions = useMemo(
         () => [
@@ -29,6 +17,22 @@ export default function UserPreference() {
     );
 
     const [isLoading, setIsLoading] = useState(false);
+    useEffect(() => {
+        const fetchTags = async () => {
+            try {
+                const response = await apiFetch.get('/package/get-packages-for-users');
+                const unique = new Set();
+                (response || []).forEach((pkg) => {
+                    pkg.packageTags?.forEach((tag) => unique.add(tag));
+                });
+                setMoodOptions(Array.from(unique));
+            } catch (error) {
+                setMoodOptions([]);
+            }
+        };
+
+        fetchTags();
+    }, []);
     const [selections, setSelections] = useState({
         moods: [],
         tours: [],

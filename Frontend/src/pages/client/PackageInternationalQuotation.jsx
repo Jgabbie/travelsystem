@@ -273,6 +273,7 @@ export default function PackageInternationalQuotation() {
                 <Spin spinning={loading} tip="Loading package details..." size="large">
                     <div className="quotation-container">
                         <Button
+                            type="primary"
                             icon={<ArrowLeftOutlined />}
                             onClick={() => navigate(-1)}
                             className="back-button"

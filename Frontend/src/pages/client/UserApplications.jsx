@@ -42,7 +42,12 @@ export default function UserApplications() {
                     date: app.createdAt,
                     details: app,
                 }));
-                setApplications([...passportApps, ...visaApps]);
+                const combined = [...passportApps, ...visaApps].sort((a, b) => {
+                    const aDate = a.date ? new Date(a.date).getTime() : 0;
+                    const bDate = b.date ? new Date(b.date).getTime() : 0;
+                    return bDate - aDate;
+                });
+                setApplications(combined);
             } catch (err) {
                 message.error('Unable to load applications');
                 setApplications([]);
@@ -73,7 +78,29 @@ export default function UserApplications() {
 
         return matchesSearch && matchesType && matchesStatus && matchesDate;
     });
-    // Status color mapping
+
+    const statusColorMap = {
+        Pending: 'orange',
+        Approved: 'green',
+        Disapproved: 'red',
+        'Payment complete': 'blue',
+        'Documents uploaded': 'gold',
+        'Documents approved': 'green',
+        'Documents received': 'cyan',
+        'Documents submitted': 'purple',
+        'Processing DFA': 'geekblue'
+    };
+
+    const fallbackColors = ['magenta', 'volcano', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
+    const getStatusColor = (value) => {
+        if (!value) return 'default';
+        if (statusColorMap[value]) return statusColorMap[value];
+        let hash = 0;
+        for (let i = 0; i < value.length; i += 1) {
+            hash = (hash * 31 + value.charCodeAt(i)) % fallbackColors.length;
+        }
+        return fallbackColors[hash];
+    };
 
     const columns = [
         { title: 'Reference', dataIndex: 'ref', key: 'ref' },
@@ -81,7 +108,7 @@ export default function UserApplications() {
         {
             title: 'Type', dataIndex: 'type', key: 'type'
         },
-        { title: 'Status', dataIndex: 'status', key: 'status', render: (value) => <Tag>{value}</Tag> },
+        { title: 'Status', dataIndex: 'status', key: 'status', render: (value) => <Tag color={getStatusColor(String(value || ''))}>{value}</Tag> },
         { title: 'Application Date', dataIndex: 'date', key: 'date', render: (value) => dayjs(value).format('MMM D, YYYY') },
         {
             title: 'Actions', key: 'actions', render: (_, record) => (

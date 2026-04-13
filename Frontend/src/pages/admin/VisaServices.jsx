@@ -207,7 +207,7 @@ export default function VisaServices() {
                     footer={null}
                     open={isModalOpen}
                     onCancel={() => { handleCancel() }}
-                    className="package-details-modal visa-details-modal"
+                    className="package-details-modal visa-details-modal cancellation-view-modal"
                     width={820}
                 >
                     {selectedService && (

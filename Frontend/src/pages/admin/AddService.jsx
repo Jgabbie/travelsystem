@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Input, Button, Card, Space, message, ConfigProvider, Select } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addservice.css";
@@ -27,7 +27,7 @@ export default function AddService() {
         visaName: "",
         description: "",
         visaPrice: "",
-        requirements: [{ req: "", desc: "", isReq: "" }],
+        requirements: [{ req: "", desc: "", isReq: "", applicationLink: "" }],
         processSteps: [""],
         reminders: [""],
         additionalRequirements: [{
@@ -188,7 +188,7 @@ export default function AddService() {
             visaName: values.visaName.trim(),
             visaPrice: Number(values.visaPrice),
             visaDescription: values.description.trim(),
-            visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim(), isReq: item.isReq })),
+            visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim(), isReq: item.isReq, applicationLink: item.applicationLink.trim() })),
             visaProcessSteps: values.processSteps.map((item) => item.trim()),
             visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0),
             visaAdditionalRequirements: hasAdditionalRequirements
@@ -227,8 +227,8 @@ export default function AddService() {
                     visaPrice: existing.visaPrice || "",
                     description: existing.visaDescription || "",
                     requirements: existing.visaRequirements?.length
-                        ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "" })
-                        : [{ req: "", desc: "", isReq: "" }],
+                        ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "", applicationLink: item.applicationLink || "" })
+                        : [{ req: "", desc: "", isReq: "", applicationLink: "" }],
                     processSteps: existing.visaProcessSteps?.length ? existing.visaProcessSteps : [""],
                     reminders: Array.isArray(existing.visaReminders)
                         ? (existing.visaReminders.length ? existing.visaReminders : [""])
@@ -276,18 +276,15 @@ export default function AddService() {
                 }
             }}
         >
+
             <div>
-                <Card className="add-service-form">
-                    <div className="add-service-header-container">
-                        <h1>{isEdit ? "Edit Visa Service" : "Add Visa Service"}</h1>
-                        <Button className="back-add-service-button" onClick={() => navigate(`${basePath}/visa-services`)}>
-                            Back to Visa Services
-                        </Button>
-                    </div>
-
-                    <div className="add-service-container">
-                        <h2 className="section-headers">Visa Information</h2>
-
+                <Button style={{ marginBottom: 20, width: 120 }} type="primary" className="back-add-service-button backsubmit-button" onClick={() => navigate(`${basePath}/visa-services`)}>
+                    <ArrowLeftOutlined />
+                    Back
+                </Button>
+                <h1>{isEdit ? "Edit Visa Service" : "Add Visa Service"}</h1>
+                <div className="add-service-container">
+                    <Card title="Basic Information" className={errors.visaName || errors.description || errors.visaPrice ? "add-service-card-error" : ""}>
                         <label className="add-service-input-labels">Visa Name</label>
                         <Input
                             status={errors.visaName ? "error" : ""}
@@ -345,110 +342,132 @@ export default function AddService() {
                             />
                             <p className="add-service-error-message">{errors.description}</p>
                         </div>
+                    </Card>
+
+                    <h2 className="section-headers">Requirements and Process</h2>
+
+                    <div className="add-service-grid">
+                        <div>
+                            <Card
+                                size="small"
+                                title="Requirements"
+                                className={errors.requirements ? "add-service-card-error" : ""}
+                            >
+                                {values.requirements.map((item, index) => (
+                                    <div key={`req-${index}`} className="add-service-bullet-row" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                        <Space style={{ width: '100%' }}>
+                                            <div>
+                                                <label className="add-service-input-labels">Requirement Name</label>
+                                                <Space>
+                                                    <Input
+                                                        value={item.req}
+                                                        className="add-service-inputs"
+                                                        placeholder="Requirement"
+                                                        onChange={(event) => updateBullet("requirements", index, event.target.value, "req")}
+                                                        style={{ flex: 1, minWidth: 520 }}
+                                                    />
+
+                                                    <Button
+                                                        type="primary"
+                                                        className="delete-add-service-button delete-button"
+                                                        onClick={() => removeBullet("requirements", index)}
+                                                        icon={<DeleteOutlined />}
+                                                    />
+                                                </Space>
+
+                                            </div>
 
 
-                        <h2 className="section-headers">Requirements and Process</h2>
+                                        </Space>
+                                        <label className="add-service-input-labels">Required or Optional</label>
+                                        <Select
+                                            value={item.isReq}
+                                            className="add-service-inputs"
+                                            placeholder="Requirement Type"
+                                            onChange={(value) => updateBullet("requirements", index, value, "isReq")}
+                                            style={{ flex: 1, minWidth: 520 }}
+                                            options={[
+                                                { value: "Required", label: "Required (For General Applicants)" },
+                                                { value: "Optional", label: "Optional" }
+                                            ]}
+                                        />
 
-                        <div className="add-service-grid">
-                            <div>
-                                <Card
-                                    size="small"
-                                    title="Requirements"
-                                    className={errors.requirements ? "add-service-card-error" : ""}
-                                >
-                                    {values.requirements.map((item, index) => (
-                                        <div key={`req-${index}`} className="add-service-bullet-row" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                            <Space style={{ width: '100%' }}>
-                                                <Input
-                                                    value={item.req}
-                                                    className="add-service-inputs"
-                                                    placeholder="Requirement"
-                                                    onChange={(event) => updateBullet("requirements", index, event.target.value, "req")}
-                                                    style={{ flex: 1, minWidth: 520 }}
-                                                />
-                                                <Button
-                                                    className="delete-add-service-button"
-                                                    danger
-                                                    onClick={() => removeBullet("requirements", index)}
-                                                    icon={<DeleteOutlined />}
-                                                />
-
-                                            </Space>
-                                            <Select
-                                                value={item.isReq}
-                                                className="add-service-inputs"
-                                                placeholder="Requirement Type"
-                                                onChange={(value) => updateBullet("requirements", index, value, "isReq")}
-                                                style={{ flex: 1, minWidth: 520 }}
-                                                options={[
-                                                    { value: "Required", label: "Required (For General Applicants)" },
-                                                    { value: "Optional", label: "Optional" }
-                                                ]}
-                                            />
+                                        <div>
+                                            <label className="add-service-input-labels">Requirement Description</label>
                                             <Input.TextArea
                                                 value={item.desc}
                                                 className="add-service-inputs"
                                                 placeholder="Description (optional)"
-                                                autoSize={{ maxRows: 4 }}
+                                                autoSize={{ minRows: 3, maxRows: 5 }}
+                                                maxLength={350}
                                                 onChange={(event) => updateBullet("requirements", index, event.target.value, "desc")}
                                                 style={{ marginTop: 2 }}
                                             />
                                         </div>
-                                    ))}
-                                    <Button
-                                        className="add-service-add-button"
-                                        type="dashed"
-                                        icon={<PlusOutlined />}
-                                        block
-                                        onClick={() => addBullet("requirements")}
-                                    >
-                                        Add Requirement
-                                    </Button>
-                                </Card>
-                                <p className="add-service-error-message">{errors.requirements}</p>
-                            </div>
 
-                            <div>
-                                <Card
-                                    size="small"
-                                    title="Process"
-                                    className={errors.processSteps ? "add-service-card-error" : ""}
-                                >
-                                    {values.processSteps.map((item, index) => (
-                                        <Space key={`step-${index}`} className="add-service-bullet-row">
+
+                                        <div>
+                                            <label className="add-service-input-labels">Application Link</label>
                                             <Input
-                                                value={item}
+                                                value={item.applicationLink}
                                                 className="add-service-inputs"
-                                                placeholder="Process step"
-                                                onChange={(event) => updateBullet("processSteps", index, event.target.value)}
+                                                placeholder="ApplicationLink (optional)"
+                                                onChange={(event) => updateBullet("requirements", index, event.target.value, "applicationLink")}
                                             />
-                                            <Button
-                                                className="delete-add-service-button"
-                                                danger
-                                                onClick={() => removeBullet("processSteps", index)}
-                                                icon={<DeleteOutlined />}
-                                            />
-                                        </Space>
-                                    ))}
-                                    <Button
-                                        className="add-service-add-button"
-                                        type="dashed"
-                                        icon={<PlusOutlined />}
-                                        block
-                                        onClick={() => addBullet("processSteps")}
-                                    >
-                                        Add Process Step
-                                    </Button>
-                                </Card>
-                                <p className="add-service-error-message">{errors.processSteps}</p>
-                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button
+                                    className="add-service-add-button highlighted-button"
+                                    type="primary"
+                                    icon={<PlusOutlined />}
+                                    block
+                                    onClick={() => addBullet("requirements")}
+                                >
+                                    Add Requirement
+                                </Button>
+                            </Card>
+                            <p className="add-service-error-message">{errors.requirements}</p>
                         </div>
 
+                        <div>
+                            <Card
+                                size="small"
+                                title="Process"
+                                className={errors.processSteps ? "add-service-card-error" : ""}
+                            >
+                                {values.processSteps.map((item, index) => (
+                                    <Space key={`step-${index}`} className="add-service-bullet-row">
+                                        <Input
+                                            value={item}
+                                            className="add-service-inputs"
+                                            placeholder="Process step"
+                                            onChange={(event) => updateBullet("processSteps", index, event.target.value)}
+                                        />
+                                        <Button
+                                            className="delete-add-service-button delete-button"
+                                            type="primary"
+                                            onClick={() => removeBullet("processSteps", index)}
+                                            icon={<DeleteOutlined />}
+                                        />
+                                    </Space>
+                                ))}
+                                <Button
+                                    className="add-service-add-button highlighted-button"
+                                    type="primary"
+                                    icon={<PlusOutlined />}
+                                    block
+                                    onClick={() => addBullet("processSteps")}
+                                >
+                                    Add Process Step
+                                </Button>
+                            </Card>
+                            <p className="add-service-error-message">{errors.processSteps}</p>
+                        </div>
+                    </div>
 
-
-
+                    <Card title="Additional Requirements for Specific Applicants" style={{ marginTop: 24, marginBottom: 24 }} className={errors.additionalRequirements ? "add-service-card-error" : ""}>
                         <div style={{ marginTop: 24 }}>
-                            <h2 className="section-headers">Additional Requirements</h2>
                             <Card
                                 size="small"
                                 title={null}
@@ -469,23 +488,23 @@ export default function AddService() {
                                         }}
                                     >
                                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                            <h3 style={{ margin: 0 }}>Customer #{index + 1}</h3>
+                                            <h3 style={{ margin: 0 }}>Applicant</h3>
                                             <Button
-                                                className="delete-add-service-button"
-                                                danger
+                                                className="delete-add-service-button delete-button"
+                                                type="primary"
                                                 onClick={() => removeBullet("additionalRequirements", index)}
                                                 icon={<DeleteOutlined />}
                                             >
-                                                Remove Customer
+                                                Remove Applicant
                                             </Button>
                                         </div>
                                         <div className="add-service-grid">
                                             <div>
-                                                <label className="add-service-input-labels">Customer</label>
+                                                <label className="add-service-input-labels">Applicant</label>
                                                 <Input
                                                     value={item.customer}
                                                     className="add-service-inputs"
-                                                    placeholder="Customer"
+                                                    placeholder="Applicant"
                                                     onChange={(event) => updateBullet("additionalRequirements", index, event.target.value, "customer")}
                                                 />
                                             </div>
@@ -544,8 +563,8 @@ export default function AddService() {
 
                                                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                                                     <Button
-                                                        className="delete-add-service-button"
-                                                        danger
+                                                        className="delete-add-service-button delete-button"
+                                                        type="primary"
                                                         onClick={() => removeAdditionalRequirementItem(index, reqIndex)}
                                                         icon={<DeleteOutlined />}
                                                     >
@@ -556,31 +575,33 @@ export default function AddService() {
                                         ))}
 
                                         <Button
-                                            className="add-service-add-button"
-                                            type="dashed"
+                                            className="add-service-add-button highlighted-button"
+                                            type="primary"
                                             icon={<PlusOutlined />}
                                             block
                                             onClick={() => addAdditionalRequirementItem(index)}
                                         >
-                                            Add Requirement for Customer
+                                            Add Requirement for Applicant
                                         </Button>
                                     </div>
                                 ))}
                                 <Button
-                                    className="add-service-add-button"
-                                    type="dashed"
+                                    className="add-service-add-button highlighted-button"
+                                    type="primary"
                                     icon={<PlusOutlined />}
                                     block
                                     onClick={() => addBullet("additionalRequirements")}
                                 >
-                                    Add Customer
+                                    Add Applicant
                                 </Button>
                             </Card>
                         </div>
+                    </Card>
 
-                        {/* Reminders Bulleted List */}
+
+                    {/* Reminders Bulleted List */}
+                    <Card title="Reminders" style={{ marginTop: 24, marginBottom: 24 }} className={errors.reminders ? "add-service-card-error" : ""}>
                         <div style={{ marginTop: 24 }}>
-                            <label className="add-service-input-labels">Reminders</label>
                             <Card size="small" title={null} style={{ padding: 0, border: 'none', background: 'none' }}>
                                 {values.reminders.map((item, index) => (
                                     <Space key={`reminder-${index}`} className="add-service-bullet-row" style={{ width: '100%' }}>
@@ -593,16 +614,16 @@ export default function AddService() {
                                             style={{ flex: 1, minWidth: 600, maxWidth: 1100 }}
                                         />
                                         <Button
-                                            className="delete-add-service-button"
-                                            danger
+                                            className="delete-add-service-button delete-button"
+                                            type="primary"
                                             onClick={() => removeBullet("reminders", index)}
                                             icon={<DeleteOutlined />}
                                         />
                                     </Space>
                                 ))}
                                 <Button
-                                    className="add-service-add-button"
-                                    type="dashed"
+                                    className="add-service-add-button highlighted-button"
+                                    type="primary"
                                     icon={<PlusOutlined />}
                                     block
                                     onClick={() => addBullet("reminders")}
@@ -611,14 +632,15 @@ export default function AddService() {
                                 </Button>
                             </Card>
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="footer-add-services">
-                        <Button className="save-service-button" type="primary" onClick={saveService}>
-                            {isEdit ? "Update Service" : "Save Service"}
-                        </Button>
-                    </div>
-                </Card>
+                </div>
+
+                <div className="footer-add-services">
+                    <Button style={{ marginRight: 10 }} className="save-service-button backsubmit-button" type="primary" onClick={saveService}>
+                        {isEdit ? "Update Service" : "Save Service"}
+                    </Button>
+                </div>
             </div>
         </ConfigProvider>
     );

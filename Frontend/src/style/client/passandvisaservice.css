@@ -257,7 +257,7 @@
 .passandvisa-hero-section {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/PassportAndVisa_BackgroundImage.jpg');
+    background-image: url('/public/images/PassportAndVisa_BackgroundImage.png');
     background-position: center;
     display: flex;
     flex-direction: column;
@@ -274,7 +274,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .passandvisa-hero-content {

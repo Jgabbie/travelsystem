@@ -248,6 +248,38 @@ export default function ViewVisaApplication() {
         }
     };
 
+    const handleResubmitDocuments = async () => {
+        if (isUpdatingStatus) return;
+
+        try {
+            setIsUpdatingStatus(true);
+            await apiFetch.put(`/visa/applications/${id}/resubmit-documents`);
+
+            setApplication((prev) => ({
+                ...prev,
+                status: "Payment complete"
+            }));
+
+            const statusMap = (application?.visaProcessSteps || []).reduce((acc, step, idx) => {
+                const key = typeof step === "string" ? step : step?.title;
+                if (key) {
+                    acc[key] = idx;
+                }
+                return acc;
+            }, {});
+
+            if (statusMap["Payment complete"] !== undefined) {
+                setCurrentStep(statusMap["Payment complete"]);
+            }
+
+            message.success("Status updated to Payment complete");
+        } catch (error) {
+            message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
     //EMBASSY REJECTED HANDLER ------------------------------------------------------
     const handleEmbassyRejected = async () => {
         try {
@@ -543,6 +575,15 @@ export default function ViewVisaApplication() {
                                             No documents submitted.
                                         </div>
                                     )}
+                                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                                        <Button
+                                            type="primary"
+                                            onClick={handleResubmitDocuments}
+                                            disabled={statusText?.toLowerCase() === "payment complete" || isUpdatingStatus}
+                                        >
+                                            Resubmit Documents
+                                        </Button>
+                                    </div>
                                 </Card>
 
                             </div>

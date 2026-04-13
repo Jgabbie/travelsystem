@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber } from 'antd';
+import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber, message } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
@@ -32,6 +32,13 @@ export default function LandingPage() {
     const [activityTags, setActivityTags] = useState([])
     const [isPopularLoading, setIsPopularLoading] = useState(false)
     const [isDomesticLoading, setIsDomesticLoading] = useState(false)
+    const handleActivityChange = (values) => {
+        if (values.length > 3) {
+            message.warning('Select up to 3 tags only.');
+            return;
+        }
+        setActivity(values);
+    };
 
     const [contactValues, setContactValues] = useState({
         name: '',
@@ -259,14 +266,14 @@ export default function LandingPage() {
 
 
                             <div className="filter-group">
-                                <label>ACTIVITIES</label>
+                                <label>TAGS</label>
                                 <Select
                                     className="landing-select"
                                     mode="multiple"
                                     allowClear
                                     placeholder="Select tags"
                                     value={activity}
-                                    onChange={setActivity}
+                                    onChange={handleActivityChange}
                                     options={activityTags.map((tag) => ({
                                         value: tag,
                                         label: tag

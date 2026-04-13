@@ -36,16 +36,16 @@ const getStatusColor = (status) => {
 };
 
 const PASSPORT_STEPS = [
-    { title: 'Application submitted', description: 'Application submitted' },
-    { title: 'Application approved', description: 'Application approved' },
-    { title: 'Payment complete', description: 'Payment complete' },
-    { title: 'Documents uploaded', description: 'Documents uploaded' },
-    { title: 'Documents approved', description: 'Documents approved' },
-    { title: 'Documents received', description: 'Documents received' },
-    { title: 'Documents submitted', description: 'Documents submitted' },
+    { title: 'Application Submitted', description: 'Application Submitted' },
+    { title: 'Application Approved', description: 'Application Approved' },
+    { title: 'Payment Complete', description: 'Payment Complete' },
+    { title: 'Documents Uploaded', description: 'Documents Uploaded' },
+    { title: 'Documents Approved', description: 'Documents Approved' },
+    { title: 'Documents Received', description: 'Documents Received' },
+    { title: 'Documents Submitted', description: 'Documents Submitted' },
     { title: 'Processing by DFA', description: 'Processing by DFA' },
-    { title: 'DFA approved', description: 'DFA approved' },
-    { title: 'Passport released', description: 'Passport released' },
+    { title: 'DFA Approved', description: 'DFA Approved' },
+    { title: 'Passport Released', description: 'Passport Released' },
 ];
 
 export default function PassportApplication() {
@@ -339,6 +339,11 @@ export default function PassportApplication() {
             return;
         }
 
+        if (!birthCertList[0] || !applicationFormList[0] || !govIdList[0]) {
+            message.warning("Please upload the required documents before submitting.");
+            return;
+        }
+
         try {
             setUploading(true);
 
@@ -359,6 +364,11 @@ export default function PassportApplication() {
             additionalDocsList.forEach(file => {
                 formData.append("files", file.originFileObj);
             });
+
+            if (!formData.has("files")) {
+                message.warning("Please upload the required documents before submitting.");
+                return;
+            }
 
             const res = await apiFetch.post(
                 '/upload/upload-passport-requirements',

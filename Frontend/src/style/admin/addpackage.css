@@ -2,10 +2,10 @@
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 
-  body,
-  html {
+  body {
     overflow: hidden;
     height: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   }
 
   .add-package-container {
@@ -315,4 +315,51 @@
   .package-image-preview>div button:hover {
     background: #d9534f;
     color: #fff;
+  }
+
+  .highlighted-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    height: 20px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+  }
+
+  .backsubmit-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    height: 40px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+  }
+
+  .delete-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    background-color: #992A46 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+  }
+
+  .delete-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #992A46 !important;
+  }
+
+  .highlighted-button:hover,
+  .backsubmit-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
   }

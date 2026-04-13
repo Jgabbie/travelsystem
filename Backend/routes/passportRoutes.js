@@ -12,6 +12,7 @@ router.put('/applications/:id/documents', userAuth, passportController.updatePas
 router.put('/applications/:id/suggest-appointments', userAuth, passportController.suggestAppointmentSchedules);
 router.put('/applications/:id/choose-appointment', userAuth, passportController.chosenSuggestedSchedule);
 router.put('/applications/:id/release-option', userAuth, passportController.passportReleaseOptionUpdate);
+router.put('/applications/:id/resubmit-documents', userAuth, passportController.requestPassportDocumentResubmission);
 router.post('/verify-payment', userAuth, passportController.verifyTokenCheckout);
 
 module.exports = router;

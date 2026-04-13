@@ -6,8 +6,9 @@
 .faq-hero {
     position: relative;
     height: 600px;
-    background-image: url('/public/images/LandingPage_Banner.png');
+    background-image: url('/public/images/FAQs_BackgroundImage.jpg');
     background-position: center;
+    background-size: cover;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -22,7 +23,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.603);
 }
 
 .faq-hero-content {

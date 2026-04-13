@@ -171,9 +171,31 @@ export default function VisaApplications() {
             key: "status",
             render: (status) => {
                 const currentStatus = Array.isArray(status) ? status[status.length - 1] : status;
+                const statusColorMap = {
+                    Pending: 'orange',
+                    Approved: 'green',
+                    Rejected: 'red',
+                    'Payment complete': 'blue',
+                    'Documents uploaded': 'gold',
+                    'Documents approved': 'green',
+                    'Documents received': 'cyan',
+                    'Documents submitted': 'purple',
+                    'Processing DFA': 'geekblue'
+                };
+
+                const fallbackColors = ['magenta', 'volcano', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
+                const getStatusColor = (value) => {
+                    if (!value) return 'default';
+                    if (statusColorMap[value]) return statusColorMap[value];
+                    let hash = 0;
+                    for (let i = 0; i < value.length; i += 1) {
+                        hash = (hash * 31 + value.charCodeAt(i)) % fallbackColors.length;
+                    }
+                    return fallbackColors[hash];
+                };
 
                 return (
-                    <Tag >
+                    <Tag color={getStatusColor(String(currentStatus || ''))}>
                         {currentStatus || "Unknown"}
                     </Tag>
                 );

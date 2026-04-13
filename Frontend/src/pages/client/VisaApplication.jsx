@@ -133,19 +133,22 @@ export default function VisaApplication() {
 
             const formData = new FormData();
             const orderedRequirements = requirements.map((req, idx) => ({
-                key: req.key || `${req.label}-${idx}`,
-                label: req.label || `Requirement ${idx + 1}`
+                key: req.key || req.req || `${req.label}-${idx}`,
+                label: req.req || req.label || `Requirement ${idx + 1}`
             }));
 
+            const missingRequirements = [];
             orderedRequirements.forEach((req) => {
                 const fileItem = requirementFiles[req.key]?.[0];
                 if (fileItem?.originFileObj) {
                     formData.append("files", fileItem.originFileObj);
+                } else {
+                    missingRequirements.push(req.label);
                 }
             });
 
-            if (!formData.has("files")) {
-                message.warning("Please upload at least one document.");
+            if (missingRequirements.length > 0) {
+                message.warning("Please upload all required documents before submitting.");
                 return;
             }
 
@@ -1066,7 +1069,7 @@ export default function VisaApplication() {
                                                         {/* DOWNLOAD BUTTON */}
                                                         <Button
                                                             className='visaapplication-download-button'
-                                                            type="default"
+                                                            type="primary"
                                                             icon={<DownloadOutlined />}
                                                             size="small"
                                                             block

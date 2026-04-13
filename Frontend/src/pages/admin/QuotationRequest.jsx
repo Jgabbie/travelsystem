@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Tag } from "antd";
+import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Tag, Input } from "antd";
 import { UploadOutlined, SendOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -37,9 +37,9 @@ export default function QuotationRequest() {
         travelDates: '',
         hotel: '',
         airline: '',
-        inclusions: [],
-        exclusions: [],
-        itinerary: {},
+        inclusionsText: '',
+        exclusionsText: '',
+        itineraryRows: [],
         baggageAllowance: '',
         travelers: '',
         totalRate: '',
@@ -173,6 +173,27 @@ export default function QuotationRequest() {
             + (totalInfantRate * counts.infant);
     };
 
+    const normalizeBullets = (value) => {
+        if (!value) return '';
+        return value
+            .split('\n')
+            .map((line) => {
+                const trimmed = line.trim();
+                if (!trimmed) return '';
+                return trimmed.startsWith('-') || trimmed.startsWith('•')
+                    ? trimmed
+                    : `• ${trimmed}`;
+            })
+            .filter(Boolean)
+            .join('\n');
+    };
+
+    const parseBulletLines = (value) =>
+        String(value || '')
+            .split('\n')
+            .map((line) => line.replace(/^[-•]\s*/, '').trim())
+            .filter(Boolean);
+
     const packageName = quotation?.packageId?.packageName || "N/A";
     const customerName = quotation?.userId?.username || "N/A";
     const hotel = quotation?.quotationDetails?.preferredHotels || "N/A";
@@ -205,6 +226,9 @@ export default function QuotationRequest() {
     };
 
     const isBooked = quotation?.status?.toLowerCase() === 'booked';
+    const details = quotation?.quotationDetails || {};
+    const itineraryNotes = details.itineraryNotes || [];
+    const flightDetails = details.flightDetails || {};
 
     console.log("Fetched quotation:", quotation);
 
@@ -232,9 +256,40 @@ export default function QuotationRequest() {
                 next.travelers = formattedTravelers === 'N/A' ? '' : formattedTravelers;
             }
 
+            if (!prev.inclusionsText?.trim()) {
+                next.inclusionsText = inclusions.length ? inclusions.map((item) => `• ${item}`).join('\n') : '';
+            }
+
+            if (!prev.exclusionsText?.trim()) {
+                next.exclusionsText = exclusions.length ? exclusions.map((item) => `• ${item}`).join('\n') : '';
+            }
+
+            const tourDays = Math.max(1, Object.keys(itinerary || {}).length || itineraryNotes.length || 1);
+            if (!Array.isArray(prev.itineraryRows) || prev.itineraryRows.length !== tourDays) {
+                const nextRows = Array.from({ length: tourDays }, (_, index) => {
+                    const key = Object.keys(itinerary || {})[index];
+                    const items = key ? itinerary[key] : [];
+                    const list = items.map((item) => {
+                        if (typeof item === 'string') return item;
+                        return item.activity;
+                    });
+
+                    return list.length ? list.map((item) => `• ${item}`).join('\n') : '';
+                });
+                next.itineraryRows = nextRows;
+            }
+
             return next;
         });
-    }, [quotation, travelDates, hotel, airline]);
+    }, [quotation, travelDates, hotel, airline, inclusions, exclusions, itinerary, itineraryNotes]);
+
+    useEffect(() => {
+        const computed = calculateTotalPrice(formData);
+        const computedValue = Number.isFinite(computed) ? String(computed) : '';
+        if (computedValue && formData.totalPrice !== computedValue) {
+            setFormData((prev) => ({ ...prev, totalPrice: computedValue }));
+        }
+    }, [formData.totalRate, formData.totalChildRate, formData.totalInfantRate, formData.travelers]);
 
     console.log("Constructed quotationData for form components:", quotationData); // Debug log to check constructed data
 
@@ -264,9 +319,6 @@ export default function QuotationRequest() {
         setEditableItinerary(newEditableItinerary);
     }, [quotation]);
 
-    const details = quotation?.quotationDetails || {};
-    const itineraryNotes = details.itineraryNotes || [];
-    const flightDetails = details.flightDetails || {};
     const previewItems = [
         {
             title: "Quotation Form Preview",
@@ -309,6 +361,9 @@ export default function QuotationRequest() {
 
     const validateForm = () => {
         const errors = {};
+        const travelerCounts = parseTravelerCounts(formData.travelers);
+        const isUploadMode = viewMode === "upload";
+        const computedTotalPrice = calculateTotalPrice(formData);
 
         if (!formData.roomType.trim()) {
             errors.roomType = "Room/Type is required.";
@@ -326,37 +381,54 @@ export default function QuotationRequest() {
             errors.airline = "Airline is required.";
         }
 
-        if (!formData.baggageAllowance.trim()) {
-            errors.baggageAllowance = "Baggage allowance is required.";
+        if (!formData.totalRate.trim()) {
+            errors.totalRate = "Total rate is required.";
+        }
+
+        if (travelerCounts.child > 0 && !formData.totalChildRate.trim()) {
+            errors.totalChildRate = "Total child rate is required.";
+        }
+
+        if (travelerCounts.infant > 0 && !formData.totalInfantRate.trim()) {
+            errors.totalInfantRate = "Total infant rate is required.";
+        }
+
+        if (!formData.totalPrice.trim()) {
+            if (!(Number.isFinite(computedTotalPrice) && computedTotalPrice > 0)) {
+                errors.totalPrice = "Total price is required.";
+            }
         }
 
         if (!formData.travelers.trim()) {
             errors.travelers = "Travelers information is required.";
         }
 
-
-        if (!formData.totalRate.trim()) {
-            errors.totalRate = "Total rate is required.";
-        }
-
-        if (!formData.totalChildRate.trim()) {
-            errors.totalChildRate = "Total child rate is required.";
-        }
-
-        if (!formData.totalInfantRate.trim()) {
-            errors.totalInfantRate = "Total infant rate is required.";
-        }
-
         if (!formData.totalDeposit.trim()) {
             errors.totalDeposit = "Total deposit is required.";
         }
 
-        if (!formData.flightImageA) {
-            errors.flightImageA = "Flight image 1 is required.";
+        if (isUploadMode) {
+            if (!formData.inclusionsText.trim()) {
+                errors.inclusionsText = "Inclusions are required.";
+            }
+
+            if (!formData.exclusionsText.trim()) {
+                errors.exclusionsText = "Exclusions are required.";
+            }
+
+            if (!formData.itineraryRows.length || formData.itineraryRows.some((row) => !row.trim())) {
+                errors.itineraryRows = "Itinerary for each day is required.";
+            }
         }
 
-        if (!formData.flightImageB) {
-            errors.flightImageB = "Flight image 2 is required.";
+        if (!isUploadMode) {
+            if (!formData.flightImageA) {
+                errors.flightImageA = "Flight image 1 is required.";
+            }
+
+            if (!formData.flightImageB) {
+                errors.flightImageB = "Flight image 2 is required.";
+            }
         }
 
         if (formData.dynamicRows && formData.dynamicRows.length > 0) {
@@ -396,19 +468,57 @@ export default function QuotationRequest() {
 
     // Upload when "Send" button is clicked
     const handleSend = async () => {
+        const isValid = validateForm();
+        if (!isValid) {
+            message.error("Please complete required fields.");
+            return;
+        }
+
         if (!selectedFile) {
             message.warning("Please select a PDF first.");
             return;
         }
 
-        const formData = new FormData();
-        formData.append("pdf", selectedFile);
+        const pdfFormData = new FormData();
+        pdfFormData.append("pdf", selectedFile);
 
         setUploading(true);
         try {
-            await apiFetch.post(`/quotation/${id}/upload-pdf`, formData, {
+            await apiFetch.post(`/quotation/${id}/upload-pdf`, pdfFormData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
+
+            const computedTotalPrice = calculateTotalPrice(formData);
+            const resolvedTotalPrice = formData.totalPrice?.trim()
+                ? formData.totalPrice
+                : String(computedTotalPrice);
+
+            const itineraryRows = Array.isArray(formData.itineraryRows) ? formData.itineraryRows : [];
+            const itineraryPayload = itineraryRows.reduce((acc, text, index) => {
+                acc[`day${index + 1}`] = parseBulletLines(text);
+                return acc;
+            }, {});
+
+            const travelDetails = {
+                roomType: formData.roomType,
+                travelDates: formData.travelDates,
+                hotel: formData.hotel,
+                airline: formData.airline,
+                inclusions: parseBulletLines(formData.inclusionsText),
+                exclusions: parseBulletLines(formData.exclusionsText),
+                itinerary: itineraryPayload,
+                dynamicRows: formData.dynamicRows,
+                baggageAllowance: formData.baggageAllowance,
+                travelers: formData.travelers,
+                totalRate: formData.totalRate,
+                totalChildRate: formData.totalChildRate,
+                totalInfantRate: formData.totalInfantRate,
+                totalPrice: resolvedTotalPrice,
+                totalDeposit: formData.totalDeposit
+            };
+
+            await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
+
             message.success(`${selectedFile.name} uploaded successfully!`);
             setSelectedFile(null);
             setPreviewURL(null);
@@ -741,9 +851,215 @@ export default function QuotationRequest() {
 
                     {viewMode === "upload" && !isBooked && (
                         <Card title="Upload Quotation PDF" style={{ margin: 20 }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 16 }}>
+                                <div>
+                                    <Input
+                                        placeholder="Travel dates"
+                                        value={formData.travelDates}
+                                        disabled
+                                        onChange={(e) => setFormData(prev => ({ ...prev, travelDates: e.target.value }))}
+                                    />
+                                    {formErrors.travelDates && <div className="quotationrequest-error">{formErrors.travelDates}</div>}
+                                </div>
+                                <div>
+                                    <Input
+                                        placeholder="Hotel"
+                                        value={formData.hotel}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, hotel: e.target.value }))}
+                                    />
+                                    {formErrors.hotel && <div className="quotationrequest-error">{formErrors.hotel}</div>}
+                                </div>
+                                <div>
+                                    <Input
+                                        placeholder="Room/Type"
+                                        value={formData.roomType}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, roomType: e.target.value }))}
+                                    />
+                                    {formErrors.roomType && <div className="quotationrequest-error">{formErrors.roomType}</div>}
+                                </div>
+                                <div>
+                                    <Input
+                                        placeholder="Airline"
+                                        value={formData.airline}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, airline: e.target.value }))}
+                                    />
+                                    {formErrors.airline && <div className="quotationrequest-error">{formErrors.airline}</div>}
+                                </div>
+                                <div>
+                                    <Input
+                                        placeholder="Baggage allowance"
+                                        value={formData.baggageAllowance}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, baggageAllowance: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <Input
+                                        placeholder="Travelers"
+                                        value={formData.travelers}
+                                        disabled
+                                        onChange={(e) => setFormData(prev => ({ ...prev, travelers: e.target.value }))}
+                                    />
+                                    {formErrors.travelers && <div className="quotationrequest-error">{formErrors.travelers}</div>}
+                                </div>
+                                <div>
+                                    <Input
+                                        placeholder="Total rate per adult"
+                                        value={formData.totalRate}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, totalRate: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                    />
+                                    {formErrors.totalRate && <div className="quotationrequest-error">{formErrors.totalRate}</div>}
+                                </div>
+                                {parseTravelerCounts(formData.travelers).child > 0 && (
+                                    <div>
+                                        <Input
+                                            placeholder="Total rate per child"
+                                            value={formData.totalChildRate}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, totalChildRate: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                        />
+                                        {formErrors.totalChildRate && <div className="quotationrequest-error">{formErrors.totalChildRate}</div>}
+                                    </div>
+                                )}
+                                {parseTravelerCounts(formData.travelers).infant > 0 && (
+                                    <div>
+                                        <Input
+                                            placeholder="Total rate per infant"
+                                            value={formData.totalInfantRate}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, totalInfantRate: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                        />
+                                        {formErrors.totalInfantRate && <div className="quotationrequest-error">{formErrors.totalInfantRate}</div>}
+                                    </div>
+                                )}
+                                <div>
+                                    <Input
+                                        placeholder="Total price"
+                                        value={formData.totalPrice}
+                                        readOnly
+                                    />
+                                    {formErrors.totalPrice && <div className="quotationrequest-error">{formErrors.totalPrice}</div>}
+                                </div>
+                                <div>
+                                    <Input
+                                        placeholder="Deposit"
+                                        value={formData.totalDeposit}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, totalDeposit: e.target.value.replace(/[^0-9.]/g, '') }))}
+                                    />
+                                    {formErrors.totalDeposit && <div className="quotationrequest-error">{formErrors.totalDeposit}</div>}
+                                </div>
+                            </div>
+
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                                <div>
+                                    <Input.TextArea
+                                        autoSize={{ minRows: 6, maxRows: 12 }}
+                                        placeholder="Inclusions (one per line)"
+                                        value={formData.inclusionsText}
+                                        onChange={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            inclusionsText: e.target.value
+                                        }))}
+                                        onBlur={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            inclusionsText: normalizeBullets(e.target.value)
+                                        }))}
+                                    />
+                                    {formErrors.inclusionsText && <div className="quotationrequest-error">{formErrors.inclusionsText}</div>}
+                                </div>
+                                <div>
+                                    <Input.TextArea
+                                        autoSize={{ minRows: 6, maxRows: 12 }}
+                                        placeholder="Exclusions (one per line)"
+                                        value={formData.exclusionsText}
+                                        onChange={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            exclusionsText: e.target.value
+                                        }))}
+                                        onBlur={(e) => setFormData(prev => ({
+                                            ...prev,
+                                            exclusionsText: normalizeBullets(e.target.value)
+                                        }))}
+                                    />
+                                    {formErrors.exclusionsText && <div className="quotationrequest-error">{formErrors.exclusionsText}</div>}
+                                </div>
+                            </div>
+
+                            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
+                                {(formData.itineraryRows || []).map((row, index) => (
+                                    <div key={`itinerary-${index}`}>
+                                        <Input.TextArea
+                                            autoSize={{ minRows: 6, maxRows: 12 }}
+                                            placeholder={`Day ${index + 1} itinerary (one per line)`}
+                                            value={row}
+                                            onChange={(e) => {
+                                                const nextRows = [...(formData.itineraryRows || [])];
+                                                nextRows[index] = e.target.value;
+                                                setFormData(prev => ({ ...prev, itineraryRows: nextRows }));
+                                            }}
+                                            onBlur={(e) => {
+                                                const nextRows = [...(formData.itineraryRows || [])];
+                                                nextRows[index] = normalizeBullets(e.target.value);
+                                                setFormData(prev => ({ ...prev, itineraryRows: nextRows }));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                                {formErrors.itineraryRows && <div className="quotationrequest-error">{formErrors.itineraryRows}</div>}
+                            </div>
+
+                            <div style={{ marginBottom: 16 }}>
+                                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                                    <Button className="quotationrequest-form-button" type="primary" onClick={addPackageRow}>
+                                        Add Row
+                                    </Button>
+                                    {formData.dynamicRows && formData.dynamicRows.length > 0 && (
+                                        <Button
+                                            className="quotationrequest-formremove-button"
+                                            type="primary"
+                                            onClick={() =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    dynamicRows: prev.dynamicRows.slice(0, -1),
+                                                }))
+                                            }
+                                        >
+                                            Remove Last Row
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {formData.dynamicRows && formData.dynamicRows.length > 0 && (
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                        {formData.dynamicRows.map((row, index) => (
+                                            <React.Fragment key={`upload-row-${index}`}>
+                                                <div>
+                                                    <Input
+                                                        placeholder="Label"
+                                                        value={row.label}
+                                                        onChange={(e) => updateDynamicRow(index, 'label', e.target.value)}
+                                                    />
+                                                    {formErrors.dynamicRows?.[index]?.label && (
+                                                        <div className="quotationrequest-error">{formErrors.dynamicRows[index].label}</div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <Input
+                                                        placeholder="Value"
+                                                        value={row.value}
+                                                        onChange={(e) => updateDynamicRow(index, 'value', e.target.value)}
+                                                    />
+                                                    {formErrors.dynamicRows?.[index]?.value && (
+                                                        <div className="quotationrequest-error">{formErrors.dynamicRows[index].value}</div>
+                                                    )}
+                                                </div>
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
                             <Upload
                                 name="pdf"
                                 showUploadList={false}
+                                allowedFileTypes={["application/pdf"]}
                                 beforeUpload={handleFileSelect}
                             >
                                 <Button icon={<UploadOutlined />} className="quotationrequest-upload-button" type="primary">

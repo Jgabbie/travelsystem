@@ -272,9 +272,10 @@ export default function PackageDomesticQuotation() {
                 <Spin spinning={loading} description="Loading package details..." size="large">
                     <div className="quotation-container">
                         <Button
+                            type='primary'
                             icon={<ArrowLeftOutlined />}
                             onClick={() => navigate(-1)}
-                            className="back-button"
+                            className="packagequotation-back-button"
                         >
                             Back
                         </Button>

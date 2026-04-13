@@ -184,8 +184,19 @@ export default function PassportApplications() {
                     Processing: "blue",
                 };
 
+                const fallbackColors = ['magenta', 'volcano', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
+                const getStatusColor = (value) => {
+                    if (!value) return 'default';
+                    if (colorMap[value]) return colorMap[value];
+                    let hash = 0;
+                    for (let i = 0; i < value.length; i += 1) {
+                        hash = (hash * 31 + value.charCodeAt(i)) % fallbackColors.length;
+                    }
+                    return fallbackColors[hash];
+                };
+
                 return (
-                    <Tag color={colorMap[status] || "default"}>
+                    <Tag color={getStatusColor(String(status || ''))}>
                         {status || "Unknown"}
                     </Tag>
                 );

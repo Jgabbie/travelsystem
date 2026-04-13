@@ -287,6 +287,52 @@ const passportReleaseOptionUpdate = async (req, res) => {
     }
 };
 
+const requestPassportDocumentResubmission = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const application = await PassportModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+
+        application.submittedDocuments = {};
+        application.status = "Payment complete";
+        await application.save();
+
+        const user = await UserModel.findById(application.userId);
+        if (user) {
+            await NotificationModel.create({
+                userId: user._id,
+                title: "Passport documents resubmission requested",
+                message: "Please resubmit your passport documents for your application.",
+                type: "passport",
+                link: "/user-applications",
+                metadata: { applicationId: application._id }
+            });
+
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: "Passport documents resubmission requested",
+                html: `
+                    <div style="font-family: Arial, sans-serif; color: #333;">
+                        <h2 style="color: #305797;">Passport documents resubmission requested</h2>
+                        <p>Hello ${user.firstname || user.username},</p>
+                        <p>Our team needs you to resubmit your passport documents for your application.</p>
+                        <p>Please log in to your account to upload the updated documents.</p>
+                    </div>
+                `
+            });
+        }
+
+        res.status(200).json({ message: "Resubmission requested", application });
+    } catch (error) {
+        console.error("Error requesting passport document resubmission:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 
 //UPDATE PASSPORT APPLICATION STATUS ------------------------------------------------------
 const updatePassportStatus = async (req, res) => {
@@ -294,16 +340,16 @@ const updatePassportStatus = async (req, res) => {
         const { id } = req.params;
         const { status } = req.body;
         const validStatuses = [
-            'Application submitted',
-            'Application approved',
-            'Payment complete',
-            'Documents uploaded',
-            'Documents approved',
-            'Documents received',
-            'Documents submitted',
+            'Application Submitted',
+            'Application Approved',
+            'Payment Complete',
+            'Documents Uploaded',
+            'Documents Approved',
+            'Documents Received',
+            'Documents Submitted',
             'Processing by DFA',
-            'DFA approved',
-            'Passport released',
+            'DFA Approved',
+            'Passport Released',
             'Rejected'
         ];
         if (!status || !validStatuses.includes(status)) {
@@ -398,8 +444,11 @@ module.exports = {
     getPassportApplicationById,
     updatePassportStatus,
     updatePassportApplicationWithDocs,
+    requestPassportDocumentResubmission,
     suggestAppointmentSchedules,
     chosenSuggestedSchedule,
     passportReleaseOptionUpdate,
     verifyTokenCheckout
 };
+
+//REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------

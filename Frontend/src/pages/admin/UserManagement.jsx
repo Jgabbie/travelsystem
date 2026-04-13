@@ -67,7 +67,7 @@ export default function UserManagement() {
         email: user.email,
         role: user.role || "User",
         status: user.isAccountVerified ? "Verified" : "Pending",
-        avatar: user.profilePicture || user.avatar || "",
+        avatar: user.profilePicture || user.profileImage || user.avatar || "",
         phone: user.phone || "",
         address: user.address || "",
         createdAt: user.createdAt || "",
@@ -263,6 +263,13 @@ export default function UserManagement() {
     }
   ];
 
+  const resolveAvatarUrl = (value) => {
+    if (!value) return "";
+    if (value.startsWith("http") || value.startsWith("data:")) return value;
+    const normalized = value.startsWith("/") ? value.slice(1) : value;
+    return `${window.location.origin}/${normalized}`;
+  };
+
 
   return (
     <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
@@ -277,7 +284,7 @@ export default function UserManagement() {
 
         <div className="user-actions">
           <Input prefix={<SearchOutlined />} placeholder="Search..." className="search-input" value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
-          <Select placeholder="Role" style={{ width: 140 }} allowClear onChange={(v) => setRoleFilter(v || "")} options={[{ value: "Admin", label: "Admin" }, { value: "User", label: "User" }]} />
+          <Select placeholder="Role" style={{ width: 140 }} allowClear onChange={(v) => setRoleFilter(v || "")} options={[{ value: "Admin", label: "Admin" }, { value: "User", label: "User" }, { value: "Employee", label: "Employee" }]} />
           <Select placeholder="Status" style={{ width: 140 }} allowClear onChange={(v) => setStatusFilter(v || "")} options={[{ value: "Verified", label: "Verified" }, { value: "Pending", label: "Pending" }]} />
 
           <Space style={{ marginLeft: 'auto' }}>
@@ -311,7 +318,12 @@ export default function UserManagement() {
           {selectedUser && (
             <div className="users-view-content">
               <div className="users-view-header">
-                <Avatar size={96} src={selectedUser.avatar || undefined} icon={<UserOutlined />} className="users-view-avatar" />
+                <Avatar
+                  size={96}
+                  src={resolveAvatarUrl(selectedUser.avatar) || undefined}
+                  icon={<UserOutlined />}
+                  className="users-view-avatar"
+                />
                 <div className="users-view-title">
                   <h2 className="users-view-name">{selectedUser.name}</h2>
                   <div className="users-view-subtitle">
@@ -322,10 +334,10 @@ export default function UserManagement() {
                 </div>
               </div>
               <div className="users-view-grid">
+                <div className="users-view-item"><span className="users-view-label">First Name</span><span className="users-view-value">{selectedUser.firstname || "N/A"}</span></div>
+                <div className="users-view-item"><span className="users-view-label">Last Name</span><span className="users-view-value">{selectedUser.lastname || "N/A"}</span></div>
                 <div className="users-view-item"><span className="users-view-label">Username</span><span className="users-view-value">{selectedUser.username}</span></div>
                 <div className="users-view-item"><span className="users-view-label">Phone</span><span className="users-view-value">{selectedUser.phone || "N/A"}</span></div>
-                <div className="users-view-item"><span className="users-view-label">Address</span><span className="users-view-value">{selectedUser.address || "N/A"}</span></div>
-                <div className="users-view-item"><span className="users-view-label">Last Login</span><span className="users-view-value">{selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "N/A"}</span></div>
               </div>
             </div>
           )}

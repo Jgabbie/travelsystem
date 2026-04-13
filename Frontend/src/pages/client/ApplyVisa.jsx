@@ -67,6 +67,12 @@ export default function ApplyVisa() {
         [requirements]
     )
 
+    const handleOpenLink = (url) => {
+        if (!url) return;
+        const safeUrl = url.startsWith('http') ? url : `https://${url}`;
+        window.open(safeUrl, '_blank', 'noopener,noreferrer');
+    };
+
     const hasAdditionalRequirements = useMemo(
         () => additionalRequirements.some((group) =>
             group.customer?.trim?.() || (group.requirements || []).some((req) =>
@@ -218,6 +224,17 @@ export default function ApplyVisa() {
                                             <strong>{item.req}</strong>
                                             <br />
                                             <span>{item.desc}</span>
+                                            {item.applicationLink && (
+                                                <div style={{ marginTop: 8 }}>
+                                                    <Button
+                                                        size="small"
+                                                        type="primary"
+                                                        onClick={() => handleOpenLink(item.applicationLink)}
+                                                    >
+                                                        Open Application Link
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -233,6 +250,17 @@ export default function ApplyVisa() {
                                             <strong>{item.req}</strong>
                                             <br />
                                             <span>{item.desc}</span>
+                                            {item.applicationLink && (
+                                                <div style={{ marginTop: 8 }}>
+                                                    <Button
+                                                        size="small"
+                                                        type="primary"
+                                                        onClick={() => handleOpenLink(item.applicationLink)}
+                                                    >
+                                                        Open Application Link
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

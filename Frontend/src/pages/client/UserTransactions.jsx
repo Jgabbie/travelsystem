@@ -131,6 +131,7 @@ export default function UserTransactions() {
                                     message.warning('No proof image available for this transaction.');
                                     return;
                                 }
+                                setSelectedTransaction(record);
                                 setSelectedProofImage(record.proofImage);
                                 setIsProofModalOpen(true);
                             }}

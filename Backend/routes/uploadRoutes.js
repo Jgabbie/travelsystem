@@ -8,7 +8,7 @@ router.post('/upload-booking-documents', upload.array('files', 20), uploadContro
 router.post('/upload-package-images', upload.array('files', 3), uploadController.uploadPackageImage);
 router.post('/upload-profile-picture', upload.single('file'), uploadController.uploadProfilePicture);
 router.post('/upload-passport-requirements', upload.array('files', 10), uploadController.uploadPassportRequirements);
-router.post('/upload-visa-requirements', upload.array('files', 10), uploadController.uploadVisaRequirements);
+router.post('/upload-visa-requirements', upload.array('files', 20), uploadController.uploadVisaRequirements);
 router.post('/upload-cancel-proof', upload.single('file'), uploadController.uploadCancellationProof);
 router.get('/quotation/signed-url', uploadController.viewQuotationPdf);
 

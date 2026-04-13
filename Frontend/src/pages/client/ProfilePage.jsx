@@ -31,16 +31,7 @@ export default function ProfilePage() {
         nationality: ''
     });
 
-    const moodOptions = [
-        'Beach',
-        'Island Hopping',
-        'Cultural',
-        'Summer',
-        'Winter',
-        'Sightseeing',
-        'Hiking',
-        'City'
-    ];
+    const [moodOptions, setMoodOptions] = useState([]);
 
     //preferences options
     const tourOptions = [
@@ -153,6 +144,19 @@ export default function ProfilePage() {
     // Fetch user data on component moun
 
     useEffect(() => {
+        const fetchPackageTags = async () => {
+            try {
+                const response = await apiFetch.get('/package/get-packages-for-users');
+                const unique = new Set();
+                (response || []).forEach((pkg) => {
+                    pkg.packageTags?.forEach((tag) => unique.add(tag));
+                });
+                setMoodOptions(Array.from(unique));
+            } catch (error) {
+                setMoodOptions([]);
+            }
+        };
+
         const fetchPreferences = async () => {
             try {
                 const response = await apiFetch.get("/preferences/me", { withCredentials: true });
@@ -255,10 +259,11 @@ export default function ProfilePage() {
             }
         }
 
-        fetchUserData()
-        fetchRecentBookings()
-        fetchRecentReviews()
-        fetchPreferences()
+        fetchPackageTags();
+        fetchUserData();
+        fetchRecentBookings();
+        fetchRecentReviews();
+        fetchPreferences();
     }, [])
 
 

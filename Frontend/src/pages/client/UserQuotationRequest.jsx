@@ -41,7 +41,9 @@ export default function UserQuotationRequest() {
                 console.log("Quotation data received from API:", quotationData);
 
                 setQuotation({
-                    packageName: quotationData.packageId.packageName || "N/A",
+                    packageId: quotationData.packageId || null,
+                    userId: quotationData.userId || null,
+                    packageName: quotationData.packageId?.packageName || "N/A",
                     travelDetails: quotationData.travelDetails || {},
                     latestPdfRevision: quotationData.latestPdfRevision || null,
                     reference: quotationData.reference || "N/A",
@@ -76,6 +78,9 @@ export default function UserQuotationRequest() {
             setQuotationBookingData(prev => ({
                 ...prev,
                 quotationId: id,
+                packageId: quotation?.packageId?._id || quotation?.packageId || '',
+                userId: quotation?.userId || '',
+                reference: quotation?.reference || '',
                 packageName: quotation?.packageName,
                 travelDate: travelDateValue,
                 travelDatePrice: priceValue,
@@ -149,8 +154,9 @@ export default function UserQuotationRequest() {
 
                 ) : (
                     quotation && (
-                        <div style={{ padding: "20px" }}>
+                        <div className="userquotationrequest-container" style={{ padding: "20px" }}>
                             <Button
+                                type="primary"
                                 className="userquotationrequest-back-button"
                                 style={{ marginBottom: "15px" }}
                                 onClick={() => navigate("/user-package-quotation")}
@@ -285,6 +291,7 @@ export default function UserQuotationRequest() {
 
                                     <div className="buttons-container-userquotationrequest">
                                         <Button
+                                            type="primary"
                                             className="acceptbutton-userquotationrequest"
                                             onClick={() => setIsAcceptModalOpen(true)}
                                             disabled={isDisabled}
@@ -292,6 +299,7 @@ export default function UserQuotationRequest() {
                                             Accept Quotation
                                         </Button>
                                         <Button
+                                            type="primary"
                                             className="revisebutton-userquotationrequest"
                                             onClick={handleRevise}
                                             disabled={isDisabled || !notes.trim()}
@@ -314,7 +322,7 @@ export default function UserQuotationRequest() {
                                     <h2 className="userquotationrequest-revision-heading">Revision Requested</h2>
                                     <p className="userquotationrequest-revision-text">Your revision request has been submitted.</p>
                                     <div className="userquotationrequest-revision-actions">
-                                        <Button className="userquotationrequest-revision-button" onClick={() => {
+                                        <Button type="primary" className="userquotationrequest-revision-button" onClick={() => {
                                             setIsRevisionModalOpen(false)
                                         }}>
                                             Continue
@@ -335,11 +343,11 @@ export default function UserQuotationRequest() {
                                     <h2 className="userquotationrequest-accept-heading">Accepting Quotation</h2>
                                     <p className="userquotationrequest-accept-text">Are you sure you want to proceed with this quotation?</p>
                                     <div className="userquotationrequest-accept-actions">
-                                        <Button className="userquotationrequest-accept-button" onClick={handleAccept}>
+                                        <Button type="primary" className="userquotationrequest-accept-button" onClick={handleAccept}>
                                             Proceed
                                         </Button>
 
-                                        <Button className="userquotationrequest-accept-button-cancel" onClick={() => {
+                                        <Button type="primary" className="userquotationrequest-accept-button-cancel" onClick={() => {
                                             setIsAcceptModalOpen(false)
                                         }}>
                                             Cancel
