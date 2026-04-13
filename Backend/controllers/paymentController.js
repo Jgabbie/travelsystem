@@ -1381,13 +1381,16 @@ const handlePayMongoWebhook = async (req, res) => {
             const amount = Math.round(net / 100) * 100;
 
             const transactionReference = generateTransactionReference();
+            console.log('metadata totalAmountCents:', metadata.totalAmountCents);
+            console.log('sessionAttributes amount_total:', sessionAttributes?.amount_total);
+            console.log('Base amount cents:', metadata.baseAmountCents);
 
             await TransactionModel.create({
                 userId: user._id,
                 applicationId: metadata.applicationId,
                 applicationType: "Visa Application",
                 reference: transactionReference,
-                amount: metadata.totalAmountCents,
+                amount: Math.round(metadata.baseAmountCents / 100),
                 method: 'Paymongo',
                 status: 'Successful',
             });
