@@ -805,12 +805,12 @@ export default function VisaApplication() {
                                             <div>No requirements found for this service.</div>
                                         )}
                                         {requirements.map((req, idx) => {
-                                            const requirementKey = req.key || `${req.label}-${idx}`;
+                                            const requirementKey = req.key || req.req || `${req.label}-${idx}`;
                                             const uploadedFile = requirementFiles[requirementKey]?.[0];
 
                                             return (
                                                 <div style={{ marginBottom: 24 }} key={requirementKey}>
-                                                    <b>{req.label || `Requirement ${idx + 1}`}</b>
+                                                    <b>{req.req || req.label || `Requirement ${idx + 1}`}</b>
                                                     <div style={{ marginTop: 8 }}>
                                                         {!uploadedFile && (
                                                             <Upload
@@ -827,7 +827,7 @@ export default function VisaApplication() {
                                                                 showUploadList={false}
                                                             >
                                                                 <Button icon={<UploadOutlined />} className='visaapplication-upload-button' type='primary'>
-                                                                    Upload {req.label || `Requirement ${idx + 1}`}
+                                                                    Upload Requirement
                                                                 </Button>
                                                             </Upload>
                                                         )}
@@ -844,7 +844,7 @@ export default function VisaApplication() {
                                                                 ) : (
                                                                     <Image
                                                                         src={uploadedFile.url}
-                                                                        alt={req.label || `Requirement ${idx + 1}`}
+                                                                        alt={req.req || req.label || `Requirement ${idx + 1}`}
                                                                         style={{ maxWidth: 220, cursor: 'pointer' }}
                                                                         preview={false}
                                                                         onClick={() => handlePreview(uploadedFile)}

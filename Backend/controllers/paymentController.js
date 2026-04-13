@@ -1387,7 +1387,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 applicationId: metadata.applicationId,
                 applicationType: "Visa Application",
                 reference: transactionReference,
-                amount,
+                amount: metadata.totalAmountCents,
                 method: 'Paymongo',
                 status: 'Successful',
             });

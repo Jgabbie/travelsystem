@@ -990,7 +990,7 @@ export default function PassportApplication() {
                                                         customRequest={({ onSuccess }) => onSuccess("ok")}
                                                     >
                                                         <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Birth Certificate
+                                                            Upload Requirement
                                                         </Button>
                                                     </Upload>
                                                 ) : (
@@ -1018,7 +1018,7 @@ export default function PassportApplication() {
                                                         customRequest={({ onSuccess }) => onSuccess("ok")}
                                                     >
                                                         <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Application Form
+                                                            Upload Requirement
                                                         </Button>
                                                     </Upload>
                                                 ) : (
@@ -1044,7 +1044,7 @@ export default function PassportApplication() {
                                                         customRequest={({ onSuccess }) => onSuccess("ok")}
                                                     >
                                                         <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Government ID
+                                                            Upload Requirement
                                                         </Button>
                                                     </Upload>
                                                 ) : (
@@ -1070,7 +1070,7 @@ export default function PassportApplication() {
                                                         customRequest={({ onSuccess }) => onSuccess("ok")}
                                                     >
                                                         <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Additional Document
+                                                            Upload Requirement
                                                         </Button>
                                                     </Upload>
                                                 ) : (
