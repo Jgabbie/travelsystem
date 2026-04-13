@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Input, Typography, ConfigProvider, Empty } from 'antd'
+import { Button, Input, Typography, ConfigProvider, Empty, Modal } from 'antd'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
@@ -10,6 +10,8 @@ export default function PassAndVisaService() {
     const [visaType, setVisaType] = useState('All')
     const [processing, setProcessing] = useState('All')
     const [services, setServices] = useState([])
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+    const [chatMessage, setChatMessage] = useState('')
     const { Title, Text } = Typography
     const navigate = useNavigate()
 
@@ -160,6 +162,34 @@ export default function PassAndVisaService() {
                         </section>
                     </div>
                 </div>
+
+                <Modal
+                    open={isChatbotOpen}
+                    onCancel={() => setIsChatbotOpen(false)}
+                    footer={null}
+                    title="Chatbot"
+                    wrapClassName="chatbot-modal"
+                >
+                    <div className="chatbot-body">
+                        <div className="chatbot-message">
+                            Hi! How can I help you today?
+                        </div>
+                        <Input.TextArea
+                            value={chatMessage}
+                            onChange={(e) => setChatMessage(e.target.value)}
+                            placeholder="Type your message..."
+                            rows={3}
+                        />
+                        <div className="chatbot-actions">
+                            <Button
+                                type="primary"
+                                disabled={!chatMessage.trim()}
+                            >
+                                Send
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </ConfigProvider>
     )

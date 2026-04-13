@@ -136,7 +136,7 @@ export default function Auditing() {
                     dataSource={filteredLogs}
                     rowKey="_id"
                     loading={loading}
-                    pagination={{ pageSize: 8, showSizeChanger: false }}
+                    pagination={{ pageSize: 10, showSizeChanger: false }}
                 />
             </div>
         </ConfigProvider>

@@ -260,6 +260,33 @@ const chosenSuggestedSchedule = async (req, res) => {
     }
 };
 
+//DELIVERY ADDRESS UPDATE FOR PASSPORT APPLICATION ------------------------------------------------------
+const passportReleaseOptionUpdate = async (req, res) => {
+    const { id } = req.params;
+    const { passportReleaseOption, deliveryAddress } = req.body;
+
+    try {
+        if (!passportReleaseOption) {
+            return res.status(400).json({ message: "Passport release option is required" });
+        }
+        const application = await PassportModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+
+        application.passportReleaseOption = passportReleaseOption;
+        application.deliveryAddress = deliveryAddress || "";
+        application.status = "Passport released";
+        await application.save();
+
+        res.status(200).json({ message: "Passport release option updated", application });
+    }
+    catch (error) {
+        console.error("Error updating passport release option:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 
 //UPDATE PASSPORT APPLICATION STATUS ------------------------------------------------------
 const updatePassportStatus = async (req, res) => {
@@ -295,7 +322,7 @@ const updatePassportStatus = async (req, res) => {
                     title: 'Passport application status updated',
                     message: `Your passport application status is now ${status}.`,
                     type: 'passport',
-                    link: '/passport',
+                    link: '/user-applications',
                     metadata: { applicationId: updated._id, status }
                 });
 
@@ -304,12 +331,27 @@ const updatePassportStatus = async (req, res) => {
                     to: user.email,
                     subject: 'Passport application status update',
                     html: `
-                        <div style="font-family: Arial, sans-serif; color: #333;">
-                            <h2 style="color: #305797;">Passport application status update</h2>
-                            <p>Hello ${user.firstname || user.username},</p>
-                            <p>Your passport application status is now <strong>${status}</strong>.</p>
-                            <p>Please log in to your account to view the latest details.</p>
+                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                M&RC Travel and Tours
+                            </h2>
+                            <p style="color:#555; font-size:16px;">
+                                Your passport application status has been updated.
+                            </p>
+
+                                <div style="font-family: Arial, sans-serif; color: #333;">
+                                    <h2 style="color: #305797;">Passport application status update</h2>
+                                    <p>Hello ${user.firstname || user.username},</p>
+                                    <p>Your passport application status is now <strong>${status}</strong>.</p>
+                                    <p>Please log in to your account to view the latest details.</p>
+                                </div>
+
+                            <p style="color:#aaa; font-size:12px; margin-top:30px;">
+                                If you did not request this update, please ignore this email.
+                            </p>
                         </div>
+                    </div>
                     `
                 });
             }
@@ -349,4 +391,15 @@ const verifyTokenCheckout = async (req, res) => {
     }
 }
 
-module.exports = { applyPassport, getPassportApplications, getUserPassportApplications, getPassportApplicationById, updatePassportStatus, updatePassportApplicationWithDocs, suggestAppointmentSchedules, chosenSuggestedSchedule, verifyTokenCheckout };
+module.exports = {
+    applyPassport,
+    getPassportApplications,
+    getUserPassportApplications,
+    getPassportApplicationById,
+    updatePassportStatus,
+    updatePassportApplicationWithDocs,
+    suggestAppointmentSchedules,
+    chosenSuggestedSchedule,
+    passportReleaseOptionUpdate,
+    verifyTokenCheckout
+};

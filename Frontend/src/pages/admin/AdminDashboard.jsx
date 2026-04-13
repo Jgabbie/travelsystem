@@ -72,13 +72,18 @@ export default function AdminDashboard() {
 
   bookings.forEach((booking) => {
     const duration = booking.packageId?.packageDuration;
+
     if (!duration) return;
-    durationCountMap[duration] = (durationCountMap[duration] || 0) + 1;
+
+    // normalize (optional but recommended)
+    const key = Number(duration);
+
+    durationCountMap[key] = (durationCountMap[key] || 0) + 1;
   });
 
   const topDurationEntries = Object.entries(durationCountMap)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
+    .sort((a, b) => b[1] - a[1]) // sort by count DESC
+    .slice(0, 3) // 👈 top 3
     .map(([duration, count]) => ({
       label: `${duration} Days`,
       count

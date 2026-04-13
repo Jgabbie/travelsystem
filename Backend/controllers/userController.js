@@ -253,7 +253,9 @@ const markLoginOnce = async (req, res) => {
 }
 
 const delUsers = async (req, res) => {
-    const { id } = req.body;
+    const { id } = req.params;
+
+    console.log("Received request to delete user with id:", id);
 
     if (!id) {
         return res.status(400).json({ message: "User id is required" });
@@ -288,6 +290,8 @@ const delUsers = async (req, res) => {
                 deletedUserId: user._id,
                 deletedUsername: user.username
             });
+
+
 
         res.json({ message: "User archived and deleted", userId: user._id });
     } catch (err) {

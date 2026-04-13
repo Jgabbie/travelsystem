@@ -129,7 +129,7 @@ if (!isServerless) {
 
     // Use the PORT variable provided by the host, default to 8080
     //const LOCAL_PORT = 8000
-    const PORT = 8080; //change to 8000 for local testing, 8080 for cloud deployment
+    const PORT = 8000; //change to 8000 for local testing, 8080 for cloud deployment
 
     // Remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {

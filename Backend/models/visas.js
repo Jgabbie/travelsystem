@@ -17,7 +17,17 @@ const VisaApplicationSchema = new mongoose.Schema({
     preferredTime: { type: String, required: true },
     purposeOfTravel: { type: String, required: true },
     applicationNumber: { type: String, required: true, unique: true },
+    suggestedAppointmentSchedules: [{
+        date: { type: String },
+        time: { type: String }
+    }],
+    suggestedAppointmentScheduleChosen: {
+        date: { type: String, default: "" },
+        time: { type: String, default: "" }
+    },
     submittedDocuments: { type: Object },
+    passportReleaseOption: { type: String },
+    deliveryAddress: { type: String },
     status: {
         type: [String],
         default: ['Application Submitted']

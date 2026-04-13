@@ -12,6 +12,7 @@ export default function ViewVisaApplication() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [isSubmittingSlots, setIsSubmittingSlots] = useState(false);
     const [application, setApplication] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [progressEditable, setProgressEditable] = useState(false);
@@ -21,10 +22,6 @@ export default function ViewVisaApplication() {
         { date: null, time: null },
         { date: null, time: null }
     ]);
-
-    const handleSubmitAlternateSlots = () => {
-        message.success("Suggested appointment options submitted.");
-    };
 
     useEffect(() => {
         const fetchApplicationAndService = async () => {
@@ -38,7 +35,10 @@ export default function ViewVisaApplication() {
 
                 // if visaProcessSteps already exist in appData
                 const statusMap = visaProcessSteps.reduce((acc, step, idx) => {
-                    acc[step.title] = idx;
+                    const key = typeof step === "string" ? step : step?.title;
+                    if (key) {
+                        acc[key] = idx;
+                    }
                     return acc;
                 }, {});
 
@@ -85,16 +85,50 @@ export default function ViewVisaApplication() {
 
     console.log("Fetched application details:", application);
 
+    //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
+    const handleSubmitAlternateSlots = async () => {
+        setIsSubmittingSlots(true);
+        try {
+            const slots = alternateSlots
+                .map((slot) => ({
+                    date: slot.date ? dayjs(slot.date).format("YYYY-MM-DD") : null,
+                    time: slot.time ? dayjs(slot.time).format("h:mm A") : null
+                }))
+                .filter((slot) => slot.date && slot.time);
+
+            if (slots.length === 0) {
+                message.error("Please select date and time for at least one option.");
+                return;
+            }
+
+            await apiFetch.put(`/visa/applications/${id}/suggest-appointments`, { slots });
+
+            setIsSubmittingSlots(false);
+            message.success("Suggested appointment options submitted.");
+        } catch (error) {
+            setIsSubmittingSlots(false);
+            message.error("Failed to submit appointment options.");
+        }
+    };
+
+
     const statusText = Array.isArray(application?.status)
         ? application.status[application.status.length - 1]
         : application?.status;
 
-    const normalizeLabel = (value) => (
-        String(value)
-            .replace(/_/g, " ")
-            .replace(/([A-Z])/g, " $1")
-            .trim()
-    );
+    useEffect(() => {
+        if (!application?.visaProcessSteps || !statusText) return;
+
+        const statusMap = application.visaProcessSteps.reduce((acc, step, idx) => {
+            const key = typeof step === "string" ? step : step?.title;
+            if (key) {
+                acc[key] = idx;
+            }
+            return acc;
+        }, {});
+
+        setCurrentStep(statusMap[statusText] ?? 0);
+    }, [application?.visaProcessSteps, statusText]);
 
     const requirements = application?.visaRequirements || [];
 
@@ -191,7 +225,9 @@ export default function ViewVisaApplication() {
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable || isUpdatingStatus) return;
         // Map step index to status string
-        const statusArr = application.visaProcessSteps.map(step => step);
+        const statusArr = application.visaProcessSteps.map((step) =>
+            typeof step === "string" ? step : step?.title
+        );
         const newStatus = statusArr[stepIdx];
 
         if (!newStatus || newStatus === statusText) return;
@@ -211,6 +247,33 @@ export default function ViewVisaApplication() {
             setIsUpdatingStatus(false);
         }
     };
+
+    //EMBASSY REJECTED HANDLER ------------------------------------------------------
+    const handleEmbassyRejected = async () => {
+        try {
+            setIsUpdatingStatus(true);
+            await apiFetch.put(`/visa/applications/${id}/status`, { status: "Rejected" });
+            setApplication((prev) => ({ ...prev, status: "Rejected" }));
+            message.success("Application marked as Embassy Rejected");
+        } catch (err) {
+            message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    const handleEmbassyApproved = async () => {
+        try {
+            setIsUpdatingStatus(true);
+            await apiFetch.put(`/visa/applications/${id}/status`, { status: "Embassy Approved" });
+            setApplication((prev) => ({ ...prev, status: "Embassy Approved" }));
+            message.success("Application marked as Embassy Approved");
+        } catch (err) {
+            message.error("Failed to update status");
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    }
 
     // DISABLE PAST DATES AND WEEKENDS IN DATE PICKER ------------------------------------------------------
     const disableDates = (current) => {
@@ -257,7 +320,48 @@ export default function ViewVisaApplication() {
                             Back
                         </Button>
                         <Title level={2} style={{ marginBottom: 16 }}>Visa Application Details</Title>
-                        <div style={{ display: "flex", flexDirection: "row", gap: 32 }}>
+
+                        {/* WAITING FOR APPLICANT TO CHOOSE SUGGESTED APPOINTMENT OPTION */}
+                        {statusText && statusText.toLowerCase() === "application submitted" &&
+                            application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" &&
+                            application.suggestedAppointmentSchedules !== null && application.suggestedAppointmentSchedules.length > 0 &&
+                            (
+                                <Card style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}>
+                                    <Tag color="gold"><h2>AWAITING APPLICANT RESPONSE</h2></Tag>
+                                    <p style={{ margin: 0, fontSize: 14 }}>
+                                        You have suggested appointment schedules for this application. Kindly wait for the applicant's response. We will notify you once they have chosen an option.
+                                    </p>
+                                </Card>
+                            )}
+
+                        {/* APPLICANT HAS CHOSEN A SUGGESTED APPOINTMENT OPTION */}
+                        {statusText && statusText.toLowerCase() === "application submitted" &&
+                            application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
+                                <Card style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                    <Tag color="green"><h2>APPLICANT RESPONSE RECEIVED</h2></Tag>
+                                    <p style={{ margin: 0, fontSize: 14 }}>
+                                        The applicant has chosen their preferred appointment schedule.
+                                    </p>
+                                    <strong>
+                                        {dayjs(application.suggestedAppointmentScheduleChosen?.date).format("MMM DD, YYYY")} at {application.suggestedAppointmentScheduleChosen?.time}
+                                    </strong>
+                                </Card>
+                            )}
+
+                        {/* PASSPORT RELEASE PASSPORT OPTION CHOSEN BY THE APPLICANT */}
+                        {statusText && statusText.toLowerCase() === "passport released" && (
+                            <Card style={{ marginTop: 16, borderLeft: '4px solid #354ad8', backgroundColor: '#edf2ff' }}>
+                                <Tag color="blue"><h2>APPLICANT'S RELEASE PASSPORT OPTION</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    This is the chosen release passport option of the applicant.
+                                </p>
+                                <strong>
+                                    {application.passportReleaseOption === "pickup" ? "Pickup at MRC Travel and Tours office" : `Delivery to ${application.deliveryAddress || "N/A"}`}
+                                </strong>
+                            </Card>
+                        )}
+
+                        <div style={{ display: "flex", flexDirection: "row", gap: 32, marginTop: 24, flexWrap: "wrap" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: 24, minWidth: 800 }}>
                                 <Card>
                                     <Descriptions bordered column={2} size="middle">
@@ -285,6 +389,18 @@ export default function ViewVisaApplication() {
                                         </Descriptions.Item>
                                     </Descriptions>
                                 </Card>
+
+                                {/* DFA APPROVE OR REJECT OPTION WHEN STATUS IS PROCESSING BY DFA */}
+                                {statusText && String(statusText).toLowerCase() === "processing by embassy" && (
+                                    <Card title="Embassy Processing Actions" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                                        <Button type="primary" onClick={handleEmbassyApproved} className="viewpassportapplication-dfa-processing-button">
+                                            Embassy Approved
+                                        </Button>
+                                        <Button type="primary" onClick={handleEmbassyRejected} className="viewpassportapplication-passport-released-button" style={{ marginLeft: 8, backgroundColor: "#ff4d4f", borderColor: "#ff4d4f" }}>
+                                            Embassy Rejected
+                                        </Button>
+                                    </Card>
+                                )}
 
                                 {statusText && String(statusText).toLowerCase() === "application submitted" && (
                                     <Card title="Suggested Appointment Options" style={{ marginTop: 16 }}>
@@ -329,8 +445,7 @@ export default function ViewVisaApplication() {
                                     </Card>
                                 )}
 
-                                <Divider orientation="left">Submitted Documents</Divider>
-                                <Card>
+                                <Card title="Submitted Documents" style={{ marginTop: 16, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                     {submittedDocuments.length > 0 ? (
                                         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                                             {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
@@ -440,7 +555,7 @@ export default function ViewVisaApplication() {
                                                 orientation="vertical"
                                                 current={currentStep}
                                                 // This is the only place that should handle the click
-                                                onChange={progressEditable && !isUpdatingStatus ? handleStepChange : undefined}
+                                                onChange={undefined}
                                                 items={application.visaProcessSteps.map((step, idx) => ({
                                                     title: (
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -448,7 +563,7 @@ export default function ViewVisaApplication() {
                                                                 fontWeight: currentStep === idx ? 'bold' : 'normal',
                                                                 color: "#305797",
                                                             }}>
-                                                                {step}
+                                                                {typeof step === "string" ? step : step?.title}
                                                             </span>
                                                             <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
                                                                 Description for {step}
@@ -456,8 +571,10 @@ export default function ViewVisaApplication() {
                                                             <Checkbox
                                                                 checked={idx <= currentStep}
                                                                 disabled={!progressEditable}
-                                                                // REMOVE the onChange from here entirely
-                                                                style={{ pointerEvents: 'none' }}
+                                                                onChange={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleStepChange(idx);
+                                                                }}
                                                             >
                                                                 Done
                                                             </Checkbox>

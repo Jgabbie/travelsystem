@@ -5,7 +5,6 @@ import dayjs from 'dayjs'
 import LoginModal from '../../components/modals/LoginModal'
 import '../../style/client/passport.css'
 import apiFetch from '../../config/fetchConfig'
-import TopNavUser from '../../components/topnav/TopNavUser'
 
 
 const dfaLocations = [
@@ -260,20 +259,6 @@ export default function NewPassport() {
                                         {error.preferredTime || ''}
                                     </p>
                                 </div>
-                            </div>
-
-                            <div style={{ marginLeft: '20px' }}>
-                                <h3>FAQs</h3>
-                                <p>Find answers to common questions about the new passport application process.</p>
-
-                                <h4>What documents do I need to prepare?</h4>
-                                <p className='faqs-answer'>Refer to the requirements section above for a general list. Specific services may have additional requirements.</p>
-
-                                <h4>How long does the process take?</h4>
-                                <p className='faqs-answer'>Processing times vary by the DFA office and the type of service you are applying for. After submission, you will receive updates on your application's status.</p>
-
-                                <h4>Can I reschedule my appointment?</h4>
-                                <p className='faqs-answer'>Rescheduling policies depend on the DFA office. If you need to change your appointment, please contact the DFA office directly.</p>
                             </div>
 
                         </div>

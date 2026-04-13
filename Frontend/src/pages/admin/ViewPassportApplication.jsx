@@ -311,7 +311,47 @@ export default function ViewPassportApplication() {
                     </Button>
                     <Title level={2} style={{ marginBottom: 16 }}>Passport Application Details</Title>
 
-                    <div style={{ display: "flex", flexDirection: "row", gap: 32 }}>
+                    {/* WAITING FOR APPLICANT TO CHOOSE SUGGESTED APPOINTMENT OPTION */}
+                    {application.status && application.status.toLowerCase() === "application submitted" &&
+                        application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" &&
+                        application.suggestedAppointmentSchedules !== null && application.suggestedAppointmentSchedules.length > 0 &&
+                        (
+                            <Card style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}>
+                                <Tag color="gold"><h2>AWAITING APPLICANT RESPONSE</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    You have suggested appointment schedules for this application. Kindly wait for the applicant's response. We will notify you once they have chosen an option.
+                                </p>
+                            </Card>
+                        )}
+
+                    {/* APPLICANT HAS CHOSEN A SUGGESTED APPOINTMENT OPTION */}
+                    {application.status && application.status.toLowerCase() === "application submitted" &&
+                        application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
+                            <Card style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                <Tag color="green"><h2>APPLICANT RESPONSE RECEIVED</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    The applicant has chosen their preferred appointment schedule.
+                                </p>
+                                <strong>
+                                    {dayjs(application.suggestedAppointmentScheduleChosen?.date).format("MMM DD, YYYY")} at {application.suggestedAppointmentScheduleChosen?.time}
+                                </strong>
+                            </Card>
+                        )}
+
+                    {/* PASSPORT RELEASE PASSPORT OPTION CHOSEN BY THE APPLICANT */}
+                    {application.status && application.status.toLowerCase() === "passport released" && (
+                        <Card style={{ marginTop: 16, borderLeft: '4px solid #354ad8', backgroundColor: '#edf2ff' }}>
+                            <Tag color="blue"><h2>APPLICANT'S RELEASE PASSPORT OPTION</h2></Tag>
+                            <p style={{ margin: 0, fontSize: 14 }}>
+                                This is the chosen release passport option of the applicant.
+                            </p>
+                            <strong>
+                                {application.passportReleaseOption === "pickup" ? "Pickup at MRC Travel and Tours office" : `Delivery to ${application.deliveryAddress || "N/A"}`}
+                            </strong>
+                        </Card>
+                    )}
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: 32, marginTop: 24, flexWrap: "wrap" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: 24, minWidth: 800 }}>
 
                             {/* APPLICATION DETAILS */}
@@ -342,78 +382,7 @@ export default function ViewPassportApplication() {
                                 </Descriptions>
                             </Card>
 
-
-                            {/* SUGGEST APPOINTMENT DATES AND TIMES IF APPLICATION IS STILL SUBMITTED */}
-                            {application.status && application.status.toLowerCase() === "application submitted" &&
-                                application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                                    <div>
-                                        <Card style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", marginTop: 16 }} title="Suggested Appointment Options" >
-                                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                {alternateSlots.map((slot, idx) => (
-                                                    <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                                                        <span style={{ minWidth: 20 }}>{idx + 1}.</span>
-                                                        <DatePicker
-                                                            disabledDate={disableDates}
-                                                            placeholder="Select date"
-                                                            value={slot.date}
-                                                            onChange={(date) => {
-                                                                const next = [...alternateSlots];
-                                                                next[idx] = { ...next[idx], date };
-                                                                setAlternateSlots(next);
-                                                            }}
-                                                        />
-                                                        <TimePicker
-                                                            format="h:mm A"
-                                                            use12Hours
-                                                            showNow={false}
-                                                            minuteStep={30}
-                                                            disabledTime={() => ({
-                                                                disabledHours
-                                                            })}
-                                                            placeholder="Select time"
-                                                            value={slot.time}
-                                                            onChange={(time) => {
-                                                                const next = [...alternateSlots];
-                                                                next[idx] = { ...next[idx], time };
-                                                                setAlternateSlots(next);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                ))}
-                                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                                    <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewpassportapplication-submit-button">
-                                                        Submit Options
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </Card>
-
-                                    </div>
-                                )}
-
-                            {application.status && application.status.toLowerCase() === "application submitted" &&
-                                application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" && (
-                                    <Card style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}>
-                                        <Tag color="gold"><h2>AWAITING APPLICANT RESPONSE</h2></Tag>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            You have suggested appointment schedules for this application. Kindly wait for the applicant's response. We will notify you once they have chosen an option.
-                                        </p>
-                                    </Card>
-                                )}
-
-                            {application.status && application.status.toLowerCase() === "application submitted" &&
-                                application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                                    <Card style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
-                                        <Tag color="green"><h2>APPLICANT RESPONSE RECEIVED</h2></Tag>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            The applicant has chosen their preferred appointment schedule.
-                                        </p>
-                                        <strong>
-                                            {dayjs(application.suggestedAppointmentScheduleChosen?.date).format("MMM DD, YYYY")} at {application.suggestedAppointmentScheduleChosen?.time}
-                                        </strong>
-                                    </Card>
-                                )}
-
+                            {/* DFA APPROVE OR REJECT OPTION WHEN STATUS IS PROCESSING BY DFA */}
                             {application.status && application.status.toLowerCase() === "processing by dfa" && (
                                 <Card title="DFA Processing Actions" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
                                     <Button type="primary" onClick={handleDFAApproved} className="viewpassportapplication-dfa-processing-button">
@@ -424,6 +393,56 @@ export default function ViewPassportApplication() {
                                     </Button>
                                 </Card>
                             )}
+
+
+                            {/* SUGGEST APPOINTMENT DATES AND TIMES IF APPLICATION IS STILL SUBMITTED */}
+                            {application.status && application.status.toLowerCase() === "application submitted" && (
+                                <div>
+                                    <Card style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", marginTop: 16 }} title="Suggested Appointment Options" >
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                            {alternateSlots.map((slot, idx) => (
+                                                <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                                    <span style={{ minWidth: 20 }}>{idx + 1}.</span>
+                                                    <DatePicker
+                                                        disabledDate={disableDates}
+                                                        placeholder="Select date"
+                                                        value={slot.date}
+                                                        onChange={(date) => {
+                                                            const next = [...alternateSlots];
+                                                            next[idx] = { ...next[idx], date };
+                                                            setAlternateSlots(next);
+                                                        }}
+                                                    />
+                                                    <TimePicker
+                                                        format="h:mm A"
+                                                        use12Hours
+                                                        showNow={false}
+                                                        minuteStep={30}
+                                                        disabledTime={() => ({
+                                                            disabledHours
+                                                        })}
+                                                        placeholder="Select time"
+                                                        value={slot.time}
+                                                        onChange={(time) => {
+                                                            const next = [...alternateSlots];
+                                                            next[idx] = { ...next[idx], time };
+                                                            setAlternateSlots(next);
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                                <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewpassportapplication-submit-button">
+                                                    Submit Options
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Card>
+
+                                </div>
+                            )}
+
+
 
 
                             {/* VIEW SUBMITTED DOCUMENTS */}
@@ -485,10 +504,7 @@ export default function ViewPassportApplication() {
                                     </div>
                                 )}
                             </Card>
-
                         </div>
-
-
 
                         {/* PROGRESS TRACKER */}
                         <div style={{ display: "flex", flexDirection: "column", minWidth: 300 }}>

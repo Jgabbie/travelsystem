@@ -155,7 +155,9 @@ export default function UserManagement() {
       okType: "danger",
       onOk: async () => {
         try {
-          await apiFetch.delete('/user/deleteUsers', { data: { id }, withCredentials: true });
+          console.log("Attempting to delete user with id:", id);
+
+          await apiFetch.delete(`/user/deleteUsers/${id}`, { withCredentials: true });
           message.success("User deleted");
           getUsers();
         } catch { message.error("Delete failed"); }

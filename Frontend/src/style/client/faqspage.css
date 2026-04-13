@@ -1,44 +1,56 @@
 .faq-page {
     min-height: 100vh;
-    background: #f7f8fb;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .faq-hero {
     position: relative;
-    padding: 80px 24px 60px;
-    background: linear-gradient(135deg, #e9f1ff, #f9fbff);
-    overflow: hidden;
+    height: 600px;
+    background-image: url('/public/images/LandingPage_Banner.png');
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
 }
 
 .faq-hero-overlay {
     position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top left, rgba(48, 87, 151, 0.15), transparent 60%);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .faq-hero-content {
     position: relative;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
+    z-index: 1;
+    margin-bottom: 100px;
 }
 
 .faq-hero-content h1 {
-    margin-bottom: 12px;
-    font-size: 40px;
-    color: #1e3a68;
+    font-family: "Montserrat", sans-serif;
+    font-size: 80px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .faq-hero-content p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    max-width: 700px;
     margin: 0 auto;
-    max-width: 640px;
-    color: #4b5563;
-    font-size: 16px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .faq-container {
     max-width: 900px;
-    margin: -30px auto 60px;
+    margin: 40px auto 0px;
     padding: 0 24px 40px;
 }
 

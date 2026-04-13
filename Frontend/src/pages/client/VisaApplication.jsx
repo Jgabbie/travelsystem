@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image } from 'antd';
+import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
@@ -40,7 +40,18 @@ export default function VisaApplication() {
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [isConfirmDocumentsOpen, setIsConfirmDocumentsOpen] = useState(false);
 
+    const [selectedSuggestedIndex, setSelectedSuggestedIndex] = useState(null);
+    const [customDateTime, setCustomDateTime] = useState({ date: null, time: null });
+    const [confirmingSuggested, setConfirmingSuggested] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(null);
+
+    const [releaseOption, setReleaseOption] = useState(null);
+    const [deliveryAddress, setDeliveryAddress] = useState("");
+
     console.log('VisaApplication component rendered with application ID:', id);
+    console.log('Current application state on render:', application);
+
 
     const fetchVisaApplication = `/visa/applications/${id}`;
 
@@ -91,6 +102,8 @@ export default function VisaApplication() {
 
     // FIND CURRENT STEP INDEX BASED ON APPLICATION STATUS
     const statusValue = Array.isArray(application?.status) ? application.status[0] : application?.status;
+    console.log('Current application state:', statusValue);
+
     const currentStep = statusValue
         ? Math.max(
             0,
@@ -363,6 +376,99 @@ export default function VisaApplication() {
         return key;
     };
 
+    //HANDLE CONFIRMATION OF SUGGESTED APPOINTMENT
+    const handleConfirmSuggested = async () => {
+        if (!application?.suggestedAppointmentSchedules || selectedSuggestedIndex === null) {
+            message.warning('Please select an appointment option first.');
+            return;
+        }
+
+        if (selectedSuggestedIndex === 'others') {
+            if (!customDateTime.date || !customDateTime.time) {
+                message.warning('Please fill in all custom date and time fields.');
+                return;
+            }
+
+            setSelectedDate(dayjs(customDateTime.date).format('YYYY-MM-DD'));
+            setSelectedTime(customDateTime.time.format('h:mm A'));
+
+        } else if (typeof selectedSuggestedIndex === 'number') {
+            const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
+
+            if (!selected?.date || !selected?.time) {
+                message.error('Selected option is missing date or time.');
+                return;
+            }
+
+            setSelectedDate(dayjs(selected.date).format('YYYY-MM-DD'));
+            setSelectedTime(selected.time);
+        }
+
+        try {
+            setConfirmingSuggested(true);
+            await apiFetch.put(`/visa/applications/${id}/choose-appointment`, {
+                date: selectedDate,
+                time: selectedTime
+            });
+
+            const refreshed = await apiFetch.get(`/visa/applications/${id}`);
+            setApplication(refreshed);
+            message.success('Appointment schedule confirmed.');
+            window.location.reload();
+        } catch (error) {
+            message.error('Failed to confirm appointment schedule.');
+        } finally {
+            setConfirmingSuggested(false);
+        }
+    };
+
+    const handleReleaseOption = async () => {
+        if (!releaseOption) {
+            message.warning('Please select a passport release option first.');
+            return
+        }
+
+        if (releaseOption === 'delivery' && deliveryAddress.trim() === "") {
+            message.warning('Please provide a delivery address in your profile settings before choosing delivery option.');
+            return;
+        }
+
+        try {
+            await apiFetch.put(`/visa/applications/${id}/release-option`, {
+                passportReleaseOption: releaseOption,
+                deliveryAddress: releaseOption === 'delivery' ? deliveryAddress : ""
+            });
+
+            setDeliveryAddress("")
+            message.success('Passport release option has been submitted successfully.');
+        } catch (error) {
+            message.error('Failed to update passport release option.');
+        }
+    }
+
+    const disableDates = (current) => {
+        const today = dayjs().startOf('day');
+        const twoWeeksFromNow = today.add(14, 'day');
+
+        return (
+            current &&
+            (
+                current < twoWeeksFromNow ||
+                current.day() === 0 ||
+                current.day() === 6
+            )
+        );
+    };
+    const disabledHours = () => {
+        const hours = [];
+        for (let i = 0; i < 24; i++) {
+            if (i < 8 || i > 17) {
+                hours.push(i);
+            }
+        }
+        return hours;
+    }
+
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
             <div className="user-bookings-page">
@@ -380,6 +486,100 @@ export default function VisaApplication() {
                     <Spin spinning={loading}>
                         {application && (
                             <>
+
+                                {/* SUGGESTED APPOINTMENT */}
+                                {statusValue && statusValue.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                    >
+                                        <Tag color="green"><h2>SUGGESTED APPOINTMENT</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            You have successfully chosen your appointment schedule.
+                                            Kindly wait for its approval. We will notify you once the date is available.
+                                        </p>
+                                    </Card>
+                                )}
+
+
+                                {/*APPROVED APPOINTMENT DATE AND TIME */}
+                                {statusValue && statusValue.toLowerCase() === 'application approved' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                    >
+                                        <Tag color="green"><h2>YOUR APPOINTMENT DATE AND TIME</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your appointment has been scheduled for <strong>{application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" ? (dayjs(application.preferredDate).format('MMM D, YYYY')) : (dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY"))}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
+                                        </p>
+                                    </Card>
+                                )}
+
+                                {/* DOCUMENTS APPROVED */}
+                                {statusValue && statusValue.toLowerCase() === 'documents approved' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                    >
+                                        <Tag color="green"><h2>DOCUMENTS APPROVED</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your uploaded documents have been approved by our team.
+                                            You may now submit or deliver the physical copies of your documents to our office.
+                                        </p>
+                                    </Card>
+                                )}
+
+                                {/* THE REST OF THE PROCESS */}
+                                {statusValue && (statusValue.toLowerCase() === 'documents received' ||
+                                    statusValue?.toLowerCase() === 'documents submitted' ||
+                                    statusValue?.toLowerCase() === 'processing by dfa') && (
+                                        <Card
+                                            style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}
+                                        >
+                                            <Tag color="gold"><h2>PROGRESS TRACKER</h2></Tag>
+                                            <p style={{ margin: 0, fontSize: 14 }}>
+                                                Kindly refer to the progress tracker for the remaining steps of the process.
+                                                You will be also receiving email notifications and updates regarding the status of your application, so please stay tuned to your inbox.
+                                            </p>
+                                        </Card>
+                                    )}
+
+                                {/* APPLICATION DENIED */}
+                                {statusValue && statusValue.toLowerCase() === 'rejected' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0' }}
+                                    >
+                                        <Tag color="red"><h2>APPLICATION DENIED</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Unfortunately, your application has been denied.
+                                            You may contact our support team for further assistance or clarification regarding your application.
+                                            For now, your documents will be delivered back to you.
+                                            Please check your email for the details of the document return process.
+                                        </p>
+                                    </Card>
+                                )}
+
+                                {/* APPLICATION SUCCESS */}
+                                {statusValue && statusValue.toLowerCase() === 'embassy approved' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                        <Tag color="green"><h2>APPLICATION APPROVED</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Congratulations! Your application has been approved.
+                                            Your passport will be released and delivered to you once the process is complete.
+                                        </p>
+                                    </Card>
+                                )}
+
+                                {/* PASSPORT FOR RELEASE */}
+                                {statusValue && statusValue.toLowerCase() === 'passport released' && (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                        <Tag color="green"><h2>PASSPORT FOR RELEASE</h2></Tag>
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your passport is ready for release.
+                                            Please proceed to the office to collect it or wait for its delivery if you have chosen the delivery option.
+                                        </p>
+                                    </Card>
+                                )}
+
                                 <div style={{ display: 'flex', flexDirection: 'row', gap: 24 }}>
                                     <Card style={{ marginBottom: 32, width: '100%' }}>
                                         <Descriptions title="Application Info" bordered column={1}>
@@ -394,12 +594,103 @@ export default function VisaApplication() {
                                             <Descriptions.Item label="Application Type">{application.serviceName}</Descriptions.Item>
                                             <Descriptions.Item label="Total Price">₱{servicePrice.toFixed(2)}</Descriptions.Item>
                                         </Descriptions>
+
+                                        {/* PASSPORT RELEASE OPTION */}
+                                        {statusValue && statusValue.toLowerCase() === 'embassy approved' && (
+                                            <div style={{ marginTop: 20 }}>
+                                                <h3>Choose Your Passport Release Option</h3>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        gap: 16,
+                                                        justifyContent: 'center',
+                                                        flexWrap: 'wrap',
+                                                        marginTop: 20,
+                                                    }}
+                                                >
+
+                                                    <Card
+                                                        hoverable
+                                                        onClick={() => setReleaseOption('pickup')}
+                                                        style={{
+                                                            border: releaseOption === 'pickup'
+                                                                ? '2px solid #305797'
+                                                                : '1px solid #f0f0f0',
+                                                            boxShadow: releaseOption === 'pickup'
+                                                                ? '0 0 0 2px rgba(48,87,151,0.15)'
+                                                                : 'none',
+                                                            flex: '1 1 220px', // ✅ responsive width instead of fixed
+                                                            maxWidth: 400,     // ✅ prevents cards from getting too wide
+                                                            textAlign: 'center',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <h3 style={{ marginBottom: 8 }}>PICK UP</h3>
+                                                        <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                            Get your passport at our office
+                                                        </p>
+                                                    </Card>
+
+                                                    <Card
+                                                        hoverable
+                                                        onClick={() => setReleaseOption('delivery')}
+                                                        style={{
+                                                            border: releaseOption === 'delivery'
+                                                                ? '2px solid #305797'
+                                                                : '1px solid #f0f0f0',
+                                                            boxShadow: releaseOption === 'delivery'
+                                                                ? '0 0 0 2px rgba(48,87,151,0.15)'
+                                                                : 'none',
+                                                            flex: '1 1 220px',
+                                                            maxWidth: 400,
+                                                            textAlign: 'center',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <h3 style={{ marginBottom: 8 }}>DELIVERY</h3>
+                                                        <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                            Have your passport delivered to you
+                                                        </p>
+                                                    </Card>
+                                                </div>
+
+                                                {releaseOption === 'delivery' && (
+                                                    <div style={{ marginTop: 20 }}>
+                                                        <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                            Kindly enter your complete address as reference for delivery.
+                                                            Our team will contact you for confirmation and further details regarding the delivery of your passport.
+                                                        </p>
+
+                                                        <Input.TextArea
+                                                            placeholder="Enter your complete address"
+                                                            rows={4}
+                                                            style={{ marginBottom: 12 }}
+                                                            maxLength={250}
+                                                            value={deliveryAddress}
+                                                            onChange={(e) => { setDeliveryAddress(e.target.value) }}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <Button
+                                                    onClick={handleReleaseOption}
+                                                    type='primary'
+                                                    className='passportapplication-submit-button'
+                                                    style={{ marginTop: 15 }}
+                                                >
+                                                    Submit
+                                                </Button>
+                                            </div>
+
+                                        )}
                                     </Card>
 
                                     <Card title="Progress Tracker" style={{ marginBottom: 32, minHeight: 180 }}>
                                         <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
                                             <Steps
-                                                direction="vertical"
+                                                orientation="vertical"
                                                 size="default"
                                                 current={currentStep}
                                                 style={{ minWidth: 350, width: 'max-content' }}
@@ -424,6 +715,89 @@ export default function VisaApplication() {
                                     </Card>
                                 </div>
 
+                                {statusValue && statusValue.toLowerCase() === 'application submitted' && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "" && (
+                                    <Card title="Suggested Appointment Options" style={{ marginBottom: 32 }}>
+                                        {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
+                                            <>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                                                    {application.suggestedAppointmentSchedules.map((slot, index) => {
+                                                        const isSelected = selectedSuggestedIndex === index;
+
+                                                        return (
+                                                            <Card
+                                                                key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
+                                                                hoverable
+                                                                onClick={() => setSelectedSuggestedIndex(index)}
+                                                                style={{
+                                                                    border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
+                                                                    boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
+                                                                }}
+                                                            >
+                                                                <Tag color="blue">Option {index + 1}</Tag>
+                                                                <div style={{ marginTop: 8, fontWeight: 600 }}>
+                                                                    {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
+                                                                </div>
+                                                                <div style={{ color: '#6b7280' }}>{slot.time || 'Time TBD'}</div>
+                                                            </Card>
+                                                        );
+                                                    })}
+
+                                                    {/* "Others" Option Card */}
+                                                    <Card
+                                                        hoverable
+                                                        onClick={() => setSelectedSuggestedIndex('others')}
+                                                        style={{
+                                                            border: selectedSuggestedIndex === 'others' ? '2px solid #305797' : '1px solid #f0f0f0',
+                                                            boxShadow: selectedSuggestedIndex === 'others' ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
+                                                        }}
+                                                    >
+                                                        <Tag color="orange">Others</Tag>
+                                                        <div style={{ marginTop: 12 }}>
+                                                            <Space orientation="vertical" style={{ width: '100%' }}>
+                                                                <DatePicker
+                                                                    disabledDate={disableDates}
+                                                                    placeholder="Select Date"
+                                                                    style={{ width: '100%' }}
+                                                                    onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
+                                                                    onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
+                                                                />
+                                                                <TimePicker
+                                                                    format="h:mm A"
+                                                                    use12Hours
+                                                                    showNow={false}
+                                                                    minuteStep={30}
+                                                                    disabledTime={() => ({
+                                                                        disabledHours
+                                                                    })}
+                                                                    placeholder="Select Time"
+                                                                    style={{ width: '100%' }}
+                                                                    onChange={(time) => setCustomDateTime(prev => ({ ...prev, time }))}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                />
+                                                            </Space>
+                                                        </div>
+                                                    </Card>
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                                    <Button
+                                                        type="primary"
+                                                        onClick={handleConfirmSuggested}
+                                                        loading={confirmingSuggested}
+                                                        disabled={
+                                                            selectedSuggestedIndex === null ||
+                                                            (selectedSuggestedIndex === 'others' && (!customDateTime.date || !customDateTime.time))
+                                                        }
+                                                    >
+                                                        Confirm selected date
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p style={{ margin: 0, color: '#6b7280' }}>No suggested dates yet. Please check back later.</p>
+                                        )}
+                                    </Card>
+                                )}
 
                                 {statusValue && statusValue.toLowerCase() === 'payment complete' && (
                                     <Card title="Upload Requirements">
@@ -518,7 +892,7 @@ export default function VisaApplication() {
                                                 <div className="card-content">
                                                     <h3>Paymongo</h3>
                                                     <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
+                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
                                                 </div>
                                             </Radio.Button>
 

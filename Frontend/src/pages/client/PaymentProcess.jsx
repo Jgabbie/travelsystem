@@ -794,7 +794,7 @@ export default function PaymentProcess() {
                                     <div className="card-content">
                                         <h3>Paymongo</h3>
                                         <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
+                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
                                     </div>
                                 </Radio>
 

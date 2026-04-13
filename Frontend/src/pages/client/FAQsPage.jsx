@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react'
-import { Button, Collapse, ConfigProvider, Input } from 'antd'
+import { Button, Collapse, ConfigProvider, Input, Modal } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import '../../style/client/faqspage.css'
-import TopNavUser from '../../components/topnav/TopNavUser'
+
 
 const { Panel } = Collapse
 
@@ -36,13 +36,33 @@ const faqData = [
         category: 'Services',
         question: 'Do you offer visa and passport services?',
         answer: 'Yes. Visit the Services page for passport and visa assistance options.'
+    },
+    {
+        category: 'Services',
+        question: 'What documents do I need to prepare?',
+        answer: 'Refer to the requirements section above for a general list. Specific services may have additional requirements.'
+    },
+    {
+        category: 'Services',
+        question: 'How long does the process take?',
+        answer: 'Processing times vary by the DFA office and Embassy and the type of service you are applying for. After submission, you will receive updates on your application status.'
+    },
+    {
+        category: 'Services',
+        question: 'Can I reschedule my appointment?',
+        answer: 'Rescheduling policies depend on the DFA office. If you need to change your appointment, please contact the DFA office directly.'
     }
 ]
+
+
 
 export default function FAQsPage() {
     const navigate = useNavigate()
     const [searchTerm, setSearchTerm] = useState('')
     const [activeCategory, setActiveCategory] = useState('All')
+
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+    const [chatMessage, setChatMessage] = useState('')
 
     const categories = useMemo(() => {
         const unique = new Set(faqData.map((item) => item.category))
@@ -120,6 +140,34 @@ export default function FAQsPage() {
                         </Collapse>
                     )}
                 </div>
+
+                <Modal
+                    open={isChatbotOpen}
+                    onCancel={() => setIsChatbotOpen(false)}
+                    footer={null}
+                    title="Chatbot"
+                    wrapClassName="chatbot-modal"
+                >
+                    <div className="chatbot-body">
+                        <div className="chatbot-message">
+                            Hi! How can I help you today?
+                        </div>
+                        <Input.TextArea
+                            value={chatMessage}
+                            onChange={(e) => setChatMessage(e.target.value)}
+                            placeholder="Type your message..."
+                            rows={3}
+                        />
+                        <div className="chatbot-actions">
+                            <Button
+                                type="primary"
+                                disabled={!chatMessage.trim()}
+                            >
+                                Send
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </ConfigProvider>
     )

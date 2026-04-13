@@ -273,21 +273,6 @@ export default function ApplyVisa() {
                                         {error.purpose || ''}
                                     </p>
                                 </div>
-
-                            </div>
-
-                            <div style={{ marginLeft: '20px' }}>
-                                <h3>FAQs</h3>
-                                <p>Find answers to common questions about the visa application process.</p>
-
-                                <h4>What documents do I need to prepare?</h4>
-                                <p className='faqs-answer'>Refer to the requirements section above for a general list. Specific services may have additional requirements.</p>
-
-                                <h4>How long does the process take?</h4>
-                                <p className='faqs-answer'>Processing times vary by embassy and service. After submission, you will receive updates on your application's status.</p>
-
-                                <h4>Can I reschedule my appointment?</h4>
-                                <p className='faqs-answer'>Rescheduling policies depend on the embassy. If you need to change your appointment, please contact the embassy directly.</p>
                             </div>
                         </div>
                         <Button className="passport-submit" type="primary" onClick={submitRequest}>

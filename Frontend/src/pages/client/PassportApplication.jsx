@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space } from 'antd';
+import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
@@ -73,6 +73,9 @@ export default function PassportApplication() {
     const [confirmingSuggested, setConfirmingSuggested] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
+
+    const [releaseOption, setReleaseOption] = useState(null);
+    const [deliveryAddress, setDeliveryAddress] = useState("");
 
     const fetchPassportApplication = `/passport/applications/${id}`;
 
@@ -422,9 +425,6 @@ export default function PassportApplication() {
             setSelectedTime(selected.time);
         }
 
-        console.log("Confirming appointment with date:", selectedDate, "and time:", selectedTime);
-
-
         try {
             setConfirmingSuggested(true);
             await apiFetch.put(`/passport/applications/${id}/choose-appointment`, {
@@ -442,6 +442,30 @@ export default function PassportApplication() {
             setConfirmingSuggested(false);
         }
     };
+
+    const handleReleaseOption = async () => {
+        if (!releaseOption) {
+            message.warning('Please select a passport release option first.');
+            return
+        }
+
+        if (releaseOption === 'delivery' && deliveryAddress.trim() === "") {
+            message.warning('Please provide a delivery address in your profile settings before choosing delivery option.');
+            return;
+        }
+
+        try {
+            await apiFetch.put(`/passport/applications/${id}/release-option`, {
+                passportReleaseOption: releaseOption,
+                deliveryAddress: releaseOption === 'delivery' ? deliveryAddress : ""
+            });
+
+            setDeliveryAddress("")
+            message.success('Passport release option has been submitted successfully.');
+        } catch (error) {
+            message.error('Failed to update passport release option.');
+        }
+    }
 
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
@@ -482,7 +506,103 @@ export default function PassportApplication() {
                         Back
                     </Button>
                     <h2 style={{ marginTop: 24 }}>Passport Application Details</h2>
+
                     <Spin spinning={loading}>
+
+                        {/* SUGGESTED APPOINTMENT */}
+                        {application?.status && application?.status?.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
+                            <Card
+                                style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                            >
+                                <Tag color="green"><h2>SUGGESTED APPOINTMENT</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    You have successfully chosen your appointment schedule.
+                                    Kindly wait for its approval. We will notify you once the date is available.
+                                </p>
+                            </Card>
+                        )}
+
+
+                        {/*APPROVED APPOINTMENT DATE AND TIME */}
+                        {application?.status && application?.status?.toLowerCase() === 'application approved' && (
+                            <Card
+                                style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                            >
+                                <Tag color="green"><h2>YOUR APPOINTMENT DATE AND TIME</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    Your appointment has been scheduled for <strong>{dayjs(application.preferredDate).format('MMM D, YYYY') || dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY")}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
+                                </p>
+                            </Card>
+                        )}
+
+                        {/* DOCUMENTS APPROVED */}
+                        {application?.status && application?.status?.toLowerCase() === 'documents approved' && (
+                            <Card
+                                style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                            >
+                                <Tag color="green"><h2>DOCUMENTS APPROVED</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    Your uploaded documents have been approved by our team.
+                                    You may now submit or deliver the physical copies of your documents to our office.
+                                </p>
+                            </Card>
+                        )}
+
+                        {/* THE REST OF THE PROCESS */}
+                        {application?.status && (application?.status?.toLowerCase() === 'documents received' ||
+                            application?.status?.toLowerCase() === 'documents submitted' ||
+                            application?.status?.toLowerCase() === 'processing by dfa') && (
+                                <Card
+                                    style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}
+                                >
+                                    <Tag color="gold"><h2>PROGRESS TRACKER</h2></Tag>
+                                    <p style={{ margin: 0, fontSize: 14 }}>
+                                        Kindly refer to the progress tracker for the remaining steps of the process.
+                                        You will be also receiving email notifications and updates regarding the status of your application, so please stay tuned to your inbox.
+                                    </p>
+                                </Card>
+                            )}
+
+                        {/* APPLICATION DENIED */}
+                        {application?.status && application?.status?.toLowerCase() === 'rejected' && (
+                            <Card
+                                style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0' }}
+                            >
+                                <Tag color="red"><h2>APPLICATION DENIED</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    Unfortunately, your application has been denied.
+                                    You may contact our support team for further assistance or clarification regarding your application.
+                                    For now, your documents will be delivered back to you.
+                                    Please check your email for the details of the document return process.
+                                </p>
+                            </Card>
+                        )}
+
+                        {/* APPLICATION SUCCESS */}
+                        {application?.status && application?.status?.toLowerCase() === 'dfa approved' && (
+                            <Card
+                                style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                <Tag color="green"><h2>APPLICATION APPROVED</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    Congratulations! Your application has been approved.
+                                    Your passport will be released and delivered to you once the process is complete.
+                                </p>
+                            </Card>
+                        )}
+
+                        {/* PASSPORT FOR RELEASE */}
+                        {application?.status && application?.status?.toLowerCase() === 'passport released' && (
+                            <Card
+                                style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                <Tag color="green"><h2>PASSPORT FOR RELEASE</h2></Tag>
+                                <p style={{ margin: 0, fontSize: 14 }}>
+                                    Your passport is ready for release.
+                                    Please proceed to the office to collect it or wait for its delivery if you have chosen the delivery option.
+                                </p>
+                            </Card>
+                        )}
+
+
                         {application && (
                             <>
                                 <div style={{ display: 'flex', flexDirection: 'row', gap: 24 }}>
@@ -500,39 +620,133 @@ export default function PassportApplication() {
                                             <Descriptions.Item label="Application Type">{application.applicationType}</Descriptions.Item>
                                             <Descriptions.Item label="Total Price">₱2,000</Descriptions.Item>
                                         </Descriptions>
+
+                                        {/* PASSPORT RELEASE OPTION */}
+                                        {application?.status?.toLowerCase() === 'dfa approved' && (
+                                            <div style={{ marginTop: 20 }}>
+                                                <h3>Choose Your Passport Release Option</h3>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        gap: 16,
+                                                        justifyContent: 'center',
+                                                        flexWrap: 'wrap',
+                                                        marginTop: 20,
+                                                    }}
+                                                >
+
+                                                    <Card
+                                                        hoverable
+                                                        onClick={() => setReleaseOption('pickup')}
+                                                        style={{
+                                                            border: releaseOption === 'pickup'
+                                                                ? '2px solid #305797'
+                                                                : '1px solid #f0f0f0',
+                                                            boxShadow: releaseOption === 'pickup'
+                                                                ? '0 0 0 2px rgba(48,87,151,0.15)'
+                                                                : 'none',
+                                                            flex: '1 1 220px', // ✅ responsive width instead of fixed
+                                                            maxWidth: 400,     // ✅ prevents cards from getting too wide
+                                                            textAlign: 'center',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <h3 style={{ marginBottom: 8 }}>PICK UP</h3>
+                                                        <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                            Get your passport at our office
+                                                        </p>
+                                                    </Card>
+
+                                                    <Card
+                                                        hoverable
+                                                        onClick={() => setReleaseOption('delivery')}
+                                                        style={{
+                                                            border: releaseOption === 'delivery'
+                                                                ? '2px solid #305797'
+                                                                : '1px solid #f0f0f0',
+                                                            boxShadow: releaseOption === 'delivery'
+                                                                ? '0 0 0 2px rgba(48,87,151,0.15)'
+                                                                : 'none',
+                                                            flex: '1 1 220px',
+                                                            maxWidth: 400,
+                                                            textAlign: 'center',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s ease',
+                                                        }}
+                                                    >
+                                                        <h3 style={{ marginBottom: 8 }}>DELIVERY</h3>
+                                                        <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                            Have your passport delivered to you
+                                                        </p>
+                                                    </Card>
+                                                </div>
+
+                                                {releaseOption === 'delivery' && (
+                                                    <div style={{ marginTop: 20 }}>
+                                                        <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                            Kindly enter your complete address as reference for delivery.
+                                                            Our team will contact you for confirmation and further details regarding the delivery of your passport.
+                                                        </p>
+
+                                                        <Input.TextArea
+                                                            placeholder="Enter your complete address"
+                                                            rows={4}
+                                                            style={{ marginBottom: 12 }}
+                                                            maxLength={250}
+                                                            value={deliveryAddress}
+                                                            onChange={(e) => { setDeliveryAddress(e.target.value) }}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <Button
+                                                    onClick={handleReleaseOption}
+                                                    type='primary'
+                                                    className='passportapplication-submit-button'
+                                                    style={{ marginTop: 15 }}
+                                                >
+                                                    Submit
+                                                </Button>
+                                            </div>
+
+                                        )}
                                     </Card>
 
-                                    <Card title="Progress Tracker" style={{ marginBottom: 32, minHeight: 180 }}>
-                                        <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
-                                            <Steps
-                                                direction="vertical"
-                                                size="default"
-                                                current={currentStep}
-                                                style={{ minWidth: 350, width: 'max-content' }}
-                                                items={PASSPORT_STEPS.map((step, idx) => ({
-                                                    title: (
-                                                        <span
-                                                            style={{
-                                                                fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                color: currentStep === idx ? '#305797' : 'inherit',
-                                                                fontSize: 16,
-                                                                textAlign: 'center',
-                                                                whiteSpace: 'nowrap',
-                                                            }}
-                                                        >
-                                                            {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
-                                                        </span>
-                                                    ),
-                                                    description: (
-                                                        <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
-                                                    ),
-                                                }))}
-                                            />
-                                        </div>
-                                    </Card>
+
+                                    {application?.status && application?.status?.toLowerCase() !== 'rejected' && (
+                                        <Card title="Progress Tracker" style={{ marginBottom: 32, minHeight: 180 }}>
+                                            <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
+                                                <Steps
+                                                    orientation="vertical"
+                                                    size="default"
+                                                    current={currentStep}
+                                                    style={{ minWidth: 350, width: 'max-content' }}
+                                                    items={PASSPORT_STEPS.map((step, idx) => ({
+                                                        title: (
+                                                            <span
+                                                                style={{
+                                                                    fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                                    color: currentStep === idx ? '#305797' : 'inherit',
+                                                                    fontSize: 16,
+                                                                    textAlign: 'center',
+                                                                    whiteSpace: 'nowrap',
+                                                                }}
+                                                            >
+                                                                {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
+                                                            </span>
+                                                        ),
+                                                        description: (
+                                                            <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
+                                                        ),
+                                                    }))}
+                                                />
+                                            </div>
+                                        </Card>
+                                    )}
                                 </div>
 
-                                {application.status.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen?.time === "" && (
+                                {application?.status && application.status?.toLowerCase() === 'application submitted' && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "" && (
                                     <Card title="Suggested Appointment Options" style={{ marginBottom: 32 }}>
                                         {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
                                             <>
@@ -616,36 +830,7 @@ export default function PassportApplication() {
                                     </Card>
                                 )}
 
-
-                                {application.status?.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                                    <Card
-                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                    >
-                                        <Tag color="green"><h2>SUGGESTED APPOINTMENT</h2></Tag>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            You have successfully chosen your appointment schedule.
-                                            Kindly wait for its approval. We will notify you once the date is available.
-                                        </p>
-                                    </Card>
-                                )}
-
-
-
-                                {application.status && application.status.toLowerCase() === 'application approved' && (
-                                    <Card
-                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                    >
-                                        <Tag color="green"><h2>YOUR APPOINTMENT DATE AND TIME</h2></Tag>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            Your appointment has been scheduled for <strong>{dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY") || application.preferredDate}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
-                                        </p>
-                                    </Card>
-                                )}
-
-
-
-
-                                {application.status && application.status.toLowerCase() === 'application approved' && !paymentCompleted && (
+                                {application?.status && application?.status?.toLowerCase() === 'application approved' && !paymentCompleted && (
                                     <Card title="Payment" style={{ marginBottom: 32 }}>
                                         <div className='payment-methods-container payment-section'>
                                             <div className="payment-methods-wrapper">
@@ -672,7 +857,7 @@ export default function PassportApplication() {
                                                         <div className="card-content">
                                                             <h3>Paymongo</h3>
                                                             <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                                            <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for usinhg this payment method is 3.5%.</p>
+                                                            <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
                                                         </div>
                                                     </Radio.Button>
 
@@ -785,7 +970,7 @@ export default function PassportApplication() {
                                 )}
 
                                 {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                {application.status && application.status?.toLowerCase() === 'payment complete' && (
+                                {application?.status && application?.status?.toLowerCase() === 'payment complete' && (
                                     <Card title="Upload Requirements">
 
                                         <div style={{ marginBottom: 24 }}>
@@ -900,76 +1085,12 @@ export default function PassportApplication() {
                                     </Card>
                                 )}
 
-                                {/* DOCUMENTS APPROVED */}
-                                {application.status && application.status?.toLowerCase() === 'documents approved' && (
-                                    <Card
-                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                    >
-                                        <Tag color="green"><h2>DOCUMENTS APPROVED</h2></Tag>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            Your uploaded documents have been approved by our team.
-                                            You may now submit or deliver the physical copies of your documents to our office.
-                                        </p>
-                                    </Card>
-                                )}
-
-                                {/* THE REST OF THE PROCESS */}
-                                {application.status && application.status?.toLowerCase() === 'documents received' ||
-                                    application.status?.toLowerCase() === 'documents submitted' ||
-                                    application.status?.toLowerCase() === 'processing by dfa' && (
-                                        <Card
-                                            style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}
-                                        >
-                                            <Tag color="gold"><h2>PROGRESS TRACKER</h2></Tag>
-                                            <p style={{ margin: 0, fontSize: 14 }}>
-                                                Kindly refer to the progress tracker for the remaining steps of the process.
-                                                You will be also receiving email notifications and updates regarding the status of your application, so please stay tuned to your inbox.
-                                            </p>
-                                        </Card>
-                                    )}
-
-                                {/* APPLICATION DENIED */}
-                                {application.status && application.status?.toLowerCase() === 'application rejected' && (
-                                    <Card
-                                        style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0' }}
-                                    >
-                                        <Tag color="red"><h2>APPLICATION DENIED</h2></Tag>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            Unfortunately, your application has been denied.
-                                            You may contact our support team for further assistance or clarification regarding your application.
-                                            For now, your documents will be delivered back to you.
-                                            Please check your email for the details of the document return process.
-                                        </p>
-                                    </Card>
-                                )}
-
-                                {/* APPLICATION SUCCESS */}
-                                {application.status && application.status.toLowerCase() === 'application approved' && (
-                                    <Card
-                                        style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}>
-                                        <Tag color="gold"><h2>APPLICATION APPROVED</h2></Tag>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            Congratulations! Your application has been approved.
-                                            Your passport will be released and delivered to you once the process is complete.
-                                            Please check your email for the details of the passport return process.
-                                        </p>
-                                    </Card>
-                                )}
-
-
-
-
-
-
-
-
-
-
 
                                 {/* DOCUMENTS UPLOADED */}
-                                {application.status && application.status.toLowerCase() !== 'application submitted' &&
-                                    application.status.toLowerCase() !== 'application approved' &&
-                                    application.status.toLowerCase() !== 'payment complete' && (
+                                {application?.status && application?.status?.toLowerCase() !== 'application submitted' &&
+                                    application?.status?.toLowerCase() !== 'application approved' &&
+                                    application?.status?.toLowerCase() !== 'payment complete' &&
+                                    application?.status?.toLowerCase() !== 'rejected' && (
                                         <Card title="Uploaded Documents" style={{ marginBottom: 32 }}>
                                             <div style={{ display: 'flex', flexDirection: 'row', gap: 160, flexWrap: 'wrap' }}>
                                                 {(() => {
@@ -1032,3 +1153,4 @@ export default function PassportApplication() {
         </ConfigProvider >
     );
 }
+

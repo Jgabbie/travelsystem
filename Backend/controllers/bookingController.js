@@ -151,7 +151,7 @@ const getAllBookings = async (_req, res) => {
     try {
         const bookings = await BookingModel.find({})
             .populate('userId', 'username')
-            .populate('packageId', 'packageName packageType')
+            .populate('packageId', 'packageName packageType packageDuration')
             .sort({ createdAt: -1 });
 
         res.status(200).json(bookings)

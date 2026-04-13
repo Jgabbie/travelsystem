@@ -10,6 +10,9 @@ router.get('/user-applications', userAuth, visaController.getUserVisaApplication
 router.get('/applications/:id', userAuth, visaController.getVisaApplicationById)
 router.put('/applications/:id/status', userAuth, visaController.updateVisaApplicationStatus)
 router.put('/applications/:id/documents', userAuth, visaController.updateVisaApplicationWithDocs)
+router.put('/applications/:id/suggest-appointments', userAuth, visaController.suggestAppointmentSchedules)
+router.put('/applications/:id/choose-appointment', userAuth, visaController.chosenSuggestedSchedule)
+router.put('/applications/:id/release-option', userAuth, visaController.passportReleaseOptionUpdate)
 router.post('/verify-payment', userAuth, visaController.verifyTokenCheckout);
 
 module.exports = router
