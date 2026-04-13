@@ -14,7 +14,7 @@ export default function LandingPage() {
     const aboutusRef = useRef(null)
 
     const [budgetRange, setBudgetRange] = useState([12000, 30000]);
-    const [activity, setActivity] = useState('Adventure Type');
+    const [activity, setActivity] = useState([]);
     const [type, setType] = useState('Tour Type');
     const [duration, setDuration] = useState('Length of Stay');
     const [pax, setPax] = useState('');
@@ -29,6 +29,7 @@ export default function LandingPage() {
 
     const [popularPackages, setPopularPackages] = useState([])
     const [domesticPackages, setDomesticPackages] = useState([])
+    const [activityTags, setActivityTags] = useState([])
     const [isPopularLoading, setIsPopularLoading] = useState(false)
     const [isDomesticLoading, setIsDomesticLoading] = useState(false)
 
@@ -47,8 +48,8 @@ export default function LandingPage() {
             params.set('q', trimmed);
         }
 
-        if (activity && activity !== 'Adventure Type') {
-            params.set('activity', activity);
+        if (Array.isArray(activity) && activity.length) {
+            activity.forEach((tag) => params.append('tag', tag));
         }
 
         if (duration && duration !== 'Length of Stay') {
@@ -181,6 +182,26 @@ export default function LandingPage() {
         fetchDomesticPackages()
     }, [])
 
+    useEffect(() => {
+        const fetchActivityTags = async () => {
+            try {
+                const response = await apiFetch.get('/package/get-packages-for-users')
+                const unique = new Set()
+
+                    ; (response || []).forEach((pkg) => {
+                        pkg.packageTags?.forEach((tag) => unique.add(tag))
+                    })
+
+                setActivityTags(Array.from(unique))
+            } catch (error) {
+                console.error('Failed to load activity tags:', error)
+                setActivityTags([])
+            }
+        }
+
+        fetchActivityTags()
+    }, [])
+
     const formatDescription = (text, maxLength = 160) => {
         if (!text) return 'No description available.'
         if (text.length <= maxLength) return text
@@ -228,9 +249,9 @@ export default function LandingPage() {
                                     }
                                 }}
                             />
-                            <button className="search-btn" onClick={handleSearch}>
+                            <Button type='primary' className="search-btn" onClick={handleSearch}>
                                 <SearchOutlined />
-                            </button>
+                            </Button>
                         </div>
 
 
@@ -241,14 +262,15 @@ export default function LandingPage() {
                                 <label>ACTIVITIES</label>
                                 <Select
                                     className="landing-select"
+                                    mode="multiple"
+                                    allowClear
+                                    placeholder="Select tags"
                                     value={activity}
                                     onChange={setActivity}
-                                    options={[
-                                        { value: 'Adventure Type', label: 'Adventure Type' },
-                                        { value: 'Beach', label: 'Beach' },
-                                        { value: 'Hiking', label: 'Hiking' },
-                                        { value: 'City Tour', label: 'City Tour' },
-                                    ]}
+                                    options={activityTags.map((tag) => ({
+                                        value: tag,
+                                        label: tag
+                                    }))}
                                 />
                             </div>
 
@@ -648,13 +670,14 @@ export default function LandingPage() {
                                     />
                                     <Button
                                         type="primary"
-                                        className='contact-submit-button'
+                                        className={`contact-submit-button${(!contactValues.name.trim() || !contactValues.email.trim() || !contactValues.message.trim()) ? ' contact-submit-button-disabled' : ''}`}
                                         disabled={
                                             !contactValues.name.trim() ||
                                             !contactValues.email.trim() ||
                                             !contactValues.message.trim()
                                         }
                                         onClick={sendMessage}
+                                        style={(!contactValues.name.trim() || !contactValues.email.trim() || !contactValues.message.trim()) ? { pointerEvents: 'none' } : {}}
                                     >
                                         Submit
                                     </Button>

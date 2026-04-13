@@ -64,19 +64,24 @@
     gap: 12px;
 }
 
-.package-action-secondary {
-    background: #305797 !important;
-    color: #fff !important;
-    border-radius: 10px;
-    border: none !important;
+.package-action-secondary,
+.package-action-outline {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
     font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 160px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.package-action-outline {
-    border-color: #305797 !important;
+.package-action-secondary:hover,
+.package-action-outline:hover {
+    background-color: #e9e9e9 !important;
     color: #305797 !important;
-    border-radius: 10px;
-    font-weight: 600;
 }
 
 .package-left-content {
@@ -154,12 +159,21 @@
 }
 
 .package-availability-button {
-    margin-top: 8px;
-    background: #305797 !important;
-    color: #fff !important;
-    border-radius: 10px;
-    border: none !important;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
     font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 250px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.package-availability-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
 }
 
 .package-tabs {

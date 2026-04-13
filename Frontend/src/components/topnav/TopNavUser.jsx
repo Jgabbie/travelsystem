@@ -113,26 +113,27 @@ export default function TopNavUser() {
         },
         {
             key: '3',
-            label: 'My Bookings',
-            icon: <CarryOutOutlined />,
-        },
-        {
-            key: '8',
-            label: 'My Applications',
-            icon: <IdcardOutlined />,
-        },
-        {
-            key: '4',
-            label: 'My Quotations',
-            icon: <IdcardOutlined />,
-        },
-        {
-            key: '5',
             label: 'My Wishlist',
             icon: <StarOutlined />,
         },
         {
+            key: '4',
+            label: 'My Bookings',
+            icon: <CarryOutOutlined />,
+        },
+        {
+            key: '5',
+            label: 'My Applications',
+            icon: <IdcardOutlined />,
+        },
+        {
             key: '6',
+            label: 'My Quotations',
+            icon: <IdcardOutlined />,
+        },
+
+        {
+            key: '7',
             label: 'My Transactions',
             icon: <CreditCardOutlined />,
         },
@@ -140,7 +141,7 @@ export default function TopNavUser() {
             type: 'divider',
         },
         {
-            key: '7',
+            key: '8',
             label: 'Logout',
             icon: <LogoutOutlined />,
             danger: true,
@@ -149,21 +150,21 @@ export default function TopNavUser() {
 
     //dropdown menu items handler/functions
     const handleMenuClick = ({ key }) => {
-        if (key === '7') {
+        if (key === '8') {
             logout()
         } else if (key === '1') {
             navigate('/home');
         } else if (key === '2') {
             navigate('/profile');
         } else if (key === '3') {
-            navigate('/user-bookings');
-        } else if (key === '8') {
-            navigate('/user-applications');
-        } else if (key === '4') {
-            navigate('/user-package-quotation');
-        } else if (key === '5') {
             navigate('/wishlist');
+        } else if (key === '4') {
+            navigate('/user-bookings');
+        } else if (key === '5') {
+            navigate('/user-applications');
         } else if (key === '6') {
+            navigate('/user-package-quotation');
+        } else if (key === '7') {
             navigate('/user-transactions');
         }
     }

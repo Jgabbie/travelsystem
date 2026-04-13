@@ -33,6 +33,7 @@ export default function PackagePage() {
     const [selectedDate, setSelectedDate] = useState(null)
     const [selectedDatePrice, setSelectedDatePrice] = useState(0)
     const [selectedDateRate, setSelectedDateRate] = useState(0)
+    const [selectedDateSlots, setSelectedDateSlots] = useState(0)
     const [travelerCounts, setTravelerCounts] = useState(null)
     const [arrangementSelection, setArrangementSelection] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
@@ -57,6 +58,7 @@ export default function PackagePage() {
         setSelectedDate(null)
         setSelectedDatePrice(0)
         setSelectedDateRate(0)
+        setSelectedDateSlots(0)
         setTravelerCounts(null)
         setArrangementSelection(null)
         setSoloGroupSelection(null)
@@ -302,9 +304,11 @@ export default function PackagePage() {
         travelDate: selectedDate,
         travelDatePrice: selectedDatePrice,
         travelDateRate: selectedDateRate,
+        travelDateSlots: selectedDateSlots,
         inclusions: packageData?.packageInclusions || [],
         exclusions: packageData?.packageExclusions || [],
         itinerary: packageData?.packageItineraries || {},
+        visaRequired: packageData?.visaRequired || false,
         images: packageData?.images || []
     }
 
@@ -451,9 +455,10 @@ export default function PackagePage() {
                                     )}
                                 </div>
 
+
                                 <div className="package-actions-left">
-                                    <Button className="package-action-secondary" onClick={handleWishlistClick}>Add to Wishlist</Button>
-                                    <Button className="package-action-outline" onClick={() => setShowReviews((prev) => !prev)}>
+                                    <Button type='primary' className="package-action-secondary" onClick={handleWishlistClick}>Add to Wishlist</Button>
+                                    <Button type='primary' className="package-action-outline" onClick={() => setShowReviews((prev) => !prev)}>
                                         {showReviews ? 'Back to Details' : 'Review and Ratings'}
                                     </Button>
                                 </div>
@@ -650,7 +655,11 @@ export default function PackagePage() {
                                             <div className="package-pricepax">
                                                 ₱{packageData?.packagePricePerPax?.toLocaleString() || '--'}
                                             </div>
-                                            <Button className="package-availability-button" onClick={handleBookingProcess}>
+                                            <Button disabled={(() => {
+                                                if (packageLoading || !packageData) return true;
+                                                const totalSlots = (packageData.packageSpecificDate || []).reduce((sum, d) => sum + Number(d.slots || 0), 0);
+                                                return totalSlots <= 0;
+                                            })()} type='primary' className="package-availability-button" onClick={handleBookingProcess}>
                                                 Check Availability
                                             </Button>
                                         </div>
@@ -683,10 +692,11 @@ export default function PackagePage() {
                         selectedDate={selectedDate}
                         selectedDatePrice={selectedDatePrice}
                         selectedDateRate={selectedDateRate}
-                        onDateChange={({ date, price, rate }) => {
+                        onDateChange={({ date, price, rate, slots }) => {
                             setSelectedDate(date);
                             setSelectedDatePrice(price);
                             setSelectedDateRate(rate);
+                            setSelectedDateSlots(slots || 0);
                         }}
                     />
 

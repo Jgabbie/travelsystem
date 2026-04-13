@@ -78,6 +78,7 @@ export default function DestinationsPackages() {
         const params = new URLSearchParams(location.search)
         const query = params.get('q')
         const tag = params.get('tag')
+        const tags = params.getAll('tag')
         const tourTypeParam = params.get('tourType')
         const minBudget = Number(params.get('minBudget'))
         const maxBudget = Number(params.get('maxBudget'))
@@ -88,7 +89,9 @@ export default function DestinationsPackages() {
             setSearch(query)
         }
 
-        if (tag) {
+        if (tags.length) {
+            setSelectedTags(tags)
+        } else if (tag) {
             setSelectedTags([tag])
         }
 
@@ -360,9 +363,12 @@ export default function DestinationsPackages() {
                                 {filteredPackages.map((pkg) => (
                                     <Col xs={24} sm={12} lg={8} key={pkg.id}>
                                         <Card
-                                            className="destinations-card"
-                                            hoverable
-                                            onClick={() => navigate(`/package/${pkg.id}`)}
+                                            className={`destinations-card${pkg.availableSlots <= 0 ? ' destinations-card-disabled' : ''}`}
+                                            hoverable={pkg.availableSlots > 0}
+                                            onClick={() => {
+                                                if (pkg.availableSlots > 0) navigate(`/package/${pkg.id}`)
+                                            }}
+                                            style={pkg.availableSlots <= 0 ? { opacity: 0.6, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
                                         >
                                             <div className="destinations-card-image">
                                                 {pkg.images ? (

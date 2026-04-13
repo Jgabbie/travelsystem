@@ -21,12 +21,34 @@ const generateTransactionReference = () => {
     return `TX-${timestamp}${random}`
 }
 
+const getTravelerCount = (booking) => {
+    const rawTravelers = booking?.travelers
+
+    if (Array.isArray(rawTravelers)) {
+        return Math.max(1, rawTravelers.length)
+    }
+
+    const parsed = Number(rawTravelers)
+    if (Number.isFinite(parsed) && parsed > 0) {
+        return parsed
+    }
+
+    const fallback = Number(booking?.bookingDetails?.travelersCount?.total)
+    if (Number.isFinite(fallback) && fallback > 0) {
+        return fallback
+    }
+
+    return 1
+}
+
 const decrementPackageSlotsForBooking = async (booking) => {
     if (!booking?.packageId || !booking?.travelDate) return false
 
     console.log('Slot decrement booking dates:', booking.travelDate)
     const packageDoc = await PackageModel.findById(booking.packageId).select('packageSpecificDate')
     console.log('Slot decrement package dates:', packageDoc?.packageSpecificDate)
+
+    const travelerCount = getTravelerCount(booking)
 
     const normalizedStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD')
     const normalizedEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD')
@@ -38,12 +60,12 @@ const decrementPackageSlotsForBooking = async (booking) => {
                 $elemMatch: {
                     startdaterange: normalizedStart,
                     enddaterange: normalizedEnd,
-                    slots: { $gt: 0 }
+                    slots: { $gte: travelerCount }
                 }
             }
         },
         {
-            $inc: { 'packageSpecificDate.$.slots': -1 }
+            $inc: { 'packageSpecificDate.$.slots': -travelerCount }
         }
     )
 
@@ -59,6 +81,8 @@ const decrementPackageSlotsForBooking = async (booking) => {
 const incrementPackageSlotsForBooking = async (booking) => {
     if (!booking?.packageId || !booking?.travelDate) return false
 
+    const travelerCount = getTravelerCount(booking)
+
     const normalizedStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD')
     const normalizedEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD')
 
@@ -73,7 +97,7 @@ const incrementPackageSlotsForBooking = async (booking) => {
             }
         },
         {
-            $inc: { 'packageSpecificDate.$.slots': 1 }
+            $inc: { 'packageSpecificDate.$.slots': travelerCount }
         }
     )
 

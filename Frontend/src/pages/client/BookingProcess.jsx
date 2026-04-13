@@ -116,6 +116,10 @@ export default function BookingProcess() {
         ? '1 Person'
         : `${travelersTotal} Person(s)${travelerBreakdownParts.length ? ` (${travelerBreakdownParts.join(', ')})` : ''}`
 
+    const availableSlots = Number(data.travelDateSlots || 0)
+    const isGroupDisabled = availableSlots === 1
+    const isTravelerLimitReached = availableSlots > 0 && travelersTotal >= availableSlots
+
     const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
@@ -124,8 +128,6 @@ export default function BookingProcess() {
     const travelDocumentShortLabel = isDomesticPackage ? 'valid ID' : 'passport'
     const images = data.images || []
     const requiresVisa = Boolean(
-        data.requiresVisa ??
-        data.packageRequiresVisa ??
         data.visaRequired
     )
 
@@ -811,8 +813,12 @@ export default function BookingProcess() {
 
                             <button
                                 type="button"
-                                className={`solo-group-card${selectedSoloGrouped === 'group' ? ' is-selected' : ''}`}
-                                onClick={() => setSelectedSoloGrouped('group')}
+                                className={`solo-group-card${selectedSoloGrouped === 'group' ? ' is-selected' : ''} ${isGroupDisabled ? ' is-disabled' : ''}`}
+                                onClick={() => {
+                                    if (isGroupDisabled) return
+                                    setSelectedSoloGrouped('group')
+                                }}
+                                disabled={isGroupDisabled}
                             >
                                 <div className="solo-group-image group" />
                                 <h3>Grouped Booking</h3>
@@ -855,7 +861,7 @@ export default function BookingProcess() {
                                             -
                                         </button>
                                         <span>{counts.adult}</span>
-                                        <button type="button" onClick={increaseAdult}>+</button>
+                                        <button type="button" onClick={increaseAdult} disabled={isTravelerLimitReached}>+</button>
                                     </div>
                                 </div>
                                 <div className="traveler-card">
@@ -872,7 +878,7 @@ export default function BookingProcess() {
                                     <div className="traveler-counter">
                                         <button type="button" onClick={decreaseChild}>-</button>
                                         <span>{counts.child}</span>
-                                        <button type="button" onClick={increaseChild}>+</button>
+                                        <button type="button" onClick={increaseChild} disabled={isTravelerLimitReached}>+</button>
                                     </div>
                                 </div>
                                 <div className="traveler-card">
@@ -889,7 +895,7 @@ export default function BookingProcess() {
                                     <div className="traveler-counter">
                                         <button type="button" onClick={decreaseInfant}>-</button>
                                         <span>{counts.infant}</span>
-                                        <button type="button" onClick={increaseInfant}>+</button>
+                                        <button type="button" onClick={increaseInfant} disabled={isTravelerLimitReached}>+</button>
                                     </div>
                                 </div>
                             </div>

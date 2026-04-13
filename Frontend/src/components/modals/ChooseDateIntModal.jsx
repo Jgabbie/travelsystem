@@ -74,6 +74,7 @@ export default function ChooseDateIntModal({
 
                             const today = dayjs().startOf('day');
                             const isPastOrToday = startDate.isSameOrBefore(today);
+                            const isSoldOut = Number(range.slots || 0) <= 0;
 
                             const isSelected =
                                 selectedDateRange.startDate?.isSame(startDate, 'day') &&
@@ -82,16 +83,17 @@ export default function ChooseDateIntModal({
                             return (
                                 <div
                                     key={startDate.format('YYYY-MM-DD') + endDate.format('YYYY-MM-DD')}
-                                    className={`budget-card ${isSelected ? 'selected' : ''} ${isPastOrToday ? 'disabled' : ''}`}
+                                    className={`budget-card ${isSelected ? 'selected' : ''} ${(isPastOrToday || isSoldOut) ? 'disabled' : ''}`}
                                     onClick={() => {
-                                        if (isPastOrToday) return; // prevent selecting today or past dates
+                                        if (isPastOrToday || isSoldOut) return; // prevent selecting today, past dates, or sold out
                                         const newRange = { startDate, endDate };
                                         setSelectedDateRange(newRange);
 
                                         onDateChange?.({
                                             date: { startDate: startDate.format('YYYY-MM-DD'), endDate: endDate.format('YYYY-MM-DD') },
                                             price: price,
-                                            rate: range.extrarate || 0
+                                            rate: range.extrarate || 0,
+                                            slots: Number(range.slots || 0)
                                         });
                                     }}
                                 >

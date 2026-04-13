@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin } from 'antd'
+import { DeleteOutlined, EyeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/wishlist.css'
@@ -231,7 +232,10 @@ export default function Wishlist() {
                             <Row gutter={[18, 18]}>
                                 {filteredPackages.map((pkg) => (
                                     <Col xs={24} sm={12} lg={8} key={pkg.wishlistId || pkg.packageId}>
-                                        <Card className="wishlist-card" hoverable>
+                                        <Card
+                                            className="wishlist-card"
+                                            hoverable
+                                        >
                                             <div className="wishlist-card-image">
                                                 {pkg.image ? (
                                                     <img src={pkg.image} alt={pkg.title} />
@@ -268,12 +272,18 @@ export default function Wishlist() {
                                                 </Text>
                                                 <div className="wishlist-card-actions">
                                                     <Button
-                                                        className='wishlist-view-button'
+                                                        icon={<EyeOutlined />}
+                                                        type='primary'
+                                                        className={`wishlist-view-button${pkg.availableSlots <= 0 ? ' wishlist-view-button-disabled' : ''}`}
                                                         onClick={() => navigate(`/package/${pkg.packageId}`)}
+                                                        disabled={pkg.availableSlots <= 0}
+                                                        style={pkg.availableSlots <= 0 ? { pointerEvents: 'none' } : {}}
                                                     >
                                                         View details
                                                     </Button>
                                                     <Button
+                                                        icon={<DeleteOutlined />}
+                                                        type='primary'
                                                         className="wishlist-remove-button"
                                                         onClick={() => confirmRemove(pkg)}
                                                     >

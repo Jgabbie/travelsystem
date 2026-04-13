@@ -21,6 +21,7 @@ const PackageSchema = new mongoose.Schema({
     packageTags: { type: Array, default: [] },
     packageDiscountPercent: { type: Number, default: 0 },
     images: { type: Array, default: [] },
+    visaRequired: { type: Boolean, default: false },
 });
 
 const PackageModel = mongoose.model("packages", PackageSchema);
