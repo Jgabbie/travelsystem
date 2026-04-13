@@ -111,6 +111,7 @@ export default function ApplyVisa() {
         }
     }
 
+    // DISABLE DATES AND HOURS --------------------------------
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
         const twoWeeksFromNow = today.add(14, 'day');
