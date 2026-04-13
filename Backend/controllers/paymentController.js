@@ -1257,7 +1257,7 @@ const handlePayMongoWebhook = async (req, res) => {
     //check if secret key exists
     if (!process.env.PAYMONGO_WEBHOOK_SECRET) {
         console.log('Webhook secret not configured');
-        return res.status(500).send('Webhook secret not configured');
+        return
     }
 
     //if the request body is a buffer, convert it to string for signature verification
@@ -1267,7 +1267,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
     if (!req.rawBody) {
         console.log('Raw body not captured. Check middleware.');
-        return res.status(500).send('Internal Server Error');
+        return
     }
 
     try {
@@ -1278,7 +1278,8 @@ const handlePayMongoWebhook = async (req, res) => {
         const parsedSignature = parsePayMongoSignature(signatureHeader);
 
         if (!parsedSignature) {
-            return res.status(400).send('Missing or invalid PayMongo signature');
+            console.log('Invalid signature header format');
+            return
         }
 
         console.log('STEP 2: SIGNATURE OK');
@@ -1296,11 +1297,11 @@ const handlePayMongoWebhook = async (req, res) => {
                 Buffer.from(parsedSignature.signature, 'utf8')
             )
         ) {
-            return res.status(400).send('Invalid PayMongo signature');
+            console.log('Invalid signature');
+            return
         }
 
         // At this point, we have verified that the webhook is legitimately from PayMongo. Now we can safely parse the payload and handle the event.
-        res.status(200).send('Event received');
 
         console.log('STEP 3: RESPONSE SENT');
 
@@ -1349,11 +1350,11 @@ const handlePayMongoWebhook = async (req, res) => {
         // checks if the metadata contains the necessary identifiers to link this payment to a user and a booking/application. If not, we log a warning and exit gracefully since we can't process this payment without that information. This is a safeguard against processing incomplete or malformed webhook events.
         if (!metadata.userId && !metadata.applicationId && !metadata.packageId) {
             console.warn('Missing metadata; cannot process');
-            return res.status(400).send('Missing metadata');
+            return console.log('missing metadata:', metadata);
         }
 
         const user = await UserModel.findById(metadata.userId);
-        if (!user) return res.status(404).send('User not found');
+        if (!user) return console.log('user not found for metadata userId:', metadata.userId);
 
         console.log('metadata:', metadata);
 
@@ -1450,6 +1451,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.error('Failed to send visa email:', emailError);
             }
 
+            console.log('Visa payment processed successfully');
             return
         }
 
@@ -1546,6 +1548,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.error('Failed to send passport email:', emailError);
             }
 
+            console.log('Passport payment processed successfully');
             return
         }
 
@@ -1640,6 +1643,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.error('Failed to send booking email:', emailError);
             }
 
+            console.log('Installment payment processed successfully');
             return
         }
 
@@ -1652,7 +1656,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
             if (!booking) {
                 console.warn('Booking not found for ID:', metadata.bookingId);
-                return res.status(404).send('Booking not found');
+                return console.log('Booking not found for ID:', metadata.bookingId);
             }
 
             const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
@@ -1782,6 +1786,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.error('Failed to send booking email:', emailError);
             }
 
+            console.log('Booking payment processed successfully');
             return
         }
 
@@ -1794,7 +1799,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
             if (!booking) {
                 console.warn('Booking not found for ID:', metadata.bookingId);
-                return res.status(404).send('Booking not found');
+                return console.log('Booking not found for ID:', metadata.bookingId);
             }
 
             const bookingStart = dayjs(booking.travelDate.startDate).format('YYYY-MM-DD');
@@ -1932,14 +1937,14 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.error('Failed to send booking email:', emailError);
             }
 
+            console.log('Booking payment processed successfully');
             return
         }
 
         // if we reach this point, it means we received a valid webhook with correct signature and metadata, but it doesn't match our expected structure for either passport or booking payments. We log this as a warning for further investigation but still return a 200 response to acknowledge receipt of the webhook. This way we avoid unnecessary retries from PayMongo while we investigate the unexpected payload structure.
         console.warn('Received unhandled webhook event with valid signature but missing expected metadata:', metadata);
     } catch (error) {
-        console.error('Webhook Error:', error);
-        res.status(400).send(`Webhook Error: ${error.message}`);
+        console.log('Webhook Error:', error);
     }
 };
 
