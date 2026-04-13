@@ -401,7 +401,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                     )}
 
                     <div className="adduser-actions">
-                        <Button className="adduser-cancel-btn" onClick={onClose}>Cancel</Button>
+                        <Button className="adduser-cancel-btn" type="primary" onClick={onClose}>Cancel</Button>
                         <Button className="adduser-submit-btn" type="primary" htmlType="submit" loading={loading}>
                             Create {values.role}
                         </Button>

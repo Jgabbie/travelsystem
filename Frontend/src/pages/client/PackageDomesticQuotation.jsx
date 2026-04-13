@@ -480,9 +480,11 @@ export default function PackageDomesticQuotation() {
                                                     .filter((range) => dayjs(range.startdaterange).isAfter(today, 'day'))
                                                     .map((range) => {
                                                         const rangeString = `${formatDate(range.startdaterange)} - ${formatDate(range.enddaterange)}`;
+                                                        const hasSlots = Number(range.slots) > 0;
                                                         return {
                                                             label: `${rangeString} (Slots: ${range.slots})`,
-                                                            value: rangeString
+                                                            value: rangeString,
+                                                            disabled: !hasSlots
                                                         };
                                                     })}
                                             />
@@ -650,20 +652,30 @@ export default function PackageDomesticQuotation() {
                     </div>
 
 
-
                     <Modal
-                        className="modal-design"
                         open={isBookingSuccessOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
+                        style={{ top: 220 }}
                         onCancel={onCancelModal}
-                        style={{ top: 240 }}
                     >
-                        <h2 className="modal-design-heading">Quotation Request Submitted</h2>
-                        <p className="modal-design-text">Your package quotation request has been submitted successfully. Please wait for your quotation to be generated.</p>
-                        <div className="modal-design-actions">
-                            <Button className="modal-design-button" onClick={onCancelModal}>
-                                OK
-                            </Button>
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Quotation Request Submitted</h1>
+                            <p className='signup-success-text'>Your package quotation request has been submitted successfully. Please wait for your quotation to be generated.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={onCancelModal}
+                                >
+                                    Cancel
+                                </Button>
+
+                            </div>
+
                         </div>
                     </Modal>
                 </Spin>

@@ -148,21 +148,13 @@ export default function UserManagement() {
   };
 
   const handleDelete = async (id) => {
-    Modal.confirm({
-      title: "Confirm Delete",
-      content: "Are you sure you want to delete this user?",
-      okText: "Delete",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          console.log("Attempting to delete user with id:", id);
+    try {
+      console.log("Attempting to delete user with id:", id);
 
-          await apiFetch.delete(`/user/deleteUsers/${id}`, { withCredentials: true });
-          message.success("User deleted");
-          getUsers();
-        } catch { message.error("Delete failed"); }
-      }
-    });
+      await apiFetch.delete(`/user/deleteUsers/${id}`, { withCredentials: true });
+      message.success("User deleted");
+      getUsers();
+    } catch { message.error("Delete failed"); }
   };
 
   const edit = (record) => {
@@ -353,11 +345,10 @@ export default function UserManagement() {
           setEditingUser(null);
         }}
         onOk={save}
-        okText="Save Changes"
         style={{ top: 120 }}
         className="users-edit-modal"
-        okButtonProps={{ className: "users-edit-save-btn" }}
-        cancelButtonProps={{ className: "users-edit-cancel-btn" }}
+        okButtonProps={{ className: "adduser-success-btn" }}
+        cancelButtonProps={{ className: "adduser-cancel-btn" }}
       >
         <Form form={editForm} layout="vertical" className="users-edit-form">
           <Row gutter={12}>
@@ -399,7 +390,12 @@ export default function UserManagement() {
             />
           </Form.Item>
         </Form>
+
       </Modal>
+
+
+
+
     </ConfigProvider>
   );
 }

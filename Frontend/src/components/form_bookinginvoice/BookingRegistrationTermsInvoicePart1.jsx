@@ -5,7 +5,7 @@ import '../../style/components/mrcregistration.css';
 import apiFetch from '../../config/fetchConfig';
 
 
-export default function BookingRegistrationTermsInvoicePart1({ form, onValuesChange }) {
+export default function BookingRegistrationTermsInvoicePart1({ form, onValuesChange, summaryInvoice }) {
     const [userProfile, setUserProfile] = React.useState(null);
 
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
@@ -20,28 +20,20 @@ export default function BookingRegistrationTermsInvoicePart1({ form, onValuesCha
     };
     const textStyle = { fontSize: '11px', lineHeight: '1.3', textAlign: 'justify', marginBottom: '10px' };
 
+    console.log("summary invoice data:", summaryInvoice);
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await apiFetch.get('/user/data', { withCredentials: true });
 
-                const u = response?.userData
 
-                const user = {
-                    firstName: u.firstname,
-                    lastName: u.lastname,
-                    fullName: `${u.firstname} ${u.lastname}`,
-                    email: u.email,
-                    phone: u.phone,
-                    homeAddress: u.homeAddress,
-                }
 
-                form.setFieldsValue({
-                    leadFullName: user.fullName,
-                    leadEmail: user.email,
-                    leadContact: user.phone,
-                    leadAddress: user.homeAddress,
-                    travelersSignature: user.fullName,
+                const user = form.setFieldsValue({
+                    leadFullName: summaryInvoice.leadFullName,
+                    leadEmail: summaryInvoice.leadEmail,
+                    leadContact: summaryInvoice.leadContact,
+                    leadAddress: summaryInvoice.leadAddress,
+                    travelersSignature: summaryInvoice.travelersSignature,
                     termsDate: dayjs().format('MMMM DD, YYYY')
                 });
 

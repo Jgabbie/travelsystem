@@ -241,20 +241,36 @@ export default function TopNavUser() {
                 />
 
                 <Modal
-                    className="logout-confirm-modal"
-                    closable={{ 'aria-label': 'Custom Close Button' }}
                     open={isModalOpen}
+                    className='signup-success-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
+                    style={{ top: 220 }}
                     onCancel={handleCancel}
-                    style={{ top: 250 }}
                 >
-                    <div className="logout-confirm-content">
-                        <h2 className="logout-confirm-title">Confirm Logout</h2>
-                        <p className="logout-confirm-text">Are you sure you want to logout?</p>
-                        <div className="logout-confirm-actions">
-                            <Button className="logout-cancel-btn" onClick={handleCancel}>Cancel</Button>
-                            <Button className="logout-confirm-btn" type="primary" onClick={handleOk}>Logout</Button>
+                    <div className='signup-success-container'>
+                        <h1 className='signup-success-heading'>Confirm Logout?</h1>
+                        <p className='signup-success-text'>Are you sure you want to logout?</p>
+
+                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                            <Button
+                                type='primary'
+                                className='logout-confirm-btn'
+                                onClick={handleOk}
+                            >
+                                Logout
+                            </Button>
+                            <Button
+                                type='primary'
+                                className='logout-cancel-btn'
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </Button>
+
                         </div>
+
                     </div>
                 </Modal>
             </div>

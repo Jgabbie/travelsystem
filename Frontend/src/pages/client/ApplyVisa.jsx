@@ -187,6 +187,7 @@ export default function ApplyVisa() {
                     <h1 className='signup-success-heading'>Application submitted</h1>
                     <p className='signup-success-text'>Your visa application has been submitted successfully. Kindly wait for your application to be approved.</p>
                     <Button
+                        type='primary'
                         id='signup-success-button'
                         onClick={() => {
                             setSentModalVisible(false)
