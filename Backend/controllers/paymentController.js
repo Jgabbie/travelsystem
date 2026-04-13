@@ -1283,6 +1283,8 @@ const handlePayMongoWebhook = async (req, res) => {
             return res.status(400).send('Invalid PayMongo signature');
         }
 
+        res.status(200).send('Event received');
+
         // At this point, we have verified that the webhook is legitimately from PayMongo. Now we can safely parse the payload and handle the event.
         const payload = Buffer.isBuffer(req.body) ? JSON.parse(rawBody) : req.body;
         const eventType = payload?.data?.attributes?.type;
@@ -1292,6 +1294,8 @@ const handlePayMongoWebhook = async (req, res) => {
         }
 
         console.log('📦 Parsed Payload:', JSON.stringify(payload, null, 2));
+
+
 
         //paymongo can send different types of events, but we're mainly interested in the checkout_session.payment.paid event which indicates a successful payment. We will extract the metadata from the event to know which user and booking this payment is for, then we can update our database accordingly.
         const sessionId =
