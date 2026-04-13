@@ -194,7 +194,7 @@ export default function PassportApplication() {
                 const payload = {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
-                    totalPrice: 2000,
+                    totalPrice: 1,
                 };
 
                 console.log("Creating checkout session with payload:", payload);
