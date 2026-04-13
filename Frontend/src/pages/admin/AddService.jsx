@@ -29,7 +29,11 @@ export default function AddService() {
         visaPrice: "",
         requirements: [{ req: "", desc: "", isReq: "" }],
         processSteps: [""],
-        reminders: [""]
+        reminders: [""],
+        additionalRequirements: [{
+            customer: "",
+            requirements: [{ requirement: "", description: "", isReq: "" }]
+        }]
     });
 
     const validate = (field, value) => {
@@ -77,6 +81,10 @@ export default function AddService() {
             const updated = [...values.reminders, ""];
             valueHandler("reminders", updated);
         }
+        if (type === "additionalRequirements") {
+            const updated = [...values.additionalRequirements, { customer: "", requirements: [{ requirement: "", description: "", isReq: "" }] }];
+            valueHandler("additionalRequirements", updated);
+        }
     };
 
     const updateBullet = (type, index, value, subfield) => {
@@ -99,6 +107,15 @@ export default function AddService() {
             updated[index] = value;
             valueHandler("reminders", updated);
         }
+        if (type === "additionalRequirements") {
+            const updated = [...values.additionalRequirements];
+            if (subfield) {
+                updated[index] = { ...updated[index], [subfield]: value };
+            } else {
+                updated[index] = value;
+            }
+            valueHandler("additionalRequirements", updated);
+        }
     };
 
     const removeBullet = (type, index) => {
@@ -114,6 +131,35 @@ export default function AddService() {
             const updated = values.reminders.filter((_, i) => i !== index);
             valueHandler("reminders", updated);
         }
+        if (type === "additionalRequirements") {
+            const updated = values.additionalRequirements.filter((_, i) => i !== index);
+            valueHandler("additionalRequirements", updated);
+        }
+    };
+
+    const addAdditionalRequirementItem = (customerIndex) => {
+        const updated = [...values.additionalRequirements];
+        const customer = updated[customerIndex];
+        const nextRequirements = [...customer.requirements, { requirement: "", description: "", isReq: "" }];
+        updated[customerIndex] = { ...customer, requirements: nextRequirements };
+        valueHandler("additionalRequirements", updated);
+    };
+
+    const updateAdditionalRequirementItem = (customerIndex, reqIndex, field, value) => {
+        const updated = [...values.additionalRequirements];
+        const customer = updated[customerIndex];
+        const nextRequirements = [...customer.requirements];
+        nextRequirements[reqIndex] = { ...nextRequirements[reqIndex], [field]: value };
+        updated[customerIndex] = { ...customer, requirements: nextRequirements };
+        valueHandler("additionalRequirements", updated);
+    };
+
+    const removeAdditionalRequirementItem = (customerIndex, reqIndex) => {
+        const updated = [...values.additionalRequirements];
+        const customer = updated[customerIndex];
+        const nextRequirements = customer.requirements.filter((_, i) => i !== reqIndex);
+        updated[customerIndex] = { ...customer, requirements: nextRequirements.length ? nextRequirements : [{ requirement: "", description: "", isReq: "" }] };
+        valueHandler("additionalRequirements", updated);
     };
 
     const saveService = async () => {
@@ -133,13 +179,28 @@ export default function AddService() {
             return;
         }
 
+        const hasAdditionalRequirements = values.additionalRequirements.some((item) =>
+            item.customer?.trim?.() || item.requirements.some((req) =>
+                Object.values(req).some((value) => value?.trim?.() || value)
+            )
+        );
         const payload = {
             visaName: values.visaName.trim(),
             visaPrice: Number(values.visaPrice),
             visaDescription: values.description.trim(),
             visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim(), isReq: item.isReq })),
             visaProcessSteps: values.processSteps.map((item) => item.trim()),
-            visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0)
+            visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0),
+            visaAdditionalRequirements: hasAdditionalRequirements
+                ? values.additionalRequirements.map((item) => ({
+                    customer: item.customer.trim(),
+                    requirements: item.requirements.map((req) => ({
+                        requirement: req.requirement.trim(),
+                        description: req.description.trim(),
+                        isReq: req.isReq
+                    }))
+                }))
+                : undefined
         };
 
         if (isEdit) {
@@ -171,7 +232,30 @@ export default function AddService() {
                     processSteps: existing.visaProcessSteps?.length ? existing.visaProcessSteps : [""],
                     reminders: Array.isArray(existing.visaReminders)
                         ? (existing.visaReminders.length ? existing.visaReminders : [""])
-                        : (existing.visaReminders ? [existing.visaReminders] : [""])
+                        : (existing.visaReminders ? [existing.visaReminders] : [""]),
+                    additionalRequirements: Array.isArray(existing.visaAdditionalRequirements)
+                        ? existing.visaAdditionalRequirements.map((item) => ({
+                            customer: item.customer || "",
+                            requirements: Array.isArray(item.requirements)
+                                ? item.requirements.map((req) => ({
+                                    requirement: req.requirement || "",
+                                    description: req.description || "",
+                                    isReq: req.isReq || ""
+                                }))
+                                : [{ requirement: "", description: "", isReq: "" }]
+                        }))
+                        : (existing.visaAdditionalRequirements
+                            ? [{
+                                customer: existing.visaAdditionalRequirements.customer || "",
+                                requirements: Array.isArray(existing.visaAdditionalRequirements.requirements)
+                                    ? existing.visaAdditionalRequirements.requirements.map((req) => ({
+                                        requirement: req.requirement || "",
+                                        description: req.description || "",
+                                        isReq: req.isReq || ""
+                                    }))
+                                    : [{ requirement: "", description: "", isReq: "" }]
+                            }]
+                            : [{ customer: "", requirements: [{ requirement: "", description: "", isReq: "" }] }])
                 });
 
             } catch (error) {
@@ -358,6 +442,140 @@ export default function AddService() {
                                 </Card>
                                 <p className="add-service-error-message">{errors.processSteps}</p>
                             </div>
+                        </div>
+
+
+
+
+                        <div style={{ marginTop: 24 }}>
+                            <h2 className="section-headers">Additional Requirements</h2>
+                            <Card
+                                size="small"
+                                title={null}
+                                style={{ padding: 0, border: "none", background: "none" }}
+                            >
+                                {values.additionalRequirements.map((item, index) => (
+                                    <div
+                                        key={`additional-req-${index}`}
+                                        className="add-service-bullet-row"
+                                        style={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            gap: 12,
+                                            padding: 12,
+                                            border: "1px solid #e6e6e6",
+                                            borderRadius: 8,
+                                            background: "#fafafa"
+                                        }}
+                                    >
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                            <h3 style={{ margin: 0 }}>Customer #{index + 1}</h3>
+                                            <Button
+                                                className="delete-add-service-button"
+                                                danger
+                                                onClick={() => removeBullet("additionalRequirements", index)}
+                                                icon={<DeleteOutlined />}
+                                            >
+                                                Remove Customer
+                                            </Button>
+                                        </div>
+                                        <div className="add-service-grid">
+                                            <div>
+                                                <label className="add-service-input-labels">Customer</label>
+                                                <Input
+                                                    value={item.customer}
+                                                    className="add-service-inputs"
+                                                    placeholder="Customer"
+                                                    onChange={(event) => updateBullet("additionalRequirements", index, event.target.value, "customer")}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {item.requirements.map((reqItem, reqIndex) => (
+                                            <div
+                                                key={`additional-req-${index}-${reqIndex}`}
+                                                className="add-service-bullet-row"
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: 8,
+                                                    padding: 10,
+                                                    border: "1px dashed #d9d9d9",
+                                                    borderRadius: 8,
+                                                    background: "#ffffff"
+                                                }}
+                                            >
+                                                <div style={{ fontWeight: 600 }}>Requirement #{reqIndex + 1}</div>
+                                                <div className="add-service-grid">
+                                                    <div>
+                                                        <label className="add-service-input-labels">Requirement</label>
+                                                        <Input
+                                                            value={reqItem.requirement}
+                                                            className="add-service-inputs"
+                                                            placeholder="Requirement"
+                                                            onChange={(event) => updateAdditionalRequirementItem(index, reqIndex, "requirement", event.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="add-service-input-labels">Required or Optional</label>
+                                                        <Select
+                                                            value={reqItem.isReq}
+                                                            className="add-service-inputs"
+                                                            placeholder="Requirement Type"
+                                                            onChange={(value) => updateAdditionalRequirementItem(index, reqIndex, "isReq", value)}
+                                                            options={[
+                                                                { value: "Required", label: "Required" },
+                                                                { value: "Optional", label: "Optional" }
+                                                            ]}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="add-service-input-labels">Description (Optional)</label>
+                                                    <Input.TextArea
+                                                        value={reqItem.description}
+                                                        className="add-service-input-textarea"
+                                                        autoSize={{ minRows: 3, maxRows: 5 }}
+                                                        placeholder="Description (optional)"
+                                                        onChange={(event) => updateAdditionalRequirementItem(index, reqIndex, "description", event.target.value)}
+                                                    />
+                                                </div>
+
+                                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                                    <Button
+                                                        className="delete-add-service-button"
+                                                        danger
+                                                        onClick={() => removeAdditionalRequirementItem(index, reqIndex)}
+                                                        icon={<DeleteOutlined />}
+                                                    >
+                                                        Remove Requirement
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        <Button
+                                            className="add-service-add-button"
+                                            type="dashed"
+                                            icon={<PlusOutlined />}
+                                            block
+                                            onClick={() => addAdditionalRequirementItem(index)}
+                                        >
+                                            Add Requirement for Customer
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button
+                                    className="add-service-add-button"
+                                    type="dashed"
+                                    icon={<PlusOutlined />}
+                                    block
+                                    onClick={() => addBullet("additionalRequirements")}
+                                >
+                                    Add Customer
+                                </Button>
+                            </Card>
                         </div>
 
                         {/* Reminders Bulleted List */}

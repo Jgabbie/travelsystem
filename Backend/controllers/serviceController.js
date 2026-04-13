@@ -2,10 +2,10 @@ const ServiceModel = require('../models/service');
 const logAction = require('../utils/logger')
 
 const createService = async (req, res) => {
-    const { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders } = req.body;
+    const { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders } = req.body;
     const userId = req.userId;
 
-    console.log("Creating service with data:", { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders });
+    console.log("Creating service with data:", { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders });
     try {
 
         const newService = new ServiceModel({
@@ -13,6 +13,7 @@ const createService = async (req, res) => {
             visaDescription,
             visaPrice,
             visaRequirements,
+            visaAdditionalRequirements: Array.isArray(visaAdditionalRequirements) ? visaAdditionalRequirements : [],
             visaProcessSteps,
             visaReminders
         });
@@ -42,13 +43,13 @@ const getAllServices = async (req, res) => {
 
 const updateService = async (req, res) => {
     const { id } = req.params;
-    const { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders } = req.body;
+    const { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders } = req.body;
     const userId = req.userId;
 
     try {
         const updatedService = await ServiceModel.findByIdAndUpdate(
             id,
-            { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders },
+            { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders },
             { new: true }
         );
         if (!updatedService) {

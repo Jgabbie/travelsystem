@@ -71,17 +71,31 @@ const generateTransactionReference = () => {
     return `TX-${timestamp}${random}`;
 };
 
-const parsePayMongoSignature = (signatureHeader) => {
-    if (!signatureHeader) return null;
-    const parts = signatureHeader.split(',').map((part) => part.trim());
-    const signatureMap = parts.reduce((acc, part) => {
+const parsePayMongoSignature = (header) => {
+    if (!header) return null;
+
+    const parts = header.split(',');
+
+    let timestamp = null;
+    let signature = null;
+
+    for (const part of parts) {
         const [key, value] = part.split('=');
-        if (key && value) acc[key] = value;
-        return acc;
-    }, {});
-    const signature = signatureMap.v1 || signatureMap.te;
-    if (!signatureMap.t || !signature) return null;
-    return { timestamp: signatureMap.t, signature };
+
+        if (key === 't') {
+            timestamp = value;
+        }
+
+        if (key === 'li') {
+            signature = value;
+        }
+    }
+
+    if (!timestamp || !signature) {
+        console.error('Invalid signature header format');
+        return null;
+    }
+    return { timestamp, signature };
 };
 
 //MANUAL PAYMENT FOR NORMAL FIXED BOOKINGS

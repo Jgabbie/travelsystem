@@ -6,7 +6,6 @@ import { useAuth } from '../../hooks/useAuth'
 import LoginModal from '../../components/modals/LoginModal'
 import '../../style/client/passport.css'
 import apiFetch from '../../config/fetchConfig'
-import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function ApplyVisa() {
     const [loginModalVisible, setLoginModalVisible] = useState(false)
@@ -14,8 +13,6 @@ export default function ApplyVisa() {
 
     const [services, setServices] = useState([])
     const [selectedServiceId, setSelectedServiceId] = useState(undefined)
-    const [fullName, setFullName] = useState('')
-    const [email, setEmail] = useState('')
     const [preferredDate, setPreferredDate] = useState('')
     const [preferredTime, setPreferredTime] = useState('')
     const [purpose, setPurpose] = useState('')
@@ -56,7 +53,28 @@ export default function ApplyVisa() {
     )
 
     const requirements = selectedService?.visaRequirements || []
+    const reminders = selectedService?.visaReminders || []
+    const additionalRequirements = selectedService?.visaAdditionalRequirements || []
     const steps = selectedService?.visaProcessSteps || []
+
+    const requiredRequirements = useMemo(
+        () => requirements.filter((item) => item.isReq === 'Required'),
+        [requirements]
+    )
+
+    const optionalRequirements = useMemo(
+        () => requirements.filter((item) => item.isReq === 'Optional'),
+        [requirements]
+    )
+
+    const hasAdditionalRequirements = useMemo(
+        () => additionalRequirements.some((group) =>
+            group.customer?.trim?.() || (group.requirements || []).some((req) =>
+                req.requirement?.trim?.() || req.description?.trim?.() || req.isReq
+            )
+        ),
+        [additionalRequirements]
+    )
 
     const submitRequest = async () => {
         const newErrors = {
@@ -189,17 +207,72 @@ export default function ApplyVisa() {
                     </header>
 
                     <section className="passport-grid">
-                        <div className="passport-panel">
+                        <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
                             <h3>Requirements</h3>
-                            <ul className="passport-list">
-                                {requirements.map((item, index) => (
-                                    <li key={`req-${index}`}>
-                                        <strong>{item.req}</strong>
-                                        <br />
-                                        <span>{item.desc}</span>
-                                    </li>
+
+                            <h4>Required</h4>
+                            {requiredRequirements.length ? (
+                                <ul className="passport-list">
+                                    {requiredRequirements.map((item, index) => (
+                                        <li key={`req-required-${index}`}>
+                                            <strong>{item.req}</strong>
+                                            <br />
+                                            <span>{item.desc}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No required items.</p>
+                            )}
+
+                            <h4 style={{ marginTop: 12 }}>Optional</h4>
+                            {optionalRequirements.length ? (
+                                <ul className="passport-list">
+                                    {optionalRequirements.map((item, index) => (
+                                        <li key={`req-optional-${index}`}>
+                                            <strong>{item.req}</strong>
+                                            <br />
+                                            <span>{item.desc}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No optional items.</p>
+                            )}
+                        </div>
+
+                        {hasAdditionalRequirements ? (
+                            <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
+                                <h3>Additional Requirements</h3>
+                                {additionalRequirements.map((group, groupIndex) => (
+                                    <div key={`additional-group-${groupIndex}`} style={{ marginBottom: 16 }}>
+                                        <h4 style={{ marginBottom: 8 }}>{group.customer || `Customer ${groupIndex + 1}`}</h4>
+                                        <ul className="passport-list">
+                                            {(group.requirements || []).map((reqItem, reqIndex) => (
+                                                <li key={`additional-req-${groupIndex}-${reqIndex}`}>
+                                                    <strong>{reqItem.requirement}</strong>
+                                                    {reqItem.isReq ? <span>{` (${reqItem.isReq})`}</span> : null}
+                                                    <br />
+                                                    <span>{reqItem.description}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
+                        ) : null}
+
+                        <div className="passport-panel">
+                            <h3>Reminders</h3>
+                            {reminders.length ? (
+                                <ul className="passport-list">
+                                    {reminders.map((item, index) => (
+                                        <li key={`reminder-${index}`}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No reminders available.</p>
+                            )}
                         </div>
 
                         <div className="passport-panel">
