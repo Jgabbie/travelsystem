@@ -36,16 +36,15 @@
     width: 100%;
     max-width: 880px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    background: #fff;
     border: 1px solid #e0e7ff;
     box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
-
 }
 
 .profile-side-card {
     width: 100%;
     border-radius: 16px;
-    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    background: #fff;
     border: 1px solid #e0e7ff;
     box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
 }
@@ -160,7 +159,7 @@
     white-space: nowrap;
 }
 
-.profile-booking-confirmed {
+.profile-booking-fullypaid {
     background: #f6ffed;
     color: #389e0d;
 }
@@ -170,9 +169,9 @@
     color: #d48806;
 }
 
-.profile-booking-completed {
+.profile-booking-notpaid {
     background: #e6f4ff;
-    color: #1677ff;
+    color: #ff4d4f;
 }
 
 .profile-card .ant-card-body {
@@ -274,13 +273,13 @@
 
 .profile-action-button {
     font-family: "Roboto", sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     background-color: #305797 !important;
     color: #fff !important;
     border-radius: 8px;
     border: none !important;
-    height: 40px;
+    height: 35px;
     padding: 0 18px;
 }
 
@@ -291,13 +290,13 @@
 
 .profile-cancel-button {
     font-family: "Roboto", sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     background-color: #992A46 !important;
     color: #fff !important;
     border-radius: 8px;
     border: none !important;
-    height: 40px;
+    height: 35px;
     padding: 0 18px;
 }
 

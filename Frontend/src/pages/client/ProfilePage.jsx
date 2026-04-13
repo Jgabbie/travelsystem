@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag } from 'antd';
+import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
 import '../../style/client/userpreference.css';
-import TopNavUser from '../../components/topnav/TopNavUser';
 
 
 export default function ProfilePage() {
@@ -449,6 +448,8 @@ export default function ProfilePage() {
                                             onChange={handleImageChange}
                                         />
                                         <Button
+                                            type="primary"
+                                            icon={<FileImageOutlined />}
                                             className="profile-action-button"
                                             onClick={() => fileInputRef.current?.click()}
                                         >
@@ -663,6 +664,7 @@ export default function ProfilePage() {
                                         Save Changes
                                     </Button>
                                     <Button
+                                        type="primary"
                                         className="profile-cancel-button"
                                         icon={<CloseOutlined />}
                                         onClick={handleCancel}
@@ -682,7 +684,7 @@ export default function ProfilePage() {
                                 <div className='profile-card-header'>
                                     <h2>Preferences</h2>
                                     <Button
-                                        type="default"
+                                        type="primary"
                                         onClick={() => setEditingPreferences(true)}
                                         icon={<EditOutlined />}
                                         disabled={editingPreferences}
@@ -757,6 +759,7 @@ export default function ProfilePage() {
                                         </Button>
 
                                         <Button
+                                            type="primary"
                                             style={{ marginLeft: '10px' }}
                                             onClick={() => setEditingPreferences(false)}
                                             icon={<CloseOutlined />}
@@ -814,9 +817,16 @@ export default function ProfilePage() {
                                                     <p className="profile-booking-title">{booking?.packageName || 'Untitled Booking'}</p>
                                                     <p className="profile-booking-meta">{booking?.bookingDate || 'Recently'}</p>
                                                 </div>
-                                                <span className={`profile-booking-status profile-booking-${(booking?.status || 'Pending').toLowerCase()}`}>
+
+                                                <Tag color={
+                                                    booking?.status === 'Fully Paid' ? 'green' :
+                                                        booking?.status === 'Cancelled' ? 'blue' :
+                                                            booking?.status === 'Not Paid' ? 'red' :
+                                                                'orange'
+                                                }>
                                                     {booking?.status || 'Pending'}
-                                                </span>
+                                                </Tag>
+
                                             </div>
                                             <p className="profile-booking-details">Reference No. {booking?.ref || 'BK-00000'} • {booking?.packageType}</p>
                                         </div>

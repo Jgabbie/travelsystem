@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin } from 'antd'
+import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin, Slider } from 'antd'
 import { DeleteOutlined, EyeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
@@ -11,7 +11,7 @@ export default function Wishlist() {
     const [search, setSearch] = useState('')
     const [category, setCategory] = useState('All')
     const [availability, setAvailability] = useState('All')
-    const [priceRange, setPriceRange] = useState('All')
+    const [priceRange, setPriceRange] = useState([0, 100000])
     const [wishlistItems, setWishlistItems] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -80,29 +80,27 @@ export default function Wishlist() {
     ]), [])
 
     const filteredPackages = useMemo(() => {
-        const query = search.trim().toLowerCase()
+        const query = search.trim().toLowerCase();
+        const normalizedCategory = category.toLowerCase();
         return wishlistPackages.filter((pkg) => {
             const matchesQuery =
                 query.length === 0 ||
                 pkg.title.toLowerCase().includes(query) ||
                 pkg.location.toLowerCase().includes(query) ||
-                pkg.category.toLowerCase().includes(query)
+                pkg.category.toLowerCase().includes(query);
 
-            const matchesCategory = category === 'All' || pkg.category === category
+            const matchesCategory =
+                normalizedCategory === 'all' ||
+                pkg.category.toLowerCase() === normalizedCategory;
+
             const matchesAvailability =
-                availability === 'All' || pkg.availability === availability
+                availability === 'All' || pkg.availability === availability;
 
-            const matchesPrice = (() => {
-                if (priceRange === 'All') return true
-                if (priceRange === 'Under 4000') return pkg.price < 4000
-                if (priceRange === '4000-7000') return pkg.price >= 4000 && pkg.price <= 7000
-                if (priceRange === '7000+') return pkg.price > 7000
-                return true
-            })()
+            const matchesPrice = pkg.price >= priceRange[0] && pkg.price <= priceRange[1];
 
-            return matchesQuery && matchesCategory && matchesAvailability && matchesPrice
-        })
-    }, [search, category, availability, priceRange, wishlistPackages])
+            return matchesQuery && matchesCategory && matchesAvailability && matchesPrice;
+        });
+    }, [search, category, availability, priceRange, wishlistPackages]);
 
     const handleRemove = async (wishlistId) => {
         if (!wishlistId) return
@@ -198,16 +196,21 @@ export default function Wishlist() {
                                 <Col xs={24} sm={12} md={8}>
                                     <div className="filter-field">
                                         <Text className="wishlist-label">Price</Text>
-                                        <Select
-                                            value={priceRange}
-                                            onChange={(value) => setPriceRange(value)}
-                                            options={[
-                                                { value: 'All', label: 'All' },
-                                                { value: 'Under 4000', label: 'Under 4000' },
-                                                { value: '4000-7000', label: '4000-7000' },
-                                                { value: '7000+', label: '7000+' },
-                                            ]}
-                                        />
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>₱{priceRange[0]?.toLocaleString?.() ?? 0}</span>
+                                                <span>₱{priceRange[1]?.toLocaleString?.() ?? 100000}</span>
+                                            </div>
+                                            <Slider
+                                                range
+                                                min={0}
+                                                max={100000}
+                                                step={1000}
+                                                value={priceRange}
+                                                onChange={setPriceRange}
+                                                tooltip={{ formatter: (value) => `₱${value}` }}
+                                            />
+                                        </div>
                                     </div>
                                 </Col>
                             </Row>

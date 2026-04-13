@@ -15,7 +15,7 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
     const packageType = summary.packageType || 'fixed';
     const isDomesticPackage = String(packageType).toLowerCase().includes('domestic');
 
-
+    console.log("Booking Registration Travelers Quote", summary);
 
     const getDisplayAge = (traveler) => {
         if (traveler?.age !== undefined && traveler?.age !== null && traveler?.age !== '') {

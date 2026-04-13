@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
+import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, Image } from "antd";
 import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -672,17 +672,29 @@ export default function TransactionManagement() {
             proofTransaction ? (
               <Space>
                 <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
-
-                <a
-                  href={getDownloadUrl(proofTransaction.proofImage)}
-                  download={proofTransaction.proofFileName}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Button
+                  className='user-transactions-viewproof-button'
+                  type="primary"
+                  style={{ marginTop: 8 }}
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'proof-of-payment';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      window.URL.revokeObjectURL(url);
+                    } catch (err) {
+                      window.open(proofTransaction.proofImage, '_blank');
+                    }
+                  }}
                 >
-                  <Button type="default">
-                    Download
-                  </Button>
-                </a>
+                  Download Image
+                </Button>
 
                 <Button
                   type="primary"
@@ -721,7 +733,7 @@ export default function TransactionManagement() {
 
               {proofTransaction.proofImage ? (
                 <div className="upload-preview-box" style={{ maxHeight: 520 }}>
-                  <img
+                  <Image
                     src={proofTransaction.proofImage}
                     alt={proofTransaction.proofFileName || "Proof of payment"}
                     className="upload-preview-image"
@@ -735,6 +747,6 @@ export default function TransactionManagement() {
           )}
         </Modal>
       </div >
-    </ConfigProvider>
+    </ConfigProvider >
   );
 }

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal } from 'antd'
-import { SearchOutlined, EyeOutlined } from '@ant-design/icons/lib/icons'
+import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal, Image } from 'antd'
+import { SearchOutlined, EyeOutlined, FileOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
 import '../../style/client/usertransactions.css'
 import '../../style/admin/transaction.css'
 import apiFetch from '../../config/fetchConfig'
-import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function UserTransactions() {
     const [transactions, setTransactions] = useState([])
@@ -124,8 +123,9 @@ export default function UserTransactions() {
                     </Button>
                     {record.method?.toLowerCase() === 'manual' && (
                         <Button
-                            className="user-transactions-view-button"
+                            className="user-transactions-viewproof-button"
                             type='primary'
+                            icon={<FileOutlined />}
                             onClick={() => {
                                 if (!record.proofImage) {
                                     message.warning('No proof image available for this transaction.');
@@ -292,29 +292,81 @@ export default function UserTransactions() {
                 )}
             </Modal>
 
+
             <Modal
                 open={isProofModalOpen}
-                onCancel={() => {
-                    setIsProofModalOpen(false);
-                    setSelectedProofImage(null);
-                }}
-                footer={null}
+                onCancel={() => setIsProofModalOpen(false)}
                 className="transaction-view-modal"
                 width={720}
                 style={{ top: 60 }}
+                footer={
+                    selectedTransaction && selectedTransaction.proofImage ? (
+                        <Space>
+                            <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
+                            <Button
+                                className='user-transactions-viewproof-button'
+                                type="primary"
+                                style={{ marginTop: 8 }}
+                                onClick={async () => {
+                                    try {
+                                        const response = await fetch(selectedTransaction.proofImage, { mode: 'cors' });
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const link = document.createElement('a');
+                                        link.href = url;
+                                        link.download = selectedTransaction.proofFileName || 'proof-of-payment';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        window.URL.revokeObjectURL(url);
+                                    } catch (err) {
+                                        window.open(selectedTransaction.proofImage, '_blank');
+                                    }
+                                }}
+                            >
+                                Download Image
+                            </Button>
+                        </Space>
+                    ) : (
+                        <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
+                    )
+                }
             >
-                {selectedProofImage ? (
-                    <div style={{ textAlign: 'center' }}>
-                        <img
-                            src={selectedProofImage}
-                            alt="Proof of payment"
-                            style={{ maxWidth: '100%', height: 'auto', borderRadius: 8 }}
-                        />
+                {selectedTransaction ? (
+                    <div className="receipt-container">
+                        <div className="receipt-header" style={{ marginBottom: 16 }}>
+                            <div className="company-info">
+                                <div className="header-flex-container">
+                                    <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+                                    <div className="address-details">
+                                        <h2 className="brand-name">Proof of Payment</h2>
+                                        <p className="sub-info">Reference: {selectedTransaction.reference}</p>
+                                        <p className="sub-info">Customer: {selectedTransaction.username || 'You'}</p>
+                                        <p className="sub-info">Method: {selectedTransaction.method}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {selectedTransaction.proofImage ? (
+                            <div className="upload-preview-box" style={{ maxHeight: 520 }}>
+                                <Image
+                                    src={selectedTransaction.proofImage}
+                                    alt={selectedTransaction.proofFileName || "Proof of payment"}
+                                    className="upload-preview-image"
+                                    style={{ width: "100%", height: "auto" }}
+                                />
+                            </div>
+                        ) : (
+                            <p>No proof image available.</p>
+                        )}
                     </div>
                 ) : (
-                    <p style={{ textAlign: 'center' }}>No proof image available.</p>
+                    <p>No transaction selected.</p>
                 )}
             </Modal>
+
+
         </ConfigProvider>
     )
 }

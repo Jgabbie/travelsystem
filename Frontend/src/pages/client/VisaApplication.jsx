@@ -850,6 +850,18 @@ export default function VisaApplication() {
                                                                         onClick={() => handlePreview(uploadedFile)}
                                                                     />
                                                                 )}
+                                                                <Button
+                                                                    danger
+                                                                    type="default"
+                                                                    onClick={() => {
+                                                                        // Remove the uploaded file for this requirement
+                                                                        const newFiles = { ...requirementFiles };
+                                                                        newFiles[requirementKey] = [];
+                                                                        setRequirementFiles(newFiles);
+                                                                    }}
+                                                                >
+                                                                    Remove <i class="fa fa-file-audio-o" aria-hidden="true"></i>
+                                                                </Button>
                                                             </div>
                                                         )}
                                                     </div>
