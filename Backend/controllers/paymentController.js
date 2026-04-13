@@ -1247,22 +1247,25 @@ const createCheckoutSessionQuotation = async (req, res) => {
 //paymongo webhook handler
 const handlePayMongoWebhook = async (req, res) => {
     console.log('🚀 Webhook HIT!');
+
+    //check if secret key exists
+    if (!process.env.PAYMONGO_WEBHOOK_SECRET) {
+        console.error('Webhook secret not configured');
+        return res.status(500).send('Webhook secret not configured');
+    }
+
+    //if the request body is a buffer, convert it to string for signature verification
+    // const rawBody = Buffer.isBuffer(req.body)
+    //     ? req.body.toString('utf8')
+    //     : JSON.stringify(req.body || {});
+
+    if (!req.rawBody) {
+        console.error('Raw body not captured. Check middleware.');
+        return res.status(500).send('Internal Server Error');
+    }
+
     try {
 
-        //check if secret key exists
-        if (!process.env.PAYMONGO_WEBHOOK_SECRET) {
-            return res.status(500).send('Webhook secret not configured');
-        }
-
-        //if the request body is a buffer, convert it to string for signature verification
-        // const rawBody = Buffer.isBuffer(req.body)
-        //     ? req.body.toString('utf8')
-        //     : JSON.stringify(req.body || {});
-
-        if (!req.rawBody) {
-            console.error('Raw body not captured. Check middleware.');
-            return res.status(500).send('Internal Server Error');
-        }
 
         const rawBodyString = req.rawBody.toString('utf8');
 
