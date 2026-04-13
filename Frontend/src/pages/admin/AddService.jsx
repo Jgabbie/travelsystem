@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Input, Button, Card, Space, message, ConfigProvider } from "antd";
+import { Input, Button, Card, Space, message, ConfigProvider, Select } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
@@ -27,7 +27,7 @@ export default function AddService() {
         visaName: "",
         description: "",
         visaPrice: "",
-        requirements: [{ req: "", desc: "" }],
+        requirements: [{ req: "", desc: "", isReq: "" }],
         processSteps: [""],
         reminders: [""]
     });
@@ -66,7 +66,7 @@ export default function AddService() {
 
     const addBullet = (type) => {
         if (type === "requirements") {
-            const updated = [...values.requirements, { req: "", desc: "" }];
+            const updated = [...values.requirements, { req: "", desc: "", isReq: "" }];
             valueHandler("requirements", updated);
         }
         if (type === "processSteps") {
@@ -137,7 +137,7 @@ export default function AddService() {
             visaName: values.visaName.trim(),
             visaPrice: Number(values.visaPrice),
             visaDescription: values.description.trim(),
-            visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim() })),
+            visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim(), isReq: item.isReq })),
             visaProcessSteps: values.processSteps.map((item) => item.trim()),
             visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0)
         };
@@ -166,8 +166,8 @@ export default function AddService() {
                     visaPrice: existing.visaPrice || "",
                     description: existing.visaDescription || "",
                     requirements: existing.visaRequirements?.length
-                        ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "" } : { req: item.req || "", desc: item.desc || "" })
-                        : [{ req: "", desc: "" }],
+                        ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "" })
+                        : [{ req: "", desc: "", isReq: "" }],
                     processSteps: existing.visaProcessSteps?.length ? existing.visaProcessSteps : [""],
                     reminders: Array.isArray(existing.visaReminders)
                         ? (existing.visaReminders.length ? existing.visaReminders : [""])
@@ -280,7 +280,7 @@ export default function AddService() {
                                                     className="add-service-inputs"
                                                     placeholder="Requirement"
                                                     onChange={(event) => updateBullet("requirements", index, event.target.value, "req")}
-                                                    style={{ flex: 1 }}
+                                                    style={{ flex: 1, minWidth: 520 }}
                                                 />
                                                 <Button
                                                     className="delete-add-service-button"
@@ -288,12 +288,24 @@ export default function AddService() {
                                                     onClick={() => removeBullet("requirements", index)}
                                                     icon={<DeleteOutlined />}
                                                 />
+
                                             </Space>
+                                            <Select
+                                                value={item.isReq}
+                                                className="add-service-inputs"
+                                                placeholder="Requirement Type"
+                                                onChange={(value) => updateBullet("requirements", index, value, "isReq")}
+                                                style={{ flex: 1, minWidth: 520 }}
+                                                options={[
+                                                    { value: "Required", label: "Required (For General Applicants)" },
+                                                    { value: "Optional", label: "Optional" }
+                                                ]}
+                                            />
                                             <Input.TextArea
                                                 value={item.desc}
                                                 className="add-service-inputs"
                                                 placeholder="Description (optional)"
-                                                autoSize={{ minRows: 1, maxRows: 3 }}
+                                                autoSize={{ maxRows: 4 }}
                                                 onChange={(event) => updateBullet("requirements", index, event.target.value, "desc")}
                                                 style={{ marginTop: 2 }}
                                             />
@@ -358,7 +370,7 @@ export default function AddService() {
                                             value={item}
                                             className="add-service-inputs"
                                             placeholder="Reminder"
-                                            maxLength={150}
+                                            maxLength={300}
                                             onChange={(event) => updateBullet("reminders", index, event.target.value)}
                                             style={{ flex: 1, minWidth: 600, maxWidth: 1100 }}
                                         />
