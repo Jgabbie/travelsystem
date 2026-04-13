@@ -344,11 +344,9 @@ export default function UserManagement() {
           setIsEditModalOpen(false);
           setEditingUser(null);
         }}
-        onOk={save}
+        footer={null}
         style={{ top: 120 }}
         className="users-edit-modal"
-        okButtonProps={{ className: "adduser-success-btn" }}
-        cancelButtonProps={{ className: "adduser-cancel-btn" }}
       >
         <Form form={editForm} layout="vertical" className="users-edit-form">
           <Row gutter={12}>
@@ -391,7 +389,32 @@ export default function UserManagement() {
           </Form.Item>
         </Form>
 
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+          <Button
+            type='primary'
+            onClick={() => {
+              setIsEditModalOpen(false);
+              setEditingUser(null);
+            }}
+            className="usermanagement-remove-button">
+            Cancel
+          </Button>
+          <Button
+            type='primary'
+            onClick={save}
+            className="usermanagement-okmodal-button">
+            Save
+          </Button>
+        </div>
       </Modal>
+
+
+      {/* DELETE CONFIRMATION */}
+
+
+
+
+
 
 
 

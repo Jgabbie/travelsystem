@@ -199,14 +199,13 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
     return (
         <Modal
             className="adduser-modal"
-            title={null}
+            title={`Add New ${values.role}`}
             open={isOpen}
             onCancel={onClose}
             footer={null}
-            destroyOnClose
+            style={{ top: 20 }}
         >
             <div className="adduser-container">
-                <h2 className="adduser-title">Add New {values.role}</h2>
                 <p className="adduser-subtitle">Fill out the details below to create a new {values.role?.toLowerCase()}.</p>
 
                 <form className="adduser-form" onSubmit={handleSubmit}>
