@@ -1480,6 +1480,9 @@ const handlePayMongoWebhook = async (req, res) => {
                 Number(sessionAttributes?.amount_total || 0) / 100;
             const net = grossAmount - ((grossAmount * 0.035) + 15);
             const amount = Math.round(net / 100) * 100;
+            console.log('metadata totalAmountCents:', metadata.totalAmountCents);
+            console.log('sessionAttributes amount_total:', sessionAttributes?.amount_total);
+            console.log('Base amount cents:', metadata.baseAmountCents);
 
             const transactionReference = generateTransactionReference();
 
@@ -1488,7 +1491,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 applicationId: metadata.applicationId,
                 applicationType: "Passport Application",
                 reference: transactionReference,
-                amount,
+                amount: Math.round(metadata.baseAmountCents / 100),
                 method: 'Paymongo',
                 status: 'Successful',
             });

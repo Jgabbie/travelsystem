@@ -960,6 +960,7 @@ export default function PassportApplication() {
 
                                             <Button style={{ marginTop: 20 }}
                                                 type="primary"
+                                                className="passportapplication-submit-button"
                                                 onClick={handleSubmitPayment}
                                                 disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
                                             >
