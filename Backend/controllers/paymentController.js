@@ -1248,9 +1248,15 @@ const createCheckoutSessionQuotation = async (req, res) => {
 const handlePayMongoWebhook = async (req, res) => {
     console.log('🚀 Webhook HIT!');
 
+    res.status(200).send('OK'); // respond instantly
+
+    console.log('✅ RESPONSE SENT');
+    console.log('HEADERS:', req.headers);
+    console.log('RAW BODY EXISTS:', !!req.rawBody);
+
     //check if secret key exists
     if (!process.env.PAYMONGO_WEBHOOK_SECRET) {
-        console.error('Webhook secret not configured');
+        console.log('Webhook secret not configured');
         return res.status(500).send('Webhook secret not configured');
     }
 
@@ -1260,7 +1266,7 @@ const handlePayMongoWebhook = async (req, res) => {
     //     : JSON.stringify(req.body || {});
 
     if (!req.rawBody) {
-        console.error('Raw body not captured. Check middleware.');
+        console.log('Raw body not captured. Check middleware.');
         return res.status(500).send('Internal Server Error');
     }
 
@@ -1302,12 +1308,11 @@ const handlePayMongoWebhook = async (req, res) => {
         const payload = JSON.parse(rawBodyString);
         const eventType = payload?.data?.attributes?.type;
         if (!eventType) {
-            console.error('Invalid webhook payload');
+            console.log('Invalid webhook payload');
             return res.status(400).send('Invalid payload');
         }
 
         console.log('📦 Parsed Payload:', JSON.stringify(payload, null, 2));
-
         console.log('STEP 4: PROCESSING EVENT');
 
         //paymongo can send different types of events, but we're mainly interested in the checkout_session.payment.paid event which indicates a successful payment. We will extract the metadata from the event to know which user and booking this payment is for, then we can update our database accordingly.
@@ -1337,7 +1342,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 metadata = sessionAttributes?.metadata || {};
                 console.log('✅ Session metadata:', metadata);
             } catch (err) {
-                console.error('❌ Failed to fetch session:', err.response?.data || err.message);
+                console.log('❌ Failed to fetch session:', err.response?.data || err.message);
             }
         }
 

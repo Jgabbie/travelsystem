@@ -58,6 +58,7 @@ app.use(express.json({
     verify: (req, res, buf) => {
         // Only store rawBody for the webhook route to save memory
         if (req.originalUrl.includes('/api/payment/webhook')) {
+            console.log('✅ RawBody captured for:', req.originalUrl);
             req.rawBody = buf;
         }
     }
