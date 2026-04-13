@@ -1480,7 +1480,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
             const transactionReference = generateTransactionReference();
 
-            await TransactionModel.create({
+            const transaction = await TransactionModel.create({
                 userId: user._id,
                 applicationId: metadata.applicationId,
                 applicationType: "Passport Application",
@@ -1489,6 +1489,10 @@ const handlePayMongoWebhook = async (req, res) => {
                 method: 'Paymongo',
                 status: 'Successful',
             });
+
+            console.log('Created transaction record:', transaction);
+
+
 
             console.log('Created transaction for passport application:', metadata.applicationId);
 
