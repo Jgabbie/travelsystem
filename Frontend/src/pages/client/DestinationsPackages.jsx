@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty } from 'antd'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty, Button, Image, Modal } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
 import apiFetch from '../../config/fetchConfig'
@@ -17,6 +17,9 @@ export default function DestinationsPackages() {
     const [daysValue, setDaysValue] = useState(6)
     const [travelersValue, setTravelersValue] = useState(null)
     const [loading, setLoading] = useState(false)
+
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+    const [chatMessage, setChatMessage] = useState('')
 
     const { Title, Text } = Typography
 
@@ -414,6 +417,38 @@ export default function DestinationsPackages() {
                         )}
                     </section>
                 </div>
+
+                <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
+                    <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
+                </Button>
+
+                <Modal
+                    open={isChatbotOpen}
+                    onCancel={() => setIsChatbotOpen(false)}
+                    footer={null}
+                    title="Chatbot"
+                    wrapClassName="chatbot-modal"
+                >
+                    <div className="chatbot-body">
+                        <div className="chatbot-message">
+                            Hi! How can I help you today?
+                        </div>
+                        <Input.TextArea
+                            value={chatMessage}
+                            onChange={(e) => setChatMessage(e.target.value)}
+                            placeholder="Type your message..."
+                            rows={3}
+                        />
+                        <div className="chatbot-actions">
+                            <Button
+                                type="primary"
+                                disabled={!chatMessage.trim()}
+                            >
+                                Send
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
 
             </div>
         </ConfigProvider >

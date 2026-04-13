@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Button, Collapse, ConfigProvider, Input, Modal } from 'antd'
+import { Button, Collapse, ConfigProvider, Input, Modal, Image } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import '../../style/client/faqspage.css'
 
@@ -140,6 +140,10 @@ export default function FAQsPage() {
                         </Collapse>
                     )}
                 </div>
+
+                <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
+                    <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
+                </Button>
 
                 <Modal
                     open={isChatbotOpen}

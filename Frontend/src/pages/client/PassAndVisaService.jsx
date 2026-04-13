@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Input, Typography, ConfigProvider, Empty, Modal } from 'antd'
+import { Button, Input, Typography, ConfigProvider, Empty, Modal, Image } from 'antd'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
-import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function PassAndVisaService() {
     const [search, setSearch] = useState('')
@@ -162,6 +161,10 @@ export default function PassAndVisaService() {
                         </section>
                     </div>
                 </div>
+
+                <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
+                    <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
+                </Button>
 
                 <Modal
                     open={isChatbotOpen}
