@@ -53,7 +53,15 @@ app.use(cors({
 }));
 
 app.use(cookieParser())
-app.use(express.json({ limit: '10mb' }))
+app.use(express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+        // Only store rawBody for the webhook route to save memory
+        if (req.originalUrl.includes('/api/payment/webhook')) {
+            req.rawBody = buf;
+        }
+    }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 let cached = global.mongoose;
