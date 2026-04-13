@@ -124,7 +124,8 @@ export default function UserTransactions() {
                     </Button>
                     {record.method?.toLowerCase() === 'manual' && (
                         <Button
-                            className="user-transactions-action"
+                            className="user-transactions-view-button"
+                            type='primary'
                             onClick={() => {
                                 if (!record.proofImage) {
                                     message.warning('No proof image available for this transaction.');
