@@ -467,7 +467,12 @@ export default function UploadBookingInvoice() {
                         </View>
                         <View style={[styles.summaryCol, styles.darkBg]}>
                             <Text style={[styles.label, { color: "#FFF" }]}>TOTAL PRICE</Text>
-                            <Text style={[styles.summaryValue, { color: "#FFF" }]}>{formatCurrency.format(totals.subtotal)}</Text>
+                            <Text style={[styles.summaryValue, { color: "#FFF" }]}>
+                                PHP {Number(totals.subtotal).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                         <View style={styles.summaryCol}>
                             <Text style={styles.label}>DUE DATE</Text>
@@ -497,8 +502,18 @@ export default function UploadBookingInvoice() {
                             <Text style={[styles.cell, { flex: 2 }]}>{item.activity}</Text>
                             <Text style={[styles.cell, { flex: 4 }]}>{item.description}</Text>
                             <Text style={[styles.cell, { flex: 1, textAlign: "center" }]}>{item.qty}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>{formatCurrency.format(item.rate)}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>{formatCurrency.format(item.qty * item.rate)}</Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>
+                                PHP {Number(item.rate).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: "right" }]}>
+                                PHP {Number(item.qty * item.rate).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                     ))}
                 </View>
@@ -525,7 +540,10 @@ export default function UploadBookingInvoice() {
                                 </Text>
                                 <Text style={[styles.cell, { flex: 2, textAlign: "right" }]}
                                 >
-                                    {formatCurrency.format(item.amount)}
+                                    PHP {Number(item.amount).toLocaleString('en-PH', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}
                                 </Text>
                                 <Text style={[
                                     styles.cell,
@@ -554,7 +572,12 @@ export default function UploadBookingInvoice() {
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL DUE</Text>
-                            <Text style={styles.totalDueValue}>{formatCurrency.format(totals.subtotal)}</Text>
+                            <Text style={styles.totalDueValue}>
+                                PHP {Number(totals.subtotal).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                         <Text style={styles.thankYou}>THANK YOU.</Text>
                     </View>
@@ -635,7 +658,7 @@ export default function UploadBookingInvoice() {
                                 <Col xs={24} md={8}>
                                     <Card className="upload-invoice-stat upload-invoice-highlight" bordered={false}>
                                         <Space direction="vertical" size={4}>
-                                            <AntText type="secondary">Remaining Balance</AntText>
+                                            <AntText type="secondary">Remaining Bal.</AntText>
                                             <div className="upload-invoice-amount">{formatCurrency.format(remainingBalance)}</div>
                                             <Tag color={remainingBalance > 0 ? "orange" : "green"}>
                                                 {remainingBalance > 0 ? "Balance Due" : "Fully Paid"}
@@ -649,7 +672,7 @@ export default function UploadBookingInvoice() {
                         <div className="display-invoice-wrapper">
                             <div className="display-invoice-card">
                                 <div className="pdf-viewer-wrapper">
-                                    <div className="pdf-toolbar-mask"></div>
+                                    <div></div>
                                     <PDFViewer style={{ width: "100%", height: 727 }}>
                                         <MyDocument />
                                     </PDFViewer>

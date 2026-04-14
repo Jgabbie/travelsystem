@@ -74,7 +74,7 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
         const updatedTravelers = travelers.map((t) => ({
             ...t,
             birthday: t.birthday ? dayjs(t.birthday).format('MMM D, YYYY') : 'N/A',
-            passportExpiry: t.passportExpiry ? dayjs(t.passportExpiry).format('MMM D, YYYY') : 'N/A',
+            passportExpiry: t.passportExpiry === null || t.passportExpiry === undefined ? 'N/A' : dayjs(t.passportExpiry).format('MMM D, YYYY'),
             passportNo: t.passportNumber || 'N/A',
 
             roomType: isSolo

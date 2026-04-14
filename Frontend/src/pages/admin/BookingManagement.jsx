@@ -327,7 +327,9 @@ export default function BookingManagement() {
           : s;
         const color = displayStatus === "Fully Paid" ? "green" :
           displayStatus === "Pending" ? "orange" :
-            "red";
+            displayStatus === "Cancelled" ? "red" :
+              displayStatus === "Not Paid" ? "pink" :
+                "purple";
         return <Tag color={color}>{displayStatus}</Tag>;
       }
     },
@@ -527,6 +529,9 @@ export default function BookingManagement() {
             </Row>
           </Form>
         </Modal>
+
+
+
       </div>
     </ConfigProvider>
   );

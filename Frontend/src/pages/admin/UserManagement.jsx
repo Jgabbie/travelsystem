@@ -52,6 +52,7 @@ export default function UserManagement() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const getUsers = async () => {
     setLoading(true);
@@ -246,7 +247,7 @@ export default function UserManagement() {
             className='usermanagement-remove-button'
             type='primary'
             icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
+            onClick={() => setIsDeleteModalOpen(true)}
           >
             Delete
           </Button>
@@ -410,9 +411,49 @@ export default function UserManagement() {
 
 
       {/* DELETE CONFIRMATION */}
+      <Modal
+        open={isModalOpen}
+        className='signup-success-modal'
+        closable={{ 'aria-label': 'Custom Close Button' }}
+        footer={null}
+        style={{ top: 220 }}
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+          setEditingUser(null);
+        }}
+      >
+        <div className='signup-success-container'>
+          <h1 className='signup-success-heading'>Delete User?</h1>
+          <p className='signup-success-text'>Are you sure you want to delete this user?</p>
 
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
+            <Button
+              type='primary'
+              className='logout-confirm-btn'
+              onClick={() => {
+                handleDelete(editingUser.id);
+                setIsDeleteModalOpen(false);
+                setEditingUser(null);
+              }}
+            >
+              Delete
+            </Button>
+            <Button
+              type='primary'
+              className='logout-cancel-btn'
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setEditingUser(null);
+              }}
+            >
+              Cancel
+            </Button>
 
+          </div>
+
+        </div>
+      </Modal>
 
 
 

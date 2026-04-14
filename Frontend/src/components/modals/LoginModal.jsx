@@ -138,7 +138,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
     //submit OTP for verification
     const submitOTP = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
+        setIsLoading(true);
 
         try {
             const response = await apiFetch('/auth/verify-account', {
@@ -146,33 +147,47 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 body: JSON.stringify({ otp: getOTP, email: email, username: values.username, password: values.password })
             });
 
-            if (response?.success) {
-                setOTP("")
-                setIsOTPModalVisible(false)
-                setIsVerifiedModalOpen(false)
+            if (response?.user || response?.accessToken || response?.message) {
+                setOTP("");
+                setIsOTPModalVisible(false);
+                setIsVerifiedModalOpen(false);
+
                 try {
                     const loginResponse = await apiFetch('/auth/loginUser', {
                         method: 'POST',
                         body: JSON.stringify({ username: values.username, password: values.password })
                     });
-                    const userData = loginResponse.user
+
+                    const userData = loginResponse.user;
                     if (userData) {
-                        setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce })
-                        clearForm()
-                        isCloseLogin()
-                        onLoginSuccess()
-                        navigate('/user-preferences')
+                        setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
+
+                        if (userData.role === 'Admin') {
+                            navigate('/dashboard');
+                        } else if (userData.role === 'Employee') {
+                            navigate('/employee/dashboard');
+                        } else if (!userData.loginOnce) {
+                            navigate('/user-preferences');
+                        } else {
+                            navigate('/home');
+                        }
+
+                        isCloseLogin();
+                        onLoginSuccess?.();
+                        clearForm();
                     }
                 } catch (loginError) {
-                    console.error("Auto login after verification failed:", loginError.data?.message || loginError.message)
+                    const errorMsg = loginError.data?.message || loginError.message || "Auto login after verification failed";
+                    console.error("Auto login after verification failed:", errorMsg);
+                    setErrorOTP(errorMsg);
                 }
-
-
             }
         } catch (err) {
-            const errorMsg = err.data?.message || "Verification failed"
-            console.error("Error: ", errorMsg)
-            setErrorOTP(errorMsg)
+            const errorMsg = err.data?.message || "Verification failed";
+            console.error("Error: ", errorMsg);
+            setErrorOTP(errorMsg);
+        } finally {
+            setIsLoading(false);
         }
     }
 

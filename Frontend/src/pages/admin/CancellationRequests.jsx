@@ -54,6 +54,7 @@ export default function CancellationRequests() {
                 status: c.status || 'Pending',
                 imageProof: c.imageProof || null
             }))
+            console.log('Fetched cancellations:', cancellations)
             setRequests(cancellations)
         } catch (err) {
             console.error('Error fetching cancellation requests:', err)

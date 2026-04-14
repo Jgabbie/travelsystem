@@ -727,7 +727,7 @@ export default function UserBookingInvoice() {
                         </View>
                         {/* Highlighting the Remaining Balance */}
                         <View style={[styles.totalDueRow, { backgroundColor: '#f3f4f6', padding: 5 }]}>
-                            <Text style={[styles.totalDueLabel, { color: '#b91c1c' }]}>REMAINING BALANCE</Text>
+                            <Text style={[styles.totalDueLabel, { color: '#b91c1c' }]}>REMAINING BAL.</Text>
                             <Text style={[styles.totalDueValue, { color: '#b91c1c' }]}>PHP {Number(remainingBalance).toLocaleString('en-PH', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
@@ -874,7 +874,7 @@ export default function UserBookingInvoice() {
                 <div className="display-invoice-wrapper">
                     <div className="display-invoice-card">
                         <div className="pdf-viewer-wrapper">
-                            <div className="pdf-toolbar-mask"></div>
+                            <div></div>
                             <PDFViewer style={{ width: "100%", height: 727 }}>
                                 <MyDocument />
                             </PDFViewer>
