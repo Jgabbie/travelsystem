@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Card, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
@@ -836,11 +836,13 @@ export default function VisaApplication() {
                                                         )}
 
                                                         {uploadedFile?.url && (
-                                                            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
                                                                 {uploadedFile.name?.toLowerCase().endsWith('.pdf') || (uploadedFile.originFileObj?.type === 'application/pdf') ? (
                                                                     <Button
+                                                                        type="dashed"
+                                                                        style={{ minWidth: 220 }}
                                                                         onClick={() => handlePreview(uploadedFile)}
-                                                                        icon={<UploadOutlined />}
+                                                                        icon={<FilePdfOutlined />}
                                                                     >
                                                                         Preview PDF: {uploadedFile.name}
                                                                     </Button>
@@ -854,8 +856,9 @@ export default function VisaApplication() {
                                                                     />
                                                                 )}
                                                                 <Button
-                                                                    danger
-                                                                    type="default"
+                                                                    className='visaapplication-removefile-button'
+                                                                    icon={<DeleteOutlined />}
+                                                                    type="primary"
                                                                     onClick={() => {
                                                                         // Remove the uploaded file for this requirement
                                                                         const newFiles = { ...requirementFiles };
@@ -863,7 +866,7 @@ export default function VisaApplication() {
                                                                         setRequirementFiles(newFiles);
                                                                     }}
                                                                 >
-                                                                    Remove <i class="fa fa-file-audio-o" aria-hidden="true"></i>
+                                                                    Remove
                                                                 </Button>
                                                             </div>
                                                         )}

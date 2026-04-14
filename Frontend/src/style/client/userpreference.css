@@ -181,7 +181,6 @@
 }
 
 .preference-cta {
-    border: 1px solid transparent;
     background: #305797;
     color: #ffffff;
     width: 220px;
@@ -190,7 +189,8 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 6px 16px rgba(48, 87, 151, 0.25);
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
 .preference-cta:hover {

@@ -231,6 +231,8 @@ export default function PassportApplication() {
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
                 {isPDF ? (
                     <Button
+                        type="dashed"
+                        style={{ minWidth: 220 }}
                         icon={<FilePdfOutlined />}
                         onClick={() => window.open(file.preview || file.url, '_blank')}
                     >
@@ -246,12 +248,13 @@ export default function PassportApplication() {
 
                 {/* The Remove Button */}
                 <Button
+                    className='passportapplication-removefile-button'
                     type="primary"
                     icon={<DeleteOutlined />}
                     onClick={() => setter([])} // Clears the specific list
                     size="small"
                 >
-                    Remove file
+                    Remove
                 </Button>
             </div>
         );

@@ -120,6 +120,8 @@
     height: 50px;
     margin-top: 40px;
     margin-bottom: 20px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
 #emailverify-submit-otp-button:hover {
@@ -136,7 +138,8 @@
     width: 220px;
     height: 40px;
     border-radius: 10px;
-    box-shadow: 0 6px 16px rgba(48, 87, 151, 0.25);
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
     display: block;
     margin: 0 auto;
 }

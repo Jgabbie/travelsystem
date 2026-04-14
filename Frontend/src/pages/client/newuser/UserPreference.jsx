@@ -166,7 +166,7 @@ export default function UserPreference() {
                         Your picks will shape the tours we recommend next.
                     </div>
                     <button
-                        type="button"
+                        type="primary"
                         className={
                             canContinue
                                 ? 'preference-cta'

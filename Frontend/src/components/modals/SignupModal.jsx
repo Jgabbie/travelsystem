@@ -308,7 +308,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={clearForms}
-                    style={{ top: 25 }}
+                    style={{ top: 15 }}
                 >
 
                     <div id='signup-container-modal'>
@@ -443,6 +443,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     className='signup-success-modal'
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
+                    style={{ top: 245 }}
                 >
                     <div className='signup-success-container'>
                         <h1 className='signup-success-heading'>Account created</h1>

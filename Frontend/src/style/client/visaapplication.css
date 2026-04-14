@@ -63,6 +63,25 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.visaapplication-removefile-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #992A46;
+    color: #fff;
+    border-radius: 10px;
+    width: 220px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    margin-top: 7px;
+}
+
+.visaapplication-removefile-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #992A46 !important;
+}
+
 .visaapplication-back-button:hover,
 .visaapplication-upload-button:hover,
 .visaapplication-uploadreceipt-button:hover,
