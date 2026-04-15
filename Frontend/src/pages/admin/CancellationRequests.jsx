@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, message, Select } from 'antd'
-import { CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined, FilePdfOutlined } from '@ant-design/icons'
+import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, message, Select, Image } from 'antd'
+import { CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -34,12 +34,38 @@ export default function CancellationRequests() {
     const [selectedRequest, setSelectedRequest] = useState(null)
     const [loading, setLoading] = useState(false)
 
+    const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false)
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
+    const [isCancellationAcceptedModalOpen, setIsCancellationAcceptedModalOpen] = useState(false)
+    const [isCancellationRejectedModalOpen, setIsCancellationRejectedModalOpen] = useState(false)
+    const [pendingActionRequest, setPendingActionRequest] = useState(null); // Track which item is being clicked
+    const [isFetchingRequests, setIsFetchingRequests] = useState(false)
+
+    const showConfirmModal = (record, type) => {
+        setPendingActionRequest(record);
+        if (type === 'Approve') setIsAcceptModalOpen(true);
+        if (type === 'Reject') setIsRejectModalOpen(true);
+    };
+
+    const handleAccept = async () => {
+        if (!pendingActionRequest) return;
+        await handleAction(pendingActionRequest.key, 'Approved');
+        setIsCancellationAcceptedModalOpen(true);
+    };
+
+    const handleReject = async () => {
+        if (!pendingActionRequest) return;
+        await handleAction(pendingActionRequest.key, 'Disapproved');
+        setIsCancellationRejectedModalOpen(true);
+    };
+
     useEffect(() => {
         getCancellationRequests()
     }, [])
 
     const getCancellationRequests = async () => {
         try {
+            setIsFetchingRequests(true)
             const response = await apiFetch.get('/booking/cancellations')
             const cancellations = response.map((c) => ({
                 key: c._id,
@@ -57,6 +83,8 @@ export default function CancellationRequests() {
             setRequests(cancellations)
         } catch (err) {
             console.error('Error fetching cancellation requests:', err)
+        } finally {
+            setIsFetchingRequests(false)
         }
         return []
     }
@@ -109,19 +137,19 @@ export default function CancellationRequests() {
 
         try {
             const imgData = await getBase64ImageFromURL("/images/Logo.png");
-            doc.addImage(imgData, "PNG", 14, 12, 30, 22);
+            doc.addImage(imgData, "PNG", 14, 12, 35, 22);
         } catch (e) {
             console.warn("Logo not found at /public/images/Logo.png");
         }
 
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("M&RC TRAVEL AND TOURS", 50, 18);
+        doc.text("M&RC TRAVEL AND TOURS", 52, 18);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
-        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
-        doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
+        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 52, 23);
+        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
+        doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
 
         doc.setDrawColor(48, 87, 151);
         doc.line(14, 38, 196, 38);
@@ -244,7 +272,7 @@ export default function CancellationRequests() {
                         className="cancellations-approve-button"
                         type="primary"
                         icon={<CheckOutlined />}
-                        onClick={() => handleAction(record.key, 'Approved')}
+                        onClick={() => showConfirmModal(record, 'Approve')}
                     >
                         Approve
                     </Button>
@@ -252,7 +280,7 @@ export default function CancellationRequests() {
                         className="cancellations-reject-button"
                         type="primary"
                         icon={<CloseOutlined />}
-                        onClick={() => handleAction(record.key, 'Disapproved')}
+                        onClick={() => showConfirmModal(record, 'Reject')}
                     >
                         Reject
                     </Button>
@@ -350,7 +378,7 @@ export default function CancellationRequests() {
                 <Card style={{ marginTop: 20 }}>
                     <Table
                         columns={columns}
-                        loading={loading}
+                        loading={loading || isFetchingRequests}
                         dataSource={filteredData}
                         pagination={{ pageSize: 10 }}
                     />
@@ -359,70 +387,212 @@ export default function CancellationRequests() {
                 <Modal
                     open={isViewModalOpen}
                     onCancel={() => setIsViewModalOpen(false)}
+                    className="transaction-view-modal"
+                    width={720}
+                    style={{ top: 150 }}
                     footer={null}
-                    className="cancellation-view-modal"
-                    width={680}
-                    style={{ top: 35 }}
+                    title={"Cancellation Request Proof - " + (selectedRequest?.ref || "")}
                 >
                     {selectedRequest && (
-                        <div className="cancellation-view-content">
-                            <div className="cancellation-view-header">
-                                <div>
-                                    <h2 className="cancellation-view-title">Cancellation Request</h2>
-                                    <div className="cancellation-view-subtitle">
-                                        <span>{selectedRequest.username}</span>
-                                        <Tag
-                                            color={
-                                                selectedRequest.status === 'Approved'
-                                                    ? 'green'
-                                                    : selectedRequest.status === 'Pending'
-                                                        ? 'orange'
-                                                        : 'red'
-                                            }
-                                        >
-                                            {selectedRequest.status}
-                                        </Tag>
-                                    </div>
+                        <div className="receipt-container">
+                            {selectedRequest.imageProof ? (
+                                <div className="upload-preview-box" style={{ maxHeight: 520 }}>
+                                    <Image
+                                        src={selectedRequest.imageProof}
+                                        alt={selectedRequest.proofFileName || "Proof of payment"}
+                                        className="upload-preview-image"
+                                        style={{ width: "100%", height: "auto" }}
+                                    />
                                 </div>
-                            </div>
-
-                            <div className="cancellation-view-grid">
-                                <div className="cancellation-view-item">
-                                    <span className="cancellation-view-label">Travel Package</span>
-                                    <span className="cancellation-view-value">{selectedRequest.package}</span>
-                                </div>
-                                <div className="cancellation-view-item">
-                                    <span className="cancellation-view-label">Reason</span>
-                                    <span className="cancellation-view-value">{selectedRequest.reason}</span>
-                                </div>
-                                <div className="cancellation-view-item">
-                                    <span className="cancellation-view-label">Days After Booking</span>
-                                    <span className="cancellation-view-value">{selectedRequest.daysAfterBooking}</span>
-                                </div>
-                                <div className="cancellation-view-item">
-                                    <span className="cancellation-view-label">Cancellation Date</span>
-                                    <span className="cancellation-view-value">
-                                        {selectedRequest.cancellationDate
-                                            ? dayjs(selectedRequest.cancellationDate).format('MMM DD, YYYY')
-                                            : '--'}
-                                    </span>
-                                </div>
-                                {selectedRequest.imageProof && (
-                                    <div className="cancellation-view-item" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>
-                                        <span className="cancellation-view-label">Proof Image</span>
-                                        <img
-                                            src={selectedRequest.imageProof}
-                                            alt="Cancellation Proof"
-                                            style={{ maxWidth: '100%', maxHeight: '300px', marginTop: 8, borderRadius: 6 }}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
+                            ) : (
+                                <p>No proof image available.</p>
+                            )}
                         </div>
+
+
                     )}
+
+                    <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+                        <Button
+                            className='user-transactions-viewproof-button'
+                            type="primary"
+                            onClick={async () => {
+                                try {
+                                    const response = await fetch(selectedRequest.imageProof, { mode: 'cors' });
+                                    const blob = await response.blob();
+                                    const url = window.URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = 'cancellation_proof_' + selectedRequest.ref + '.png';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    window.URL.revokeObjectURL(url);
+                                } catch (err) {
+                                    window.open(selectedRequest.imageProof, '_blank');
+                                }
+                            }}
+                        >
+                            Download Image
+                        </Button>
+                    </Space>
                 </Modal>
             </div>
+
+            {/* APPROVE CANCELLATION REQUEST MODAL */}
+            <Modal
+                open={isAcceptModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsAcceptModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Accept Cancellation Request?</h1>
+                    <p className='signup-success-text'>Are you sure you want to accept this cancellation request?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                handleAccept();
+                                setIsAcceptModalOpen(false);
+                            }}
+                        >
+                            Accept
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='logout-cancel-btn'
+                            onClick={() => {
+                                setIsAcceptModalOpen(false);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+            {/* APPROVE CANCELLATION REQUEST MODAL */}
+            <Modal
+                open={isRejectModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRejectModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Reject Cancellation Request?</h1>
+                    <p className='signup-success-text'>Are you sure you want to reject this cancellation request?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                handleReject();
+                                setIsRejectModalOpen(false);
+                            }}
+                        >
+                            Reject
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='logout-cancel-btn'
+                            onClick={() => {
+                                setIsRejectModalOpen(false);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+            {/* CANCELLATION REQUEST HAS BEEN ACCEPTED MODAL */}
+            <Modal
+                open={isCancellationAcceptedModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsCancellationAcceptedModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Cancellation Request Accepted!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='signup-success-text'>The cancellation request has been accepted.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                setIsCancellationAcceptedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+
+            {/* CANCELLATION REQUEST HAS BEEN REJECTED MODAL */}
+            <Modal
+                open={isCancellationRejectedModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsCancellationRejectedModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Cancellation Request Rejected!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='signup-success-text'>The cancellation request has been rejected.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                setIsCancellationRejectedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
         </ConfigProvider>
     )
 }

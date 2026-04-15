@@ -9,7 +9,8 @@ import {
   ExclamationCircleOutlined,
   EyeOutlined,
   FilePdfOutlined,
-  PlusOutlined
+  PlusOutlined,
+  CheckCircleFilled
 } from "@ant-design/icons";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -53,6 +54,8 @@ export default function UserManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isUserEditedModalOpen, setIsUserEditedModalOpen] = useState(false);
+  const [isUserDeletedModalOpen, setIsUserDeletedModalOpen] = useState(false);
 
   const getUsers = async () => {
     setLoading(true);
@@ -150,7 +153,8 @@ export default function UserManagement() {
   const handleDelete = async (id) => {
     try {
       await apiFetch.delete(`/user/deleteUsers/${id}`, { withCredentials: true });
-      message.success("User deleted");
+      setIsDeleteModalOpen(false);
+      setIsUserDeletedModalOpen(true);
       getUsers();
     } catch { message.error("Delete failed"); }
   };
@@ -165,6 +169,7 @@ export default function UserManagement() {
       email: record.email,
       role: record.role
     });
+
 
     setIsEditModalOpen(true);
   };
@@ -181,6 +186,7 @@ export default function UserManagement() {
 
       message.success("User updated");
       setIsEditModalOpen(false);
+      setIsUserEditedModalOpen(true);
       setEditingUser(null);
       editForm.resetFields();
       getUsers();
@@ -453,7 +459,77 @@ export default function UserManagement() {
         </div>
       </Modal>
 
+      {/* USER HAS BEEN EDITED MODAL */}
+      <Modal
+        open={isUserEditedModalOpen}
+        className='signup-success-modal'
+        closable={{ 'aria-label': 'Custom Close Button' }}
+        footer={null}
+        style={{ top: 220 }}
+        onCancel={() => {
+          setIsUserEditedModalOpen(false);
+        }}
+      >
+        <div className='signup-success-container'>
+          <h1 className='signup-success-heading'>User Edited Successfully!</h1>
 
+          <div>
+            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+          </div>
+
+          <p className='signup-success-text'>The user has been edited.</p>
+
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+            <Button
+              type='primary'
+              className='logout-confirm-btn'
+              onClick={() => {
+                setIsUserEditedModalOpen(false);
+              }}
+            >
+              Continue
+            </Button>
+          </div>
+
+        </div>
+      </Modal>
+
+      {/* USER HAS BEEN DELETED MODAL */}
+      <Modal
+        open={isUserDeletedModalOpen}
+        className='signup-success-modal'
+        closable={{ 'aria-label': 'Custom Close Button' }}
+        footer={null}
+        style={{ top: 220 }}
+        onCancel={() => {
+          setIsUserDeletedModalOpen(false);
+        }}
+      >
+        <div className='signup-success-container'>
+          <h1 className='signup-success-heading'>User Deleted Successfully!</h1>
+
+          <div>
+            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+          </div>
+
+          <p className='signup-success-text'>The user has been deleted.</p>
+
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+            <Button
+              type='primary'
+              className='logout-confirm-btn'
+              onClick={() => {
+                setIsUserDeletedModalOpen(false);
+              }}
+            >
+              Continue
+            </Button>
+          </div>
+
+        </div>
+      </Modal>
 
 
 

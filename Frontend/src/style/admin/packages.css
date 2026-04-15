@@ -207,6 +207,13 @@
   padding-bottom: 0;
 }
 
+.package-details-modal .ant-modal.title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #305797;
+}
+
 .package-details-modal-header {
   display: flex;
   justify-content: space-between;
@@ -364,6 +371,53 @@
   background-color: #f0f5ff;
 }
 
+.packages-edit-slots-modal .ant-modal-title,
+.packages-add-discount-modal .ant-modal-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #305797;
+}
+
+.package-slots-save-button,
+.package-discount-save-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 110px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.package-slots-save-button:hover,
+.package-discount-save-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #305797 !important;
+}
+
+.package-slots-cancel-button,
+.package-discount-cancel-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #992A46;
+  color: #fff;
+  border-radius: 10px;
+  width: 110px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.pacakge-slots-cancel-button:hover,
+.package-discount-cancel-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #992A46 !important;
+}
 
 
 @media (max-width: 768px) {

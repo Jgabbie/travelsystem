@@ -23,6 +23,8 @@ export default function ViewVisaApplication() {
         { date: null, time: null }
     ]);
 
+    const isBusy = loading || isSubmittingSlots || isUpdatingStatus;
+
     useEffect(() => {
         const fetchApplicationAndService = async () => {
             try {
@@ -328,7 +330,7 @@ export default function ViewVisaApplication() {
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
-            {loading ? (
+            {isBusy ? (
                 <div
                     style={{
                         display: "flex",
@@ -337,7 +339,16 @@ export default function ViewVisaApplication() {
                         height: "80vh"
                     }}
                 >
-                    <Spin size="large" description="Loading application details..." />
+                    <Spin
+                        size="large"
+                        description={
+                            loading
+                                ? "Loading application details..."
+                                : isSubmittingSlots
+                                    ? "Submitting suggested appointment options..."
+                                    : "Updating application status..."
+                        }
+                    />
                 </div>) :
                 (
                     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, Image } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/transaction.css";
@@ -25,7 +26,7 @@ const getBase64ImageFromURL = (url) => {
 };
 
 export default function TransactionManagement() {
-
+  const receiptRef = useRef();
   const [searchText, setSearchText] = useState("");
   const [methodFilter, setMethodFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -38,6 +39,9 @@ export default function TransactionManagement() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isProofModalOpen, setIsProofModalOpen] = useState(false);
   const [proofTransaction, setProofTransaction] = useState(null);
+  const [isTransactionEditedModalOpen, setIsTransactionEditedModalOpen] = useState(false);
+  const [isTransactionDeletedModalOpen, setIsTransactionDeletedModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
@@ -63,6 +67,8 @@ export default function TransactionManagement() {
           proofImageType: t.proofImageType || "",
           proofFileName: t.proofFileName || ""
         }));
+
+        console.log(transactions)
 
         setData(transactions);
       } catch (error) {
@@ -107,6 +113,53 @@ export default function TransactionManagement() {
   const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
   const totalPending = filteredData.filter(t => t.status === "Pending").length;
   const totalFailed = filteredData.filter(t => t.status === "Failed").length;
+
+  const handleDownloadPDF = async () => {
+    const element = receiptRef.current;
+    if (!element) {
+      message.error("Receipt content not found!");
+      return;
+    }
+
+    try {
+      message.loading({ content: "Generating PDF...", key: "pdf" });
+
+      const canvas = await html2canvas(element, {
+        scale: 3, // Higher scale for crisp text
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff", // Ensures background isn't transparent/black
+        logging: false,
+        // This tells html2canvas to wait for images to load
+        onclone: (clonedDoc) => {
+          // You can manually adjust styles of the cloned element here if needed
+          const clonedElement = clonedDoc.querySelector(".receipt-container");
+          if (clonedElement) {
+            clonedElement.style.padding = "20px";
+          }
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
+
+      message.success({ content: "Downloaded successfully!", key: "pdf" });
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+      message.error({ content: "Failed to generate PDF.", key: "pdf" });
+    }
+  };
+
 
   const generatePDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -183,13 +236,6 @@ export default function TransactionManagement() {
     setIsEditModalOpen(true);
   };
 
-
-  //view proof modal
-  const getDownloadUrl = (url) => {
-    if (!url) return "";
-    return url.replace("/upload/", "/upload/fl_attachment/");
-  };
-
   const openViewModal = (record) => {
     setSelectedTransaction(record);
     setIsViewModalOpen(true);
@@ -220,34 +266,15 @@ export default function TransactionManagement() {
     }
   };
 
-  const handleDelete = (key) => {
-    Modal.confirm({
-      className: "logout-confirm-modal",
-      icon: null,
-      title: (
-        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
-          Confirm Delete
-        </div>
-      ),
-      content: (
-        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-          <p className="logout-confirm-text">Are you sure you want to delete this transaction?</p>
-        </div>
-      ),
-      okText: "Delete",
-      cancelText: "Cancel",
-      okButtonProps: { className: "logout-confirm-btn" },
-      cancelButtonProps: { className: "logout-cancel-btn" },
-      onOk: async () => {
-        try {
-          await apiFetch.delete(`/transaction/${key}`);
-          setData((prev) => prev.filter((item) => item.key !== key));
-          message.success("Transaction deleted");
-        } catch (error) {
-          message.error("Failed to delete transaction");
-        }
-      }
-    });
+  const handleDelete = async (key) => {
+    try {
+      await apiFetch.delete(`/transaction/${key}`);
+      setData((prev) => prev.filter((item) => item.key !== key));
+      setIsTransactionDeletedModalOpen(true);
+      message.success("Transaction deleted");
+    } catch (error) {
+      message.error("Failed to delete transaction");
+    }
   };
 
   const save = async () => {
@@ -290,6 +317,7 @@ export default function TransactionManagement() {
       );
 
       message.success("Transaction updated");
+      setIsTransactionEditedModalOpen(true);
       setIsEditModalOpen(false);
       setEditingTransaction(null);
       editForm.resetFields();
@@ -349,7 +377,10 @@ export default function TransactionManagement() {
             className="transactionmanagement-remove-button"
             type="primary"
             icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key)}
+            onClick={() => {
+              setEditingTransaction(record);
+              setIsDeleteModalOpen(true);
+            }}
           >
             Delete
           </Button>
@@ -498,12 +529,10 @@ export default function TransactionManagement() {
             setIsEditModalOpen(false);
             setEditingTransaction(null);
           }}
-          onOk={save}
-          okText="Save Changes"
-          style={{ top: 120 }}
+          footer={null}
+          style={{ top: 155 }}
           className="transaction-edit-modal"
-          okButtonProps={{ className: "transaction-edit-save-btn" }}
-          cancelButtonProps={{ className: "transaction-edit-cancel-btn" }}
+
         >
           <Form form={editForm} layout="vertical" className="transaction-edit-form">
             <Form.Item
@@ -569,6 +598,24 @@ export default function TransactionManagement() {
                 </Form.Item>
               </Col>
             </Row>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <Button
+                type='primary'
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingTransaction(null);
+                }}
+                className="usermanagement-remove-button">
+                Cancel
+              </Button>
+              <Button
+                type='primary'
+                onClick={save}
+                className="usermanagement-okmodal-button">
+                Save
+              </Button>
+            </div>
           </Form>
         </Modal>
 
@@ -578,10 +625,10 @@ export default function TransactionManagement() {
           footer={null}
           className="transaction-view-modal"
           width={720}
-          style={{ top: 60 }}
+          style={{ top: 40 }}
         >
           {selectedTransaction && (
-            <div className="receipt-container">
+            <div className="receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
               {/* Header Section */}
               <div className="receipt-header">
                 <div className="company-info">
@@ -602,7 +649,7 @@ export default function TransactionManagement() {
 
                 </div>
                 <div className="receipt-title-box">
-                  <h1 className="receipt-title">Receipt</h1>
+                  <h1 className="receipt-title">RECEIPT</h1>
                 </div>
               </div>
 
@@ -662,8 +709,20 @@ export default function TransactionManagement() {
                 <p className="support-text">Thank you for your purchase!</p>
                 <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
               </div>
+
+
+
             </div>
           )}
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+            <Button
+              className='user-transactions-viewproof-button'
+              type="primary"
+              onClick={handleDownloadPDF}
+            >
+              Download Receipt
+            </Button>
+          </div>
         </Modal>
 
         <Modal
@@ -671,70 +730,12 @@ export default function TransactionManagement() {
           onCancel={() => setIsProofModalOpen(false)}
           className="transaction-view-modal"
           width={720}
-          style={{ top: 110 }}
-          footer={
-            proofTransaction ? (
-              <Space>
-                <Button type="primary" className='user-transactions-viewproof-button' onClick={() => setIsProofModalOpen(false)}>Close</Button>
-                <Button
-                  className='user-transactions-viewproof-button'
-                  type="primary"
-                  onClick={async () => {
-                    try {
-                      const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
-                      const blob = await response.blob();
-                      const url = window.URL.createObjectURL(blob);
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.download = 'proof-of-payment';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      window.URL.revokeObjectURL(url);
-                    } catch (err) {
-                      window.open(proofTransaction.proofImage, '_blank');
-                    }
-                  }}
-                >
-                  Download Image
-                </Button>
-
-                <Button
-                  type="primary"
-                  className='transactionmanagement-accept-button'
-                  disabled={proofTransaction.status === "Successful"}
-                  onClick={() => handleProofDecision(proofTransaction, "Successful")}
-                >
-                  Accept Proof
-                </Button>
-
-                <Button
-                  type="primary"
-                  className='transactionmanagement-remove-button'
-                  disabled={proofTransaction.status === "Failed"}
-                  onClick={() => handleProofDecision(proofTransaction, "Failed")}
-                >
-                  Reject Proof
-                </Button>
-              </Space>
-            ) : null
-          }
+          style={{ top: 150 }}
+          footer={null}
+          title={`Proof of Payment - ${proofTransaction?.ref || ""}`}
         >
           {proofTransaction && (
             <div className="receipt-container">
-              <div className="receipt-header" style={{ marginBottom: 16 }}>
-                <div className="company-info">
-                  <div className="header-flex-container">
-                    <div className="address-details">
-                      <h2 className="brand-name">Proof of Payment</h2>
-                      <p className="sub-info">Reference: {proofTransaction.ref}</p>
-                      <p className="sub-info">Customer: {proofTransaction.username}</p>
-                      <p className="sub-info">Method: {proofTransaction.method}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {proofTransaction.proofImage ? (
                 <div className="upload-preview-box" style={{ maxHeight: 520 }}>
                   <Image
@@ -748,9 +749,170 @@ export default function TransactionManagement() {
                 <p>No proof image available.</p>
               )}
             </div>
+
+
           )}
+
+          <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+            <Button
+              className='user-transactions-viewproof-button'
+              type="primary"
+              onClick={async () => {
+                try {
+                  const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = 'proof_of_payment_' + proofTransaction.ref + '.png';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  window.URL.revokeObjectURL(url);
+                } catch (err) {
+                  window.open(proofTransaction.proofImage, '_blank');
+                }
+              }}
+            >
+              Download Image
+            </Button>
+
+            <Button
+              type="primary"
+              className='transactionmanagement-accept-button'
+              onClick={() => handleProofDecision(proofTransaction, "Successful")}
+            >
+              Accept Proof
+            </Button>
+
+            <Button
+              type="primary"
+              className='transactionmanagement-remove-button'
+              onClick={() => handleProofDecision(proofTransaction, "Failed")}
+            >
+              Reject Proof
+            </Button>
+          </Space>
+        </Modal>
+
+
+        {/* DELETE TRANSACTION CONFIRMATION MODAL */}
+        <Modal
+          open={isDeleteModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsDeleteModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Delete Booking?</h1>
+            <p className='signup-success-text'>Are you sure you want to delete this booking?</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  handleDelete(editingTransaction.key);
+                  setIsDeleteModalOpen(false);
+                }}
+              >
+                Delete
+              </Button>
+              <Button
+                type='primary'
+                className='logout-cancel-btn'
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setEditingTransaction(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* TRANSACTION HAS BEEN EDITED MODAL */}
+        <Modal
+          open={isTransactionEditedModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsTransactionEditedModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Transaction Edited Successfully!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='signup-success-text'>The transaction has been edited.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  setIsTransactionEditedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
+        </Modal>
+
+
+        {/* TRANSACTION HAS BEEN DELETED MODAL */}
+        <Modal
+          open={isTransactionDeletedModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsTransactionDeletedModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Transaction Deleted Successfully!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='signup-success-text'>The transaction has been deleted.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  setIsTransactionDeletedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
         </Modal>
       </div >
+
+
+
     </ConfigProvider >
   );
 }

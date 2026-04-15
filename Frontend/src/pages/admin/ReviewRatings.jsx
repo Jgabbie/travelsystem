@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, message, Modal, ConfigProvider, Space } from "antd";
-import { StarOutlined, MessageOutlined, ClockCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { StarOutlined, MessageOutlined, ClockCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import jsPDF from 'jspdf';
@@ -33,6 +33,9 @@ export default function ReviewRatings() {
     const [searchText, setSearchText] = useState("");
     const [ratingFilter, setRatingFilter] = useState(null);
     const [dateFilter, setDateFilter] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false);
+    const [deletingRating, setDeletingRating] = useState(null);
 
     // GET ALL RATINGS FOR ADMIN ----------------------------------------------------------------------------
     useEffect(() => {
@@ -116,19 +119,19 @@ export default function ReviewRatings() {
 
         try {
             const imgData = await getBase64ImageFromURL("/images/Logo.png");
-            doc.addImage(imgData, "PNG", 14, 12, 30, 22);
+            doc.addImage(imgData, "PNG", 14, 12, 35, 22);
         } catch (e) {
             console.warn("Logo not found at /public/images/Logo.png");
         }
 
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("M&RC TRAVEL AND TOURS", 50, 18);
+        doc.text("M&RC TRAVEL AND TOURS", 52, 18);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
-        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
-        doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
+        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 52, 23);
+        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
+        doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
 
         doc.setDrawColor(48, 87, 151);
         doc.line(14, 38, 196, 38);
@@ -167,23 +170,17 @@ export default function ReviewRatings() {
 
 
     // DELETE RATING ----------------------------------------------------------------------------
-    const handleDelete = (id) => {
-        Modal.confirm({
-            title: "Confirm Delete",
-            content: "Are you sure you want to delete this review?",
-            okText: "Delete",
-            okType: "danger",
-            cancelText: "Cancel",
-            onOk: async () => {
-                try {
-                    await apiFetch.delete(`/rating/delete/${id}`);
-                    message.success("Review deleted successfully");
-                    setRatings((prev) => prev.filter((r) => r.id !== id));
-                } catch {
-                    message.error("Failed to delete review");
-                }
-            },
-        });
+    const handleDelete = async (id) => {
+
+        try {
+            await apiFetch.delete(`/rating/delete/${id}`);
+            message.success("Review deleted successfully");
+            setRatings((prev) => prev.filter((r) => r.id !== id));
+            setIsRatingDeletedModalOpen(true);
+        } catch {
+            message.error("Failed to delete review");
+        }
+
     };
 
 
@@ -227,7 +224,10 @@ export default function ReviewRatings() {
                     className='reviewratings-remove-button'
                     type='primary'
                     icon={<DeleteOutlined />}
-                    onClick={() => handleDelete(record.id)}
+                    onClick={() => {
+                        setDeletingRating(record);
+                        setIsDeleteModalOpen(true);
+                    }}
                 >
                     Delete
                 </Button>
@@ -329,6 +329,85 @@ export default function ReviewRatings() {
                     />
                 </Card>
             </div>
+
+            {/* DELETE RATING CONFIRMATION MODAL */}
+            <Modal
+                open={isDeleteModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsDeleteModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Delete Rating?</h1>
+                    <p className='signup-success-text'>Are you sure you want to delete this rating?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                handleDelete(deletingRating.id);
+                                setIsDeleteModalOpen(false);
+                            }}
+                        >
+                            Delete
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='logout-cancel-btn'
+                            onClick={() => {
+                                setIsDeleteModalOpen(false);
+                                setDeletingRating(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+
+                    </div>
+
+                </div>
+            </Modal>
+
+            {/* RATING DELETED SUCCESSFULLY MODAL */}
+            <Modal
+                open={isRatingDeletedModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRatingDeletedModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Rating Deleted Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='signup-success-text'>The rating has been deleted.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                setIsRatingDeletedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
         </ConfigProvider>
     );
 }

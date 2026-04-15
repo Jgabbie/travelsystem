@@ -30,6 +30,7 @@ export default function VisaApplications() {
     const navigate = useNavigate();
 
     const [applications, setApplications] = useState([])
+    const [isFetchingApplications, setIsFetchingApplications] = useState(false);
 
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -38,6 +39,7 @@ export default function VisaApplications() {
     useEffect(() => {
         const loadApplications = async () => {
             try {
+                setIsFetchingApplications(true);
                 const response = await apiFetch.get('/visa/applications')
 
                 const applications = response.map((a) => ({
@@ -55,6 +57,8 @@ export default function VisaApplications() {
                 const errorMessage = error?.data?.message || 'Unable to load visa applications.'
                 message.error(errorMessage)
                 setApplications([])
+            } finally {
+                setIsFetchingApplications(false)
             }
         }
         loadApplications()
@@ -97,19 +101,19 @@ export default function VisaApplications() {
 
         try {
             const imgData = await getBase64ImageFromURL("/images/Logo.png");
-            doc.addImage(imgData, "PNG", 14, 12, 30, 22);
+            doc.addImage(imgData, "PNG", 14, 12, 35, 22);
         } catch (e) {
             console.warn("Logo not found at /public/images/Logo.png");
         }
 
         doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
-        doc.text("M&RC TRAVEL AND TOURS", 50, 18);
+        doc.text("M&RC TRAVEL AND TOURS", 52, 18);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
-        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
-        doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
+        doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 52, 23);
+        doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
+        doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
 
         doc.setDrawColor(48, 87, 151);
         doc.line(14, 38, 196, 38);
@@ -321,6 +325,7 @@ export default function VisaApplications() {
                         columns={columns}
                         dataSource={filteredData}
                         rowKey="key"
+                        loading={isFetchingApplications}
                         pagination={{ pageSize: 10 }}
                         locale={{
                             emptyText: (

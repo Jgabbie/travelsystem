@@ -1,5 +1,5 @@
 import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, ConfigProvider, Space } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import apiFetch from "../../config/fetchConfig";
@@ -16,6 +16,9 @@ export default function VisaServices() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchText, setSearchText] = useState("");
     const [selectedService, setSelectedService] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isServiceDeletedModalOpen, setIsServiceDeletedModalOpen] = useState(false);
+    const [serviceToDelete, setServiceToDelete] = useState(null);
 
     const formatListItem = (item) => {
         if (typeof item === "string") return item;
@@ -54,35 +57,17 @@ export default function VisaServices() {
         setIsModalOpen(false);
     };
 
-    const removeService = (id) => {
-        Modal.confirm({
-            className: "logout-confirm-modal",
-            icon: null,
-            title: (
-                <div className="logout-confirm-title" style={{ textAlign: "center" }}>
-                    Confirm Delete
-                </div>
-            ),
-            content: (
-                <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-                    <p className="logout-confirm-text">Are you sure you want to delete this visa service?</p>
-                </div>
-            ),
-            okText: "Delete",
-            cancelText: "Cancel",
-            okButtonProps: { className: "logout-confirm-btn" },
-            cancelButtonProps: { className: "logout-cancel-btn" },
-            onOk: async () => {
-                try {
-                    await apiFetch.delete(`/services/delete-service/${id}`);
-                    setServicesData(prevData => prevData.filter(service => service._id !== id));
-                    message.success("Visa service deleted successfully");
-                } catch (error) {
-                    console.error("Failed to delete visa service:", error);
-                    message.error("Failed to delete visa service");
-                }
-            }
-        });
+    const handleDelete = async (id) => {
+        try {
+            await apiFetch.delete(`/services/delete-service/${id}`);
+            setServicesData(prevData => prevData.filter(service => service._id !== id));
+            message.success("Visa service deleted successfully");
+            setIsServiceDeletedModalOpen(true);
+            setServiceToDelete(null);
+        } catch (error) {
+            console.error("Failed to delete visa service:", error);
+            message.error("Failed to delete visa service");
+        }
     };
 
 
@@ -192,7 +177,10 @@ export default function VisaServices() {
                                 className="visaservices-remove-button"
                                 type="primary"
                                 icon={<DeleteOutlined />}
-                                onClick={() => removeService(service._id)}
+                                onClick={() => {
+                                    setServiceToDelete(service._id);
+                                    setIsDeleteModalOpen(true);
+                                }}
                             >
                                 Delete
                             </Button>
@@ -206,8 +194,9 @@ export default function VisaServices() {
                     footer={null}
                     open={isModalOpen}
                     onCancel={() => { handleCancel() }}
-                    className="package-details-modal visa-details-modal cancellation-view-modal"
+                    className="package-details-modal"
                     width={820}
+                    style={{ top: 40 }}
                 >
                     {selectedService && (
                         <div>
@@ -263,6 +252,95 @@ export default function VisaServices() {
                         </div>
                     )}
                 </Modal>
+
+
+
+                {/* DELETE SERVICE CONFIRMATION MODAL */}
+                <Modal
+                    open={isDeleteModalOpen}
+                    className='signup-success-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    style={{ top: 220 }}
+                    onCancel={() => {
+                        setIsDeleteModalOpen(false);
+                    }}
+                >
+                    <div className='signup-success-container'>
+                        <h1 className='signup-success-heading'>Delete Service?</h1>
+                        <p className='signup-success-text'>Are you sure you want to delete this service?</p>
+
+                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                            <Button
+                                type='primary'
+                                className='logout-confirm-btn'
+                                onClick={() => {
+                                    console.log("Deleting service with ID:", serviceToDelete);
+                                    handleDelete(serviceToDelete);
+                                    setIsDeleteModalOpen(false);
+                                }}
+                            >
+                                Accept
+                            </Button>
+                            <Button
+                                type='primary'
+                                className='logout-cancel-btn'
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* SERVICE HAS BEEN DELETED MODAL */}
+                <Modal
+                    open={isServiceDeletedModalOpen}
+                    className='signup-success-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    style={{ top: 220 }}
+                    onCancel={() => {
+                        setIsServiceDeletedModalOpen(false);
+                    }}
+                >
+                    <div className='signup-success-container'>
+                        <h1 className='signup-success-heading'>Service Deleted!</h1>
+
+                        <div>
+                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        </div>
+
+                        <p className='signup-success-text'>The service has been deleted.</p>
+
+                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                            <Button
+                                type='primary'
+                                className='logout-confirm-btn'
+                                onClick={() => {
+                                    setIsServiceDeletedModalOpen(false);
+                                }}
+                            >
+                                Continue
+                            </Button>
+                        </div>
+
+                    </div>
+                </Modal>
+
+
+
+
+
+
+
+
+
+
             </div>
         </ConfigProvider>
     );

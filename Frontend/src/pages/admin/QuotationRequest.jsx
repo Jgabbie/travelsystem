@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Tag, Input } from "antd";
-import { UploadOutlined, SendOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Tag, Input, Modal } from "antd";
+import { UploadOutlined, SendOutlined, ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import dayjs from "dayjs";
@@ -25,6 +25,7 @@ export default function QuotationRequest() {
     const [adminName, setAdminName] = useState(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [isQuotationSentModalOpen, setIsQuotationSentModalOpen] = useState(false);
 
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewURL, setPreviewURL] = useState(null);
@@ -515,6 +516,26 @@ export default function QuotationRequest() {
             await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
 
             message.success(`${selectedFile.name} uploaded successfully!`);
+
+            setFormData({
+                roomType: '',
+                travelDates: '',
+                hotel: '',
+                airline: '',
+                inclusionsText: '',
+                exclusionsText: '',
+                itineraryRows: [],
+                baggageAllowance: '',
+                travelers: '',
+                totalRate: '',
+                totalChildRate: '0',
+                totalInfantRate: '0',
+                totalPrice: '',
+                totalDeposit: '',
+                flightImageA: '',
+                flightImageB: ''
+            });
+            setIsQuotationSentModalOpen(true);
             setSelectedFile(null);
             setPreviewURL(null);
         } catch (error) {
@@ -602,7 +623,7 @@ export default function QuotationRequest() {
 
             await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
 
-
+            setIsQuotationSentModalOpen(true);
             message.success("Quotation has been sent successfully!");
         } catch (err) {
             console.error(err);
@@ -848,6 +869,7 @@ export default function QuotationRequest() {
                         <Card title="Upload Quotation PDF" style={{ margin: 20 }}>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 16 }}>
                                 <div>
+                                    <label className="quotationrequest-label">Travel Dates</label>
                                     <Input
                                         placeholder="Travel dates"
                                         value={formData.travelDates}
@@ -857,6 +879,7 @@ export default function QuotationRequest() {
                                     {formErrors.travelDates && <div className="quotationrequest-error">{formErrors.travelDates}</div>}
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Hotel</label>
                                     <Input
                                         placeholder="Hotel"
                                         value={formData.hotel}
@@ -865,6 +888,7 @@ export default function QuotationRequest() {
                                     {formErrors.hotel && <div className="quotationrequest-error">{formErrors.hotel}</div>}
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Room/Type</label>
                                     <Input
                                         placeholder="Room/Type"
                                         value={formData.roomType}
@@ -873,6 +897,7 @@ export default function QuotationRequest() {
                                     {formErrors.roomType && <div className="quotationrequest-error">{formErrors.roomType}</div>}
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Airline</label>
                                     <Input
                                         placeholder="Airline"
                                         value={formData.airline}
@@ -881,6 +906,7 @@ export default function QuotationRequest() {
                                     {formErrors.airline && <div className="quotationrequest-error">{formErrors.airline}</div>}
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Baggage Allowance</label>
                                     <Input
                                         placeholder="Baggage allowance"
                                         value={formData.baggageAllowance}
@@ -888,6 +914,7 @@ export default function QuotationRequest() {
                                     />
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Travelers</label>
                                     <Input
                                         placeholder="Travelers"
                                         value={formData.travelers}
@@ -897,6 +924,7 @@ export default function QuotationRequest() {
                                     {formErrors.travelers && <div className="quotationrequest-error">{formErrors.travelers}</div>}
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Total Rate per Adult</label>
                                     <Input
                                         placeholder="Total rate per adult"
                                         value={formData.totalRate}
@@ -906,6 +934,7 @@ export default function QuotationRequest() {
                                 </div>
                                 {parseTravelerCounts(formData.travelers).child > 0 && (
                                     <div>
+                                        <label className="quotationrequest-label">Total Rate per Child</label>
                                         <Input
                                             placeholder="Total rate per child"
                                             value={formData.totalChildRate}
@@ -916,6 +945,7 @@ export default function QuotationRequest() {
                                 )}
                                 {parseTravelerCounts(formData.travelers).infant > 0 && (
                                     <div>
+                                        <label className="quotationrequest-label">Total Rate per Infant</label>
                                         <Input
                                             placeholder="Total rate per infant"
                                             value={formData.totalInfantRate}
@@ -925,6 +955,7 @@ export default function QuotationRequest() {
                                     </div>
                                 )}
                                 <div>
+                                    <label className="quotationrequest-label">Total Price</label>
                                     <Input
                                         placeholder="Total price"
                                         value={formData.totalPrice}
@@ -933,6 +964,7 @@ export default function QuotationRequest() {
                                     {formErrors.totalPrice && <div className="quotationrequest-error">{formErrors.totalPrice}</div>}
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Total Deposit</label>
                                     <Input
                                         placeholder="Deposit"
                                         value={formData.totalDeposit}
@@ -944,6 +976,7 @@ export default function QuotationRequest() {
 
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
                                 <div>
+                                    <label className="quotationrequest-label">Inclusions</label>
                                     <Input.TextArea
                                         autoSize={{ minRows: 6, maxRows: 12 }}
                                         placeholder="Inclusions (one per line)"
@@ -960,6 +993,7 @@ export default function QuotationRequest() {
                                     {formErrors.inclusionsText && <div className="quotationrequest-error">{formErrors.inclusionsText}</div>}
                                 </div>
                                 <div>
+                                    <label className="quotationrequest-label">Exclusions</label>
                                     <Input.TextArea
                                         autoSize={{ minRows: 6, maxRows: 12 }}
                                         placeholder="Exclusions (one per line)"
@@ -980,6 +1014,7 @@ export default function QuotationRequest() {
                             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
                                 {(formData.itineraryRows || []).map((row, index) => (
                                     <div key={`itinerary-${index}`}>
+                                        <label className="quotationrequest-label">Day {index + 1} Itinerary</label>
                                         <Input.TextArea
                                             autoSize={{ minRows: 6, maxRows: 12 }}
                                             placeholder={`Day ${index + 1} itinerary (one per line)`}
@@ -1126,6 +1161,43 @@ export default function QuotationRequest() {
                             )}
                         </Card>
                     </div>
+
+                    {/* QUOTATION HAS BEEN SENT */}
+                    <Modal
+                        open={isQuotationSentModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsQuotationSentModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Quotation Sent Successfully!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>The quotation has been sent.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsQuotationSentModalOpen(false);
+                                        window.location.reload();
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
                 </div>
             )}
         </ConfigProvider>

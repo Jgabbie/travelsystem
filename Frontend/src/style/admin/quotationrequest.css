@@ -16,6 +16,12 @@
     box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.15);
 }
 
+.quotationrequest-label {
+    color: #305797;
+    font-size: 13px;
+    margin-bottom: 0px;
+}
+
 .quotationrequest-formremove-button {
     font-family: "Roboto", sans-serif;
     font-size: 13px;

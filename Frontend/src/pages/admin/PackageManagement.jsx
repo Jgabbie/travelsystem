@@ -1,5 +1,5 @@
 import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Dropdown, Space, Spin, InputNumber, Tag } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, DownOutlined, CalendarOutlined, PercentageOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
@@ -18,6 +18,8 @@ export default function PackageManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSlotsModalOpen, setIsSlotsModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+  const [isDiscountAppliedModalOpen, setIsDiscountAppliedModalOpen] = useState(false);
+  const [isSlotsSavedModalOpen, setIsSlotsSavedModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -94,6 +96,7 @@ export default function PackageManagement() {
       };
 
       await apiFetch.put('/package/update-slots', slotsPayload);
+      setIsSlotsSavedModalOpen(true);
 
     } catch (error) {
       console.error("Error updating slots:", error);
@@ -122,6 +125,8 @@ export default function PackageManagement() {
         packageId: discountPackage._id,
         discountPercent: Number(discountPercent) || 0
       });
+
+      setIsDiscountAppliedModalOpen(true);
     } catch (error) {
       console.error("Error updating discount:", error);
       message.error("Failed to update discount.");
@@ -411,6 +416,7 @@ export default function PackageManagement() {
           onCancel={() => { handleCancel() }}
           className="package-details-modal"
           width={820}
+          style={{ top: 200 }}
         >
           <div className="package-details-modal-header">
             <div>
@@ -458,6 +464,8 @@ export default function PackageManagement() {
           open={isSlotsModalOpen}
           onCancel={handleSlotsCancel}
           width={760}
+          className="packages-edit-slots-modal"
+          style={{ top: 80 }}
         >
           {slotsPackage ? (
             <div>
@@ -518,10 +526,10 @@ export default function PackageManagement() {
               )}
 
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                <Button onClick={handleSlotsCancel} style={{ marginRight: 8 }}>
+                <Button className='package-slots-cancel-button' type="primary" onClick={handleSlotsCancel} style={{ marginRight: 8 }}>
                   Cancel
                 </Button>
-                <Button type="primary" onClick={handleSlotsSave}>
+                <Button className='package-slots-save-button' type="primary" onClick={handleSlotsSave}>
                   Save Slots
                 </Button>
               </div>
@@ -535,6 +543,8 @@ export default function PackageManagement() {
           open={isDiscountModalOpen}
           onCancel={handleDiscountCancel}
           width={420}
+          className="packages-add-discount-modal"
+          style={{ top: 250 }}
         >
           {discountPackage ? (
             <div>
@@ -552,16 +562,95 @@ export default function PackageManagement() {
               />
 
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                <Button onClick={handleDiscountCancel} style={{ marginRight: 8 }}>
+                <Button className='package-discount-cancel-button' type="primary" onClick={handleDiscountCancel} style={{ marginRight: 8 }}>
                   Cancel
                 </Button>
-                <Button type="primary" onClick={handleDiscountSave}>
+                <Button className='package-discount-save-button' type="primary" onClick={handleDiscountSave}>
                   Save Discount
                 </Button>
               </div>
             </div>
           ) : null}
         </Modal>
+
+
+        {/* DISCOUNT APPLIED MODAL */}
+        <Modal
+          open={isDiscountAppliedModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsDiscountAppliedModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Discount Applied!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='signup-success-text'>The discount has been applied successfully.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  setIsDiscountAppliedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
+        </Modal>
+
+
+        {/* SLOTS SAVED MODAL */}
+        <Modal
+          open={isSlotsSavedModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsSlotsSavedModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Slots Saved!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='signup-success-text'>The slots have been saved successfully.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  setIsSlotsSavedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
+        </Modal>
+
+
+
+
+
       </div >
     </ConfigProvider >
   );

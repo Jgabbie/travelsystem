@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -38,6 +38,8 @@ export default function BookingManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
+  const [isBookingEditedModalOpen, setIsBookingEditedModalOpen] = useState(false);
+  const [isBookingDeletedModalOpen, setIsBookingDeletedModalOpen] = useState(false);
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -215,6 +217,7 @@ export default function BookingManagement() {
     try {
       await apiFetch.delete(`/booking/${key}`);
       setData((prev) => prev.filter((item) => item.key !== key));
+      setIsBookingDeletedModalOpen(true);
       message.success("Booking deleted");
     } catch (error) {
       message.error("Unable to delete booking");
@@ -277,6 +280,7 @@ export default function BookingManagement() {
 
       message.success("Booking updated");
       setIsEditModalOpen(false);
+      setIsBookingEditedModalOpen(true);
       setEditingBooking(null);
       editForm.resetFields();
     } catch {
@@ -568,7 +572,78 @@ export default function BookingManagement() {
               >
                 Cancel
               </Button>
+            </div>
+          </div>
+        </Modal>
 
+        {/* BOOKING HAS BEEN EDITED MODAL */}
+        <Modal
+          open={isBookingEditedModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsBookingEditedModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Booking Edited Successfully!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='signup-success-text'>The booking has been edited.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  setIsBookingEditedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
+        </Modal>
+
+
+        {/* BOOKING HAS BEEN DELETED MODAL */}
+        <Modal
+          open={isBookingDeletedModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsBookingDeletedModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Booking Deleted Successfully!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='signup-success-text'>The booking has been deleted.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  setIsBookingDeletedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
             </div>
 
           </div>

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, message } from 'antd';
+import { CheckCircleFilled } from '@ant-design/icons';
 import '../../style/components/modals/addusermodal.css';
 import apiFetch from '../../config/fetchConfig';
 
 export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }) {
     const [loading, setLoading] = useState(false);
+    const [isUserAddedModalOpen, setIsUserAddedModalOpen] = useState(false);
     const [values, setValues] = useState({
         role: roleToAdd || 'User',
         username: '',
@@ -113,6 +115,54 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         return "";
     };
 
+    //check for duplicate username
+    useEffect(() => {
+        const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
+        if (frontEndError) return;
+
+        apiFetch.post('/auth/checkDups', { username: values.username })
+            .then((data) => {
+                setError(prev => ({
+                    ...prev,
+                    username: ""
+                }));
+            })
+            .catch((err) => {
+                console.log("RAW ERROR:", err);
+
+                const message = err?.data.message || "Username already exists";
+
+                setError(prev => ({
+                    ...prev,
+                    username: message
+                }));
+            });
+    }, [values.username])
+
+    //check for duplicate email
+    useEffect(() => {
+        const frontEndError = validate("email", values.email);
+        if (frontEndError) return;
+
+        apiFetch.post('/auth/checkDups', { email: values.email })
+            .then((data) => {
+                setError(prev => ({
+                    ...prev,
+                    email: ""
+                }));
+            })
+            .catch((err) => {
+                console.log("RAW ERROR:", err);
+
+                const message = err?.data.message || "Email already exists";
+
+                setError(prev => ({
+                    ...prev,
+                    email: message
+                }));
+            });
+    }, [values.email]);
+
     //handles input changes and the validations
     const valueHandler = (field, value) => {
         const updatedValues = { ...values, [field]: value };
@@ -150,6 +200,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             await apiFetch.post('/user/createUsers', payload, { withCredentials: true });
 
             message.success(`${values.role} created successfully!`);
+            setIsUserAddedModalOpen(true);
             setValues({
                 role: roleToAdd || 'User',
                 username: '',
@@ -197,216 +248,265 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
     };
 
     return (
-        <Modal
-            className="adduser-modal"
-            title={`Add New ${values.role}`}
-            open={isOpen}
-            onCancel={onClose}
-            footer={null}
-            style={{ top: 20 }}
-        >
-            <div className="adduser-container">
-                <p className="adduser-subtitle">Fill out the details below to create a new {values.role?.toLowerCase()}.</p>
+        <>
+            <Modal
+                className="adduser-modal"
+                title={`Add New ${values.role}`}
+                open={isOpen}
+                onCancel={onClose}
+                footer={null}
+                style={{ top: 35 }}
+            >
+                <div className="adduser-container">
+                    <p className="adduser-subtitle">Fill out the details below to create a new {values.role?.toLowerCase()}.</p>
 
-                <form className="adduser-form" onSubmit={handleSubmit}>
-                    <div className="adduser-field">
-                        <label className="adduser-label">Role</label>
-                        <Select
-                            value={values.role}
-                            className="adduser-input adduser-select"
-                            onChange={handleRoleChange}
-                            options={[
-                                { value: 'Admin', label: 'Admin' },
-                                { value: 'User', label: 'User' }
-                            ]}
-                        />
-                        <p className="adduser-error">{error.role}</p>
-                    </div>
+                    <form className="adduser-form" onSubmit={handleSubmit}>
+                        <div className="adduser-field">
+                            <label className="adduser-label">Role</label>
+                            <Select
+                                value={values.role}
+                                className="adduser-input adduser-select"
+                                onChange={handleRoleChange}
+                                options={[
+                                    { value: 'Admin', label: 'Admin' },
+                                    { value: 'User', label: 'User' }
+                                ]}
+                            />
+                            <p className="adduser-error">{error.role}</p>
+                        </div>
 
-                    <div className="adduser-field">
-                        <label className="adduser-label" htmlFor="username">Username</label>
-                        <Input
-                            id="username"
-                            className="adduser-input"
-                            value={values.username}
-                            status={error.username ? 'error' : ''}
-                            maxLength={20}
-                            onChange={(e) => valueHandler('username', e.target.value)}
-                            onKeyDown={(e) => {
-                                if (!/^[A-Za-z0-9]+$/.test(e.key) || (e.key === " " && e.key !== "Backspace")) {
-                                    e.preventDefault();
-                                }
-                            }}
-                            autoComplete="off"
-                            required
-                        />
-                        <p className="adduser-error">{error.username}</p>
-                    </div>
-
-                    <div className="adduser-row">
-                        <div className="adduser-col">
-                            <label className="adduser-label" htmlFor="firstname">First Name</label>
+                        <div className="adduser-field">
+                            <label className="adduser-label" htmlFor="username">Username</label>
                             <Input
-                                id="firstname"
+                                id="username"
                                 className="adduser-input"
-                                value={values.firstname}
-                                status={error.firstname ? 'error' : ''}
+                                value={values.username}
+                                status={error.username ? 'error' : ''}
                                 maxLength={20}
-                                onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                onChange={(e) => valueHandler('username', e.target.value)}
                                 onKeyDown={(e) => {
-                                    const value = e.target.value;
-                                    if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
-                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-
-                                    if (
-                                        !/^[A-Za-z ]$/.test(e.key) &&
-                                        e.key !== "Backspace" &&
-                                        e.key !== "ArrowLeft" &&
-                                        e.key !== "ArrowRight"
-                                    ) {
+                                    if (!/^[A-Za-z0-9]+$/.test(e.key) || (e.key === " " && e.key !== "Backspace")) {
                                         e.preventDefault();
                                     }
                                 }}
                                 autoComplete="off"
                                 required
                             />
-                            <p className="adduser-error">{error.firstname}</p>
+                            <p className="adduser-error">{error.username}</p>
                         </div>
 
-                        <div className="adduser-col">
-                            <label className="adduser-label" htmlFor="lastname">Last Name</label>
+                        <div className="adduser-row">
+                            <div className="adduser-col">
+                                <label className="adduser-label" htmlFor="firstname">First Name</label>
+                                <Input
+                                    id="firstname"
+                                    className="adduser-input"
+                                    value={values.firstname}
+                                    status={error.firstname ? 'error' : ''}
+                                    maxLength={20}
+                                    onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                    onKeyDown={(e) => {
+                                        const value = e.target.value;
+                                        if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+
+                                        if (
+                                            !/^[A-Za-z ]$/.test(e.key) &&
+                                            e.key !== "Backspace" &&
+                                            e.key !== "ArrowLeft" &&
+                                            e.key !== "ArrowRight"
+                                        ) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    autoComplete="off"
+                                    required
+                                />
+                                <p className="adduser-error">{error.firstname}</p>
+                            </div>
+
+                            <div className="adduser-col">
+                                <label className="adduser-label" htmlFor="lastname">Last Name</label>
+                                <Input
+                                    id="lastname"
+                                    className="adduser-input"
+                                    value={values.lastname}
+                                    status={error.lastname ? 'error' : ''}
+                                    maxLength={20}
+                                    onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                    onKeyDown={(e) => {
+                                        const value = e.target.value;
+                                        if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                        if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                        if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                        if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                        if (
+                                            !/^[A-Za-z -]$/.test(e.key) &&
+                                            e.key !== "Backspace" &&
+                                            e.key !== "ArrowLeft" &&
+                                            e.key !== "ArrowRight"
+                                        ) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    autoComplete="off"
+                                    required
+                                />
+                                <p className="adduser-error">{error.lastname}</p>
+                            </div>
+                        </div>
+
+                        <div className="adduser-field">
+                            <label className="adduser-label" htmlFor="email">Email</label>
                             <Input
-                                id="lastname"
+                                id="email"
                                 className="adduser-input"
-                                value={values.lastname}
-                                status={error.lastname ? 'error' : ''}
-                                maxLength={20}
-                                onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                value={values.email}
+                                status={error.email ? 'error' : ''}
+                                maxLength={40}
+                                onChange={(e) => valueHandler('email', e.target.value)}
                                 onKeyDown={(e) => {
-                                    const value = e.target.value;
-                                    if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
-                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-                                    if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
-                                    if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
-                                    if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                    if (
-                                        !/^[A-Za-z -]$/.test(e.key) &&
-                                        e.key !== "Backspace" &&
-                                        e.key !== "ArrowLeft" &&
-                                        e.key !== "ArrowRight"
-                                    ) {
+                                    if (e.key === " " && e.key !== "Backspace") {
                                         e.preventDefault();
                                     }
                                 }}
                                 autoComplete="off"
                                 required
                             />
-                            <p className="adduser-error">{error.lastname}</p>
+                            <p className="adduser-error">{error.email}</p>
                         </div>
+
+                        <div className="adduser-field">
+                            <label className="adduser-label" htmlFor="phone">Phone Number</label>
+                            <Input
+                                id="phone"
+                                className="adduser-input"
+                                addonBefore="+63"
+                                value={values.phone}
+                                status={error.phone ? 'error' : ''}
+                                maxLength={12}
+                                onChange={(e) => {
+                                    let value = e.target.value.replace(/\D/g, "");
+
+                                    let formatted = "";
+                                    if (value.length > 0) formatted += value.slice(0, 3);
+                                    if (value.length >= 4) formatted += " " + value.slice(3, 6);
+                                    if (value.length >= 7) formatted += " " + value.slice(6, 10);
+
+                                    valueHandler('phone', formatted);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                        e.preventDefault();
+                                    }
+                                }}
+                                autoComplete="off"
+                                required
+                            />
+                            <p className="adduser-error">{error.phone}</p>
+                        </div>
+
+                        {values.role !== 'Admin' && (
+                            <>
+                                <div className="adduser-row">
+                                    <div className="adduser-col">
+                                        <div className="adduser-field">
+                                            <label className="adduser-label" htmlFor="password">Password</label>
+                                            <Input.Password
+                                                id="password"
+                                                className="adduser-input"
+                                                value={values.password}
+                                                status={error.password ? 'error' : ''}
+                                                maxLength={20}
+                                                onChange={(e) => valueHandler('password', e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === " " && e.key !== "Backspace") {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                                autoComplete="off"
+                                                required
+                                            />
+                                            <p className="adduser-error">{error.password}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="adduser-col">
+                                        <div className="adduser-field">
+                                            <label className="adduser-label" htmlFor="confirmPassword">Confirm Password</label>
+                                            <Input.Password
+                                                id="confirmPassword"
+                                                className="adduser-input"
+                                                value={values.confirmPassword}
+                                                status={error.confirmPassword ? 'error' : ''}
+                                                maxLength={20}
+                                                onChange={(e) => valueHandler('confirmPassword', e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === " " && e.key !== "Backspace") {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                                autoComplete="off"
+                                                required
+                                            />
+                                            <p className="adduser-error">{error.confirmPassword}</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </>
+                        )}
+
+                        <div className="adduser-actions">
+                            <Button className="adduser-cancel-btn" type="primary" onClick={onClose}>Cancel</Button>
+                            <Button className="adduser-submit-btn" type="primary" htmlType="submit" loading={loading}>
+                                Create {values.role}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
+
+
+            {/* USER HAS BEEN ADDED MODAL */}
+            <Modal
+                open={isUserAddedModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsUserAddedModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>User Added Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
                     </div>
 
-                    <div className="adduser-field">
-                        <label className="adduser-label" htmlFor="email">Email</label>
-                        <Input
-                            id="email"
-                            className="adduser-input"
-                            value={values.email}
-                            status={error.email ? 'error' : ''}
-                            maxLength={40}
-                            onChange={(e) => valueHandler('email', e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === " " && e.key !== "Backspace") {
-                                    e.preventDefault();
-                                }
+                    <p className='signup-success-text'>The user has been added to the system.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                setIsUserAddedModalOpen(false);
                             }}
-                            autoComplete="off"
-                            required
-                        />
-                        <p className="adduser-error">{error.email}</p>
-                    </div>
-
-                    <div className="adduser-field">
-                        <label className="adduser-label" htmlFor="phone">Phone Number</label>
-                        <Input
-                            id="phone"
-                            className="adduser-input"
-                            addonBefore="+63"
-                            value={values.phone}
-                            status={error.phone ? 'error' : ''}
-                            maxLength={12}
-                            onChange={(e) => {
-                                let value = e.target.value.replace(/\D/g, "");
-
-                                let formatted = "";
-                                if (value.length > 0) formatted += value.slice(0, 3);
-                                if (value.length >= 4) formatted += " " + value.slice(3, 6);
-                                if (value.length >= 7) formatted += " " + value.slice(6, 10);
-
-                                valueHandler('phone', formatted);
-                            }}
-                            onKeyDown={(e) => {
-                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                    e.preventDefault();
-                                }
-                            }}
-                            autoComplete="off"
-                            required
-                        />
-                        <p className="adduser-error">{error.phone}</p>
-                    </div>
-
-                    {values.role !== 'Admin' && (
-                        <>
-                            <div className="adduser-field">
-                                <label className="adduser-label" htmlFor="password">Password</label>
-                                <Input.Password
-                                    id="password"
-                                    className="adduser-input"
-                                    value={values.password}
-                                    status={error.password ? 'error' : ''}
-                                    maxLength={20}
-                                    onChange={(e) => valueHandler('password', e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    autoComplete="off"
-                                    required
-                                />
-                                <p className="adduser-error">{error.password}</p>
-                            </div>
-
-                            <div className="adduser-field">
-                                <label className="adduser-label" htmlFor="confirmPassword">Confirm Password</label>
-                                <Input.Password
-                                    id="confirmPassword"
-                                    className="adduser-input"
-                                    value={values.confirmPassword}
-                                    status={error.confirmPassword ? 'error' : ''}
-                                    maxLength={20}
-                                    onChange={(e) => valueHandler('confirmPassword', e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    autoComplete="off"
-                                    required
-                                />
-                                <p className="adduser-error">{error.confirmPassword}</p>
-                            </div>
-                        </>
-                    )}
-
-                    <div className="adduser-actions">
-                        <Button className="adduser-cancel-btn" type="primary" onClick={onClose}>Cancel</Button>
-                        <Button className="adduser-submit-btn" type="primary" htmlType="submit" loading={loading}>
-                            Create {values.role}
+                        >
+                            Continue
                         </Button>
                     </div>
-                </form>
-            </div>
-        </Modal>
+
+                </div>
+            </Modal>
+        </>
+
+
+
     );
 }

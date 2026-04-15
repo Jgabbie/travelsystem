@@ -316,7 +316,7 @@ export default function ViewPassportApplication() {
     return (
         <ConfigProvider
             theme={{ token: { colorPrimary: "#305797" } }}>
-            {loading || isSubmittingSlots ? (
+            {loading || isSubmittingSlots || isUpdatingStatus ? (
                 <div
                     style={{
                         display: "flex",
@@ -325,7 +325,16 @@ export default function ViewPassportApplication() {
                         height: "80vh"
                     }}
                 >
-                    <Spin size="large" description={loading ? "Loading application details..." : "Submitting suggested appointment options..."} />
+                    <Spin
+                        size="large"
+                        description={
+                            loading
+                                ? "Loading application details..."
+                                : isSubmittingSlots
+                                    ? "Submitting suggested appointment options..."
+                                    : "Updating application status..."
+                        }
+                    />
                 </div>
             ) : (
                 <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
