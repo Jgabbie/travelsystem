@@ -105,7 +105,7 @@ function App() {
                 <Route index element={<Navigate to="/dashboard" />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="bookings" element={<BookingManagement />} />
-                <Route path="bookings/:id/invoice" element={<UploadBookingInvoice />} />
+                <Route path="bookings/invoice" element={<UploadBookingInvoice />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="transactions" element={<TransactionManagement />} />
                 <Route path="packages" element={<PackageManagement />} />

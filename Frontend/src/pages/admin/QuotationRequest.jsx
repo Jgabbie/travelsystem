@@ -58,7 +58,6 @@ export default function QuotationRequest() {
             setLoading(true);
             try {
                 const response = await apiFetch.get(`/quotation/get-quotation/${id}`);
-                console.log("Fetched quotation data:", response); // Debug log to check fetched data
                 setQuotation(response);
             } catch (error) {
                 console.error("Error fetching quotation:", error);
@@ -230,8 +229,6 @@ export default function QuotationRequest() {
     const itineraryNotes = details.itineraryNotes || [];
     const flightDetails = details.flightDetails || {};
 
-    console.log("Fetched quotation:", quotation);
-
     useEffect(() => {
         if (!quotation) return;
 
@@ -290,8 +287,6 @@ export default function QuotationRequest() {
             setFormData((prev) => ({ ...prev, totalPrice: computedValue }));
         }
     }, [formData.totalRate, formData.totalChildRate, formData.totalInfantRate, formData.travelers]);
-
-    console.log("Constructed quotationData for form components:", quotationData); // Debug log to check constructed data
 
     const [editableItinerary, setEditableItinerary] = useState(
         Object.entries(quotationData.itinerary || {}).map(([dayKey, activities], index) => ({

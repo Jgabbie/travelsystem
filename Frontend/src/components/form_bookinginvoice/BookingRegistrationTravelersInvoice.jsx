@@ -22,8 +22,6 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
         return '';
     };
 
-    console.log("summary in travelers:", summaryInvoice);
-
     const bookingType = summaryInvoice.bookingType || 'No Booking';
 
 
@@ -51,7 +49,6 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
             travelersSignature: user.fullName,
         });
 
-        console.log("user data response:", user);
         setUserProfile(user);
     }, [summaryInvoice]);
 

@@ -20,14 +20,9 @@ export default function BookingRegistrationTermsInvoicePart1({ form, onValuesCha
     };
     const textStyle = { fontSize: '11px', lineHeight: '1.3', textAlign: 'justify', marginBottom: '10px' };
 
-    console.log("summary invoice data:", summaryInvoice);
-
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-
-
-
                 const user = form.setFieldsValue({
                     leadFullName: summaryInvoice.leadFullName,
                     leadEmail: summaryInvoice.leadEmail,
@@ -37,7 +32,6 @@ export default function BookingRegistrationTermsInvoicePart1({ form, onValuesCha
                     termsDate: dayjs().format('MMMM DD, YYYY')
                 });
 
-                console.log("user data response:", user);
                 setUserProfile(user);
 
             } catch (error) {

@@ -9,7 +9,7 @@ import "../../style/admin/transaction.css";
 
 const getBase64ImageFromURL = (url) => {
   return new Promise((resolve, reject) => {
-    const img = new Image();
+    const img = new window.Image();
     img.setAttribute("crossOrigin", "anonymous");
     img.onload = () => {
       const canvas = document.createElement("canvas");
@@ -44,6 +44,7 @@ export default function TransactionManagement() {
 
   useEffect(() => {
     const fetchTransactions = async () => {
+      setLoading(true);
       try {
         const response = await apiFetch.get("/transaction/all-transactions");
 
@@ -67,6 +68,8 @@ export default function TransactionManagement() {
       } catch (error) {
         console.error("Error fetching transactions:", error);
         message.error("Unable to load transactions.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchTransactions();
@@ -78,7 +81,9 @@ export default function TransactionManagement() {
       item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
       item.package.toLowerCase().includes(searchText.toLowerCase()) ||
       item.method.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.status.toLowerCase().includes(searchText.toLowerCase());
+      item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.username.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.price.toString().toLowerCase().includes(searchText.toLowerCase());
 
     const matchesMethod =
       methodFilter === "" || item.method === methodFilter;
@@ -117,19 +122,19 @@ export default function TransactionManagement() {
 
     try {
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
-      doc.addImage(imgData, "PNG", 14, 12, 30, 22);
+      doc.addImage(imgData, "PNG", 14, 12, 35, 22);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("M&RC TRAVEL AND TOURS", 50, 18);
+    doc.text("M&RC TRAVEL AND TOURS", 52, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
-    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
-    doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 52, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
 
     doc.setDrawColor(48, 87, 151);
     doc.line(14, 38, 196, 38);
@@ -437,9 +442,8 @@ export default function TransactionManagement() {
             value={methodFilter || undefined}
             onChange={(v) => setMethodFilter(v || "")}
             options={[
-              { value: "Bank Transfer", label: "Bank Transfer" },
-              { value: "GCash", label: "GCash" },
-              { value: "Credit Card", label: "Credit Card" }
+              { value: "Manual", label: "Manual" },
+              { value: "Paymongo", label: "Paymongo" },
             ]}
           />
 
@@ -667,15 +671,14 @@ export default function TransactionManagement() {
           onCancel={() => setIsProofModalOpen(false)}
           className="transaction-view-modal"
           width={720}
-          style={{ top: 60 }}
+          style={{ top: 110 }}
           footer={
             proofTransaction ? (
               <Space>
-                <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
+                <Button type="primary" className='user-transactions-viewproof-button' onClick={() => setIsProofModalOpen(false)}>Close</Button>
                 <Button
                   className='user-transactions-viewproof-button'
                   type="primary"
-                  style={{ marginTop: 8 }}
                   onClick={async () => {
                     try {
                       const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
@@ -698,6 +701,7 @@ export default function TransactionManagement() {
 
                 <Button
                   type="primary"
+                  className='transactionmanagement-accept-button'
                   disabled={proofTransaction.status === "Successful"}
                   onClick={() => handleProofDecision(proofTransaction, "Successful")}
                 >
@@ -705,7 +709,8 @@ export default function TransactionManagement() {
                 </Button>
 
                 <Button
-                  danger
+                  type="primary"
+                  className='transactionmanagement-remove-button'
                   disabled={proofTransaction.status === "Failed"}
                   onClick={() => handleProofDecision(proofTransaction, "Failed")}
                 >
@@ -720,7 +725,6 @@ export default function TransactionManagement() {
               <div className="receipt-header" style={{ marginBottom: 16 }}>
                 <div className="company-info">
                   <div className="header-flex-container">
-                    <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
                     <div className="address-details">
                       <h2 className="brand-name">Proof of Payment</h2>
                       <p className="sub-info">Reference: {proofTransaction.ref}</p>

@@ -54,8 +54,6 @@ export default function ViewVisaApplication() {
                         const serviceId = typeof appData.serviceId === "object" ? appData.serviceId._id : appData.serviceId;
                         const serviceData = await apiFetch.get(`/services/get-service/${serviceId}`);
 
-                        console.log("Fetched visa service details:", serviceData);
-
                         // Merge service info into application
                         setApplication({
                             ...appData,
@@ -82,8 +80,6 @@ export default function ViewVisaApplication() {
 
         fetchApplicationAndService();
     }, [id, navigate]);
-
-    console.log("Fetched application details:", application);
 
     //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
     const handleSubmitAlternateSlots = async () => {
@@ -231,8 +227,6 @@ export default function ViewVisaApplication() {
         const newStatus = statusArr[stepIdx];
 
         if (!newStatus || newStatus === statusText) return;
-
-        console.log("Attempting to update visa application status to:", newStatus);
 
         try {
             setIsUpdatingStatus(true);

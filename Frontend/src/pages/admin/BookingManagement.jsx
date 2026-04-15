@@ -36,6 +36,7 @@ export default function BookingManagement() {
 
   const [editForm] = Form.useForm();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
 
   const [data, setData] = useState([]);
@@ -148,19 +149,19 @@ export default function BookingManagement() {
 
     try {
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
-      doc.addImage(imgData, "PNG", 14, 12, 30, 22);
+      doc.addImage(imgData, "PNG", 14, 12, 35, 22);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("M&RC TRAVEL AND TOURS", 50, 18);
+    doc.text("M&RC TRAVEL AND TOURS", 52, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 50, 23);
-    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 50, 27);
-    doc.text("+639690554806 | info1@mrctravels.com", 50, 31);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 52, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
 
     doc.setDrawColor(48, 87, 151);
     doc.line(14, 38, 196, 38); // Line width reset for Portrait
@@ -209,41 +210,22 @@ export default function BookingManagement() {
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = (key) => {
-    Modal.confirm({
-      className: "booking-manage-confirm-modal",
-      icon: null,
-      title: (
-        <div className="booking-manage-confirm-title" style={{ textAlign: "center" }}>
-          Confirm Delete
-        </div>
-      ),
-      content: (
-        <div className="booking-manage-confirm-content" style={{ textAlign: "center" }}>
-          <p className="booking-manage-confirm-text">Are you sure you want to delete this booking?</p>
-        </div>
-      ),
-      okText: "Delete",
-      cancelText: "Cancel",
-      okButtonProps: { className: "booking-manage-confirm-btn" },
-      cancelButtonProps: { className: "booking-manage-cancel-btn" },
-      style: { top: 200 },
-      onOk: async () => {
-        try {
-          await apiFetch.delete(`/booking/${key}`);
-          setData((prev) => prev.filter((item) => item.key !== key));
-          message.success("Booking deleted");
-        } catch (error) {
-          message.error("Unable to delete booking");
-        }
-      }
-    });
+  const handleDelete = async (key) => {
+
+    try {
+      await apiFetch.delete(`/booking/${key}`);
+      setData((prev) => prev.filter((item) => item.key !== key));
+      message.success("Booking deleted");
+    } catch (error) {
+      message.error("Unable to delete booking");
+    }
+
   };
 
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
-      navigate(`${basePath}/bookings/${key}/invoice`, { state: { booking } });
+      navigate(`${basePath}/bookings/invoice`, { state: { booking } });
     }
   };
 
@@ -357,7 +339,10 @@ export default function BookingManagement() {
             className='bookingmanagement-remove-button'
             type='primary'
             icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.key)}
+            onClick={() => {
+              setEditingBooking(record);
+              setIsDeleteModalOpen(true);
+            }}
           >
             Delete
           </Button>
@@ -462,12 +447,11 @@ export default function BookingManagement() {
             setIsEditModalOpen(false);
             setEditingBooking(null);
           }}
+          footer={null}
           onOk={save}
           okText="Save Changes"
-          style={{ top: 120 }}
+          style={{ top: 170 }}
           className="booking-edit-modal"
-          okButtonProps={{ className: "booking-edit-save-btn" }}
-          cancelButtonProps={{ className: "booking-edit-cancel-btn" }}
         >
           <Form form={editForm} layout="vertical" className="booking-edit-form">
             <Form.Item
@@ -528,8 +512,67 @@ export default function BookingManagement() {
               </Col>
             </Row>
           </Form>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <Button
+              type='primary'
+              onClick={() => {
+                setIsEditModalOpen(false);
+                setEditingBooking(null);
+              }}
+              className="bookingmanagement-cancel-button">
+              Cancel
+            </Button>
+            <Button
+              type='primary'
+              onClick={save}
+              className="bookingmanagement-okmodal-button">
+              Save
+            </Button>
+          </div>
         </Modal>
 
+        <Modal
+          open={isDeleteModalOpen}
+          className='signup-success-modal'
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsDeleteModalOpen(false);
+          }}
+        >
+          <div className='signup-success-container'>
+            <h1 className='signup-success-heading'>Delete Booking?</h1>
+            <p className='signup-success-text'>Are you sure you want to delete this booking?</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='logout-confirm-btn'
+                onClick={() => {
+                  handleDelete(editingBooking.key);
+                  setIsDeleteModalOpen(false);
+                }}
+              >
+                Delete
+              </Button>
+              <Button
+                type='primary'
+                className='logout-cancel-btn'
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setEditingBooking(null);
+                }}
+              >
+                Cancel
+              </Button>
+
+            </div>
+
+          </div>
+        </Modal>
 
 
       </div>

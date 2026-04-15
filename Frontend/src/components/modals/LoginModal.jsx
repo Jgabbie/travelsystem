@@ -72,8 +72,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 body: JSON.stringify({ username: values.username, password: values.password })
             });
 
-            console.log("Login response:", response);
-
             if (response) {
                 if (onLoginSuccess) {
                     const userData = response.user;

@@ -91,7 +91,7 @@ export default function UploadBookingInvoice() {
     const bookingDetails = booking?.bookingDetails || {};
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
-    const reference = booking?.reference || booking?.ref || booking?._id || "--";
+    const reference = booking?.reference || booking?.ref || booking?._id;
     const logoUrl = typeof window !== "undefined"
         ? `${window.location.origin}/images/Logo.png`
         : "/images/Logo.png";
@@ -101,41 +101,17 @@ export default function UploadBookingInvoice() {
     //FETCH BOOKING DETAILS
     useEffect(() => {
         if (!reference) return;
-        if (booking && booking.bookingDetails) return;
-
+        setLoading(true);
         const fetchBooking = async () => {
-            setLoading(true);
             try {
                 const bookingRes = await apiFetch.get(`/booking/by-reference/${reference}`);
                 const fetchedBooking = bookingRes?.booking || null;
                 const fetchedTransactions = bookingRes?.transactions || [];
 
-                setBooking(fetchedBooking);
-                setTransactions(fetchedTransactions);
-
-                console.log("Fetched booking for invoice:", fetchedBooking);
-
-                if (fetchedBooking?._id) {
-                    try {
-                        const allBookingsRes = await apiFetch.get("/booking/all-bookings");
-                        const number = buildInvoiceNumber(allBookingsRes || [], fetchedBooking);
-
-                        if (number) {
-                            setInvoiceNumber(number);
-                        } else {
-
-                            const createdAtValue = fetchedBooking.createdAt || fetchedBooking.bookingDate;
-                            const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
-                            if (createdAt?.isValid()) {
-                                setInvoiceNumber(`${createdAt.format("MM")}01`);
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Error fetching invoice number list:", err);
-
-                    }
+                if (fetchedBooking) {
+                    setBooking(fetchedBooking);
                 }
-
+                setTransactions(fetchedTransactions);
             } catch (error) {
                 message.error("Unable to load booking details");
             } finally {
@@ -236,8 +212,15 @@ export default function UploadBookingInvoice() {
         bookingDetails.totalPrice || bookingDetails.amount || booking?.totalPrice || 0
     );
     const paidAmountFromTransactions = Math.round(transactions
-        .filter((txn) => txn.status === "Paid" || txn.status === "Successful" || txn.status === "Fully Paid")
-        .reduce((sum, txn) => sum + Number(txn.amount || 0), 0) * 100) / 100;
+        .filter((txn) => {
+            const status = String(txn.status || "").toLowerCase();
+            return status === "paid" || status === "successful" || status === "fully paid" || status === "fully_paid";
+        })
+        .reduce((sum, txn) => {
+            const rawAmount = txn.amount ?? txn.totalAmount ?? txn.paidAmount ?? 0;
+            const parsedAmount = Number(String(rawAmount).replace(/[^0-9.-]/g, ""));
+            return sum + (Number.isFinite(parsedAmount) ? parsedAmount : 0);
+        }, 0) * 100) / 100;
     const paidAmountFallback = Number(bookingDetails.paidAmount || bookingDetails.amountPaid || 0);
     const paidAmount = paidAmountFromTransactions > 0 ? paidAmountFromTransactions : paidAmountFallback;
     const remainingBalance = Math.max(totalPrice - paidAmount, 0);
@@ -288,22 +271,28 @@ export default function UploadBookingInvoice() {
     };
 
     useEffect(() => {
-        if (!booking?._id) return;
-
+        if (!reference) return;
         const fetchInvoiceNumber = async () => {
+
             try {
                 const response = await apiFetch.get("/booking/all-bookings");
-                const number = buildInvoiceNumber(response || [], booking);
+                const allBookings = response?.bookings || response || [];
+                console.log("Fetched all bookings for invoice number generation:", allBookings);
+
+                const number = buildInvoiceNumber(allBookings, booking);
+
                 if (number) {
                     setInvoiceNumber(number);
                     return;
                 }
-            } catch {
-                // Fallback to month + 01 if list cannot be loaded.
+            } catch (err) {
+                console.error(err);
             }
 
+            // fallback
             const createdAtValue = booking.createdAt || booking.bookingDate;
             const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
+
             if (createdAt && createdAt.isValid()) {
                 setInvoiceNumber(`${createdAt.format("MM")}01`);
             }
@@ -312,28 +301,6 @@ export default function UploadBookingInvoice() {
         fetchInvoiceNumber();
     }, [booking]);
 
-    useEffect(() => {
-        if (!reference || reference === "--") return;
-
-        const fetchBookingWithTransactions = async () => {
-            try {
-                const bookingRes = await apiFetch.get(`/booking/by-reference/${reference}`);
-                const fetchedBooking = bookingRes?.booking || null;
-                const fetchedTransactions = bookingRes?.transactions || [];
-
-                if (fetchedBooking?._id) {
-                    setBooking(fetchedBooking);
-                }
-                setTransactions(fetchedTransactions);
-            } catch (error) {
-                message.error("Failed to load booking transactions.");
-            }
-        };
-
-        fetchBookingWithTransactions();
-    }, [reference]);
-
-    console.log("Booking details for invoice:", booking);
 
     const invoice = {
         company: {
@@ -481,11 +448,6 @@ export default function UploadBookingInvoice() {
                     </View>
                 </View>
 
-                <View style={styles.paidRow}>
-                    <Text style={styles.label}>PAID AMOUNT</Text>
-                    <Text style={styles.summaryValue}>{formatCurrency.format(paidAmount)}</Text>
-                </View>
-
                 <View style={styles.table}>
                     <View style={styles.tableHeader}>
                         <Text style={[styles.cell, { flex: 1.5 }]}>DATE</Text>
@@ -600,25 +562,24 @@ export default function UploadBookingInvoice() {
                 }
             }}
         >
-            <div className="upload-invoice-page">
-                <Button type="primary" className="upload-invoice-back-button" onClick={() => navigate("/bookings")}>
-                    <ArrowLeftOutlined />
-                    Back
-                </Button>
-                <div className="upload-invoice-header">
-                    <div>
-                        <Title level={2} className="page-header">Booking Invoice</Title>
-                        <AntText className="upload-invoice-subtitle">
-                            Review the remaining balance and attach the final invoice for this booking.
-                        </AntText>
-                    </div>
+            {loading ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
+                    <Spin spinning={loading} description="Loading booking details..." size="large" />
                 </div>
-
-                {loading ? (
-                    <div className="upload-invoice-loading">
-                        <Spin />
+            ) : (
+                <div className="upload-invoice-page">
+                    <Button type="primary" className="upload-invoice-back-button" onClick={() => navigate("/bookings")}>
+                        <ArrowLeftOutlined />
+                        Back
+                    </Button>
+                    <div className="upload-invoice-header">
+                        <div>
+                            <Title level={2} className="page-header">Booking Invoice</Title>
+                            <AntText className="upload-invoice-subtitle">
+                                Review the remaining balance and attach the final invoice for this booking.
+                            </AntText>
+                        </div>
                     </div>
-                ) : (
                     <>
                         <Card className="upload-invoice-card" style={{ marginBottom: 40 }}>
                             <div className="upload-invoice-meta">
@@ -644,20 +605,20 @@ export default function UploadBookingInvoice() {
 
                             <Row gutter={[16, 16]} className="upload-invoice-summary">
                                 <Col xs={24} md={8}>
-                                    <Card className="upload-invoice-stat" bordered={false}>
+                                    <Card className="upload-invoice-stat" variant={false}>
                                         <AntText type="secondary">Total Price</AntText>
                                         <div className="upload-invoice-amount">{formatCurrency.format(totalPrice)}</div>
                                     </Card>
                                 </Col>
                                 <Col xs={24} md={8}>
-                                    <Card className="upload-invoice-stat" bordered={false}>
+                                    <Card className="upload-invoice-stat" variant={false}>
                                         <AntText type="secondary">Paid Amount</AntText>
                                         <div className="upload-invoice-amount">{formatCurrency.format(paidAmount)}</div>
                                     </Card>
                                 </Col>
                                 <Col xs={24} md={8}>
-                                    <Card className="upload-invoice-stat upload-invoice-highlight" bordered={false}>
-                                        <Space direction="vertical" size={4}>
+                                    <Card className="upload-invoice-stat upload-invoice-highlight" variant={false}>
+                                        <Space orientation="vertical" size={4}>
                                             <AntText type="secondary">Remaining Bal.</AntText>
                                             <div className="upload-invoice-amount">{formatCurrency.format(remainingBalance)}</div>
                                             <Tag color={remainingBalance > 0 ? "orange" : "green"}>
@@ -672,7 +633,6 @@ export default function UploadBookingInvoice() {
                         <div className="display-invoice-wrapper">
                             <div className="display-invoice-card">
                                 <div className="pdf-viewer-wrapper">
-                                    <div></div>
                                     <PDFViewer style={{ width: "100%", height: 727 }}>
                                         <MyDocument />
                                     </PDFViewer>
@@ -698,7 +658,7 @@ export default function UploadBookingInvoice() {
                             {transactions.length === 0 ? (
                                 <AntText type="secondary">No transactions yet.</AntText>
                             ) : (
-                                <Space direction="vertical" style={{ width: "100%" }}>
+                                <Space orientation="vertical" style={{ width: "100%" }}>
                                     {transactions.map((txn, index) => (
                                         <Card key={index} size="small">
                                             <Row justify="space-between">
@@ -923,8 +883,9 @@ export default function UploadBookingInvoice() {
                             </div>
                         </Card>
                     </>
-                )}
-            </div>
+
+                </div>
+            )}
         </ConfigProvider>
     );
 }

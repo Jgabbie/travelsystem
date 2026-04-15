@@ -39,6 +39,7 @@ const app = express()
 const allowedOrigins = [
     "http://localhost:3000",
     "https://mrctravelandtours.com",
+    "https://www.mrctravelandtours.com",
     "https://lively-smoke-07f042800.7.azurestaticapps.net"
 ];
 

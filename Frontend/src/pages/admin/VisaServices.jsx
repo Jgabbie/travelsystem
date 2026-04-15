@@ -38,7 +38,6 @@ export default function VisaServices() {
                     return (b._id > a._id ? 1 : -1);
                 });
                 setServicesData(sorted);
-                console.log("Fetched visa services:", sorted);
             } catch (error) {
                 console.error("Failed to fetch visa services:", error);
             }

@@ -1,5 +1,5 @@
 const API_BASE_URL = 'http://localhost:8000/api';
-const PROD_BASE_URL = 'https://mrctraveltours-qa72u.ondigitalocean.app/api';
+const PROD_BASE_URL = 'https://api.mrctravelandtours.com/api';
 
 const isLocalhost = typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');

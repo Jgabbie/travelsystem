@@ -74,7 +74,6 @@ export default function UserManagement() {
         createdAt: user.createdAt || "",
         lastLogin: user.lastLogin || ""
       }));
-      console.log("Fetched Users:", formattedData);
       setUsers(formattedData);
     } catch {
       message.error("Failed to load users");
@@ -96,7 +95,7 @@ export default function UserManagement() {
     try {
       // 1. Add Logo
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
-      doc.addImage(imgData, "PNG", 14, 12, 22, 22);
+      doc.addImage(imgData, "PNG", 14, 12, 35, 22);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
@@ -104,12 +103,12 @@ export default function UserManagement() {
     // 2. Company Info Header
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
+    doc.text("M&RC TRAVEL AND TOURS", 52, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
-    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
-    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 52, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
 
     // 3. Report Title & Search Input Display
     doc.setDrawColor(48, 87, 151);
@@ -150,8 +149,6 @@ export default function UserManagement() {
 
   const handleDelete = async (id) => {
     try {
-      console.log("Attempting to delete user with id:", id);
-
       await apiFetch.delete(`/user/deleteUsers/${id}`, { withCredentials: true });
       message.success("User deleted");
       getUsers();
@@ -159,8 +156,6 @@ export default function UserManagement() {
   };
 
   const edit = (record) => {
-    console.log("EDIT RECORD:", record);
-
     setEditingUser(record);
 
     editForm.setFieldsValue({
@@ -197,7 +192,9 @@ export default function UserManagement() {
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchText.toLowerCase()) ||
       user.username.toLowerCase().includes(searchText.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchText.toLowerCase());
+      user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchText.toLowerCase()) ||
+      user.status.toLowerCase().includes(searchText.toLowerCase())
     const matchesRole = roleFilter === "" || user.role === roleFilter;
     const matchesStatus = statusFilter === "" || user.status === statusFilter;
     return matchesSearch && matchesRole && matchesStatus;
@@ -247,11 +244,14 @@ export default function UserManagement() {
             className='usermanagement-remove-button'
             type='primary'
             icon={<DeleteOutlined />}
-            onClick={() => setIsDeleteModalOpen(true)}
+            onClick={() => {
+              setEditingUser(record)
+              setIsDeleteModalOpen(true)
+            }}
           >
             Delete
           </Button>
-        </Space>
+        </Space >
       )
     }
   ];
@@ -412,14 +412,13 @@ export default function UserManagement() {
 
       {/* DELETE CONFIRMATION */}
       <Modal
-        open={isModalOpen}
+        open={isDeleteModalOpen}
         className='signup-success-modal'
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
         style={{ top: 220 }}
         onCancel={() => {
           setIsDeleteModalOpen(false);
-          setEditingUser(null);
         }}
       >
         <div className='signup-success-container'>
@@ -434,7 +433,6 @@ export default function UserManagement() {
               onClick={() => {
                 handleDelete(editingUser.id);
                 setIsDeleteModalOpen(false);
-                setEditingUser(null);
               }}
             >
               Delete

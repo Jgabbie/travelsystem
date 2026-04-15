@@ -64,8 +64,6 @@ export default function BookingRegistrationDietInvoice({ form, onValuesChange, s
             emergencyTitle: diet.emergencyTitle,
             signatureDate: dayjs().format('MMMM DD, YYYY'),
         });
-
-        console.log("diet data response:", diet);
         setDietInfo(diet);
     }, [summaryInvoice]);
 

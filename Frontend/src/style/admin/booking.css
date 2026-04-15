@@ -111,78 +111,6 @@
 
 
 /* Modal content styling */
-.booking-manage-confirm-modal .ant-modal-content {
-  border-radius: 16px;
-  padding: 24px;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  box-shadow: 0 18px 50px rgba(48, 87, 151, 0.18);
-}
-
-.booking-manage-confirm-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-}
-
-.booking-manage-confirm-title {
-  font-family: "Montserrat", sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: #305797;
-  margin: 0;
-}
-
-.booking-manage-confirm-text {
-  font-family: "Roboto", sans-serif;
-  font-size: 14px;
-  color: #4b5563;
-  margin: 0 0 4px;
-}
-
-.booking-manage-confirm-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-/* Cancel button */
-.booking-manage-cancel-btn {
-  font-family: "Roboto", sans-serif;
-  font-size: 14px;
-  border-radius: 8px;
-  height: 38px;
-  padding: 0 18px;
-}
-
-.booking-manage-cancel-btn:hover,
-.booking-manage-cancel-btn:focus-visible {
-  border-color: #305797 !important;
-  color: #305797 !important;
-  background-color: #f0f4ff !important;
-}
-
-/* Confirm button */
-.booking-manage-confirm-btn {
-  font-family: "Roboto", sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  background-color: #305797;
-  color: #fff;
-  border-radius: 8px;
-  height: 38px;
-  padding: 0 18px;
-  box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
-}
-
-.booking-manage-confirm-btn:hover {
-  background-color: #e9e9e9 !important;
-  color: #305797 !important;
-  border-color: #305797 !important;
-}
-
 .booking-edit-modal .ant-modal-content {
   border-radius: 16px;
   padding: 24px;
@@ -225,19 +153,40 @@
   box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.12) !important;
 }
 
-.booking-edit-modal .ant-btn-primary.booking-edit-save-btn {
-  background-color: #305797;
-  border-color: #305797;
-  border-radius: 10px;
-  height: 38px;
-  padding: 0 18px;
+.bookingmanagement-cancel-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 10px 22px rgba(48, 87, 151, 0.2);
+  background-color: #992A46;
+  color: #fff;
+  border-radius: 10px;
+  width: 110px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-.booking-edit-modal .ant-btn-primary.booking-edit-save-btn:hover {
-  background-color: #24477a;
-  border-color: #24477a;
+.bookingmanagement-cancel-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #992A46 !important;
+}
+
+.bookingmanagement-okmodal-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 110px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.bookingmanagement-okmodal-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #305797 !important;
 }
 
 .booking-edit-modal .booking-edit-cancel-btn {

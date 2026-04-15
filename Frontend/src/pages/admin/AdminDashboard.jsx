@@ -41,13 +41,8 @@ export default function AdminDashboard() {
   });
 
   const packageCountArray = Object.values(packageCountMap);
-
   packageCountArray.sort((a, b) => b.count - a.count);
-
   const top3Packages = packageCountArray.slice(0, 3);
-
-  console.log("Top 3 most booked packages:", top3Packages);
-
 
 
   //booking trends
@@ -148,7 +143,6 @@ export default function AdminDashboard() {
     const fetchTransactions = async () => {
       try {
         const response = await apiFetch.get("/transaction/all-transactions");
-        console.log("Fetched transactions:", response);
 
         setTransactions(response);
 
@@ -161,7 +155,6 @@ export default function AdminDashboard() {
     const fetchBookings = async () => {
       try {
         const response = await apiFetch.get("/booking/all-bookings")
-        console.log("Fetched bookings:", response);
 
         setBookings(response);
 
