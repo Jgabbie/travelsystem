@@ -129,7 +129,7 @@ export default function TopNav() {
           <h2 className="logout-confirm-title">Confirm Logout</h2>
           <p className="logout-confirm-text">Are you sure you want to logout?</p>
           <div className="logout-confirm-actions">
-            <Button className="logout-cancel-btn" onClick={handleCancel}>Cancel</Button>
+            <Button className="logout-cancel-btn" type="primary" onClick={handleCancel}>Cancel</Button>
             <Button className="logout-confirm-btn" type="primary" onClick={handleOk}>Logout</Button>
           </div>
         </div>

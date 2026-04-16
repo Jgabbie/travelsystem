@@ -26,19 +26,19 @@ const PassportSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: [
-            'Application submitted',
-            'Application approved',
-            'Payment complete',
-            'Documents uploaded',
-            'Documents approved',
-            'Documents received',
-            'Documents submitted',
+            'Application Submitted',
+            'Application Approved',
+            'Payment Complete',
+            'Documents Uploaded',
+            'Documents Approved',
+            'Documents Received',
+            'Documents Submitted',
             'Processing by DFA',
-            'DFA approved',
-            'Passport released',
+            'DFA Approved',
+            'Passport Released',
             'Rejected'
         ],
-        default: 'Application submitted'
+        default: 'Application Submitted'
     },
     createdAt: { type: Date, default: Date.now }
 });

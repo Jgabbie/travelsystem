@@ -25,8 +25,6 @@ const createBooking = async (req, res) => {
     const { bookingPayload } = req.body
     const userId = req.userId
 
-    console.log("Creating booking with data:", bookingPayload)
-
     const packageId = bookingPayload.packageId
     const travelDate = bookingPayload.travelDate
     const travelers = bookingPayload.travelers
@@ -59,8 +57,6 @@ const createBooking = async (req, res) => {
             expiresAt
         })
 
-        console.log("New booking created:", newBooking)
-
         const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -70,8 +66,6 @@ const createBooking = async (req, res) => {
             amount: bookingPayload.amount,
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
-
-        console.log("Token checkout created:", tokenCheckout)
 
         logAction('BOOKING_CREATED', userId, {
             bookingId: newBooking._id,
@@ -240,18 +234,10 @@ const deleteBooking = async (req, res) => {
 
 //CANCEL BOOKING (USER) -----------------------------------------------------------------
 const cancelBooking = async (req, res) => {
-    console.log('Received cancellation request with data')
-
     const { id } = req.params
     const userId = req.userId
     const payload = req.body
 
-    console.log('Cancellation payload:', payload)
-    console.log('Cancellation form data:', {
-        reason: payload.reason,
-        comments: payload.comments,
-        imageProof: payload.imageProof ? 'Image file included' : 'No image file'
-    });
 
     const { reason, comments, imageProof } = payload
 
@@ -363,6 +349,8 @@ const approveCancellation = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                        <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#305797; margin-bottom:10px;">Cancellation Approved</h2>
 
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
@@ -382,10 +370,12 @@ const approveCancellation = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours<br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -458,6 +448,8 @@ const disApproveCancellation = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                        <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#b91c1c; margin-bottom:10px;">Cancellation Rejected</h2>
 
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
@@ -477,10 +469,12 @@ const disApproveCancellation = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours<br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>

@@ -2,7 +2,6 @@ const transporter = require('../config/nodemailer')
 
 const sendContactEmail = async (req, res) => {
     const { name, email, message } = req.body;
-    console.log('Received contact form submission:', { name, email, message });
 
     if (!name || !email || !message) {
         return res.status(400).json({ message: 'All fields are required' });
@@ -32,6 +31,8 @@ const sendContactEmail = async (req, res) => {
             <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
             <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                 <h2 style="color:#305797; margin-bottom:10px;">
                     Welcome to M&RC Travel and Tours
                 </h2>
@@ -54,10 +55,12 @@ const sendContactEmail = async (req, res) => {
 
                 <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                <p style="color:#aaa; font-size:12px;">
-                    © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                    Making your travel dreams come true.
-                </p>
+                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                    <p>M&RC Travel and Tours</p>
+                    <p>support@mrctravelandtours.com</p>
+                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                </div>
 
             </div>
         </div>

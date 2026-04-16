@@ -13,6 +13,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     const [email, setEmail] = useState("")
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSignupSuccessVisible, setIsSignupSuccessVisible] = useState(false);
 
     const [error, setError] = useState({
@@ -80,23 +81,24 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         }
         if (field === "phone") {
             if (value === "") return "Phone is required.";
-            if (value.length < 12) return "Phone must be 10 digits";
-            if (value.slice(0, 1) !== "8" && value.slice(0, 1) !== "9") return "Phone number must start with 8 or 9";
+            if (value.length < 13) return "Phone must be 11 digits";
+            if (!/^0[9]/.test(value))
+                return "Phone number must start with 09";
         }
         if (field === "password") {
-            const errors = [];
-            if (value === "") errors.push("Password is required.");
-            if (value.length < 8) errors.push("Password must be at least 8 characters.");
-            if (!/[A-Z]/.test(value)) errors.push("Password must contain at least one uppercase letter.");
-            if (!/[0-9]/.test(value)) errors.push("Password must contain at least one number.");
-            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) errors.push("Password must contain at least one special character.");
-            return errors;
+
+            if (value === "") return "Password is required.";
+            if (value.length < 8) return "Password must be at least 8 characters.";
+            if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter.";
+            if (!/[a-z]/.test(value)) return "Password must contain at least one lowercase letter.";
+            if (!/[0-9]/.test(value)) return "Password must contain at least one number.";
+            if (!/[!@#$%^&*(),.?\":{}|<>]/.test(value)) return "Password must contain at least one special character.";
+
         }
         if (field === "confirmPassword") {
-            const errors = [];
-            if (value === "") errors.push("Confirm Password is required.");
-            if (value !== allValues.password) errors.push("Passwords do not match");
-            return errors;
+            if (value === "") return ["Confirm Password is required."];
+            if (value !== allValues.password) return ["Passwords do not match"];
+            return [];
         }
         return "";
     };
@@ -308,7 +310,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={clearForms}
-                    style={{ top: 15 }}
+                    style={{ top: 60 }}
                 >
 
                     <div id='signup-container-modal'>
@@ -383,22 +385,28 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                             <div className="signup-input-group-modal">
                                 <label className='signup-labels-modal'>Phone Number</label>
-                                <Input addonBefore="+63" status={hasFieldError(error.phone) ? "error" : ""} maxLength={12} onChange={(e) => {
-                                    let value = e.target.value.replace(/\D/g, "");
+                                <Input addonBefore="+63" status={hasFieldError(error.phone) ? "error" : ""} maxLength={13}
+                                    onChange={(e) => {
+                                        let value = e.target.value.replace(/\D/g, "");
 
+                                        value = value.slice(0, 11);
 
-                                    let formatted = "";
-                                    if (value.length > 0) formatted += value.slice(0, 3);
-                                    if (value.length >= 4) formatted += " " + value.slice(3, 6);
-                                    if (value.length >= 7) formatted += " " + value.slice(6, 10);
+                                        let formatted = value;
 
-                                    valueHandler("phone", formatted)
-                                }} autoComplete='off' onKeyDown={(e) => {
-                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                        if (value.length > 4 && value.length <= 7) {
+                                            formatted =
+                                                value.slice(0, 4) + " " +
+                                                value.slice(4);
+                                        }
+                                        else if (value.length > 7) {
+                                            formatted =
+                                                value.slice(0, 4) + " " +
+                                                value.slice(4, 7) + " " +
+                                                value.slice(7);
+                                        }
 
-                                        e.preventDefault()
-                                    }
-                                }} value={values.phone} type="tel" id="phone" className='signup-input-fields-modal' name="phone" required />
+                                        valueHandler("phone", formatted);
+                                    }} value={values.phone} type="tel" id="phone" className='signup-input-fields-modal' name="phone" required />
 
                                 {renderErrorMessages(error.phone, "phone")}
                             </div>
@@ -421,7 +429,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                         if (e.key === " " && e.key !== "Backspace") {
                                             e.preventDefault()
                                         }
-                                    }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} value={values.confirmPassword} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
+                                    }} visibilityToggle={{ visible: showConfirmPassword, onVisibleChange: setShowConfirmPassword }} value={values.confirmPassword} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
 
                                     {renderErrorMessages(error.confirmPassword, "confirmPassword")}
                                 </div>

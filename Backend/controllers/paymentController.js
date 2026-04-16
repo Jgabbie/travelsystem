@@ -111,8 +111,6 @@ const createManualPayment = async (req, res) => {
             proofFileName,
         } = req.body;
 
-        console.log("Manual payment request body:", req.body);
-
         const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -123,7 +121,7 @@ const createManualPayment = async (req, res) => {
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
-        console.log("Token checkout created for manual deposit:", tokenCheckout);
+
 
         const reference = generateTransactionReference();
 
@@ -152,16 +150,10 @@ const createManualPayment = async (req, res) => {
         booking.status = 'Pending'
         booking.statusHistory.push({ status: 'Pending', changedAt: new Date() });
 
-        console.log("Start Date:", bookingStart);
-        console.log("End Date:", bookingEnd);
 
         const packageDoc = await PackageModel.findById(packageId);
-        console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
-        console.log('Manual payment deposit created:', transaction);
 
         const user = await UserModel.findById(userId).select('email username');
-        console.log('userId for email:', user.email);
-        console.log('username for email:', user.username);
 
         await NotificationModel.create({
             userId: user._id,
@@ -180,6 +172,8 @@ const createManualPayment = async (req, res) => {
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Booking Confirmed!
@@ -208,10 +202,12 @@ const createManualPayment = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -246,10 +242,6 @@ const createManualPaymentQuotation = async (req, res) => {
             proofFileName,
         } = req.body;
 
-        console.log("Quotation ID: ", quotationId);
-
-        console.log("Manual payment request body:", req.body);
-
         const token = crypto.randomUUID();
 
         const tokenCheckout = await TokenCheckoutModel.create({
@@ -259,8 +251,6 @@ const createManualPaymentQuotation = async (req, res) => {
             amount,
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
-
-        console.log("Token checkout created for manual deposit:", tokenCheckout);
 
         const reference = generateTransactionReference();
 
@@ -288,21 +278,15 @@ const createManualPaymentQuotation = async (req, res) => {
         booking.statusHistory.push({ status: 'Pending', changedAt: new Date() });
 
         const quotation = await QuotationModel.findById(quotationId);
-        console.log("Quotation found:", quotation);
+
         quotation.status = 'Booked';
         await quotation.save();
 
-        console.log("Start Date:", bookingStart);
-        console.log("End Date:", bookingEnd);
 
         const packageDoc = await PackageModel.findById(packageId);
-        console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
-
-        console.log('Manual payment deposit created:', transaction);
 
         const user = await UserModel.findById(userId).select('email username');
-        console.log('userId for email:', user.email);
-        console.log('username for email:', user.username);
+
 
         await NotificationModel.create({
             userId: user._id,
@@ -321,6 +305,8 @@ const createManualPaymentQuotation = async (req, res) => {
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Booking Quotation Confirmed!
@@ -349,10 +335,12 @@ const createManualPaymentQuotation = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -395,8 +383,6 @@ const createManualPaymentDeposit = async (req, res) => {
             amount: amount.amount,
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
-
-        console.log("Token checkout created for manual deposit:", tokenCheckout);
 
         const reference = generateTransactionReference();
         const booking = await BookingModel.findById(bookingId);
@@ -442,6 +428,8 @@ const createManualPaymentDeposit = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Installment Payment Successful!
                             </h2>
@@ -469,10 +457,12 @@ const createManualPaymentDeposit = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -481,8 +471,6 @@ const createManualPaymentDeposit = async (req, res) => {
         } catch (emailError) {
             console.error('Failed to send booking email:', emailError);
         }
-
-        console.log('Manual payment deposit created:', transaction);
 
         return res.status(200).json({
             redirectUrl: `/booking-payment/success?token=${token}`
@@ -522,7 +510,6 @@ const createManualPaymentPassport = async (req, res) => {
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
-        console.log("Token checkout created for manual passport payment:", tokenCheckout);
 
         const reference = generateTransactionReference();
         const transaction = await TransactionModel.create({
@@ -536,7 +523,6 @@ const createManualPaymentPassport = async (req, res) => {
             proofImage,
         });
 
-        console.log('Manual payment for passport application created:', transaction);
 
         const passportApp = await PassportModel.findById(applicationId);
         const user = await UserModel.findById(userId).select('email username');
@@ -556,6 +542,8 @@ const createManualPaymentPassport = async (req, res) => {
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Passport Payment Submitted!
@@ -584,10 +572,12 @@ const createManualPaymentPassport = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -633,7 +623,6 @@ const createManualPaymentVisa = async (req, res) => {
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
-        console.log("Token checkout created for manual visa payment:", tokenCheckout);
 
         const reference = generateTransactionReference();
         const transaction = await TransactionModel.create({
@@ -647,7 +636,6 @@ const createManualPaymentVisa = async (req, res) => {
             proofImage,
         });
 
-        console.log('Manual payment for visa application created:', transaction);
 
         const visaApp = await VisaModel.findById(applicationId);
         const user = await UserModel.findById(userId).select('email username');
@@ -667,6 +655,8 @@ const createManualPaymentVisa = async (req, res) => {
                 html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Visa Payment Submitted!
@@ -695,10 +685,12 @@ const createManualPaymentVisa = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -743,7 +735,6 @@ const createCheckoutSessionPassport = async (req, res) => {
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
-        console.log("Token checkout created for visa application:", tokenCheckoutVisa);
 
         const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
         const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
@@ -845,7 +836,6 @@ const createCheckoutSessionVisa = async (req, res) => {
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
-        console.log("Token checkout created for visa application:", tokenCheckoutVisa);
 
         const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
         const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
@@ -932,7 +922,6 @@ const createCheckoutSessionDeposit = async (req, res) => {
         }
         const { paymentPayload } = req.body;
 
-        console.log("Received payment payload for deposit:", paymentPayload);
 
         const bookingId = paymentPayload.bookingId;
         const totalPrice = paymentPayload.totalPrice
@@ -951,7 +940,6 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${token}`;
         const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
 
-        console.log("Deposit payment payload:", paymentPayload);
 
         const package = await PackageModel.findById(packageId).select('packageName');
         const packageName = package.packageName
@@ -963,9 +951,6 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const username = await UserModel.findById(userId).select('username');
         const email = await UserModel.findById(userId).select('email');
 
-        console.log("Token checkout created:", tokenCheckout)
-
-        console.log("Namespace variables:", { username, email });
 
         //currently not being used
         const metadata = {
@@ -1057,7 +1042,6 @@ const createCheckoutSession = async (req, res) => {
         const tokenDoc = await TokenCheckoutModel.findOne({ token: paymentToken });
         if (!tokenDoc) return res.status(404).json({ error: "Invalid payment token" });
 
-        console.log("Found token document:", tokenDoc);
 
         if (dayjs().isAfter(dayjs(tokenDoc.expiresAt))) {
             return res.status(400).json({ error: "Payment token expired" });
@@ -1073,7 +1057,6 @@ const createCheckoutSession = async (req, res) => {
         const packageName = booking.packageId.packageName;
         const totalPrice = tokenDoc.amount;
 
-        console.log("Booking details:", { packageName, totalPrice });
 
         const baseAmountCents = Math.round(totalPrice * 100);
         const convenienceFeeCents = Math.round(baseAmountCents * 0.035 + 1500);
@@ -1089,7 +1072,6 @@ const createCheckoutSession = async (req, res) => {
             totalAmountCents: finalTotalCents,
         };
 
-        console.log("Creating PayMongo checkout session with metadata:", metadata);
 
         const response = await axios.post(
             "https://api.paymongo.com/v1/checkout_sessions",
@@ -1169,7 +1151,6 @@ const createCheckoutSessionQuotation = async (req, res) => {
         const tokenDoc = await TokenCheckoutModel.findOne({ token: paymentToken });
         if (!tokenDoc) return res.status(404).json({ error: "Invalid payment token" });
 
-        console.log("Found token document:", tokenDoc);
 
         if (dayjs().isAfter(dayjs(tokenDoc.expiresAt))) {
             return res.status(400).json({ error: "Payment token expired" });
@@ -1185,7 +1166,6 @@ const createCheckoutSessionQuotation = async (req, res) => {
         const packageName = booking.packageId.packageName;
         const totalPrice = tokenDoc.amount;
 
-        console.log("Booking details:", { packageName, totalPrice });
 
         const baseAmountCents = Math.round(totalPrice * 100);
         const convenienceFeeCents = Math.round(baseAmountCents * 0.035 + 1500);
@@ -1202,7 +1182,6 @@ const createCheckoutSessionQuotation = async (req, res) => {
             totalAmountCents: finalTotalCents,
         };
 
-        console.log("Creating PayMongo checkout session with metadata:", metadata);
 
         const response = await axios.post(
             "https://api.paymongo.com/v1/checkout_sessions",
@@ -1261,12 +1240,9 @@ const createCheckoutSessionQuotation = async (req, res) => {
 //paymongo webhook handler
 const handlePayMongoWebhook = async (req, res) => {
     console.log('🚀 Webhook HIT!');
-
     res.status(200).send('OK'); // respond instantly
-
     console.log('✅ RESPONSE SENT');
-    console.log('HEADERS:', req.headers);
-    console.log('RAW BODY EXISTS:', !!req.rawBody);
+
 
     //check if secret key exists
     if (!process.env.PAYMONGO_WEBHOOK_SECRET) {
@@ -1381,9 +1357,6 @@ const handlePayMongoWebhook = async (req, res) => {
             const amount = Math.round(net / 100) * 100;
 
             const transactionReference = generateTransactionReference();
-            console.log('metadata totalAmountCents:', metadata.totalAmountCents);
-            console.log('sessionAttributes amount_total:', sessionAttributes?.amount_total);
-            console.log('Base amount cents:', metadata.baseAmountCents);
 
             await TransactionModel.create({
                 userId: user._id,
@@ -1428,6 +1401,8 @@ const handlePayMongoWebhook = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Visa Payment Successful!
                             </h2>
@@ -1455,10 +1430,12 @@ const handlePayMongoWebhook = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -1480,9 +1457,6 @@ const handlePayMongoWebhook = async (req, res) => {
                 Number(sessionAttributes?.amount_total || 0) / 100;
             const net = grossAmount - ((grossAmount * 0.035) + 15);
             const amount = Math.round(net / 100) * 100;
-            console.log('metadata totalAmountCents:', metadata.totalAmountCents);
-            console.log('sessionAttributes amount_total:', sessionAttributes?.amount_total);
-            console.log('Base amount cents:', metadata.baseAmountCents);
 
             const transactionReference = generateTransactionReference();
 
@@ -1495,10 +1469,6 @@ const handlePayMongoWebhook = async (req, res) => {
                 method: 'Paymongo',
                 status: 'Successful',
             });
-
-            console.log('Created transaction record:', transaction);
-
-
 
             console.log('Created transaction for passport application:', metadata.applicationId);
 
@@ -1532,6 +1502,8 @@ const handlePayMongoWebhook = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Passport Payment Successful!
                             </h2>
@@ -1559,10 +1531,12 @@ const handlePayMongoWebhook = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -1626,6 +1600,8 @@ const handlePayMongoWebhook = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Installment Payment Successful!
                             </h2>
@@ -1654,10 +1630,12 @@ const handlePayMongoWebhook = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -1687,12 +1665,8 @@ const handlePayMongoWebhook = async (req, res) => {
             const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
             const packageId = booking.packageId.toString();
 
-            console.log("Start Date:", bookingStart);
-            console.log("End Date:", bookingEnd);
 
             const packageDoc = await PackageModel.findById(packageId);
-            console.log("Fetched package document:", packageDoc);
-            console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
 
             const updateResult = await PackageModel.updateOne(
                 {
@@ -1770,6 +1744,8 @@ const handlePayMongoWebhook = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Booking Confirmed!
                             </h2>
@@ -1797,10 +1773,12 @@ const handlePayMongoWebhook = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>
@@ -1830,12 +1808,8 @@ const handlePayMongoWebhook = async (req, res) => {
             const bookingEnd = dayjs(booking.travelDate.endDate).format('YYYY-MM-DD');
             const packageId = booking.packageId.toString();
 
-            console.log("Start Date:", bookingStart);
-            console.log("End Date:", bookingEnd);
 
             const packageDoc = await PackageModel.findById(packageId);
-            console.log("Fetched package document:", packageDoc);
-            console.log("packageSpecificDate array:", packageDoc.packageSpecificDate);
 
 
             const updateResult = await PackageModel.updateOne(
@@ -1921,6 +1895,8 @@ const handlePayMongoWebhook = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
 
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
                             <h2 style="color:#305797; margin-bottom:10px;">
                                 Booking Quotation Confirmed!
                             </h2>
@@ -1948,10 +1924,12 @@ const handlePayMongoWebhook = async (req, res) => {
 
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
-                            <p style="color:#aaa; font-size:12px;">
-                                © ${new Date().getFullYear()} M&RC Travel and Tours <br/>
-                                Making your travel dreams come true.
-                            </p>
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
 
                         </div>
                     </div>

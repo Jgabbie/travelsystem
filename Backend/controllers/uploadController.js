@@ -17,21 +17,14 @@ const uploadBufferToCloudinary = (file, folder) => new Promise((resolve, reject)
 
 
 const uploadReceiptProof = async (req, res) => {
-    console.log('Received request to upload receipt proof');
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.file);
 
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
     }
 
     try {
-        console.log('Uploading file to Cloudinary:', req.file.originalname);
-
         // Use upload_stream with a Promise to await the upload
         const uploadResult = await uploadBufferToCloudinary(req.file, 'manual-deposits');
-
-        console.log('Upload result:', uploadResult);
 
         // Only send response once, after upload completes
         return res.status(200).json({
@@ -47,9 +40,6 @@ const uploadReceiptProof = async (req, res) => {
 }
 
 const uploadBookingDocuments = async (req, res) => {
-    console.log('Received request to upload booking documents');
-    console.log('BODY:', req.body);
-    console.log('FILES:', req.files);
 
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ error: 'No files uploaded.' });
@@ -61,8 +51,6 @@ const uploadBookingDocuments = async (req, res) => {
         );
 
         const uploadedUrls = await Promise.all(uploadPromises);
-
-        console.log('Uploaded URLs:', uploadedUrls);
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
@@ -76,9 +64,6 @@ const uploadBookingDocuments = async (req, res) => {
 };
 
 const uploadPackageImage = async (req, res) => {
-    console.log('Received request to upload package image');
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.files);
 
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ error: 'No files uploaded.' });
@@ -91,7 +76,6 @@ const uploadPackageImage = async (req, res) => {
 
         const uploadedResults = await Promise.all(uploadPromises);
 
-        console.log('Uploaded Results:', uploadedResults);
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
@@ -104,20 +88,15 @@ const uploadPackageImage = async (req, res) => {
 };
 
 const uploadProfilePicture = async (req, res) => {
-    console.log('Received request to upload profile picture');
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.file);
 
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
     }
 
     try {
-        console.log('Uploading file to Cloudinary:', req.file);
 
         const uploadResult = await uploadBufferToCloudinary(req.file, 'profile-pictures');
 
-        console.log('Upload result:', uploadResult);
 
         // Only send response once, after upload completes
         return res.status(200).json({
@@ -133,9 +112,6 @@ const uploadProfilePicture = async (req, res) => {
 };
 
 const uploadPassportRequirements = async (req, res) => {
-    console.log('Received request to upload passport requirements');
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.file);
 
     if (!req.files) {
         return res.status(400).json({ error: 'No files uploaded.' });
@@ -147,8 +123,6 @@ const uploadPassportRequirements = async (req, res) => {
         );
 
         const uploadedResults = await Promise.all(uploadPromises);
-
-        console.log('Uploaded Results:', uploadedResults);
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
@@ -162,9 +136,6 @@ const uploadPassportRequirements = async (req, res) => {
 }
 
 const uploadVisaRequirements = async (req, res) => {
-    console.log('Received request to upload visa requirements');
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.file);
 
     if (!req.files) {
         return res.status(400).json({ error: 'No files uploaded.' });
@@ -177,7 +148,6 @@ const uploadVisaRequirements = async (req, res) => {
 
         const uploadedResults = await Promise.all(uploadPromises);
 
-        console.log('Uploaded Results:', uploadedResults);
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
@@ -191,20 +161,15 @@ const uploadVisaRequirements = async (req, res) => {
 }
 
 const uploadCancellationProof = async (req, res) => {
-    console.log('Received request to upload cancellation proof');
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.file);
 
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
     }
 
     try {
-        console.log('Uploading file to Cloudinary:', req.file);
 
         const uploadResult = await uploadBufferToCloudinary(req.file, 'cancellation-proofs');
 
-        console.log('Upload result:', uploadResult);
 
         // Only send response once, after upload completes
         return res.status(200).json({
@@ -220,7 +185,6 @@ const uploadCancellationProof = async (req, res) => {
 }
 
 const viewQuotationPdf = async (req, res) => {
-    console.log('Received request to view quotation PDF');
     try {
         const publicId = req.params.publicId;
 

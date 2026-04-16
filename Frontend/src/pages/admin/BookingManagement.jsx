@@ -228,7 +228,10 @@ export default function BookingManagement() {
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
-      navigate(`${basePath}/bookings/invoice`, { state: { booking } });
+      const invoicePath = isEmployee
+        ? `${basePath}/bookings/${key}/invoice`
+        : `${basePath}/bookings/invoice`;
+      navigate(invoicePath, { state: { booking } });
     }
   };
 

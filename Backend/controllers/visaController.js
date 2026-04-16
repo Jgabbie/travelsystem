@@ -5,6 +5,7 @@ const UserModel = require('../models/user')
 const NotificationModel = require('../models/notification')
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger')
+const dayjs = require('dayjs')
 
 
 const generateApplicationNumber = () => {
@@ -14,8 +15,6 @@ const generateApplicationNumber = () => {
 const applyVisa = async (req, res) => {
     const { serviceId, preferredDate, preferredTime, purposeOfTravel, status } = req.body
     const userId = req.userId
-
-    console.log("Applying for visa with data:", { serviceId, preferredDate, preferredTime, purposeOfTravel, status });
 
     if (!serviceId || !preferredDate || !preferredTime || !purposeOfTravel) {
         return res.status(400).json({ message: 'Missing required fields' })
@@ -243,17 +242,48 @@ const suggestAppointmentSchedules = async (req, res) => {
                 to: user.email,
                 subject: "Visa appointment options available",
                 html: `
-                    <div style="font-family: Arial, sans-serif; color: #333;">
-                        <h2 style="color: #305797;">Visa appointment options</h2>
-                        <p>Hello ${user.firstname || user.username},</p>
-                        <p>We have suggested appointment options for your visa application.</p>
-                        <ul>
-                            ${cleanedSlots
-                        .map((slot, index) => `<li>Option ${index + 1}: ${slot.date} ${slot.time}</li>`)
+                <div style="font-family: Arial, sans-serif; background:#ffffff; padding:20px;">
+        
+                        <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:25px; text-align:center;">
+                            
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                            <h2 style="color:#305797;">Visa Appointment Options</h2>
+                            <p style="color:#555;">We’ve found available schedules for your visa application.</p>
+
+                            <div style="text-align:center; color:#333; margin-top:15px;">
+                                <p style="font-size:16px; margin-bottom:10px;">Hello ${user.firstname || user.username},</p>
+                                <p>Please review the available appointment slots below:</p>
+
+                                <ul style="padding-left:20px;">
+                                    ${cleanedSlots
+                        .map((slot, index) => `
+                                                            <div style="margin-bottom:10px;">
+                                                                <strong>Option ${index + 1}:</strong> ${dayjs(slot.date).format("MMMM DD, YYYY")} - ${slot.time}
+                                                            </div>
+                                                        `)
                         .join("")}
-                        </ul>
-                        <p>Please log in to review and confirm your preferred schedule.</p>
-                    </div>
+                                </ul>
+
+                                <p style="margin-top:15px;">
+                                    Log in to your account to confirm your preferred schedule.
+                                </p>
+                            </div>
+
+                            <a href="https://mrctravelandtours.com/home"
+                            style="display:inline-block; margin-top:20px; background:#305797; color:#fff; padding:10px 18px; border-radius:5px; text-decoration:none;">
+                            View Appointment
+                            </a>
+                        </div>
+
+                        <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                            <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                            <p>M&RC Travel and Tours</p>
+                            <p>support@mrctravelandtours.com</p>
+                            <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                        </div>
+
+                </div>
                 `
             });
         }
@@ -302,7 +332,7 @@ const passportReleaseOptionUpdate = async (req, res) => {
         }
         const application = await VisaModel.findById(id);
         if (!application) {
-            return res.status(404).json({ message: "Passport application not found" });
+            return res.status(404).json({ message: "Visa application not found" });
         }
 
         application.passportReleaseOption = passportReleaseOption;
@@ -336,8 +366,6 @@ const updateVisaApplicationStatus = async (req, res) => {
         const serviceDoc = await ServiceModel.findById(serviceId).select('visaProcessSteps');
         const validStatuses = [...(serviceDoc?.visaProcessSteps), "Rejected"];
 
-        console.log("Updating visa application status with data:", { id, status, serviceId, validStatuses });
-
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ message: 'Invalid status value' });
         }
@@ -364,27 +392,32 @@ const updateVisaApplicationStatus = async (req, res) => {
                     to: user.email,
                     subject: 'Visa application status update',
                     html: `
-                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                            <h2 style="color:#305797; margin-bottom:10px;">
-                                M&RC Travel and Tours
-                            </h2>
-                            <p style="color:#555; font-size:16px;">
-                                Your visa application status has been updated.
-                            </p>
+                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:20px;">
+                            <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:25px; text-align:center;">
+                                <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
-                                <div style="font-family: Arial, sans-serif; color: #333;">
-                                    <h2 style="color: #305797;">Visa application status update</h2>
-                                    <p>Hello ${user.firstname || user.username},</p>
+                                <h2 style="color:#305797;">M&RC Travel and Tours</h2>
+                                <p style="color:#555;">Your visa application status has been updated.</p>
+
+                                <div style="text-align:center; color:#333; margin-top:15px;">
+                                    <p style="font-size:16px; margin-bottom:10px;">Hello ${user.firstname || user.username},</p>
                                     <p>Your visa application status is now <strong>${status}</strong>.</p>
-                                    <p>Please log in to your account to view the latest details.</p>
                                 </div>
 
-                            <p style="color:#aaa; font-size:12px; margin-top:30px;">
-                                If you did not request this update, please ignore this email.
-                            </p>
+                                <a href="https://mrctravelandtours.com/home"
+                                style="display:inline-block; margin-top:20px; background:#305797; color:#fff; padding:10px 18px; border-radius:5px; text-decoration:none;">
+                                View Account
+                                </a>
+
+                                <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+                                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                    <p>M&RC Travel and Tours</p>
+                                    <p>info1@mrctravels.com</p>
+                                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
                     `
                 });
             }

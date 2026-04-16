@@ -568,7 +568,7 @@ export default function UploadBookingInvoice() {
                 </div>
             ) : (
                 <div className="upload-invoice-page">
-                    <Button type="primary" className="upload-invoice-back-button" onClick={() => navigate("/bookings")}>
+                    <Button type="primary" className="upload-invoice-back-button" onClick={() => navigate(-1)}>
                         <ArrowLeftOutlined />
                         Back
                     </Button>

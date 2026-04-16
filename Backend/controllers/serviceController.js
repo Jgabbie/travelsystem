@@ -5,7 +5,6 @@ const createService = async (req, res) => {
     const { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders } = req.body;
     const userId = req.userId;
 
-    console.log("Creating service with data:", { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders });
     try {
 
         const newService = new ServiceModel({

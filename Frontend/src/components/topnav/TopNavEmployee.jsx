@@ -1,5 +1,5 @@
 import { Layout, Space, Dropdown, Modal, Button } from "antd";
-import { DownOutlined, HomeOutlined, LogoutOutlined } from "@ant-design/icons";
+import { DownOutlined, HomeOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +56,11 @@ export default function TopNavEmployee() {
             icon: <HomeOutlined />
         },
         {
+            key: '2',
+            label: 'Profile',
+            icon: <UserOutlined />,
+        },
+        {
             type: 'divider',
         },
         {
@@ -71,6 +76,8 @@ export default function TopNavEmployee() {
             logout();
         } else if (key === '1') {
             navigate('/employee/dashboard');
+        } else if (key === '2') {
+            navigate('/employee/adminprofile');
         }
     };
 
@@ -117,7 +124,7 @@ export default function TopNavEmployee() {
                     <h2 className="logout-confirm-title">Confirm Logout</h2>
                     <p className="logout-confirm-text">Are you sure you want to logout?</p>
                     <div className="logout-confirm-actions">
-                        <Button className="logout-cancel-btn" onClick={handleCancel}>Cancel</Button>
+                        <Button className="logout-cancel-btn" type="primary" onClick={handleCancel}>Cancel</Button>
                         <Button className="logout-confirm-btn" type="primary" onClick={handleOk}>Logout</Button>
                     </div>
                 </div>

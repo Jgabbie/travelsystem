@@ -95,6 +95,7 @@ export default function ViewVisaApplication() {
                 .filter((slot) => slot.date && slot.time);
 
             if (slots.length === 0) {
+                setIsSubmittingSlots(false);
                 message.error("Please select date and time for at least one option.");
                 return;
             }
@@ -582,6 +583,7 @@ export default function ViewVisaApplication() {
                                     )}
                                     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
                                         <Button
+                                            className="viewvisaapplication-submitdocu-button"
                                             type="primary"
                                             onClick={handleResubmitDocuments}
                                             disabled={statusText?.toLowerCase() === "payment complete" || isUpdatingStatus}

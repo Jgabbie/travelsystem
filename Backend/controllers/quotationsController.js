@@ -18,11 +18,8 @@ const createQuotation = async (req, res) => {
     const { packageId, quotationDetails } = req.body
     const userId = req.userId
 
-    console.log("Creating quotation with data:", { packageId, userId, quotationDetails })
-
     try {
         const userName = await UserModel.findById(userId).select('username')
-        console.log("User found for quotation:", userName.username)
 
         if (!packageId || !quotationDetails) {
             return res.status(400).json({ message: "Missing required fields" })
@@ -35,8 +32,6 @@ const createQuotation = async (req, res) => {
             reference: generateQuotationReference(),
             status: 'Pending'
         })
-
-        console.log("Quotation created successfully:", newQuotation)
 
         logAction('QUOTATION_CREATED', userId, {
             quotationId: newQuotation._id,
@@ -84,7 +79,6 @@ const getAllQuotations = async (_req, res) => {
             .populate('userId', 'username')
             .populate('packageId', 'packageName packageType')
 
-        console.log("Fetched all quotations for admin:", quotations)
         res.status(200).json(quotations)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching quotations', error })
@@ -192,8 +186,6 @@ const uploadQuotationPDF = async (req, res) => {
         }
 
         const userName = await UserModel.findById(req.userId).select('username')
-
-        console.log("Current PDF URL before upload:", pdfUrl)
 
 
         quotation.status = 'Under Review'
