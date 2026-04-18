@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Dropdown, Space, Button, Modal, Spin, ConfigProvider } from 'antd';
-import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined } from '@ant-design/icons';
+import { DownOutlined, HomeOutlined, UserOutlined, CarryOutOutlined, StarOutlined, CreditCardOutlined, IdcardOutlined, LogoutOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import apiFetch from '../../config/fetchConfig';
@@ -129,7 +129,7 @@ export default function TopNavUser() {
         {
             key: '6',
             label: 'My Quotations',
-            icon: <IdcardOutlined />,
+            icon: <FileTextOutlined />,
         },
 
         {

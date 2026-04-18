@@ -26,6 +26,7 @@ const getBase64ImageFromURL = (url) => {
 };
 
 export default function TransactionManagement() {
+  const [form] = Form.useForm();
   const receiptRef = useRef();
   const [searchText, setSearchText] = useState("");
   const [methodFilter, setMethodFilter] = useState("");
@@ -533,13 +534,14 @@ export default function TransactionManagement() {
           </div>
 
           <Card>
-            <Table
-              columns={columns}
-              dataSource={filteredData}
-              loading={loading}
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: "max-content" }}
-            />
+            <Form form={form} component={false}>
+              <Table
+                columns={columns}
+                dataSource={filteredData}
+                loading={loading}
+                pagination={{ pageSize: 10, showSizeChanger: false }}
+              />
+            </Form>
           </Card>
 
           <Modal

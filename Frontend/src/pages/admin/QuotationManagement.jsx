@@ -393,9 +393,8 @@ export default function QuotationManagement() {
                             columns={columns}
                             dataSource={filteredData}
                             loading={loading}
-                            pagination={{ pageSize: 10 }}
+                            pagination={{ pageSize: 10, showSizeChanger: false }}
                             rowClassName={"editable-row"}
-                            scroll={{ x: "max-content" }}
                         />
                     </Form>
                 </Card>

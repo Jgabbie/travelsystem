@@ -380,7 +380,7 @@ export default function CancellationRequests() {
                         columns={columns}
                         loading={loading || isFetchingRequests}
                         dataSource={filteredData}
-                        pagination={{ pageSize: 10 }}
+                        pagination={{ pageSize: 10, showSizeChanger: false }}
                     />
                 </Card>
 

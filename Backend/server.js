@@ -26,6 +26,7 @@ const visaRoutes = require("./routes/visaRoutes")
 const sendEmailRoutes = require("./routes/sendEmailRoutes")
 const preferencesRoutes = require("./routes/preferencesRoutes")
 const uploadRoutes = require("./routes/uploadRoutes")
+const chatbotRoutes = require("./routes/chatbotRoutes")
 
 const rateLimit = require('express-rate-limit');
 
@@ -109,6 +110,7 @@ app.use("/api/visa", visaRoutes);
 app.use("/api/email", sendEmailRoutes);
 app.use("/api/preferences", preferencesRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 //might remove later
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

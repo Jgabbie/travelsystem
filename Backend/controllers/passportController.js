@@ -85,7 +85,7 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         if (additionalDocs && Array.isArray(additionalDocs)) {
             application.submittedDocuments.additionalDocs = additionalDocs; // now array is valid
         }
-        application.status = "Documents uploaded";
+        application.status = "Documents Uploaded";
 
         await application.save();
 
@@ -303,7 +303,7 @@ const passportReleaseOptionUpdate = async (req, res) => {
 
         application.passportReleaseOption = passportReleaseOption;
         application.deliveryAddress = deliveryAddress || "";
-        application.status = "Passport released";
+        application.status = "Passport Released";
         await application.save();
 
         res.status(200).json({ message: "Passport release option updated", application });
@@ -324,7 +324,7 @@ const requestPassportDocumentResubmission = async (req, res) => {
         }
 
         application.submittedDocuments = {};
-        application.status = "Payment complete";
+        application.status = "Payment Complete";
         await application.save();
 
         const user = await UserModel.findById(application.userId);

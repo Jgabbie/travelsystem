@@ -322,7 +322,7 @@ export default function ReviewRatings() {
                         dataSource={filteredRatings}
                         rowKey="id"
                         loading={loading}
-                        pagination={{ pageSize: 10 }}
+                        pagination={{ pageSize: 10, showSizeChanger: false }}
                         locale={{
                             emptyText: <Empty description="No reviews available yet" />,
                         }}

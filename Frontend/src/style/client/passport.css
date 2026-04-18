@@ -164,6 +164,23 @@
     text-align: justify;
 }
 
+.visaapplication-link-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #305797;
+    border-radius: 10px;
+    width: 150px;
+    height: 35px;
+    border: none !important;
+    text-decoration: underline;
+}
+
+.visaapplication-link-button:hover {
+    color: #4c71b0 !important;
+    text-decoration: none;
+}
+
 
 .passport-submit {
     font-family: "Roboto", sans-serif;

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
+import Chatbot from '../../components/chatbot/Chatbot';
 
 export default function LandingPage() {
     const navigate = useNavigate()
@@ -753,10 +754,10 @@ export default function LandingPage() {
                                         type="primary"
                                         loading={isSending}
                                         className={`contact-submit-button${(!contactValues.name.trim() ||
-                                                !contactValues.email.trim() ||
-                                                !contactValues.message.trim())
-                                                ? ' contact-submit-button-disabled'
-                                                : ''
+                                            !contactValues.email.trim() ||
+                                            !contactValues.message.trim())
+                                            ? ' contact-submit-button-disabled'
+                                            : ''
                                             }`}
                                         disabled={
                                             isSending ||
@@ -829,33 +830,11 @@ export default function LandingPage() {
                     <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
                 </Button>
 
-                <Modal
-                    open={isChatbotOpen}
-                    onCancel={() => setIsChatbotOpen(false)}
-                    footer={null}
-                    title="Chatbot"
-                    wrapClassName="chatbot-modal"
-                >
-                    <div className="chatbot-body">
-                        <div className="chatbot-message">
-                            Hi! How can I help you today?
-                        </div>
-                        <Input.TextArea
-                            value={chatMessage}
-                            onChange={(e) => setChatMessage(e.target.value)}
-                            placeholder="Type your message..."
-                            rows={3}
-                        />
-                        <div className="chatbot-actions">
-                            <Button
-                                type="primary"
-                                disabled={!chatMessage.trim()}
-                            >
-                                Send
-                            </Button>
-                        </div>
-                    </div>
-                </Modal>
+                <Chatbot
+                    isChatbotOpen={isChatbotOpen}
+                    setIsChatbotOpen={setIsChatbotOpen}
+                />
+
             </div>
 
             {/* SUCCESS MODAL */}

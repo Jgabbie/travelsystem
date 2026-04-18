@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker, Modal } from "antd";
+import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/viewpassportapplication.css";
@@ -36,6 +36,9 @@ export default function ViewPassportApplication() {
         { date: null, time: null },
         { date: null, time: null }
     ]);
+    const [isSuggestedDatesSentModalOpen, setIsSuggestedDatesSentModalOpen] = useState(false);
+    const [isResubmitDocumentsSentModalOpen, setIsResubmitDocumentsSentModalOpen] = useState(false);
+
 
     //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
     const handleSubmitAlternateSlots = async () => {
@@ -56,8 +59,14 @@ export default function ViewPassportApplication() {
 
             await apiFetch.put(`/passport/applications/${id}/suggest-appointments`, { slots });
 
+            setAlternateSlots([
+                { date: null, time: null },
+                { date: null, time: null },
+                { date: null, time: null }
+            ]);
+
             setIsSubmittingSlots(false);
-            message.success("Suggested appointment options submitted.");
+            setIsSuggestedDatesSentModalOpen(true);
         } catch (error) {
             setIsSubmittingSlots(false);
             message.error("Failed to submit appointment options.");
@@ -70,17 +79,17 @@ export default function ViewPassportApplication() {
         try {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${id}/resubmit-documents`);
-            setApplication((prev) => ({ ...prev, status: "Payment complete" }));
+            setApplication((prev) => ({ ...prev, status: "Payment Complete" }));
 
             const statusMap = statusSteps.reduce((acc, step, idx) => {
                 acc[step.title] = idx;
                 return acc;
             }, {});
-            if (statusMap["Payment complete"] !== undefined) {
-                setCurrentStep(statusMap["Payment complete"]);
+            if (statusMap["Payment Complete"] !== undefined) {
+                setCurrentStep(statusMap["Payment Complete"]);
             }
 
-            message.success("Status updated to Payment complete");
+            setIsResubmitDocumentsSentModalOpen(true);
         } catch (error) {
             message.error("Failed to update status");
         } finally {
@@ -276,8 +285,8 @@ export default function ViewPassportApplication() {
     const handleDFAApproved = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${id}/status`, { status: "DFA approved" });
-            setApplication((prev) => ({ ...prev, status: "DFA approved" }));
+            await apiFetch.put(`/passport/applications/${id}/status`, { status: "DFA Approved" });
+            setApplication((prev) => ({ ...prev, status: "DFA Approved" }));
             message.success("Application marked as DFA Approved");
         } catch (err) {
             message.error("Failed to update status");
@@ -542,7 +551,7 @@ export default function ViewPassportApplication() {
                                         className="viewvisaapplication-submitdocu-button"
                                         type="primary"
                                         onClick={handleResubmitDocuments}
-                                        disabled={application?.status?.toLowerCase() === "payment complete" || isUpdatingStatus}
+                                        disabled={application?.status?.toLowerCase() === "payment complete" || application?.status?.toLowerCase() === "application approved" || application?.status?.toLowerCase() === "application submitted" || isUpdatingStatus}
                                     >
                                         Resubmit Documents
                                     </Button>
@@ -590,18 +599,82 @@ export default function ViewPassportApplication() {
                                 </Card>
                             </div>
                         </div>
-
-
-
-
-
-
-
-
-
                     </div>
                 </div>
             )}
+
+            {/* SUGGESTED DATES SENT MODAL */}
+            <Modal
+                open={isSuggestedDatesSentModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsSuggestedDatesSentModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Suggested Dates Sent!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='signup-success-text'>The suggested dates have been sent.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                setIsSuggestedDatesSentModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+
+            {/* RESUBMIT DOCUMENTS SENT MODAL */}
+            <Modal
+                open={isResubmitDocumentsSentModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsResubmitDocumentsSentModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Resubmit Documents Sent!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='signup-success-text'>The requested document resubmission has been sent.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                setIsResubmitDocumentsSentModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
 
         </ConfigProvider >
     );

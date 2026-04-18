@@ -228,8 +228,9 @@ export default function ApplyVisa() {
                                             {item.applicationLink && (
                                                 <div style={{ marginTop: 8 }}>
                                                     <Button
+                                                        className='visaapplication-link-button'
                                                         size="small"
-                                                        type="primary"
+                                                        type="link"
                                                         onClick={() => handleOpenLink(item.applicationLink)}
                                                     >
                                                         Open Application Link

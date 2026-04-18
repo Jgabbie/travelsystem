@@ -442,8 +442,7 @@ export default function BookingManagement() {
             columns={columns}
             dataSource={filteredData}
             loading={loading}
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: "max-content" }}
+            pagination={{ pageSize: 10, showSizeChanger: false }}
           />
         </Card>
 

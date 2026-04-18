@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Steps, Card, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal } from 'antd';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined, CheckCircleFilled } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
@@ -76,6 +76,12 @@ export default function PassportApplication() {
 
     const [releaseOption, setReleaseOption] = useState(null);
     const [deliveryAddress, setDeliveryAddress] = useState("");
+
+    const [isConfirmDocumentsOpen, setIsConfirmDocumentsOpen] = useState(false);
+    const [isSelectDateModalOpen, setIsSelectDateModalOpen] = useState(false);
+    const [isDateSelectedModalOpen, setIsDateSelectedModalOpen] = useState(false);
+    const [isDocumentsUploadedModalOpen, setIsDocumentsUploadedModalOpen] = useState(false);
+    const [isPassportReleaseOptionSelectedModalOpen, setIsPassportReleaseOptionSelectedModalOpen] = useState(false);
 
     const fetchPassportApplication = `/passport/applications/${id}`;
 
@@ -391,8 +397,6 @@ export default function PassportApplication() {
                 additionalDocs: uploaded.slice(3),
             });
 
-            message.success("Documents submitted successfully");
-
             // reset
             setBirthCertList([]);
             setApplicationFormList([]);
@@ -402,6 +406,7 @@ export default function PassportApplication() {
             const refreshed = await apiFetch.get(`/passport/applications/${id}`);
             setApplication(refreshed);
 
+            setIsDocumentsUploadedModalOpen(true);
         } catch (err) {
             console.error(err);
             message.error("Failed to submit documents");
@@ -417,14 +422,17 @@ export default function PassportApplication() {
             return;
         }
 
+        let dateToSend = null;
+        let timeToSend = null;
+
         if (selectedSuggestedIndex === 'others') {
             if (!customDateTime.date || !customDateTime.time) {
                 message.warning('Please fill in all custom date and time fields.');
                 return;
             }
 
-            setSelectedDate(dayjs(customDateTime.date).format('YYYY-MM-DD'));
-            setSelectedTime(customDateTime.time.format('h:mm A'));
+            dateToSend = dayjs(customDateTime.date).format('YYYY-MM-DD');
+            timeToSend = customDateTime.time.format('h:mm A');
 
         } else if (typeof selectedSuggestedIndex === 'number') {
             const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
@@ -434,21 +442,25 @@ export default function PassportApplication() {
                 return;
             }
 
-            setSelectedDate(dayjs(selected.date).format('YYYY-MM-DD'));
-            setSelectedTime(selected.time);
+            dateToSend = dayjs(selected.date).format('YYYY-MM-DD');
+            timeToSend = selected.time;
         }
 
         try {
             setConfirmingSuggested(true);
+
             await apiFetch.put(`/passport/applications/${id}/choose-appointment`, {
-                date: selectedDate,
-                time: selectedTime
+                date: dateToSend,
+                time: timeToSend
             });
+
+            // optional: keep state in sync
+            setSelectedDate(dateToSend);
+            setSelectedTime(timeToSend);
 
             const refreshed = await apiFetch.get(`/passport/applications/${id}`);
             setApplication(refreshed);
-            message.success('Appointment schedule confirmed.');
-            window.location.reload();
+            setIsDateSelectedModalOpen(true);
         } catch (error) {
             message.error('Failed to confirm appointment schedule.');
         } finally {
@@ -474,7 +486,8 @@ export default function PassportApplication() {
             });
 
             setDeliveryAddress("")
-            message.success('Passport release option has been submitted successfully.');
+            setIsPassportReleaseOptionSelectedModalOpen(true);
+            window.location.reload();
         } catch (error) {
             message.error('Failed to update passport release option.');
         }
@@ -506,21 +519,27 @@ export default function PassportApplication() {
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
-            <div className="user-bookings-page">
 
-                <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
-                    <Button
-                        type='primary'
-                        className='passportapplication-back-button'
-                        icon={<ArrowLeftOutlined />}
-                        style={{ marginTop: 24, marginBottom: 8 }}
-                        onClick={() => navigate('/user-applications')}
-                    >
-                        Back
-                    </Button>
-                    <h2 style={{ marginTop: 24 }}>Passport Application Details</h2>
 
-                    <Spin spinning={loading}>
+
+            {loading || uploading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                    <Spin size="large" description={uploading ? "Uploading Documents..." : "Loading..."} />
+                </div>
+            ) : (
+                <div className="user-bookings-page">
+
+                    <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
+                        <Button
+                            type='primary'
+                            className='passportapplication-back-button'
+                            icon={<ArrowLeftOutlined />}
+                            style={{ marginTop: 24, marginBottom: 8 }}
+                            onClick={() => navigate('/user-applications')}
+                        >
+                            Back
+                        </Button>
+                        <h2 style={{ marginTop: 24 }}>Passport Application Details</h2>
 
                         {/* SUGGESTED APPOINTMENT */}
                         {application?.status && application?.status?.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
@@ -827,7 +846,9 @@ export default function PassportApplication() {
                                                     <Button
                                                         className='passport-submitdate'
                                                         type="primary"
-                                                        onClick={handleConfirmSuggested}
+                                                        onClick={() => {
+                                                            setIsSelectDateModalOpen(true);
+                                                        }}
                                                         loading={confirmingSuggested}
                                                         disabled={
                                                             selectedSuggestedIndex === null ||
@@ -1094,7 +1115,9 @@ export default function PassportApplication() {
                                             </div>
                                         </div>
 
-                                        <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={handleSubmit}>
+                                        <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={
+                                            () => setIsConfirmDocumentsOpen(true)
+                                        }>
                                             Submit Documents
                                         </Button>
                                     </Card>
@@ -1161,10 +1184,204 @@ export default function PassportApplication() {
                                     )}
                             </>
                         )}
+                    </div>
 
-                    </Spin>
+
+                    <Modal
+                        open={isConfirmDocumentsOpen}
+                        className="signup-success-modal"
+                        closable={{ 'aria-label': 'Close modal' }}
+                        footer={null}
+                        onCancel={() => setIsConfirmDocumentsOpen(false)}
+                        style={{ top: 200 }}
+                    >
+                        <div className="signup-success-container">
+                            <h1 className="signup-success-heading">Submit Documents</h1>
+                            <p className="signup-success-text">
+                                Make sure that these documents are not tampered with or fake. Our team will verify their legitimacy.
+                                Make sure that the image is clear and your face and details are clearly captured.
+                            </p>
+                        </div>
+
+                        <div className="signup-actions">
+                            <Button
+                                id="signup-success-button"
+                                onClick={async () => {
+                                    setIsConfirmDocumentsOpen(false);
+                                    await handleSubmit();
+                                }}
+                            >
+                                Submit
+                            </Button>
+
+                            <Button
+                                id="signup-success-button-cancel"
+                                onClick={() => setIsConfirmDocumentsOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </Modal>
+
+
+                    {/* SELECT DATE CONFIRMATION */}
+                    <Modal
+                        open={isSelectDateModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsSelectDateModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Select Date</h1>
+                            <p className='signup-success-text'>Are you sure you want to select this date?</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        handleConfirmSuggested();
+                                        setIsSelectDateModalOpen(false);
+                                    }}
+                                >
+                                    Select
+                                </Button>
+                                <Button
+                                    type='primary'
+                                    className='logout-cancel-btn'
+                                    onClick={() => {
+                                        setIsSelectDateModalOpen(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+
+                            </div>
+
+                        </div>
+                    </Modal>
+
+                    {/* DATE SELECTED MODAL */}
+                    <Modal
+                        open={isDateSelectedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsDateSelectedModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Date Selected Successfully!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>The date has been selected.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsDateSelectedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+                    {/* DOCUMENTS UPLOADED MODAL */}
+                    <Modal
+                        open={isDocumentsUploadedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsDocumentsUploadedModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Documents Uploaded Successfully!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>The documents have been uploaded.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsDocumentsUploadedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+
+
+
+                    {/* PASSPORT RELEASE OPTION SELECTED MODAL */}
+                    <Modal
+                        open={isPassportReleaseOptionSelectedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsPassportReleaseOptionSelectedModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Passport Release Option Selected!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>You have selected a passport release option.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsPassportReleaseOptionSelectedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
                 </div>
-            </div>
+            )}
+
         </ConfigProvider >
     );
 }

@@ -299,7 +299,7 @@ export default function UserManagement() {
               loading={loading}
               columns={columns}
               dataSource={filteredUsers}
-              pagination={{ pageSize: 10 }}
+              pagination={{ pageSize: 10, showSizeChanger: false }}
             />
           </Form>
         </Card>

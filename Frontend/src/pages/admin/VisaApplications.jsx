@@ -330,10 +330,10 @@ export default function VisaApplications() {
                         dataSource={filteredData}
                         rowKey="key"
                         loading={isFetchingApplications}
-                        pagination={{ pageSize: 10 }}
+                        pagination={{ pageSize: 10, showSizeChanger: false }}
                         locale={{
                             emptyText: (
-                                <Empty description="No Data" />
+                                <Empty description="No data" />
                             ),
                         }}
 
