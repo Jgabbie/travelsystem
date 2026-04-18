@@ -78,6 +78,7 @@ export default function AllInOrLandArrangementModal({
 
                 <div className="arrangement-actions">
                     <Button
+                        type='primary'
                         className="arrangement-proceed"
                         onClick={handleProceed}
                         disabled={!selection}
@@ -85,6 +86,7 @@ export default function AllInOrLandArrangementModal({
                         Proceed
                     </Button>
                     <Button
+                        type='primary'
                         className="arrangement-cancel"
                         onClick={handleCancel}>
                         Cancel

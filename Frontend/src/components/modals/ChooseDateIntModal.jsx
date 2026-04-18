@@ -140,6 +140,7 @@ export default function ChooseDateIntModal({
 
                     <div className="right-actions">
                         <Button
+                            type='primary'
                             className="choose-date-proceed"
                             onClick={handleProceed}
                             disabled={!selectedDateRange.startDate || !selectedDateRange.endDate}
@@ -147,6 +148,7 @@ export default function ChooseDateIntModal({
                             Proceed
                         </Button>
                         <Button
+                            type='primary'
                             className="choose-date-cancel"
                             onClick={handleCancel}
                         >

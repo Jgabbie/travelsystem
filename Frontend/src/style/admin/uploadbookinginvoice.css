@@ -60,10 +60,6 @@
     border-radius: 12px;
 }
 
-.upload-invoice-highlight {
-    background: linear-gradient(135deg, #e0f2fe 0%, #eff6ff 100%);
-}
-
 .upload-invoice-amount {
     font-size: 20px;
     font-weight: 700;

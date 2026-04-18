@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, Image } from "antd";
+import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, Image, Spin } from "antd";
 import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -41,6 +41,10 @@ export default function TransactionManagement() {
   const [proofTransaction, setProofTransaction] = useState(null);
   const [isTransactionEditedModalOpen, setIsTransactionEditedModalOpen] = useState(false);
   const [isTransactionDeletedModalOpen, setIsTransactionDeletedModalOpen] = useState(false);
+  const [isProofApprovedModalOpen, setIsProofApprovedModalOpen] = useState(false);
+  const [isProofRejectedModalOpen, setIsProofRejectedModalOpen] = useState(false);
+  const [isProofDecisionloading, setIsProofDecisionLoading] = useState(false);
+  const [isProofDecision, setIsProofDecision] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   const [loading, setLoading] = useState(false);
@@ -246,12 +250,18 @@ export default function TransactionManagement() {
     setIsProofModalOpen(true);
   };
 
+
+  //HANDLE PROOF DECISION (ACCEPT OR REJECT) ----------------------------
   const handleProofDecision = async (record, status) => {
+    setIsProofDecisionLoading(true);
+
     try {
       if (status === "Failed") {
         await apiFetch.put(`/transaction/${record.key}/reject`);
+        setIsProofRejectedModalOpen(true);
       } else {
         await apiFetch.put(`/transaction/${record.key}`, { status });
+        setIsProofApprovedModalOpen(true);
       }
       setData((prev) =>
         prev.map((item) =>
@@ -259,13 +269,17 @@ export default function TransactionManagement() {
         )
       );
       setIsProofModalOpen(false);
+      setIsProofDecision(null);
       setProofTransaction(null);
-      message.success(`Proof ${status === "Successful" ? "accepted" : "rejected"}.`);
     } catch (error) {
       message.error("Failed to update proof status.");
+    } finally {
+      setIsProofDecisionLoading(false);
     }
   };
 
+
+  //HANDLE DELETE TRANSACTION ----------------------------
   const handleDelete = async (key) => {
     try {
       await apiFetch.delete(`/transaction/${key}`);
@@ -409,509 +423,594 @@ export default function TransactionManagement() {
         }
       }}
     >
-      <div className="transaction-management-container">
-        <h1 className="page-header">Transaction Management</h1>
 
-
-        <Row gutter={16} style={{ marginBottom: 20 }}>
-          <Col xs={24} sm={6}>
-            <Card className="transaction-management-card">
-              <Statistic
-                title="Total Transactions"
-                value={totalTransactions}
-                prefix={<SwapOutlined />}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={6}>
-            <Card className="transaction-management-card">
-              <Statistic
-                title="Successful"
-                value={totalSuccessful}
-                prefix={<CheckCircleOutlined />}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={6}>
-            <Card className="transaction-management-card">
-              <Statistic
-                title="Pending"
-                value={totalPending}
-                prefix={<ClockCircleOutlined />}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={6}>
-            <Card className="transaction-management-card">
-              <Statistic
-                title="Failed"
-                value={totalFailed}
-                prefix={<CloseCircleOutlined />}
-              />
-            </Card>
-          </Col>
-        </Row>
-
-        <div className="transaction-actions">
-          <Input
-            prefix={<SearchOutlined />}
-            placeholder="Search reference, package, method or status..."
-            className="search-input"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-          />
-
-          <Select
-            className="transaction-select"
-            placeholder="Method"
-            style={{ width: 160 }}
-            allowClear
-            value={methodFilter || undefined}
-            onChange={(v) => setMethodFilter(v || "")}
-            options={[
-              { value: "Manual", label: "Manual" },
-              { value: "Paymongo", label: "Paymongo" },
-            ]}
-          />
-
-          <Select
-            className="transaction-select"
-            placeholder="Status"
-            style={{ width: 140 }}
-            allowClear
-            value={statusFilter || undefined}
-            onChange={(v) => setStatusFilter(v || "")}
-            options={[
-              { value: "Successful", label: "Successful" },
-              { value: "Pending", label: "Pending" },
-              { value: "Failed", label: "Failed" }
-            ]}
-          />
-
-          <DatePicker
-            className="transaction-date-filter"
-            placeholder="Payment Date"
-            value={paymentDateFilter}
-            onChange={(d) => setPaymentDateFilter(d)}
-            allowClear
-          />
-
-          <Space style={{ marginLeft: 'auto' }}>
-            <Button
-              className='transactionmanagement-export-button'
-              type="primary"
-              icon={<FilePdfOutlined />}
-              onClick={generatePDF}
-            >
-              Export to PDF
-            </Button>
-          </Space>
+      {isProofDecisionloading ? (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+          <Spin size="large" description={isProofDecision === "Accept" ? "Accepting proof..." : "Rejecting proof..."} />
         </div>
+      ) : (
+        <div className="transaction-management-container">
+          <h1 className="page-header">Transaction Management</h1>
 
-        <Card>
-          <Table
-            columns={columns}
-            dataSource={filteredData}
-            loading={loading}
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: "max-content" }}
-          />
-        </Card>
 
-        <Modal
-          title="Edit Transaction"
-          open={isEditModalOpen}
-          onCancel={() => {
-            setIsEditModalOpen(false);
-            setEditingTransaction(null);
-          }}
-          footer={null}
-          style={{ top: 155 }}
-          className="transaction-edit-modal"
+          <Row gutter={16} style={{ marginBottom: 20 }}>
+            <Col xs={24} sm={6}>
+              <Card className="transaction-management-card">
+                <Statistic
+                  title="Total Transactions"
+                  value={totalTransactions}
+                  prefix={<SwapOutlined />}
+                />
+              </Card>
+            </Col>
 
-        >
-          <Form form={editForm} layout="vertical" className="transaction-edit-form">
-            <Form.Item
-              name="package"
-              label="Package"
-              rules={[{ required: true, message: "Package is required" }]}
-            >
-              <Input />
-            </Form.Item>
+            <Col xs={24} sm={6}>
+              <Card className="transaction-management-card">
+                <Statistic
+                  title="Successful"
+                  value={totalSuccessful}
+                  prefix={<CheckCircleOutlined />}
+                />
+              </Card>
+            </Col>
 
-            <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item
-                  name="date"
-                  label="Payment Date"
-                  rules={[{ required: true, message: "Payment date is required" }]}
-                >
-                  <DatePicker showTime format="YYYY-MM-DD HH:mm" style={{ width: "100%" }} />
-                </Form.Item>
-              </Col>
+            <Col xs={24} sm={6}>
+              <Card className="transaction-management-card">
+                <Statistic
+                  title="Pending"
+                  value={totalPending}
+                  prefix={<ClockCircleOutlined />}
+                />
+              </Card>
+            </Col>
 
-              <Col span={12}>
-                <Form.Item
-                  name="price"
-                  label="Amount"
-                  rules={[{ required: true, message: "Amount is required" }]}
-                >
-                  <Input type="number" min={0} />
-                </Form.Item>
-              </Col>
-            </Row>
+            <Col xs={24} sm={6}>
+              <Card className="transaction-management-card">
+                <Statistic
+                  title="Failed"
+                  value={totalFailed}
+                  prefix={<CloseCircleOutlined />}
+                />
+              </Card>
+            </Col>
+          </Row>
 
-            <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item
-                  name="method"
-                  label="Method"
-                  rules={[{ required: true, message: "Method is required" }]}
-                >
-                  <Select
-                    options={[
-                      { value: "Bank Transfer", label: "Bank Transfer" },
-                      { value: "GCash", label: "GCash" },
-                      { value: "Credit Card", label: "Credit Card" }
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
+          <div className="transaction-actions">
+            <Input
+              prefix={<SearchOutlined />}
+              placeholder="Search reference, package, method or status..."
+              className="search-input"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+            />
 
-              <Col span={12}>
-                <Form.Item
-                  name="status"
-                  label="Status"
-                  rules={[{ required: true, message: "Status is required" }]}
-                >
-                  <Select
-                    options={[
-                      { value: "Successful", label: "Successful" },
-                      { value: "Pending", label: "Pending" },
-                      { value: "Failed", label: "Failed" }
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+            <Select
+              className="transaction-select"
+              placeholder="Method"
+              style={{ width: 160 }}
+              allowClear
+              value={methodFilter || undefined}
+              onChange={(v) => setMethodFilter(v || "")}
+              options={[
+                { value: "Manual", label: "Manual" },
+                { value: "Paymongo", label: "Paymongo" },
+              ]}
+            />
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <Select
+              className="transaction-select"
+              placeholder="Status"
+              style={{ width: 140 }}
+              allowClear
+              value={statusFilter || undefined}
+              onChange={(v) => setStatusFilter(v || "")}
+              options={[
+                { value: "Successful", label: "Successful" },
+                { value: "Pending", label: "Pending" },
+                { value: "Failed", label: "Failed" }
+              ]}
+            />
+
+            <DatePicker
+              className="transaction-date-filter"
+              placeholder="Payment Date"
+              value={paymentDateFilter}
+              onChange={(d) => setPaymentDateFilter(d)}
+              allowClear
+            />
+
+            <Space style={{ marginLeft: 'auto' }}>
               <Button
-                type='primary'
-                onClick={() => {
-                  setIsEditModalOpen(false);
-                  setEditingTransaction(null);
-                }}
-                className="usermanagement-remove-button">
-                Cancel
+                className='transactionmanagement-export-button'
+                type="primary"
+                icon={<FilePdfOutlined />}
+                onClick={generatePDF}
+              >
+                Export to PDF
               </Button>
-              <Button
-                type='primary'
-                onClick={save}
-                className="usermanagement-okmodal-button">
-                Save
-              </Button>
-            </div>
-          </Form>
-        </Modal>
+            </Space>
+          </div>
 
-        <Modal
-          open={isViewModalOpen}
-          onCancel={() => setIsViewModalOpen(false)}
-          footer={null}
-          className="transaction-view-modal"
-          width={720}
-          style={{ top: 40 }}
-        >
-          {selectedTransaction && (
-            <div className="receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
-              {/* Header Section */}
-              <div className="receipt-header">
-                <div className="company-info">
+          <Card>
+            <Table
+              columns={columns}
+              dataSource={filteredData}
+              loading={loading}
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: "max-content" }}
+            />
+          </Card>
 
-                  <div className="header-flex-container">
-                    <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+          <Modal
+            title="Edit Transaction"
+            open={isEditModalOpen}
+            onCancel={() => {
+              setIsEditModalOpen(false);
+              setEditingTransaction(null);
+            }}
+            footer={null}
+            style={{ top: 155 }}
+            className="transaction-edit-modal"
 
-                    <div className="address-details">
-                      <h2 className="brand-name">M&RC Travel and Tours</h2>
-                      <p className="sub-info">2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1</p>
-                      <p className="sub-info">Parañaque City, Philippines</p>
-                      <p className="sub-info">1709 PHL</p>
-                      <p className="sub-info">+63 969 055 4806</p>
-                      <p className="sub-info">info1@mrctravels.com</p>
+          >
+            <Form form={editForm} layout="vertical" className="transaction-edit-form">
+              <Form.Item
+                name="package"
+                label="Package"
+                rules={[{ required: true, message: "Package is required" }]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Form.Item
+                    name="date"
+                    label="Payment Date"
+                    rules={[{ required: true, message: "Payment date is required" }]}
+                  >
+                    <DatePicker showTime format="YYYY-MM-DD HH:mm" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
+
+                <Col span={12}>
+                  <Form.Item
+                    name="price"
+                    label="Amount"
+                    rules={[{ required: true, message: "Amount is required" }]}
+                  >
+                    <Input type="number" min={0} />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={12}>
+                <Col span={12}>
+                  <Form.Item
+                    name="method"
+                    label="Method"
+                    rules={[{ required: true, message: "Method is required" }]}
+                  >
+                    <Select
+                      options={[
+                        { value: "Bank Transfer", label: "Bank Transfer" },
+                        { value: "GCash", label: "GCash" },
+                        { value: "Credit Card", label: "Credit Card" }
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col span={12}>
+                  <Form.Item
+                    name="status"
+                    label="Status"
+                    rules={[{ required: true, message: "Status is required" }]}
+                  >
+                    <Select
+                      options={[
+                        { value: "Successful", label: "Successful" },
+                        { value: "Pending", label: "Pending" },
+                        { value: "Failed", label: "Failed" }
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <Button
+                  type='primary'
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditingTransaction(null);
+                  }}
+                  className="usermanagement-remove-button">
+                  Cancel
+                </Button>
+                <Button
+                  type='primary'
+                  onClick={save}
+                  className="usermanagement-okmodal-button">
+                  Save
+                </Button>
+              </div>
+            </Form>
+          </Modal>
+
+          <Modal
+            open={isViewModalOpen}
+            onCancel={() => setIsViewModalOpen(false)}
+            footer={null}
+            className="transaction-view-modal"
+            width={720}
+            style={{ top: 40 }}
+          >
+            {selectedTransaction && (
+              <div className="receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
+                {/* Header Section */}
+                <div className="receipt-header">
+                  <div className="company-info">
+
+                    <div className="header-flex-container">
+                      <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+
+                      <div className="address-details">
+                        <h2 className="brand-name">M&RC Travel and Tours</h2>
+                        <p className="sub-info">2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1</p>
+                        <p className="sub-info">Parañaque City, Philippines</p>
+                        <p className="sub-info">1709 PHL</p>
+                        <p className="sub-info">+63 969 055 4806</p>
+                        <p className="sub-info">info1@mrctravels.com</p>
+                      </div>
+                    </div>
+
+
+                  </div>
+                  <div className="receipt-title-box">
+                    <h1 className="receipt-title">RECEIPT</h1>
+                  </div>
+                </div>
+
+                {/* Billing & Meta Section */}
+                <div className="receipt-meta">
+                  <div className="billed-to">
+                    <span className="label-blue">Billed To</span>
+                    <h3 className="customer-name" style={{ margin: 0 }}>{selectedTransaction.username || "Customer Name"}</h3>
+                  </div>
+                  <div className="receipt-details">
+                    <div className="detail-item">
+                      <span className="label-blue">Receipt #</span>
+                      <span>{selectedTransaction.ref}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="label-blue">Receipt date</span>
+                      <span>{selectedTransaction.date ? dayjs(selectedTransaction.date).format("DD-MM-YYYY") : "--"}</span>
                     </div>
                   </div>
-
-
                 </div>
-                <div className="receipt-title-box">
-                  <h1 className="receipt-title">RECEIPT</h1>
-                </div>
-              </div>
 
-              {/* Billing & Meta Section */}
-              <div className="receipt-meta">
-                <div className="billed-to">
-                  <span className="label-blue">Billed To</span>
-                  <h3 className="customer-name" style={{ margin: 0 }}>{selectedTransaction.username || "Customer Name"}</h3>
-                </div>
-                <div className="receipt-details">
-                  <div className="detail-item">
-                    <span className="label-blue">Receipt #</span>
-                    <span>{selectedTransaction.ref}</span>
+                {/* Items Table */}
+                <table className="receipt-table">
+                  <thead>
+                    <tr>
+                      <th>QTY</th>
+                      <th>Description</th>
+                      <th className="text-right">Unit Price</th>
+                      <th className="text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>{selectedTransaction.package}</td>
+                      <td className="text-right">{selectedTransaction.price}</td>
+                      <td className="text-right">{selectedTransaction.price}</td>
+                    </tr>
+                    {/* Add more rows here if your transaction data has multiple items */}
+                  </tbody>
+                </table>
+
+                {/* Calculation Section */}
+                <div className="receipt-summary">
+                  <div className="summary-row">
+                    <span>Subtotal</span>
+                    <span>{selectedTransaction.price}</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="label-blue">Receipt date</span>
-                    <span>{selectedTransaction.date ? dayjs(selectedTransaction.date).format("DD-MM-YYYY") : "--"}</span>
+                  <div className="summary-row total-row">
+                    <span className="label-blue">Total</span>
+                    <span className="total-amount">{selectedTransaction.price}</span>
                   </div>
                 </div>
+
+                {/* Footer Notes */}
+                <div className="receipt-footer">
+                  <p className="support-text">Thank you for your purchase!</p>
+                  <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
+                </div>
+
+
+
+              </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+              <Button
+                className='user-transactions-viewproof-button'
+                type="primary"
+                onClick={handleDownloadPDF}
+              >
+                Download Receipt
+              </Button>
+            </div>
+          </Modal>
+
+          <Modal
+            open={isProofModalOpen}
+            onCancel={() => setIsProofModalOpen(false)}
+            className="transaction-view-modal"
+            width={720}
+            style={{ top: 150 }}
+            footer={null}
+            title={`Proof of Payment - ${proofTransaction?.ref || ""}`}
+          >
+            {proofTransaction && (
+              <div className="receipt-container">
+                {proofTransaction.proofImage ? (
+                  <div className="upload-preview-box" style={{ maxHeight: 520 }}>
+                    <Image
+                      src={proofTransaction.proofImage}
+                      alt={proofTransaction.proofFileName || "Proof of payment"}
+                      className="upload-preview-image"
+                      style={{ width: "100%", height: "auto" }}
+                    />
+                  </div>
+                ) : (
+                  <p>No proof image available.</p>
+                )}
               </div>
 
-              {/* Items Table */}
-              <table className="receipt-table">
-                <thead>
-                  <tr>
-                    <th>QTY</th>
-                    <th>Description</th>
-                    <th className="text-right">Unit Price</th>
-                    <th className="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>{selectedTransaction.package}</td>
-                    <td className="text-right">{selectedTransaction.price}</td>
-                    <td className="text-right">{selectedTransaction.price}</td>
-                  </tr>
-                  {/* Add more rows here if your transaction data has multiple items */}
-                </tbody>
-              </table>
 
-              {/* Calculation Section */}
-              <div className="receipt-summary">
-                <div className="summary-row">
-                  <span>Subtotal</span>
-                  <span>{selectedTransaction.price}</span>
-                </div>
-                <div className="summary-row total-row">
-                  <span className="label-blue">Total</span>
-                  <span className="total-amount">{selectedTransaction.price}</span>
-                </div>
+            )}
+
+            <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+              <Button
+                className='user-transactions-viewproof-button'
+                type="primary"
+                onClick={async () => {
+                  try {
+                    const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'proof_of_payment_' + proofTransaction.ref + '.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                  } catch (err) {
+                    window.open(proofTransaction.proofImage, '_blank');
+                  }
+                }}
+              >
+                Download Image
+              </Button>
+
+              <Button
+                type="primary"
+                className='transactionmanagement-accept-button'
+                onClick={() => {
+                  handleProofDecision(proofTransaction, "Successful")
+                  setIsProofDecision('Accept');
+                }}
+              >
+                Accept Proof
+              </Button>
+
+              <Button
+                type="primary"
+                className='transactionmanagement-remove-button'
+                onClick={() => {
+                  handleProofDecision(proofTransaction, "Failed")
+                  setIsProofDecision('Reject');
+                }}
+              >
+                Reject Proof
+              </Button>
+            </Space>
+          </Modal>
+
+
+          {/* DELETE TRANSACTION CONFIRMATION MODAL */}
+          <Modal
+            open={isDeleteModalOpen}
+            className='signup-success-modal'
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            style={{ top: 220 }}
+            onCancel={() => {
+              setIsDeleteModalOpen(false);
+            }}
+          >
+            <div className='signup-success-container'>
+              <h1 className='signup-success-heading'>Delete Booking?</h1>
+              <p className='signup-success-text'>Are you sure you want to delete this booking?</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='logout-confirm-btn'
+                  onClick={() => {
+                    handleDelete(editingTransaction.key);
+                    setIsDeleteModalOpen(false);
+                  }}
+                >
+                  Delete
+                </Button>
+                <Button
+                  type='primary'
+                  className='logout-cancel-btn'
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setEditingTransaction(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </Modal>
+
+          {/* TRANSACTION HAS BEEN EDITED MODAL */}
+          <Modal
+            open={isTransactionEditedModalOpen}
+            className='signup-success-modal'
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            style={{ top: 220 }}
+            onCancel={() => {
+              setIsTransactionEditedModalOpen(false);
+            }}
+          >
+            <div className='signup-success-container'>
+              <h1 className='signup-success-heading'>Transaction Edited Successfully!</h1>
+
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
               </div>
 
-              {/* Footer Notes */}
-              <div className="receipt-footer">
-                <p className="support-text">Thank you for your purchase!</p>
-                <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
+              <p className='signup-success-text'>The transaction has been edited.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='logout-confirm-btn'
+                  onClick={() => {
+                    setIsTransactionEditedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
               </div>
 
+            </div>
+          </Modal>
 
+
+          {/* TRANSACTION HAS BEEN DELETED MODAL */}
+          <Modal
+            open={isTransactionDeletedModalOpen}
+            className='signup-success-modal'
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            style={{ top: 220 }}
+            onCancel={() => {
+              setIsTransactionDeletedModalOpen(false);
+            }}
+          >
+            <div className='signup-success-container'>
+              <h1 className='signup-success-heading'>Transaction Deleted Successfully!</h1>
+
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              </div>
+
+              <p className='signup-success-text'>The transaction has been deleted.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='logout-confirm-btn'
+                  onClick={() => {
+                    setIsTransactionDeletedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
 
             </div>
-          )}
-          <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-            <Button
-              className='user-transactions-viewproof-button'
-              type="primary"
-              onClick={handleDownloadPDF}
-            >
-              Download Receipt
-            </Button>
-          </div>
-        </Modal>
+          </Modal>
 
-        <Modal
-          open={isProofModalOpen}
-          onCancel={() => setIsProofModalOpen(false)}
-          className="transaction-view-modal"
-          width={720}
-          style={{ top: 150 }}
-          footer={null}
-          title={`Proof of Payment - ${proofTransaction?.ref || ""}`}
-        >
-          {proofTransaction && (
-            <div className="receipt-container">
-              {proofTransaction.proofImage ? (
-                <div className="upload-preview-box" style={{ maxHeight: 520 }}>
-                  <Image
-                    src={proofTransaction.proofImage}
-                    alt={proofTransaction.proofFileName || "Proof of payment"}
-                    className="upload-preview-image"
-                    style={{ width: "100%", height: "auto" }}
-                  />
-                </div>
-              ) : (
-                <p>No proof image available.</p>
-              )}
+          {/* PAYMENT PROOF HAS BEEN APPROVED MODAL */}
+          <Modal
+            open={isProofApprovedModalOpen}
+            className='signup-success-modal'
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            style={{ top: 220 }}
+            onCancel={() => {
+              setIsProofApprovedModalOpen(false);
+            }}
+          >
+            <div className='signup-success-container'>
+              <h1 className='signup-success-heading'>Payment Proof Accepted!</h1>
+
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              </div>
+
+              <p className='signup-success-text'>The payment proof has been approved.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='logout-confirm-btn'
+                  onClick={() => {
+                    setIsProofApprovedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
             </div>
+          </Modal>
 
+          {/* PAYMENT PROOF HAS BEEN REJECTED MODAL */}
+          <Modal
+            open={isProofRejectedModalOpen}
+            className='signup-success-modal'
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            style={{ top: 220 }}
+            onCancel={() => {
+              setIsProofRejectedModalOpen(false);
+            }}
+          >
+            <div className='signup-success-container'>
+              <h1 className='signup-success-heading'>Payment Proof Rejected!</h1>
 
-          )}
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              </div>
 
-          <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-            <Button
-              className='user-transactions-viewproof-button'
-              type="primary"
-              onClick={async () => {
-                try {
-                  const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.download = 'proof_of_payment_' + proofTransaction.ref + '.png';
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  window.URL.revokeObjectURL(url);
-                } catch (err) {
-                  window.open(proofTransaction.proofImage, '_blank');
-                }
-              }}
-            >
-              Download Image
-            </Button>
+              <p className='signup-success-text'>The payment proof has been rejected.</p>
 
-            <Button
-              type="primary"
-              className='transactionmanagement-accept-button'
-              onClick={() => handleProofDecision(proofTransaction, "Successful")}
-            >
-              Accept Proof
-            </Button>
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
-            <Button
-              type="primary"
-              className='transactionmanagement-remove-button'
-              onClick={() => handleProofDecision(proofTransaction, "Failed")}
-            >
-              Reject Proof
-            </Button>
-          </Space>
-        </Modal>
+                <Button
+                  type='primary'
+                  className='logout-confirm-btn'
+                  onClick={() => {
+                    setIsProofRejectedModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
 
-
-        {/* DELETE TRANSACTION CONFIRMATION MODAL */}
-        <Modal
-          open={isDeleteModalOpen}
-          className='signup-success-modal'
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          style={{ top: 220 }}
-          onCancel={() => {
-            setIsDeleteModalOpen(false);
-          }}
-        >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Delete Booking?</h1>
-            <p className='signup-success-text'>Are you sure you want to delete this booking?</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='logout-confirm-btn'
-                onClick={() => {
-                  handleDelete(editingTransaction.key);
-                  setIsDeleteModalOpen(false);
-                }}
-              >
-                Delete
-              </Button>
-              <Button
-                type='primary'
-                className='logout-cancel-btn'
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setEditingTransaction(null);
-                }}
-              >
-                Cancel
-              </Button>
             </div>
-          </div>
-        </Modal>
+          </Modal>
 
-        {/* TRANSACTION HAS BEEN EDITED MODAL */}
-        <Modal
-          open={isTransactionEditedModalOpen}
-          className='signup-success-modal'
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          style={{ top: 220 }}
-          onCancel={() => {
-            setIsTransactionEditedModalOpen(false);
-          }}
-        >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Transaction Edited Successfully!</h1>
+        </div >
 
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
-            </div>
-
-            <p className='signup-success-text'>The transaction has been edited.</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='logout-confirm-btn'
-                onClick={() => {
-                  setIsTransactionEditedModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
-            </div>
-
-          </div>
-        </Modal>
-
-
-        {/* TRANSACTION HAS BEEN DELETED MODAL */}
-        <Modal
-          open={isTransactionDeletedModalOpen}
-          className='signup-success-modal'
-          closable={{ 'aria-label': 'Custom Close Button' }}
-          footer={null}
-          style={{ top: 220 }}
-          onCancel={() => {
-            setIsTransactionDeletedModalOpen(false);
-          }}
-        >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Transaction Deleted Successfully!</h1>
-
-            <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
-            </div>
-
-            <p className='signup-success-text'>The transaction has been deleted.</p>
-
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
-
-              <Button
-                type='primary'
-                className='logout-confirm-btn'
-                onClick={() => {
-                  setIsTransactionDeletedModalOpen(false);
-                }}
-              >
-                Continue
-              </Button>
-            </div>
-
-          </div>
-        </Modal>
-      </div >
-
-
+      )}
 
     </ConfigProvider >
   );

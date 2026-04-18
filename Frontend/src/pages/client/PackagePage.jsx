@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin } from 'antd';
+import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -28,6 +29,10 @@ export default function PackagePage() {
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isArrangementModalOpen, setIsArrangementModalOpen] = useState(false)
+    const [isPackageWishlistedModalOpen, setIsPackageWishlistedModalOpen] = useState(false)
+    const [isRatingEditedModalOpen, setIsRatingEditedModalOpen] = useState(false)
+    const [isRatingSubmittedModalOpen, setIsRatingSubmittedModalOpen] = useState(false)
+    const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false)
 
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
@@ -260,6 +265,7 @@ export default function PackagePage() {
         try {
             await apiFetch.post('/wishlist/add', { packageId })
             setIsWishlistModalOpen(true)
+            setIsPackageWishlistedModalOpen(true)
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to add to wishlist. Please try again.'
@@ -326,6 +332,7 @@ export default function PackagePage() {
 
         setIsSubmittingReview(true);
 
+
         try {
             if (isEditingReview) {
                 // UPDATE review
@@ -333,6 +340,7 @@ export default function PackagePage() {
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
                 });
+                setIsRatingEditedModalOpen(true)
                 message.success("Review updated");
             } else {
                 // CREATE review
@@ -341,6 +349,7 @@ export default function PackagePage() {
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
                 });
+                setIsRatingSubmittedModalOpen(true)
                 message.success("Review submitted");
             }
 
@@ -368,7 +377,6 @@ export default function PackagePage() {
             message.error('No review to delete.')
             return
         }
-
         setIsSubmittingReview(true)
 
         try {
@@ -383,6 +391,7 @@ export default function PackagePage() {
             })
             setIsEditingReview(false)
             setIsDeleteModalOpen(false)
+            setIsRatingDeletedModalOpen(true)
         } catch (error) {
             message.error('Unable to delete review')
         } finally {
@@ -564,7 +573,7 @@ export default function PackagePage() {
                                                                     <div>
                                                                         <Button
                                                                             type="link"
-                                                                            style={{ padding: 0, marginTop: 4, border: 'none' }}
+                                                                            style={{ padding: 0, marginTop: 4, border: 'none', color: "#305797" }}
                                                                             onClick={() => {
                                                                                 setReviewForm({
                                                                                     rating: review.rating,
@@ -581,7 +590,7 @@ export default function PackagePage() {
                                                                         <Button
                                                                             type="link"
                                                                             danger
-                                                                            style={{ padding: 0, marginTop: 4, marginLeft: 12, border: 'none' }}
+                                                                            style={{ padding: 0, marginTop: 4, marginLeft: 12, border: 'none', color: "#992A46" }}
                                                                             disabled={isSubmittingReview}
                                                                             onClick={handleOpenDeleteModal}
                                                                         >
@@ -625,26 +634,28 @@ export default function PackagePage() {
                                                     }
                                                     style={{ marginTop: 10 }}
                                                 />
-
-                                                <Button
-                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
-                                                    className="package-action-secondary"
-                                                    onClick={handleSubmitReview}
-                                                    style={{ marginTop: 10 }}
-                                                >
-                                                    {isEditingReview ? "Update Review" : "Submit Review"}
-                                                </Button>
-                                                {userReview && (
+                                                <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
                                                     <Button
-                                                        danger
-                                                        disabled={isSubmittingReview}
+                                                        type='primary'
+                                                        disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
                                                         className="package-action-secondary"
-                                                        onClick={handleOpenDeleteModal}
+                                                        onClick={handleSubmitReview}
                                                         style={{ marginTop: 10 }}
                                                     >
-                                                        Delete Review
+                                                        {isEditingReview ? "Update Review" : "Submit Review"}
                                                     </Button>
-                                                )}
+                                                    {userReview && (
+                                                        <Button
+                                                            type='primary'
+                                                            disabled={isSubmittingReview}
+                                                            className="package-action-remove"
+                                                            onClick={handleOpenDeleteModal}
+                                                            style={{ marginTop: 10 }}
+                                                        >
+                                                            Delete Review
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </Card>
@@ -709,49 +720,200 @@ export default function PackagePage() {
                         }}
                     />
 
+
+                    {/* DELETE CONFIRMATION */}
                     <Modal
-                        className="package-delete-review-modal"
                         open={isDeleteModalOpen}
-                        onCancel={() => setIsDeleteModalOpen(false)}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsDeleteModalOpen(false);
+                        }}
                     >
-                        <h2 className="package-delete-review-title">Delete review?</h2>
-                        <p className="package-delete-review-text">
-                            This will permanently remove your review for this package.
-                        </p>
-                        <div className="package-delete-review-actions">
-                            <Button
-                                className="package-action-secondary"
-                                onClick={() => setIsDeleteModalOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                danger
-                                className="package-action-secondary"
-                                loading={isSubmittingReview}
-                                onClick={handleDeleteReview}
-                                style={{ marginLeft: 10 }}
-                            >
-                                Delete
-                            </Button>
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Delete Review?</h1>
+                            <p className='signup-success-text'>Are you sure you want to delete this review?</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        handleDeleteReview();
+                                        setIsDeleteModalOpen(false);
+                                    }}
+                                >
+                                    Delete
+                                </Button>
+                                <Button
+                                    type='primary'
+                                    className='logout-cancel-btn'
+                                    onClick={() => {
+                                        setIsDeleteModalOpen(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+
+                            </div>
+
                         </div>
                     </Modal>
 
+
+
+
+                    {/* PACKAGE HAS BEEN WISHLISTED MODAL */}
                     <Modal
-                        className="package-wishlist-modal"
-                        open={isWishlistModalOpen}
+                        open={isPackageWishlistedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        onCancel={() => setIsWishlistModalOpen(false)}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsPackageWishlistedModalOpen(false);
+                        }}
                     >
-                        <h2 className="package-wishlist-title">Added to Wishlist</h2>
-                        <p className="package-wishlist-text">This package has been successfully added to your wishlist.</p>
-                        <div className="package-wishlist-actions">
-                            <Button className="package-action-secondary" onClick={() => setIsWishlistModalOpen(false)}>
-                                Close
-                            </Button>
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Package Added!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>This Package has been added to your Wishlist.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsPackageWishlistedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
                         </div>
                     </Modal>
+
+
+                    {/* RATING HAS BEEN SUBMITTED MODAL */}
+                    <Modal
+                        open={isRatingSubmittedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsRatingSubmittedModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Review Submitted!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>Your review has been successfully submitted.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsRatingSubmittedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+
+                    {/* RATING HAS BEEN EDITED MODAL */}
+                    <Modal
+                        open={isRatingEditedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsRatingEditedModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Review Edited!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>Your review has been successfully edited.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsRatingEditedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+                    {/* RATING HAS BEEN DELETED MODAL */}
+                    <Modal
+                        open={isRatingDeletedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsRatingDeletedModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Review Deleted!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>Your review has been successfully deleted.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsRatingDeletedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
                 </Spin>
             </div>
         </ConfigProvider >

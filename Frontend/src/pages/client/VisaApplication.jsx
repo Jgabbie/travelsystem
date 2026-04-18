@@ -784,6 +784,7 @@ export default function VisaApplication() {
 
                                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
                                                     <Button
+                                                        className='visaapplication-submitdate-button'
                                                         type="primary"
                                                         onClick={handleConfirmSuggested}
                                                         loading={confirmingSuggested}

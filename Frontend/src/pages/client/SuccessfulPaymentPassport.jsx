@@ -3,6 +3,7 @@ import { Button, ConfigProvider, Spin, message } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import apiFetch from '../../config/fetchConfig';
+import '../../style/client/successfulpaymentpage.css';
 
 export default function SuccessfulPaymentPassport() {
     const navigate = useNavigate();
@@ -61,10 +62,10 @@ export default function SuccessfulPaymentPassport() {
                         </p>
 
                         <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-                            <Button onClick={() => navigate('/user-applications')}>
+                            <Button className='successpayment-button' type='primary' onClick={() => navigate('/user-applications')}>
                                 View Applications
                             </Button>
-                            <Button type="primary" onClick={() => navigate('/home')}>
+                            <Button className='successpayment-button' type='primary' onClick={() => navigate('/home')}>
                                 Go to Home
                             </Button>
                         </div>

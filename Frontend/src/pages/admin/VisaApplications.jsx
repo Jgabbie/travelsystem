@@ -333,7 +333,7 @@ export default function VisaApplications() {
                         pagination={{ pageSize: 10 }}
                         locale={{
                             emptyText: (
-                                <Empty description="No visa applications found" />
+                                <Empty description="No Data" />
                             ),
                         }}
 

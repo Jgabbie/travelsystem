@@ -186,31 +186,37 @@
 }
 
 .choose-date-proceed {
-    background-color: #fff !important;
-    color: #305797 !important;
-    border-radius: 10px;
-    border: solid 1px #305797 !important;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
     font-weight: 600;
-    height: 40px;
-    padding: 0 16px;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 160px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
 .choose-date-proceed:hover {
-    background-color: #305797 !important;
-    color: #fff !important;
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
 }
 
 .choose-date-cancel {
-    background-color: #fff !important;
-    color: #992A46 !important;
-    border-radius: 10px;
-    border: solid 1px #992A46 !important;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
     font-weight: 600;
-    height: 40px;
-    padding: 0 16px;
+    background-color: #992A46;
+    color: #fff;
+    border-radius: 10px;
+    width: 160px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
 .choose-date-cancel:hover {
-    background-color: #992A46 !important;
-    color: #fff !important;
+    background-color: #e9e9e9 !important;
+    color: #992A46 !important;
 }

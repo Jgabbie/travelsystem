@@ -240,7 +240,6 @@ export default function PackageInternationalQuotation() {
                 }
             })
 
-            message.success('Quotation request submitted successfully!')
             setIsBookingSuccessOpen(true)
             setTravelers(1)
             setPreferredAirlines('')
@@ -276,7 +275,7 @@ export default function PackageInternationalQuotation() {
                             type="primary"
                             icon={<ArrowLeftOutlined />}
                             onClick={() => navigate(-1)}
-                            className="back-button"
+                            className="packagequotation-back-button"
                         >
                             Back
                         </Button>
@@ -679,7 +678,7 @@ export default function PackageInternationalQuotation() {
                                     className='logout-confirm-btn'
                                     onClick={onCancelModal}
                                 >
-                                    Cancel
+                                    Continue
                                 </Button>
 
                             </div>

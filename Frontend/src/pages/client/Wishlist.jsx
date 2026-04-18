@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin, Slider } from 'antd'
-import { DeleteOutlined, EyeOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EyeOutlined, CheckCircleFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/wishlist.css'
@@ -14,6 +14,9 @@ export default function Wishlist() {
     const [priceRange, setPriceRange] = useState([0, 100000])
     const [wishlistItems, setWishlistItems] = useState([])
     const [isLoading, setIsLoading] = useState(true)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [isPackageRemovedModalOpen, setIsPackageRemovedModalOpen] = useState(false)
+    const [selectedWishlistId, setSelectedWishlistId] = useState(null);
 
     const { Title, Text } = Typography
 
@@ -115,18 +118,6 @@ export default function Wishlist() {
                 error?.data?.message || 'Unable to remove wishlist item.'
             message.error(errorMessage)
         }
-    }
-
-    const confirmRemove = (pkg) => {
-        Modal.confirm({
-            title: 'Remove from wishlist',
-            content: `Remove ${pkg.title} from your wishlist?`,
-            okText: 'Remove',
-            cancelText: 'Cancel',
-            onOk: async () => {
-                await handleRemove(pkg.wishlistId)
-            }
-        })
     }
 
     return (
@@ -288,7 +279,10 @@ export default function Wishlist() {
                                                         icon={<DeleteOutlined />}
                                                         type='primary'
                                                         className="wishlist-remove-button"
-                                                        onClick={() => confirmRemove(pkg)}
+                                                        onClick={() => {
+                                                            setIsDeleteModalOpen(true)
+                                                            setSelectedWishlistId(pkg.wishlistId)
+                                                        }}
                                                     >
                                                         Remove
                                                     </Button>
@@ -301,6 +295,103 @@ export default function Wishlist() {
                         )}
                     </section>
                 </div>
+
+                {/* DELETE CONFIRMATION */}
+                <Modal
+                    open={isDeleteModalOpen}
+                    className='signup-success-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    style={{ top: 220 }}
+                    onCancel={() => {
+                        setIsDeleteModalOpen(false);
+                    }}
+                >
+                    <div className='signup-success-container'>
+                        <h1 className='signup-success-heading'>Remove Package?</h1>
+                        <p className='signup-success-text'>Are you sure you want to remove this package from your wishlist?</p>
+
+                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                            <Button
+                                type='primary'
+                                className='logout-confirm-btn'
+                                onClick={() => {
+                                    handleRemove(selectedWishlistId);
+                                    setSelectedWishlistId(null);
+                                    setIsDeleteModalOpen(false);
+                                }}
+                            >
+                                Remove
+                            </Button>
+                            <Button
+                                type='primary'
+                                className='logout-cancel-btn'
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+
+                        </div>
+
+                    </div>
+                </Modal>
+
+
+
+
+                {/* PACKAGE HAS BEEN WISHLISTED MODAL */}
+                <Modal
+                    open={isPackageRemovedModalOpen}
+                    className='signup-success-modal'
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    style={{ top: 220 }}
+                    onCancel={() => {
+                        setIsPackageRemovedModalOpen(false);
+                    }}
+                >
+                    <div className='signup-success-container'>
+                        <h1 className='signup-success-heading'>Package Removed!</h1>
+
+                        <div>
+                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        </div>
+
+                        <p className='signup-success-text'>This Package has been removed from your Wishlist.</p>
+
+                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                            <Button
+                                type='primary'
+                                className='logout-confirm-btn'
+                                onClick={() => {
+                                    setIsPackageRemovedModalOpen(false);
+                                }}
+                            >
+                                Continue
+                            </Button>
+                        </div>
+
+                    </div>
+                </Modal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
         </ConfigProvider>
 

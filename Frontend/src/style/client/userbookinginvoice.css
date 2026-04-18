@@ -1,6 +1,11 @@
+.user-invoice-container {
+    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+}
+
+
 .user-invoice-page {
     padding: 24px;
-    max-width: 1200px;
+    max-width: 1300px;
     margin: 0 auto;
 }
 
@@ -130,8 +135,37 @@
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
 }
 
+.user-invoice-checkout-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 210px;
+    height: 35px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+.user-invoice-receipt-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 180px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+}
+
+
 .user-invoice-back-button:hover,
-.user-invoice-form-button:hover {
+.user-invoice-form-button:hover,
+.user-invoice-checkout-button:hover,
+.user-invoice-receipt-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
 }

@@ -659,7 +659,6 @@ export default function QuotationsPaymentProcess() {
                         </div>
                     )}
 
-
                     <Space style={{ marginLeft: "auto" }}>
                         <Button
                             type='primary'

@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useQuotationBooking } from '../../context/BookingQuotationContext';
 import apiFetch from '../../config/fetchConfig';
+import '../../style/client/successfulpaymentpage.css';
 
 
 export default function SuccessfulBooking() {
@@ -83,8 +84,8 @@ export default function SuccessfulBooking() {
                         Redirecting to home in <strong>{countdown}</strong> seconds...
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-                        <Button onClick={() => navigate('/user-bookings')}>View Bookings</Button>
-                        <Button type="primary" onClick={() => navigate('/home')}>Go to Home</Button>
+                        <Button className='successpayment-button' type='primary' onClick={() => navigate('/user-bookings')}>View Bookings</Button>
+                        <Button className='successpayment-button' type='primary' onClick={() => navigate('/home')}>Go to Home</Button>
                     </div>
                 </div>
             </div>

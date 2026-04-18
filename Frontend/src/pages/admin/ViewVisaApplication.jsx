@@ -431,10 +431,10 @@ export default function ViewVisaApplication() {
                                 {/* DFA APPROVE OR REJECT OPTION WHEN STATUS IS PROCESSING BY DFA */}
                                 {statusText && String(statusText).toLowerCase() === "processing by embassy" && (
                                     <Card title="Embassy Processing Actions" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                                        <Button type="primary" onClick={handleEmbassyApproved} className="viewpassportapplication-dfa-processing-button">
+                                        <Button type="primary" onClick={handleEmbassyApproved} className="viewpassportapplication-dfa-processing-approve-button">
                                             Embassy Approved
                                         </Button>
-                                        <Button type="primary" onClick={handleEmbassyRejected} className="viewpassportapplication-passport-released-button" style={{ marginLeft: 8, backgroundColor: "#ff4d4f", borderColor: "#ff4d4f" }}>
+                                        <Button type="primary" onClick={handleEmbassyRejected} className="viewpassportapplication-dfa-processing-reject-button" style={{ marginLeft: 8 }}>
                                             Embassy Rejected
                                         </Button>
                                     </Card>

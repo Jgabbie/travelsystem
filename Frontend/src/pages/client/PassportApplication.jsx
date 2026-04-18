@@ -825,6 +825,7 @@ export default function PassportApplication() {
 
                                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
                                                     <Button
+                                                        className='passport-submitdate'
                                                         type="primary"
                                                         onClick={handleConfirmSuggested}
                                                         loading={confirmingSuggested}

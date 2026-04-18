@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty, Button, Image, Modal } from 'antd'
+import { FacebookFilled, InstagramFilled } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
 import apiFetch from '../../config/fetchConfig'
@@ -168,7 +169,7 @@ export default function DestinationsPackages() {
                 }
             }}
         >
-            <div>
+            <div className='destinations-container'>
                 <div className="destinations-hero-section">
                     <div className="destinations-hero-overlay"></div>
                     <div className="destinations-hero-content">
@@ -422,6 +423,49 @@ export default function DestinationsPackages() {
                             </Row>
                         )}
                     </section>
+                </div>
+
+                <div style={{ paddingTop: '10px', marginTop: '20px' }}>
+                    <div className='landingpage-footer'>
+                        <div className='footer-section'>
+
+                            <div className='footer-section-top'>
+                                <div className='footer-section-logo'>
+                                    <h2 className='footer-header'>M&RC Travel and Tours</h2>
+                                    <p className='footer-text'>Discover affordable vacation travel and tours. Book your dream activities and start exploring the world!</p>
+
+                                </div>
+
+                                <div className='footer-section-address'>
+                                    <h2 className='footer-header'>Our Address</h2>
+                                    <p className='footer-text'>2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1 , Brgy. San Antonio, Parañaque, Philippines, 1715</p>
+                                </div>
+
+                                <div className='footer-section-hours'>
+                                    <h2 className='footer-header'>Our Hours</h2>
+                                    <p className='footer-text'>Monday - Saturday: 9:00 AM - 6:00 PM</p>
+                                </div>
+
+                                <div className='footer-section-socials'>
+                                    <h2 className='footer-header'>Our Socials</h2>
+                                    <div className='footer-section-socials-icons'>
+                                        <FacebookFilled className='socials-icon' onClick={() => window.open('https://www.facebook.com/mrctravelandtour', '_blank')} />
+                                        <p className='footer-text'>M&RC Travel and Tours</p>
+                                    </div>
+
+                                    <div className='footer-section-socials-icons'>
+                                        <InstagramFilled className='socials-icon' onClick={() => window.open('https://www.instagram.com/mrc_travelandtours?fbclid=IwY2xjawQVIU5leHRuA2FlbQIxMABicmlkETE1M0YwaFZ6SW1EQ0xTZnNrc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHgrnAZz5frwKYlnHCi-Txow7AV3kwbYXwWp0W7XV-_BZcoANgGr7hUQA3Eq6_aem_VyUBdOcsD0LsgGhYaEtNog', '_blank')} />
+                                        <p className='footer-text'>@mrc_travel_tours</p>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <hr className='footer-divider' />
+                            <p className='footer-bottom-text'>© 2026 M&RC Travel and Tours. All rights reserved.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>

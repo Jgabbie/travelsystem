@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined } from '@ant-design/icons';
+import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin } from 'antd';
+import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
@@ -12,6 +12,9 @@ export default function ProfilePage() {
     const [editing, setEditing] = useState(false)
     const [saving, setSaving] = useState(false)
     const [profileImage, setProfileImage] = useState('')
+    const [isUserProfileEdited, setIsUserProfileEdited] = useState(false)
+    const [isUserPreferencesEdited, setIsUserPreferencesEdited] = useState(false)
+
     const fileInputRef = useRef(null)
     const [error, setError] = useState({
         firstname: '',
@@ -72,6 +75,7 @@ export default function ProfilePage() {
             }, { withCredentials: true });
 
             setEditingPreferences(false);
+            setIsUserPreferencesEdited(true);
             message.success('Preferences saved successfully!');
         } catch (error) {
             console.error('Error saving preferences:', error);
@@ -143,131 +147,144 @@ export default function ProfilePage() {
     }
     // Fetch user data on component moun
 
-    useEffect(() => {
-        const fetchPackageTags = async () => {
-            try {
-                const response = await apiFetch.get('/package/get-packages-for-users');
-                const unique = new Set();
-                (response || []).forEach((pkg) => {
-                    pkg.packageTags?.forEach((tag) => unique.add(tag));
+
+    const fetchPackageTags = async () => {
+        try {
+            const response = await apiFetch.get('/package/get-packages-for-users');
+            const unique = new Set();
+            (response || []).forEach((pkg) => {
+                pkg.packageTags?.forEach((tag) => unique.add(tag));
+            });
+            setMoodOptions(Array.from(unique));
+        } catch (error) {
+            setMoodOptions([]);
+        }
+    };
+
+    const fetchPreferences = async () => {
+        try {
+            const response = await apiFetch.get("/preferences/me", { withCredentials: true });
+            if (response?.preferrences) {
+                const data = response.preferrences;
+                setPreferences({
+                    moods: data.moods || [],
+                    tours: data.tours || []
                 });
-                setMoodOptions(Array.from(unique));
-            } catch (error) {
-                setMoodOptions([]);
+
+                console.log("Fetched preferences:", data);
+                console.log("Set preferences state:", preferences);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching preferences:', error);
+            setPreferences({ moods: [], tours: [] });
+        }
+    };
 
-        const fetchPreferences = async () => {
-            try {
-                const response = await apiFetch.get("/preferences/me", { withCredentials: true });
-                if (response?.preferrences) {
-                    const data = response.preferrences;
-                    setPreferences({
-                        moods: data.moods || [],
-                        tours: data.tours || []
-                    });
+    const fetchUserData = async () => {
+        try {
+            const response = await apiFetch.get('/user/data', {
+                withCredentials: true
+            })
 
-                    console.log("Fetched preferences:", data);
-                    console.log("Set preferences state:", preferences);
-                }
-            } catch (error) {
-                console.error('Error fetching preferences:', error);
-                setPreferences({ moods: [], tours: [] });
-            }
-        };
-
-        const fetchUserData = async () => {
-            try {
-                const response = await apiFetch.get('/user/data', {
-                    withCredentials: true
+            if (response?.userData) {
+                const data = response
+                setUserData(data.userData)
+                setProfileImage(
+                    data.userData?.profileImageUrl ||
+                    data.userData?.profileImage ||
+                    data.userData?.avatarUrl ||
+                    ''
+                )
+                setValues({
+                    username: data.userData.username,
+                    firstname: data.userData.firstname,
+                    lastname: data.userData.lastname,
+                    email: data.userData.email,
+                    phone: data.userData.phone,
+                    homeAddress: data.userData.homeAddress || '',
+                    gender: data.userData.gender || '',
+                    birthdate: data.userData.birthdate || '',
+                    nationality: data.userData.nationality || ''
                 })
-
-                if (response?.userData) {
-                    const data = response
-                    setUserData(data.userData)
-                    setProfileImage(
-                        data.userData?.profileImageUrl ||
-                        data.userData?.profileImage ||
-                        data.userData?.avatarUrl ||
-                        ''
-                    )
-                    setValues({
-                        username: data.userData.username,
-                        firstname: data.userData.firstname,
-                        lastname: data.userData.lastname,
-                        email: data.userData.email,
-                        phone: data.userData.phone,
-                        homeAddress: data.userData.homeAddress || '',
-                        gender: data.userData.gender || '',
-                        birthdate: data.userData.birthdate || '',
-                        nationality: data.userData.nationality || ''
-                    })
-                } else if (response?.status === 401) {
-                    message.error('Please login to view your profile')
-                } else {
-                    message.error('Failed to fetch user data')
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error)
-                message.error('Error fetching profile')
+            } else if (response?.status === 401) {
+                message.error('Please login to view your profile')
+            } else {
+                message.error('Failed to fetch user data')
             }
+        } catch (error) {
+            console.error('Error fetching user data:', error)
+            message.error('Error fetching profile')
         }
+    }
 
-        const fetchRecentBookings = async () => {
+    const fetchRecentBookings = async () => {
+        try {
+            const response = await apiFetch.get('/booking/my-bookings')
+            const bookings = response.map((b) => ({
+                _id: b._id,
+                key: b._id,
+                ref: b.reference || b._id,
+                packageName: b.packageId?.packageName || 'Tour Package',
+                packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
+                travelDate: b.travelDate
+                    ? dayjs(
+                        typeof b.travelDate === 'string'
+                            ? b.travelDate.split(' - ')[0]
+                            : b.travelDate.startDate || b.travelDate.endDate
+                    ).format('MMM D, YYYY')
+                    : 'N/A',
+                bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
+                travelersCount: b.travelers || {},
+                status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
+            }))
+
+            console.log('Fetched bookings:', bookings)
+
+            setRecentBookings(bookings)
+        } catch (error) {
+            setRecentBookings([])
+        }
+    }
+
+    const fetchRecentReviews = async () => {
+        try {
+            const response = await apiFetch.get('/rating/my-ratings')
+            const reviews = response.map((r) => ({
+                key: r._id,
+                packageName: r.packageId?.packageName || 'Untitled Review',
+                rating: r.rating || 0,
+                date: dayjs(r.createdAt).format('MMM D, YYYY'),
+                review: r.review
+            }))
+
+            setRecentReviews(reviews)
+        } catch (error) {
+            setRecentReviews([])
+        }
+    }
+
+    useEffect(() => {
+        const init = async () => {
             try {
-                const response = await apiFetch.get('/booking/my-bookings')
-                const bookings = response.map((b) => ({
-                    _id: b._id,
-                    key: b._id,
-                    ref: b.reference || b._id,
-                    packageName: b.packageId?.packageName || 'Tour Package',
-                    packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
-                    travelDate: b.travelDate
-                        ? dayjs(
-                            typeof b.travelDate === 'string'
-                                ? b.travelDate.split(' - ')[0]
-                                : b.travelDate.startDate || b.travelDate.endDate
-                        ).format('MMM D, YYYY')
-                        : 'N/A',
-                    bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
-                    travelersCount: b.travelers || {},
-                    status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
-                }))
+                setIsLoading(true);
 
-                console.log('Fetched bookings:', bookings)
+                await Promise.all([
+                    fetchPackageTags(),
+                    fetchUserData(),
+                    fetchRecentBookings(),
+                    fetchRecentReviews(),
+                    fetchPreferences()
+                ]);
 
-                setRecentBookings(bookings)
             } catch (error) {
-                setRecentBookings([])
+                console.error(error);
+            } finally {
+                setIsLoading(false);
             }
-        }
+        };
 
-        const fetchRecentReviews = async () => {
-            try {
-                const response = await apiFetch.get('/rating/my-ratings')
-                const reviews = response.map((r) => ({
-                    key: r._id,
-                    packageName: r.packageId?.packageName || 'Untitled Review',
-                    rating: r.rating || 0,
-                    date: dayjs(r.createdAt).format('MMM D, YYYY'),
-                    review: r.review
-                }))
-
-                setRecentReviews(reviews)
-            } catch (error) {
-                setRecentReviews([])
-            }
-        }
-
-        fetchPackageTags();
-        fetchUserData();
-        fetchRecentBookings();
-        fetchRecentReviews();
-        fetchPreferences();
-    }, [])
-
-
-
+        init();
+    }, []);
 
     const handleEdit = () => {
         setEditing(true)
@@ -393,6 +410,7 @@ export default function ProfilePage() {
                 nationality: data.userData?.nationality || ''
             }))
             setEditing(false)
+            setIsUserProfileEdited(true);
             message.success('Profile updated successfully!')
         } catch (error) {
             console.error('Error updating profile:', error)
@@ -411,437 +429,520 @@ export default function ProfilePage() {
                 }
             }}
         >
-            <div className="profile-page" >
 
-                {/* profile */}
-                <div className="profile-container" style={{ marginBottom: 40 }}>
-                    <div className="profile-content">
-                        <Card
-                            className="profile-card"
-                            title={
-                                <div className="profile-card-header">
-                                    <h2>My Profile</h2>
-                                    {!editing && (
-                                        <Button
-                                            type="primary"
-                                            className="profile-action-button"
-                                            icon={<EditOutlined />}
-                                            onClick={handleEdit}
-                                        >
-                                            Edit Profile
-                                        </Button>
+
+            {isLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                    <Spin size="large" description="Loading Profile..." />
+                </div>
+            ) : (
+                <div className="profile-page" >
+
+                    {/* profile */}
+                    <div className="profile-container" style={{ marginBottom: 40 }}>
+                        <div className="profile-content">
+                            <Card
+                                className="profile-card"
+                                title={
+                                    <div className="profile-card-header">
+                                        <h2>My Profile</h2>
+                                        {!editing && (
+                                            <Button
+                                                type="primary"
+                                                className="profile-action-button"
+                                                icon={<EditOutlined />}
+                                                onClick={handleEdit}
+                                            >
+                                                Edit Profile
+                                            </Button>
+                                        )}
+                                    </div>
+                                }
+                            >
+
+                                <div className="profile-avatar-section">
+                                    <div className="profile-avatar">
+                                        {profileImage ? (
+                                            <img src={profileImage} alt="Profile" />
+                                        ) : (
+                                            <div className="profile-avatar-placeholder">{getInitials()}</div>
+                                        )}
+                                    </div>
+                                    {editing && (
+                                        <>
+                                            <input
+                                                ref={fileInputRef}
+                                                className="profile-avatar-input"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                            />
+                                            <Button
+                                                type="primary"
+                                                icon={<FileImageOutlined />}
+                                                className="profile-action-button"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                Change Photo
+                                            </Button>
+                                            <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+                                        </>
                                     )}
                                 </div>
-                            }
-                        >
 
-                            <div className="profile-avatar-section">
-                                <div className="profile-avatar">
-                                    {profileImage ? (
-                                        <img src={profileImage} alt="Profile" />
-                                    ) : (
-                                        <div className="profile-avatar-placeholder">{getInitials()}</div>
-                                    )}
-                                </div>
-                                {editing && (
-                                    <>
-                                        <input
-                                            ref={fileInputRef}
-                                            className="profile-avatar-input"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                        />
-                                        <Button
-                                            type="primary"
-                                            icon={<FileImageOutlined />}
-                                            className="profile-action-button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            Change Photo
-                                        </Button>
-                                        <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="profile-fields">
-                                <div className="profile-field">
-                                    <label className="profile-label">Username</label>
-                                    <Input
-                                        placeholder="Username"
-                                        value={values.username}
-                                        disabled
-                                    />
-                                </div>
-
-                                {userData?.role && (
+                                <div className="profile-fields">
                                     <div className="profile-field">
-                                        <label className="profile-label">Role</label>
-                                        <Input value={userData.role} disabled />
+                                        <label className="profile-label">Username</label>
+                                        <Input
+                                            placeholder="Username"
+                                            value={values.username}
+                                            disabled
+                                        />
+                                    </div>
+
+                                    {userData?.role && (
+                                        <div className="profile-field">
+                                            <label className="profile-label">Role</label>
+                                            <Input value={userData.role} disabled />
+                                        </div>
+                                    )}
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">First Name</label>
+                                        <Input
+                                            placeholder="Enter your first name"
+                                            allowClear
+                                            status={error.firstname ? "error" : ""}
+                                            value={values.firstname}
+                                            disabled={!editing}
+                                            onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                            onKeyDown={(e) => {
+                                                const value = e.target.value;
+                                                if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                                if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+
+                                                if (
+                                                    !/^[A-Za-z ]$/.test(e.key) &&
+                                                    e.key !== "Backspace" &&
+                                                    e.key !== "ArrowLeft" &&
+                                                    e.key !== "ArrowRight"
+                                                ) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
+                                        />
+                                        {error.firstname && (
+                                            <p className="profile-error-message">{error.firstname}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">Last Name</label>
+                                        <Input
+                                            placeholder="Enter your last name"
+                                            allowClear
+                                            status={error.lastname ? "error" : ""}
+                                            value={values.lastname}
+                                            disabled={!editing}
+                                            onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                            onKeyDown={(e) => {
+                                                const value = e.target.value;
+                                                if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                                if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                                if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                                if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                if (
+                                                    !/^[A-Za-z -]$/.test(e.key) &&
+                                                    e.key !== "Backspace" &&
+                                                    e.key !== "ArrowLeft" &&
+                                                    e.key !== "ArrowRight"
+                                                ) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
+                                        />
+                                        {error.lastname && (
+                                            <p className="profile-error-message">{error.lastname}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">Email Address</label>
+                                        <Input
+                                            placeholder="Enter your email"
+                                            type="email"
+                                            allowClear
+                                            status={error.email ? "error" : ""}
+                                            value={values.email}
+                                            disabled={!editing}
+                                            onChange={(e) => valueHandler('email', e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === " " && e.key !== "Backspace") {
+                                                    e.preventDefault()
+                                                }
+                                            }}
+                                        />
+                                        {error.email && (
+                                            <p className="profile-error-message">{error.email}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">Phone Number</label>
+                                        <Input
+                                            placeholder="Enter your phone number"
+                                            allowClear
+                                            addonBefore="+63"
+                                            status={error.phone ? "error" : ""}
+                                            value={values.phone}
+                                            disabled={!editing}
+                                            onChange={(e) => {
+                                                let value = e.target.value.replace(/\D/g, "");
+
+                                                let formatted = "";
+                                                if (value.length > 0) formatted += value.slice(0, 3);
+                                                if (value.length >= 4) formatted += " " + value.slice(3, 6);
+                                                if (value.length >= 7) formatted += " " + value.slice(6, 10);
+
+                                                valueHandler("phone", formatted)
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                    e.preventDefault()
+                                                }
+                                            }}
+                                        />
+                                        {error.phone && (
+                                            <p className="profile-error-message">{error.phone}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">Home Address</label>
+                                        <Input
+                                            placeholder="Enter your home address"
+                                            allowClear
+                                            value={values.homeAddress}
+                                            disabled={!editing}
+                                            onChange={(e) => valueHandler('homeAddress', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">Nationality</label>
+                                        <Input
+                                            placeholder="Enter your nationality"
+                                            allowClear
+                                            value={values.nationality}
+                                            disabled={!editing}
+                                            onChange={(e) => valueHandler('nationality', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">Gender</label>
+                                        <Select
+                                            placeholder="Select gender"
+                                            value={values.gender || undefined}
+                                            disabled={!editing}
+                                            onChange={(value) => valueHandler('gender', value || '')}
+                                            options={[
+                                                { value: 'Male', label: 'Male' },
+                                                { value: 'Female', label: 'Female' },
+                                                { value: 'Other', label: 'Other' },
+                                                { value: 'Prefer not to say', label: 'Prefer not to say' }
+                                            ]}
+                                            allowClear
+                                        />
+                                    </div>
+
+                                    <div className="profile-field">
+                                        <label className="profile-label">Birthdate</label>
+                                        <DatePicker
+                                            placeholder="Select birthdate"
+                                            value={values.birthdate ? dayjs(values.birthdate) : null}
+                                            disabled={!editing}
+                                            onChange={(date) =>
+                                                valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
+                                            }
+                                            format="YYYY-MM-DD"
+                                            allowClear
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+
+
+
+
+                                </div>
+
+                                {userData?.isAccountVerified && (
+                                    <div className="verification-status">
+                                        <p>✓ Account Verified</p>
                                     </div>
                                 )}
 
-                                <div className="profile-field">
-                                    <label className="profile-label">First Name</label>
-                                    <Input
-                                        placeholder="Enter your first name"
-                                        allowClear
-                                        status={error.firstname ? "error" : ""}
-                                        value={values.firstname}
-                                        disabled={!editing}
-                                        onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
-                                        onKeyDown={(e) => {
-                                            const value = e.target.value;
-                                            if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
-                                            if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-
-                                            if (
-                                                !/^[A-Za-z ]$/.test(e.key) &&
-                                                e.key !== "Backspace" &&
-                                                e.key !== "ArrowLeft" &&
-                                                e.key !== "ArrowRight"
-                                            ) {
-                                                e.preventDefault();
-                                            }
-                                        }}
-                                    />
-                                    {error.firstname && (
-                                        <p className="profile-error-message">{error.firstname}</p>
-                                    )}
-                                </div>
-
-                                <div className="profile-field">
-                                    <label className="profile-label">Last Name</label>
-                                    <Input
-                                        placeholder="Enter your last name"
-                                        allowClear
-                                        status={error.lastname ? "error" : ""}
-                                        value={values.lastname}
-                                        disabled={!editing}
-                                        onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
-                                        onKeyDown={(e) => {
-                                            const value = e.target.value;
-                                            if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
-                                            if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-                                            if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
-                                            if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
-                                            if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                            if (
-                                                !/^[A-Za-z -]$/.test(e.key) &&
-                                                e.key !== "Backspace" &&
-                                                e.key !== "ArrowLeft" &&
-                                                e.key !== "ArrowRight"
-                                            ) {
-                                                e.preventDefault();
-                                            }
-                                        }}
-                                    />
-                                    {error.lastname && (
-                                        <p className="profile-error-message">{error.lastname}</p>
-                                    )}
-                                </div>
-
-                                <div className="profile-field">
-                                    <label className="profile-label">Email Address</label>
-                                    <Input
-                                        placeholder="Enter your email"
-                                        type="email"
-                                        allowClear
-                                        status={error.email ? "error" : ""}
-                                        value={values.email}
-                                        disabled={!editing}
-                                        onChange={(e) => valueHandler('email', e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === " " && e.key !== "Backspace") {
-                                                e.preventDefault()
-                                            }
-                                        }}
-                                    />
-                                    {error.email && (
-                                        <p className="profile-error-message">{error.email}</p>
-                                    )}
-                                </div>
-
-                                <div className="profile-field">
-                                    <label className="profile-label">Phone Number</label>
-                                    <Input
-                                        placeholder="Enter your phone number"
-                                        allowClear
-                                        addonBefore="+63"
-                                        status={error.phone ? "error" : ""}
-                                        value={values.phone}
-                                        disabled={!editing}
-                                        onChange={(e) => {
-                                            let value = e.target.value.replace(/\D/g, "");
-
-                                            let formatted = "";
-                                            if (value.length > 0) formatted += value.slice(0, 3);
-                                            if (value.length >= 4) formatted += " " + value.slice(3, 6);
-                                            if (value.length >= 7) formatted += " " + value.slice(6, 10);
-
-                                            valueHandler("phone", formatted)
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                                e.preventDefault()
-                                            }
-                                        }}
-                                    />
-                                    {error.phone && (
-                                        <p className="profile-error-message">{error.phone}</p>
-                                    )}
-                                </div>
-
-                                <div className="profile-field">
-                                    <label className="profile-label">Home Address</label>
-                                    <Input
-                                        placeholder="Enter your home address"
-                                        allowClear
-                                        value={values.homeAddress}
-                                        disabled={!editing}
-                                        onChange={(e) => valueHandler('homeAddress', e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="profile-field">
-                                    <label className="profile-label">Nationality</label>
-                                    <Input
-                                        placeholder="Enter your nationality"
-                                        allowClear
-                                        value={values.nationality}
-                                        disabled={!editing}
-                                        onChange={(e) => valueHandler('nationality', e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="profile-field">
-                                    <label className="profile-label">Gender</label>
-                                    <Select
-                                        placeholder="Select gender"
-                                        value={values.gender || undefined}
-                                        disabled={!editing}
-                                        onChange={(value) => valueHandler('gender', value || '')}
-                                        options={[
-                                            { value: 'Male', label: 'Male' },
-                                            { value: 'Female', label: 'Female' },
-                                            { value: 'Other', label: 'Other' },
-                                            { value: 'Prefer not to say', label: 'Prefer not to say' }
-                                        ]}
-                                        allowClear
-                                    />
-                                </div>
-
-                                <div className="profile-field">
-                                    <label className="profile-label">Birthdate</label>
-                                    <DatePicker
-                                        placeholder="Select birthdate"
-                                        value={values.birthdate ? dayjs(values.birthdate) : null}
-                                        disabled={!editing}
-                                        onChange={(date) =>
-                                            valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
-                                        }
-                                        format="YYYY-MM-DD"
-                                        allowClear
-                                        style={{ width: '100%' }}
-                                    />
-                                </div>
-
-
-
-
-                            </div>
-
-                            {userData?.isAccountVerified && (
-                                <div className="verification-status">
-                                    <p>✓ Account Verified</p>
-                                </div>
-                            )}
-
-                            {editing && (
-                                <Space>
-                                    <Button
-                                        type="primary"
-                                        className="profile-action-button"
-                                        icon={<SaveOutlined />}
-                                        onClick={handleSave}
-                                    >
-                                        Save Changes
-                                    </Button>
-                                    <Button
-                                        type="primary"
-                                        className="profile-cancel-button"
-                                        icon={<CloseOutlined />}
-                                        onClick={handleCancel}
-                                        disabled={saving}
-                                    >
-                                        Cancel
-                                    </Button>
-                                </Space>
-                            )}
-                        </Card>
-
-
-                        <Card
-                            className="profile-card"
-                            title=
-                            {
-                                <div className='profile-card-header'>
-                                    <h2>Preferences</h2>
-                                    <Button
-                                        type="primary"
-                                        onClick={() => setEditingPreferences(true)}
-                                        icon={<EditOutlined />}
-                                        disabled={editingPreferences}
-                                        className='profile-action-button'
-                                    >
-                                        Edit Preferences
-                                    </Button>
-                                </div>
-
-                            }
-                            style={{ marginTop: '20px' }}
-                        >
-                            <div className="preference-section">
-
-                                {/* MOODS */}
-                                <div className="preference-block">
-                                    <h3>What are you in the mood for?</h3>
-                                    <p>Choose up to 3</p>
-
-                                    <div className="preference-chip-grid">
-                                        {moodOptions.map((option) => (
-                                            <button
-                                                key={option}
-                                                type="button"
-                                                disabled={!editingPreferences}
-                                                className={
-                                                    preferences.moods.includes(option)
-                                                        ? 'preference-chip is-selected'
-                                                        : 'preference-chip'
-                                                }
-                                                onClick={() => togglePreference('moods', option, 3)}
-                                            >
-                                                {option}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* TOURS */}
-                                <div className="preference-block" style={{ marginTop: '20px' }}>
-                                    <h3>What type of tour do you like?</h3>
-
-                                    <div className="preference-chip-grid">
-                                        {tourOptions.map((option) => (
-                                            <button
-                                                key={option}
-                                                type="button"
-                                                disabled={!editingPreferences}
-                                                className={
-                                                    preferences.tours.includes(option)
-                                                        ? 'preference-chip is-selected'
-                                                        : 'preference-chip'
-                                                }
-                                                onClick={() => togglePreference('tours', option)}
-                                            >
-                                                {option}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-
-                                {editingPreferences && (
-                                    <div style={{ marginTop: '20px' }}>
+                                {editing && (
+                                    <Space>
                                         <Button
                                             type="primary"
-                                            onClick={savePreferences}
-                                            icon={<SaveOutlined />}
                                             className="profile-action-button"
+                                            icon={<SaveOutlined />}
+                                            onClick={handleSave}
                                         >
-                                            Save Preferences
+                                            Save Changes
                                         </Button>
-
                                         <Button
                                             type="primary"
-                                            style={{ marginLeft: '10px' }}
-                                            onClick={() => setEditingPreferences(false)}
-                                            icon={<CloseOutlined />}
                                             className="profile-cancel-button"
+                                            icon={<CloseOutlined />}
+                                            onClick={handleCancel}
+                                            disabled={saving}
                                         >
                                             Cancel
                                         </Button>
+                                    </Space>
+                                )}
+                            </Card>
+
+
+                            <Card
+                                className="profile-card"
+                                title=
+                                {
+                                    <div className='profile-card-header'>
+                                        <h2>Preferences</h2>
+                                        <Button
+                                            type="primary"
+                                            onClick={() => setEditingPreferences(true)}
+                                            icon={<EditOutlined />}
+                                            disabled={editingPreferences}
+                                            className='profile-action-button'
+                                        >
+                                            Edit Preferences
+                                        </Button>
+                                    </div>
+
+                                }
+                                style={{ marginTop: '20px' }}
+                            >
+                                <div className="preference-section">
+
+                                    {/* MOODS */}
+                                    <div className="preference-block">
+                                        <h3>What are you in the mood for?</h3>
+                                        <p>Choose up to 3</p>
+
+                                        <div className="preference-chip-grid">
+                                            {moodOptions.map((option) => (
+                                                <button
+                                                    key={option}
+                                                    type="button"
+                                                    disabled={!editingPreferences}
+                                                    className={
+                                                        preferences.moods.includes(option)
+                                                            ? 'preference-chip is-selected'
+                                                            : 'preference-chip'
+                                                    }
+                                                    onClick={() => togglePreference('moods', option, 3)}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* TOURS */}
+                                    <div className="preference-block" style={{ marginTop: '20px' }}>
+                                        <h3>What type of tour do you like?</h3>
+
+                                        <div className="preference-chip-grid">
+                                            {tourOptions.map((option) => (
+                                                <button
+                                                    key={option}
+                                                    type="button"
+                                                    disabled={!editingPreferences}
+                                                    className={
+                                                        preferences.tours.includes(option)
+                                                            ? 'preference-chip is-selected'
+                                                            : 'preference-chip'
+                                                    }
+                                                    onClick={() => togglePreference('tours', option)}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+
+                                    {editingPreferences && (
+                                        <div style={{ marginTop: '20px' }}>
+                                            <Button
+                                                type="primary"
+                                                onClick={savePreferences}
+                                                icon={<SaveOutlined />}
+                                                className="profile-action-button"
+                                            >
+                                                Save Preferences
+                                            </Button>
+
+                                            <Button
+                                                type="primary"
+                                                style={{ marginLeft: '10px' }}
+                                                onClick={() => setEditingPreferences(false)}
+                                                icon={<CloseOutlined />}
+                                                className="profile-cancel-button"
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                </div>
+                            </Card>
+
+                        </div>
+
+                        {/* recent bookings and reviews */}
+                        <div className="profile-side-column">
+                            <Card
+                                className="profile-side-card"
+                                title={<h3>My Recent Reviews</h3>}
+                            >
+                                {recentReviews.length === 0 ? (
+                                    <p className="profile-empty-text">No reviews yet.</p>
+                                ) : (
+                                    <div className="profile-review-list">
+                                        {recentReviews.slice(0, 3).map((review, index) => (
+                                            <div className="profile-review-item" key={review?._id || index}>
+                                                <div>
+                                                    <p className="profile-review-title">{review?.packageName || 'Untitled Review'}</p>
+                                                    <p className="profile-review-meta">{review?.date || 'Recently'}</p>
+                                                    <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
+                                                </div>
+                                                <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
+                            </Card>
 
-                            </div>
-                        </Card>
+                            <Card
+                                className="profile-side-card"
+                                title={<h3>My Recent Bookings</h3>}
+                            >
+                                {recentBookings.length === 0 ? (
+                                    <p className="profile-empty-text">No bookings yet.</p>
+                                ) : (
+                                    <div className="profile-booking-list">
+                                        {recentBookings.slice(0, 3).map((booking, index) => (
+                                            <div className="profile-booking-item" key={booking?._id || index}>
+                                                <div className="profile-booking-header">
+                                                    <div>
+                                                        <p className="profile-booking-title">{booking?.packageName || 'Untitled Booking'}</p>
+                                                        <p className="profile-booking-meta">{booking?.bookingDate || 'Recently'}</p>
+                                                    </div>
 
-                    </div>
+                                                    <Tag color={
+                                                        booking?.status === 'Fully Paid' ? 'green' :
+                                                            booking?.status === 'Cancelled' ? 'blue' :
+                                                                booking?.status === 'Not Paid' ? 'red' :
+                                                                    'orange'
+                                                    }>
+                                                        {booking?.status || 'Pending'}
+                                                    </Tag>
 
-
-
-
-                    {/* recent bookings and reviews */}
-                    <div className="profile-side-column">
-                        <Card
-                            className="profile-side-card"
-                            title={<h3>My Recent Reviews</h3>}
-                        >
-                            {recentReviews.length === 0 ? (
-                                <p className="profile-empty-text">No reviews yet.</p>
-                            ) : (
-                                <div className="profile-review-list">
-                                    {recentReviews.slice(0, 3).map((review, index) => (
-                                        <div className="profile-review-item" key={review?._id || index}>
-                                            <div>
-                                                <p className="profile-review-title">{review?.packageName || 'Untitled Review'}</p>
-                                                <p className="profile-review-meta">{review?.date || 'Recently'}</p>
-                                                <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
-                                            </div>
-                                            <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Card>
-
-                        <Card
-                            className="profile-side-card"
-                            title={<h3>My Recent Bookings</h3>}
-                        >
-                            {recentBookings.length === 0 ? (
-                                <p className="profile-empty-text">No bookings yet.</p>
-                            ) : (
-                                <div className="profile-booking-list">
-                                    {recentBookings.slice(0, 3).map((booking, index) => (
-                                        <div className="profile-booking-item" key={booking?._id || index}>
-                                            <div className="profile-booking-header">
-                                                <div>
-                                                    <p className="profile-booking-title">{booking?.packageName || 'Untitled Booking'}</p>
-                                                    <p className="profile-booking-meta">{booking?.bookingDate || 'Recently'}</p>
                                                 </div>
-
-                                                <Tag color={
-                                                    booking?.status === 'Fully Paid' ? 'green' :
-                                                        booking?.status === 'Cancelled' ? 'blue' :
-                                                            booking?.status === 'Not Paid' ? 'red' :
-                                                                'orange'
-                                                }>
-                                                    {booking?.status || 'Pending'}
-                                                </Tag>
-
+                                                <p className="profile-booking-details">Reference No. {booking?.ref || 'BK-00000'} • {booking?.packageType}</p>
                                             </div>
-                                            <p className="profile-booking-details">Reference No. {booking?.ref || 'BK-00000'} • {booking?.packageType}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </Card>
+                                        ))}
+                                    </div>
+                                )}
+                            </Card>
+                        </div>
                     </div>
-                </div>
-            </div >
+
+                    {/* USER PROFILE HAS BEEN EDITED MODAL */}
+                    <Modal
+                        open={isUserProfileEdited}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsUserProfileEdited(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>User Profile Edited Successfully!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>Your user profile has been edited.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsUserProfileEdited(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+                    {/* USER PREFERENCES HAS BEEN EDITED MODAL */}
+                    <Modal
+                        open={isUserPreferencesEdited}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setIsUserPreferencesEdited(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>User Preferences Edited Successfully!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>Your user preferences has been edited.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsUserPreferencesEdited(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+
+
+
+                </div >
+            )}
         </ConfigProvider>
     )
 }

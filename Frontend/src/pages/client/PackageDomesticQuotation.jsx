@@ -671,7 +671,7 @@ export default function PackageDomesticQuotation() {
                                     className='logout-confirm-btn'
                                     onClick={onCancelModal}
                                 >
-                                    Cancel
+                                    Continue
                                 </Button>
 
                             </div>

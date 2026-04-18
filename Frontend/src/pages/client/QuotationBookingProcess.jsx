@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Button, message, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker } from 'antd'
+import { Button, message, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker, Space } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useQuotationBooking } from '../../context/BookingQuotationContext';
 import apiFetch from '../../config/fetchConfig';
@@ -40,6 +41,7 @@ export default function QuotationBookingProcess() {
     const pdfStepRef = useRef(null);
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
+    const [isGoBackModalOpen, setIsGoBackModalOpen] = useState(false);
 
     //CLOSE MODAL
     const onCancelModal = () => {
@@ -630,6 +632,20 @@ export default function QuotationBookingProcess() {
         >
             <div className='bookingprocess-container'>
 
+                <Space style={{ marginLeft: "auto" }}>
+                    <Button
+                        type='primary'
+                        className='booking-back-button'
+                        onClick={() => {
+                            setIsGoBackModalOpen(true)
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', marginLeft: '40px' }}
+                    >
+                        <ArrowLeftOutlined />
+                        Back
+                    </Button>
+                </Space>
+
                 {/* BOOKING SUMMARY SECTION */}
                 <div className="booking-summary-container booking-section">
                     <div className="booking-section-header">
@@ -1084,6 +1100,7 @@ export default function QuotationBookingProcess() {
                         <div className='booking-form-button-controls'>
                             {currentStep > 0 && (
                                 <Button
+                                    type='primary'
                                     className='booking-form-button'
                                     size="large"
                                     onClick={prev}
@@ -1095,6 +1112,7 @@ export default function QuotationBookingProcess() {
 
                             {currentStep < 3 ? (
                                 <Button
+                                    type='primary'
                                     className='booking-form-button'
                                     size="large"
                                     onClick={next}
@@ -1104,6 +1122,7 @@ export default function QuotationBookingProcess() {
                                 </Button>
                             ) : (
                                 <Button
+                                    type='primary'
                                     className='booking-form-button-proceed'
                                     size="large"
                                     onClick={() => setIsProceedModalOpen(true)}
@@ -1118,6 +1137,8 @@ export default function QuotationBookingProcess() {
 
             </div >
 
+
+            {/* PROCEED MODAL */}
             <Modal
                 open={isProceedModalOpen}
                 className='signup-success-modal'
@@ -1141,12 +1162,11 @@ export default function QuotationBookingProcess() {
                     <p className='signup-success-text' style={{ color: "#992A46", fontWeight: "500" }}>Note: Once you click the "Proceed" button, your booking will be submitted and cannot be modified. Please review all details carefully before proceeding.</p>
                     <p className='signup-success-text' style={{ color: "#992A46", fontWeight: "500" }}>If you have any questions or need further assistance, please contact our customer support team before proceeding.</p>
 
-
-
                 </div>
 
                 <div className='signup-actions'>
                     <Button
+                        type='primary'
                         id='signup-success-button'
                         onClick={handleFinalSubmit}
                     >
@@ -1154,6 +1174,7 @@ export default function QuotationBookingProcess() {
                     </Button>
 
                     <Button
+                        type='primary'
                         id='signup-success-button-cancel'
                         onClick={onCancelModal}
                     >
@@ -1161,6 +1182,43 @@ export default function QuotationBookingProcess() {
                     </Button>
                 </div>
             </Modal>
+
+
+
+
+            {/* GO BACK MODAL */}
+            <Modal
+                open={isGoBackModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                onCancel={() => { setIsGoBackModalOpen(false) }}
+                style={{ top: 210 }}
+                width={600}
+            >
+                <div className='signup-success-container' style={{ width: '100%' }}>
+                    <h1 className='signup-success-heading'>Go Back?</h1>
+                    <p className='signup-success-text'>
+                        Are you sure you want to go back? If you go back, all the information you have entered in the booking form will reset and you will have to start the booking process from the beginning.
+                    </p>
+
+                </div>
+
+                <div className='signup-actions'>
+                    <Button
+                        type='primary'
+                        id='signup-success-button'
+                        onClick={() => {
+                            setIsGoBackModalOpen(false)
+                            setQuotationBookingData(null)
+                            navigate(-1)
+                        }}
+                    >
+                        Go Back
+                    </Button>
+                </div>
+            </Modal>
+
         </ConfigProvider >
     )
 }

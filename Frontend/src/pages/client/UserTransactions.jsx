@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal, Image } from 'antd'
 import { SearchOutlined, EyeOutlined, FileOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import '../../style/client/usertransactions.css'
 import '../../style/admin/transaction.css'
 import apiFetch from '../../config/fetchConfig'
 
 export default function UserTransactions() {
+    const receiptRef = useRef();
     const [transactions, setTransactions] = useState([])
     const [loading, setLoading] = useState(false)
 
@@ -144,6 +147,52 @@ export default function UserTransactions() {
         }
     ]
 
+    const handleDownloadPDF = async () => {
+        const element = receiptRef.current;
+        if (!element) {
+            message.error("Receipt content not found!");
+            return;
+        }
+
+        try {
+            message.loading({ content: "Generating PDF...", key: "pdf" });
+
+            const canvas = await html2canvas(element, {
+                scale: 3, // Higher scale for crisp text
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: "#ffffff", // Ensures background isn't transparent/black
+                logging: false,
+                // This tells html2canvas to wait for images to load
+                onclone: (clonedDoc) => {
+                    // You can manually adjust styles of the cloned element here if needed
+                    const clonedElement = clonedDoc.querySelector(".receipt-container");
+                    if (clonedElement) {
+                        clonedElement.style.padding = "20px";
+                    }
+                }
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4',
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
+
+            message.success({ content: "Downloaded successfully!", key: "pdf" });
+        } catch (error) {
+            console.error("PDF Generation Error:", error);
+            message.error({ content: "Failed to generate PDF.", key: "pdf" });
+        }
+    };
+
     return (
         <ConfigProvider
             theme={{
@@ -211,10 +260,10 @@ export default function UserTransactions() {
                 footer={null}
                 className="transaction-view-modal"
                 width={720}
-                style={{ top: 60 }}
+                style={{ top: 35 }}
             >
                 {selectedTransaction && (
-                    <div className="receipt-container">
+                    <div className="receipt-container" ref={receiptRef}>
                         <div className="receipt-header">
                             <div className="company-info">
                                 <div className="header-flex-container">
@@ -291,19 +340,29 @@ export default function UserTransactions() {
                         </div>
                     </div>
                 )}
+
+                <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+                    <Button
+                        className='user-transactions-viewproof-button'
+                        type="primary"
+                        onClick={handleDownloadPDF}
+                    >
+                        Download Receipt
+                    </Button>
+                </div>
             </Modal>
 
 
             <Modal
+                title={`Proof of Payment - ${selectedTransaction?.reference || ""}`}
                 open={isProofModalOpen}
                 onCancel={() => setIsProofModalOpen(false)}
                 className="transaction-view-modal"
                 width={720}
-                style={{ top: 60 }}
+                style={{ top: 150 }}
                 footer={
                     selectedTransaction && selectedTransaction.proofImage ? (
                         <Space>
-                            <Button onClick={() => setIsProofModalOpen(false)}>Close</Button>
                             <Button
                                 className='user-transactions-viewproof-button'
                                 type="primary"
@@ -335,19 +394,6 @@ export default function UserTransactions() {
             >
                 {selectedTransaction ? (
                     <div className="receipt-container">
-                        <div className="receipt-header" style={{ marginBottom: 16 }}>
-                            <div className="company-info">
-                                <div className="header-flex-container">
-                                    <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
-                                    <div className="address-details">
-                                        <h2 className="brand-name">Proof of Payment</h2>
-                                        <p className="sub-info">Reference: {selectedTransaction.reference}</p>
-                                        <p className="sub-info">Customer: {selectedTransaction.username || 'You'}</p>
-                                        <p className="sub-info">Method: {selectedTransaction.method}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         {selectedTransaction.proofImage ? (
                             <div className="upload-preview-box" style={{ maxHeight: 520 }}>

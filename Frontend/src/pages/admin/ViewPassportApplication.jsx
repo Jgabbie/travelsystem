@@ -419,10 +419,10 @@ export default function ViewPassportApplication() {
                             {/* DFA APPROVE OR REJECT OPTION WHEN STATUS IS PROCESSING BY DFA */}
                             {application.status && application.status.toLowerCase() === "processing by dfa" && (
                                 <Card title="DFA Processing Actions" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                                    <Button type="primary" onClick={handleDFAApproved} className="viewpassportapplication-dfa-processing-button">
+                                    <Button type="primary" onClick={handleDFAApproved} className="viewpassportapplication-dfa-processing-approve-button">
                                         DFA Approved
                                     </Button>
-                                    <Button type="primary" onClick={handleDFARejected} className="viewpassportapplication-passport-released-button" style={{ marginLeft: 8, backgroundColor: "#ff4d4f", borderColor: "#ff4d4f" }}>
+                                    <Button type="primary" onClick={handleDFARejected} className="viewpassportapplication-dfa-processing-reject-button" style={{ marginLeft: 8 }}>
                                         DFA Rejected
                                     </Button>
                                 </Card>

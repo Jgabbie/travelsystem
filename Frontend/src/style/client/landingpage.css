@@ -650,6 +650,15 @@
     color: #305797 !important;
 }
 
+.error-text {
+    color: #ff4d4f;
+    font-size: 12px;
+    font-family: "Roboto", sans-serif;
+    height: 12px;
+    align-self: flex-start;
+    margin-left: 10%;
+}
+
 
 
 /* FOOTER */

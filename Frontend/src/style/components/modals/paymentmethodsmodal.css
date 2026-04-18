@@ -3,12 +3,6 @@
     padding: 24px;
 }
 
-.payment-methods-container {
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
 
 .payment-methods-wrapper {
     display: flex;

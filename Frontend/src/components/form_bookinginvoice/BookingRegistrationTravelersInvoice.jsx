@@ -23,83 +23,62 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
     };
 
     const bookingType = summaryInvoice.bookingType || 'No Booking';
+    console.log('Summary Invoice:', summaryInvoice);
+    console.log('EXPECTED:', totalCount);
+    console.log('ACTUAL:', form.getFieldValue('travelers')?.length);
 
 
     useEffect(() => {
-
-        if (!summaryInvoice) return
-
-        const user = {
-
-            fullName: summaryInvoice.leadFullName,
-            email: summaryInvoice.leadEmail,
-            phone: summaryInvoice.leadContact,
-            homeAddress: summaryInvoice.leadAddress,
-            leadTitle: summaryInvoice.leadTitle,
-            travelers: summaryInvoice.travelers || [],
-        }
-
-        form.setFieldsValue({
-            leadFullName: user.fullName,
-            leadEmail: user.email,
-            leadContact: user.phone,
-            leadAddress: user.homeAddress,
-            leadTitle: user.leadTitle,
-            travelers: user.travelers,
-            travelersSignature: user.fullName,
-        });
-
-        setUserProfile(user);
-    }, [summaryInvoice]);
-
-
-    useEffect(() => {
-        if (!summaryInvoice?.travelers) return;
-
-        form.setFieldsValue({
-            travelers: summaryInvoice.travelers
-        });
-
-    }, [summaryInvoice]);
-
-    useEffect(() => {
-        const travelers = form.getFieldValue('travelers') || [];
+        if (!summaryInvoice) return;
 
         const isSolo = bookingType === 'Solo Booking';
         const isGroup = bookingType === 'Group Booking';
 
-        const updatedTravelers = travelers.map((t) => ({
+        let travelersData = (summaryInvoice.travelers || []).map((t) => ({
             ...t,
-            birthday: t.birthday ? dayjs(t.birthday).format('MMM D, YYYY') : 'N/A',
-            passportExpiry: t.passportExpiry === null || t.passportExpiry === undefined ? 'N/A' : dayjs(t.passportExpiry).format('MMM D, YYYY'),
+            birthday: t.birthday || '',
+            passportExpiry: t.passportExpiry || '',
             passportNo: t.passportNumber || 'N/A',
-
             roomType: isSolo
                 ? 'SINGLE'
                 : (isGroup && t?.roomType === 'SINGLE' ? undefined : t?.roomType)
         }));
 
+        const desiredCount = travelersData.length;
+        const countDiff = desiredCount - travelersData.length;
+
+        if (countDiff > 0) {
+            const extraFields = Array.from({ length: countDiff }, () => ({
+                title: '',
+                firstName: '',
+                lastName: '',
+                roomType: '',
+                birthday: '',
+                age: '',
+                passportNo: '',
+                passportExpiry: ''
+            }));
+            travelersData = [...travelersData, ...extraFields];
+        } else if (countDiff < 0) {
+            travelersData = travelersData.slice(0, desiredCount);
+        }
+
         form.setFieldsValue({
-            travelers: updatedTravelers,
+            leadFullName: summaryInvoice.leadFullName,
+            leadEmail: summaryInvoice.leadEmail,
+            leadContact: summaryInvoice.leadContact,
+            leadAddress: summaryInvoice.leadAddress,
+            leadTitle: summaryInvoice.leadTitle,
+            travelersSignature: summaryInvoice.leadFullName,
             dateOfRegistration: dayjs().format('MMMM DD, YYYY'),
             tourPackageTitle: summaryInvoice.tourPackageTitle || 'N/A',
             tourPackageVia: summaryInvoice.tourPackageVia || 'N/A',
             packageTravelDate: formatTravelDate(summaryInvoice.travelDate),
             travelersDate: dayjs().format('MMMM DD, YYYY'),
+            travelers: travelersData, // Set the array here
         });
 
-        const countDiff = totalCount - updatedTravelers.length;
-        if (countDiff > 0) {
-            form.setFieldsValue({
-                travelers: [...updatedTravelers, ...Array(countDiff).fill({})]
-            });
-        } else if (countDiff < 0) {
-            form.setFieldsValue({
-                travelers: updatedTravelers.slice(0, totalCount)
-            });
-        }
-
-    }, [totalCount, userProfile, form, bookingType]);
+    }, [summaryInvoice, totalCount, form]); // Added form to deps
 
     return (
         <ConfigProvider
@@ -117,10 +96,10 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
                     </div>
 
                     <Form
+                        key={totalCount}
                         form={form}
                         layout="vertical"
                         onValuesChange={onValuesChange}
-                        initialValues={{ travelers: summaryInvoice?.travelers || [] }}
                         validateMessages={{ required: '' }}
                     >
 
@@ -246,6 +225,7 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
                         <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.leadTitle !== currentValues.leadTitle}>
                             {() => {
                                 const value = form.getFieldValue('leadTitle');
+                                const travelers = form.getFieldValue('travelers') || [];
                                 const isInvalid = value && value !== 'MR' && value !== 'MS';
                                 const isEmpty = !value;
 
@@ -309,63 +289,78 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
                                         <th style={{ border: '1px solid #000', borderTop: 'none', padding: '2px', fontSize: '10px' }}>EXPIRY</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <Form.List name="travelers">
-                                        {(fields) => fields.map(({ key, name, ...restField }, index) => (
-                                            <tr key={key} style={{ height: '26px' }}>
-                                                <td style={{ border: '1px solid #000', background: '#fafafa', fontSize: '9px' }}>{index + 1}</td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'title']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
-                                                    </Form.Item>
-                                                </td>
+                                <Form.List name="travelers">
+                                    {(fields) => (
+                                        <tbody>
+                                            {fields.map(({ key, name, ...restField }, index) => (
+                                                <tr key={key} style={{ height: '26px' }}>
+                                                    {/* Row Number */}
+                                                    <td style={{ border: '1px solid #000', background: '#fafafa', fontSize: '9px' }}>
+                                                        {index + 1}
+                                                    </td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'firstName']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: '0 6px', }} readOnly />
-                                                    </Form.Item>
-                                                </td>
+                                                    {/* Title */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'title']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'lastName']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: '0 6px', }} readOnly />
-                                                    </Form.Item>
-                                                </td>
+                                                    {/* First Name */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'firstName']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: '0 6px' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'roomType']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
-                                                    </Form.Item>
-                                                </td>
+                                                    {/* Last Name */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'lastName']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: '0 6px' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'birthday']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
-                                                    </Form.Item>
-                                                </td>
+                                                    {/* Room Type */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'roomType']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'age']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: 0, textAlign: 'center' }} readOnly />
-                                                    </Form.Item>
-                                                </td>
+                                                    {/* Birthday */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'birthday']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'passportNo']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
-                                                    </Form.Item>
-                                                </td>
+                                                    {/* Age */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'age']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: 0, textAlign: 'center' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
 
-                                                <td style={{ border: '1px solid #000' }}>
-                                                    <Form.Item {...restField} name={[name, 'passportExpiry']} noStyle>
-                                                        <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
-                                                    </Form.Item>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </Form.List>
-                                </tbody>
+                                                    {/* Passport No */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'passportNo']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
+
+                                                    {/* Passport Expiry */}
+                                                    <td style={{ border: '1px solid #000' }}>
+                                                        <Form.Item {...restField} name={[name, 'passportExpiry']} noStyle>
+                                                            <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
+                                                        </Form.Item>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    )}
+                                </Form.List>
+
                             </table>
                         </div>
 

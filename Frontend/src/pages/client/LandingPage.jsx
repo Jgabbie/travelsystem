@@ -30,6 +30,7 @@ export default function LandingPage() {
     const [popularPackages, setPopularPackages] = useState([])
     const [domesticPackages, setDomesticPackages] = useState([])
     const [activityTags, setActivityTags] = useState([])
+    const [isSending, setIsSending] = useState(false);
     const [isPopularLoading, setIsPopularLoading] = useState(false)
     const [isDomesticLoading, setIsDomesticLoading] = useState(false)
     const handleActivityChange = (values) => {
@@ -45,6 +46,53 @@ export default function LandingPage() {
         email: '',
         message: '',
     })
+
+    const [contactErrors, setContactErrors] = useState({
+        name: '',
+        email: '',
+        message: '',
+    })
+
+    const validateContact = () => {
+        let errors = {
+            name: '',
+            email: '',
+            message: '',
+        };
+
+        let isValid = true;
+
+        // NAME
+        if (!contactValues.name.trim()) {
+            errors.name = 'Name is required';
+            isValid = false;
+        } else if (contactValues.name.trim().length < 2) {
+            errors.name = 'Name must be at least 2 characters';
+            isValid = false;
+        }
+
+        // EMAIL
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!contactValues.email.trim()) {
+            errors.email = 'Email is required';
+            isValid = false;
+        } else if (!emailRegex.test(contactValues.email)) {
+            errors.email = 'Invalid email format';
+            isValid = false;
+        }
+
+        // MESSAGE
+        if (!contactValues.message.trim()) {
+            errors.message = 'Message is required';
+            isValid = false;
+        } else if (contactValues.message.trim().length < 10) {
+            errors.message = 'Message must be at least 10 characters';
+            isValid = false;
+        }
+
+        setContactErrors(errors);
+        return isValid;
+    };
 
     //SEARCH BAR -------------------------------------------------------------
     const handleSearch = () => {
@@ -87,18 +135,29 @@ export default function LandingPage() {
 
     // SEND MESSAGE ---------------------------------------------------------------------
     const sendMessage = async () => {
+        if (!validateContact()) return;
+
+        setIsSending(true);
+
         try {
-            await apiFetch.post('/email/contact', contactValues)
-            setOpenModalSuccess(true)
+            await apiFetch.post('/email/contact', contactValues);
+            setOpenModalSuccess(true);
             setContactValues({
                 name: '',
                 email: '',
                 message: '',
-            })
+            });
+            setContactErrors({
+                name: '',
+                email: '',
+                message: '',
+            });
         } catch (error) {
-            setOpenModalError(true)
+            setOpenModalError(true);
+        } finally {
+            setIsSending(false);
         }
-    }
+    };
 
     //FETCH PACKAGES
     useEffect(() => {
@@ -628,8 +687,12 @@ export default function LandingPage() {
                                     <Input
                                         placeholder="Your Name"
                                         className='contact-input'
+                                        status={contactErrors.name ? 'error' : ''}
                                         value={contactValues.name}
-                                        onChange={(e) => setContactValues(prev => ({ ...prev, name: e.target.value }))}
+                                        onChange={(e) => {
+                                            setContactValues(prev => ({ ...prev, name: e.target.value }));
+                                            setContactErrors(prev => ({ ...prev, name: '' }));
+                                        }}
                                         onKeyDown={(e) => {
                                             const value = e.target.value
                                             if (e.key === " " && value.length === 0) {
@@ -650,23 +713,33 @@ export default function LandingPage() {
                                             }
                                         }}
                                     />
+                                    {contactErrors.name && <span className="error-text">{contactErrors.name}</span>}
                                     <Input
                                         placeholder="Your Email"
                                         className='contact-input'
+                                        status={contactErrors.email ? 'error' : ''}
                                         value={contactValues.email}
-                                        onChange={(e) => setContactValues(prev => ({ ...prev, email: e.target.value }))}
+                                        onChange={(e) => {
+                                            setContactValues(prev => ({ ...prev, email: e.target.value }))
+                                            setContactErrors(prev => ({ ...prev, email: '' }))
+                                        }}
                                         onKeyDown={(e) => {
                                             if (e.key === " ") {
                                                 e.preventDefault()
                                             }
                                         }}
                                     />
+                                    {contactErrors.email && <span className="error-text">{contactErrors.email}</span>}
                                     <Input.TextArea
                                         placeholder="Your Message"
                                         className='contact-textarea'
                                         rows={4}
+                                        status={contactErrors.message ? 'error' : ''}
                                         value={contactValues.message}
-                                        onChange={(e) => setContactValues(prev => ({ ...prev, message: e.target.value }))}
+                                        onChange={(e) => {
+                                            setContactValues(prev => ({ ...prev, message: e.target.value }))
+                                            setContactErrors(prev => ({ ...prev, message: '' }))
+                                        }}
                                         onKeyDown={(e) => {
                                             const value = e.target.value
 
@@ -675,18 +748,25 @@ export default function LandingPage() {
                                             }
                                         }}
                                     />
+                                    {contactErrors.message && <span className="error-text">{contactErrors.message}</span>}
                                     <Button
                                         type="primary"
-                                        className={`contact-submit-button${(!contactValues.name.trim() || !contactValues.email.trim() || !contactValues.message.trim()) ? ' contact-submit-button-disabled' : ''}`}
+                                        loading={isSending}
+                                        className={`contact-submit-button${(!contactValues.name.trim() ||
+                                                !contactValues.email.trim() ||
+                                                !contactValues.message.trim())
+                                                ? ' contact-submit-button-disabled'
+                                                : ''
+                                            }`}
                                         disabled={
+                                            isSending ||
                                             !contactValues.name.trim() ||
                                             !contactValues.email.trim() ||
                                             !contactValues.message.trim()
                                         }
                                         onClick={sendMessage}
-                                        style={(!contactValues.name.trim() || !contactValues.email.trim() || !contactValues.message.trim()) ? { pointerEvents: 'none' } : {}}
                                     >
-                                        Submit
+                                        {isSending ? 'Sending...' : 'Submit'}
                                     </Button>
                                 </div>
                             </div>
@@ -778,7 +858,7 @@ export default function LandingPage() {
                 </Modal>
             </div>
 
-            {/* success modal */}
+            {/* SUCCESS MODAL */}
             <Modal
                 open={openModalSuccess}
                 className='emailverify-success-modal'
@@ -790,6 +870,7 @@ export default function LandingPage() {
                     <h1 className='emailverify-heading-modal'>Your message has been sent</h1>
                     <p className='emailverify-secondary-heading-modal'>Kindly check your email for responses.</p>
                     <Button
+                        type='primary'
                         id='emailverify-success-button'
                         onClick={() => {
                             setOpenModalSuccess(false)
@@ -801,7 +882,7 @@ export default function LandingPage() {
                 </div>
             </Modal>
 
-            {/* fail modal */}
+            {/* FAIL MODAL */}
             <Modal
                 open={openModalError}
                 className='emailverify-fail-modal'

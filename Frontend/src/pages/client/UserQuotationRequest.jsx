@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Modal, message, Button, Input, Card, ConfigProvider, Spin, Tag } from "antd"
-import { ArrowLeftOutlined } from "@ant-design/icons"
+import { ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons"
 import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import { useQuotationBooking } from "../../context/BookingQuotationContext";
@@ -108,9 +108,10 @@ export default function UserQuotationRequest() {
         }
         console.log("Revision requested with notes:", notes);
         setActionLoading(true);
-        apiFetch.post(`quotation/${id}/request-revision`, {
+        apiFetch.post(`/quotation/${id}/request-revision`, {
             notes
         }).then(res => {
+            setIsRevisionModalOpen(true);
             message.success("Revision requested successfully.");
             setNotes("");
         }).catch(err => {
@@ -317,9 +318,15 @@ export default function UserQuotationRequest() {
                                 open={isRevisionModalOpen}
                                 footer={null}
                                 onCancel={() => setIsRevisionModalOpen(false)}
+                                style={{ top: 200 }}
                             >
                                 <div className="userquotationrequest-revision-container">
                                     <h2 className="userquotationrequest-revision-heading">Revision Requested</h2>
+
+                                    <div>
+                                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                    </div>
+
                                     <p className="userquotationrequest-revision-text">Your revision request has been submitted.</p>
                                     <div className="userquotationrequest-revision-actions">
                                         <Button type="primary" className="userquotationrequest-revision-button" onClick={() => {
@@ -342,17 +349,17 @@ export default function UserQuotationRequest() {
                                 <div className="userquotationrequest-accept-container">
                                     <h2 className="userquotationrequest-accept-heading">Accepting Quotation</h2>
                                     <p className="userquotationrequest-accept-text">Are you sure you want to proceed with this quotation?</p>
-                                    <div className="userquotationrequest-accept-actions">
-                                        <Button type="primary" className="userquotationrequest-accept-button" onClick={handleAccept}>
-                                            Proceed
-                                        </Button>
+                                </div>
+                                <div className="userquotationrequest-accept-actions">
+                                    <Button type="primary" className="userquotationrequest-accept-button" onClick={handleAccept}>
+                                        Proceed
+                                    </Button>
 
-                                        <Button type="primary" className="userquotationrequest-accept-button-cancel" onClick={() => {
-                                            setIsAcceptModalOpen(false)
-                                        }}>
-                                            Cancel
-                                        </Button>
-                                    </div>
+                                    <Button type="primary" className="userquotationrequest-accept-button-cancel" onClick={() => {
+                                        setIsAcceptModalOpen(false)
+                                    }}>
+                                        Cancel
+                                    </Button>
                                 </div>
                             </Modal>
 
