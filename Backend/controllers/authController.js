@@ -50,7 +50,7 @@ const signupUser = async (req, res) => {
                     Kindly log in to verify your account and start browsing our travel packages, tours, and exclusive offers.
                 </p>
 
-                <a href="http://mrctravelntours.vercel.app/home"
+                <a href="http://mrctravelandtours.com/home"
                     style="
                         display:inline-block;
                         margin-top:25px;
@@ -98,6 +98,7 @@ const signupUser = async (req, res) => {
         }
 
         res.status(200).json({ message: "Signup Successful!", userId: user._id })
+
     } catch (e) {
         res.status(500).json({ message: "Signup Function failed " + e.message })
     }

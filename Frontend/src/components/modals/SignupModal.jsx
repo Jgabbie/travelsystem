@@ -259,7 +259,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             }
         } catch (err) {
             setIsLoading(false);
-            console.log("Invalid Inputs")
+            console.log("Invalid Inputs" + err);
         }
     };
 
