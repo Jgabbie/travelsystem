@@ -168,6 +168,7 @@ export default function ResetPassword() {
             if (value === "") return ["Password is required."]
             if (value.length < 8) return ["Password must be at least 8 characters."]
             if (!/\d/.test(value)) return ["Password must have at least one number."]
+            if (!/[a-z]/.test(value)) return ["Password must have at least one lowercase character."]
             if (!/[A-Z]/.test(value)) return ["Password must have at least one uppercase character."]
             if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return ["Password must contain a special character."]
             return []
@@ -330,6 +331,7 @@ export default function ResetPassword() {
                         footer={null}
                         onOk={handleOk}
                         onCancel={handleCancel}
+                        style={{ top: 150 }}
                     >
 
                         <div className='resetpassword-container-modal'>

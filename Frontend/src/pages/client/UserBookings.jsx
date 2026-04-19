@@ -275,9 +275,9 @@ export default function UserBookings() {
                 }
             }}
         >
-            {loading || loadingCancel ? (
+            {loadingCancel ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                    <Spin size="large" description={loadingCancel ? "Cancelling booking..." : "Loading bookings..."} />
+                    <Spin size="large" description="Cancelling booking..." />
                 </div>
             ) : (
 

@@ -137,9 +137,10 @@ const updateUserData = async (req, res) => {
                 'USER_PROFILE_UPDATED',
                 userId,
                 {
-                    updatedFields,
-                    changedFieldCount: changes.length,
-                },
+                    "Profile Updated": `Role: ${user.role} | Username: ${user.username} | Email: ${user.email}`,
+
+
+                }
             )
         }
 

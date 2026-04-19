@@ -220,6 +220,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     //go to reset password page
     const resetPassword = (e) => {
         e.preventDefault();
+        isCloseLogin();
         navigate('/reset-password');
     }
 

@@ -8,9 +8,8 @@
 
 .passport-assistance {
     min-height: 100vh;
-    padding: 40px 24px 40px;
+    padding: 40px 32px 40px;
     font-family: "Roboto", sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .passandvisa-header {

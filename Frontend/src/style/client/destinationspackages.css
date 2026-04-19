@@ -317,6 +317,20 @@
     align-items: center;
 }
 
+@media (max-width: 1024px) {
+    .destinations-hero-section {
+        height: 520px;
+    }
+
+    .destinations-hero-content h1 {
+        font-size: 56px;
+    }
+
+    .destinations-hero-content p {
+        font-size: 20px;
+    }
+}
+
 @media (max-width: 768px) {
     .destinations-page {
         padding: 100px 20px 32px;
@@ -338,19 +352,6 @@
     }
 }
 
-@media (max-width: 1024px) {
-    .destinations-hero-section {
-        height: 520px;
-    }
-
-    .destinations-hero-content h1 {
-        font-size: 56px;
-    }
-
-    .destinations-hero-content p {
-        font-size: 20px;
-    }
-}
 
 @media (max-width: 640px) {
     .destinations-hero-section {

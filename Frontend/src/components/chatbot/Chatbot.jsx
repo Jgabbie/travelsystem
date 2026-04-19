@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Button, Input, List, Spin } from 'antd'; // Using axios for consistency with your other routes
-import { RobotOutlined, UserOutlined } from '@ant-design/icons';
+import { RobotOutlined, UserOutlined, ReloadOutlined, SendOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import apiFetch from '../../config/fetchConfig';
@@ -162,14 +162,22 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                         }}
                     />
                     <div className="chatbot-actions" style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                        <Button onClick={handleNewChat} disabled={loading}>
+                        <Button
+                            className='chatbot-send-button'
+                            type='primary'
+                            onClick={handleNewChat}
+                            disabled={loading}
+                            icon={<ReloadOutlined />}
+                        >
                             New Chat
                         </Button>
                         <Button
+                            className='chatbot-send-button'
                             type="primary"
                             onClick={handleSendMessage}
                             loading={loading}
                             disabled={!chatMessage.trim()}
+                            icon={<SendOutlined />}
                         >
                             Send
                         </Button>

@@ -41,6 +41,10 @@ export default function SideNav() {
   const [latestPassportValue, setLatestPassportValue] = useState(null);
   const [visaCount, setVisaCount] = useState(0);
   const [latestVisaValue, setLatestVisaValue] = useState(null);
+  const [loggingCount, setLoggingCount] = useState(0);
+  const [latestLoggingValue, setLatestLoggingValue] = useState(null);
+  const [auditingCount, setAuditingCount] = useState(0);
+  const [latestAuditingValue, setLatestAuditingValue] = useState(null);
 
   const lastSeenBookingKey = useMemo(() => "adminBookingsLastSeen", []);
   const lastSeenCancellationKey = useMemo(() => "adminCancellationsLastSeen", []);
@@ -50,6 +54,8 @@ export default function SideNav() {
   const lastSeenRatingKey = useMemo(() => "adminRatingsLastSeen", []);
   const lastSeenPassportKey = useMemo(() => "adminPassportLastSeen", []);
   const lastSeenVisaKey = useMemo(() => "adminVisaLastSeen", []);
+  const lastSeenLoggingKey = useMemo(() => "adminLoggingLastSeen", []);
+  const lastSeenAuditingKey = useMemo(() => "adminAuditingLastSeen", []);
 
   const getDateValue = (value) => {
     if (!value) return null;
@@ -102,6 +108,8 @@ export default function SideNav() {
           ratingResponse,
           passportResponse,
           visaResponse,
+          loggingResponse,
+          auditingResponse,
         ] = await Promise.all([
           apiFetch.get("/booking/all-bookings"),
           apiFetch.get("/booking/cancellations"),
@@ -111,6 +119,8 @@ export default function SideNav() {
           apiFetch.get("/rating/all-ratings"),
           apiFetch.get("/passport/applications"),
           apiFetch.get("/visa/applications"),
+          apiFetch.get("/logs/get-logs"),
+          apiFetch.get("/logs/get-audits"),
         ]);
 
         const bookings = bookingResponse || [];
@@ -121,6 +131,8 @@ export default function SideNav() {
         const ratings = ratingResponse || [];
         const passports = passportResponse || [];
         const visas = visaResponse || [];
+        const logs = loggingResponse || [];
+        const audits = auditingResponse || [];
 
         const latestBooking = getLatestValue(bookings, "createdAt");
         const latestCancellation = getLatestValue(cancellations, "cancellationDate");
@@ -130,6 +142,8 @@ export default function SideNav() {
         const latestRating = getLatestValue(ratings, "createdAt");
         const latestPassport = getLatestValue(passports, "createdAt");
         const latestVisa = getLatestValue(visas, "createdAt");
+        const latestLogging = getLatestValue(logs, "timestamp");
+        const latestAuditing = getLatestValue(audits, "timestamp");
 
         const lastSeenBookingValue = getDateValue(localStorage.getItem(lastSeenBookingKey)) || 0;
         const lastSeenCancellationValue = getDateValue(localStorage.getItem(lastSeenCancellationKey)) || 0;
@@ -139,6 +153,8 @@ export default function SideNav() {
         const lastSeenRatingValue = getDateValue(localStorage.getItem(lastSeenRatingKey)) || 0;
         const lastSeenPassportValue = getDateValue(localStorage.getItem(lastSeenPassportKey)) || 0;
         const lastSeenVisaValue = getDateValue(localStorage.getItem(lastSeenVisaKey)) || 0;
+        const lastSeenLoggingValue = getDateValue(localStorage.getItem(lastSeenLoggingKey)) || 0;
+        const lastSeenAuditingValue = getDateValue(localStorage.getItem(lastSeenAuditingKey)) || 0;
 
         const newBookingCount = bookings.filter((b) => {
           const value = getDateValue(b?.createdAt);
@@ -180,6 +196,16 @@ export default function SideNav() {
           return value && value > lastSeenVisaValue;
         }).length;
 
+        const newLoggingCount = logs.filter((l) => {
+          const value = getDateValue(l?.timestamp);
+          return value && value > lastSeenLoggingValue;
+        }).length;
+
+        const newAuditingCount = audits.filter((a) => {
+          const value = getDateValue(a?.timestamp);
+          return value && value > lastSeenAuditingValue;
+        }).length;
+
         if (!isMounted) return;
         setLatestBookingValue(latestBooking);
         setLatestCancellationValue(latestCancellation);
@@ -189,6 +215,8 @@ export default function SideNav() {
         setLatestRatingValue(latestRating);
         setLatestPassportValue(latestPassport);
         setLatestVisaValue(latestVisa);
+        setLatestLoggingValue(latestLogging);
+        setLatestAuditingValue(latestAuditing);
         setBookingCount(newBookingCount);
         setCancellationCount(newCancellationCount);
         setUserCount(newUserCount);
@@ -197,6 +225,8 @@ export default function SideNav() {
         setRatingCount(newRatingCount);
         setPassportCount(newPassportCount);
         setVisaCount(newVisaCount);
+        setLoggingCount(newLoggingCount);
+        setAuditingCount(newAuditingCount);
       } catch (error) {
         if (!isMounted) return;
         setBookingCount(0);
@@ -207,6 +237,8 @@ export default function SideNav() {
         setRatingCount(0);
         setPassportCount(0);
         setVisaCount(0);
+        setLoggingCount(0);
+        setAuditingCount(0);
       }
     };
 
@@ -340,6 +372,8 @@ export default function SideNav() {
     lastSeenRatingKey,
     lastSeenPassportKey,
     lastSeenVisaKey,
+    lastSeenLoggingKey,
+    lastSeenAuditingKey,
   ]);
 
   const handleBookingsClick = () => {
@@ -396,6 +430,20 @@ export default function SideNav() {
       localStorage.setItem(lastSeenVisaKey, new Date(latestVisaValue).toISOString());
     }
     setVisaCount(0);
+  };
+
+  const handleLoggingClick = () => {
+    if (latestLoggingValue) {
+      localStorage.setItem(lastSeenLoggingKey, new Date(latestLoggingValue).toISOString());
+    }
+    setLoggingCount(0);
+  };
+
+  const handleAuditingClick = () => {
+    if (latestAuditingValue) {
+      localStorage.setItem(lastSeenAuditingKey, new Date(latestAuditingValue).toISOString());
+    }
+    setAuditingCount(0);
   };
 
 
@@ -475,14 +523,16 @@ export default function SideNav() {
           </NavLink>
 
           <div style={{ margin: "10px 0", borderTop: "1px solid rgba(255,255,255,0.2)" }}></div>
-          <NavLink to="/logging" className="nav-item">
+          <NavLink to="/logging" className="nav-item" onClick={handleLoggingClick}>
             <span className="nav-item-content">
               <span><BellOutlined /> Logging</span>
+              {loggingCount > 0 && <span className="nav-badge">{loggingCount}</span>}
             </span>
           </NavLink>
-          <NavLink to="/auditing" className="nav-item">
+          <NavLink to="/auditing" className="nav-item" onClick={handleAuditingClick}>
             <span className="nav-item-content">
               <span><AuditOutlined /> Auditing</span>
+              {auditingCount > 0 && <span className="nav-badge">{auditingCount}</span>}
             </span>
           </NavLink>
         </div>

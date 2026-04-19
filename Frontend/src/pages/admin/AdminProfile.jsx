@@ -60,8 +60,9 @@ export default function AdminProfile() {
         }
         if (field === "phone") {
             if (value === "") return "Phone is required.";
-            if (value.length < 12) return "Phone must be 10 digits";
-            if (value.slice(0, 1) !== "8" && value.slice(0, 1) !== "9") return "Phone number must start with 8 or 9";
+            if (value.length < 13) return "Phone must be 11 digits";
+            if (!/^0[9]/.test(value))
+                return "Phone number must start with 09";
         }
         return "";
     };
@@ -442,6 +443,7 @@ export default function AdminProfile() {
                                     <div className="profile-field">
                                         <label className="profile-label">Phone Number</label>
                                         <Input
+                                            maxLength={13}
                                             placeholder="Enter your phone number"
                                             allowClear
                                             addonBefore="+63"
@@ -451,17 +453,23 @@ export default function AdminProfile() {
                                             onChange={(e) => {
                                                 let value = e.target.value.replace(/\D/g, "");
 
-                                                let formatted = "";
-                                                if (value.length > 0) formatted += value.slice(0, 3);
-                                                if (value.length >= 4) formatted += " " + value.slice(3, 6);
-                                                if (value.length >= 7) formatted += " " + value.slice(6, 10);
+                                                value = value.slice(0, 11);
 
-                                                valueHandler("phone", formatted)
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                                    e.preventDefault()
+                                                let formatted = value;
+
+                                                if (value.length > 4 && value.length <= 7) {
+                                                    formatted =
+                                                        value.slice(0, 4) + " " +
+                                                        value.slice(4);
                                                 }
+                                                else if (value.length > 7) {
+                                                    formatted =
+                                                        value.slice(0, 4) + " " +
+                                                        value.slice(4, 7) + " " +
+                                                        value.slice(7);
+                                                }
+
+                                                valueHandler("phone", formatted);
                                             }}
                                         />
                                         {error.phone && (

@@ -82,6 +82,7 @@ function App() {
 
             <Route element={<GuestsUsersRoute />}>
               <Route element={<Layout />}>
+                <Route path='/reset-password' element={<ResetPassword />} />
                 <Route path='/home' element={<LandingPage />} />
                 <Route path='/destinations-packages' element={<DestinationsPackages />} />
                 <Route path='/passandvisa-service' element={<PassAndVisaService />} />

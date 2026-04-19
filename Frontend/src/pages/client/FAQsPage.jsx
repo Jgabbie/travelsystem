@@ -185,37 +185,6 @@ export default function FAQsPage() {
                     </div>
                 </div>
 
-                <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
-                    <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
-                </Button>
-
-                <Modal
-                    open={isChatbotOpen}
-                    onCancel={() => setIsChatbotOpen(false)}
-                    footer={null}
-                    title="Chatbot"
-                    wrapClassName="chatbot-modal"
-                >
-                    <div className="chatbot-body">
-                        <div className="chatbot-message">
-                            Hi! How can I help you today?
-                        </div>
-                        <Input.TextArea
-                            value={chatMessage}
-                            onChange={(e) => setChatMessage(e.target.value)}
-                            placeholder="Type your message..."
-                            rows={3}
-                        />
-                        <div className="chatbot-actions">
-                            <Button
-                                type="primary"
-                                disabled={!chatMessage.trim()}
-                            >
-                                Send
-                            </Button>
-                        </div>
-                    </div>
-                </Modal>
             </div>
         </ConfigProvider>
     )

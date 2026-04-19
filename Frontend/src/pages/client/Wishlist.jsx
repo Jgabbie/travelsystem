@@ -129,7 +129,7 @@ export default function Wishlist() {
             }}
         >
 
-            <div>
+            <div className="wishlist-container">
                 <div className="destinations-hero-section">
                     <div className="destinations-hero-overlay"></div>
                     <div className="destinations-hero-content">

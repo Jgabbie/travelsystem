@@ -436,7 +436,7 @@ export default function LandingPage() {
 
 
                 {/* SECOND SECTION */}
-                <div ref={packagesRef} style={{ paddingTop: '50px', marginTop: '30px' }}>
+                <div ref={packagesRef}>
                     <div className="hero-section-packages">
                         <div className="hero-overlay-packages"></div>
                         <div className="hero-content-packages">
@@ -498,10 +498,10 @@ export default function LandingPage() {
 
 
                 {/* THIRD SECTION */}
-                <div ref={exploreRef} style={{ marginTop: '50px', paddingTop: '110px' }}>
+                <div ref={exploreRef} style={{ marginTop: '50px', }}>
                     <div className='explore-container'>
                         <div className='explore-local-packages-section'>
-                            <h1 className='explore-text explore-text-center-mobile'>Local Tour Packages</h1>
+                            <h1 className='explore-text'>Local Tour Packages</h1>
                             <div className='explore-local-packages'>
                                 {isDomesticLoading ? (
                                     <p>Loading domestic packages...</p>
@@ -510,14 +510,14 @@ export default function LandingPage() {
                                 ) : (
                                     domesticPackages.map((pkg) => (
                                         <Card
+                                            className='package-card'
                                             key={pkg.id}
                                             hoverable
-                                            style={{ width: 300 }}
                                             onClick={() => navigate(`/package/${pkg.id}`)}
                                             cover={
                                                 pkg.image ? (
                                                     <img
-                                                        style={{ height: 200 }}
+                                                        style={{ height: 250 }}
                                                         draggable={false}
                                                         alt={pkg.packageName}
                                                         src={pkg.image}
@@ -549,7 +549,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* ABOUTUS SECTION */}
-                <div ref={aboutusRef} style={{ paddingTop: '100px', marginTop: '50px' }}>
+                <div ref={aboutusRef} style={{ paddingTop: '100px' }}>
 
                     <div className="hero-section-aboutus">
                         <div className="hero-overlay-aboutus"></div>
@@ -565,19 +565,20 @@ export default function LandingPage() {
                     <div className='aboutus-row'>
                         <div className='aboutus-text-col'>
                             <div className='aboutus-text-wrap'>
-                                <h1 className='explore-text'>About Us</h1>
+                                <h1 className='explore-text' style={{ color: '#ffffff', marginBottom: 0, paddingBottom: 0 }}>About Us</h1>
+                                <div style={{ width: '270px', height: '4px', backgroundColor: '#ffffff', marginBottom: '20px', marginTop: 20 }}></div>
 
-                                <p className='aboutus-text'>
+                                <p className='aboutus-text' style={{ color: '#ffffff' }}>
                                     M&RC Travel and Tours humbly started travel business in July 2018 when two vibrant entrepreneur, traveler,
                                     Maricar Carle and Rhon Carle decided to turn their passion into business. Office is located at #1 Cor Fatima Street
                                     San antonio Avenue Valley 1, Brgy. San Antonio Paranaque City with over thousand of agents worldwide and travel partners.
                                 </p>
 
-                                <p className='aboutus-text'>
+                                <p className='aboutus-text' style={{ color: '#ffffff' }}>
                                     We commit to adapt the changing needs of business sectors and become a major player through satisfying specialized requirements of the small, medium and large organizations.
                                 </p>
 
-                                <p className='aboutus-text'>
+                                <p className='aboutus-text' style={{ color: '#ffffff' }}>
                                     We value honesty and integrity.
                                     M&RC Travel and Tours continuously develop other line of services with the primary objective of extending wide range of quality and excellent service.
                                 </p>
@@ -608,45 +609,56 @@ export default function LandingPage() {
                         </div>
 
                         <div className='aboutus-vision-mission'>
-                            <h2 className='explore-text'>Our Vision</h2>
-                            <p className='aboutus-text'>
-                                Our Vision is to be the preferred travel
-                                and tours agency in the country offering
-                                specialized, high quality and cost-
-                                efficient travel solutions at all times,
-                                anywhere, everywhere.
-                            </p>
+                            <div style={{ marginBottom: 40 }}>
+                                <h2 className='explore-text' style={{ color: '#ffffff', marginBottom: 0, paddingBottom: 0 }}>Our Vision</h2>
+                                <div style={{ width: '270px', height: '4px', backgroundColor: '#ffffff', marginBottom: '20px', marginTop: 20 }}></div>
+                                <p className='aboutus-text' style={{ color: '#ffffff' }}>
+                                    Our Vision is to be the preferred travel
+                                    and tours agency in the country offering
+                                    specialized, high quality and cost-
+                                    efficient travel solutions at all times,
+                                    anywhere, everywhere.
+                                </p>
+                            </div>
 
-                            <h2 className='explore-text'>Our Mission</h2>
-                            <p className='aboutus-text'>
-                                We are committed to provide value-added travel
-                                solutions to our Customers by offering good service
-                                and meaningful experience through the help of our
-                                reliable and service- oriented travel partners.
-                                We aim to grow and profit with the knowledge that
+                            <div>
+                                <h2 className='explore-text' style={{ color: '#ffffff', marginBottom: 0, paddingBottom: 0 }}>Our Mission</h2>
+                                <div style={{ width: '270px', height: '4px', backgroundColor: '#ffffff', marginBottom: '20px', marginTop: 20 }}></div>
+                                <p className='aboutus-text' style={{ color: '#ffffff' }}>
+                                    We are committed to provide value-added travel
+                                    solutions to our Customers by offering good service
+                                    and meaningful experience through the help of our
+                                    reliable and service- oriented travel partners.
+                                    We aim to grow and profit with the knowledge that
 
-                                each customer we served is fully satisfied.
+                                    each customer we served is fully satisfied.
 
-                                We adhere to the notion of reliability, competence,
+                                    We adhere to the notion of reliability, competence,
 
-                                competitiveness and integrity.
+                                    competitiveness and integrity.
 
-                                We are committed to be updated with the latest
-                                technology to keep up with the demands of the global
+                                    We are committed to be updated with the latest
+                                    technology to keep up with the demands of the global
 
-                                market.
+                                    market.
 
-                                We care for the well-being of our employees, our
+                                    We care for the well-being of our employees, our
 
-                                community and our environment.
-                            </p>
+                                    community and our environment.
+                                </p>
+                            </div>
+
 
                         </div>
                     </div>
 
 
                     <div className='aboutus-accreditation'>
-                        <h2 className='explore-text'>Accreditations</h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 60 }}>
+                            <h2 className='explore-text' style={{ fontSize: 45, fontWeight: 'bold', marginBottom: 5, paddingBottom: 0 }}>WHY <span style={{ color: '#305797' }}>BOOK</span> WITH US?</h2>
+                            <h4 style={{ width: 650, textAlign: 'center' }}>We are a company accredited by the Department of Tourism (DOT) of the Philippines and Philippine Government Electronic Procurement System (PhilGEPS)</h4>
+                        </div>
+
 
                         <div style={{ display: 'flex', gap: '70px', flexDirection: 'row' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
@@ -692,7 +704,7 @@ export default function LandingPage() {
 
                             <div className='contactus-section-right'>
                                 <div className='contactus-section-right-card'>
-                                    <label className='contact-label'>Send us a message:</label>
+                                    <label className='contact-label'>You have an inquiry? Send us a message!</label>
                                     <Input
                                         placeholder="Your Name"
                                         className='contact-input'
