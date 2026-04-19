@@ -3,7 +3,7 @@ import { Input, Button, Card, DatePicker, Select, Space, message, ConfigProvider
 import { UploadOutlined, PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addpackage.css";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -15,9 +15,11 @@ export default function AddPackage() {
   const isEmployee = auth?.role === "Employee";
   const basePath = isEmployee ? "/employee" : "";
 
-  const { id } = useParams();
+
+  const location = useLocation();
+  const { packageId } = location.state || {};
   const fileInputRef = useRef(null);
-  const isEdit = Boolean(id);
+  const isEdit = Boolean(packageId);
 
   const [backEndErrors, setBackEndErrors] = useState(null);
   const [loadingPackage, setLoadingPackage] = useState(false);
@@ -611,7 +613,7 @@ export default function AddPackage() {
 
     try {
       if (isEdit) {
-        await apiFetch.put(`/package/update-package/${id}`, payload);
+        await apiFetch.put(`/package/update-package/${packageId}`, payload);
       } else {
         await apiFetch.post("/package/add-package", payload);
       }
@@ -631,7 +633,7 @@ export default function AddPackage() {
     const getPackage = async () => {
       setLoadingPackage(true);
       try {
-        const pkg = await apiFetch.get(`/package/get-package/${id}`);
+        const pkg = await apiFetch.get(`/package/get-package/${packageId}`);
 
         setValues((prev) => ({
           ...prev,
@@ -673,7 +675,7 @@ export default function AddPackage() {
     };
 
     getPackage();
-  }, [id]);
+  }, [packageId]);
 
   useEffect(() => {
     if (isEdit) return; // skip if editing

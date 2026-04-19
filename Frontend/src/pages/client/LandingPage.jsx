@@ -6,9 +6,11 @@ import LoginModal from '../../components/modals/LoginModal';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
 import Chatbot from '../../components/chatbot/Chatbot';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function LandingPage() {
     const navigate = useNavigate()
+    const { auth, authLoading } = useAuth()
 
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
@@ -221,6 +223,12 @@ export default function LandingPage() {
 
         fetchPopularPackages()
     }, [])
+
+    useEffect(() => {
+        if (!auth && !authLoading) {
+            setIsChatbotOpen(false)
+        }
+    }, [auth, authLoading])
 
     //FETCH DOMESTIC PACKAGES -----------------------------------------------
     useEffect(() => {
@@ -826,14 +834,18 @@ export default function LandingPage() {
                     onLoginSuccess={() => navigate('/destinations-packages')}
                 />
 
-                <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
-                    <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
-                </Button>
+                {auth && (
+                    <>
+                        <Button className="chatbot-fab" type="primary" onClick={() => setIsChatbotOpen(true)}>
+                            <Image preview={false} style={{ width: 20, height: 20 }} src="/images/chatbotlogo.png" />
+                        </Button>
 
-                <Chatbot
-                    isChatbotOpen={isChatbotOpen}
-                    setIsChatbotOpen={setIsChatbotOpen}
-                />
+                        <Chatbot
+                            isChatbotOpen={isChatbotOpen}
+                            setIsChatbotOpen={setIsChatbotOpen}
+                        />
+                    </>
+                )}
 
             </div>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Modal, Checkbox, DatePicker, TimePicker } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import apiFetch from "../../config/fetchConfig";
 import dayjs from "dayjs";
@@ -9,7 +9,8 @@ import dayjs from "dayjs";
 const { Title } = Typography;
 
 export default function ViewVisaApplication() {
-    const { id } = useParams();
+    const location = useLocation();
+    const { applicationId } = location.state || {};
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [isSubmittingSlots, setIsSubmittingSlots] = useState(false);
@@ -32,7 +33,7 @@ export default function ViewVisaApplication() {
             try {
                 setLoading(true);
                 // 1. Fetch the application first
-                const appData = await apiFetch.get(`/visa/applications/${id}`);
+                const appData = await apiFetch.get(`/visa/applications/${applicationId}`);
 
                 // 2. Determine current step
                 const visaProcessSteps = appData.visaProcessSteps || []; // might be undefined if service not fetched yet
@@ -83,7 +84,7 @@ export default function ViewVisaApplication() {
         };
 
         fetchApplicationAndService();
-    }, [id, navigate]);
+    }, [applicationId, navigate]);
 
     //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
     const handleSubmitAlternateSlots = async () => {
@@ -102,7 +103,7 @@ export default function ViewVisaApplication() {
                 return;
             }
 
-            await apiFetch.put(`/visa/applications/${id}/suggest-appointments`, { slots });
+            await apiFetch.put(`/visa/applications/${applicationId}/suggest-appointments`, { slots });
 
             setAlternateSlots([
                 { date: null, time: null },
@@ -242,7 +243,7 @@ export default function ViewVisaApplication() {
         try {
             setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
-            await apiFetch.put(`/visa/applications/${id}/status`, { status: newStatus });
+            await apiFetch.put(`/visa/applications/${applicationId}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
             setCurrentStep(stepIdx);
             message.success(`Status updated to ${newStatus}`);
@@ -258,7 +259,7 @@ export default function ViewVisaApplication() {
 
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/visa/applications/${id}/resubmit-documents`);
+            await apiFetch.put(`/visa/applications/${applicationId}/resubmit-documents`);
 
             setApplication((prev) => ({
                 ...prev,
@@ -289,7 +290,7 @@ export default function ViewVisaApplication() {
     const handleEmbassyRejected = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/visa/applications/${id}/status`, { status: "Rejected" });
+            await apiFetch.put(`/visa/applications/${applicationId}/status`, { status: "Rejected" });
             setApplication((prev) => ({ ...prev, status: "Rejected" }));
             message.success("Application marked as Embassy Rejected");
         } catch (err) {
@@ -302,7 +303,7 @@ export default function ViewVisaApplication() {
     const handleEmbassyApproved = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/visa/applications/${id}/status`, { status: "Embassy Approved" });
+            await apiFetch.put(`/visa/applications/${applicationId}/status`, { status: "Embassy Approved" });
             setApplication((prev) => ({ ...prev, status: "Embassy Approved" }));
             message.success("Application marked as Embassy Approved");
         } catch (err) {

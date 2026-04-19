@@ -2,6 +2,7 @@ const OpenAI = require('openai');
 const pdfParse = require('pdf-parse');
 const KnowledgeChunk = require('../models/knowledgeChunk');
 const PackageModel = require('../models/package');
+const ServiceModel = require('../models/service');
 
 const MAX_HISTORY = 3;
 const MAX_MESSAGE_CHARS = 500;
@@ -11,6 +12,9 @@ const BLOCKED_REPLY = "Sorry, I can't help you with that.";
 const VECTOR_INDEX = process.env.MONGODB_VECTOR_INDEX || 'knowledgeIndex';
 const VECTOR_CANDIDATES = 100;
 const VECTOR_LIMIT = 5;
+
+const TRAVEX_PROMPT_ID = 'pmpt_69e4a9003a4c8195923e2db164ea4f6208e21becb823361f';
+const TRAVEX_PROMPT_VERSION = 'v1';
 
 const faqData = [
     {
@@ -99,6 +103,31 @@ const blockedPattern = new RegExp(`\\b(${blockedTerms.join('|')})\\b`, 'i');
 
 const containsBlockedContent = (text) => blockedPattern.test(normalizeText(text));
 
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const formatReply = (text, { packageNames = [], serviceNames = [] } = {}) => {
+    if (!text) return text;
+
+    let output = text;
+
+    output = output.replace(
+        /(price(?: per pax)?|solo|child|infant)\s*:\s*(\d[\d,]*(?:\.\d+)?)/gi,
+        (_match, label, amount) => `${label}: ₱${amount}`
+    );
+
+    output = output.replace(/₱\s*\d[\d,]*(?:\.\d+)?/g, (match) => `**${match}**`);
+
+    const names = [...new Set([...packageNames, ...serviceNames].filter(Boolean))]
+        .sort((a, b) => b.length - a.length);
+
+    names.forEach((name) => {
+        const pattern = new RegExp(`\\b${escapeRegExp(name)}\\b`, 'gi');
+        output = output.replace(pattern, (match) => `**${match}**`);
+    });
+
+    return output;
+};
+
 const chunkText = (text, chunkSize = 1200, overlap = 200) => {
     const chunks = [];
     let start = 0;
@@ -163,7 +192,7 @@ const buildPackageContext = async (message) => {
     const normalized = normalizeText(message);
     const wantsPackages = /\b(package|packages|tour|tours|available|availability|price|rate|promo|deal)\b/.test(normalized);
 
-    if (!wantsPackages) return '';
+    if (!wantsPackages) return { text: '', names: [] };
 
     const packages = await PackageModel.find({}, {
         packageName: 1,
@@ -176,16 +205,63 @@ const buildPackageContext = async (message) => {
         .limit(5)
         .lean();
 
-    if (!packages.length) return 'No packages are currently available.';
+    if (!packages.length) return { text: 'No packages are currently available.', names: [] };
 
-    return packages
+    const text = packages
         .map((pkg) => {
             const tags = Array.isArray(pkg.packageTags) && pkg.packageTags.length > 0
                 ? ` Tags: ${pkg.packageTags.join(', ')}.`
                 : '';
-            return `- ${pkg.packageName} (${pkg.packageType}). ${pkg.packageDuration} day(s). Price per pax: ${pkg.packagePricePerPax}.${tags}`;
+            const discount = pkg.packageDiscountPercent
+                ? ` Discount: ${pkg.packageDiscountPercent}%.`
+                : '';
+            const visa = pkg.visaRequired === true ? ' Visa required.' : ' Visa not required.';
+            const inclusions = Array.isArray(pkg.packageInclusions) && pkg.packageInclusions.length > 0
+                ? ` Inclusions: ${pkg.packageInclusions.slice(0, 6).join(', ')}${pkg.packageInclusions.length > 6 ? ', ...' : ''}.`
+                : '';
+            const exclusions = Array.isArray(pkg.packageExclusions) && pkg.packageExclusions.length > 0
+                ? ` Exclusions: ${pkg.packageExclusions.slice(0, 6).join(', ')}${pkg.packageExclusions.length > 6 ? ', ...' : ''}.`
+                : '';
+            return `- ${pkg.packageName} (${pkg.packageType}). ${pkg.packageDuration} day(s). Price per pax: ${pkg.packagePricePerPax}. Solo: ${pkg.packageSoloRate}. Child: ${pkg.packageChildRate}. Infant: ${pkg.packageInfantRate}.${discount}${visa}${tags}${inclusions}${exclusions}`;
         })
         .join('\n');
+
+    return { text, names: packages.map((pkg) => pkg.packageName).filter(Boolean) };
+};
+
+const buildVisaServiceContext = async () => {
+    const services = await ServiceModel.find({}, {
+        visaName: 1,
+        visaPrice: 1,
+        visaRequirements: 1,
+        visaAdditionalRequirements: 1
+    })
+        .sort({ visaName: 1 })
+        .limit(5)
+        .lean();
+
+    if (!services.length) return { text: 'No visa services are currently available.', names: [] };
+
+    const text = services
+        .map((service) => {
+            const reqs = Array.isArray(service.visaRequirements) && service.visaRequirements.length > 0
+                ? service.visaRequirements
+                    .slice(0, 6)
+                    .map((req) => req.name || req.requirement || JSON.stringify(req))
+                    .join(', ')
+                : 'No listed requirements';
+            const extraReqs = Array.isArray(service.visaAdditionalRequirements) && service.visaAdditionalRequirements.length > 0
+                ? service.visaAdditionalRequirements
+                    .slice(0, 4)
+                    .map((req) => req.name || req.requirement || JSON.stringify(req))
+                    .join(', ')
+                : '';
+            const extraNote = extraReqs ? ` Additional requirements: ${extraReqs}.` : '';
+            return `- ${service.visaName}. Price: ${service.visaPrice}. Requirements: ${reqs}.${extraNote}`;
+        })
+        .join('\n');
+
+    return { text, names: services.map((service) => service.visaName).filter(Boolean) };
 };
 
 const uploadKnowledge = async (req, res) => {
@@ -246,9 +322,9 @@ const knowledgeStatus = async (_req, res) => {
 
 const chatAction = async (req, res) => {
 
-    const groq = new OpenAI({
-        apiKey: process.env.GROQ_API_KEY,
-        baseURL: "https://api.groq.com/openai/v1",
+    const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: "https://api.openai.com/v1",
     });
 
 
@@ -296,31 +372,42 @@ const chatAction = async (req, res) => {
             : 'No relevant PDF context found.';
 
         let packageContext = '';
+        let packageNames = [];
         try {
-            packageContext = await buildPackageContext(userQuery);
+            const result = await buildPackageContext(userQuery);
+            packageContext = result.text;
+            packageNames = result.names;
         } catch (packageError) {
             console.error('Package context error:', packageError);
         }
 
-        // Groq uses Llama or Qwen models. 
-        // 'llama-3.3-70b-versatile' is excellent for FAQs and complex reasoning.
-        const response = await groq.chat.completions.create({
-            model: 'llama-3.1-8b-instant',
-            messages: [
+        let visaServiceContext = '';
+        let serviceNames = [];
+        try {
+            const result = await buildVisaServiceContext();
+            visaServiceContext = result.text;
+            serviceNames = result.names;
+        } catch (serviceError) {
+            console.error('Visa service context error:', serviceError);
+        }
+
+        const response = await openai.responses.create({
+            prompt: {
+                id: TRAVEX_PROMPT_ID
+            },
+            input: [
                 {
-                    role: "system",
+                    role: "user",
                     content: [
-                        "You are the TRAVEX travel assistant.",
-                        "You can greet users and ask how you can help.",
-                        "Answer only using the FAQ list and the context below for information.",
-                        `If the question is off-topic or not covered, reply exactly: \"${OFF_TOPIC_REPLY}\".`,
-                        "Keep responses concise (1-3 sentences).",
+                        "Context for this request:",
                         "FAQ list:",
                         ...faqData.map((item) => `- ${item.question} Answer: ${item.answer}`),
                         "PDF context:",
                         knowledgeContext,
                         "Available packages:",
-                        packageContext || 'No package context requested.'
+                        packageContext || 'No package context requested.',
+                        "Visa services:",
+                        visaServiceContext || 'No visa service context available.'
                     ].join('\n')
                 },
                 ...recentMessages.map((m) => ({
@@ -328,32 +415,34 @@ const chatAction = async (req, res) => {
                     content: m.content
                 }))
             ],
-            max_tokens: MAX_TOKENS,
-            temperature: 0.4,
+            max_output_tokens: 300,
+            reasoning: { effort: 'low' },
+            text: { verbosity: 'low' }
         });
 
-        const reply = response?.choices?.[0]?.message?.content?.trim();
+        const reply = response?.output_text?.trim();
 
         if (!reply) {
-            console.error("Empty response from Groq:", response);
+            console.error("Empty response from OpenAI:", response);
             return res.status(502).json({ error: 'Empty response from AI provider.' });
         }
 
-        res.json({ reply });
+        const formattedReply = formatReply(reply, { packageNames, serviceNames });
+        res.json({ reply: formattedReply });
     } catch (error) {
 
-        console.error("--- GROQ API ERROR ---");
+        console.error("--- OPENAI API ERROR ---");
         console.error("Status:", error.status);
         console.error("Message:", error.message);
         console.error("-----------------------");
 
         let userFeedback = "The AI is having a moment. Try again?";
 
-        if (error.status === 401) userFeedback = "Invalid Groq API Key.";
+        if (error.status === 401) userFeedback = "Invalid OpenAI API Key.";
         if (error.status === 429) userFeedback = "Rate limit reached. Wait 60 seconds.";
 
 
-        console.error("Error in Groq chatAction:", error.response?.data || error.message);
+        console.error("Error in OpenAI chatAction:", error.response?.data || error.message);
 
         if (error.status === 429) {
             return res.status(429).json({

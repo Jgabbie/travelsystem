@@ -216,7 +216,7 @@ export default function PassportApplications() {
                             className='viewbutton-passport-application'
                             type="primary"
                             icon={<EyeOutlined />}
-                            onClick={() => navigate(`view/${record.key}`)}
+                            onClick={() => navigate(`view`, { state: { applicationId: record.key } })}
                         >
                             View
                         </Button>

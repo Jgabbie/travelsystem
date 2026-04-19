@@ -1,12 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Button, Input, List, Spin } from 'antd'; // Using axios for consistency with your other routes
+import { RobotOutlined, UserOutlined } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import apiFetch from '../../config/fetchConfig';
+import '../../style/components/chatbot.css';
+
+const initialMessages = [
+    { role: 'assistant', content: 'Hi! How can I help you today?', timestamp: new Date().toISOString() }
+];
 
 const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
     const [chatMessage, setChatMessage] = useState('');
-    const [messages, setMessages] = useState([
-        { role: 'assistant', content: 'Hi! How can I help you today?' }
-    ]);
+    const [messages, setMessages] = useState(initialMessages);
     const [loading, setLoading] = useState(false);
     const scrollRef = useRef(null);
 
@@ -17,10 +23,23 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
         }
     }, [messages, loading]);
 
+    const formatTimestamp = (value) => {
+        if (!value) return '';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleString();
+    };
+
+    const createMessage = (role, content) => ({
+        role,
+        content,
+        timestamp: new Date().toISOString()
+    });
+
     const handleSendMessage = async () => {
         if (!chatMessage.trim()) return;
 
-        const userMessage = { role: 'user', content: chatMessage };
+        const userMessage = createMessage('user', chatMessage);
         const updatedMessages = [...messages, userMessage];
         const recentMessages = updatedMessages.slice(-3);
 
@@ -36,23 +55,23 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
             // Optional Chaining (?.) and a fallback message
             const botReply = response?.reply || "I received an empty response. Please try again.";
 
-            setMessages([...updatedMessages, {
-                role: 'assistant',
-                content: botReply
-            }]);
+            setMessages([...updatedMessages, createMessage('assistant', botReply)]);
         } catch (error) {
             console.error("Full Error Object:", error.response); // This is key to debugging!
 
             // Extract the error message from the backend if it exists
             const errorMsg = error.response?.data?.error || "Connection error. Check backend console.";
 
-            setMessages([...updatedMessages, {
-                role: 'assistant',
-                content: `Error: ${errorMsg}`
-            }]);
+            setMessages([...updatedMessages, createMessage('assistant', `Error: ${errorMsg}`)]);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleNewChat = () => {
+        setMessages(initialMessages);
+        setChatMessage('');
+        setLoading(false);
     };
 
     return (
@@ -62,9 +81,10 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
             footer={null}
             title="TRAVEX Assistant"
             wrapClassName="chatbot-modal"
-            width={400}
+            width={900}
+            className='chatbot-modal'
         >
-            <div className="chatbot-body" style={{ display: 'flex', flexDirection: 'column', height: '450px' }}>
+            <div className="chatbot-body" style={{ display: 'flex', flexDirection: 'column', height: '450px', width: '100%' }}>
 
                 {/* Message Display Area */}
                 <div
@@ -79,6 +99,22 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                                 textAlign: item.role === 'user' ? 'right' : 'left',
                                 marginBottom: '10px'
                             }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        justifyContent: item.role === 'user' ? 'flex-end' : 'flex-start',
+                                        fontSize: '11px',
+                                        color: '#6b7280',
+                                        marginBottom: '4px'
+                                    }}
+                                >
+                                    {item.role === 'user' ? <UserOutlined /> : <RobotOutlined />}
+                                    <span>{item.role === 'user' ? 'You' : 'TRAVEX Assistant'}</span>
+                                    <span>•</span>
+                                    <span>{formatTimestamp(item.timestamp)}</span>
+                                </div>
                                 <div style={{
                                     display: 'inline-block',
                                     padding: '8px 12px',
@@ -87,7 +123,18 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                                     color: item.role === 'user' ? '#fff' : '#000',
                                     maxWidth: '80%'
                                 }}>
-                                    {item.content}
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        components={{
+                                            p: ({ children }) => (
+                                                <span style={{ textAlign: 'justify', display: 'inline-block' }}>
+                                                    {children}
+                                                </span>
+                                            )
+                                        }}
+                                    >
+                                        {item.content}
+                                    </ReactMarkdown>
                                 </div>
                             </div>
                         )}
@@ -102,6 +149,7 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                 {/* Input Area */}
                 <div className="chatbot-input-section">
                     <Input.TextArea
+                        maxLength={150}
                         value={chatMessage}
                         onChange={(e) => setChatMessage(e.target.value)}
                         placeholder="Type your message..."
@@ -113,7 +161,10 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                             }
                         }}
                     />
-                    <div className="chatbot-actions" style={{ marginTop: '10px', textAlign: 'right' }}>
+                    <div className="chatbot-actions" style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <Button onClick={handleNewChat} disabled={loading}>
+                            New Chat
+                        </Button>
                         <Button
                             type="primary"
                             onClick={handleSendMessage}

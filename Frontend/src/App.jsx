@@ -89,7 +89,6 @@ function App() {
                 <Route path='/new-passport' element={<NewPassport />} />
                 <Route path='/renew-passport' element={<RenewPassport />} />
                 <Route path='/package' element={<PackagePage />} />
-                <Route path='/package/:id' element={<PackagePage />} />
                 <Route path='/general-faq' element={<FAQsPage />} />
               </Route>
             </Route>
@@ -112,17 +111,15 @@ function App() {
                 <Route path="packages/add" element={<AddPackage />} />
                 <Route path="packages/add/domestic" element={<AddPackageDomestic />} />
                 <Route path="packages/add/international" element={<AddPackageInternational />} />
-                <Route path="/packages/edit/:id" element={<AddPackage />} />
-                <Route path="/packages/edit/domestic/:id" element={<AddPackageDomestic />} />
-                <Route path="/packages/edit/international/:id" element={<AddPackageInternational />} />
+                <Route path="/packages/edit" element={<AddPackage />} />
                 <Route path="ratings" element={<ReviewRatings />} />
                 <Route path="visa-applications" element={<VisaApplications />} />
                 <Route path="visa-services" element={<VisaServices />} />
                 <Route path="visa-services/add" element={<AddService />} />
-                <Route path="visa-services/edit/:id" element={<AddService />} />
+                <Route path="visa-services/edit" element={<AddService />} />
                 <Route path="passport-applications" element={<PassportApplications />} />
-                <Route path="passport-applications/view/:id" element={<ViewPassportApplication />} />
-                <Route path="visa-applications/view/:id" element={<ViewVisaApplication />} />
+                <Route path="passport-applications/view" element={<ViewPassportApplication />} />
+                <Route path="visa-applications/view" element={<ViewVisaApplication />} />
                 <Route path="cancellation-requests" element={<CancellationRequests />} />
                 <Route path="adminprofile" element={<AdminProfile />} />
                 <Route path="package-quotation" element={<QuotationManagement />} />
@@ -139,26 +136,24 @@ function App() {
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="bookings" element={<BookingManagement />} />
-                <Route path="bookings/:id/invoice" element={<UploadBookingInvoice />} />
+                <Route path="bookings/invoice" element={<UploadBookingInvoice />} />
                 <Route path="transactions" element={<TransactionManagement />} />
                 <Route path="packages" element={<PackageManagement />} />
                 <Route path="packages/add" element={<AddPackage />} />
-                <Route path="packages/edit/:id" element={<AddPackage />} />
+                <Route path="packages/edit" element={<AddPackage />} />
                 <Route path="packages/add/domestic" element={<AddPackageDomestic />} />
                 <Route path="packages/add/international" element={<AddPackageInternational />} />
-                <Route path="packages/edit/domestic/:id" element={<AddPackageDomestic />} />
-                <Route path="packages/edit/international/:id" element={<AddPackageInternational />} />
                 <Route path="ratings" element={<ReviewRatings />} />
                 <Route path="package-quotation" element={<QuotationManagement />} />
                 <Route path="quotation" element={<QuotationRequest />} />
                 <Route path="adminprofile" element={<AdminProfile />} />
                 <Route path="visa-services" element={<VisaServices />} />
                 <Route path="visa-services/add" element={<AddService />} />
-                <Route path="visa-services/edit/:id" element={<AddService />} />
+                <Route path="visa-services/edit" element={<AddService />} />
                 <Route path="visa-applications" element={<VisaApplications />} />
                 <Route path="passport-applications" element={<PassportApplications />} />
-                <Route path="passport-applications/view/:id" element={<ViewPassportApplication />} />
-                <Route path="visa-applications/view/:id" element={<ViewVisaApplication />} />
+                <Route path="passport-applications/view" element={<ViewPassportApplication />} />
+                <Route path="visa-applications/view" element={<ViewVisaApplication />} />
                 <Route path="cancellation-requests" element={<CancellationRequests />} />
               </Route>
             </Route>

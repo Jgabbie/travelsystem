@@ -2,6 +2,7 @@ const UserModel = require('../models/user');
 const ArchivedUserModel = require('../models/archivedusers');
 const bcrypt = require("bcryptjs");
 const logAction = require('../utils/logger');
+const transporter = require('../config/nodemailer')
 
 const getUserData = async (req, res) => {
     try {
@@ -192,35 +193,147 @@ const createUsers = async (req, res) => {
             return res.status(400).json({ message: "Username or Email already exists" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        if (role === "Admin" || role === "Employee") {
+            const randomPassword = Math.random().toString(36).slice(-8);
 
-        const newUser = await UserModel.create({
-            username,
-            firstname,
-            lastname,
-            email,
-            phone,
-            hashedPassword,
-            role: role || "Customer",
-            isAccountVerified: true
-        });
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-        const actionName = role === "Admin" ? "ADMIN_CREATED_ADMIN" : "ADMIN_CREATED_USER";
-
-        await logAction(
-            actionName,
-            adminId,
-            {
-                "Successfully Created": `Role: ${newUser.role} | Username: ${newUser.username} | Email: ${newUser.email}`
+            const newUser = await UserModel.create({
+                username,
+                firstname,
+                lastname,
+                email,
+                phone,
+                hashedPassword,
+                role,
+                isAccountVerified: true
             });
 
-        const io = req.app.get('io')
-        if (io) {
-            io.emit('user:created', {
-                id: newUser._id,
-                createdAt: newUser.createdAt
-            })
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: email,
+                subject: `Your ${role} Account Has Been Created`,
+                html: `
+            <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+
+                <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                <h2 style="color:#305797; margin-bottom:10px;">
+                    Welcome to M&RC Travel and Tours
+                </h2>
+
+                <p style="color:#555; font-size:16px;">
+                    Hello <b>${username}</b>,
+                </p>
+
+                <p style="color:#555; font-size:15px; line-height:1.6;">
+                    Your account has been successfully created!
+                </p>
+
+                <p style="color:#555; font-size:15px; line-height:1.6;">
+                    Here is your password. Kindly log in to your account immediately and reset your password.
+                </p>
+
+                    <div style="
+                        margin:25px 0;
+                        font-size:32px;
+                        font-weight:bold;
+                        letter-spacing:8px;
+                        color:#992A46;
+                        background:#f9fafb;
+                        padding:15px;
+                        border-radius:8px;
+                        border:1px dashed #ddd;
+                    ">
+                        ${randomPassword}
+                    </div>
+
+                <a href="http://mrctravelntours.vercel.app/home"
+                    style="
+                        display:inline-block;
+                        margin-top:25px;
+                        padding:12px 28px;
+                        background:#305797;
+                        color:#ffffff;
+                        text-decoration:none;
+                        border-radius:6px;
+                        font-weight:bold;
+                        font-size:14px;
+                    ">
+                    Log In to Your Account
+                </a>
+
+                <p style="color:#777; font-size:13px; margin-top:30px;">
+                    If you did not request this account, please ignore this email.
+                </p>
+
+                <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                    <p>M&RC Travel and Tours</p>
+                    <p>support@mrctravelandtours.com</p>
+                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                </div>
+            </div>`
+            });
+
+            const actionName = role === "Admin" ? "ADMIN_CREATED_ADMIN" : "ADMIN_CREATED_USER";
+
+            await logAction(
+                actionName,
+                adminId,
+                {
+                    "Successfully Created": `Role: ${newUser.role} | Username: ${newUser.username} | Email: ${newUser.email}`
+                });
+
+            const io = req.app.get('io')
+            if (io) {
+                io.emit('user:created', {
+                    id: newUser._id,
+                    createdAt: newUser.createdAt
+                })
+            }
+
         }
+
+        if (role === "Customer") {
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const newUser = await UserModel.create({
+                username,
+                firstname,
+                lastname,
+                email,
+                phone,
+                hashedPassword,
+                role: role || "Customer",
+                isAccountVerified: true
+            });
+
+            const actionName = role === "Admin" ? "ADMIN_CREATED_ADMIN" : "ADMIN_CREATED_USER";
+
+            await logAction(
+                actionName,
+                adminId,
+                {
+                    "Successfully Created": `Role: ${newUser.role} | Username: ${newUser.username} | Email: ${newUser.email}`
+                });
+
+
+            const io = req.app.get('io')
+            if (io) {
+                io.emit('user:created', {
+                    id: newUser._id,
+                    createdAt: newUser.createdAt
+                })
+            }
+        }
+
+
+
+
 
         res.status(201).json({ message: "User created successfully", user: newUser });
 

@@ -169,7 +169,7 @@ export default function VisaServices() {
                                 className="visaservices-edit-button"
                                 type="primary"
                                 icon={<EditOutlined />}
-                                onClick={() => navigate(`${basePath}/visa-services/edit/${service._id}`)}
+                                onClick={() => navigate(`${basePath}/visa-services/edit`, { state: { serviceId: service._id } })}
                             >
                                 Edit
                             </Button>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
 import dayjs from 'dayjs';
@@ -15,7 +15,8 @@ import TopNavUser from '../../components/topnav/TopNavUser';
 
 
 export default function PackagePage() {
-    const { id } = useParams();
+    const location = useLocation()
+    const { packageId } = location.state || {}
     const { auth } = useAuth();
     const { setBookingData } = useBooking();
 
@@ -75,13 +76,13 @@ export default function PackagePage() {
     //fetch package details from backend using the id from the URL and handle loading and error states
     useEffect(() => {
         const fetchPackage = async () => {
-            if (!id) {
+            if (!packageId) {
                 setPackageLoading(false)
                 return
             }
             try {
                 setPackageLoading(true)
-                const response = await apiFetch.get(`/package/get-package/${id}`)
+                const response = await apiFetch.get(`/package/get-package/${packageId}`)
                 setPackageData(response); //temp origin and destination for testing, replace with actual data from package when available
                 setPackageError('')
             } catch (error) {
@@ -93,13 +94,13 @@ export default function PackagePage() {
             }
         }
         fetchPackage()
-    }, [id])
+    }, [packageId])
 
     //get ratings for this package and map to display format, also used in fetchRatings function after submitting review to refresh the reviews
     const fetchRatings = useCallback(async () => {
-        if (!id) return
+        if (!packageId) return
         try {
-            const response = await apiFetch.get(`/rating/package/${id}/ratings`)
+            const response = await apiFetch.get(`/rating/package/${packageId}/ratings`)
             const mapped = (response || []).map((rating) => ({
                 id: rating._id,
                 userId: rating.userId?._id,
@@ -115,7 +116,7 @@ export default function PackagePage() {
         } catch {
             setReviews([])
         }
-    }, [id])
+    }, [packageId])
 
     useEffect(() => {
         fetchRatings()
@@ -256,7 +257,7 @@ export default function PackagePage() {
             return;
         }
 
-        const packageId = packageData?._id || id
+        const packageId = packageData?._id || packageId
         if (!packageId) {
             message.error('Unable to add wishlist item. Package is missing.')
             return
@@ -344,7 +345,7 @@ export default function PackagePage() {
             } else {
                 // CREATE review
                 await apiFetch.post('/rating/submit-rating', {
-                    packageId: id,
+                    packageId: packageId,
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
                 });

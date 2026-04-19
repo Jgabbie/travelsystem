@@ -8,6 +8,7 @@ import TopNavUser from '../../components/topnav/TopNavUser'
 
 
 export default function DestinationsPackages() {
+
     const navigate = useNavigate()
     const location = useLocation()
     const [packages, setPackages] = useState([])
@@ -367,7 +368,7 @@ export default function DestinationsPackages() {
                                             className={`destinations-card${pkg.availableSlots <= 0 ? ' destinations-card-disabled' : ''}`}
                                             hoverable={pkg.availableSlots > 0}
                                             onClick={() => {
-                                                if (pkg.availableSlots > 0) navigate(`/package/${pkg.id}`)
+                                                if (pkg.availableSlots > 0) navigate('/package', { state: { packageId: pkg.id } })
                                             }}
                                             style={pkg.availableSlots <= 0 ? { opacity: 0.6, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
                                         >

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Input, Button, Card, Space, message, ConfigProvider, Select } from "antd";
 import { PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addservice.css";
 import { useAuth } from "../../hooks/useAuth";
@@ -12,8 +12,9 @@ export default function AddService() {
     const { auth } = useAuth();
     const isEmployee = auth?.role === 'Employee';
     const basePath = isEmployee ? '/employee' : '';
-    const { id } = useParams();
-    const isEdit = Boolean(id);
+    const location = useLocation();
+    const { serviceId } = location.state || {};
+    const isEdit = Boolean(serviceId);
 
     const [errors, setErrors] = useState({
         visaName: "",
@@ -204,7 +205,7 @@ export default function AddService() {
         };
 
         if (isEdit) {
-            await apiFetch.put(`/services/update-service/${id}`, payload);
+            await apiFetch.put(`/services/update-service/${serviceId}`, payload);
         } else {
             await apiFetch.post("/services/create-service", payload);
         }
@@ -220,7 +221,7 @@ export default function AddService() {
 
         const getService = async () => {
             try {
-                const existing = await apiFetch.get(`/services/get-service/${id}`);
+                const existing = await apiFetch.get(`/services/get-service/${serviceId}`);
 
                 setValues({
                     visaName: existing.visaName || "",
@@ -265,7 +266,7 @@ export default function AddService() {
         }
 
         getService();
-    }, [id, isEdit]);
+    }, [serviceId, isEdit]);
 
 
     return (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker, Modal } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/viewpassportapplication.css";
 import dayjs from "dayjs";
@@ -23,7 +23,8 @@ const statusSteps = [
 ];
 
 export default function ViewPassportApplication() {
-    const { id } = useParams();
+    const location = useLocation();
+    const { applicationId } = location.state || {};
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [isSubmittingSlots, setIsSubmittingSlots] = useState(false);
@@ -57,7 +58,7 @@ export default function ViewPassportApplication() {
                 return;
             }
 
-            await apiFetch.put(`/passport/applications/${id}/suggest-appointments`, { slots });
+            await apiFetch.put(`/passport/applications/${applicationId}/suggest-appointments`, { slots });
 
             setAlternateSlots([
                 { date: null, time: null },
@@ -78,7 +79,7 @@ export default function ViewPassportApplication() {
 
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${id}/resubmit-documents`);
+            await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`);
             setApplication((prev) => ({ ...prev, status: "Payment Complete" }));
 
             const statusMap = statusSteps.reduce((acc, step, idx) => {
@@ -101,7 +102,7 @@ export default function ViewPassportApplication() {
     useEffect(() => {
         const fetchApplication = async () => {
             try {
-                const response = await apiFetch.get(`/passport/applications/${id}`);
+                const response = await apiFetch.get(`/passport/applications/${applicationId}`);
                 setApplication(response);
                 // Determine step based on status
                 const statusMap = statusSteps.reduce((acc, step, idx) => {
@@ -117,7 +118,7 @@ export default function ViewPassportApplication() {
             }
         };
         fetchApplication();
-    }, [id, navigate]);
+    }, [applicationId, navigate]);
 
     if (!application) {
         return null;
@@ -257,7 +258,7 @@ export default function ViewPassportApplication() {
         try {
             setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
-            await apiFetch.put(`/passport/applications/${id}/status`, { status: newStatus });
+            await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
             setCurrentStep(stepIdx);
             message.success(`Status updated to ${newStatus}`);
@@ -272,7 +273,7 @@ export default function ViewPassportApplication() {
     const handleDFARejected = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${id}/status`, { status: "Rejected" });
+            await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "Rejected" });
             setApplication((prev) => ({ ...prev, status: "Rejected" }));
             message.success("Application marked as DFA Rejected");
         } catch (err) {
@@ -285,7 +286,7 @@ export default function ViewPassportApplication() {
     const handleDFAApproved = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${id}/status`, { status: "DFA Approved" });
+            await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "DFA Approved" });
             setApplication((prev) => ({ ...prev, status: "DFA Approved" }));
             message.success("Application marked as DFA Approved");
         } catch (err) {

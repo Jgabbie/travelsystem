@@ -219,7 +219,7 @@ export default function VisaApplications() {
                             className='viewbutton-visa-application'
                             type="primary"
                             icon={<EyeOutlined />}
-                            onClick={() => navigate(`${basePath}/visa-applications/view/${record.key}`)}
+                            onClick={() => navigate(`${basePath}/visa-applications/view`, { state: { applicationId: record.key } })}
                         >
                             View
                         </Button>

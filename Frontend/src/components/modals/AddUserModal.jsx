@@ -9,7 +9,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
     const [loading, setLoading] = useState(false);
     const [isUserAddedModalOpen, setIsUserAddedModalOpen] = useState(false);
     const [values, setValues] = useState({
-        role: roleToAdd || 'User',
+        role: roleToAdd || 'Customer',
         username: '',
         firstname: '',
         lastname: '',
@@ -32,7 +32,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
     // RESET FIELDS AND ERRORS WHEN MODAL OPENS OR ROLE TO ADD CHANGES -----------------------------
     useEffect(() => {
         if (isOpen) {
-            const nextRole = roleToAdd || 'User';
+            const nextRole = roleToAdd || 'Customer';
             setValues({
                 role: nextRole,
                 username: '',
@@ -97,14 +97,16 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         }
         if (field === "phone") {
             if (value === "") return "Phone is required.";
-            if (value.length < 12) return "Phone must be 10 digits";
-            if (value.slice(0, 1) !== "8" && value.slice(0, 1) !== "9") return "Phone number must start with 8 or 9";
+            if (value.length < 13) return "Phone must be 10 digits";
+            if (!/^0[9]/.test(value))
+                return "Phone number must start with 09";
         }
         if (field === "password") {
             if (currentValues.role === 'Admin') return "";
             if (value === "") return "Password is required.";
             if (value.length < 8) return "Password must be at least 8 characters.";
             if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter.";
+            if (!/[a-z]/.test(value)) return "Password must contain at least one lowercase letter.";
             if (!/[0-9]/.test(value)) return "Password must contain at least one number.";
             if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return "Password must contain at least one special character.";
         }
@@ -203,7 +205,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             message.success(`${values.role} created successfully!`);
             setIsUserAddedModalOpen(true);
             setValues({
-                role: roleToAdd || 'User',
+                role: roleToAdd || 'Customer',
                 username: '',
                 firstname: '',
                 lastname: '',
@@ -270,7 +272,8 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                                 onChange={handleRoleChange}
                                 options={[
                                     { value: 'Admin', label: 'Admin' },
-                                    { value: 'User', label: 'User' }
+                                    { value: 'Customer', label: 'Customer' },
+                                    { value: 'Employee', label: 'Employee' }
                                 ]}
                             />
                             <p className="adduser-error">{error.role}</p>
@@ -386,16 +389,27 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                                 addonBefore="+63"
                                 value={values.phone}
                                 status={error.phone ? 'error' : ''}
-                                maxLength={12}
+                                maxLength={13}
                                 onChange={(e) => {
                                     let value = e.target.value.replace(/\D/g, "");
 
-                                    let formatted = "";
-                                    if (value.length > 0) formatted += value.slice(0, 3);
-                                    if (value.length >= 4) formatted += " " + value.slice(3, 6);
-                                    if (value.length >= 7) formatted += " " + value.slice(6, 10);
+                                    value = value.slice(0, 11);
 
-                                    valueHandler('phone', formatted);
+                                    let formatted = value;
+
+                                    if (value.length > 4 && value.length <= 7) {
+                                        formatted =
+                                            value.slice(0, 4) + " " +
+                                            value.slice(4);
+                                    }
+                                    else if (value.length > 7) {
+                                        formatted =
+                                            value.slice(0, 4) + " " +
+                                            value.slice(4, 7) + " " +
+                                            value.slice(7);
+                                    }
+
+                                    valueHandler("phone", formatted);
                                 }}
                                 onKeyDown={(e) => {
                                     if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
@@ -408,7 +422,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                             <p className="adduser-error">{error.phone}</p>
                         </div>
 
-                        {values.role !== 'Admin' && (
+                        {values.role !== 'Admin' && values.role !== 'Employee' ? (
                             <>
                                 <div className="adduser-row">
                                     <div className="adduser-col">
@@ -457,7 +471,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
 
                                 </div>
                             </>
-                        )}
+                        ) : null}
 
                         <div className="adduser-actions">
                             <Button className="adduser-cancel-btn" type="primary" onClick={onClose}>Cancel</Button>

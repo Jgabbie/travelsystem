@@ -365,7 +365,7 @@ export default function PackageManagement() {
                     type="primary"
                     icon={<EditOutlined />}
                     onClick={() =>
-                      navigate(`${basePath}/packages/edit/${pkg._id}`)
+                      navigate(`${basePath}/packages/edit`, { state: { packageId: pkg._id } })
                     }
                   >
                     Edit
