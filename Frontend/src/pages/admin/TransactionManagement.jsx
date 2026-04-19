@@ -286,7 +286,6 @@ export default function TransactionManagement() {
       await apiFetch.delete(`/transaction/${key}`);
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsTransactionDeletedModalOpen(true);
-      message.success("Transaction deleted");
     } catch (error) {
       message.error("Failed to delete transaction");
     }
@@ -331,7 +330,6 @@ export default function TransactionManagement() {
         )
       );
 
-      message.success("Transaction updated");
       setIsTransactionEditedModalOpen(true);
       setIsEditModalOpen(false);
       setEditingTransaction(null);
@@ -596,9 +594,8 @@ export default function TransactionManagement() {
                   >
                     <Select
                       options={[
-                        { value: "Bank Transfer", label: "Bank Transfer" },
-                        { value: "GCash", label: "GCash" },
-                        { value: "Credit Card", label: "Credit Card" }
+                        { value: "Manual", label: "Manual" },
+                        { value: "Paymongo", label: "Paymongo" },
                       ]}
                     />
                   </Form.Item>

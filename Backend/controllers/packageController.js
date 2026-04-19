@@ -106,31 +106,12 @@ const addPackage = async (req, res) => {
             images: images || []
         });
 
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         await logAction(
             "PACKAGE_CREATED",
             req.userId || null,
             {
-                packageId: newPackage._id,
-                packageCode: newPackage.packageCode,
-                packageName: newPackage.packageName,
-                pricePerPax: newPackage.packagePricePerPax,
-                availableSlots: newPackage.packageAvailableSlots,
-                description: newPackage.packageDescription,
-                packageType: newPackage.packageType,
-                duration: newPackage.packageDuration,
-                dateRanges: newPackage.packageSpecificDate,
-                hotels: newPackage.packageHotels,
-                airlines: newPackage.packageAirlines,
-                termsAndConditions: newPackage.packageTermsConditions,
-                inclusions: newPackage.packageInclusions,
-                exclusions: newPackage.packageExclusions,
-                itineraries: newPackage.packageItineraries,
-                tags: newPackage.packageTags,
-                visaRequired: newPackage.visaRequired,
-                images: newPackage.images || []
-            },
-            ip
+                "Package Created": `Package Name: ${newPackage.packageName} | Package Code: ${newPackage.packageCode} | Package Type: ${newPackage.packageType} | Duration: ${newPackage.packageDuration}`
+            }
         );
 
         res.status(201).json({ message: "Package created successfully", package: newPackage });
@@ -191,6 +172,15 @@ const removePackage = async (req, res) => {
         if (!deletedPackage) {
             return res.status(404).json({ message: "Package not found" });
         }
+
+        await logAction(
+            "PACKAGE_DELETED",
+            req.userId || null,
+            {
+                "Package Deleted": `Package Name: ${deletedPackage.packageName} | Package Code: ${deletedPackage.packageCode} | Package Type: ${deletedPackage.packageType} | Duration: ${deletedPackage.packageDuration}`
+            },
+        );
+
         res.status(200).json({ message: "Package removed successfully", package: deletedPackage });
     } catch (err) {
         console.error(err);
@@ -302,6 +292,14 @@ const updatePackage = async (req, res) => {
             });
         }
 
+        await logAction(
+            "PACKAGE_UPDATED",
+            req.userId || null,
+            {
+                "Package Updated": `Package Name: ${updatedPackage.packageName} | Package Code: ${updatedPackage.packageCode} | Package Type: ${updatedPackage.packageType} | Duration: ${updatedPackage.packageDuration}`
+            },
+        );
+
         res.status(200).json(updatedPackage);
     } catch (err) {
         console.error(err);
@@ -410,6 +408,14 @@ const updateSlots = async (req, res) => {
             });
         }
 
+        await logAction(
+            "PACKAGE_SLOTS_UPDATED",
+            req.userId || null,
+            {
+                "Package Slots Updated": `Package Name: ${pkg.packageName} | Package Code: ${pkg.packageCode} | Package Type: ${pkg.packageType} | Duration: ${pkg.packageDuration}`
+            },
+        );
+
         res.status(200).json({ message: "Slots updated successfully" });
     } catch (err) {
         console.error(err);
@@ -467,6 +473,14 @@ const updateDiscount = async (req, res) => {
                 `
             });
         }
+
+        await logAction(
+            "PACKAGE_DISCOUNT_UPDATED",
+            req.userId || null,
+            {
+                "Package Discount Updated": `Package Name: ${pkg.packageName} | Package Code: ${pkg.packageCode} | Package Type: ${pkg.packageType} | Duration: ${pkg.packageDuration}`
+            },
+        );
 
         res.status(200).json({ message: "Discount updated successfully", package: pkg });
     } catch (err) {

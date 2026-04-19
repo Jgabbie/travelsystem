@@ -567,16 +567,16 @@ export default function AddPackage() {
     let uploadedImageUrls = [];
 
     if (newFiles.length > 0) {
-      message.loading({ content: "Uploading images...", key: "upload" });
+      message.loading({ content: "Adding Package...", key: "upload" });
 
       uploadedImageUrls = await uploadPackageImages(newFiles);
 
       if (!uploadedImageUrls.length) {
-        message.error({ content: "Image upload failed", key: "upload" });
+        message.error({ content: "Failed to add package", key: "upload" });
         return;
       }
 
-      message.success({ content: "Images uploaded!", key: "upload" });
+      message.success({ content: "Package added successfully!", key: "upload" });
     }
 
     // combine both

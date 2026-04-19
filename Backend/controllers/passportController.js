@@ -36,7 +36,7 @@ const applyPassport = async (req, res) => {
             applicationNumber: randomApplicationNumber()
         })
 
-        logAction('APPLY_PASSPORT', userId, { dfaLocation, preferredDate, preferredTime, applicationType });
+        logAction('APPLY_PASSPORT', userId, { "Passport Application": ` DFA Location: ${dfaLocation} | Preferred Date: ${preferredDate} | Preferred Time: ${preferredTime} | Application Type: ${applicationType}` });
 
         const io = req.app.get('io')
         if (io) {
@@ -92,7 +92,7 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         // Log action
         logAction('UPDATE_PASSPORT', userId, {
             id,
-            docsUpdated: !!(birthCertificate || applicationForm || govId || additionalDocs)
+            "Documents Updated": `Application Number: ${application.applicationNumber}`
         });
 
         // Emit socket event

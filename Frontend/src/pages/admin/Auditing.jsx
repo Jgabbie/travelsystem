@@ -49,24 +49,26 @@ export default function Auditing() {
     //columns for the audit logs table
     const columns = [
         {
-            title: 'Date',
+            title: 'Date/Time',
             dataIndex: 'timestamp',
             key: 'timestamp',
+            width: 170,
             sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
             render: (text) => new Date(text).toLocaleString(),
         },
         {
-            title: 'Audit Event',
+            title: 'Action',
             dataIndex: 'action',
             key: 'action',
-            filters: actionFilters,
+            width: 160,
             onFilter: (value, record) => record.action?.includes(value),
             render: (text) => <Tag color="purple">{text}</Tag>
         },
         {
-            title: 'User Affected / Performed By',
+            title: 'Performed By',
             dataIndex: 'performedBy',
             key: 'performedBy',
+            width: 220,
             render: (user) => user ? (
                 <div>
                     <div style={{ fontWeight: 'bold' }}>{user.username} ({user.role})</div>
@@ -77,10 +79,7 @@ export default function Auditing() {
         {
             title: 'Role',
             key: 'role',
-            filters: [
-                { text: 'Admin', value: 'Admin' },
-                { text: 'User', value: 'User' },
-            ],
+            width: 100,
             onFilter: (value, record) => record.performedBy?.role === value,
             render: (_, record) => {
                 const role = record.performedBy?.role || "N/A";
@@ -89,24 +88,29 @@ export default function Auditing() {
             }
         },
         {
-            title: 'Change Details',
+            title: 'Details',
             dataIndex: 'details',
             key: 'details',
+            width: 360,
             render: (details, record) => {
-                const isPackageCreate = record.action === 'PACKAGE_CREATED';
-                if (isPackageCreate) {
-                    return (
-                        <div style={{ fontSize: '11px' }}>
-                            <div><strong>Name:</strong> {details?.packageName || 'N/A'}</div>
-                            <div><strong>Code:</strong> {details?.packageCode || 'N/A'}</div>
-                        </div>
-                    );
+
+                if (!details || typeof details !== 'object') {
+                    return <div style={{ fontSize: '12px', color: '#888' }}>No details</div>;
+                }
+
+                const entries = Object.entries(details);
+                if (entries.length === 0) {
+                    return <div style={{ fontSize: '12px', color: '#888' }}>No details</div>;
                 }
 
                 return (
-                    <pre style={{ margin: 0, fontSize: '11px' }}>
-                        {JSON.stringify(details, null, 2)}
-                    </pre>
+                    <ul style={{ margin: 0, paddingLeft: 16, fontSize: '12px', color: '#555' }}>
+                        {entries.map(([key, value]) => (
+                            <li key={key}>
+                                <strong>{key}:</strong> {String(value ?? 'N/A')}
+                            </li>
+                        ))}
+                    </ul>
                 );
             }
         }
@@ -136,6 +140,7 @@ export default function Auditing() {
                     dataSource={filteredLogs}
                     rowKey="_id"
                     loading={loading}
+                    tableLayout="fixed"
                     pagination={{ pageSize: 10, showSizeChanger: false }}
                 />
             </div>

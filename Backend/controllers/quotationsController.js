@@ -33,10 +33,9 @@ const createQuotation = async (req, res) => {
             status: 'Pending'
         })
 
-        logAction('QUOTATION_CREATED', userId, {
-            quotationId: newQuotation._id,
-            packageId
-        })
+        const packageName = await QuotationModel.findById(packageId).select('packageName')
+
+        logAction('QUOTATION_CREATED', userId, { "Quotation Created: ": `Reference: ${newQuotation.reference}` })
 
         const io = req.app.get('io')
         if (io) {
@@ -102,7 +101,7 @@ const updateQuotation = async (req, res) => {
         if (!updatedQuotation) {
             return res.status(404).json({ message: 'Quotation not found' })
         }
-        logAction('QUOTATION_UPDATED', req.userId, { quotationId: id })
+        logAction('QUOTATION_UPDATED', req.userId, { "Quotation Updated": `Reference: ${updatedQuotation.reference}` })
         res.status(200).json(updatedQuotation)
     } catch (error) {
         res.status(500).json({ message: 'Error updating quotation', error })
@@ -120,7 +119,7 @@ const deleteQuotation = async (req, res) => {
             return res.status(404).json({ message: 'Quotation not found' })
         }
 
-        logAction('QUOTATION_DELETED', req.userId, { quotationId: id })
+        logAction('QUOTATION_DELETED', req.userId, { "Quotation Deleted": `Reference: ${deletedQuotation.reference}` })
         res.status(200).json({ message: 'Quotation deleted' })
     } catch (error) {
         res.status(500).json({ message: 'Error deleting quotation', error })
@@ -211,7 +210,7 @@ const uploadQuotationPDF = async (req, res) => {
             console.error('Failed to create notification:', notificationError)
         }
 
-        logAction('QUOTATION_PDF_UPLOADED', req.userId, { quotationId: id });
+        logAction('QUOTATION_FORM_UPLOADED', req.userId, { "Quotation FORM Uploaded": `Reference: ${quotation.reference}` });
 
         res.status(200).json({ message: "PDF uploaded successfully", quotation: quotation });
     } catch (error) {
@@ -263,14 +262,13 @@ const requestRevision = async (req, res) => {
             createdAt: new Date()
         })
         await quotation.save()
-        logAction('QUOTATION_REVISION_REQUESTED', req.userId, { quotationId: id })
+        logAction('QUOTATION_REVISION_REQUESTED', req.userId, { "Quotation Revision Requested": `Reference: ${quotation.reference}` })
         res.status(200).json({ message: 'Revision requested successfully', quotation })
 
     } catch (error) {
         res.status(500).json({ message: 'Error requesting revision', error })
     }
 }
-
 
 
 module.exports = {

@@ -67,10 +67,9 @@ const createBooking = async (req, res) => {
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
-        logAction('BOOKING_CREATED', userId, {
-            bookingId: newBooking._id,
-            packageId: packageId
-        })
+        const packageName = await PackageModel.findById(packageId).select('packageName').lean()
+
+        logAction('BOOKING_CREATED', userId, { "Booking Created": `Booking Reference: ${newBooking.reference} | Package Name: ${packageName.packageName}` })
 
         const io = req.app.get('io')
         if (io) {
@@ -150,7 +149,6 @@ const getAllBookings = async (_req, res) => {
 
         res.status(200).json(bookings)
     } catch (error) {
-        logAction('GET_ALL_BOOKINGS_ERROR', _req.userId, { error: error.message })
         console.error('Error fetching bookings:', error)
         res.status(500).json({ message: 'Error fetching bookings', error })
     }
@@ -208,7 +206,7 @@ const updateBooking = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' })
         }
 
-        logAction('BOOKING_UPDATED', req.userId, { bookingId: id })
+        logAction('BOOKING_UPDATED', req.userId, { "Booking Updated": `Booking Reference: ${updatedBooking.reference}` })
         res.status(200).json(updatedBooking)
     } catch (error) {
         res.status(500).json({ message: 'Error updating booking', error })
@@ -225,7 +223,7 @@ const deleteBooking = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' })
         }
 
-        logAction('BOOKING_DELETED', req.userId, { bookingId: id })
+        logAction('BOOKING_DELETED', req.userId, { "Booking Deleted": `Booking Reference: ${deletedBooking.reference}` })
         res.status(200).json({ message: 'Booking deleted' })
     } catch (error) {
         res.status(500).json({ message: 'Error deleting booking', error })
@@ -268,7 +266,6 @@ const cancelBooking = async (req, res) => {
             imageProof: imageProof || null,
             status: 'Pending'
         })
-        logAction('BOOKING_CANCELLED', userId, { bookingId: id, reason })
         const io = req.app.get('io')
         if (io) {
             io.emit('cancellation:created', {
@@ -386,7 +383,7 @@ const approveCancellation = async (req, res) => {
                 }
             }
         }
-        logAction('CANCELLATION_APPROVED', req.userId, { cancellationId: id })
+        logAction('CANCELLATION_APPROVED', req.userId, { "Cancellation Approved": `Cancellation Reference: ${cancellation.reference}` })
         res.status(200).json({ message: 'Cancellation approved' })
     } catch (error) {
         res.status(500).json({ message: 'Error approving cancellation', error })
@@ -486,7 +483,7 @@ const disApproveCancellation = async (req, res) => {
             }
         }
 
-        logAction('CANCELLATION_DISAPPROVED', req.userId, { cancellationId: id })
+        logAction('CANCELLATION_DISAPPROVED', req.userId, { "Cancellation Disapproved": `Cancellation Reference: ${cancellation.reference}` })
         res.status(200).json({ message: 'Cancellation disapproved' })
     } catch (error) {
         res.status(500).json({ message: 'Error disapproving cancellation', error })

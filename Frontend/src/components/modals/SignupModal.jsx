@@ -303,6 +303,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             {isLoading && (
                 <Spin fullscreen size="large" className="app-loading-spin" style={{ zIndex: 2000 }} />
             )}
+
             <div>
                 <Modal
                     open={isOpenSignup}
@@ -313,136 +314,150 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     style={{ top: 60 }}
                 >
 
-                    <div id='signup-container-modal'>
-                        <h1 id='signup-heading-modal'>Welcome</h1>
-                        <p id='signup-secondary-heading-modal'>Create an Account</p>
+                    <div className='signup-container-modal'>
 
-                        <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleSignup}>
-                            <div className="signup-input-group-modal">
-                                <label className='signup-labels-modal'>Username</label>
-                                <Input status={hasFieldError(error.username) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                    if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
-                                        e.preventDefault()
-                                    }
-                                }} value={values.username} type="text" id="username" className='signup-input-fields-modal' name="username" required />
-                            </div>
-                            {renderErrorMessages(error.username, "username")}
 
-                            <div className="signup-input-row-modal">
+                        <div className='signup-container-left'>
+                            <img
+                                src='/images/Signup_BackgroundImage.png'
+                                alt='Signup Background'
+                                className='signup-container-left-image'
+                            />
+                        </div>
+
+
+                        <div className='signup-container-right'>
+                            <h1 id='signup-heading-modal'>Welcome</h1>
+                            <p id='signup-secondary-heading-modal'>Create an Account</p>
+
+                            <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleSignup}>
                                 <div className="signup-input-group-modal">
-                                    <label className='signup-labels-modal'>First name</label>
-                                    <Input status={hasFieldError(error.firstname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("firstname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
-                                        const value = e.target.value;
-                                        if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
-                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-
-                                        if (
-                                            !/^[A-Za-z ]$/.test(e.key) &&
-                                            e.key !== "Backspace" &&
-                                            e.key !== "ArrowLeft" &&
-                                            e.key !== "ArrowRight"
-                                        ) {
-                                            e.preventDefault();
+                                    <label className='signup-labels-modal'>Username</label>
+                                    <Input status={hasFieldError(error.username) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                        if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
+                                            e.preventDefault()
                                         }
-                                    }} value={values.firstname} type="text" id="firstname" className='signup-input-fields-modal-group' name="firstname" required />
+                                    }} value={values.username} type="text" id="username" className='signup-input-fields-modal' name="username" required />
+                                </div>
+                                {renderErrorMessages(error.username, "username")}
 
-                                    {renderErrorMessages(error.firstname, "firstname")}
+                                <div className="signup-input-row-modal">
+                                    <div className="signup-input-group-modal">
+                                        <label className='signup-labels-modal'>First name</label>
+                                        <Input status={hasFieldError(error.firstname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("firstname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
+                                            const value = e.target.value;
+                                            if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                            if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+
+                                            if (
+                                                !/^[A-Za-z ]$/.test(e.key) &&
+                                                e.key !== "Backspace" &&
+                                                e.key !== "ArrowLeft" &&
+                                                e.key !== "ArrowRight"
+                                            ) {
+                                                e.preventDefault();
+                                            }
+                                        }} value={values.firstname} type="text" id="firstname" className='signup-input-fields-modal-group' name="firstname" required />
+
+                                        {renderErrorMessages(error.firstname, "firstname")}
+                                    </div>
+
+                                    <div className="signup-input-group-modal">
+                                        <label className='signup-labels-modal'>Last name</label>
+                                        <Input status={hasFieldError(error.lastname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("lastname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
+                                            const value = e.target.value;
+                                            if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                            if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                            if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                            if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                            if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                            if (
+                                                !/^[A-Za-z -]$/.test(e.key) &&
+                                                e.key !== "Backspace" &&
+                                                e.key !== "ArrowLeft" &&
+                                                e.key !== "ArrowRight"
+                                            ) {
+                                                e.preventDefault();
+                                            }
+                                        }} value={values.lastname} type="text" id="lastname" className='signup-input-fields-modal-group' name="lastname" required />
+
+                                        {renderErrorMessages(error.lastname, "lastname")}
+                                    </div>
                                 </div>
 
                                 <div className="signup-input-group-modal">
-                                    <label className='signup-labels-modal'>Last name</label>
-                                    <Input status={hasFieldError(error.lastname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("lastname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
-                                        const value = e.target.value;
-                                        if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
-                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-                                        if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
-                                        if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
-                                        if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                        if (
-                                            !/^[A-Za-z -]$/.test(e.key) &&
-                                            e.key !== "Backspace" &&
-                                            e.key !== "ArrowLeft" &&
-                                            e.key !== "ArrowRight"
-                                        ) {
-                                            e.preventDefault();
-                                        }
-                                    }} value={values.lastname} type="text" id="lastname" className='signup-input-fields-modal-group' name="lastname" required />
-
-                                    {renderErrorMessages(error.lastname, "lastname")}
-                                </div>
-                            </div>
-
-                            <div className="signup-input-group-modal">
-                                <label className='signup-labels-modal'>Email</label>
-                                <Input status={hasFieldError(error.email) ? "error" : ""} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                    if (e.key === " " && e.key !== "Backspace") {
-                                        e.preventDefault()
-                                    }
-                                }} value={values.email} type="email" id="email" className='signup-input-fields-modal' name="email" required />
-
-                                {renderErrorMessages(error.email, "email")}
-                            </div>
-
-                            <div className="signup-input-group-modal">
-                                <label className='signup-labels-modal'>Phone Number</label>
-                                <Input addonBefore="+63" status={hasFieldError(error.phone) ? "error" : ""} maxLength={13}
-                                    onChange={(e) => {
-                                        let value = e.target.value.replace(/\D/g, "");
-
-                                        value = value.slice(0, 11);
-
-                                        let formatted = value;
-
-                                        if (value.length > 4 && value.length <= 7) {
-                                            formatted =
-                                                value.slice(0, 4) + " " +
-                                                value.slice(4);
-                                        }
-                                        else if (value.length > 7) {
-                                            formatted =
-                                                value.slice(0, 4) + " " +
-                                                value.slice(4, 7) + " " +
-                                                value.slice(7);
-                                        }
-
-                                        valueHandler("phone", formatted);
-                                    }} value={values.phone} type="tel" id="phone" className='signup-input-fields-modal' name="phone" required />
-
-                                {renderErrorMessages(error.phone, "phone")}
-                            </div>
-
-                            <div className="signup-input-row-modal">
-                                <div className="signup-input-group-modal">
-                                    <label className='signup-labels-modal'>Password</label>
-                                    <Input.Password status={hasFieldError(error.password) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                    <label className='signup-labels-modal'>Email</label>
+                                    <Input status={hasFieldError(error.email) ? "error" : ""} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                         if (e.key === " " && e.key !== "Backspace") {
                                             e.preventDefault()
                                         }
-                                    }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} value={values.password} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
+                                    }} value={values.email} type="email" id="email" className='signup-input-fields-modal' name="email" required />
 
-                                    {renderErrorMessages(error.password, "password")}
+                                    {renderErrorMessages(error.email, "email")}
                                 </div>
 
                                 <div className="signup-input-group-modal">
-                                    <label className='signup-labels-modal'>Confirm Password</label>
-                                    <Input.Password status={hasFieldError(error.confirmPassword) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault()
-                                        }
-                                    }} visibilityToggle={{ visible: showConfirmPassword, onVisibleChange: setShowConfirmPassword }} value={values.confirmPassword} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
+                                    <label className='signup-labels-modal'>Phone Number</label>
+                                    <Input addonBefore="+63" status={hasFieldError(error.phone) ? "error" : ""} maxLength={13}
+                                        onChange={(e) => {
+                                            let value = e.target.value.replace(/\D/g, "");
 
-                                    {renderErrorMessages(error.confirmPassword, "confirmPassword")}
+                                            value = value.slice(0, 11);
+
+                                            let formatted = value;
+
+                                            if (value.length > 4 && value.length <= 7) {
+                                                formatted =
+                                                    value.slice(0, 4) + " " +
+                                                    value.slice(4);
+                                            }
+                                            else if (value.length > 7) {
+                                                formatted =
+                                                    value.slice(0, 4) + " " +
+                                                    value.slice(4, 7) + " " +
+                                                    value.slice(7);
+                                            }
+
+                                            valueHandler("phone", formatted);
+                                        }} value={values.phone} type="tel" id="phone" className='signup-input-fields-modal' name="phone" required />
+
+                                    {renderErrorMessages(error.phone, "phone")}
                                 </div>
-                            </div>
 
+                                <div className="signup-input-row-modal">
+                                    <div className="signup-input-group-modal">
+                                        <label className='signup-labels-modal'>Password</label>
+                                        <Input.Password status={hasFieldError(error.password) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                            if (e.key === " " && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} value={values.password} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
 
-                            <div className="signup-button-row-modal">
-                                <Button htmlType="submit" id='signup-button-modal'>Create Account</Button>
-                                <div className="signup-link-text-modal">
-                                    <p className='signup-label-links-modal'>Already have an account? <Button className='signup-button-links-modal' type="link" onClick={goToLogin}>Login here</Button></p>
+                                        {renderErrorMessages(error.password, "password")}
+                                    </div>
+
+                                    <div className="signup-input-group-modal">
+                                        <label className='signup-labels-modal'>Confirm Password</label>
+                                        <Input.Password status={hasFieldError(error.confirmPassword) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
+                                            if (e.key === " " && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }} visibilityToggle={{ visible: showConfirmPassword, onVisibleChange: setShowConfirmPassword }} value={values.confirmPassword} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
+
+                                        {renderErrorMessages(error.confirmPassword, "confirmPassword")}
+                                    </div>
                                 </div>
-                            </div>
-                        </form>
+
+
+                                <div className="signup-button-row-modal">
+                                    <Button htmlType="submit" id='signup-button-modal'>Create Account</Button>
+                                    <div className="signup-link-text-modal">
+                                        <p className='signup-label-links-modal'>Already have an account? <Button className='signup-button-links-modal' type="link" onClick={goToLogin}>Login here</Button></p>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
                     </div>
                 </Modal>
 

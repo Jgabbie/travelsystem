@@ -1,5 +1,6 @@
 const Rating = require('../models/rating')
 const mongoose = require('mongoose')
+const logAction = require('../utils/logger')
 
 const submitRating = async (req, res) => {
     const { packageId, rating, review } = req.body;
@@ -36,6 +37,16 @@ const submitRating = async (req, res) => {
                 createdAt: newRating.createdAt
             })
         }
+
+        const ratingDoc = await Rating.findById(newRating._id)
+            .populate('packageId', 'packageName')
+            .populate('userId', 'username')
+            .select('packageId userId')
+
+        const packageName = ratingDoc?.packageId?.packageName || 'Unknown'
+        const userName = ratingDoc?.userId?.username || 'Unknown'
+
+        logAction('RATING_SUBMITTED', userId, { "Rating Submitted": `Customer Name: ${userName} | Package Name: ${packageName} | Rating: ${rating} | Review: ${review}` })
 
         return res.status(201).json({
             message: "Rating submitted successfully",
@@ -88,7 +99,16 @@ const deleteRating = async (req, res) => {
             return res.status(403).json({ message: "Forbidden" });
         }
 
+        await rating.populate('packageId', 'packageName');
+        await rating.populate('userId', 'username');
+
+        const packageName = rating?.packageId?.packageName || 'Unknown'
+        const userName = rating?.userId?.username || 'Unknown'
+
         await rating.deleteOne()
+
+        logAction('RATING_DELETED', userId, { "Rating Deleted": `Customer Name: ${userName} | Package Name: ${packageName}` })
+
         res.status(200).json({ message: "Rating deleted" })
     } catch (error) {
         res.status(500).json({ message: "Error deleting rating", error })
@@ -102,13 +122,23 @@ const adminDeleteRating = async (req, res) => {
         if (!rating) {
             return res.status(404).json({ message: "Rating not found" })
         }
+
+
+        await rating.populate('packageId', 'packageName');
+        await rating.populate('userId', 'username');
+
+        const packageName = rating?.packageId?.packageName || 'Unknown'
+        const userName = rating?.userId?.username || 'Unknown'
+
         await rating.deleteOne()
+
+        logAction('RATING_DELETED_BY_ADMIN', req.userId, { "Rating Deleted by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
+
         res.status(200).json({ message: "Rating deleted" })
     } catch (error) {
         res.status(500).json({ message: "Error deleting rating", error })
     }
 }
-
 
 const updateRating = async (req, res) => {
     const { id } = req.params
@@ -125,6 +155,18 @@ const updateRating = async (req, res) => {
         existingRating.rating = rating
         existingRating.review = review
         await existingRating.save()
+
+
+        const ratingDoc = await Rating.findById(id)
+            .populate('packageId', 'packageName')
+            .populate('userId', 'username')
+            .select('packageId userId')
+
+        const packageName = ratingDoc?.packageId?.packageName || 'Unknown'
+        const userName = ratingDoc?.userId?.username || 'Unknown'
+
+        logAction('RATING_UPDATED', userId, { "Rating Updated": `Customer Name: ${userName} | Package Name: ${packageName} | New Rating: ${rating} | New Review: ${review}` })
+
         res.status(200).json({ message: "Rating updated successfully", rating: existingRating })
     } catch (error) {
         res.status(500).json({ message: "Error updating rating", error })

@@ -7,20 +7,63 @@ body {
     overflow-y: auto !important;
 }
 
+.signup-modal .ant-modal {
+    max-width: 100vw !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+.signup-modal .ant-modal-content,
+.signup-modal .ant-modal-body {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.signup-modal .ant-modal-container {
+    padding: 0 !important;
+}
+
 .signup-modal {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     top: 70px;
+    padding: none;
+    margin: none;
 }
 
-#signup-container-modal {
+.signup-container-modal {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-    width: 650px;
+    min-width: 1000px;
+    gap: 20px;
+    padding: 0px;
+}
+
+
+.signup-container-left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    width: 490px;
+    height: 610px;
+
+}
+
+.signup-container-left-image {
+    padding: 0;
+    min-width: 490px;
+    min-height: 610px;
+    border-top-left-radius: 7px;
+    border-bottom-left-radius: 7px;
+}
+
+.signup-container-right {
+    padding: 20px;
 }
 
 #signup-heading-modal {
@@ -50,6 +93,19 @@ body {
     height: 35px;
     font-size: 13px;
     font-family: "Montserrat", sans-serif;
+}
+
+.signup-input-fields-modal-group.ant-input-password,
+.signup-input-fields-modal-group.ant-input-affix-wrapper {
+    height: 35px;
+    align-items: center;
+}
+
+.signup-input-fields-modal-group.ant-input-password .ant-input,
+.signup-input-fields-modal-group.ant-input-affix-wrapper .ant-input {
+    height: 35px;
+    line-height: 35px;
+    font-size: 13px;
 }
 
 .signup-input-fields-modal {
@@ -177,7 +233,52 @@ body {
     margin-top: 15px;
 }
 
+
+@media (max-width: 1024px) {
+
+    .ant-modal {
+        top: 30px !important;
+    }
+
+    .signup-container-modal {
+        flex-direction: column;
+        min-width: 320px;
+        width: 100%;
+        padding: 0 20px;
+    }
+
+    .signup-container-left {
+        display: none;
+    }
+
+    #signup-heading-modal {
+        font-size: 28px;
+        line-height: 1.1;
+    }
+
+    #signup-secondary-heading-modal {
+        font-size: 14px;
+        line-height: 1.2;
+    }
+
+    .signup-button-row-modal {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    #signup-button-modal {
+        width: 100%;
+        max-width: 280px;
+    }
+}
+
 @media (max-width: 768px) {
+
+    .ant-modal {
+        top: 25px !important;
+    }
+
     .signup-modal {
         top: 30px;
     }
@@ -192,12 +293,8 @@ body {
         line-height: 1.2;
     }
 
-    .signup-input-row-modal {
-        flex-direction: column;
-    }
-
-    .signup-input-group-modal {
-        margin-right: 0;
+    .signup-container-left {
+        display: none;
     }
 
     .signup-button-row-modal {
@@ -214,8 +311,13 @@ body {
 
 @media (max-width: 480px) {
 
-    #signup-container-modal {
-        padding: 0 12px;
+    .ant-modal,
+    .ant-modal-container {
+        top: 5px !important;
+    }
+
+    .signup-container-modal {
+        padding: 0 20px;
         width: 100%;
     }
 
@@ -223,6 +325,14 @@ body {
     .signup-label-links-modal,
     .signup-button-links-modal {
         font-size: 13px;
+    }
+
+    .signup-input-row-modal {
+        flex-direction: column;
+    }
+
+    .signup-input-group-modal {
+        margin-right: 0;
     }
 }
 
@@ -234,7 +344,8 @@ body {
 }
 
 /* --- Signup Success Modal --- */
-.signup-success-modal .ant-modal-content {
+
+.ant .signup-success-modal .ant-modal-content {
     border-radius: 16px;
     padding: 24px;
     background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);

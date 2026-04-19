@@ -60,10 +60,12 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 .search-input {
-  width: 795px;
+  width: 100%;
+  max-width: 795px;
 }
 
 .search-input,

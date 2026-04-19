@@ -23,6 +23,8 @@ import socket, { isSocketEnabled } from "../../config/socket";
 const { Sider } = Layout;
 
 export default function SideNav() {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [bookingCount, setBookingCount] = useState(0);
   const [latestBookingValue, setLatestBookingValue] = useState(null);
   const [cancellationCount, setCancellationCount] = useState(0);
@@ -63,6 +65,28 @@ export default function SideNav() {
     values.sort((a, b) => a - b);
     return values[values.length - 1];
   };
+
+  useEffect(() => {
+    const updateLayout = () => {
+      const nextIsMobile = window.innerWidth <= 900;
+      setIsMobile(nextIsMobile);
+      setIsCollapsed(nextIsMobile);
+    };
+
+    updateLayout();
+    window.addEventListener("resize", updateLayout);
+    return () => window.removeEventListener("resize", updateLayout);
+  }, []);
+
+  useEffect(() => {
+    const handleToggle = () => {
+      if (!isMobile) return;
+      setIsCollapsed((prev) => !prev);
+    };
+
+    window.addEventListener("sidenav:toggle", handleToggle);
+    return () => window.removeEventListener("sidenav:toggle", handleToggle);
+  }, [isMobile]);
 
   useEffect(() => {
     let isMounted = true;
@@ -377,7 +401,13 @@ export default function SideNav() {
 
   return (
     <>
-      <Sider className="sidenav" width={220}>
+      <Sider
+        className={isMobile ? "sidenav is-mobile" : "sidenav"}
+        width={220}
+        collapsedWidth={0}
+        collapsed={isCollapsed}
+        trigger={null}
+      >
 
         <div className="nav-top">
           <NavLink to="/dashboard" className="nav-item">

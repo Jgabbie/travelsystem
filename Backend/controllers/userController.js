@@ -201,7 +201,7 @@ const createUsers = async (req, res) => {
             email,
             phone,
             hashedPassword,
-            role: role || "User",
+            role: role || "Customer",
             isAccountVerified: true
         });
 
@@ -211,9 +211,7 @@ const createUsers = async (req, res) => {
             actionName,
             adminId,
             {
-                new_user_id: newUser._id,
-                new_user_role: newUser.role,
-                new_username: newUser.username
+                "Successfully Created": `Role: ${newUser.role} | Username: ${newUser.username} | Email: ${newUser.email}`
             });
 
         const io = req.app.get('io')
@@ -254,6 +252,11 @@ const markLoginOnce = async (req, res) => {
 
 const delUsers = async (req, res) => {
     const { id } = req.params;
+    const adminId = req.userId;
+
+    if (!adminId) {
+        return res.status(401).json({ message: "Unauthorized: Admin ID missing" });
+    }
 
     if (!id) {
         return res.status(400).json({ message: "User id is required" });
@@ -283,13 +286,10 @@ const delUsers = async (req, res) => {
 
         await logAction(
             "ADMIN_DELETED_USER",
-            req.userId || null,
+            adminId,
             {
-                deletedUserId: user._id,
-                deletedUsername: user.username
+                "Successfully Deleted": `Role: ${user.role} | Username: ${user.username} | Email: ${user.email}`
             });
-
-
 
         res.json({ message: "User archived and deleted", userId: user._id });
     } catch (err) {

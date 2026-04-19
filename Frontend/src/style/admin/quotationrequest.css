@@ -1,5 +1,6 @@
 .quotationrequest-selection-card {
-    width: 590px;
+    width: 100%;
+    max-width: 590px;
     border: 1px solid #f0f0f0;
     border-radius: 16px;
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
@@ -119,4 +120,16 @@
     margin-top: 6px;
     font-size: 12px;
     color: #c0392b;
+}
+
+@media (max-width: 600px) {
+
+    .quotationrequest-formremove-button,
+    .quotationrequest-form-button,
+    .quotationrequest-formgenerate-button,
+    .quotationrequest-sendquotation-button,
+    .quotationrequest-upload-button,
+    .quotationrequest-viewpdf-button {
+        width: 100%;
+    }
 }

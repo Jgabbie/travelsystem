@@ -13,6 +13,7 @@ const NotificationModel = require("../models/notification");
 const PassportModel = require("../models/passport");
 const VisaModel = require("../models/visas");
 const QuotationModel = require("../models/quotations")
+const logAction = require('../utils/logger')
 
 
 const parseAmount = (value) => {
@@ -121,8 +122,6 @@ const createManualPayment = async (req, res) => {
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
-
-
         const reference = generateTransactionReference();
 
         if (!proofImage || !proofImageType) {
@@ -216,6 +215,8 @@ const createManualPayment = async (req, res) => {
         } catch (emailError) {
             console.error('Failed to send booking email:', emailError);
         }
+
+        logAction('MANUAL_PAYMENT_TRANSACTION', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Package Booking` });
 
         return res.status(200).json({
             redirectUrl: `/booking-payment/success?token=${token}`
@@ -350,6 +351,8 @@ const createManualPaymentQuotation = async (req, res) => {
             console.error('Failed to send booking email:', emailError);
         }
 
+        logAction('MANUAL_PAYMENT_TRANSACTION', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Quotation Booking` });
+
         return res.status(200).json({
             redirectUrl: `/booking-payment/success?token=${token}`
         });
@@ -472,6 +475,8 @@ const createManualPaymentDeposit = async (req, res) => {
             console.error('Failed to send booking email:', emailError);
         }
 
+        logAction('MANUAL_PAYMENT_TRANSACTION', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.amount.toFixed(2)} | Payment Purpose: Installment Payment` });
+
         return res.status(200).json({
             redirectUrl: `/booking-payment/success?token=${token}`
         });
@@ -587,6 +592,8 @@ const createManualPaymentPassport = async (req, res) => {
             console.error('Failed to send passport email:', emailError);
         }
 
+        logAction('MANUAL_PAYMENT_TRANSACTION', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Passport Application` });
+
         return res.status(200).json({
             redirectUrl: `/user-applications/success/passport?token=${token}`
         });
@@ -699,6 +706,8 @@ const createManualPaymentVisa = async (req, res) => {
         } catch (emailError) {
             console.error('Failed to send visa email:', emailError);
         }
+
+        logAction('MANUAL_PAYMENT_TRANSACTION', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Visa Application` });
 
         return res.status(200).json({
             redirectUrl: `/user-applications/success/visa?token=${token}`
@@ -1368,6 +1377,8 @@ const handlePayMongoWebhook = async (req, res) => {
                 status: 'Successful',
             });
 
+            logAction('PAYMONGO_PAYMENT_TRANSACTION', user._id, { "Visa Application Paid": `Transaction Reference: ${transactionReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Visa Application` });
+
             console.log('Created transaction for visa application:', metadata.applicationId);
 
             const updatedVisa = await VisaModel.findOneAndUpdate(
@@ -1546,6 +1557,8 @@ const handlePayMongoWebhook = async (req, res) => {
                 console.error('Failed to send passport email:', emailError);
             }
 
+            logAction('PAYMONGO_PAYMENT_TRANSACTION', user._id, { "Passport Application Paid": `Transaction Reference: ${transactionReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Passport Application` });
+
             console.log('Passport payment processed successfully');
             return
         }
@@ -1644,6 +1657,8 @@ const handlePayMongoWebhook = async (req, res) => {
             } catch (emailError) {
                 console.error('Failed to send booking email:', emailError);
             }
+
+            logAction('PAYMONGO_PAYMENT_TRANSACTION', user._id, { "Installment Payment": `Transaction Reference: ${transactionReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Installment Payment` });
 
             console.log('Installment payment processed successfully');
             return
@@ -1787,6 +1802,8 @@ const handlePayMongoWebhook = async (req, res) => {
             } catch (emailError) {
                 console.error('Failed to send booking email:', emailError);
             }
+
+            logAction('PAYMONGO_PAYMENT_TRANSACTION', user._id, { "Booking Payment": `Transaction Reference: ${metadata.bookingReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Booking Payment` });
 
             console.log('Booking payment processed successfully');
             return
@@ -1938,6 +1955,8 @@ const handlePayMongoWebhook = async (req, res) => {
             } catch (emailError) {
                 console.error('Failed to send booking email:', emailError);
             }
+
+            logAction('PAYMONGO_PAYMENT_TRANSACTION', user._id, { "Quotation Booking Payment": `Transaction Reference: ${metadata.bookingReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Quotation Booking Payment` });
 
             console.log('Booking payment processed successfully');
             return

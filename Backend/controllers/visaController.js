@@ -46,7 +46,7 @@ const applyVisa = async (req, res) => {
             status,
         })
 
-        logAction('APPLY_VISA', userId, { serviceId, preferredDate, purposeOfTravel });
+        logAction('APPLY_VISA', userId, { "Visa Application Created": `Application Number: ${application.applicationNumber}` });
 
         const io = req.app.get('io')
         if (io) {
@@ -91,7 +91,7 @@ const updateVisaApplicationWithDocs = async (req, res) => {
 
         await application.save();
 
-        logAction('UPDATE_VISA_APPLICATION', userId, { applicationId: id, preferredDate, purposeOfTravel, submittedDocuments });
+        logAction('UPDATE_VISA_APPLICATION', userId, { "Visa Application Updated": `Application Number: ${application.applicationNumber}` });
 
         const io = req.app.get('io')
         if (io) {
@@ -421,6 +421,11 @@ const updateVisaApplicationStatus = async (req, res) => {
                     `
                 });
             }
+
+
+
+            logAction('UPDATE_VISA_STATUS', req.userId, { "Visa Application Status Updated": `Application Number: ${updated.applicationNumber}, New Status: ${status}` });
+
         } catch (notifyError) {
             console.error('Failed to send visa status notification:', notifyError);
         }

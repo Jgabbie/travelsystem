@@ -70,6 +70,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   .footer-add-packages {
@@ -362,4 +364,40 @@
   .backsubmit-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
+  }
+
+  @media (max-width: 900px) {
+    body {
+      overflow: auto;
+    }
+
+    .add-package-form.ant-card {
+      height: auto;
+    }
+
+    .add-package-inputs,
+    .add-package-duration-select {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    .add-package-section-half {
+      min-width: 0;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .package-image-action-button,
+    .save-package-button {
+      width: 100% !important;
+    }
+
+    .package-image-preview {
+      gap: 16px;
+    }
+
+    .package-image-preview > div {
+      width: 100%;
+      height: 180px;
+    }
   }

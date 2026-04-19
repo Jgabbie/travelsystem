@@ -2,29 +2,41 @@ const LogModel = require('../models/log');
 const AuditModel = require('../models/audit');
 
 const auditExcludedActions = new Set([
-    'USER_LOGIN',
+    'CUSTOMER_LOGIN',
     'ADMIN_LOGIN',
-    'USER_LOGOUT',
+    'EMPLOYEE_LOGIN',
+    'CUSTOMER_LOGOUT',
     'ADMIN_LOGOUT',
+    'EMPLOYEE_LOGOUT',
     'LOGIN_FAILED'
 ]);
 
-const logAction = async (action, userId, details = {}, ip = '0.0.0.0') => {
+const logIncludedActionsOnly = new Set([
+    'CUSTOMER_LOGIN',
+    'ADMIN_LOGIN',
+    'EMPLOYEE_LOGIN',
+    'LOGIN_FAILED',
+    'CUSTOMER_LOGOUT',
+    'ADMIN_LOGOUT',
+    'EMPLOYEE_LOGOUT',
+]);
+
+const logAction = async (action, userId, details = {}) => {
     const logPayload = {
         action,
         performedBy: userId,
         details,
-        ipAddress: ip
     };
 
     try {
-        await LogModel.create(logPayload);
+        if (logIncludedActionsOnly.has(action)) {
+            await LogModel.create(logPayload);
+        }
 
         if (!auditExcludedActions.has(action)) {
             await AuditModel.create(logPayload);
         }
 
-        console.log(`[LOG] Action: ${action} | User: ${userId}`);
     } catch (error) {
         console.error("Failed to create audit log:", error);
     }

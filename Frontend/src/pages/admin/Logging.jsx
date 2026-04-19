@@ -42,6 +42,7 @@ export default function Logging() {
             title: 'Date/Time',
             dataIndex: 'timestamp',
             key: 'timestamp',
+            width: 170,
             sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
             render: (text) => new Date(text).toLocaleString(),
         },
@@ -49,12 +50,7 @@ export default function Logging() {
             title: 'Action',
             dataIndex: 'action',
             key: 'action',
-            filters: [
-                { text: 'Login (User)', value: 'USER_LOGIN' },
-                { text: 'Login (Admin)', value: 'ADMIN_LOGIN' },
-                { text: 'Logout', value: 'USER_LOGOUT' },
-                { text: 'Failed Login', value: 'LOGIN_FAILED' },
-            ],
+            width: 160,
             onFilter: (value, record) => record.action.includes(value),
             render: (text) => {
                 let color = 'default';
@@ -68,6 +64,7 @@ export default function Logging() {
             title: 'Performed By',
             dataIndex: 'performedBy',
             key: 'performedBy',
+            width: 220,
             render: (user) => user ? (
                 <div>
                     <div style={{ fontWeight: 'bold' }}>{user.username}</div>
@@ -78,10 +75,7 @@ export default function Logging() {
         {
             title: 'Role',
             key: 'role',
-            filters: [
-                { text: 'Admin', value: 'Admin' },
-                { text: 'User', value: 'User' },
-            ],
+            width: 100,
             onFilter: (value, record) => record.performedBy?.role === value,
             render: (_, record) => {
                 const role = record.performedBy?.role || "N/A";
@@ -93,14 +87,26 @@ export default function Logging() {
             title: 'Details',
             dataIndex: 'details',
             key: 'details',
+            width: 360,
             render: (details) => {
-                if (!details) {
+                if (!details || typeof details !== 'object') {
                     return <div style={{ fontSize: '12px', color: '#888' }}>No details</div>;
                 }
-                const text = JSON.stringify(details)
-                    .replace(/["{}]/g, '')
-                    .replace(/:/g, ': ');
-                return <div style={{ fontSize: '12px', color: '#555' }}>{text}</div>;
+
+                const entries = Object.entries(details);
+                if (entries.length === 0) {
+                    return <div style={{ fontSize: '12px', color: '#888' }}>No details</div>;
+                }
+
+                return (
+                    <ul style={{ margin: 0, paddingLeft: 16, fontSize: '12px', color: '#555' }}>
+                        {entries.map(([key, value]) => (
+                            <li key={key}>
+                                <strong>{key}:</strong> {String(value ?? 'N/A')}
+                            </li>
+                        ))}
+                    </ul>
+                );
             }
         },
     ];
@@ -129,6 +135,7 @@ export default function Logging() {
                     dataSource={filteredLogs}
                     rowKey="_id"
                     loading={loading}
+                    tableLayout="fixed"
                     pagination={{ pageSize: 10, showSizeChanger: false }}
                 />
             </div>

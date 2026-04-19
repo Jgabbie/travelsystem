@@ -341,7 +341,6 @@ export default function PackagePage() {
                     review: reviewForm.comment.trim()
                 });
                 setIsRatingEditedModalOpen(true)
-                message.success("Review updated");
             } else {
                 // CREATE review
                 await apiFetch.post('/rating/submit-rating', {
@@ -350,7 +349,6 @@ export default function PackagePage() {
                     review: reviewForm.comment.trim()
                 });
                 setIsRatingSubmittedModalOpen(true)
-                message.success("Review submitted");
             }
 
             await fetchRatings();
@@ -381,7 +379,6 @@ export default function PackagePage() {
 
         try {
             await apiFetch.delete(`/rating/${userReview.id}`)
-            message.success('Review deleted')
 
             await fetchRatings()
 

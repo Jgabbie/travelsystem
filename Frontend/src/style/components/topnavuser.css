@@ -424,6 +424,16 @@
         flex: 1 1 auto;
     }
 
+    .regsignin {
+        padding-left: 0;
+    }
+
+    .landing-button-links {
+        font-size: 12px;
+        padding-right: 10px;
+        padding-bottom: 2px;
+    }
+
     .username-text {
         display: none;
     }
@@ -448,7 +458,7 @@
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 555px) {
     .navbar {
         padding: 8px 12px;
         width: 100%;
@@ -461,6 +471,11 @@
     .nav-buttonlinks-group {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .regsignin {
+        margin-left: auto;
+        text-align: right;
     }
 
     .nav-buttonlinks.ant-btn-link {

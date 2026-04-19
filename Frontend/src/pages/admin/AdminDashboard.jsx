@@ -212,55 +212,57 @@ export default function AdminDashboard() {
     <div>
       <h1 className="page-header">Dashboard</h1>
 
-      <Row gutter={20}>
-        <Col span={6}>
-          <Card className="dash-card">
-            <div className="dash-card-content-vertical">
-              <p>Total Transactions</p>
-              <div className="dash-text">
-                <DollarCircleOutlined className="dash-icon" />
-                <h2>{loading ? "..." : stats.totalTransactions}</h2>
+      <div className="dashboard-section">
+        <Row className="dashboard-section" gutter={20}>
+          <Col span={6}>
+            <Card className="dash-card">
+              <div className="dash-card-content-vertical">
+                <p>Total Transactions</p>
+                <div className="dash-text">
+                  <DollarCircleOutlined className="dash-icon" />
+                  <h2>{loading ? "..." : stats.totalTransactions}</h2>
+                </div>
               </div>
-            </div>
-          </Card>
-        </Col>
+            </Card>
+          </Col>
 
-        <Col span={6}>
-          <Card className="dash-card">
-            <div className="dash-card-content-vertical">
-              <p>Total Bookings</p>
-              <div className="dash-text">
-                <ShoppingCartOutlined className="dash-icon" />
-                <h2>{loading ? "..." : stats.totalBookings}</h2>
+          <Col span={6}>
+            <Card className="dash-card">
+              <div className="dash-card-content-vertical">
+                <p>Total Bookings</p>
+                <div className="dash-text">
+                  <ShoppingCartOutlined className="dash-icon" />
+                  <h2>{loading ? "..." : stats.totalBookings}</h2>
+                </div>
               </div>
-            </div>
-          </Card>
-        </Col>
+            </Card>
+          </Col>
 
-        <Col span={6}>
-          <Card className="dash-card">
-            <div className="dash-card-content-vertical">
-              <p>Total Users</p>
-              <div className="dash-text">
-                <UserOutlined className="dash-icon" />
-                <h2>{loading ? "..." : stats.totalUsers}</h2>
+          <Col span={6}>
+            <Card className="dash-card">
+              <div className="dash-card-content-vertical">
+                <p>Total Users</p>
+                <div className="dash-text">
+                  <UserOutlined className="dash-icon" />
+                  <h2>{loading ? "..." : stats.totalUsers}</h2>
+                </div>
               </div>
-            </div>
-          </Card>
-        </Col>
+            </Card>
+          </Col>
 
-        <Col span={6}>
-          <Card className="dash-card">
-            <div className="dash-card-content-vertical">
-              <p>Total Packages</p>
-              <div className="dash-text">
-                <AppstoreOutlined className="dash-icon" />
-                <h2>{loading ? "..." : stats.totalPackages}</h2>
+          <Col span={6}>
+            <Card className="dash-card">
+              <div className="dash-card-content-vertical">
+                <p>Total Packages</p>
+                <div className="dash-text">
+                  <AppstoreOutlined className="dash-icon" />
+                  <h2>{loading ? "..." : stats.totalPackages}</h2>
+                </div>
               </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
+            </Card>
+          </Col>
+        </Row>
+      </div>
 
       <div className="dashboard-charts">
         <Card className="dashboard-chart-card">

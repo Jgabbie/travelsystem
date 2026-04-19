@@ -174,7 +174,6 @@ export default function ReviewRatings() {
 
         try {
             await apiFetch.delete(`/rating/delete/${id}`);
-            message.success("Review deleted successfully");
             setRatings((prev) => prev.filter((r) => r.id !== id));
             setIsRatingDeletedModalOpen(true);
         } catch {

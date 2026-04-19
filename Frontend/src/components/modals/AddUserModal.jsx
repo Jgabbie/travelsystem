@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Select, message } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import '../../style/components/modals/addusermodal.css';
+import '../../style/components/modals/modaldesign.css';
 import apiFetch from '../../config/fetchConfig';
 
 export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }) {
@@ -28,7 +29,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         confirmPassword: ''
     });
 
-    // Reset form when modal opens
+    // RESET FIELDS AND ERRORS WHEN MODAL OPENS OR ROLE TO ADD CHANGES -----------------------------
     useEffect(() => {
         if (isOpen) {
             const nextRole = roleToAdd || 'User';
@@ -55,7 +56,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         }
     }, [isOpen, roleToAdd]);
 
-    //proper casing function, first letter is capitalized for each name
+    //PROPER CASE CONVERTER -----------------------------------------------------
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -71,7 +72,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             )
             .join(" ");
 
-    //input validations (same as SignupModal)
+    //INPUT VALIDATION -----------------------------------------------------
     const validate = (field, value, currentValues = values) => {
         if (field === "role") {
             if (value === "") return "Role is required.";
@@ -115,7 +116,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         return "";
     };
 
-    //check for duplicate username
+    //CHECK FOR DUPLICATE USERNAME -----------------------------------------
     useEffect(() => {
         const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
         if (frontEndError) return;
@@ -139,7 +140,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             });
     }, [values.username])
 
-    //check for duplicate email
+    //CHECK FOR DUPLICATE EMAIL -----------------------------------------
     useEffect(() => {
         const frontEndError = validate("email", values.email);
         if (frontEndError) return;
@@ -163,14 +164,14 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
             });
     }, [values.email]);
 
-    //handles input changes and the validations
+    //HANDLES CHANGES IN ALL FIELDS EXCEPT ROLE -----------------------------
     const valueHandler = (field, value) => {
         const updatedValues = { ...values, [field]: value };
         setValues(updatedValues);
         setError({ ...error, [field]: validate(field, value, updatedValues) });
     };
 
-    //if role is changed to Admin, remove password fields
+    //IF ROLE IS CHANGED TO ADMIN, IT REMOVES THE PASSWORD FIELDS AND THEIR ERRORS ----------------
     const handleRoleChange = (roleValue) => {
         const updatedValues = {
             ...values,
@@ -186,7 +187,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         });
     };
 
-    //add user
+    //ADD USER -----------------------------------------------------
     const handleCreate = async (e) => {
         e.preventDefault();
         setLoading(true);

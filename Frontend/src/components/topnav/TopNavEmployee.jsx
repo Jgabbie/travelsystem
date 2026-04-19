@@ -1,5 +1,5 @@
 import { Layout, Space, Dropdown, Modal, Button } from "antd";
-import { DownOutlined, HomeOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { DownOutlined, HomeOutlined, LogoutOutlined, UserOutlined, MenuOutlined } from "@ant-design/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -49,6 +49,10 @@ export default function TopNavEmployee() {
         }
     };
 
+    const toggleSideNav = () => {
+        window.dispatchEvent(new CustomEvent("sidenav:toggle"));
+    };
+
     const items = [
         {
             key: '1',
@@ -84,6 +88,13 @@ export default function TopNavEmployee() {
     return (
         <div>
             <Header className="topnav">
+                <Button
+                    className="topnav-menu-toggle"
+                    type="text"
+                    icon={<MenuOutlined />}
+                    onClick={toggleSideNav}
+                    aria-label="Toggle navigation"
+                />
                 <div className="admin-logo-section">
                     <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
                     <div className="brand">TRAVEX M&RC Travel and Tours</div>

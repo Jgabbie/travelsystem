@@ -73,3 +73,27 @@
   top: 0;
   z-index: 1000;
 }
+
+@media (max-width: 900px) {
+  .sidenav.is-mobile {
+    position: fixed;
+    top: 90px;
+    left: 0;
+    min-height: calc(100vh - 90px);
+    height: calc(100vh - 90px);
+    width: 220px !important;
+    padding: 12px;
+    z-index: 1200;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidenav.is-mobile.ant-layout-sider-collapsed {
+    box-shadow: none;
+    display: none !important;
+  }
+
+  .nav-item {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}

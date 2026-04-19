@@ -1,5 +1,5 @@
 import { Layout, Space, Dropdown, Modal, Button } from "antd";
-import { DownOutlined, HomeOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { DownOutlined, HomeOutlined, UserOutlined, LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -85,35 +85,48 @@ export default function TopNav() {
     }
   }
 
+  const toggleSideNav = () => {
+    window.dispatchEvent(new CustomEvent("sidenav:toggle"));
+  };
+
   return (
     <div>
       <Header className="topnav">
-        <div className="admin-logo-section">
-          <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
-          <div className="brand">TRAVEX M&RC Travel and Tours</div>
-        </div>
+        <div className="topnav-items">
+          <Button
+            className="topnav-menu-toggle"
+            type="text"
+            icon={<MenuOutlined />}
+            onClick={toggleSideNav}
+            aria-label="Toggle navigation"
+          />
+          <div className="admin-logo-section">
+            <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
+            <div className="brand">TRAVEX M&RC Travel and Tours</div>
+          </div>
 
 
-        <div className="topnav-right">
-          <Dropdown
-            trigger={['hover']}
-            align={{
-              offset: [0, -15],
-            }}
-            menu={{ items, onClick: handleMenuClick }}
-            className='user-dropdown'>
-            <Space className='dropdown-space'>
-              <div className='admin-nav-user-avatar'>
-                {auth?.profileImage ? (
-                  <img src={auth.profileImage} alt="Profile" className='admin-nav-user-avatar-img' />
-                ) : (
-                  <div className='admin-nav-user-avatar-placeholder'>{getInitials()}</div>
-                )}
-              </div>
-              <h3 className="user-welcome">Welcome, <span className="user-topnav">{auth?.username.toUpperCase()}</span> </h3>
-              <DownOutlined className='user-dropdown-icon' />
-            </Space>
-          </Dropdown>
+          <div className="topnav-right">
+            <Dropdown
+              trigger={['hover']}
+              align={{
+                offset: [0, -15],
+              }}
+              menu={{ items, onClick: handleMenuClick }}
+              className='user-dropdown'>
+              <Space className='dropdown-space' align="center">
+                <div className='admin-nav-user-avatar'>
+                  {auth?.profileImage ? (
+                    <img src={auth.profileImage} alt="Profile" className='admin-nav-user-avatar-img' />
+                  ) : (
+                    <div className='admin-nav-user-avatar-placeholder'>{getInitials()}</div>
+                  )}
+                </div>
+                <h3 className="user-welcome">Welcome, <span className="user-topnav">{auth?.username.toUpperCase()}</span> </h3>
+                <DownOutlined className='user-dropdown-icon' />
+              </Space>
+            </Dropdown>
+          </div>
         </div>
       </Header>
 

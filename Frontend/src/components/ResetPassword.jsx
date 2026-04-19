@@ -71,18 +71,21 @@ export default function ResetPassword() {
 
         try {
             const response = await apiFetch.post('/auth/check-reset-otp', { email: getEmail, otp: getOTP })
-            if (response.success || response.status === 200) {
+            if (response?.resetToken) {
                 setResetToken(response.resetToken)
-                setIsLoading(false);
                 setIsModalOpen(false)
                 setIsOTPValid(true)
                 setOTP("")
+            } else {
+                const errorMsg = response?.message || "Verification failed"
+                setErrorOTP(errorMsg)
             }
         } catch (err) {
-            setIsLoading(false);
             const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
             setErrorOTP(errorMsg)
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -205,14 +208,14 @@ export default function ResetPassword() {
                 token: resetToken
             })
 
-            if (response.success || response.status === 200) {
-                setIsLoading(false);
+            if (response?.message || response?.success || response?.status === 200) {
                 setIsSuccessModalOpen(true);
             }
         } catch (err) {
-            setIsLoading(false);
             const errorMsg = err.data?.message || "Verification failed"
             console.error("Error: ", errorMsg)
+        } finally {
+            setIsLoading(false);
         }
     }
 

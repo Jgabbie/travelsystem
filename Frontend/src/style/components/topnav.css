@@ -2,61 +2,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 .topnav {
-  background: white;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background-color: #ffffff;
+  min-height: 90px;
+}
+
+.topnav-items {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
 }
 
 .topnav-right {
+  margin-left: auto;
+  margin-bottom: 7px;
+}
+
+.admin-logo-section {
   display: flex;
-  flex-direction: row;
-  gap: 16px;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.topnav-menu-toggle {
+  display: none;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: #305797;
 }
 
 .brand {
   font-family: "Montserrat", sans-serif;
   font-size: 18px;
   font-weight: 600;
-}
-
-.admin-logo-section {
-  display: flex;
-  align-items: center;
-  font-weight: bold;
-  font-size: 20px;
-  color: #555;
+  line-height: 1.2;
+  max-width: 520px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .logo-img {
   height: 50px;
   width: 75px;
   margin-right: 25px;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
-.user-topnav {
-  font-family: "Montserrat", sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #305797;
-  margin-top: 10px;
-  margin-left: 5px;
-  margin-right: 15px;
-}
-
-.user-welcome {
-  font-family: "Montserrat", sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: #000000;
-  margin-top: 10px;
+.dropdown-space {
+  align-items: center;
 }
 
 .admin-nav-user-avatar {
@@ -88,6 +89,99 @@
 .no-dropdown-gap {
   transform: translateY(0) !important;
 }
+
+.user-topnav {
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #305797;
+  margin-top: 10px;
+  margin-left: 5px;
+  margin-right: 15px;
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.user-welcome {
+  font-family: "Montserrat", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #000000;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+
+
+
+
+
+
+@media (max-width: 900px) {
+  .topnav {
+    padding: 8px 16px;
+  }
+
+  .topnav-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand {
+    font-size: 16px;
+    max-width: 360px;
+  }
+
+  .user-topnav,
+  .user-welcome {
+    font-size: 16px;
+  }
+
+  .logo-img {
+    height: 44px;
+    width: 66px;
+    margin-right: 12px;
+  }
+
+  .topnav-right {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .topnav-right {
+    margin-bottom: 0;
+  }
+
+  .brand,
+  .user-welcome {
+    display: none;
+  }
+
+  .user-topnav {
+    margin-right: 6px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* --- Logout Confirmation Modal --- */
 .logout-confirm-modal .ant-modal-content {

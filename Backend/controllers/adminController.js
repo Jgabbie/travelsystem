@@ -69,14 +69,11 @@ const editUser = async (req, res) => {
 
         if (changes.length > 0) {
             await logAction(
-                "ADMIN_UPDATED_USER",
-                req.userId || null,
+                "ADMIN_UPDATED_USER", req.userId,
                 {
-                    updatedFields,
-                    changedFieldCount: changes.length,
-                    targetUserId: user._id,
-                    targetUsername: user.username
-                })
+                    "Successfully Edited": `Role: ${user.role} | Username: ${user.username} | Email: ${user.email}`,
+                }
+            );
         }
 
         res.status(200).json({

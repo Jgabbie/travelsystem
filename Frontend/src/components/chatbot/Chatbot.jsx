@@ -83,7 +83,7 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                                     display: 'inline-block',
                                     padding: '8px 12px',
                                     borderRadius: '12px',
-                                    backgroundColor: item.role === 'user' ? '#1890ff' : '#f0f0f0',
+                                    backgroundColor: item.role === 'user' ? '#305797' : '#f0f0f0',
                                     color: item.role === 'user' ? '#fff' : '#000',
                                     maxWidth: '80%'
                                 }}>

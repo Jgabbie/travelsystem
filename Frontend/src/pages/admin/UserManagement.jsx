@@ -18,6 +18,7 @@ import autoTable from 'jspdf-autotable';
 import AddUserModal from "../../components/modals/AddUserModal";
 import apiFetch from '../../config/fetchConfig';
 import "../../style/admin/users.css";
+import "../../style/components/modals/modaldesign.css";
 
 
 // HELPER: Converts Logo.png to Base64
@@ -44,7 +45,7 @@ export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [targetRole, setTargetRole] = useState("User");
+  const [targetRole, setTargetRole] = useState("Customer");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchText, setSearchText] = useState("");
@@ -69,7 +70,7 @@ export default function UserManagement() {
         name: `${user.firstname} ${user.lastname}`,
         username: user.username,
         email: user.email,
-        role: user.role || "User",
+        role: user.role || "Customer",
         status: user.isAccountVerified ? "Verified" : "Pending",
         avatar: user.profilePicture || user.profileImage || user.avatar || "",
         phone: user.phone || "",
@@ -214,7 +215,7 @@ export default function UserManagement() {
       title: "Role",
       dataIndex: "role",
       editable: true,
-      render: role => <Tag color={role === "Admin" ? "purple" : "blue"}>{role}</Tag>
+      render: role => <Tag color={role === "Admin" ? "purple" : role === "Employee" ? "blue" : "volcano"}>{role}</Tag>
     },
     {
       title: "Status",
@@ -283,7 +284,7 @@ export default function UserManagement() {
 
         <div className="user-actions">
           <Input prefix={<SearchOutlined />} placeholder="Search..." className="search-input" value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
-          <Select placeholder="Role" style={{ width: 140 }} allowClear onChange={(v) => setRoleFilter(v || "")} options={[{ value: "Admin", label: "Admin" }, { value: "User", label: "User" }, { value: "Employee", label: "Employee" }]} />
+          <Select placeholder="Role" style={{ width: 140 }} allowClear onChange={(v) => setRoleFilter(v || "")} options={[{ value: "Admin", label: "Admin" }, { value: "Customer", label: "Customer" }, { value: "Employee", label: "Employee" }]} />
           <Select placeholder="Status" style={{ width: 140 }} allowClear onChange={(v) => setStatusFilter(v || "")} options={[{ value: "Verified", label: "Verified" }, { value: "Pending", label: "Pending" }]} />
 
           <Space style={{ marginLeft: 'auto' }}>
@@ -327,7 +328,7 @@ export default function UserManagement() {
                   <h2 className="users-view-name">{selectedUser.name}</h2>
                   <div className="users-view-subtitle">
                     <span>{selectedUser.email}</span>
-                    <Tag color={selectedUser.role === "Admin" ? "purple" : "blue"}>{selectedUser.role}</Tag>
+                    <Tag color={selectedUser.role === "Admin" ? "purple" : selectedUser.role === "Customer" ? "volcano" : "blue"}>{selectedUser.role}</Tag>
                     <Tag color={selectedUser.status === "Verified" ? "green" : "orange"}>{selectedUser.status}</Tag>
                   </div>
                 </div>
@@ -390,7 +391,8 @@ export default function UserManagement() {
             <Select
               options={[
                 { value: "Admin", label: "Admin" },
-                { value: "User", label: "User" }
+                { value: "Customer", label: "Customer" },
+                { value: "Employee", label: "Employee" }
               ]}
             />
           </Form.Item>
@@ -419,7 +421,7 @@ export default function UserManagement() {
       {/* DELETE CONFIRMATION */}
       <Modal
         open={isDeleteModalOpen}
-        className='signup-success-modal'
+        className='modal-modal'
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
         style={{ top: 220 }}
@@ -427,9 +429,9 @@ export default function UserManagement() {
           setIsDeleteModalOpen(false);
         }}
       >
-        <div className='signup-success-container'>
-          <h1 className='signup-success-heading'>Delete User?</h1>
-          <p className='signup-success-text'>Are you sure you want to delete this user?</p>
+        <div className='modal-container'>
+          <h1 className='modal-heading'>Delete User?</h1>
+          <p className='modal-text'>Are you sure you want to delete this user?</p>
 
           <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
@@ -462,7 +464,7 @@ export default function UserManagement() {
       {/* USER HAS BEEN EDITED MODAL */}
       <Modal
         open={isUserEditedModalOpen}
-        className='signup-success-modal'
+        className='modal-modal'
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
         style={{ top: 220 }}
@@ -470,14 +472,14 @@ export default function UserManagement() {
           setIsUserEditedModalOpen(false);
         }}
       >
-        <div className='signup-success-container'>
-          <h1 className='signup-success-heading'>User Edited Successfully!</h1>
+        <div className='modal-container'>
+          <h1 className='modal-heading'>User Edited Successfully!</h1>
 
           <div>
             <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
           </div>
 
-          <p className='signup-success-text'>The user has been edited.</p>
+          <p className='modal-text'>The user has been edited.</p>
 
           <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
@@ -498,7 +500,7 @@ export default function UserManagement() {
       {/* USER HAS BEEN DELETED MODAL */}
       <Modal
         open={isUserDeletedModalOpen}
-        className='signup-success-modal'
+        className='modal-modal'
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
         style={{ top: 220 }}
@@ -506,14 +508,14 @@ export default function UserManagement() {
           setIsUserDeletedModalOpen(false);
         }}
       >
-        <div className='signup-success-container'>
-          <h1 className='signup-success-heading'>User Deleted Successfully!</h1>
+        <div className='modal-container'>
+          <h1 className='modal-heading'>User Deleted Successfully!</h1>
 
           <div>
             <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
           </div>
 
-          <p className='signup-success-text'>The user has been deleted.</p>
+          <p className='modal-text'>The user has been deleted.</p>
 
           <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 

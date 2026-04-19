@@ -19,7 +19,7 @@ const signupUser = async (req, res) => {
         user.verifyOtp = hashedOtp; //set hashed otp to user.otp
         user.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000 //10 minutes timer
 
-        user.role = "User" //set the role of the new registered user
+        user.role = "Customer" //set the role of the new registered user
         await user.save() //save new user to database
 
 
@@ -84,8 +84,9 @@ const signupUser = async (req, res) => {
 
         await transporter.sendMail(mailOptions)
 
-        await logAction("USER_CREATED_ACC", user._id, { //log action for account creation
-            username: user.username, email: user.email
+        await logAction("CUSTOMER_CREATED_ACC", user._id, { //log action for account creation
+            Username: user.username,
+            Email: user.email
         });
 
         const io = req.app.get('io')
@@ -108,17 +109,19 @@ const loginUser = async (req, res) => {
     await connectToDatabase();
     try {
         const user = await UserModel.findOne({ username })
+
         if (!user) {
             return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
         const matchPass = await bcrypt.compare(password, user.hashedPassword)
         if (!matchPass) {
-            await logAction("LOGIN_FAILED", user._id, { reason: "Incorrect Password" });
+            await logAction("LOGIN_FAILED", user._id, { Username: username });
             return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
         if (!user.isAccountVerified) {
+            await logAction("LOGIN_FAILED", user._id, { Username: username });
             return res.status(403).json({ message: "Account is not verified", email: user.email, })
         }
 
@@ -144,8 +147,8 @@ const loginUser = async (req, res) => {
 
         // Check role to determine action name
         //LOG SUCCESSFUL LOGIN
-        const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : "USER_LOGIN";
-        await logAction(actionName, user._id, { username: user.username });
+        const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : user.role === 'Employee' ? "EMPLOYEE_LOGIN" : "CUSTOMER_LOGIN";
+        await logAction(actionName, user._id, { Username: user.username });
 
         res.status(200).json({
             message: "Login Successful!",
@@ -243,9 +246,8 @@ const logoutUser = async (req, res) => {
 
 
         // Determine action based on the user found (if any)
-        const actionName = (user && user.role === 'Admin') ? "ADMIN_LOGOUT" : "USER_LOGOUT";
-
-        await logAction(actionName, user ? user._id : null, { username: user ? user.username : 'Unknown' });
+        const actionName = user.role === 'Admin' ? "ADMIN_LOGOUT" : user.role === 'Employee' ? "EMPLOYEE_LOGOUT" : "CUSTOMER_LOGOUT";
+        await logAction(actionName, user._id, { Username: user.username });
 
         res.status(200).json({ message: "Logged Out" })
     }
@@ -362,11 +364,12 @@ const verifyEmail = async (req, res) => {
 
         const matchPass = await bcrypt.compare(password, userName.hashedPassword)
         if (!matchPass) {
-            await logAction("LOGIN_FAILED", userName._id, { reason: "Incorrect Password" });
+            await logAction("LOGIN_FAILED", userName._id, { Username: username });
             return res.status(401).json({ message: "Invalid Username or Password" })
         }
 
         if (!userName.isAccountVerified) {
+            await logAction("LOGIN_FAILED", userName._id, { Username: username });
             return res.status(403).json({ message: "Account is not verified", email: userName.email, })
         }
 
@@ -393,7 +396,7 @@ const verifyEmail = async (req, res) => {
 
         // Check role to determine action name
         //LOG SUCCESSFUL LOGIN
-        const actionName = userName.role === 'Admin' ? "ADMIN_LOGIN" : "USER_LOGIN";
+        const actionName = userName.role === 'Admin' ? "ADMIN_LOGIN" : userName.role === 'Employee' ? "EMPLOYEE_LOGIN" : "CUSTOMER_LOGIN";
         await logAction(actionName, userName._id, { username: userName.username });
 
         res.status(200).json({
@@ -590,7 +593,7 @@ const resetPassword = async (req, res) => {
 
         await user.save()
 
-        await logAction("PASSWORD_CHANGE", user._id, { method: "Reset via Email" });
+        await logAction("PASSWORD_CHANGE", user._id, { Username: user.username });
 
         return res.status(200).json({ message: "Password has been reset successfully" })
 

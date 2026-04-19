@@ -256,10 +256,11 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={clearForm}
+                    style={{ top: 60 }}
                 >
 
                     {isOTPModalVisible ? (
-                        <div id='login-container-modal'>
+                        <div className='login-container-otp'>
                             <h1 className='emailverify-heading-modal'>Verify OTP</h1>
                             <p className='emailverify-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
@@ -285,44 +286,54 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             }
                         </div>
                     ) : (
-                        <div id='login-container-modal'>
-                            <h1 id='login-heading-modal'>Welcome</h1>
-                            <p id='login-secondary-heading-modal'>Login Account</p>
+                        <div className='login-container-modal'>
 
-                            <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
-                                <div className='login-div-input-fields-modal'>
-                                    <label className='login-labels-modal' htmlFor="username">Username</label>
-                                    <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                        if (e.key === " " || e.key === "Backspace") {
-                                            return;
-                                        }
+                            <div className='login-container-left'>
+                                <img
+                                    src='/images/Login_BackgroundImage.png'
+                                    alt='Login Background'
+                                    className='login-container-left-image'
+                                />
+                            </div>
 
-                                        if (!/^[A-Za-z0-9]+$/.test(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
-                                </div>
+                            <div className='login-container-right'>
+                                <h1 id='login-heading-modal'>Welcome</h1>
+                                <p id='login-secondary-heading-modal'>Login Account</p>
 
-                                <div className='login-div-input-fields-modal'>
-                                    <label className='login-labels-modal' htmlFor="password">Password</label>
-                                    <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault()
-                                        }
-                                    }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} key={isOpenLogin ? "" : false} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
-                                </div>
+                                <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
+                                    <div className='login-div-input-fields-modal'>
+                                        <label className='login-labels-modal' htmlFor="username">Username</label>
+                                        <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                            if (e.key === " " || e.key === "Backspace") {
+                                                return;
+                                            }
 
-                                <p id='login-error-message-modal'>{error}</p>
+                                            if (!/^[A-Za-z0-9]+$/.test(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
+                                    </div>
 
-                                <div id='login-links-container-modal'>
-                                    <Button className='login-button-links-modal' type="link" onClick={goToSignup}>Need an Account? Signup here</Button>
-                                    <Button className='login-button-links-modal' type="link" onClick={resetPassword} > Forgot your Password?</Button>
-                                </div>
+                                    <div className='login-div-input-fields-modal'>
+                                        <label className='login-labels-modal' htmlFor="password">Password</label>
+                                        <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                            if (e.key === " " && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} key={isOpenLogin ? "" : false} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
+                                    </div>
 
-                                <Button id='login-button-modal' htmlType="submit">Log in</Button>
-                            </form>
+                                    <p id='login-error-message-modal'>{error}</p>
+
+                                    <div id='login-links-container-modal'>
+                                        <Button className='login-button-links-modal' type="link" onClick={goToSignup}>Need an Account? Signup here</Button>
+                                        <Button className='login-button-links-modal' type="link" onClick={resetPassword} > Forgot your Password?</Button>
+                                    </div>
+
+                                    <Button id='login-button-modal' htmlType="submit">Log in</Button>
+                                </form>
+                            </div>
                         </div>
-
                     )}
                 </Modal>
             </div >

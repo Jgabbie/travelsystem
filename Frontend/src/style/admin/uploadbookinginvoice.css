@@ -156,4 +156,9 @@
     .upload-invoice-empty {
         height: 360px;
     }
+
+    .upload-invoice-back-button,
+    .upload-invoice-form-button {
+        width: 100%;
+    }
 }

@@ -17,10 +17,6 @@ const AuditSchema = new mongoose.Schema({
         type: Object
     },
 
-    ipAddress: {
-        type: String
-    },
-
     timestamp: {
         type: Date,
         default: Date.now

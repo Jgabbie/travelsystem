@@ -129,7 +129,7 @@ const createTransaction = async (req, res) => {
             status: transactionPayload.status,
         })
 
-        logAction('TRANSACTION_CREATED', userId, { transactionId: newTransaction._id })
+        logAction('TRANSACTION_CREATED', userId, { "Transaction Created": `Transaction Reference: ${newTransaction.reference} | Method: ${newTransaction.method} | Amount: ${newTransaction.amount}` })
 
         const io = req.app.get('io')
         if (io) {
@@ -141,7 +141,7 @@ const createTransaction = async (req, res) => {
 
         res.status(201).json(newTransaction)
     } catch (error) {
-        logAction('CREATE_TRANSACTION_ERROR', userId, { error: error.message })
+        logAction('CREATE_TRANSACTION_ERROR', userId, { "Transaction Failed": `Error: ${error.message}` })
         res.status(500).json({ message: "Failed to create transaction", error: error.message })
     }
 }
@@ -154,7 +154,6 @@ const getUserTransactions = async (req, res) => {
             .populate('packageId', 'packageName')
         res.status(200).json(transactions)
     } catch (error) {
-        logAction('GET_USER_TRANSACTIONS_ERROR', userId, { error: error.message })
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
     }
 }
@@ -169,7 +168,6 @@ const getAllTransactions = async (_req, res) => {
 
         res.status(200).json(transactions)
     } catch (error) {
-        logAction('GET_ALL_TRANSACTIONS_ERROR', _req.userId, { error: error.message })
         console.error('Error fetching transactions:', error)
         res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
     }
@@ -332,18 +330,12 @@ const updateTransaction = async (req, res) => {
             }
         }
 
-        logAction('TRANSACTION_UPDATED', req.userId, {
-            transactionId: id,
-            status,
-            method,
-            amount,
-            packageName
-        })
+        logAction('TRANSACTION_UPDATED', req.userId, { "Transaction Updated": `Transaction Reference: ${updatedTransaction.reference} | Method: ${updatedTransaction.method} | Amount: ${updatedTransaction.amount}` })
+
 
         res.status(200).json(updatedTransaction)
     }
     catch (error) {
-        logAction('UPDATE_TRANSACTION_ERROR', req.userId, { error: error.message })
         res.status(500).json({ message: "Failed to update transaction", error: error.message })
     }
 }
@@ -357,10 +349,9 @@ const deleteTransaction = async (req, res) => {
             return res.status(404).json({ message: "Transaction not found" })
         }
 
-        logAction('TRANSACTION_DELETED', req.userId, { transactionId: id })
+        logAction('TRANSACTION_DELETED', req.userId, { "Transaction Deleted": `Transaction Reference: ${deletedTransaction.reference} | Method: ${deletedTransaction.method} | Amount: ${deletedTransaction.amount}` })
         res.status(200).json({ message: "Transaction deleted successfully" })
     } catch (error) {
-        logAction('DELETE_TRANSACTION_ERROR', req.userId, { error: error.message })
         res.status(500).json({ message: "Failed to delete transaction", error: error.message })
     }
 }
@@ -456,10 +447,9 @@ const rejectTransaction = async (req, res) => {
             }
         }
 
-        logAction('TRANSACTION_REJECTED', req.userId, { transactionId: id })
+        logAction('TRANSACTION_UPDATED', req.userId, { "Transaction Updated": `Transaction Reference: ${updatedTransaction.reference} | Method: ${updatedTransaction.method} | Amount: ${updatedTransaction.amount}` })
         res.status(200).json(updatedTransaction)
     } catch (error) {
-        logAction('REJECT_TRANSACTION_ERROR', req.userId, { error: error.message })
         res.status(500).json({ message: "Failed to reject transaction", error: error.message })
     }
 }
