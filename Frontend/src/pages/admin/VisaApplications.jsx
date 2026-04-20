@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, message, ConfigProvider, Space, Select, Input, DatePicker } from "antd";
-import { FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, message, ConfigProvider, Space, Select, Input, DatePicker, Modal } from "antd";
+import { FileTextOutlined, ClockCircleOutlined, IdcardOutlined, InboxOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import dayjs from "dayjs";
@@ -8,7 +8,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/visaapplications.css";
-
+import "../../style/components/modals/modaldesign.css";
 
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
@@ -34,42 +34,78 @@ export default function VisaApplications() {
     const basePath = isEmployee ? "/employee" : "";
 
     const [applications, setApplications] = useState([])
+    const [archivedApplications, setArchivedApplications] = useState([])
+    const [showArchived, setShowArchived] = useState(false)
     const [isFetchingApplications, setIsFetchingApplications] = useState(false);
 
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [submissionDateFilter, setSubmissionDateFilter] = useState(null);
 
-    useEffect(() => {
-        const loadApplications = async () => {
-            try {
-                setIsFetchingApplications(true);
-                const response = await apiFetch.get('/visa/applications')
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+    const [isVisaApplicationDeletedModalOpen, setIsVisaApplicationDeletedModalOpen] = useState(false);
+    const [isVisaApplicationRestoredModalOpen, setIsVisaApplicationRestoredModalOpen] = useState(false);
+    const [archivingApplication, setArchivingApplication] = useState(null);
 
-                const applications = response.map((a) => ({
-                    key: a._id,
-                    applicationNumber: a.applicationNumber,
-                    applicantName: a.applicantName,
-                    serviceName: a.serviceName,
-                    preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
-                    preferredTime: a.preferredTime ? dayjs(a.preferredTime, 'HH:mm').format('hh:mm A') : 'Not Set',
-                    status: a.status,
-                }))
+    const loadApplications = async () => {
+        try {
+            setIsFetchingApplications(true);
+            const response = await apiFetch.get('/visa/applications')
 
-                setApplications(applications)
-            } catch (error) {
-                const errorMessage = error?.data?.message || 'Unable to load visa applications.'
-                message.error(errorMessage)
-                setApplications([])
-            } finally {
-                setIsFetchingApplications(false)
-            }
+            const applications = response.map((a) => ({
+                key: a._id,
+                applicationNumber: a.applicationNumber,
+                applicantName: a.applicantName,
+                serviceName: a.serviceName,
+                preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
+                preferredTime: a.preferredTime ? dayjs(a.preferredTime, 'HH:mm').format('hh:mm A') : 'Not Set',
+                status: a.status,
+            }))
+
+            setApplications(applications)
+        } catch (error) {
+            const errorMessage = error?.data?.message || 'Unable to load visa applications.'
+            message.error(errorMessage)
+            setApplications([])
+        } finally {
+            setIsFetchingApplications(false)
         }
+    }
+
+    const loadArchivedApplications = async () => {
+        try {
+            setIsFetchingApplications(true);
+            const response = await apiFetch.get('/visa/archived-applications')
+
+            const applications = response.map((a) => ({
+                key: a._id,
+                applicationNumber: a.applicationNumber,
+                applicantName: a.applicantName,
+                serviceName: a.serviceName,
+                preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
+                preferredTime: a.preferredTime ? dayjs(a.preferredTime, 'HH:mm').format('hh:mm A') : 'Not Set',
+                status: a.status,
+            }))
+
+            setArchivedApplications(applications)
+        } catch (error) {
+            const errorMessage = error?.data?.message || 'Unable to load archived visa applications.'
+            message.error(errorMessage)
+            setArchivedApplications([])
+        } finally {
+            setIsFetchingApplications(false)
+        }
+    }
+
+    useEffect(() => {
         loadApplications()
     }, [])
 
 
-    const filteredData = applications.filter(item => {
+    const currentData = showArchived ? archivedApplications : applications
+
+    const filteredData = currentData.filter(item => {
         const matchesSearch =
             (item.applicationNumber?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
             (item.applicantName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
@@ -145,6 +181,29 @@ export default function VisaApplications() {
         doc.save(`Visa_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
         message.success("Report exported to PDF successfully.");
     };
+
+    const handleArchive = async (key) => {
+        try {
+            await apiFetch.delete(`/visa/applications/${key}/archive`)
+            setIsVisaApplicationDeletedModalOpen(true);
+            setApplications((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error archiving visa application:", error)
+            message.error("Visa application archived unsuccessfully")
+        }
+    }
+
+    const handleRestore = async (key) => {
+        try {
+            await apiFetch.post(`/visa/archived-applications/${key}/restore`)
+            setIsVisaApplicationRestoredModalOpen(true);
+            setArchivedApplications((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error restoring visa application:", error)
+            message.error("Visa application restore unsuccessfully")
+        }
+
+    }
 
     const columns = [
         {
@@ -223,11 +282,61 @@ export default function VisaApplications() {
                         >
                             View
                         </Button>
+                        {showArchived ? (
+                            <Button
+                                icon={<CheckCircleOutlined />}
+                                className='visaapplications-restore-button'
+                                type="primary"
+                                onClick={() => {
+                                    setArchivingApplication(record);
+                                    setIsRestoreModalOpen(true);
+                                }}
+                            >
+                                Restore
+                            </Button>
+                        ) : (
+                            <Button
+                                icon={<DeleteOutlined />}
+                                className='visaapplications-archive-button'
+                                type="primary"
+                                onClick={() => {
+                                    setArchivingApplication(record);
+                                    setIsDeleteModalOpen(true);
+                                }}
+                            >
+                                Archive
+                            </Button>
+                        )}
                     </Space>
                 </>
             ),
         },
     ];
+
+    const archivedColumns = columns.map((col) => {
+        if (col.title !== "Actions") {
+            return col;
+        }
+
+        return {
+            ...col,
+            render: (text, record) => (
+                <Space>
+                    <Button
+                        icon={<CheckCircleOutlined />}
+                        className='visaapplications-restore-button'
+                        type="primary"
+                        onClick={() => {
+                            setArchivingApplication(record);
+                            setIsRestoreModalOpen(true);
+                        }}
+                    >
+                        Restore
+                    </Button>
+                </Space>
+            )
+        };
+    });
 
     return (
         <ConfigProvider
@@ -240,44 +349,46 @@ export default function VisaApplications() {
             <div className="visa-applications-container">
                 <h1 className="page-header">Visa Applications</h1>
 
-                <Row gutter={16} style={{ marginBottom: 20 }}>
-                    <Col xs={24} sm={6}>
-                        <Card className="visaapps-management-card">
-                            <Statistic
-                                title="Total Applications"
-                                value={totals}
-                                prefix={<FileTextOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="visaapps-management-card">
-                            <Statistic
-                                title="Pending"
-                                value={pending}
-                                prefix={<ClockCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="visaapps-management-card">
-                            <Statistic
-                                title="Approved"
-                                value={approved}
-                                prefix={<CheckCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="visaapps-management-card">
-                            <Statistic
-                                title="Rejected"
-                                value={rejected}
-                                prefix={<CloseCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                </Row>
+                {!showArchived && (
+                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                        <Col xs={24} sm={6}>
+                            <Card className="visaapps-management-card">
+                                <Statistic
+                                    title="Total Applications"
+                                    value={totals}
+                                    prefix={<FileTextOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="visaapps-management-card">
+                                <Statistic
+                                    title="Pending"
+                                    value={pending}
+                                    prefix={<ClockCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="visaapps-management-card">
+                                <Statistic
+                                    title="Approved"
+                                    value={approved}
+                                    prefix={<CheckCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="visaapps-management-card">
+                                <Statistic
+                                    title="Rejected"
+                                    value={rejected}
+                                    prefix={<CloseCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
 
                 <div className="visaapplications-actions">
                     <Input
@@ -321,12 +432,31 @@ export default function VisaApplications() {
                         >
                             Export to PDF
                         </Button>
+                        <Button
+                            icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
+                            className='visaapplications-export'
+                            type="primary"
+                            onClick={() => {
+                                const nextValue = !showArchived
+                                setShowArchived(nextValue)
+                                setSearchText("")
+                                setStatusFilter("")
+                                setSubmissionDateFilter(null)
+                                if (nextValue) {
+                                    loadArchivedApplications()
+                                } else {
+                                    loadApplications()
+                                }
+                            }}
+                        >
+                            {showArchived ? 'Back to Applications' : 'Archives'}
+                        </Button>
                     </Space>
                 </div>
 
                 <Card>
                     <Table
-                        columns={columns}
+                        columns={showArchived ? archivedColumns : columns}
                         dataSource={filteredData}
                         rowKey="key"
                         loading={isFetchingApplications}
@@ -340,6 +470,170 @@ export default function VisaApplications() {
                     />
                 </Card>
             </div>
+
+
+            {/* ARCHIVE VISA APPLICATION CONFIRMATION MODAL */}
+            <Modal
+                open={isDeleteModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsDeleteModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Archive Visa Application?</h1>
+                    <p className='modal-text'>Are you sure you want to archive this visa application?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleArchive(archivingApplication.key);
+                                setIsDeleteModalOpen(false);
+                            }}
+                        >
+                            Archive
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsDeleteModalOpen(false);
+                                setArchivingApplication(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+            {/* RESTORE VISA APPLICATION CONFIRMATION MODAL */}
+            <Modal
+                open={isRestoreModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRestoreModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Restore Visa Application?</h1>
+                    <p className='modal-text'>Are you sure you want to restore this visa application?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleRestore(archivingApplication.key);
+                                setIsRestoreModalOpen(false);
+                            }}
+                        >
+                            Restore
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsRestoreModalOpen(false);
+                                setArchivingApplication(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+
+            {/* VISA APPLICATION HAS BEEN ARCHIVED MODAL */}
+            <Modal
+                open={isVisaApplicationDeletedModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsVisaApplicationDeletedModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Visa Application Archived Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The visa application has been archived.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsVisaApplicationDeletedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+            {/* VISA APPLICATION HAS BEEN RESTORED MODAL */}
+            <Modal
+                open={isVisaApplicationRestoredModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsVisaApplicationRestoredModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Visa Application Restored Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The visa application has been restored.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsVisaApplicationRestoredModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+
+
+
+
+
+
+
+
+
         </ConfigProvider>
     );
 };

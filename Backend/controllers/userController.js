@@ -178,6 +178,16 @@ const getUsers = (req, res) => {
         });
 };
 
+const getArchivedUsers = (req, res) => {
+    ArchivedUserModel.find()
+        .sort({ archivedAt: -1 })
+        .then(users => res.json(users))
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: err.message })
+        });
+};
+
 
 const createUsers = async (req, res) => {
     const { username, firstname, lastname, password, email, phone, role } = req.body;
@@ -412,4 +422,56 @@ const delUsers = async (req, res) => {
     }
 };
 
-module.exports = { getUsers, createUsers, delUsers, getUserData, updateUserData, markLoginOnce };
+const restoreArchivedUser = async (req, res) => {
+    const { id } = req.params;
+    const adminId = req.userId;
+
+    if (!adminId) {
+        return res.status(401).json({ message: "Unauthorized: Admin ID missing" });
+    }
+
+    try {
+        const archivedUser = await ArchivedUserModel.findById(id);
+        if (!archivedUser) {
+            return res.status(404).json({ message: "Archived user not found" });
+        }
+
+        const existingUser = await UserModel.findOne({
+            $or: [{ email: archivedUser.email }, { username: archivedUser.username }]
+        });
+
+        if (existingUser) {
+            return res.status(409).json({ message: "User with this email or username already exists" });
+        }
+
+        const restoredUser = await UserModel.create({
+            _id: archivedUser.originalUserId,
+            username: archivedUser.username,
+            firstname: archivedUser.firstname,
+            lastname: archivedUser.lastname,
+            email: archivedUser.email,
+            hashedPassword: archivedUser.hashedPassword,
+            phone: archivedUser.phone,
+            profileImage: archivedUser.profileImage,
+            role: archivedUser.role,
+            isAccountVerified: archivedUser.isAccountVerified
+        });
+
+        await ArchivedUserModel.findByIdAndDelete(id);
+
+        await logAction(
+            "ADMIN_RESTORED_USER",
+            adminId,
+            {
+                "User Restored": `Role: ${restoredUser.role} | Username: ${restoredUser.username} | Email: ${restoredUser.email}`
+            }
+        );
+
+        res.json({ message: "User restored successfully", user: restoredUser });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { getUsers, getArchivedUsers, createUsers, delUsers, restoreArchivedUser, getUserData, updateUserData, markLoginOnce };

@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, message, Select, Image } from 'antd'
-import { CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, SafetyCertificateOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/admin/cancellationrequests.css'
+import "../../style/components/modals/modaldesign.css";
 
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
@@ -26,6 +27,8 @@ const getBase64ImageFromURL = (url) => {
 
 export default function CancellationRequests() {
     const [requests, setRequests] = useState([])
+    const [archivedRequests, setArchivedRequests] = useState([])
+    const [showArchived, setShowArchived] = useState(false)
 
     const [statusFilter, setStatusFilter] = useState("");
     const [searchText, setSearchText] = useState('')
@@ -38,8 +41,14 @@ export default function CancellationRequests() {
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
     const [isCancellationAcceptedModalOpen, setIsCancellationAcceptedModalOpen] = useState(false)
     const [isCancellationRejectedModalOpen, setIsCancellationRejectedModalOpen] = useState(false)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
+    const [isRequestDeletedModalOpen, setIsRequestDeletedModalOpen] = useState(false)
+    const [isRequestRestoredModalOpen, setIsRequestRestoredModalOpen] = useState(false)
+    const [editingRequest, setEditingRequest] = useState(null)
     const [pendingActionRequest, setPendingActionRequest] = useState(null); // Track which item is being clicked
     const [isFetchingRequests, setIsFetchingRequests] = useState(false)
+
 
     const showConfirmModal = (record, type) => {
         setPendingActionRequest(record);
@@ -89,7 +98,35 @@ export default function CancellationRequests() {
         return []
     }
 
-    const filteredData = requests.filter(item => {
+    const getArchivedCancellationRequests = async () => {
+        try {
+            setIsFetchingRequests(true)
+            const response = await apiFetch.get('/booking/archived-cancellations')
+            const cancellations = response.map((c) => ({
+                key: c._id,
+                ref: c.reference,
+                username: c.userId?.username || c.userId?.email || 'Unknown',
+                package: c.bookingId?.packageId?.packageName || 'Package',
+                daysAfterBooking: c.bookingId?.createdAt && c.cancellationDate
+                    ? dayjs(c.cancellationDate).diff(dayjs(c.bookingId?.createdAt), 'day')
+                    : '--',
+                reason: c.cancellationReason || '--',
+                cancellationDate: c.cancellationDate,
+                status: c.status || 'Pending',
+                imageProof: c.imageProof || null
+            }))
+            setArchivedRequests(cancellations)
+        } catch (err) {
+            console.error('Error fetching archived cancellation requests:', err)
+        } finally {
+            setIsFetchingRequests(false)
+        }
+        return []
+    }
+
+    const currentData = showArchived ? archivedRequests : requests
+
+    const filteredData = currentData.filter(item => {
         const matchesSearch =
             (item.ref.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -208,6 +245,31 @@ export default function CancellationRequests() {
         setIsViewModalOpen(true)
     }
 
+    const handleArchive = async (key) => {
+
+        try {
+            await apiFetch.delete(`/booking/cancellations/${key}/archive`)
+            setIsRequestDeletedModalOpen(true)
+            setRequests((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error archiving cancellation request:", error)
+            message.error("Cancellation request archived unsuccessfully")
+        }
+
+    }
+
+    const handleRestore = async (key) => {
+
+        try {
+            await apiFetch.post(`/booking/archived-cancellations/${key}/restore`)
+            setIsRequestRestoredModalOpen(true)
+            setArchivedRequests((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error restoring cancellation request:", error)
+            message.error(error?.response?.data?.message || "Cancellation restore failed")
+        }
+    }
+
     const columns = useMemo(() => [
         {
             title: 'Cancellation Request No.',
@@ -268,26 +330,55 @@ export default function CancellationRequests() {
                     >
                         View
                     </Button>
-                    <Button
-                        className="cancellations-approve-button"
-                        type="primary"
-                        icon={<CheckOutlined />}
-                        onClick={() => showConfirmModal(record, 'Approve')}
-                    >
-                        Approve
-                    </Button>
-                    <Button
-                        className="cancellations-reject-button"
-                        type="primary"
-                        icon={<CloseOutlined />}
-                        onClick={() => showConfirmModal(record, 'Reject')}
-                    >
-                        Reject
-                    </Button>
+                    {showArchived ? (
+                        <Button
+                            className="cancellations-restore-button"
+                            type="primary"
+                            icon={<CheckCircleOutlined />}
+                            onClick={() => {
+                                setEditingRequest(record)
+                                setIsRestoreModalOpen(true)
+                            }}
+                        >
+                            Restore
+                        </Button>
+                    ) : (
+                        <>
+                            <Button
+                                className="cancellations-approve-button"
+                                type="primary"
+                                icon={<CheckOutlined />}
+                                onClick={() => showConfirmModal(record, 'Approve')}
+                            >
+                                Approve
+                            </Button>
+                            <Button
+                                className="cancellations-reject-button"
+                                type="primary"
+                                icon={<CloseOutlined />}
+                                onClick={() => showConfirmModal(record, 'Reject')}
+                            >
+                                Reject
+                            </Button>
+                            <Button
+                                className="cancellations-reject-button"
+                                type="primary"
+                                icon={<DeleteOutlined />}
+                                onClick={() => {
+                                    setEditingRequest(record)
+                                    setIsDeleteModalOpen(true)
+                                }}
+                            >
+                                Archive
+                            </Button>
+                        </>
+                    )}
                 </Space>
             )
         }
-    ], [])
+    ], [showArchived])
+
+    const archivedColumns = columns
 
     return (
         <ConfigProvider
@@ -300,37 +391,39 @@ export default function CancellationRequests() {
             <div className="cancellations-container">
                 <h1 className="page-header">Cancellation Requests</h1>
 
-                <Row gutter={16} style={{ marginBottom: 20 }}>
-                    <Col xs={24} sm={8}>
-                        <Card className='cancellation-management-card'>
-                            <Statistic
-                                title="Total Requests"
-                                value={totalRequests}
-                                prefix={<CheckCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
+                {!showArchived && (
+                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                        <Col xs={24} sm={8}>
+                            <Card className='cancellation-management-card'>
+                                <Statistic
+                                    title="Total Requests"
+                                    value={totalRequests}
+                                    prefix={<CheckCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
 
-                    <Col xs={24} sm={8}>
-                        <Card className='cancellation-management-card'>
-                            <Statistic
-                                title="Approved"
-                                value={approvedRequests}
-                                prefix={<CheckCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
+                        <Col xs={24} sm={8}>
+                            <Card className='cancellation-management-card'>
+                                <Statistic
+                                    title="Approved"
+                                    value={approvedRequests}
+                                    prefix={<CheckCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
 
-                    <Col xs={24} sm={8}>
-                        <Card className='cancellation-management-card'>
-                            <Statistic
-                                title="Disapproved"
-                                value={disapprovedRequests}
-                                prefix={<CloseCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                </Row>
+                        <Col xs={24} sm={8}>
+                            <Card className='cancellation-management-card'>
+                                <Statistic
+                                    title="Disapproved"
+                                    value={disapprovedRequests}
+                                    prefix={<CloseCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
 
                 <div className="cancel-actions">
                     <Input
@@ -372,12 +465,31 @@ export default function CancellationRequests() {
                         >
                             Export to PDF
                         </Button>
+                        <Button
+                            icon={showArchived ? <SafetyCertificateOutlined /> : <InboxOutlined />}
+                            className='cancellations-export-button'
+                            type="primary"
+                            onClick={() => {
+                                const nextValue = !showArchived
+                                setShowArchived(nextValue)
+                                setSearchText("")
+                                setStatusFilter("")
+                                setDateFilter(null)
+                                if (nextValue) {
+                                    getArchivedCancellationRequests()
+                                } else {
+                                    getCancellationRequests()
+                                }
+                            }}
+                        >
+                            {showArchived ? 'Back to Requests' : 'Archives'}
+                        </Button>
                     </Space>
                 </div>
 
                 <Card style={{ marginTop: 20 }}>
                     <Table
-                        columns={columns}
+                        columns={showArchived ? archivedColumns : columns}
                         loading={loading || isFetchingRequests}
                         dataSource={filteredData}
                         pagination={{ pageSize: 10, showSizeChanger: false }}
@@ -585,6 +697,160 @@ export default function CancellationRequests() {
                             className='logout-confirm-btn'
                             onClick={() => {
                                 setIsCancellationRejectedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+
+            {/* ARCHIVE REQUEST CONFIRMATION MODAL */}
+            <Modal
+                open={isDeleteModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsDeleteModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Archive Cancellation Request?</h1>
+                    <p className='modal-text'>Are you sure you want to archive this cancellation request?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleArchive(editingRequest.key);
+                                setIsDeleteModalOpen(false);
+                            }}
+                        >
+                            Archive
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsDeleteModalOpen(false);
+                                setEditingRequest(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+            {/* RESTORE REQUEST CONFIRMATION MODAL */}
+            <Modal
+                open={isRestoreModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRestoreModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Restore Cancellation Request?</h1>
+                    <p className='modal-text'>Are you sure you want to restore this cancellation request?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleRestore(editingRequest.key);
+                                setIsRestoreModalOpen(false);
+                            }}
+                        >
+                            Restore
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsRestoreModalOpen(false);
+                                setEditingRequest(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+
+            {/* REQUEST HAS BEEN ARCHIVED MODAL */}
+            <Modal
+                open={isRequestDeletedModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRequestDeletedModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Cancellation Request Archived Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The cancellation request has been archived.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsRequestDeletedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+            {/* REQUEST HAS BEEN RESTORED MODAL */}
+            <Modal
+                open={isRequestRestoredModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRequestRestoredModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Cancellation Request Restored Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The cancellation request has been restored.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsRequestRestoredModalOpen(false);
                             }}
                         >
                             Continue

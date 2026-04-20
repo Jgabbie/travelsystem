@@ -1,9 +1,10 @@
 import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, ConfigProvider, Space, Spin } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { PlusOutlined, IdcardOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, CheckCircleOutlined, DeleteOutlined, EyeOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/visaservices.css";
+import "../../style/components/modals/modaldesign.css";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function VisaServices() {
@@ -13,11 +14,15 @@ export default function VisaServices() {
     const basePath = isEmployee ? '/employee' : '';
 
     const [servicesData, setServicesData] = useState([]);
+    const [archivedServices, setArchivedServices] = useState([]);
+    const [showArchived, setShowArchived] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchText, setSearchText] = useState("");
     const [selectedService, setSelectedService] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isServiceDeletedModalOpen, setIsServiceDeletedModalOpen] = useState(false);
+    const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+    const [isServiceRestoredModalOpen, setIsServiceRestoredModalOpen] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -29,26 +34,43 @@ export default function VisaServices() {
         return "";
     };
 
+    const getServices = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch.get("/services/services");
+            const sorted = [...response].sort((a, b) => {
+                if (a.createdAt && b.createdAt) {
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                }
+                return (b._id > a._id ? 1 : -1);
+            });
+            setServicesData(sorted);
+        } catch (error) {
+            console.error("Failed to fetch visa services:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getArchivedServices = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch.get("/services/archived-services");
+            const sorted = [...response].sort((a, b) => {
+                if (a.archivedAt && b.archivedAt) {
+                    return new Date(b.archivedAt) - new Date(a.archivedAt);
+                }
+                return (b._id > a._id ? 1 : -1);
+            });
+            setArchivedServices(sorted);
+        } catch (error) {
+            console.error("Failed to fetch archived visa services:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const getServices = async () => {
-            setLoading(true);
-            try {
-                const response = await apiFetch.get("/services/services");
-                // Sort by createdAt descending if available, else by _id
-                const sorted = [...response].sort((a, b) => {
-                    if (a.createdAt && b.createdAt) {
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    }
-                    // fallback: sort by _id (MongoDB ObjectId has timestamp)
-                    return (b._id > a._id ? 1 : -1);
-                });
-                setServicesData(sorted);
-            } catch (error) {
-                console.error("Failed to fetch visa services:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         getServices();
     }, []);
 
@@ -61,21 +83,33 @@ export default function VisaServices() {
         setIsModalOpen(false);
     };
 
-    const handleDelete = async (id) => {
+    const handleArchive = async (key) => {
         try {
-            await apiFetch.delete(`/services/delete-service/${id}`);
-            setServicesData(prevData => prevData.filter(service => service._id !== id));
-            message.success("Visa service deleted successfully");
+            await apiFetch.delete(`/services/delete-service/${key}`);
+            setServicesData(prevData => prevData.filter(service => service._id !== key));
             setIsServiceDeletedModalOpen(true);
             setServiceToDelete(null);
         } catch (error) {
             console.error("Failed to delete visa service:", error);
-            message.error("Failed to delete visa service");
+            message.error("Failed to archive visa service");
+        }
+    };
+
+    const handleRestore = async (key) => {
+        try {
+            await apiFetch.post(`/services/archived-services/${key}/restore`)
+            setArchivedServices(prevData => prevData.filter(service => service._id !== key))
+            setIsServiceRestoredModalOpen(true);
+        } catch (error) {
+            console.error("Failed to restore visa service:", error)
+            message.error("Failed to restore visa service")
         }
     };
 
 
-    const filteredServices = servicesData.filter((service) => {
+    const currentServices = showArchived ? archivedServices : servicesData;
+
+    const filteredServices = currentServices.filter((service) => {
         const query = searchText.trim().toLowerCase();
         const matchesSearch =
             !query ||
@@ -98,35 +132,37 @@ export default function VisaServices() {
             <div>
                 <h1 className="page-header">Visa Services</h1>
 
-                <Row gutter={16} style={{ marginBottom: 20 }}>
-                    <Col xs={24} sm={8}>
-                        <Card className="visaservice-management-card">
-                            <Statistic
-                                title="Total Visa Services"
-                                value={totalServices}
-                                prefix={<AppstoreOutlined />}
-                            />
-                        </Card>
-                    </Col>
+                {!showArchived && (
+                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                        <Col xs={24} sm={8}>
+                            <Card className="visaservice-management-card">
+                                <Statistic
+                                    title="Total Visa Services"
+                                    value={totalServices}
+                                    prefix={<AppstoreOutlined />}
+                                />
+                            </Card>
+                        </Col>
 
-                    <Col xs={24} sm={8}>
-                        <Card className="visaservice-management-card">
-                            <Statistic
-                                title="Tourist Visas"
-                                value={servicesData.filter(service => service.visaType === "Tourist").length}
-                            />
-                        </Card>
-                    </Col>
+                        <Col xs={24} sm={8}>
+                            <Card className="visaservice-management-card">
+                                <Statistic
+                                    title="Tourist Visas"
+                                    value={servicesData.filter(service => service.visaType === "Tourist").length}
+                                />
+                            </Card>
+                        </Col>
 
-                    <Col xs={24} sm={8}>
-                        <Card className="visaservice-management-card">
-                            <Statistic
-                                title="Express Processing"
-                                value={servicesData.filter(service => service.processing === "Express").length}
-                            />
-                        </Card>
-                    </Col>
-                </Row>
+                        <Col xs={24} sm={8}>
+                            <Card className="visaservice-management-card">
+                                <Statistic
+                                    title="Express Processing"
+                                    value={servicesData.filter(service => service.processing === "Express").length}
+                                />
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
 
                 <div className="package-actions">
                     <Input
@@ -142,8 +178,26 @@ export default function VisaServices() {
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={() => navigate(`${basePath}/visa-services/add`)}
+                            disabled={showArchived}
                         >
                             Add Service
+                        </Button>
+                        <Button
+                            icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
+                            className="visaservices-add-button"
+                            type="primary"
+                            onClick={() => {
+                                const nextValue = !showArchived;
+                                setShowArchived(nextValue);
+                                setSearchText("");
+                                if (nextValue) {
+                                    getArchivedServices();
+                                } else {
+                                    getServices();
+                                }
+                            }}
+                        >
+                            {showArchived ? 'Back to Services' : 'Archives'}
                         </Button>
                     </Space>
                 </div>
@@ -170,25 +224,41 @@ export default function VisaServices() {
                                 >
                                     View
                                 </Button>
-                                <Button
-                                    className="visaservices-edit-button"
-                                    type="primary"
-                                    icon={<EditOutlined />}
-                                    onClick={() => navigate(`${basePath}/visa-services/edit`, { state: { serviceId: service._id } })}
-                                >
-                                    Edit
-                                </Button>
-                                <Button
-                                    className="visaservices-remove-button"
-                                    type="primary"
-                                    icon={<DeleteOutlined />}
-                                    onClick={() => {
-                                        setServiceToDelete(service._id);
-                                        setIsDeleteModalOpen(true);
-                                    }}
-                                >
-                                    Delete
-                                </Button>
+                                {showArchived ? (
+                                    <Button
+                                        icon={<CheckCircleOutlined />}
+                                        className="visaservices-restore-button"
+                                        type="primary"
+                                        onClick={() => {
+                                            setServiceToDelete(service._id);
+                                            setIsRestoreModalOpen(true);
+                                        }}
+                                    >
+                                        Restore
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            className="visaservices-edit-button"
+                                            type="primary"
+                                            icon={<EditOutlined />}
+                                            onClick={() => navigate(`${basePath}/visa-services/edit`, { state: { serviceId: service._id } })}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            className="visaservices-remove-button"
+                                            type="primary"
+                                            icon={<DeleteOutlined />}
+                                            onClick={() => {
+                                                setServiceToDelete(service._id);
+                                                setIsDeleteModalOpen(true);
+                                            }}
+                                        >
+                                            Archive
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </Card>
                     )) : (
@@ -263,11 +333,9 @@ export default function VisaServices() {
                 </Modal>
 
 
-
                 {/* DELETE SERVICE CONFIRMATION MODAL */}
                 <Modal
                     open={isDeleteModalOpen}
-                    className='signup-success-modal'
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     style={{ top: 220 }}
@@ -275,26 +343,25 @@ export default function VisaServices() {
                         setIsDeleteModalOpen(false);
                     }}
                 >
-                    <div className='signup-success-container'>
-                        <h1 className='signup-success-heading'>Delete Service?</h1>
-                        <p className='signup-success-text'>Are you sure you want to delete this service?</p>
+                    <div className='modal-container'>
+                        <h1 className='modal-heading'>Archive Service?</h1>
+                        <p className='modal-text'>Are you sure you want to archive this service?</p>
 
                         <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                             <Button
                                 type='primary'
-                                className='logout-confirm-btn'
+                                className='modal-button'
                                 onClick={() => {
-                                    console.log("Deleting service with ID:", serviceToDelete);
-                                    handleDelete(serviceToDelete);
+                                    handleArchive(serviceToDelete);
                                     setIsDeleteModalOpen(false);
                                 }}
                             >
-                                Accept
+                                Archive
                             </Button>
                             <Button
                                 type='primary'
-                                className='logout-cancel-btn'
+                                className='modal-button-cancel'
                                 onClick={() => {
                                     setIsDeleteModalOpen(false);
                                 }}
@@ -308,7 +375,6 @@ export default function VisaServices() {
                 {/* SERVICE HAS BEEN DELETED MODAL */}
                 <Modal
                     open={isServiceDeletedModalOpen}
-                    className='signup-success-modal'
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     style={{ top: 220 }}
@@ -316,20 +382,20 @@ export default function VisaServices() {
                         setIsServiceDeletedModalOpen(false);
                     }}
                 >
-                    <div className='signup-success-container'>
-                        <h1 className='signup-success-heading'>Service Deleted!</h1>
+                    <div className='modal-container'>
+                        <h1 className='modal-heading'>Service Archived!</h1>
 
                         <div>
                             <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
                         </div>
 
-                        <p className='signup-success-text'>The service has been deleted.</p>
+                        <p className='modal-text'>The service has been archived.</p>
 
                         <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                             <Button
                                 type='primary'
-                                className='logout-confirm-btn'
+                                className='modal-button'
                                 onClick={() => {
                                     setIsServiceDeletedModalOpen(false);
                                 }}
@@ -342,7 +408,80 @@ export default function VisaServices() {
                 </Modal>
 
 
+                {/* RESTORE QUOTATION CONFIRMATION MODAL */}
+                <Modal
+                    open={isRestoreModalOpen}
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    style={{ top: 220 }}
+                    onCancel={() => {
+                        setIsRestoreModalOpen(false);
+                    }}
+                >
+                    <div className='modal-container'>
+                        <h1 className='modal-heading'>Restore Visa Service?</h1>
+                        <p className='modal-text'>Are you sure you want to restore this visa service?</p>
 
+                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                            <Button
+                                type='primary'
+                                className='modal-button'
+                                onClick={() => {
+                                    handleRestore(serviceToDelete);
+                                    setIsRestoreModalOpen(false);
+                                }}
+                            >
+                                Restore
+                            </Button>
+                            <Button
+                                type='primary'
+                                className='modal-button-cancel'
+                                onClick={() => {
+                                    setIsRestoreModalOpen(false);
+                                    setServiceToDelete(null);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* SERVICE HAS BEEN RESTORED MODAL */}
+                <Modal
+                    open={isServiceRestoredModalOpen}
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    style={{ top: 220 }}
+                    onCancel={() => {
+                        setIsServiceRestoredModalOpen(false);
+                    }}
+                >
+                    <div className='modal-container'>
+                        <h1 className='modal-heading'>Visa Service Restored Successfully!</h1>
+
+                        <div>
+                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        </div>
+
+                        <p className='modal-text'>The visa service has been restored.</p>
+
+                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                            <Button
+                                type='primary'
+                                className='modal-button'
+                                onClick={() => {
+                                    setIsServiceRestoredModalOpen(false);
+                                }}
+                            >
+                                Continue
+                            </Button>
+                        </div>
+
+                    </div>
+                </Modal>
 
 
 

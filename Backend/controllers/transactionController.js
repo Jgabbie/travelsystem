@@ -1,4 +1,5 @@
 const TransactionModel = require('../models/transactions')
+const ArchivedTransactionModel = require('../models/archivedtransactions')
 const BookingModel = require('../models/booking')
 const PackageModel = require('../models/package')
 const VisaModel = require('../models/visas')
@@ -173,6 +174,21 @@ const getAllTransactions = async (_req, res) => {
     }
 }
 
+//GET ARCHIVED TRANSACTIONS --------------------------------------------------------------------------
+const getArchivedTransactions = async (_req, res) => {
+    try {
+        const transactions = await ArchivedTransactionModel.find({})
+            .populate('userId', 'username')
+            .populate('packageId', 'packageName')
+            .sort({ archivedAt: -1 });
+
+        res.status(200).json(transactions)
+    } catch (error) {
+        console.error('Error fetching archived transactions:', error)
+        res.status(500).json({ message: "Failed to fetch archived transactions", error: error.message })
+    }
+}
+
 //UPDATE TRANSACTIONS --------------------------------------------------------------------------
 const updateTransaction = async (req, res) => {
     const { id } = req.params
@@ -344,15 +360,77 @@ const deleteTransaction = async (req, res) => {
     const { id } = req.params
 
     try {
-        const deletedTransaction = await TransactionModel.findByIdAndDelete(id)
-        if (!deletedTransaction) {
+        const transaction = await TransactionModel.findById(id)
+        if (!transaction) {
             return res.status(404).json({ message: "Transaction not found" })
         }
 
-        logAction('TRANSACTION_DELETED', req.userId, { "Transaction Deleted": `Transaction Reference: ${deletedTransaction.reference} | Method: ${deletedTransaction.method} | Amount: ${deletedTransaction.amount}` })
-        res.status(200).json({ message: "Transaction deleted successfully" })
+        await ArchivedTransactionModel.create({
+            originalTransactionId: transaction._id,
+            bookingId: transaction.bookingId,
+            applicationId: transaction.applicationId,
+            applicationType: transaction.applicationType,
+            packageId: transaction.packageId,
+            userId: transaction.userId,
+            reference: transaction.reference,
+            amount: transaction.amount,
+            method: transaction.method,
+            status: transaction.status,
+            proofImage: transaction.proofImage,
+            proofImageType: transaction.proofImageType,
+            proofFileName: transaction.proofFileName,
+            paymentType: transaction.paymentType,
+            createdAt: transaction.createdAt
+        })
+
+        await TransactionModel.findByIdAndDelete(id)
+
+        logAction('TRANSACTION_ARCHIVED', req.userId, { "Transaction Archived": `Transaction Reference: ${transaction.reference} | Method: ${transaction.method} | Amount: ${transaction.amount}` })
+        res.status(200).json({ message: "Transaction archived successfully" })
     } catch (error) {
-        res.status(500).json({ message: "Failed to delete transaction", error: error.message })
+        res.status(500).json({ message: "Failed to archive transaction", error: error.message })
+    }
+}
+
+//RESTORE TRANSACTION (ADMIN) -----------------------------------------------------------------
+const restoreArchivedTransaction = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const archivedTransaction = await ArchivedTransactionModel.findById(id)
+        if (!archivedTransaction) {
+            return res.status(404).json({ message: 'Archived transaction not found' })
+        }
+
+        const existingTransaction = await TransactionModel.findOne({ reference: archivedTransaction.reference })
+        if (existingTransaction) {
+            return res.status(409).json({ message: 'Transaction with this reference already exists' })
+        }
+
+        const restoredTransaction = await TransactionModel.create({
+            _id: archivedTransaction.originalTransactionId,
+            bookingId: archivedTransaction.bookingId,
+            applicationId: archivedTransaction.applicationId,
+            applicationType: archivedTransaction.applicationType,
+            packageId: archivedTransaction.packageId,
+            userId: archivedTransaction.userId,
+            reference: archivedTransaction.reference,
+            amount: archivedTransaction.amount,
+            method: archivedTransaction.method,
+            status: archivedTransaction.status,
+            proofImage: archivedTransaction.proofImage,
+            proofImageType: archivedTransaction.proofImageType,
+            proofFileName: archivedTransaction.proofFileName,
+            paymentType: archivedTransaction.paymentType,
+            createdAt: archivedTransaction.createdAt
+        })
+
+        await ArchivedTransactionModel.findByIdAndDelete(id)
+
+        logAction('TRANSACTION_RESTORED', req.userId, { "Transaction Restored": `Transaction Reference: ${restoredTransaction.reference}` })
+        res.status(200).json({ message: 'Transaction restored', transaction: restoredTransaction })
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to restore transaction', error: error.message })
     }
 }
 
@@ -454,4 +532,4 @@ const rejectTransaction = async (req, res) => {
     }
 }
 
-module.exports = { createTransaction, getUserTransactions, getAllTransactions, updateTransaction, deleteTransaction, rejectTransaction }
+module.exports = { createTransaction, getUserTransactions, getAllTransactions, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction }

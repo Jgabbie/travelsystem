@@ -115,7 +115,7 @@ export default function UserQuotationRequest() {
             message.success("Revision requested successfully.");
             setNotes("");
         }).catch(err => {
-            console.error(err.data || err.message);
+            console.log(err.data.error || err.message);
             message.error("Failed to request revision.");
         }).finally(() => {
             setActionLoading(false);

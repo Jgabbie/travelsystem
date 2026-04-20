@@ -144,6 +144,7 @@ export default function PassAndVisaService() {
                                 >
                                     <h3>New Passport</h3>
                                     <p>Apply for a passport for first-time applicants.</p>
+                                    <p className="passport-price">₱ 2000</p>
                                 </div>
                                 <div
                                     className="passport-card"
@@ -158,6 +159,7 @@ export default function PassAndVisaService() {
                                 >
                                     <h3>Renew Passport</h3>
                                     <p>Renew your existing passport quickly.</p>
+                                    <p className="passport-price">₱ 2000</p>
                                 </div>
                             </div>
                         </section>

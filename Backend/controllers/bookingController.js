@@ -1,6 +1,8 @@
 const BookingModel = require('../models/booking')
+const ArchivedBookingModel = require('../models/archivedbookings')
 const TransactionModel = require('../models/transactions')
 const CancellationModel = require('../models/cancellations')
+const ArchivedCancellationModel = require('../models/archivedcancellations')
 const TokenCheckoutModel = require('../models/tokencheckout')
 const PackageModel = require('../models/package')
 const NotificationModel = require('../models/notification')
@@ -154,6 +156,21 @@ const getAllBookings = async (_req, res) => {
     }
 }
 
+//GET ARCHIVED BOOKINGS (ADMIN) -----------------------------------------------------------------
+const getArchivedBookings = async (_req, res) => {
+    try {
+        const bookings = await ArchivedBookingModel.find({})
+            .populate('userId', 'username')
+            .populate('packageId', 'packageName packageType packageDuration')
+            .sort({ archivedAt: -1 })
+
+        res.status(200).json(bookings)
+    } catch (error) {
+        console.error('Error fetching archived bookings:', error)
+        res.status(500).json({ message: 'Error fetching archived bookings', error })
+    }
+}
+
 
 //GET BOOKING BY REFERENCE (USER) -----------------------------------------------------------------
 const getBookingByReference = async (req, res) => {
@@ -213,20 +230,84 @@ const updateBooking = async (req, res) => {
     }
 }
 
-//DELETE BOOKING (ADMIN) -----------------------------------------------------------------
+//ARCHIVE BOOKING (ADMIN) -----------------------------------------------------------------
 const deleteBooking = async (req, res) => {
     const { id } = req.params
 
     try {
-        const deletedBooking = await BookingModel.findByIdAndDelete(id)
-        if (!deletedBooking) {
+        const booking = await BookingModel.findById(id)
+        if (!booking) {
             return res.status(404).json({ message: 'Booking not found' })
         }
 
-        logAction('BOOKING_DELETED', req.userId, { "Booking Deleted": `Booking Reference: ${deletedBooking.reference}` })
-        res.status(200).json({ message: 'Booking deleted' })
+        await ArchivedBookingModel.create({
+            originalBookingId: booking._id,
+            packageId: booking.packageId,
+            userId: booking.userId,
+            bookingDate: booking.bookingDate,
+            travelDate: booking.travelDate,
+            travelers: booking.travelers,
+            reference: booking.reference,
+            status: booking.status,
+            bookingDetails: booking.bookingDetails,
+            passportFiles: booking.passportFiles,
+            photoFiles: booking.photoFiles,
+            statusHistory: booking.statusHistory,
+            slotDecremented: booking.slotDecremented,
+            createdAt: booking.createdAt,
+            expiresAt: booking.expiresAt
+        })
+
+        await BookingModel.findByIdAndDelete(id)
+
+        logAction('BOOKING_ARCHIVED', req.userId, { "Booking Archived": `Booking Reference: ${booking.reference}` })
+        res.status(200).json({ message: 'Booking archived' })
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting booking', error })
+        res.status(500).json({ message: 'Error archiving booking', error })
+    }
+}
+
+//RESTORE BOOKING (ADMIN) -----------------------------------------------------------------
+const restoreArchivedBooking = async (req, res) => {
+    const { id } = req.params
+    console.log("Restoring booking with archived ID:", id)
+
+    try {
+        const archivedBooking = await ArchivedBookingModel.findById(id)
+        if (!archivedBooking) {
+            return res.status(404).json({ message: 'Archived booking not found' })
+        }
+
+        const existingBooking = await BookingModel.findOne({ reference: archivedBooking.reference })
+        if (existingBooking) {
+            return res.status(409).json({ message: 'Booking with this reference already exists' })
+        }
+
+        const restoredExpiresAt = archivedBooking.expiresAt || dayjs().add(5, 'minutes').toDate()
+        const restoredBooking = await BookingModel.create({
+            _id: archivedBooking.originalBookingId,
+            packageId: archivedBooking.packageId,
+            userId: archivedBooking.userId,
+            bookingDate: archivedBooking.bookingDate,
+            travelDate: archivedBooking.travelDate,
+            travelers: archivedBooking.travelers,
+            reference: archivedBooking.reference,
+            status: archivedBooking.status,
+            bookingDetails: archivedBooking.bookingDetails,
+            passportFiles: archivedBooking.passportFiles,
+            photoFiles: archivedBooking.photoFiles,
+            statusHistory: archivedBooking.statusHistory,
+            slotDecremented: archivedBooking.slotDecremented,
+            createdAt: archivedBooking.createdAt,
+            expiresAt: restoredExpiresAt
+        })
+
+        await ArchivedBookingModel.findByIdAndDelete(id)
+
+        logAction('BOOKING_RESTORED', req.userId, { "Booking Restored": `Booking Reference: ${restoredBooking.reference}` })
+        res.status(200).json({ message: 'Booking restored', booking: restoredBooking })
+    } catch (error) {
+        res.status(500).json({ message: 'Error restoring booking', error })
     }
 }
 
@@ -508,6 +589,93 @@ const getcancellations = async (req, res) => {
     }
 }
 
+//GET ARCHIVED CANCELLATIONS (ADMIN) -----------------------------------------------------------------
+const getArchivedCancellations = async (req, res) => {
+    try {
+        const cancellations = await ArchivedCancellationModel.find({})
+            .populate('userId', 'username email')
+            .populate({
+                path: 'bookingId',
+                select: 'bookingDetails createdAt reference status packageId',
+                populate: { path: 'packageId', select: 'packageName' }
+            })
+            .populate('packageId', 'packageName')
+            .sort({ archivedAt: -1 })
+        res.status(200).json(cancellations)
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching archived cancellations', error })
+    }
+}
+
+//ARCHIVE CANCELLATION (ADMIN) -----------------------------------------------------------------
+const archiveCancellation = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const cancellation = await CancellationModel.findById(id)
+        if (!cancellation) {
+            return res.status(404).json({ message: 'Cancellation request not found' })
+        }
+
+        await ArchivedCancellationModel.create({
+            originalCancellationId: cancellation._id,
+            bookingId: cancellation.bookingId,
+            packageId: cancellation.packageId,
+            userId: cancellation.userId,
+            cancellationReason: cancellation.cancellationReason,
+            cancellationComments: cancellation.cancellationComments,
+            imageProof: cancellation.imageProof,
+            cancellationDate: cancellation.cancellationDate,
+            reference: cancellation.reference,
+            status: cancellation.status
+        })
+
+        await CancellationModel.findByIdAndDelete(id)
+
+        logAction('CANCELLATION_ARCHIVED', req.userId, { "Cancellation Archived": `Cancellation Reference: ${cancellation.reference}` })
+        res.status(200).json({ message: 'Cancellation archived' })
+    } catch (error) {
+        res.status(500).json({ message: 'Error archiving cancellation', error })
+    }
+}
+
+//RESTORE CANCELLATION (ADMIN) -----------------------------------------------------------------
+const restoreArchivedCancellation = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const archivedCancellation = await ArchivedCancellationModel.findById(id)
+        if (!archivedCancellation) {
+            return res.status(404).json({ message: 'Archived cancellation not found' })
+        }
+
+        const existingCancellation = await CancellationModel.findOne({ reference: archivedCancellation.reference })
+        if (existingCancellation) {
+            return res.status(409).json({ message: 'Cancellation with this reference already exists' })
+        }
+
+        const restoredCancellation = await CancellationModel.create({
+            _id: archivedCancellation.originalCancellationId,
+            bookingId: archivedCancellation.bookingId,
+            packageId: archivedCancellation.packageId,
+            userId: archivedCancellation.userId,
+            cancellationReason: archivedCancellation.cancellationReason,
+            cancellationComments: archivedCancellation.cancellationComments,
+            imageProof: archivedCancellation.imageProof,
+            cancellationDate: archivedCancellation.cancellationDate,
+            reference: archivedCancellation.reference,
+            status: archivedCancellation.status
+        })
+
+        await ArchivedCancellationModel.findByIdAndDelete(id)
+
+        logAction('CANCELLATION_RESTORED', req.userId, { "Cancellation Restored": `Cancellation Reference: ${restoredCancellation.reference}` })
+        res.status(200).json({ message: 'Cancellation restored', cancellation: restoredCancellation })
+    } catch (error) {
+        res.status(500).json({ message: 'Error restoring cancellation', error })
+    }
+}
+
 const verifyTokenCheckout = async (req, res) => {
     const { token } = req.body
 
@@ -526,4 +694,4 @@ const verifyTokenCheckout = async (req, res) => {
         return { valid: false, message: 'Error verifying token' }
     }
 }
-module.exports = { createBooking, getUserBookings, getAllBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, cancelBooking, getcancellations, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation }
+module.exports = { createBooking, getUserBookings, getAllBookings, getArchivedBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, restoreArchivedBooking, cancelBooking, getcancellations, getArchivedCancellations, archiveCancellation, restoreArchivedCancellation, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation }

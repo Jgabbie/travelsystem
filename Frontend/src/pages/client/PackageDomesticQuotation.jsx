@@ -338,7 +338,7 @@ export default function PackageDomesticQuotation() {
                         <div className="quotation-top-grid">
                             <div className="quotation-left">
                                 <div className="package-type-selector quotation-section">
-                                    <label className="section-label">Select Arrangement Type</label>
+                                    <label className="section-label"><span className='packagequotation-steps'>1</span>Select Arrangement Type</label>
                                     <div className="selection-cards">
                                         <div
                                             className={`selection-card ${packageCategory === 'All in Package' ? 'active' : ''}`}
@@ -361,7 +361,7 @@ export default function PackageDomesticQuotation() {
                                         </div>
                                     </div>
 
-                                    <label className="section-label" style={{ marginTop: 16 }}>Travelers</label>
+                                    <label className="section-label" style={{ marginTop: 16 }}> <span className='packagequotation-steps'>2</span>Select If "Solo Booking" or "Group Booking"</label>
                                     <div className="selection-cards">
                                         <div
                                             className={`selection-card ${travelerType === 'solo' ? 'active' : ''}`}
@@ -418,9 +418,11 @@ export default function PackageDomesticQuotation() {
                             </div>
 
                             <div className="quotation-right">
-                                <div className="quotation-section">
-                                    <div className="quotation-grid">
 
+                                <div className="quotation-section">
+                                    <label className="section-label"> <span className='packagequotation-steps'>3</span>Fill up the required details below</label>
+
+                                    <div className="quotation-grid">
                                         {packageCategory !== 'Land Arrangement' && (
                                             <div className="quotation-field">
                                                 <label htmlFor="quotation-airlines">Preferred Airlines <span style={{ color: 'red' }}>*</span></label>
@@ -511,8 +513,12 @@ export default function PackageDomesticQuotation() {
                                         </div>
 
                                         {/* Land Arrangement Flight Details */}
+
                                         {packageCategory === 'Land Arrangement' && (
+
                                             <div className="quotation-flight-details quotation-section">
+                                                <label className="section-label" style={{ width: 700 }}> <span className='packagequotation-steps'>4</span>If you are booking for Land Arrangement, Fill up the required details below</label>
+
                                                 <h3>Flight Details</h3>
 
                                                 <div className='flightdetails-left'>
@@ -602,7 +608,7 @@ export default function PackageDomesticQuotation() {
                                         </div>
                                     </div>
                                 ) : null}
-
+                                <label className="section-label" style={{ width: 700 }}> <span className='packagequotation-steps'>5</span>Provide comments or details about the itinerary for possible changes</label>
                                 <h3>Itinerary Notes</h3>
                                 <div className="quotation-itinerary-grid">
                                     {itineraryLabels.map((label, index) => (

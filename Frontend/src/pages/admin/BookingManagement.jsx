@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { SearchOutlined, InboxOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled, BookOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/booking.css";
+import "../../style/components/modals/modaldesign.css";
 import { useAuth } from "../../hooks/useAuth";
 
 
@@ -40,72 +41,89 @@ export default function BookingManagement() {
   const [editingBooking, setEditingBooking] = useState(null);
   const [isBookingEditedModalOpen, setIsBookingEditedModalOpen] = useState(false);
   const [isBookingDeletedModalOpen, setIsBookingDeletedModalOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [isBookingRestoredModalOpen, setIsBookingRestoredModalOpen] = useState(false);
 
   const [data, setData] = useState([]);
+  const [archivedData, setArchivedData] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { auth } = useAuth();
   const isEmployee = auth?.role === 'Employee';
   const basePath = isEmployee ? '/employee' : '';
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      setLoading(true);
-      try {
-        const response = await apiFetch.get("/booking/all-bookings");
+  const mapBookings = (response) => response.map((b) => {
+    const rawTravel = b?.travelDate || b?.bookingDetails?.travelDate || null;
+    const travelStart = rawTravel?.startDate
+      || (typeof rawTravel === 'string' ? rawTravel.split(' - ')[0] : null)
+      || rawTravel
+      || null;
+    const travelDateDisplay = travelStart && dayjs(travelStart).isValid()
+      ? dayjs(travelStart).format('MMM DD, YYYY')
+      : '--';
 
-        const bookings = response.map((b) => {
-          const rawTravel = b?.travelDate || b?.bookingDetails?.travelDate || null;
-          const travelStart = rawTravel?.startDate
-            || (typeof rawTravel === 'string' ? rawTravel.split(' - ')[0] : null)
-            || rawTravel
-            || null;
-          const travelDateDisplay = travelStart && dayjs(travelStart).isValid()
-            ? dayjs(travelStart).format('MMM DD, YYYY')
-            : '--';
+    const bookingDateDisplay = b?.createdAt && dayjs(b.createdAt).isValid()
+      ? dayjs(b.createdAt).format('MMM DD, YYYY')
+      : '--';
 
-          const bookingDateDisplay = b?.createdAt && dayjs(b.createdAt).isValid()
-            ? dayjs(b.createdAt).format('MMM DD, YYYY')
-            : '--';
-
-          return {
-            key: b._id,
-            ref: b.reference || b._id,
-            username: b.userId?.username || "Customer Name",
-            pkg: b.packageId?.packageName || "Package",
-            travelDate: travelDateDisplay,
-            travelDateRaw: travelStart,
-            bookingDate: bookingDateDisplay,
-            bookingDateRaw: b.createdAt || null,
-            qty: b.travelers || 0,
-            status: (() => {
-              const rawStatus = b.status || "";
-              const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
-              const normalized = formatted.toLowerCase();
-              if (normalized === "successful" || normalized === "fully paid") {
-                return "Fully Paid";
-              }
-              return formatted || "Pending";
-            })(),
-
-            bookingDetails: b.bookingDetails || {}
-          };
-        });
-
-        setData(bookings);
-      } catch (error) {
-        message.error("Unable to load bookings");
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
+    return {
+      key: b._id,
+      ref: b.reference || b._id,
+      username: b.userId?.username || "Customer Name",
+      pkg: b.packageId?.packageName || "Package",
+      travelDate: travelDateDisplay,
+      travelDateRaw: travelStart,
+      bookingDate: bookingDateDisplay,
+      bookingDateRaw: b.createdAt || null,
+      qty: b.travelers || 0,
+      status: (() => {
+        const rawStatus = b.status || "";
+        const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+        const normalized = formatted.toLowerCase();
+        if (normalized === "successful" || normalized === "fully paid") {
+          return "Fully Paid";
+        }
+        return formatted || "Pending";
+      })(),
+      bookingDetails: b.bookingDetails || {}
     };
+  });
 
+  const fetchBookings = async () => {
+    setLoading(true);
+    try {
+      const response = await apiFetch.get("/booking/all-bookings");
+      setData(mapBookings(response));
+    } catch (error) {
+      message.error("Unable to load bookings");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchArchivedBookings = async () => {
+    setLoading(true);
+    try {
+      const response = await apiFetch.get("/booking/archived-bookings");
+      setArchivedData(mapBookings(response));
+    } catch (error) {
+      message.error("Unable to load archived bookings");
+      setArchivedData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchBookings();
   }, []);
 
 
-  const filteredData = data.filter(item => {
+  const currentData = showArchived ? archivedData : data;
+
+  const filteredData = currentData.filter(item => {
     const matchesSearch =
       (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
       (String(item.travelDate || "").toLowerCase().includes(searchText.toLowerCase())) ||
@@ -212,15 +230,26 @@ export default function BookingManagement() {
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = async (key) => {
+  const handleArchive = async (key) => {
 
     try {
       await apiFetch.delete(`/booking/${key}`);
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsBookingDeletedModalOpen(true);
-      message.success("Booking deleted");
     } catch (error) {
-      message.error("Unable to delete booking");
+      message.error("Unable to archive booking");
+    }
+
+  };
+
+  const handleRestore = async (key) => {
+
+    try {
+      await apiFetch.post(`/booking/archived-bookings/${key}/restore`);
+      setIsBookingRestoredModalOpen(true);
+      setArchivedData((prev) => prev.filter((item) => item.key !== key));
+    } catch (error) {
+      message.error(error?.response?.data?.message || "Unable to restore booking");
     }
 
   };
@@ -351,7 +380,58 @@ export default function BookingManagement() {
               setIsDeleteModalOpen(true);
             }}
           >
-            Delete
+            Archive
+          </Button>
+        </Space>
+      )
+    }
+  ];
+
+  const archivedColumns = [
+    { title: "Booking Reference", dataIndex: "ref" },
+    { title: "Travel Package", dataIndex: "pkg" },
+    { title: "Customer Name", dataIndex: "username" },
+    {
+      title: "Travel Date",
+      dataIndex: "travelDate",
+      render: d => d || "--"
+    },
+    {
+      title: "Booking Date",
+      dataIndex: "bookingDate",
+      render: d => d || "--"
+    },
+    { title: "Travelers", dataIndex: "qty" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: s => {
+        const normalized = (s || "").toLowerCase();
+        const displayStatus = normalized === "confirmed" || normalized === "successful" || normalized === "fully paid"
+          ? "Fully Paid"
+          : s;
+        const color = displayStatus === "Fully Paid" ? "green" :
+          displayStatus === "Pending" ? "orange" :
+            displayStatus === "Cancelled" ? "red" :
+              displayStatus === "Not Paid" ? "pink" :
+                "purple";
+        return <Tag color={color}>{displayStatus}</Tag>;
+      }
+    },
+    {
+      title: "Actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            className='bookingmanagement-restore-button'
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={() => {
+              setEditingBooking(record);
+              setIsRestoreModalOpen(true);
+            }}
+          >
+            Restore
           </Button>
         </Space>
       )
@@ -373,28 +453,30 @@ export default function BookingManagement() {
     >
       <div className="booking-management-container">
         <h1 className="page-header">Booking Management</h1>
-        <Row gutter={16} style={{ marginBottom: 20 }}>
-          <Col xs={24} sm={6}>
-            <Card className="booking-management-card">
-              <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="booking-management-card">
-              <Statistic title="Pending" value={totalPending} prefix={<ClockCircleOutlined />} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="booking-management-card">
-              <Statistic title="Fully Paid" value={totalFullyPaid} prefix={<CheckCircleOutlined />} />
-            </Card>
-          </Col>
-          <Col xs={24} sm={6}>
-            <Card className="booking-management-card">
-              <Statistic title="Cancelled" value={totalCancelled} prefix={<CloseCircleOutlined />} />
-            </Card>
-          </Col>
-        </Row>
+        {!showArchived && (
+          <Row gutter={16} style={{ marginBottom: 20 }}>
+            <Col xs={24} sm={6}>
+              <Card className="booking-management-card">
+                <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Card className="booking-management-card">
+                <Statistic title="Pending" value={totalPending} prefix={<ClockCircleOutlined />} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Card className="booking-management-card">
+                <Statistic title="Fully Paid" value={totalFullyPaid} prefix={<CheckCircleOutlined />} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Card className="booking-management-card">
+                <Statistic title="Cancelled" value={totalCancelled} prefix={<CloseCircleOutlined />} />
+              </Card>
+            </Col>
+          </Row>
+        )}
 
         <div className="booking-actions">
           <Input
@@ -434,12 +516,32 @@ export default function BookingManagement() {
           />
           <Space style={{ marginLeft: 'auto' }}>
             <Button className='bookingmanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+            <Button
+              className='bookingmanagement-export-button'
+              icon={showArchived ? <BookOutlined /> : <InboxOutlined />}
+              type="primary"
+              onClick={() => {
+                const nextValue = !showArchived;
+                setShowArchived(nextValue);
+                setSearchText("");
+                setStatusFilter("");
+                setBookingDateFilter(null);
+                setTravelDateFilter(null);
+                if (nextValue) {
+                  fetchArchivedBookings();
+                } else {
+                  fetchBookings();
+                }
+              }}
+            >
+              {showArchived ? 'Back to Bookings' : 'Archives'}
+            </Button>
           </Space>
         </div>
 
         <Card>
           <Table
-            columns={columns}
+            columns={showArchived ? archivedColumns : columns}
             dataSource={filteredData}
             loading={loading}
             pagination={{ pageSize: 10, showSizeChanger: false }}
@@ -538,9 +640,10 @@ export default function BookingManagement() {
           </div>
         </Modal>
 
+
+        {/* BOOKING ARCHIVE CONFIRMATION MODAL */}
         <Modal
           open={isDeleteModalOpen}
-          className='signup-success-modal'
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
           style={{ top: 220 }}
@@ -548,25 +651,25 @@ export default function BookingManagement() {
             setIsDeleteModalOpen(false);
           }}
         >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Delete Booking?</h1>
-            <p className='signup-success-text'>Are you sure you want to delete this booking?</p>
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Archive Booking?</h1>
+            <p className='modal-text'>Are you sure you want to archive this booking?</p>
 
             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
               <Button
                 type='primary'
-                className='logout-confirm-btn'
+                className='modal-button'
                 onClick={() => {
-                  handleDelete(editingBooking.key);
+                  handleArchive(editingBooking.key);
                   setIsDeleteModalOpen(false);
                 }}
               >
-                Delete
+                Archive
               </Button>
               <Button
                 type='primary'
-                className='logout-cancel-btn'
+                className='modal-button-cancel'
                 onClick={() => {
                   setIsDeleteModalOpen(false);
                   setEditingBooking(null);
@@ -578,10 +681,51 @@ export default function BookingManagement() {
           </div>
         </Modal>
 
+
+        {/* BOOKING RESTORE CONFIRMATION MODAL */}
+        <Modal
+          open={isRestoreModalOpen}
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsRestoreModalOpen(false);
+          }}
+        >
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Restore Booking?</h1>
+            <p className='modal-text'>Are you sure you want to restore this booking?</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='modal-button'
+                onClick={() => {
+                  handleRestore(editingBooking.key);
+                  setIsRestoreModalOpen(false);
+                }}
+              >
+                Restore
+              </Button>
+              <Button
+                type='primary'
+                className='modal-button-cancel'
+                onClick={() => {
+                  setIsRestoreModalOpen(false);
+                  setEditingBooking(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+
         {/* BOOKING HAS BEEN EDITED MODAL */}
         <Modal
           open={isBookingEditedModalOpen}
-          className='signup-success-modal'
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
           style={{ top: 220 }}
@@ -589,20 +733,20 @@ export default function BookingManagement() {
             setIsBookingEditedModalOpen(false);
           }}
         >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Booking Edited Successfully!</h1>
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Booking Edited Successfully!</h1>
 
             <div>
               <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
             </div>
 
-            <p className='signup-success-text'>The booking has been edited.</p>
+            <p className='modal-text'>The booking has been edited.</p>
 
             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
               <Button
                 type='primary'
-                className='logout-confirm-btn'
+                className='modal-button'
                 onClick={() => {
                   setIsBookingEditedModalOpen(false);
                 }}
@@ -615,10 +759,9 @@ export default function BookingManagement() {
         </Modal>
 
 
-        {/* BOOKING HAS BEEN DELETED MODAL */}
+        {/* BOOKING HAS BEEN ARCHIVED MODAL */}
         <Modal
           open={isBookingDeletedModalOpen}
-          className='signup-success-modal'
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
           style={{ top: 220 }}
@@ -626,22 +769,59 @@ export default function BookingManagement() {
             setIsBookingDeletedModalOpen(false);
           }}
         >
-          <div className='signup-success-container'>
-            <h1 className='signup-success-heading'>Booking Deleted Successfully!</h1>
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Booking Archived Successfully!</h1>
 
             <div>
               <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
             </div>
 
-            <p className='signup-success-text'>The booking has been deleted.</p>
+            <p className='modal-text'>The booking has been archived.</p>
 
             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
               <Button
                 type='primary'
-                className='logout-confirm-btn'
+                className='modal-button'
                 onClick={() => {
                   setIsBookingDeletedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
+        </Modal>
+
+
+
+        {/* BOOKING HAS BEEN RESTORED MODAL */}
+        <Modal
+          open={isBookingRestoredModalOpen}
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsBookingRestoredModalOpen(false);
+          }}
+        >
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Booking Restored Successfully!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='modal-text'>The booking has been restored.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='modal-button'
+                onClick={() => {
+                  setIsBookingRestoredModalOpen(false);
                 }}
               >
                 Continue

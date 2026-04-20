@@ -47,6 +47,7 @@ export default function ApplyVisa() {
         }
     }, [location])
 
+
     const selectedService = useMemo(
         () => services.find((service) => service._id === selectedServiceId),
         [services, selectedServiceId]
@@ -327,6 +328,24 @@ export default function ApplyVisa() {
                     <section className="renew-passport-card">
 
                         <h3>Application Details</h3>
+                        <div
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                padding: '6px 12px',
+                                marginTop: 6,
+                                marginBottom: 14,
+                                borderRadius: 999,
+                                background: 'rgba(48, 87, 151, 0.08)',
+                                border: '1px solid rgba(48, 87, 151, 0.25)',
+                                color: '#305797',
+                                fontWeight: 600,
+                            }}
+                        >
+                            <span>Visa Fee</span>
+                            <span>₱{selectedService.visaPrice}</span>
+                        </div>
                         <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
 
                             <div>

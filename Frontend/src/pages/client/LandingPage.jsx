@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber, message } from 'antd';
-import { SearchOutlined, FacebookFilled, InstagramFilled } from '@ant-design/icons';
+import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
 import apiFetch from '../../config/fetchConfig';
@@ -36,6 +36,9 @@ export default function LandingPage() {
     const [isSending, setIsSending] = useState(false);
     const [isPopularLoading, setIsPopularLoading] = useState(false)
     const [isDomesticLoading, setIsDomesticLoading] = useState(false)
+    const [exploreSlideIndex, setExploreSlideIndex] = useState(0)
+    const [popularSlideIndex, setPopularSlideIndex] = useState(0)
+    const [popularCardsPerView, setPopularCardsPerView] = useState(3)
     const handleActivityChange = (values) => {
         if (values.length > 3) {
             message.warning('Select up to 3 tags only.');
@@ -96,6 +99,24 @@ export default function LandingPage() {
         setContactErrors(errors);
         return isValid;
     };
+
+    const exploreSlides = [
+        {
+            src: '/images/Homepage1.png',
+            title: 'Discover the Philippines',
+            subtitle: 'Sunlit beaches, island escapes, and soulful local journeys.'
+        },
+        {
+            src: '/images/Homepage2.png',
+            title: 'City Lights to Nature Trails',
+            subtitle: 'From skyline adventures to quiet mountain mornings.'
+        },
+        {
+            src: '/images/LandingPage_Banner.png',
+            title: 'Your Next Adventure Awaits',
+            subtitle: 'Handpicked tours that match your pace and budget.'
+        }
+    ]
 
     //SEARCH BAR -------------------------------------------------------------
     const handleSearch = () => {
@@ -277,6 +298,46 @@ export default function LandingPage() {
         fetchActivityTags()
     }, [])
 
+    useEffect(() => {
+        if (exploreSlides.length === 0) return undefined
+
+        const interval = setInterval(() => {
+            setExploreSlideIndex((prev) => (prev + 1) % exploreSlides.length)
+        }, 4000)
+
+        return () => clearInterval(interval)
+    }, [exploreSlides.length])
+
+    const displayedPopularPackages = popularPackages.length > 0 ? popularPackages : fallbackPopularPackages
+
+    useEffect(() => {
+        const calculateCardsPerView = () => {
+            if (typeof window === 'undefined') return 3
+            if (window.innerWidth <= 768) return 1
+            if (window.innerWidth <= 1024) return 2
+            return 3
+        }
+
+        const handleResize = () => {
+            setPopularCardsPerView(calculateCardsPerView())
+        }
+
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    const popularSlides = []
+    for (let index = 0; index < displayedPopularPackages.length; index += popularCardsPerView) {
+        popularSlides.push(displayedPopularPackages.slice(index, index + popularCardsPerView))
+    }
+
+    useEffect(() => {
+        if (popularSlides.length > 0) {
+            setPopularSlideIndex(0)
+        }
+    }, [popularSlides.length])
+
     const formatDescription = (text, maxLength = 160) => {
         if (!text) return 'No description available.'
         if (text.length <= maxLength) return text
@@ -449,7 +510,7 @@ export default function LandingPage() {
                     </div>
 
                     <div className='popular-packages-section'>
-                        <h1 className='popular-packages-text'>Popular Packages</h1>
+                        <h1 className='popular-packages-text' style={{ color: "#ffffff" }}>Popular Packages</h1>
 
                         <div className='popular-packages'>
                             {isPopularLoading ? (
@@ -457,40 +518,93 @@ export default function LandingPage() {
                             ) : popularPackages.length === 0 && fallbackPopularPackages.length === 0 ? (
                                 <p>No popular packages available yet.</p>
                             ) : (
-                                (popularPackages.length > 0 ? popularPackages : fallbackPopularPackages).map((pkg) => (
-                                    <Card
-                                        className='package-card'
-                                        key={pkg.id}
-                                        hoverable
-                                        onClick={() => navigate(`/package/${pkg.id}`)}
-                                        cover={
-                                            pkg.image ? (
-                                                <img
-                                                    style={{ height: 250 }}
-                                                    draggable={false}
-                                                    alt={pkg.packageName}
-                                                    src={pkg.image}
-                                                />
-                                            ) : (
-                                                <div
-                                                    style={{
-                                                        height: 250,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        background: '#f5f5f5',
-                                                        color: '#777'
-                                                    }}
-                                                >
-                                                    No Image
+                                <div className="popular-packages-carousel">
+                                    <Button
+                                        aria-label="Previous package"
+                                        type="default"
+                                        shape="circle"
+                                        className="popular-carousel-button"
+                                        icon={<LeftOutlined />}
+                                        disabled={popularSlides.length <= 1}
+                                        onClick={() => {
+                                            setPopularSlideIndex((prev) => {
+                                                const total = popularSlides.length
+                                                return total === 0 ? 0 : (prev - 1 + total) % total
+                                            })
+                                        }}
+                                    />
+
+                                    <div className="popular-packages-viewport">
+                                        <div
+                                            className="popular-packages-track"
+                                            style={{ transform: `translateX(-${popularSlideIndex * 100}%)` }}
+                                        >
+                                            {popularSlides.map((slide, slideIndex) => (
+                                                <div className="popular-packages-slide" key={`popular-slide-${slideIndex}`}>
+                                                    {slide.map((pkg) => (
+                                                        <Card
+                                                            className='package-card popular-packages-card'
+                                                            key={pkg.id}
+                                                            hoverable
+                                                            onClick={() => navigate(`/package/${pkg.id}`)}
+                                                            cover={
+                                                                pkg.image ? (
+                                                                    <img
+                                                                        style={{ height: 250 }}
+                                                                        draggable={false}
+                                                                        alt={pkg.packageName}
+                                                                        src={pkg.image}
+                                                                    />
+                                                                ) : (
+                                                                    <div
+                                                                        style={{
+                                                                            height: 250,
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            background: '#f5f5f5',
+                                                                            color: '#777'
+                                                                        }}
+                                                                    >
+                                                                        No Image
+                                                                    </div>
+                                                                )
+                                                            }
+                                                        >
+                                                            <h2>{pkg.packageName}</h2>
+                                                            <p>{formatDescription(pkg.packageDescription)}</p>
+                                                        </Card>
+                                                    ))}
                                                 </div>
-                                            )
-                                        }
-                                    >
-                                        <h2>{pkg.packageName}</h2>
-                                        <p>{formatDescription(pkg.packageDescription)}</p>
-                                    </Card>
-                                ))
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        aria-label="Next package"
+                                        type="default"
+                                        shape="circle"
+                                        className="popular-carousel-button"
+                                        icon={<RightOutlined />}
+                                        disabled={popularSlides.length <= 1}
+                                        onClick={() => {
+                                            setPopularSlideIndex((prev) => {
+                                                const total = popularSlides.length
+                                                return total === 0 ? 0 : (prev + 1) % total
+                                            })
+                                        }}
+                                    />
+
+                                    <div className="popular-packages-dots">
+                                        {popularSlides.map((_, dotIndex) => (
+                                            <span
+                                                key={`popular-dot-${dotIndex}`}
+                                                className={dotIndex === popularSlideIndex ? 'active' : ''}
+                                                onClick={() => setPopularSlideIndex(dotIndex)}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -498,54 +612,79 @@ export default function LandingPage() {
 
 
                 {/* THIRD SECTION */}
-                <div ref={exploreRef} style={{ marginTop: '50px', }}>
-                    <div className='explore-container'>
-                        <div className='explore-local-packages-section'>
-                            <h1 className='explore-text'>Local Tour Packages</h1>
-                            <div className='explore-local-packages'>
-                                {isDomesticLoading ? (
-                                    <p>Loading domestic packages...</p>
-                                ) : domesticPackages.length === 0 ? (
-                                    <p>No domestic packages available yet.</p>
-                                ) : (
-                                    domesticPackages.map((pkg) => (
-                                        <Card
-                                            className='package-card'
-                                            key={pkg.id}
-                                            hoverable
-                                            onClick={() => navigate(`/package/${pkg.id}`)}
-                                            cover={
-                                                pkg.image ? (
-                                                    <img
-                                                        style={{ height: 250 }}
-                                                        draggable={false}
-                                                        alt={pkg.packageName}
-                                                        src={pkg.image}
-                                                    />
-                                                ) : (
-                                                    <div
-                                                        style={{
-                                                            height: 200,
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            background: '#f5f5f5',
-                                                            color: '#777'
-                                                        }}
-                                                    >
-                                                        No Image
-                                                    </div>
-                                                )
-                                            }
-                                        >
-                                            <h2>{pkg.packageName}</h2>
-                                            <p>{formatDescription(pkg.packageDescription)}</p>
-                                        </Card>
-                                    ))
-                                )}
+                <div ref={exploreRef} className="explore-carousel-section">
+                    <div className="explore-carousel">
+                        <div
+                            className="explore-carousel-track"
+                            style={{ transform: `translateX(-${exploreSlideIndex * 100}%)` }}
+                        >
+                            {exploreSlides.map((slide, index) => (
+                                <div className="explore-carousel-slide" key={`explore-slide-${index}`}>
+                                    <img
+                                        src={slide.src}
+                                        alt={slide.title}
+                                        draggable={false}
+                                    />
+                                    <div className="explore-carousel-overlay"></div>
+                                    <div className="explore-carousel-text">
+                                        <h2>{slide.title}</h2>
+                                        <p>{slide.subtitle}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="explore-carousel-dots">
+                            {exploreSlides.map((_, index) => (
+                                <span
+                                    key={`explore-dot-${index}`}
+                                    className={index === exploreSlideIndex ? 'active' : ''}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 60, paddingRight: 20, paddingLeft: 20 }}>
+                        <h2 className='explore-text' style={{ fontSize: 45, fontWeight: 'bold', marginBottom: 5, paddingBottom: 0 }}>THE <span style={{ color: '#305797' }}>SERVICES</span> WE OFFER</h2>
+                        <div style={{ display: 'flex', gap: '50px', flexDirection: 'row', marginTop: 20 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <img>
+                                </img>
+                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
+                                <p style={{ textAlign: 'center' }}>
+                                    Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <img>
+                                </img>
+                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
+                                <p style={{ textAlign: 'center' }}>
+                                    Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <img>
+                                </img>
+                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
+                                <p style={{ textAlign: 'center' }}>
+                                    Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <img>
+                                </img>
+                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
+                                <p style={{ textAlign: 'center' }}>
+                                    Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
+                                </p>
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 {/* ABOUTUS SECTION */}

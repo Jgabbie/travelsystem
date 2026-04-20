@@ -84,6 +84,24 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.bookingmanagement-restore-button {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #1f8f3a;
+  color: #fff;
+  border-radius: 10px;
+  width: 85px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+.bookingmanagement-restore-button:hover {
+  background-color: #e9e9e9 !important;
+  color: #1f8f3a !important;
+}
+
 .bookingmanagement-remove-button:hover {
   background-color: #e9e9e9 !important;
   color: #992A46 !important;

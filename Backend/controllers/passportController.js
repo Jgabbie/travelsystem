@@ -1,5 +1,6 @@
 
 const PassportModel = require("../models/passport");
+const ArchivedPassportApplicationModel = require("../models/archivedpassportapplications");
 const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
 const UserModel = require("../models/user");
 const NotificationModel = require("../models/notification");
@@ -469,6 +470,95 @@ const verifyTokenCheckout = async (req, res) => {
     }
 }
 
+const archivePassportApplication = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const application = await PassportModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Passport application not found" });
+        }
+
+        await ArchivedPassportApplicationModel.create({
+            originalPassportApplicationId: application._id,
+            userId: application.userId,
+            applicationNumber: application.applicationNumber,
+            username: application.username,
+            dfaLocation: application.dfaLocation,
+            preferredDate: application.preferredDate,
+            preferredTime: application.preferredTime,
+            applicationType: application.applicationType,
+            suggestedAppointmentSchedules: application.suggestedAppointmentSchedules,
+            suggestedAppointmentScheduleChosen: application.suggestedAppointmentScheduleChosen,
+            submittedDocuments: application.submittedDocuments,
+            passportReleaseOption: application.passportReleaseOption,
+            deliveryAddress: application.deliveryAddress,
+            status: application.status,
+            createdAt: application.createdAt
+        });
+
+        await application.deleteOne();
+
+        logAction('PASSPORT_APPLICATION_ARCHIVED', req.userId, { "Passport Application Archived": `Application Number: ${application.applicationNumber}` });
+
+        res.status(200).json({ message: "Passport application archived successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error archiving passport application", error: error.message });
+    }
+};
+
+const getArchivedPassportApplications = async (_req, res) => {
+    try {
+        const applications = await ArchivedPassportApplicationModel.find({})
+            .populate('userId', 'username email')
+            .sort({ archivedAt: -1 });
+
+        res.status(200).json(applications);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching archived passport applications", error: error.message });
+    }
+};
+
+const restoreArchivedPassportApplication = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const archivedApplication = await ArchivedPassportApplicationModel.findById(id);
+        if (!archivedApplication) {
+            return res.status(404).json({ message: "Archived passport application not found" });
+        }
+
+        const existing = await PassportModel.findOne({ applicationNumber: archivedApplication.applicationNumber });
+        if (existing) {
+            return res.status(409).json({ message: "Passport application already exists" });
+        }
+
+        const restored = await PassportModel.create({
+            userId: archivedApplication.userId,
+            applicationNumber: archivedApplication.applicationNumber,
+            username: archivedApplication.username,
+            dfaLocation: archivedApplication.dfaLocation,
+            preferredDate: archivedApplication.preferredDate,
+            preferredTime: archivedApplication.preferredTime,
+            applicationType: archivedApplication.applicationType,
+            suggestedAppointmentSchedules: archivedApplication.suggestedAppointmentSchedules,
+            suggestedAppointmentScheduleChosen: archivedApplication.suggestedAppointmentScheduleChosen,
+            submittedDocuments: archivedApplication.submittedDocuments,
+            passportReleaseOption: archivedApplication.passportReleaseOption,
+            deliveryAddress: archivedApplication.deliveryAddress,
+            status: archivedApplication.status,
+            createdAt: archivedApplication.createdAt,
+            updatedAt: archivedApplication.createdAt
+        });
+
+        await archivedApplication.deleteOne();
+
+        logAction('PASSPORT_APPLICATION_RESTORED', req.userId, { "Passport Application Restored": `Application Number: ${restored.applicationNumber}` });
+
+        res.status(200).json({ message: "Passport application restored successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error restoring passport application", error: error.message });
+    }
+};
+
 module.exports = {
     applyPassport,
     getPassportApplications,
@@ -480,7 +570,10 @@ module.exports = {
     suggestAppointmentSchedules,
     chosenSuggestedSchedule,
     passportReleaseOptionUpdate,
-    verifyTokenCheckout
+    verifyTokenCheckout,
+    archivePassportApplication,
+    getArchivedPassportApplications,
+    restoreArchivedPassportApplication
 };
 
 //REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------

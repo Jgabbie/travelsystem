@@ -99,6 +99,9 @@ export default function BookingProcess() {
     const childRate = baseChildRate * discountMultiplier
     const infantRate = baseInfantRate * discountMultiplier
 
+    const baseSoloDisplayRate = baseSoloRate || basePackagePricePerPax
+    const discountedSoloDisplayRate = soloRate || packagePricePerPax
+
     const soloExtraRate = Math.max(0, soloRate - packagePricePerPax)
     const dateSurcharge = data.travelDateRate || 0
 
@@ -106,6 +109,10 @@ export default function BookingProcess() {
         travelersCount.adult * packagePricePerPax +
         travelersCount.child * childRate +
         travelersCount.infant * infantRate;
+    const originalTotalPrice =
+        travelersCount.adult * basePackagePricePerPax +
+        travelersCount.child * baseChildRate +
+        travelersCount.infant * baseInfantRate;
     const travelersTotal = travelersCount.adult + travelersCount.child + travelersCount.infant
     const travelerBreakdownParts = [
         travelersCount.adult ? `${travelersCount.adult} Adult${travelersCount.adult > 1 ? 's' : ''}` : null,
@@ -703,12 +710,35 @@ export default function BookingProcess() {
                                     )}
                                 </h2>
                                 {discountPercent > 0 && (
-                                    <div className="booking-summary-row">
-                                        <span className="booking-summary-label">Discount per pax</span>
-                                        <span className="booking-summary-value">
-                                            {discountPercent}%
-                                        </span>
-                                    </div>
+                                    <>
+                                        <div className="booking-summary-row">
+                                            <span className="booking-summary-label">Discount</span>
+                                            <span className="booking-summary-value">
+                                                {discountPercent}%
+                                            </span>
+                                        </div>
+                                        <div className="booking-summary-row">
+                                            <span className="booking-summary-label">Original total</span>
+                                            <span
+                                                className="booking-summary-value"
+                                                style={{ textDecoration: 'line-through', color: '#9aa0a6' }}
+                                            >
+                                                ₱{(selectedSoloGrouped === 'solo'
+                                                    ? baseSoloDisplayRate
+                                                    : originalTotalPrice
+                                                ).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                        <div className="booking-summary-row">
+                                            <span className="booking-summary-label">Discounted total</span>
+                                            <span className="booking-summary-value">
+                                                ₱{(selectedSoloGrouped === 'solo'
+                                                    ? discountedSoloDisplayRate
+                                                    : totalPrice
+                                                ).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                    </>
                                 )}
                                 {selectedSoloGrouped === 'solo' && (
                                     <div style={{ marginBottom: '12px' }}>

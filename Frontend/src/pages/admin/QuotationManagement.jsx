@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, DatePicker, Tabs } from "antd";
-import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
 import dayjs from "dayjs";
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/quotationmanagement.css";
+import "../../style/components/modals/modaldesign.css";
 import { useAuth } from "../../hooks/useAuth";
+
 
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
@@ -36,6 +38,14 @@ export default function QuotationManagement() {
 
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]);
+    const [archivedData, setArchivedData] = useState([]);
+    const [showArchived, setShowArchived] = useState(false);
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+    const [isQuotationDeletedModalOpen, setIsQuotationDeletedModalOpen] = useState(false);
+    const [isQuotationRestoredModalOpen, setIsQuotationRestoredModalOpen] = useState(false);
+    const [editingQuotation, setEditingQuotation] = useState(null);
 
     const navigate = useNavigate()
     const { auth } = useAuth()
@@ -51,35 +61,60 @@ export default function QuotationManagement() {
         return adult + child + infant;
     };
 
+    const fetchQuotations = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch.get("/quotation/all-quotations")
+            const quotations = response.map((q) => ({
+                key: q._id,
+                ref: q.reference,
+                packageName: q.packageId?.packageName || "Package",
+                packageType: q.packageId?.packageType?.toUpperCase() || "N/A",
+                customerName: q.userId?.username || "Unknown",
+                dateRequested: q.createdAt ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
+                travelers: sumTravelers(q.quotationDetails?.travelers),
+                status: q.status
+            }))
+
+            console.log("Fetched quotations:", quotations);
+            setData(quotations);
+        } catch (error) {
+            console.error("Error fetching quotations:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchQuotations = async () => {
-            setLoading(true);
-            try {
-                const response = await apiFetch.get("/quotation/all-quotations")
-                const quotations = response.map((q) => ({
-                    key: q._id,
-                    ref: q.reference,
-                    packageName: q.packageId?.packageName || "Package",
-                    packageType: q.packageId?.packageType?.toUpperCase() || "N/A",
-                    customerName: q.userId?.username || "Unknown",
-                    dateRequested: q.createdAt ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
-                    travelers: sumTravelers(q.quotationDetails?.travelers),
-                    status: q.status
-                }))
-
-                console.log("Fetched quotations:", quotations);
-                setData(quotations);
-            } catch (error) {
-                console.error("Error fetching quotations:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchQuotations();
     }, []);
 
-    const filteredData = data.filter(item => {
+    const fetchArchivedQuotations = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch.get("/quotation/archived-quotations")
+            const quotations = response.map((q) => ({
+                key: q._id,
+                ref: q.reference,
+                packageName: q.packageId?.packageName || "Package",
+                packageType: q.packageId?.packageType?.toUpperCase() || "N/A",
+                customerName: q.userId?.username || "Unknown",
+                dateRequested: q.createdAt ? dayjs(q.createdAt).format("MMM DD, YYYY") : "Not Set",
+                travelers: sumTravelers(q.quotationDetails?.travelers),
+                status: q.status
+            }))
+
+            setArchivedData(quotations)
+        } catch (error) {
+            console.error("Error fetching archived quotations:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const currentData = showArchived ? archivedData : data
+
+    const filteredData = currentData.filter(item => {
         const matchesSearch =
             (item.ref?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
             (item.customerName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
@@ -175,6 +210,45 @@ export default function QuotationManagement() {
         message.success("Report exported to PDF successfully.");
     };
 
+    const handleView = (key) => {
+        const quotation = data.find((item) => item.key === key);
+        if (quotation) {
+            console.log("Viewing quotation:", quotation);
+            navigate(`${basePath}/quotation`, { state: { quotationId: key } });
+        }
+    }
+
+    const handleArchive = async (key) => {
+        if (!key) {
+            message.error("Quotation not found")
+            return
+        }
+        try {
+            await apiFetch.delete(`/quotation/${key}`)
+            setIsQuotationDeletedModalOpen(true)
+            setData((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error archiving quotation:", error)
+            message.error("Quotation archived unsuccessfully")
+        }
+    }
+
+    const handleRestore = async (key) => {
+        if (!key) {
+            message.error("Quotation not found")
+            return
+        }
+        try {
+            await apiFetch.post(`/quotation/archived-quotations/${key}/restore`)
+            setIsQuotationRestoredModalOpen(true)
+            setArchivedData((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error restoring quotation:", error)
+            message.error(error?.response?.data?.message || "Quotation restore failed")
+        }
+
+    }
+
     const columns = [
         {
             title: "Quotation Request No.",
@@ -222,7 +296,7 @@ export default function QuotationManagement() {
         },
         {
             title: "Actions",
-            render: (text, record) => (
+            render: (_text, record) => (
                 <Space>
                     <Button
                         className="quotation-view"
@@ -232,18 +306,37 @@ export default function QuotationManagement() {
                     >
                         View
                     </Button>
+                    {showArchived ? (
+                        <Button
+                            className="quotation-restore"
+                            type="primary"
+                            icon={<CheckCircleOutlined />}
+                            onClick={() => {
+                                setEditingQuotation(record);
+                                setIsRestoreModalOpen(true);
+                            }}
+                        >
+                            Restore
+                        </Button>
+                    ) : (
+                        <Button
+                            className="quotation-remove"
+                            type="primary"
+                            icon={<DeleteOutlined />}
+                            onClick={() => {
+                                setEditingQuotation(record);
+                                setIsDeleteModalOpen(true);
+                            }}
+                        >
+                            Archive
+                        </Button>
+                    )}
                 </Space>
             )
         }
     ];
 
-    const handleView = (key) => {
-        const quotation = data.find((item) => item.key === key);
-        if (quotation) {
-            console.log("Viewing quotation:", quotation);
-            navigate(`${basePath}/quotation`, { state: { quotationId: key } });
-        }
-    }
+    const archivedColumns = columns
 
     const totalRequests = filteredData.length;
     const totalUnderReview = filteredData.filter(item => item.status === "Under Review").length;
@@ -284,44 +377,46 @@ export default function QuotationManagement() {
             <div className="quotation-management-container">
                 <h1 className="page-header">Quotation Management</h1>
 
-                <Row gutter={16} style={{ marginBottom: 20 }}>
-                    <Col xs={24} sm={6}>
-                        <Card className="quotation-management-card">
-                            <Statistic
-                                title="Total Requests"
-                                value={totalRequests}
-                                prefix={<FileTextOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="quotation-management-card">
-                            <Statistic
-                                title="Under Review"
-                                value={totalUnderReview}
-                                prefix={<FileTextOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="quotation-management-card">
-                            <Statistic
-                                title="Accepted"
-                                value={totalAccepted}
-                                prefix={<CheckCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="quotation-management-card">
-                            <Statistic
-                                title="Expired"
-                                value={totalExpired}
-                                prefix={<CloseCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                </Row>
+                {!showArchived && (
+                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                        <Col xs={24} sm={6}>
+                            <Card className="quotation-management-card">
+                                <Statistic
+                                    title="Total Requests"
+                                    value={totalRequests}
+                                    prefix={<FileTextOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="quotation-management-card">
+                                <Statistic
+                                    title="Under Review"
+                                    value={totalUnderReview}
+                                    prefix={<FileTextOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="quotation-management-card">
+                                <Statistic
+                                    title="Accepted"
+                                    value={totalAccepted}
+                                    prefix={<CheckCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="quotation-management-card">
+                                <Statistic
+                                    title="Expired"
+                                    value={totalExpired}
+                                    prefix={<CloseCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
 
                 <div className="quotation-management-actions">
                     <Input
@@ -379,6 +474,26 @@ export default function QuotationManagement() {
                         >
                             Export to PDF
                         </Button>
+                        <Button
+                            icon={showArchived ? <FileTextOutlined /> : <InboxOutlined />}
+                            className='quotation-export'
+                            type="primary"
+                            onClick={() => {
+                                const nextValue = !showArchived
+                                setShowArchived(nextValue)
+                                setSearchText("")
+                                setStatusFilter("")
+                                setDateFilter(null)
+                                setPackageTypeFilter("")
+                                if (nextValue) {
+                                    fetchArchivedQuotations()
+                                } else {
+                                    fetchQuotations()
+                                }
+                            }}
+                        >
+                            {showArchived ? 'Back to Quotations' : 'Archives'}
+                        </Button>
                     </Space>
                 </div>
 
@@ -390,7 +505,7 @@ export default function QuotationManagement() {
                                     cell: EditableCell
                                 }
                             }}
-                            columns={columns}
+                            columns={showArchived ? archivedColumns : columns}
                             dataSource={filteredData}
                             loading={loading}
                             pagination={{ pageSize: 10, showSizeChanger: false }}
@@ -398,10 +513,162 @@ export default function QuotationManagement() {
                         />
                     </Form>
                 </Card>
+            </div>
+
+
+            {/* ARCHIVE QUOTATION CONFIRMATION MODAL */}
+            <Modal
+                open={isDeleteModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsDeleteModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Archive Quotation?</h1>
+                    <p className='modal-text'>Are you sure you want to archive this quotation?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleArchive(editingQuotation?.key);
+                                setIsDeleteModalOpen(false);
+                            }}
+                        >
+                            Archive
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsDeleteModalOpen(false);
+                                setEditingQuotation(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+            {/* RESTORE QUOTATION CONFIRMATION MODAL */}
+            <Modal
+                open={isRestoreModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRestoreModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Restore Quotation?</h1>
+                    <p className='modal-text'>Are you sure you want to restore this quotation?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleRestore(editingQuotation?.key);
+                                setIsRestoreModalOpen(false);
+                            }}
+                        >
+                            Restore
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsRestoreModalOpen(false);
+                                setEditingQuotation(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
 
 
 
-            </div >
+            {/* QUOTATION HAS BEEN ARCHIVED MODAL */}
+            <Modal
+                open={isQuotationDeletedModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsQuotationDeletedModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Quotation Archived Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The quotation has been archived.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsQuotationDeletedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+            {/* QUOTATION HAS BEEN RESTORED MODAL */}
+            <Modal
+                open={isQuotationRestoredModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsQuotationRestoredModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Quotation Restored Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The quotation has been restored.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsQuotationRestoredModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
         </ConfigProvider>
     );
 }

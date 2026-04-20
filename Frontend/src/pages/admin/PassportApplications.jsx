@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, message, Input, Select, DatePicker } from "antd";
-import { FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, message, Input, Select, DatePicker, Modal } from "antd";
+import { FileTextOutlined, TeamOutlined, InboxOutlined, DeleteOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/passportapplications.css";
+import "../../style/components/modals/modaldesign.css";
 
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
@@ -29,42 +30,78 @@ export default function PassportApplications() {
     const navigate = useNavigate();
 
     const [passportApplications, setPassportApplications] = useState([]);
+    const [archivedApplications, setArchivedApplications] = useState([]);
+    const [showArchived, setShowArchived] = useState(false);
     const [isFetchingApplications, setIsFetchingApplications] = useState(false);
 
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [submissionDateFilter, setSubmissionDateFilter] = useState(null);
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+    const [isPassportApplicationArchivedModalOpen, setIsPassportApplicationArchivedModalOpen] = useState(false);
+    const [isPassportApplicationRestoredModalOpen, setIsPassportApplicationRestoredModalOpen] = useState(false);
+    const [archivingApplication, setArchivingApplication] = useState(null);
+
+
+    const getPassportApplications = async () => {
+        try {
+            setIsFetchingApplications(true);
+            const response = await apiFetch.get('/passport/applications');
+
+            const applications = response.map((a) => ({
+                key: a._id,
+                applicationNumber: a.applicationNumber,
+                applicantName: a.username,
+                dfaLocation: a.dfaLocation,
+                preferredDate: a.preferredDate ? dayjs(a.preferredDate).format("MMM DD, YYYY") : "Not Set",
+                preferredTime: a.preferredTime || "Not Set",
+                applicationType: a.applicationType,
+                status: a.status,
+            }));
+
+            setPassportApplications(applications);
+
+        } catch (error) {
+            console.error("Error fetching passport applications:", error);
+        } finally {
+            setIsFetchingApplications(false);
+        }
+    }
+
+    const getArchivedPassportApplications = async () => {
+        try {
+            setIsFetchingApplications(true);
+            const response = await apiFetch.get('/passport/archived-applications');
+
+            const applications = response.map((a) => ({
+                key: a._id,
+                applicationNumber: a.applicationNumber,
+                applicantName: a.username,
+                dfaLocation: a.dfaLocation,
+                preferredDate: a.preferredDate ? dayjs(a.preferredDate).format("MMM DD, YYYY") : "Not Set",
+                preferredTime: a.preferredTime || "Not Set",
+                applicationType: a.applicationType,
+                status: a.status,
+            }));
+
+            setArchivedApplications(applications);
+
+        } catch (error) {
+            console.error("Error fetching archived passport applications:", error);
+        } finally {
+            setIsFetchingApplications(false);
+        }
+    }
 
     useEffect(() => {
-        const getPassportApplications = async () => {
-            try {
-                setIsFetchingApplications(true);
-                const response = await apiFetch.get('/passport/applications');
-
-                const applications = response.map((a) => ({
-                    key: a._id,
-                    applicationNumber: a.applicationNumber,
-                    applicantName: a.username,
-                    dfaLocation: a.dfaLocation,
-                    preferredDate: a.preferredDate ? dayjs(a.preferredDate).format("MMM DD, YYYY") : "Not Set",
-                    preferredTime: a.preferredTime || "Not Set",
-                    applicationType: a.applicationType,
-                    status: a.status,
-                }));
-
-                setPassportApplications(applications);
-
-            } catch (error) {
-                console.error("Error fetching passport applications:", error);
-            } finally {
-                setIsFetchingApplications(false);
-            }
-        }
         getPassportApplications();
     }, []);
 
-    const filteredData = passportApplications.filter(item => {
+    const currentData = showArchived ? archivedApplications : passportApplications
+
+    const filteredData = currentData.filter(item => {
         const matchesSearch =
             (item.applicationNumber?.toString().toLowerCase() || "").includes(searchText.toLowerCase()) ||
             (item.applicantName?.toLowerCase() || "").includes(searchText.toLowerCase()) ||
@@ -140,6 +177,36 @@ export default function PassportApplications() {
         doc.save(`Passport_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
         message.success("Report exported to PDF successfully.");
     };
+
+    const handleArchive = async (key) => {
+        if (!key) {
+            message.error("Passport application not found")
+            return
+        }
+        try {
+            await apiFetch.delete(`/passport/applications/${key}/archive`)
+            setIsPassportApplicationArchivedModalOpen(true);
+            setPassportApplications((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error archiving passport application:", error)
+            message.error("Passport application archived unsuccessfully")
+        }
+    }
+
+    const handleRestore = async (key) => {
+        if (!key) {
+            message.error("Passport application not found")
+            return
+        }
+        try {
+            await apiFetch.post(`/passport/archived-applications/${key}/restore`)
+            setIsPassportApplicationRestoredModalOpen(true);
+            setArchivedApplications((prev) => prev.filter((item) => item.key !== key))
+        } catch (error) {
+            console.error("Error restoring passport application:", error)
+            message.error("Passport application restore unsuccessfully")
+        }
+    }
 
 
     const columns = [
@@ -220,14 +287,36 @@ export default function PassportApplications() {
                         >
                             View
                         </Button>
+                        {showArchived ? (
+                            <Button
+                                icon={<CheckCircleOutlined />}
+                                className='passportapplications-restore-button'
+                                type="primary"
+                                onClick={() => {
+                                    setArchivingApplication(record);
+                                    setIsRestoreModalOpen(true);
+                                }}
+                            >
+                                Restore
+                            </Button>
+                        ) : (
+                            <Button
+                                icon={<DeleteOutlined />}
+                                className='passportapplications-archive-button'
+                                type="primary"
+                                onClick={() => {
+                                    setArchivingApplication(record);
+                                    setIsDeleteModalOpen(true);
+                                }}
+                            >
+                                Archive
+                            </Button>
+                        )}
                     </Space>
                 </>
             ),
         },
     ];
-
-
-
 
     return (
         <ConfigProvider
@@ -241,44 +330,46 @@ export default function PassportApplications() {
 
                 <h1 className="page-header">Passport Applications</h1>
 
-                <Row gutter={16} style={{ marginBottom: 20 }}>
-                    <Col xs={24} sm={6}>
-                        <Card className="passportapps-management-card">
-                            <Statistic
-                                title="Total Applications"
-                                value={totals}
-                                prefix={<FileTextOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="passportapps-management-card">
-                            <Statistic
-                                title="Pending"
-                                value={pending}
-                                prefix={<ClockCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="passportapps-management-card">
-                            <Statistic
-                                title="Approved"
-                                value={approved}
-                                prefix={<CheckCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={6}>
-                        <Card className="passportapps-management-card">
-                            <Statistic
-                                title="Rejected"
-                                value={rejected}
-                                prefix={<CloseCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                </Row>
+                {!showArchived && (
+                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                        <Col xs={24} sm={6}>
+                            <Card className="passportapps-management-card">
+                                <Statistic
+                                    title="Total Applications"
+                                    value={totals}
+                                    prefix={<FileTextOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="passportapps-management-card">
+                                <Statistic
+                                    title="Pending"
+                                    value={pending}
+                                    prefix={<ClockCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="passportapps-management-card">
+                                <Statistic
+                                    title="Approved"
+                                    value={approved}
+                                    prefix={<CheckCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={6}>
+                            <Card className="passportapps-management-card">
+                                <Statistic
+                                    title="Rejected"
+                                    value={rejected}
+                                    prefix={<CloseCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
 
                 <div className="passportapplications-actions">
                     <Input
@@ -322,6 +413,25 @@ export default function PassportApplications() {
                         >
                             Export to PDF
                         </Button>
+                        <Button
+                            icon={showArchived ? <TeamOutlined /> : <InboxOutlined />}
+                            className='passportapplications-export'
+                            type="primary"
+                            onClick={() => {
+                                const nextValue = !showArchived
+                                setShowArchived(nextValue)
+                                setSearchText("")
+                                setStatusFilter("")
+                                setSubmissionDateFilter(null)
+                                if (nextValue) {
+                                    getArchivedPassportApplications()
+                                } else {
+                                    getPassportApplications()
+                                }
+                            }}
+                        >
+                            {showArchived ? 'Back to Applications' : 'Archives'}
+                        </Button>
                     </Space>
                 </div>
 
@@ -340,6 +450,168 @@ export default function PassportApplications() {
                     />
                 </Card>
             </div>
+
+
+            {/* ARCHIVE PASSPORT APPLICATION CONFIRMATION MODAL */}
+            <Modal
+                open={isDeleteModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsDeleteModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Archive Passport Application?</h1>
+                    <p className='modal-text'>Are you sure you want to archive this passport application?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleArchive(archivingApplication?.key);
+                                setIsDeleteModalOpen(false);
+                            }}
+                        >
+                            Archive
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsDeleteModalOpen(false);
+                                setArchivingApplication(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+            {/* RESTORE PASSPORT APPLICATION CONFIRMATION MODAL */}
+            <Modal
+                open={isRestoreModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRestoreModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Restore Passport Application?</h1>
+                    <p className='modal-text'>Are you sure you want to restore this passport application?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleRestore(archivingApplication?.key);
+                                setIsRestoreModalOpen(false);
+                            }}
+                        >
+                            Restore
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsRestoreModalOpen(false);
+                                setArchivingApplication(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+
+
+            {/* PASSPORT APPLICATION HAS BEEN ARCHIVED MODAL */}
+            <Modal
+                open={isPassportApplicationArchivedModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsPassportApplicationArchivedModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Passport Application Archived Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The passport application has been archived.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsPassportApplicationArchivedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+            {/* PASSPORT APPLICATION HAS BEEN RESTORED MODAL */}
+            <Modal
+                open={isPassportApplicationRestoredModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsPassportApplicationRestoredModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Passport Application Restored Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The passport application has been restored.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsPassportApplicationRestoredModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+
+
+
+
+
+
+
         </ConfigProvider>
     );
 };

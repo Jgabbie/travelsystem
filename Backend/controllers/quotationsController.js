@@ -1,5 +1,6 @@
 const cloudinary = require('../config/cloudinary')
 const QuotationModel = require('../models/quotations')
+const ArchivedQuotationModel = require('../models/archivedquotations')
 const UserModel = require('../models/user')
 const NotificationModel = require('../models/notification')
 const logAction = require('../utils/logger')
@@ -84,6 +85,19 @@ const getAllQuotations = async (_req, res) => {
     }
 }
 
+//GET ARCHIVED QUOTATIONS (ADMIN) --------------------------------------------------------------
+const getArchivedQuotations = async (_req, res) => {
+    try {
+        const quotations = await ArchivedQuotationModel.find({}).sort({ archivedAt: -1 })
+            .populate('userId', 'username')
+            .populate('packageId', 'packageName packageType')
+
+        res.status(200).json(quotations)
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching archived quotations', error })
+    }
+}
+
 
 //UPDATE QUOTATION ------------------------------------------------------------------------
 const updateQuotation = async (req, res) => {
@@ -114,15 +128,67 @@ const deleteQuotation = async (req, res) => {
     const { id } = req.params
 
     try {
-        const deletedQuotation = await QuotationModel.findByIdAndDelete(id)
-        if (!deletedQuotation) {
+        const quotation = await QuotationModel.findById(id)
+        if (!quotation) {
             return res.status(404).json({ message: 'Quotation not found' })
         }
 
-        logAction('QUOTATION_DELETED', req.userId, { "Quotation Deleted": `Reference: ${deletedQuotation.reference}` })
-        res.status(200).json({ message: 'Quotation deleted' })
+        await ArchivedQuotationModel.create({
+            originalQuotationId: quotation._id,
+            packageId: quotation.packageId,
+            userId: quotation.userId,
+            quotationDetails: quotation.quotationDetails,
+            reference: quotation.reference,
+            status: quotation.status,
+            currentPdfUrl: quotation.currentPdfUrl,
+            pdfRevisions: quotation.pdfRevisions,
+            revisionComments: quotation.revisionComments,
+            createdAt: quotation.createdAt
+        })
+
+        await QuotationModel.findByIdAndDelete(id)
+
+        logAction('QUOTATION_ARCHIVED', req.userId, { "Quotation Archived": `Reference: ${quotation.reference}` })
+        res.status(200).json({ message: 'Quotation archived' })
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting quotation', error })
+        res.status(500).json({ message: 'Error archiving quotation', error })
+    }
+}
+
+//RESTORE QUOTATION ------------------------------------------------------------------------
+const restoreArchivedQuotation = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const archivedQuotation = await ArchivedQuotationModel.findById(id)
+        if (!archivedQuotation) {
+            return res.status(404).json({ message: 'Archived quotation not found' })
+        }
+
+        const existingQuotation = await QuotationModel.findOne({ reference: archivedQuotation.reference })
+        if (existingQuotation) {
+            return res.status(409).json({ message: 'Quotation with this reference already exists' })
+        }
+
+        const restoredQuotation = await QuotationModel.create({
+            _id: archivedQuotation.originalQuotationId,
+            packageId: archivedQuotation.packageId,
+            userId: archivedQuotation.userId,
+            quotationDetails: archivedQuotation.quotationDetails,
+            reference: archivedQuotation.reference,
+            status: archivedQuotation.status,
+            currentPdfUrl: archivedQuotation.currentPdfUrl,
+            pdfRevisions: archivedQuotation.pdfRevisions,
+            revisionComments: archivedQuotation.revisionComments,
+            createdAt: archivedQuotation.createdAt
+        })
+
+        await ArchivedQuotationModel.findByIdAndDelete(id)
+
+        logAction('QUOTATION_RESTORED', req.userId, { "Quotation Restored": `Reference: ${restoredQuotation.reference}` })
+        res.status(200).json({ message: 'Quotation restored', quotation: restoredQuotation })
+    } catch (error) {
+        res.status(500).json({ message: 'Error restoring quotation', error })
     }
 }
 
@@ -244,6 +310,9 @@ const uploadTravelDetails = async (req, res) => {
 const requestRevision = async (req, res) => {
     const { id } = req.params
     const { notes } = req.body
+
+    console.log('notes:', notes)
+
     try {
         const quotation = await QuotationModel.findById(id)
         const userName = await UserModel.findById(req.userId).select('username')
@@ -275,6 +344,8 @@ module.exports = {
     createQuotation,
     getUserQuotations,
     getAllQuotations,
+    getArchivedQuotations,
+    restoreArchivedQuotation,
     updateQuotation,
     deleteQuotation,
     getQuotation,

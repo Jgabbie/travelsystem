@@ -1,4 +1,5 @@
 const VisaModel = require('../models/visas')
+const ArchivedVisaApplicationModel = require('../models/archivedvisaapplications')
 const TokenCheckoutVisaModel = require('../models/tokencheckoutvisa')
 const ServiceModel = require('../models/service')
 const UserModel = require('../models/user')
@@ -462,6 +463,100 @@ const verifyTokenCheckout = async (req, res) => {
     }
 }
 
+const archiveVisaApplication = async (req, res) => {
+    const { id } = req.params
+    try {
+        const application = await VisaModel.findById(id)
+        if (!application) {
+            return res.status(404).json({ message: 'Visa application not found' })
+        }
+
+        await ArchivedVisaApplicationModel.create({
+            originalVisaApplicationId: application._id,
+            userId: application.userId,
+            serviceId: application.serviceId,
+            serviceName: application.serviceName,
+            applicantName: application.applicantName,
+            preferredDate: application.preferredDate,
+            preferredTime: application.preferredTime,
+            purposeOfTravel: application.purposeOfTravel,
+            applicationNumber: application.applicationNumber,
+            suggestedAppointmentSchedules: application.suggestedAppointmentSchedules,
+            suggestedAppointmentScheduleChosen: application.suggestedAppointmentScheduleChosen,
+            submittedDocuments: application.submittedDocuments,
+            passportReleaseOption: application.passportReleaseOption,
+            deliveryAddress: application.deliveryAddress,
+            status: application.status,
+            currentStepIndex: application.currentStepIndex,
+            createdAt: application.createdAt
+        })
+
+        await application.deleteOne()
+
+        logAction('VISA_APPLICATION_ARCHIVED', req.userId, { "Visa Application Archived": `Application Number: ${application.applicationNumber}` })
+
+        res.status(200).json({ message: 'Visa application archived successfully' })
+    } catch (error) {
+        res.status(500).json({ message: 'Error archiving visa application', error: error.message })
+    }
+}
+
+const getArchivedVisaApplications = async (_req, res) => {
+    try {
+        const applications = await ArchivedVisaApplicationModel.find({})
+            .populate('userId', 'firstname lastname username')
+            .populate('serviceId', 'visaName')
+            .sort({ archivedAt: -1 })
+
+        res.status(200).json(applications)
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching archived visa applications', error: error.message })
+    }
+}
+
+const restoreArchivedVisaApplication = async (req, res) => {
+    const { id } = req.params
+    try {
+        const archivedApplication = await ArchivedVisaApplicationModel.findById(id)
+        if (!archivedApplication) {
+            return res.status(404).json({ message: 'Archived visa application not found' })
+        }
+
+        const existing = await VisaModel.findOne({ applicationNumber: archivedApplication.applicationNumber })
+        if (existing) {
+            return res.status(409).json({ message: 'Visa application already exists' })
+        }
+
+        const restored = await VisaModel.create({
+            applicationNumber: archivedApplication.applicationNumber,
+            userId: archivedApplication.userId,
+            serviceId: archivedApplication.serviceId,
+            serviceName: archivedApplication.serviceName,
+            applicantName: archivedApplication.applicantName,
+            preferredDate: archivedApplication.preferredDate,
+            preferredTime: archivedApplication.preferredTime,
+            purposeOfTravel: archivedApplication.purposeOfTravel,
+            suggestedAppointmentSchedules: archivedApplication.suggestedAppointmentSchedules,
+            suggestedAppointmentScheduleChosen: archivedApplication.suggestedAppointmentScheduleChosen,
+            submittedDocuments: archivedApplication.submittedDocuments,
+            passportReleaseOption: archivedApplication.passportReleaseOption,
+            deliveryAddress: archivedApplication.deliveryAddress,
+            status: archivedApplication.status,
+            currentStepIndex: archivedApplication.currentStepIndex,
+            createdAt: archivedApplication.createdAt,
+            updatedAt: archivedApplication.createdAt
+        })
+
+        await archivedApplication.deleteOne()
+
+        logAction('VISA_APPLICATION_RESTORED', req.userId, { "Visa Application Restored": `Application Number: ${restored.applicationNumber}` })
+
+        res.status(200).json({ message: 'Visa application restored successfully' })
+    } catch (error) {
+        res.status(500).json({ message: 'Error restoring visa application', error: error.message })
+    }
+}
+
 module.exports = {
     applyVisa,
     getVisaApplications,
@@ -473,5 +568,8 @@ module.exports = {
     chosenSuggestedSchedule,
     passportReleaseOptionUpdate,
     updateVisaApplicationStatus,
-    verifyTokenCheckout
+    verifyTokenCheckout,
+    archiveVisaApplication,
+    getArchivedVisaApplications,
+    restoreArchivedVisaApplication
 };

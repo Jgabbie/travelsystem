@@ -13,6 +13,8 @@ const adminAuth = (req, res, next) => {
 router.post('/add-package', userAuth, packageController.addPackage);
 router.get('/popular-packages', packageController.getPopularPackages);
 router.get('/get-packages', packageController.getPackages);
+router.get('/archived-packages', userAuth, packageController.getArchivedPackages);
+router.post('/archived-packages/:id/restore', userAuth, packageController.restoreArchivedPackage);
 router.get('/get-packages-for-users', packageController.getPackagesForUsers);
 router.delete('/remove-package/:id', userAuth, packageController.removePackage);
 router.get('/get-package/:id', packageController.getPackage);

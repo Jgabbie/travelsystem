@@ -36,9 +36,10 @@ export default function Notifications() {
     )
 
     const markAsRead = async (notification) => {
+        const routeState = notification?.metadata?.routeState
         if (!notification || notification.isRead) {
             if (notification?.link) {
-                navigate(notification.link)
+                navigate(notification.link, routeState ? { state: routeState } : undefined)
             }
             return
         }
@@ -51,7 +52,7 @@ export default function Notifications() {
                 )
             )
             if (notification.link) {
-                navigate(notification.link)
+                navigate(notification.link, routeState ? { state: routeState } : undefined)
             }
         } catch (error) {
             console.error('Failed to mark notification as read:', error)

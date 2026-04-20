@@ -13,7 +13,7 @@ const RevisionCommentSchema = new mongoose.Schema({
 
     role: {
         type: String,
-        enum: ['User', 'Admin', 'Agent'],
+        enum: ['Customer', 'Admin', 'Employee'],
         required: true
     },
 

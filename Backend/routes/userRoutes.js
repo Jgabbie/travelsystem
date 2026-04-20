@@ -27,6 +27,8 @@ router.put('/data', userAuth, userController.updateUserData);
 router.post('/login-once', userAuth, userController.markLoginOnce);
 router.post('/createUsers', userAuth, authorizeRoles(['Admin', 'Employee']), userController.createUsers);
 router.get('/getUsers', userController.getUsers);
+router.get('/getArchivedUsers', userAuth, authorizeRoles(['Admin', 'Employee']), userController.getArchivedUsers);
+router.post('/archived-users/:id/restore', userAuth, authorizeRoles(['Admin', 'Employee']), userController.restoreArchivedUser);
 router.delete('/deleteUsers/:id', userAuth, authorizeRoles(['Admin', 'Employee']), userController.delUsers);
 
 module.exports = router;

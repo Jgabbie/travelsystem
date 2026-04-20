@@ -601,6 +601,20 @@
     color: #305797 !important;
 }
 
+.packagequotation-steps {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #305797;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
 /* Responsive Media Queries */
 @media (max-width: 900px) {
 

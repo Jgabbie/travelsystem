@@ -1,4 +1,5 @@
 const PackageModel = require("../models/package");
+const ArchivedPackageModel = require("../models/archivedpackages");
 const BookingModel = require("../models/booking");
 const WishlistModel = require("../models/wishlist");
 const NotificationModel = require("../models/notification");
@@ -134,6 +135,17 @@ const getPackages = async (req, res) => {
     }
 };
 
+//GET ARCHIVED PACKAGES (ADMIN)
+const getArchivedPackages = async (_req, res) => {
+    try {
+        const packages = await ArchivedPackageModel.find().sort({ archivedAt: -1 });
+        res.status(200).json(packages);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
 const getPackagesForUsers = async (req, res) => {
     try {
         const packages = await PackageModel.find();
@@ -154,7 +166,8 @@ const getPackagesForUsers = async (req, res) => {
                 packageAvailableSlots: availableSlots,
                 packageType: pkg.packageType,
                 packageImages: pkg.images || [],
-                packageTags: pkg.packageTags || []
+                packageTags: pkg.packageTags || [],
+                packageDiscountPercent: pkg.packageDiscountPercent || 0
             };
         });
 
@@ -168,20 +181,107 @@ const getPackagesForUsers = async (req, res) => {
 const removePackage = async (req, res) => {
     const { id } = req.params;
     try {
-        const deletedPackage = await PackageModel.findByIdAndDelete(id);
-        if (!deletedPackage) {
+        const pkg = await PackageModel.findById(id);
+        if (!pkg) {
             return res.status(404).json({ message: "Package not found" });
         }
 
+        await ArchivedPackageModel.create({
+            originalPackageId: pkg._id,
+            packageName: pkg.packageName,
+            packageCode: pkg.packageCode,
+            packagePricePerPax: pkg.packagePricePerPax,
+            packageSoloRate: pkg.packageSoloRate,
+            packageChildRate: pkg.packageChildRate,
+            packageInfantRate: pkg.packageInfantRate,
+            packageDeposit: pkg.packageDeposit,
+            packageDuration: pkg.packageDuration,
+            packageDescription: pkg.packageDescription,
+            packageType: pkg.packageType,
+            packageSpecificDate: pkg.packageSpecificDate,
+            packageHotels: pkg.packageHotels,
+            packageAirlines: pkg.packageAirlines,
+            packageAddons: pkg.packageAddons,
+            packageInclusions: pkg.packageInclusions,
+            packageExclusions: pkg.packageExclusions,
+            packageTermsConditions: pkg.packageTermsConditions,
+            packageItineraries: pkg.packageItineraries,
+            packageTags: pkg.packageTags,
+            packageDiscountPercent: pkg.packageDiscountPercent,
+            images: pkg.images,
+            visaRequired: pkg.visaRequired,
+            createdAt: pkg.createdAt
+        });
+
+        await PackageModel.findByIdAndDelete(id);
+
         await logAction(
-            "PACKAGE_DELETED",
+            "PACKAGE_ARCHIVED",
             req.userId || null,
             {
-                "Package Deleted": `Package Name: ${deletedPackage.packageName} | Package Code: ${deletedPackage.packageCode} | Package Type: ${deletedPackage.packageType} | Duration: ${deletedPackage.packageDuration}`
+                "Package Archived": `Package Name: ${pkg.packageName} | Package Code: ${pkg.packageCode} | Package Type: ${pkg.packageType} | Duration: ${pkg.packageDuration}`
             },
         );
 
-        res.status(200).json({ message: "Package removed successfully", package: deletedPackage });
+        res.status(200).json({ message: "Package archived successfully", package: pkg });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+//RESTORE PACKAGE (ADMIN)
+const restoreArchivedPackage = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const archivedPackage = await ArchivedPackageModel.findById(id);
+        if (!archivedPackage) {
+            return res.status(404).json({ message: "Archived package not found" });
+        }
+
+        const existingPackage = await PackageModel.findOne({ packageCode: archivedPackage.packageCode });
+        if (existingPackage) {
+            return res.status(409).json({ message: "Package with this code already exists" });
+        }
+
+        const restoredPackage = await PackageModel.create({
+            _id: archivedPackage.originalPackageId,
+            packageName: archivedPackage.packageName,
+            packageCode: archivedPackage.packageCode,
+            packagePricePerPax: archivedPackage.packagePricePerPax,
+            packageSoloRate: archivedPackage.packageSoloRate,
+            packageChildRate: archivedPackage.packageChildRate,
+            packageInfantRate: archivedPackage.packageInfantRate,
+            packageDeposit: archivedPackage.packageDeposit,
+            packageDuration: archivedPackage.packageDuration,
+            packageDescription: archivedPackage.packageDescription,
+            packageType: archivedPackage.packageType,
+            packageSpecificDate: archivedPackage.packageSpecificDate,
+            packageHotels: archivedPackage.packageHotels,
+            packageAirlines: archivedPackage.packageAirlines,
+            packageAddons: archivedPackage.packageAddons,
+            packageInclusions: archivedPackage.packageInclusions,
+            packageExclusions: archivedPackage.packageExclusions,
+            packageTermsConditions: archivedPackage.packageTermsConditions,
+            packageItineraries: archivedPackage.packageItineraries,
+            packageTags: archivedPackage.packageTags,
+            packageDiscountPercent: archivedPackage.packageDiscountPercent,
+            images: archivedPackage.images,
+            visaRequired: archivedPackage.visaRequired
+        });
+
+        await ArchivedPackageModel.findByIdAndDelete(id);
+
+        await logAction(
+            "PACKAGE_RESTORED",
+            req.userId || null,
+            {
+                "Package Restored": `Package Name: ${restoredPackage.packageName} | Package Code: ${restoredPackage.packageCode} | Package Type: ${restoredPackage.packageType} | Duration: ${restoredPackage.packageDuration}`
+            },
+        );
+
+        res.status(200).json({ message: "Package restored successfully", package: restoredPackage });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -386,8 +486,11 @@ const updateSlots = async (req, res) => {
                 title: "Package now available",
                 message: `${pkg.packageName} is now available for booking.`,
                 type: "wishlist",
-                link: `/package/${pkg._id}`,
-                metadata: { availability: "available" },
+                link: '/package',
+                metadata: {
+                    availability: "available",
+                    routeState: { packageId: pkg._id }
+                },
                 emailSubject: `Now available: ${pkg.packageName}`,
                 emailHtml: (user) => `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
@@ -452,8 +555,11 @@ const updateDiscount = async (req, res) => {
                 title: "Package discount available",
                 message: `${pkg.packageName} now has a ${parsedDiscount}% discount.`,
                 type: "wishlist",
-                link: `/package/${pkg._id}`,
-                metadata: { discountPercent: parsedDiscount },
+                link: '/package',
+                metadata: {
+                    discountPercent: parsedDiscount,
+                    routeState: { packageId: pkg._id }
+                },
                 emailSubject: `Discount alert: ${pkg.packageName}`,
                 emailHtml: (user) => `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
@@ -489,4 +595,4 @@ const updateDiscount = async (req, res) => {
     }
 };
 
-module.exports = { addPackage, getPackages, getPackagesForUsers, removePackage, getPackage, updatePackage, getPopularPackages, updateSlots, updateDiscount };
+module.exports = { addPackage, getPackages, getArchivedPackages, restoreArchivedPackage, getPackagesForUsers, removePackage, getPackage, updatePackage, getPopularPackages, updateSlots, updateDiscount };

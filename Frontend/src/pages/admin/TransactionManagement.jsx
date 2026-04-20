@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, Image, Spin } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/transaction.css";
+import "../../style/components/modals/modaldesign.css";
 
 const getBase64ImageFromURL = (url) => {
   return new Promise((resolve, reject) => {
@@ -47,46 +48,68 @@ export default function TransactionManagement() {
   const [isProofDecisionloading, setIsProofDecisionLoading] = useState(false);
   const [isProofDecision, setIsProofDecision] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [isTransactionRestoredModalOpen, setIsTransactionRestoredModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
+  const [archivedData, setArchivedData] = useState([]);
+
+  const mapTransactions = (response) => response.map((t) => ({
+    key: t._id,
+    ref: t.reference,
+    username: t.userId?.username || "Unknown User",
+    package: t.packageId?.packageName || t.applicationType,
+    date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
+    price: `₱${Number(t.amount || 0).toLocaleString()}`,
+    amountRaw: Number(t.amount || 0),
+    method: t.method?.charAt(0)?.toUpperCase() + t.method?.slice(1) || "No Method",
+    methodRaw: t.method || "",
+    status: t.status || "No Status",
+    proofImage: t.proofImage || null,
+    proofImageType: t.proofImageType || "",
+    proofFileName: t.proofFileName || ""
+  }));
+
+  const fetchTransactions = async () => {
+    setLoading(true);
+    try {
+      const response = await apiFetch.get("/transaction/all-transactions");
+      const transactions = mapTransactions(response);
+
+      console.log(transactions)
+
+      setData(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      message.error("Unable to load transactions.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchArchivedTransactions = async () => {
+    setLoading(true);
+    try {
+      const response = await apiFetch.get("/transaction/archived-transactions");
+      const transactions = mapTransactions(response);
+      setArchivedData(transactions);
+    } catch (error) {
+      console.error("Error fetching archived transactions:", error);
+      message.error("Unable to load archived transactions.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        const response = await apiFetch.get("/transaction/all-transactions");
-
-        const transactions = response.map((t) => ({
-          key: t._id,
-          ref: t.reference,
-          username: t.userId?.username || "Unknown User",
-          package: t.packageId?.packageName || t.applicationType,
-          date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
-          price: `₱${Number(t.amount || 0).toLocaleString()}`,
-          amountRaw: Number(t.amount || 0),
-          method: t.method?.charAt(0)?.toUpperCase() + t.method?.slice(1) || "No Method",
-          methodRaw: t.method || "",
-          status: t.status || "No Status",
-          proofImage: t.proofImage || null,
-          proofImageType: t.proofImageType || "",
-          proofFileName: t.proofFileName || ""
-        }));
-
-        console.log(transactions)
-
-        setData(transactions);
-      } catch (error) {
-        console.error("Error fetching transactions:", error);
-        message.error("Unable to load transactions.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTransactions();
   }, []);
 
-  const filteredData = data.filter(item => {
+  const currentData = showArchived ? archivedData : data;
+
+  const filteredData = currentData.filter(item => {
 
     const matchesSearch =
       item.ref.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -280,15 +303,28 @@ export default function TransactionManagement() {
   };
 
 
-  //HANDLE DELETE TRANSACTION ----------------------------
-  const handleDelete = async (key) => {
+  //HANDLE ARCHIVE TRANSACTION ----------------------------
+  const handleArchive = async (key) => {
+    console.log("Archiving transaction with ID:", key);
     try {
       await apiFetch.delete(`/transaction/${key}`);
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsTransactionDeletedModalOpen(true);
     } catch (error) {
-      message.error("Failed to delete transaction");
+      message.error("Failed to archive transaction");
     }
+  };
+
+  const handleRestore = async (key) => {
+    console.log("Restoring transaction with archived ID:", key);
+    try {
+      await apiFetch.post(`/transaction/archived-transactions/${key}/restore`);
+      setIsTransactionRestoredModalOpen(true);
+      setArchivedData((prev) => prev.filter((item) => item.key !== key));
+    } catch (error) {
+      message.error(error?.response?.data?.message || "Failed to restore transaction");
+    }
+
   };
 
   const save = async () => {
@@ -395,7 +431,7 @@ export default function TransactionManagement() {
               setIsDeleteModalOpen(true);
             }}
           >
-            Delete
+            Archive
           </Button>
           {record.methodRaw === "Manual" && record.proofImage && (
             <Button
@@ -407,6 +443,52 @@ export default function TransactionManagement() {
               View Proof
             </Button>
           )}
+        </Space>
+      )
+    }
+  ];
+
+  const archivedColumns = [
+    { title: "Transaction Reference", dataIndex: "ref" },
+    { title: "Item", dataIndex: "package" },
+    { title: "Customer Name", dataIndex: "username" },
+    {
+      title: "Payment Date & Time",
+      dataIndex: "date",
+      render: d => dayjs(d).format("MMM DD, YYYY hh:mm A")
+    },
+    { title: "Total Price", dataIndex: "price" },
+    { title: "Transaction Method", dataIndex: "method" },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: s => (
+        <Tag
+          color={
+            s === "Successful" ? "green" :
+              s === "Pending" ? "orange" :
+                "red"
+          }
+        >
+          {s}
+        </Tag>
+      )
+    },
+    {
+      title: "Actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            className='transactionmanagement-restore-button'
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={() => {
+              setEditingTransaction(record);
+              setIsRestoreModalOpen(true);
+            }}
+          >
+            Restore
+          </Button>
         </Space>
       )
     }
@@ -432,47 +514,49 @@ export default function TransactionManagement() {
           <h1 className="page-header">Transaction Management</h1>
 
 
-          <Row gutter={16} style={{ marginBottom: 20 }}>
-            <Col xs={24} sm={6}>
-              <Card className="transaction-management-card">
-                <Statistic
-                  title="Total Transactions"
-                  value={totalTransactions}
-                  prefix={<SwapOutlined />}
-                />
-              </Card>
-            </Col>
+          {!showArchived && (
+            <Row gutter={16} style={{ marginBottom: 20 }}>
+              <Col xs={24} sm={6}>
+                <Card className="transaction-management-card">
+                  <Statistic
+                    title="Total Transactions"
+                    value={totalTransactions}
+                    prefix={<SwapOutlined />}
+                  />
+                </Card>
+              </Col>
 
-            <Col xs={24} sm={6}>
-              <Card className="transaction-management-card">
-                <Statistic
-                  title="Successful"
-                  value={totalSuccessful}
-                  prefix={<CheckCircleOutlined />}
-                />
-              </Card>
-            </Col>
+              <Col xs={24} sm={6}>
+                <Card className="transaction-management-card">
+                  <Statistic
+                    title="Successful"
+                    value={totalSuccessful}
+                    prefix={<CheckCircleOutlined />}
+                  />
+                </Card>
+              </Col>
 
-            <Col xs={24} sm={6}>
-              <Card className="transaction-management-card">
-                <Statistic
-                  title="Pending"
-                  value={totalPending}
-                  prefix={<ClockCircleOutlined />}
-                />
-              </Card>
-            </Col>
+              <Col xs={24} sm={6}>
+                <Card className="transaction-management-card">
+                  <Statistic
+                    title="Pending"
+                    value={totalPending}
+                    prefix={<ClockCircleOutlined />}
+                  />
+                </Card>
+              </Col>
 
-            <Col xs={24} sm={6}>
-              <Card className="transaction-management-card">
-                <Statistic
-                  title="Failed"
-                  value={totalFailed}
-                  prefix={<CloseCircleOutlined />}
-                />
-              </Card>
-            </Col>
-          </Row>
+              <Col xs={24} sm={6}>
+                <Card className="transaction-management-card">
+                  <Statistic
+                    title="Failed"
+                    value={totalFailed}
+                    prefix={<CloseCircleOutlined />}
+                  />
+                </Card>
+              </Col>
+            </Row>
+          )}
 
           <div className="transaction-actions">
             <Input
@@ -528,13 +612,33 @@ export default function TransactionManagement() {
               >
                 Export to PDF
               </Button>
+              <Button
+                icon={showArchived ? <TransactionOutlined /> : <InboxOutlined />}
+                className='transactionmanagement-export-button'
+                type="primary"
+                onClick={() => {
+                  const nextValue = !showArchived;
+                  setShowArchived(nextValue);
+                  setSearchText("");
+                  setMethodFilter("");
+                  setStatusFilter("");
+                  setPaymentDateFilter(null);
+                  if (nextValue) {
+                    fetchArchivedTransactions();
+                  } else {
+                    fetchTransactions();
+                  }
+                }}
+              >
+                {showArchived ? 'Back to Transactions' : 'Archives'}
+              </Button>
             </Space>
           </div>
 
           <Card>
             <Form form={form} component={false}>
               <Table
-                columns={columns}
+                columns={showArchived ? archivedColumns : columns}
                 dataSource={filteredData}
                 loading={loading}
                 pagination={{ pageSize: 10, showSizeChanger: false }}
@@ -821,10 +925,9 @@ export default function TransactionManagement() {
           </Modal>
 
 
-          {/* DELETE TRANSACTION CONFIRMATION MODAL */}
+          {/* ARCHIVE TRANSACTION CONFIRMATION MODAL */}
           <Modal
             open={isDeleteModalOpen}
-            className='signup-success-modal'
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
             style={{ top: 220 }}
@@ -832,25 +935,25 @@ export default function TransactionManagement() {
               setIsDeleteModalOpen(false);
             }}
           >
-            <div className='signup-success-container'>
-              <h1 className='signup-success-heading'>Delete Booking?</h1>
-              <p className='signup-success-text'>Are you sure you want to delete this booking?</p>
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Archive Transaction?</h1>
+              <p className='modal-text'>Are you sure you want to archive this transaction?</p>
 
               <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                 <Button
                   type='primary'
-                  className='logout-confirm-btn'
+                  className='modal-button'
                   onClick={() => {
-                    handleDelete(editingTransaction.key);
+                    handleArchive(editingTransaction.key);
                     setIsDeleteModalOpen(false);
                   }}
                 >
-                  Delete
+                  Archive
                 </Button>
                 <Button
                   type='primary'
-                  className='logout-cancel-btn'
+                  className='modal-button-cancel'
                   onClick={() => {
                     setIsDeleteModalOpen(false);
                     setEditingTransaction(null);
@@ -862,10 +965,52 @@ export default function TransactionManagement() {
             </div>
           </Modal>
 
+
+          {/* RESTORE TRANSACTION CONFIRMATION MODAL */}
+          <Modal
+            open={isRestoreModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            style={{ top: 220 }}
+            onCancel={() => {
+              setIsRestoreModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Restore Transaction?</h1>
+              <p className='modal-text'>Are you sure you want to restore this transaction?</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    handleRestore(editingTransaction.key);
+                    setIsRestoreModalOpen(false);
+                  }}
+                >
+                  Restore
+                </Button>
+                <Button
+                  type='primary'
+                  className='modal-button-cancel'
+                  onClick={() => {
+                    setIsRestoreModalOpen(false);
+                    setEditingTransaction(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </Modal>
+
+
+
           {/* TRANSACTION HAS BEEN EDITED MODAL */}
           <Modal
             open={isTransactionEditedModalOpen}
-            className='signup-success-modal'
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
             style={{ top: 220 }}
@@ -873,20 +1018,20 @@ export default function TransactionManagement() {
               setIsTransactionEditedModalOpen(false);
             }}
           >
-            <div className='signup-success-container'>
-              <h1 className='signup-success-heading'>Transaction Edited Successfully!</h1>
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Transaction Edited Successfully!</h1>
 
               <div>
                 <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
               </div>
 
-              <p className='signup-success-text'>The transaction has been edited.</p>
+              <p className='modal-text'>The transaction has been edited.</p>
 
               <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                 <Button
                   type='primary'
-                  className='logout-confirm-btn'
+                  className='modal-button'
                   onClick={() => {
                     setIsTransactionEditedModalOpen(false);
                   }}
@@ -899,10 +1044,9 @@ export default function TransactionManagement() {
           </Modal>
 
 
-          {/* TRANSACTION HAS BEEN DELETED MODAL */}
+          {/* TRANSACTION HAS BEEN ARCHIVED MODAL */}
           <Modal
             open={isTransactionDeletedModalOpen}
-            className='signup-success-modal'
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
             style={{ top: 220 }}
@@ -910,20 +1054,20 @@ export default function TransactionManagement() {
               setIsTransactionDeletedModalOpen(false);
             }}
           >
-            <div className='signup-success-container'>
-              <h1 className='signup-success-heading'>Transaction Deleted Successfully!</h1>
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Transaction Archived Successfully!</h1>
 
               <div>
                 <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
               </div>
 
-              <p className='signup-success-text'>The transaction has been deleted.</p>
+              <p className='modal-text'>The transaction has been archived.</p>
 
               <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                 <Button
                   type='primary'
-                  className='logout-confirm-btn'
+                  className='modal-button'
                   onClick={() => {
                     setIsTransactionDeletedModalOpen(false);
                   }}
@@ -935,10 +1079,45 @@ export default function TransactionManagement() {
             </div>
           </Modal>
 
+          {/* TRANSACTION HAS BEEN RESTORED MODAL */}
+          <Modal
+            open={isTransactionRestoredModalOpen}
+            closable={{ 'aria-label': 'Custom Close Button' }}
+            footer={null}
+            style={{ top: 220 }}
+            onCancel={() => {
+              setIsTransactionRestoredModalOpen(false);
+            }}
+          >
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Transaction Restored Successfully!</h1>
+
+              <div>
+                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              </div>
+
+              <p className='modal-text'>The transaction has been restored.</p>
+
+              <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                <Button
+                  type='primary'
+                  className='modal-button'
+                  onClick={() => {
+                    setIsTransactionRestoredModalOpen(false);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+
+            </div>
+          </Modal>
+
+
           {/* PAYMENT PROOF HAS BEEN APPROVED MODAL */}
           <Modal
             open={isProofApprovedModalOpen}
-            className='signup-success-modal'
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
             style={{ top: 220 }}
@@ -946,20 +1125,20 @@ export default function TransactionManagement() {
               setIsProofApprovedModalOpen(false);
             }}
           >
-            <div className='signup-success-container'>
-              <h1 className='signup-success-heading'>Payment Proof Accepted!</h1>
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Payment Proof Accepted!</h1>
 
               <div>
                 <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
               </div>
 
-              <p className='signup-success-text'>The payment proof has been approved.</p>
+              <p className='modal-text'>The payment proof has been approved.</p>
 
               <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                 <Button
                   type='primary'
-                  className='logout-confirm-btn'
+                  className='modal-button'
                   onClick={() => {
                     setIsProofApprovedModalOpen(false);
                   }}
@@ -974,7 +1153,6 @@ export default function TransactionManagement() {
           {/* PAYMENT PROOF HAS BEEN REJECTED MODAL */}
           <Modal
             open={isProofRejectedModalOpen}
-            className='signup-success-modal'
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
             style={{ top: 220 }}
@@ -982,20 +1160,20 @@ export default function TransactionManagement() {
               setIsProofRejectedModalOpen(false);
             }}
           >
-            <div className='signup-success-container'>
-              <h1 className='signup-success-heading'>Payment Proof Rejected!</h1>
+            <div className='modal-container'>
+              <h1 className='modal-heading'>Payment Proof Rejected!</h1>
 
               <div>
                 <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
               </div>
 
-              <p className='signup-success-text'>The payment proof has been rejected.</p>
+              <p className='modal-text'>The payment proof has been rejected.</p>
 
               <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                 <Button
                   type='primary'
-                  className='logout-confirm-btn'
+                  className='modal-button'
                   onClick={() => {
                     setIsProofRejectedModalOpen(false);
                   }}

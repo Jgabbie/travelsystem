@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin } from 'antd';
-import { CheckCircleFilled } from '@ant-design/icons';
+import { CheckCircleFilled, HeartFilled, HeartOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -34,6 +34,7 @@ export default function PackagePage() {
     const [isRatingEditedModalOpen, setIsRatingEditedModalOpen] = useState(false)
     const [isRatingSubmittedModalOpen, setIsRatingSubmittedModalOpen] = useState(false)
     const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false)
+    const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
 
     //states for booking details
     const [selectedDate, setSelectedDate] = useState(null)
@@ -73,6 +74,8 @@ export default function PackagePage() {
         setIsArrangementModalOpen(false)
     }
 
+    const resolvedPackageId = packageData?._id || packageId
+
     //fetch package details from backend using the id from the URL and handle loading and error states
     useEffect(() => {
         const fetchPackage = async () => {
@@ -95,6 +98,30 @@ export default function PackagePage() {
         }
         fetchPackage()
     }, [packageId])
+
+    useEffect(() => {
+        const fetchWishlist = async () => {
+            if (!auth) {
+                setWishlistedIds(new Set())
+                return
+            }
+            try {
+                const response = await apiFetch.get('/wishlist')
+                const wishlist = response?.wishlist || []
+                const ids = new Set(
+                    wishlist
+                        .map((entry) => entry?.packageId?._id || entry?.packageId)
+                        .filter(Boolean)
+                        .map((id) => String(id))
+                )
+                setWishlistedIds(ids)
+            } catch {
+                setWishlistedIds(new Set())
+            }
+        }
+
+        fetchWishlist()
+    }, [auth])
 
     //get ratings for this package and map to display format, also used in fetchRatings function after submitting review to refresh the reviews
     const fetchRatings = useCallback(async () => {
@@ -257,16 +284,26 @@ export default function PackagePage() {
             return;
         }
 
-        const packageId = packageData?._id || packageId
-        if (!packageId) {
+        const targetPackageId = packageData?._id || packageId
+        if (!targetPackageId) {
             message.error('Unable to add wishlist item. Package is missing.')
             return
         }
 
+        if (wishlistedIds.has(String(targetPackageId))) {
+            message.info('This package is already in your wishlist.')
+            return
+        }
+
         try {
-            await apiFetch.post('/wishlist/add', { packageId })
+            await apiFetch.post('/wishlist/add', { packageId: targetPackageId })
             setIsWishlistModalOpen(true)
             setIsPackageWishlistedModalOpen(true)
+            setWishlistedIds((prev) => {
+                const next = new Set(prev)
+                next.add(String(targetPackageId))
+                return next
+            })
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to add to wishlist. Please try again.'
@@ -441,6 +478,14 @@ export default function PackagePage() {
         }
     }
 
+    const packageDiscountPercent = Number(packageData?.packageDiscountPercent || 0)
+    const basePackagePricePerPax = Number(packageData?.packagePricePerPax || 0)
+    const discountedPackagePricePerPax = packageDiscountPercent > 0
+        ? basePackagePricePerPax * (1 - packageDiscountPercent / 100)
+        : basePackagePricePerPax
+    const isWishlisted = Boolean(resolvedPackageId && wishlistedIds.has(String(resolvedPackageId)))
+    const hasUserReview = Boolean(userReview)
+
     return (
         <ConfigProvider
             theme={{
@@ -464,8 +509,20 @@ export default function PackagePage() {
 
 
                                 <div className="package-actions-left">
-                                    <Button type='primary' className="package-action-secondary" onClick={handleWishlistClick}>Add to Wishlist</Button>
-                                    <Button type='primary' className="package-action-outline" onClick={() => setShowReviews((prev) => !prev)}>
+                                    <Button
+                                        type='primary'
+                                        className="package-action-secondary"
+                                        icon={isWishlisted ? <HeartFilled /> : <HeartOutlined />}
+                                        onClick={handleWishlistClick}
+                                    >
+                                        Add to Wishlist
+                                    </Button>
+                                    <Button
+                                        type='primary'
+                                        className="package-action-outline"
+                                        icon={hasUserReview ? <StarFilled /> : <StarOutlined />}
+                                        onClick={() => setShowReviews((prev) => !prev)}
+                                    >
                                         {showReviews ? 'Back to Details' : 'Review and Ratings'}
                                     </Button>
                                 </div>
@@ -662,7 +719,34 @@ export default function PackagePage() {
                                         <div className="package-price-card">
                                             <div className="package-price-label">Price per pax</div>
                                             <div className="package-pricepax">
-                                                ₱{packageData?.packagePricePerPax?.toLocaleString() || '--'}
+                                                {packageDiscountPercent > 0 && (
+                                                    <span
+                                                        style={{
+                                                            textDecoration: 'line-through',
+                                                            color: '#9aa0a6',
+                                                            fontSize: '0.9rem',
+                                                            marginRight: 8,
+                                                            display: 'inline-block'
+                                                        }}
+                                                    >
+                                                        ₱{basePackagePricePerPax.toLocaleString()}
+                                                    </span>
+                                                )}
+                                                <span>
+                                                    ₱{discountedPackagePricePerPax.toLocaleString() || '--'}
+                                                </span>
+                                                {packageDiscountPercent > 0 && (
+                                                    <span
+                                                        style={{
+                                                            marginLeft: 8,
+                                                            color: '#cf1322',
+                                                            fontWeight: 600,
+                                                            fontSize: '0.85rem'
+                                                        }}
+                                                    >
+                                                        -{packageDiscountPercent}%
+                                                    </span>
+                                                )}
                                             </div>
                                             <Button disabled={(() => {
                                                 if (packageLoading || !packageData) return true;

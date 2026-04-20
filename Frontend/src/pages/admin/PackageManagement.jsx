@@ -1,12 +1,12 @@
 import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Dropdown, Space, Spin, InputNumber, Tag } from "antd";
-import { PlusOutlined, SearchOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, SolutionOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import "../../style/admin/packages.css";
+import "../../style/components/modals/modaldesign.css";
 import apiFetch from "../../config/fetchConfig";
 import { useAuth } from "../../hooks/useAuth";
-
 
 export default function PackageManagement() {
   const navigate = useNavigate();
@@ -15,13 +15,20 @@ export default function PackageManagement() {
   const basePath = isEmployee ? '/employee' : '';
 
   const [packagesData, setPackagesData] = useState([]);
+  const [archivedPackagesData, setArchivedPackagesData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSlotsModalOpen, setIsSlotsModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [isDiscountAppliedModalOpen, setIsDiscountAppliedModalOpen] = useState(false);
   const [isSlotsSavedModalOpen, setIsSlotsSavedModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [isPackageDeletedModalOpen, setIsPackageDeletedModalOpen] = useState(false);
+  const [isPackageRestoredModalOpen, setIsPackageRestoredModalOpen] = useState(false);
+  const [editingPackage, setEditingPackage] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const [filters, setFilters] = useState({
     packageType: null,
@@ -153,35 +160,28 @@ export default function PackageManagement() {
 
 
   //REMOVE PACKAGE ----------------------------------------------------------
-  const removePackage = async (id) => {
-    Modal.confirm({
-      className: "logout-confirm-modal",
-      icon: null,
-      title: (
-        <div className="logout-confirm-title" style={{ textAlign: "center" }}>
-          Confirm Delete
-        </div>
-      ),
-      content: (
-        <div className="logout-confirm-content" style={{ textAlign: "center" }}>
-          <p className="logout-confirm-text">Are you sure you want to delete this package?</p>
-        </div>
-      ),
-      okText: "Delete",
-      cancelText: "Cancel",
-      okButtonProps: { className: "logout-confirm-btn" },
-      cancelButtonProps: { className: "logout-cancel-btn" },
-      onOk: async () => {
-        try {
-          await apiFetch.delete(`/package/remove-package/${id}`);
-          message.success("Package removed successfully");
-          getPackages();
-        } catch (error) {
-          console.error("Error removing package:", error);
-          message.error("Package removed unsuccessfully");
-        }
-      }
-    });
+  const handleArchive = async (key) => {
+    try {
+      await apiFetch.delete(`/package/remove-package/${key}`);
+      setIsPackageDeletedModalOpen(true);
+      getPackages();
+    } catch (error) {
+      console.error("Error removing package:", error);
+      message.error("Package archived unsuccessfully");
+    }
+
+  }
+
+  const handleRestore = async (key) => {
+
+    try {
+      await apiFetch.post(`/package/archived-packages/${key}/restore`);
+      setIsPackageRestoredModalOpen(true);
+      setArchivedPackagesData((prev) => prev.filter((item) => item._id !== key));
+    } catch (error) {
+      console.error("Error restoring package:", error);
+      message.error(error?.response?.data?.message || "Package restore failed");
+    }
   }
 
   // GET PACKAGES ----------------------------------------------------------
@@ -207,6 +207,26 @@ export default function PackageManagement() {
     }
   }
 
+  const getArchivedPackages = async () => {
+    setLoading(true);
+    try {
+      const response = await apiFetch.get('/package/archived-packages');
+
+      const sortedPackages = response.sort((a, b) => {
+        if (a.archivedAt && b.archivedAt) {
+          return new Date(b.archivedAt) - new Date(a.archivedAt);
+        }
+        return b._id.localeCompare(a._id);
+      });
+
+      setArchivedPackagesData(sortedPackages);
+    } catch (error) {
+      console.error("Error fetching archived packages:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   //GET TOTAL SLOTS FOR A PACKAGE ----------------------------------------------------------
   const availableSlots = (pkg) => {
     if (!pkg.packageSpecificDate || pkg.packageSpecificDate.length === 0) {
@@ -224,7 +244,9 @@ export default function PackageManagement() {
 
 
   // FILTERING ----------------------------------------------------------
-  const filteredPackages = packagesData.filter((pkg) => {
+  const currentPackages = showArchived ? archivedPackagesData : packagesData;
+
+  const filteredPackages = currentPackages.filter((pkg) => {
     const matchesType = filters.packageType ? pkg.packageType === filters.packageType : true;
     const matchesAvailability = filters.availability
       ? (filters.availability === "available" ? availableSlots(pkg) > 0 : availableSlots(pkg) === 0)
@@ -238,7 +260,7 @@ export default function PackageManagement() {
     return matchesType && matchesAvailability && matchesSearch;
   });
 
-  const totalPackages = packagesData.length;
+  const totalPackages = currentPackages.length;
 
 
 
@@ -254,37 +276,39 @@ export default function PackageManagement() {
         <h1 className="page-header">Package Management</h1>
 
         {/* STATISTICS */}
-        <Row gutter={16} style={{ marginBottom: 20 }}>
-          <Col xs={24} sm={8}>
-            <Card className="package-management-card">
-              <Statistic
-                title="Total Packages"
-                value={totalPackages}
-                prefix={<AppstoreOutlined />}
-              />
-            </Card>
-          </Col>
+        {!showArchived && (
+          <Row gutter={16} style={{ marginBottom: 20 }}>
+            <Col xs={24} sm={8}>
+              <Card className="package-management-card">
+                <Statistic
+                  title="Total Packages"
+                  value={totalPackages}
+                  prefix={<AppstoreOutlined />}
+                />
+              </Card>
+            </Col>
 
-          <Col xs={24} sm={8}>
-            <Card className="package-management-card">
-              <Statistic
-                title="Available"
-                value={filteredPackages.filter(pkg => availableSlots(pkg) > 0).length}
-                prefix={<CheckCircleOutlined />}
-              />
-            </Card>
-          </Col>
+            <Col xs={24} sm={8}>
+              <Card className="package-management-card">
+                <Statistic
+                  title="Available"
+                  value={filteredPackages.filter(pkg => availableSlots(pkg) > 0).length}
+                  prefix={<CheckCircleOutlined />}
+                />
+              </Card>
+            </Col>
 
-          <Col xs={24} sm={8}>
-            <Card className="package-management-card">
-              <Statistic
-                title="Unavailable"
-                value={filteredPackages.filter(pkg => availableSlots(pkg) === 0).length}
-                prefix={<StopOutlined />}
-              />
-            </Card>
-          </Col>
-        </Row>
+            <Col xs={24} sm={8}>
+              <Card className="package-management-card">
+                <Statistic
+                  title="Unavailable"
+                  value={filteredPackages.filter(pkg => availableSlots(pkg) === 0).length}
+                  prefix={<StopOutlined />}
+                />
+              </Card>
+            </Col>
+          </Row>
+        )}
 
 
         {/* FILTER ACTIONS */}
@@ -313,8 +337,32 @@ export default function PackageManagement() {
 
           <Space style={{ marginLeft: 'auto' }}>
 
-            <Button className="packagemanagement-addpackage" type="primary" icon={<PlusOutlined />} onClick={() => navigate(`${basePath}/packages/add`)}>
+            <Button
+              className="packagemanagement-addpackage"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate(`${basePath}/packages/add`)}
+              disabled={showArchived}
+            >
               Add Package
+            </Button>
+            <Button
+              icon={showArchived ? <SolutionOutlined /> : <InboxOutlined />}
+              className="packagemanagement-addpackage"
+              type="primary"
+              onClick={() => {
+                const nextValue = !showArchived;
+                setShowArchived(nextValue);
+                setSearchText("");
+                setFilters({ packageType: null, availability: null });
+                if (nextValue) {
+                  getArchivedPackages();
+                } else {
+                  getPackages();
+                }
+              }}
+            >
+              {showArchived ? 'Back to Packages' : 'Archives'}
             </Button>
           </Space>
         </div >
@@ -367,6 +415,7 @@ export default function PackageManagement() {
                     onClick={() =>
                       navigate(`${basePath}/packages/edit`, { state: { packageId: pkg._id } })
                     }
+                    disabled={showArchived}
                   >
                     Edit
                   </Button>
@@ -376,6 +425,7 @@ export default function PackageManagement() {
                     type="primary"
                     icon={<CalendarOutlined />}
                     onClick={() => showSlotsModal(pkg)}
+                    disabled={showArchived}
                   >
                     Edit Slots
                   </Button>
@@ -385,6 +435,7 @@ export default function PackageManagement() {
                     type="primary"
                     icon={<PercentageOutlined />}
                     onClick={() => showDiscountModal(pkg)}
+                    disabled={showArchived}
                   >
                     Add Discount
                   </Button>
@@ -393,10 +444,28 @@ export default function PackageManagement() {
                     className="packagemanagement-remove-button"
                     type="primary"
                     icon={<DeleteOutlined />}
-                    onClick={() => removePackage(pkg._id)}
+                    onClick={() => {
+                      setEditingPackage({ key: pkg._id });
+                      setIsDeleteModalOpen(true);
+                    }}
+                    disabled={showArchived}
                   >
-                    Delete
+                    Archive
                   </Button>
+
+                  {showArchived && (
+                    <Button
+                      className="packagemanagement-restore-button"
+                      type="primary"
+                      icon={<CheckCircleOutlined />}
+                      onClick={() => {
+                        setEditingPackage({ key: pkg._id });
+                        setIsRestoreModalOpen(true);
+                      }}
+                    >
+                      Restore
+                    </Button>
+                  )}
                 </div>
               </Card>
             ))
@@ -648,7 +717,158 @@ export default function PackageManagement() {
         </Modal>
 
 
+        {/* ARCHIVE PACKAGE CONFIRMATION MODAL */}
+        <Modal
+          open={isDeleteModalOpen}
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsDeleteModalOpen(false);
+          }}
+        >
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Archive Package?</h1>
+            <p className='modal-text'>Are you sure you want to archive this package?</p>
 
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='modal-button'
+                onClick={() => {
+                  handleArchive(editingPackage.key);
+                  setIsDeleteModalOpen(false);
+                }}
+              >
+                Archive
+              </Button>
+              <Button
+                type='primary'
+                className='modal-button-cancel'
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setEditingPackage(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+
+        {/* RESTORE PACKAGE CONFIRMATION MODAL */}
+        <Modal
+          open={isRestoreModalOpen}
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsRestoreModalOpen(false);
+          }}
+        >
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Restore Package?</h1>
+            <p className='modal-text'>Are you sure you want to restore this package?</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='modal-button'
+                onClick={() => {
+                  handleRestore(editingPackage.key);
+                  setIsRestoreModalOpen(false);
+                }}
+              >
+                Restore
+              </Button>
+              <Button
+                type='primary'
+                className='modal-button-cancel'
+                onClick={() => {
+                  setIsRestoreModalOpen(false);
+                  setEditingPackage(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+
+
+        {/* PACKAGE HAS BEEN ARCHIVED MODAL */}
+        <Modal
+          open={isPackageDeletedModalOpen}
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsPackageDeletedModalOpen(false);
+          }}
+        >
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Package Archived Successfully!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='modal-text'>The package has been archived.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='modal-button'
+                onClick={() => {
+                  setIsPackageDeletedModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
+        </Modal>
+
+        {/* PACKAGE HAS BEEN RESTORED MODAL */}
+        <Modal
+          open={isPackageRestoredModalOpen}
+          closable={{ 'aria-label': 'Custom Close Button' }}
+          footer={null}
+          style={{ top: 220 }}
+          onCancel={() => {
+            setIsPackageRestoredModalOpen(false);
+          }}
+        >
+          <div className='modal-container'>
+            <h1 className='modal-heading'>Package Restored Successfully!</h1>
+
+            <div>
+              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            </div>
+
+            <p className='modal-text'>The package has been restored.</p>
+
+            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+              <Button
+                type='primary'
+                className='modal-button'
+                onClick={() => {
+                  setIsPackageRestoredModalOpen(false);
+                }}
+              >
+                Continue
+              </Button>
+            </div>
+
+          </div>
+        </Modal>
 
 
       </div >

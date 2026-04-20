@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, message, Modal, ConfigProvider, Space } from "antd";
-import { StarOutlined, MessageOutlined, ClockCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { StarOutlined, MessageOutlined, FundOutlined, ClockCircleOutlined, CheckCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/reviewratings.css";
+import "../../style/components/modals/modaldesign.css";
 
 dayjs.extend(isBetween);
 
@@ -29,49 +30,83 @@ const getBase64ImageFromURL = (url) => {
 
 export default function ReviewRatings() {
     const [ratings, setRatings] = useState([]);
+    const [archivedRatings, setArchivedRatings] = useState([]);
+    const [showArchived, setShowArchived] = useState(false);
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState("");
     const [ratingFilter, setRatingFilter] = useState(null);
     const [dateFilter, setDateFilter] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false);
+    const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+    const [isRatingRestoredModalOpen, setIsRatingRestoredModalOpen] = useState(false);
     const [deletingRating, setDeletingRating] = useState(null);
 
     // GET ALL RATINGS FOR ADMIN ----------------------------------------------------------------------------
+    const fetchRatings = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch.get("/rating/all-ratings");
+            const mapped = (response || []).map((rating) => {
+                const user = rating.userId || {};
+                const pkg = rating.packageId || {};
+                const fullName = [user.firstname, user.lastname].filter(Boolean).join(" ");
+                const name = fullName || user.username || "User";
+
+                return {
+                    id: rating._id,
+                    user: name,
+                    packageName: pkg.packageName || "Package",
+                    rating: rating.rating,
+                    comment: rating.review || "",
+                    date: rating.createdAt ? dayjs(rating.createdAt) : null,
+                };
+            });
+            setRatings(mapped);
+        } catch (error) {
+            setRatings([]);
+            message.error("Failed to fetch reviews");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchArchivedRatings = async () => {
+        setLoading(true);
+        try {
+            const response = await apiFetch.get("/rating/archived-ratings");
+            const mapped = (response || []).map((rating) => {
+                const user = rating.userId || {};
+                const pkg = rating.packageId || {};
+                const fullName = [user.firstname, user.lastname].filter(Boolean).join(" ");
+                const name = fullName || user.username || "User";
+
+                return {
+                    id: rating._id,
+                    user: name,
+                    packageName: pkg.packageName || "Package",
+                    rating: rating.rating,
+                    comment: rating.review || "",
+                    date: rating.createdAt ? dayjs(rating.createdAt) : null,
+                };
+            });
+            setArchivedRatings(mapped);
+        } catch (error) {
+            setArchivedRatings([]);
+            message.error("Failed to fetch archived reviews");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchRatings = async () => {
-            setLoading(true);
-            try {
-                const response = await apiFetch.get("/rating/all-ratings");
-                const mapped = (response || []).map((rating) => {
-                    const user = rating.userId || {};
-                    const pkg = rating.packageId || {};
-                    const fullName = [user.firstname, user.lastname].filter(Boolean).join(" ");
-                    const name = fullName || user.username || "User";
-
-                    return {
-                        id: rating._id,
-                        user: name,
-                        packageName: pkg.packageName || "Package",
-                        rating: rating.rating,
-                        comment: rating.review || "",
-                        date: rating.createdAt ? dayjs(rating.createdAt) : null,
-                    };
-                });
-                setRatings(mapped);
-            } catch (error) {
-                setRatings([]);
-                message.error("Failed to fetch reviews");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchRatings();
     }, []);
 
     // FILTERING RATINGS ----------------------------------------------------------------------------
-    const filteredRatings = ratings.filter((item) => {
+    const currentRatings = showArchived ? archivedRatings : ratings;
+
+    const filteredRatings = currentRatings.filter((item) => {
         const matchesSearch =
             (item.user.toLowerCase().includes(searchText.toLowerCase())) ||
             (item.packageName.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -170,16 +205,34 @@ export default function ReviewRatings() {
 
 
     // DELETE RATING ----------------------------------------------------------------------------
-    const handleDelete = async (id) => {
-
+    const handleArchive = async (key) => {
+        if (!key) {
+            message.error("Rating not found")
+            return
+        }
         try {
-            await apiFetch.delete(`/rating/delete/${id}`);
-            setRatings((prev) => prev.filter((r) => r.id !== id));
+            await apiFetch.delete(`/rating/delete/${key}`);
+            setRatings((prev) => prev.filter((r) => r.id !== key));
             setIsRatingDeletedModalOpen(true);
         } catch {
-            message.error("Failed to delete review");
+            message.error("Failed to archive review");
         }
 
+    };
+
+    const handleRestore = async (key) => {
+        if (!key) {
+            message.error("Rating not found")
+            return
+        }
+        try {
+            await apiFetch.post(`/rating/archived-ratings/${key}/restore`)
+            setIsRatingRestoredModalOpen(true);
+            setArchivedRatings((prev) => prev.filter((item) => item.id !== key))
+        } catch (error) {
+            console.error("Error restoring rating:", error)
+            message.error("Rating restore unsuccessfully")
+        }
     };
 
 
@@ -219,19 +272,42 @@ export default function ReviewRatings() {
             title: "Actions",
             key: "actions",
             render: (_, record) => (
-                <Button
-                    className='reviewratings-remove-button'
-                    type='primary'
-                    icon={<DeleteOutlined />}
-                    onClick={() => {
-                        setDeletingRating(record);
-                        setIsDeleteModalOpen(true);
-                    }}
-                >
-                    Delete
-                </Button>
+                !showArchived && (
+                    <Button
+                        className='reviewratings-remove-button'
+                        type='primary'
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                            setDeletingRating(record);
+                            setIsDeleteModalOpen(true);
+                        }}
+                    >
+                        Archive
+                    </Button>
+                )
             ),
         },
+    ];
+
+    const archivedColumns = [
+        ...columns.filter((col) => col.title !== "Actions"),
+        {
+            title: "Actions",
+            key: "actions",
+            render: (_, record) => (
+                <Button
+                    className='reviewratings-restore-button'
+                    type='primary'
+                    icon={<CheckCircleOutlined />}
+                    onClick={() => {
+                        setDeletingRating(record);
+                        setIsRestoreModalOpen(true);
+                    }}
+                >
+                    Restore
+                </Button>
+            )
+        }
     ];
 
 
@@ -246,35 +322,37 @@ export default function ReviewRatings() {
             <div className="reviewratings-container">
                 <h1 className="page-header">Reviews & Ratings</h1>
 
-                <Row gutter={16} style={{ marginBottom: 20 }}>
-                    <Col xs={24} sm={8}>
-                        <Card className="rating-management-card">
-                            <Statistic
-                                title="Average Rating"
-                                value={averageRating ?? "—"}
-                                prefix={<StarOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={8}>
-                        <Card className="rating-management-card">
-                            <Statistic
-                                title="Total Reviews"
-                                value={ratings.length || "—"}
-                                prefix={<MessageOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                    <Col xs={24} sm={8}>
-                        <Card className="rating-management-card">
-                            <Statistic
-                                title="Latest Review"
-                                value={latestReview}
-                                prefix={<ClockCircleOutlined />}
-                            />
-                        </Card>
-                    </Col>
-                </Row>
+                {!showArchived && (
+                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                        <Col xs={24} sm={8}>
+                            <Card className="rating-management-card">
+                                <Statistic
+                                    title="Average Rating"
+                                    value={averageRating ?? "—"}
+                                    prefix={<StarOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={8}>
+                            <Card className="rating-management-card">
+                                <Statistic
+                                    title="Total Reviews"
+                                    value={ratings.length || "—"}
+                                    prefix={<MessageOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={8}>
+                            <Card className="rating-management-card">
+                                <Statistic
+                                    title="Latest Review"
+                                    value={latestReview}
+                                    prefix={<ClockCircleOutlined />}
+                                />
+                            </Card>
+                        </Col>
+                    </Row>
+                )}
 
                 <div className="reviewratings-actions">
                     <Input
@@ -312,12 +390,31 @@ export default function ReviewRatings() {
                         >
                             Export to PDF
                         </Button>
+                        <Button
+                            icon={showArchived ? <FundOutlined /> : <InboxOutlined />}
+                            className='reviewratings-export-button'
+                            type="primary"
+                            onClick={() => {
+                                const nextValue = !showArchived;
+                                setShowArchived(nextValue);
+                                setSearchText("");
+                                setRatingFilter(null);
+                                setDateFilter(null);
+                                if (nextValue) {
+                                    fetchArchivedRatings();
+                                } else {
+                                    fetchRatings();
+                                }
+                            }}
+                        >
+                            {showArchived ? 'Back to Reviews' : 'Archives'}
+                        </Button>
                     </Space>
                 </div>
 
                 <Card>
                     <Table
-                        columns={columns}
+                        columns={showArchived ? archivedColumns : columns}
                         dataSource={filteredRatings}
                         rowKey="id"
                         loading={loading}
@@ -332,7 +429,6 @@ export default function ReviewRatings() {
             {/* DELETE RATING CONFIRMATION MODAL */}
             <Modal
                 open={isDeleteModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 style={{ top: 220 }}
@@ -340,25 +436,25 @@ export default function ReviewRatings() {
                     setIsDeleteModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Delete Rating?</h1>
-                    <p className='signup-success-text'>Are you sure you want to delete this rating?</p>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Archive Rating?</h1>
+                    <p className='modal-text'>Are you sure you want to archive this rating?</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
-                                handleDelete(deletingRating.id);
+                                handleArchive(deletingRating?.id);
                                 setIsDeleteModalOpen(false);
                             }}
                         >
-                            Delete
+                            Archive
                         </Button>
                         <Button
                             type='primary'
-                            className='logout-cancel-btn'
+                            className='modal-button-cancel'
                             onClick={() => {
                                 setIsDeleteModalOpen(false);
                                 setDeletingRating(null);
@@ -375,7 +471,6 @@ export default function ReviewRatings() {
             {/* RATING DELETED SUCCESSFULLY MODAL */}
             <Modal
                 open={isRatingDeletedModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 style={{ top: 220 }}
@@ -383,22 +478,97 @@ export default function ReviewRatings() {
                     setIsRatingDeletedModalOpen(false);
                 }}
             >
-                <div className='signup-success-container'>
-                    <h1 className='signup-success-heading'>Rating Deleted Successfully!</h1>
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Rating Archived Successfully!</h1>
 
                     <div>
                         <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
                     </div>
 
-                    <p className='signup-success-text'>The rating has been deleted.</p>
+                    <p className='modal-text'>The rating has been archived.</p>
 
                     <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                         <Button
                             type='primary'
-                            className='logout-confirm-btn'
+                            className='modal-button'
                             onClick={() => {
                                 setIsRatingDeletedModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+            {/* RESTORE RATING CONFIRMATION MODAL */}
+            <Modal
+                open={isRestoreModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRestoreModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Restore Rating?</h1>
+                    <p className='modal-text'>Are you sure you want to restore this rating?</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                handleRestore(deletingRating?.id);
+                                setIsRestoreModalOpen(false);
+                            }}
+                        >
+                            Restore
+                        </Button>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsRestoreModalOpen(false);
+                                setDeletingRating(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* RATING HAS BEEN RESTORED MODAL */}
+            <Modal
+                open={isRatingRestoredModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                style={{ top: 220 }}
+                onCancel={() => {
+                    setIsRatingRestoredModalOpen(false);
+                }}
+            >
+                <div className='modal-container'>
+                    <h1 className='modal-heading'>Rating Restored Successfully!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='modal-text'>The rating has been restored.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='modal-button'
+                            onClick={() => {
+                                setIsRatingRestoredModalOpen(false);
                             }}
                         >
                             Continue

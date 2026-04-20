@@ -10,7 +10,8 @@ import {
   EyeOutlined,
   FilePdfOutlined,
   PlusOutlined,
-  CheckCircleFilled
+  CheckCircleFilled,
+  InboxOutlined
 } from "@ant-design/icons";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -43,6 +44,7 @@ export default function UserManagement() {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [users, setUsers] = useState([]);
+  const [archivedUsers, setArchivedUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetRole, setTargetRole] = useState("Customer");
@@ -51,12 +53,15 @@ export default function UserManagement() {
   const [searchText, setSearchText] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isUserEditedModalOpen, setIsUserEditedModalOpen] = useState(false);
   const [isUserDeletedModalOpen, setIsUserDeletedModalOpen] = useState(false);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [isUserRestoredModalOpen, setIsUserRestoredModalOpen] = useState(false);
 
   const getUsers = async () => {
     setLoading(true);
@@ -81,6 +86,32 @@ export default function UserManagement() {
       setUsers(formattedData);
     } catch {
       message.error("Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getArchivedUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await apiFetch.get('/user/getArchivedUsers', { withCredentials: true });
+      const formattedData = response.map(user => ({
+        key: user._id,
+        id: user.originalUserId || user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        name: `${user.firstname} ${user.lastname}`,
+        username: user.username,
+        email: user.email,
+        role: user.role || "Customer",
+        status: user.isAccountVerified ? "Verified" : "Pending",
+        avatar: user.profileImage || "",
+        phone: user.phone || "",
+        archivedAt: user.archivedAt || ""
+      }));
+      setArchivedUsers(formattedData);
+    } catch {
+      message.error("Failed to load archived users");
     } finally {
       setLoading(false);
     }
@@ -151,13 +182,25 @@ export default function UserManagement() {
     message.success("Report exported to PDF successfully.");
   };
 
-  const handleDelete = async (id) => {
+  const handleArchive = async (key) => {
     try {
-      await apiFetch.delete(`/user/deleteUsers/${id}`, { withCredentials: true });
+      await apiFetch.delete(`/user/deleteUsers/${key}`, { withCredentials: true });
       setIsDeleteModalOpen(false);
       setIsUserDeletedModalOpen(true);
       getUsers();
-    } catch { message.error("Delete failed"); }
+    } catch { message.error("Archive failed"); }
+  };
+
+  const handleRestore = async (key) => {
+    try {
+      await apiFetch.post(`/user/archived-users/${key}/restore`, {}, { withCredentials: true });
+      setIsUserRestoredModalOpen(true);
+      message.success("User restored successfully");
+      setArchivedUsers((prev) => prev.filter((item) => item.key !== key));
+
+    } catch (error) {
+      message.error(error?.response?.data?.message || "User restore failed");
+    }
   };
 
   const edit = (record) => {
@@ -196,7 +239,9 @@ export default function UserManagement() {
     }
   };
 
-  const filteredUsers = users.filter(user => {
+  const currentUsers = showArchived ? archivedUsers : users;
+
+  const filteredUsers = currentUsers.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchText.toLowerCase()) ||
       user.username.toLowerCase().includes(searchText.toLowerCase()) ||
       user.email.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -256,9 +301,43 @@ export default function UserManagement() {
               setIsDeleteModalOpen(true)
             }}
           >
-            Delete
+            Archive
           </Button>
         </Space >
+      )
+    }
+  ];
+
+  const archivedColumns = [
+    { title: "Name", dataIndex: "name" },
+    { title: "Username", dataIndex: "username" },
+    { title: "Email", dataIndex: "email" },
+    {
+      title: "Role",
+      dataIndex: "role",
+      render: role => <Tag color={role === "Admin" ? "purple" : role === "Employee" ? "blue" : "volcano"}>{role}</Tag>
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: status => <Tag color={status === "Verified" ? "green" : "orange"}>{status}</Tag>
+    },
+    {
+      title: "Actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            className='usermanagement-restore-button'
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={() => {
+              setEditingUser(record);
+              setIsRestoreModalOpen(true);
+            }}
+          >
+            Restore
+          </Button>
+        </Space>
       )
     }
   ];
@@ -276,11 +355,13 @@ export default function UserManagement() {
       <div className="user-management-container">
         <h1 className="page-header">User Management</h1>
 
-        <Row gutter={16} style={{ marginBottom: 20 }}>
-          <Col xs={24} sm={8}><Card><Statistic title="Total Users" value={users.length} prefix={<UserOutlined />} /></Card></Col>
-          <Col xs={24} sm={8}><Card><Statistic title="Verified Users" value={users.filter(u => u.status === "Verified").length} prefix={<CheckCircleOutlined />} /></Card></Col>
-          <Col xs={24} sm={8}><Card><Statistic title="Unverified Users" value={users.filter(u => u.status === "Pending").length} prefix={<ExclamationCircleOutlined />} /></Card></Col>
-        </Row>
+        {!showArchived && (
+          <Row gutter={16} style={{ marginBottom: 20 }}>
+            <Col xs={24} sm={8}><Card><Statistic title="Total Users" value={users.length} prefix={<UserOutlined />} /></Card></Col>
+            <Col xs={24} sm={8}><Card><Statistic title="Verified Users" value={users.filter(u => u.status === "Verified").length} prefix={<CheckCircleOutlined />} /></Card></Col>
+            <Col xs={24} sm={8}><Card><Statistic title="Unverified Users" value={users.filter(u => u.status === "Pending").length} prefix={<ExclamationCircleOutlined />} /></Card></Col>
+          </Row>
+        )}
 
         <div className="user-actions">
           <Input prefix={<SearchOutlined />} placeholder="Search..." className="search-input" value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
@@ -289,8 +370,42 @@ export default function UserManagement() {
 
           <Space style={{ marginLeft: 'auto' }}>
             {/* RESTORED original classes */}
-            <Button className='usermanagement-add-button' type="primary" icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>Add User</Button>
-            <Button className='usermanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+            <Button
+              className='usermanagement-add-button'
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsModalOpen(true)}
+              disabled={showArchived}
+            >
+              Add User
+            </Button>
+            <Button
+              className='usermanagement-export-button'
+              type="primary"
+              icon={<FilePdfOutlined />}
+              onClick={generatePDF}
+            >
+              Export to PDF
+            </Button>
+            <Button
+              icon={showArchived ? <UserOutlined /> : <InboxOutlined />}
+              className='usermanagement-export-button'
+              type="primary"
+              onClick={() => {
+                const nextValue = !showArchived;
+                setShowArchived(nextValue);
+                setSearchText("");
+                setRoleFilter("");
+                setStatusFilter("");
+                if (nextValue) {
+                  getArchivedUsers();
+                } else {
+                  getUsers();
+                }
+              }}
+            >
+              {showArchived ? 'Back to Users' : 'Archives'}
+            </Button>
           </Space>
         </div>
 
@@ -298,7 +413,7 @@ export default function UserManagement() {
           <Form form={form} component={false}>
             <Table
               loading={loading}
-              columns={columns}
+              columns={showArchived ? archivedColumns : columns}
               dataSource={filteredUsers}
               pagination={{ pageSize: 10, showSizeChanger: false }}
             />
@@ -405,23 +520,22 @@ export default function UserManagement() {
               setIsEditModalOpen(false);
               setEditingUser(null);
             }}
-            className="usermanagement-remove-button">
+            className="modal-button-cancel">
             Cancel
           </Button>
           <Button
             type='primary'
             onClick={save}
-            className="usermanagement-okmodal-button">
+            className="modal-button">
             Save
           </Button>
         </div>
       </Modal>
 
 
-      {/* DELETE CONFIRMATION */}
+      {/* ARCHIVE CONFIRMATION */}
       <Modal
         open={isDeleteModalOpen}
-        className='modal-modal'
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
         style={{ top: 220 }}
@@ -430,24 +544,24 @@ export default function UserManagement() {
         }}
       >
         <div className='modal-container'>
-          <h1 className='modal-heading'>Delete User?</h1>
-          <p className='modal-text'>Are you sure you want to delete this user?</p>
+          <h1 className='modal-heading'>Archive User?</h1>
+          <p className='modal-text'>Are you sure you want to archive this user?</p>
 
           <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
             <Button
               type='primary'
-              className='logout-confirm-btn'
+              className='modal-button'
               onClick={() => {
-                handleDelete(editingUser.id);
+                handleArchive(editingUser.key);
                 setIsDeleteModalOpen(false);
               }}
             >
-              Delete
+              Archive
             </Button>
             <Button
               type='primary'
-              className='logout-cancel-btn'
+              className='modal-button-cancel'
               onClick={() => {
                 setIsDeleteModalOpen(false);
                 setEditingUser(null);
@@ -461,10 +575,61 @@ export default function UserManagement() {
         </div>
       </Modal>
 
+
+      {/* RESTORE CONFIRMATION */}
+      <Modal
+        open={isRestoreModalOpen}
+        closable={{ 'aria-label': 'Custom Close Button' }}
+        footer={null}
+        style={{ top: 220 }}
+        onCancel={() => {
+          setIsRestoreModalOpen(false);
+        }}
+      >
+        <div className='modal-container'>
+          <h1 className='modal-heading'>Restore User?</h1>
+          <p className='modal-text'>Are you sure you want to restore this user?</p>
+
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+            <Button
+              type='primary'
+              className='modal-button'
+              onClick={() => {
+                handleRestore(editingUser.key);
+                setIsRestoreModalOpen(false);
+              }}
+            >
+              Restore
+            </Button>
+            <Button
+              type='primary'
+              className='modal-button-cancel'
+              onClick={() => {
+                setIsRestoreModalOpen(false);
+                setEditingUser(null);
+              }}
+            >
+              Cancel
+            </Button>
+
+          </div>
+
+        </div>
+      </Modal>
+
+
+
+
+
+
+
+
+
+
       {/* USER HAS BEEN EDITED MODAL */}
       <Modal
         open={isUserEditedModalOpen}
-        className='modal-modal'
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
         style={{ top: 220 }}
@@ -485,7 +650,7 @@ export default function UserManagement() {
 
             <Button
               type='primary'
-              className='logout-confirm-btn'
+              className='modal-button'
               onClick={() => {
                 setIsUserEditedModalOpen(false);
               }}
@@ -497,10 +662,9 @@ export default function UserManagement() {
         </div>
       </Modal>
 
-      {/* USER HAS BEEN DELETED MODAL */}
+      {/* USER HAS BEEN ARCHIVED MODAL */}
       <Modal
         open={isUserDeletedModalOpen}
-        className='modal-modal'
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
         style={{ top: 220 }}
@@ -509,21 +673,57 @@ export default function UserManagement() {
         }}
       >
         <div className='modal-container'>
-          <h1 className='modal-heading'>User Deleted Successfully!</h1>
+          <h1 className='modal-heading'>User Archived Successfully!</h1>
 
           <div>
             <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
           </div>
 
-          <p className='modal-text'>The user has been deleted.</p>
+          <p className='modal-text'>The user has been archived.</p>
 
           <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
             <Button
               type='primary'
-              className='logout-confirm-btn'
+              className='modal-button'
               onClick={() => {
                 setIsUserDeletedModalOpen(false);
+              }}
+            >
+              Continue
+            </Button>
+          </div>
+
+        </div>
+      </Modal>
+
+
+      {/* USER HAS BEEN RESTORED MODAL */}
+      <Modal
+        open={isUserRestoredModalOpen}
+        closable={{ 'aria-label': 'Custom Close Button' }}
+        footer={null}
+        style={{ top: 220 }}
+        onCancel={() => {
+          setIsUserRestoredModalOpen(false);
+        }}
+      >
+        <div className='modal-container'>
+          <h1 className='modal-heading'>User Restored Successfully!</h1>
+
+          <div>
+            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+          </div>
+
+          <p className='modal-text'>The user has been restored.</p>
+
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+            <Button
+              type='primary'
+              className='modal-button'
+              onClick={() => {
+                setIsUserRestoredModalOpen(false);
               }}
             >
               Continue

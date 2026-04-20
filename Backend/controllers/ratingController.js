@@ -1,4 +1,5 @@
 const Rating = require('../models/rating')
+const ArchivedRatingModel = require('../models/archivedratings')
 const mongoose = require('mongoose')
 const logAction = require('../utils/logger')
 
@@ -119,24 +120,36 @@ const adminDeleteRating = async (req, res) => {
     const { id } = req.params
     try {
         const rating = await Rating.findById(id)
+            .populate('packageId', 'packageName')
+            .populate('userId', 'username')
         if (!rating) {
             return res.status(404).json({ message: "Rating not found" })
         }
 
-
-        await rating.populate('packageId', 'packageName');
-        await rating.populate('userId', 'username');
-
         const packageName = rating?.packageId?.packageName || 'Unknown'
         const userName = rating?.userId?.username || 'Unknown'
 
+        const packageId = rating?.packageId?._id || rating?.packageId
+        const userId = rating?.userId?._id || rating?.userId || null
+
+        await ArchivedRatingModel.create({
+            originalRatingId: rating._id,
+            packageId,
+            userId,
+            rating: rating.rating,
+            review: rating.review,
+            guestName: rating.guestName,
+            guestEmail: rating.guestEmail,
+            createdAt: rating.createdAt
+        })
+
         await rating.deleteOne()
 
-        logAction('RATING_DELETED_BY_ADMIN', req.userId, { "Rating Deleted by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
+        logAction('RATING_ARCHIVED_BY_ADMIN', req.userId, { "Rating Archived by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
 
-        res.status(200).json({ message: "Rating deleted" })
+        res.status(200).json({ message: "Rating archived" })
     } catch (error) {
-        res.status(500).json({ message: "Error deleting rating", error })
+        res.status(500).json({ message: "Error archiving rating", error })
     }
 }
 
@@ -241,4 +254,61 @@ const getAverageRatings = async (_req, res) => {
     }
 };
 
-module.exports = { submitRating, getPackageRatings, deleteRating, adminDeleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings }
+const getArchivedRatings = async (_req, res) => {
+    try {
+        const ratings = await ArchivedRatingModel.find({})
+            .populate('userId', 'username firstname lastname')
+            .populate('packageId', 'packageName')
+            .sort({ archivedAt: -1 })
+        res.status(200).json(ratings)
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching archived ratings", error })
+    }
+}
+
+const restoreArchivedRating = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const archivedRating = await ArchivedRatingModel.findById(id)
+            .populate('packageId', 'packageName')
+            .populate('userId', 'username')
+        if (!archivedRating) {
+            return res.status(404).json({ message: "Archived rating not found" })
+        }
+
+        if (archivedRating.userId) {
+            const existingRating = await Rating.findOne({
+                packageId: archivedRating.packageId,
+                userId: archivedRating.userId
+            })
+            if (existingRating) {
+                return res.status(409).json({ message: "Rating already exists" })
+            }
+        }
+
+        await Rating.create({
+            packageId: archivedRating.packageId,
+            userId: archivedRating.userId,
+            rating: archivedRating.rating,
+            review: archivedRating.review,
+            guestName: archivedRating.guestName,
+            guestEmail: archivedRating.guestEmail,
+            createdAt: archivedRating.createdAt,
+            updatedAt: archivedRating.createdAt
+        })
+
+        const packageName = archivedRating?.packageId?.packageName || 'Unknown'
+        const userName = archivedRating?.userId?.username || 'Unknown'
+
+        await archivedRating.deleteOne()
+
+        logAction('RATING_RESTORED_BY_ADMIN', req.userId, { "Rating Restored by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
+
+        res.status(200).json({ message: "Rating restored" })
+    } catch (error) {
+        res.status(500).json({ message: "Error restoring rating", error })
+    }
+}
+
+module.exports = { submitRating, getPackageRatings, deleteRating, adminDeleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings, getArchivedRatings, restoreArchivedRating }

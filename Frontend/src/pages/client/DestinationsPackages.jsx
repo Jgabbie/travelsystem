@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty, Button, Image, Modal } from 'antd'
-import { FacebookFilled, InstagramFilled } from '@ant-design/icons'
+import { FacebookFilled, InstagramFilled, HeartFilled } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
 import apiFetch from '../../config/fetchConfig'
 import TopNavUser from '../../components/topnav/TopNavUser'
+import { useAuth } from '../../hooks/useAuth'
 
 
 export default function DestinationsPackages() {
@@ -19,9 +20,12 @@ export default function DestinationsPackages() {
     const [daysValue, setDaysValue] = useState(6)
     const [travelersValue, setTravelersValue] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
 
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
     const [chatMessage, setChatMessage] = useState('')
+
+    const { auth } = useAuth()
 
     const { Title, Text } = Typography
 
@@ -40,18 +44,28 @@ export default function DestinationsPackages() {
                     ])
                 )
 
+                console.log('packages response:', response)
+
                 const packages = response.map((pkg) => {
                     const rating = ratingMap.get(String(pkg._id)) || 0
+                    const discountPercent = Number(pkg.packageDiscountPercent || 0)
+                    const budget = Number(pkg.packagePricePerPax || 0)
+                    const discountedBudget = discountPercent > 0
+                        ? budget * (1 - discountPercent / 100)
+                        : budget
                     // const availableSlots = Array.isArray(pkg.packageSpecificDate)
                     //     ? pkg.packageSpecificDate.reduce((sum, entry) => sum + (Number(entry?.slots) || 0), 0)
                     //     : (pkg.packageAvailableSlots || 0)
 
+                    console.log('discountPercent:', discountPercent)
                     return {
                         id: pkg._id,
                         packageName: pkg.packageName,
                         packageType: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
-                        budget: pkg.packagePricePerPax,
+                        budget,
+                        discountedBudget,
+                        discountPercent,
                         availableSlots: pkg.packageAvailableSlots || 0,
                         images: pkg.packageImages && pkg.packageImages.length > 0 ? pkg.packageImages[0] : '',
                         tags: pkg.packageTags || [],
@@ -71,6 +85,32 @@ export default function DestinationsPackages() {
         }
         fetchPackages()
     }, [])
+
+    useEffect(() => {
+        const fetchWishlist = async () => {
+            if (!auth) {
+                setWishlistedIds(new Set())
+                return
+            }
+
+            try {
+                const response = await apiFetch.get('/wishlist')
+                const wishlist = response?.wishlist || []
+                const ids = new Set(
+                    wishlist
+                        .map((entry) => entry?.packageId?._id || entry?.packageId)
+                        .filter(Boolean)
+                        .map((id) => String(id))
+                )
+                setWishlistedIds(ids)
+            } catch (error) {
+                console.error('Failed to load wishlist:', error)
+                setWishlistedIds(new Set())
+            }
+        }
+
+        fetchWishlist()
+    }, [auth])
 
 
     //gets the values from the search bar from the landing page and sets the filters based on the configuration of the user
@@ -142,7 +182,7 @@ export default function DestinationsPackages() {
             (item.tags?.some((tag) => tag.toLowerCase().includes(search.toLowerCase())))
 
         const matchesBudget =
-            item.budget >= budgetRange[0] && item.budget <= budgetRange[1]
+            item.discountedBudget >= budgetRange[0] && item.discountedBudget <= budgetRange[1]
 
         const matchesTags =
             selectedTags.length === 0 ||
@@ -386,7 +426,15 @@ export default function DestinationsPackages() {
                                                     </Title>
                                                     <Text type="secondary">{pkg.packageType}</Text>
                                                 </div>
-                                                <Tag className="destinations-rating">⭐ {pkg.rating.toFixed(1)}</Tag>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                    {wishlistedIds.has(String(pkg.id)) && (
+                                                        <HeartFilled style={{ color: '#cf1322', fontSize: 16 }} />
+                                                    )}
+                                                    {pkg.discountPercent > 0 && (
+                                                        <Tag color="red">-{pkg.discountPercent}%</Tag>
+                                                    )}
+                                                    <Tag className="destinations-rating">⭐ {pkg.rating.toFixed(1)}</Tag>
+                                                </div>
                                             </div>
                                             <div className="destinations-card-meta">
                                                 <Tag className="destinations-type">{pkg.packageType}</Tag>
@@ -404,18 +452,35 @@ export default function DestinationsPackages() {
                                                 ))}
                                             </div>
                                             <div className="destinations-card-footer">
+                                                {pkg.discountPercent > 0 && (
+                                                    <Text
+                                                        delete
+                                                        className="destinations-price"
+                                                        style={{ color: '#9aa0a6', marginRight: 8 }}
+                                                    >
+                                                        ₱{(
+                                                            Number.isFinite(travelersValue) && travelersValue > 0
+                                                                ? pkg.budget * travelersValue
+                                                                : pkg.budget
+                                                        ).toLocaleString()}
+                                                    </Text>
+                                                )}
                                                 <Text className="destinations-price">
                                                     ₱{(
                                                         Number.isFinite(travelersValue) && travelersValue > 0
-                                                            ? pkg.budget * travelersValue
-                                                            : pkg.budget
+                                                            ? pkg.discountedBudget * travelersValue
+                                                            : pkg.discountedBudget
                                                     ).toLocaleString()}
                                                     {Number.isFinite(travelersValue) && travelersValue > 0
                                                         ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
                                                         : ''}
                                                 </Text>
                                                 <Text className="destinations-budget">
-                                                    {Number.isFinite(travelersValue) && travelersValue > 0 ? 'Total Budget' : 'Budget / Pax'}
+                                                    {Number.isFinite(travelersValue) && travelersValue > 0
+                                                        ? 'Total Budget'
+                                                        : pkg.discountPercent > 0
+                                                            ? 'Discounted / Pax'
+                                                            : 'Budget / Pax'}
                                                 </Text>
                                             </div>
                                         </Card>

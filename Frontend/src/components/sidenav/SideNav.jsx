@@ -6,7 +6,7 @@ import {
   FileTextOutlined,
   FundOutlined,
   IdcardOutlined,
-  ReadOutlined,
+  BookOutlined,
   SafetyCertificateOutlined,
   SolutionOutlined,
   TeamOutlined,
@@ -471,7 +471,7 @@ export default function SideNav() {
           </NavLink>
           <NavLink to="/bookings" className="nav-item" onClick={handleBookingsClick}>
             <span className="nav-item-content">
-              <span><ReadOutlined /> Bookings</span>
+              <span><BookOutlined /> Bookings</span>
               {bookingCount > 0 && <span className="nav-badge">{bookingCount}</span>}
             </span>
           </NavLink>

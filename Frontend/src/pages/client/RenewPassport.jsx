@@ -207,6 +207,24 @@ export default function RenewPassport() {
 
                     <section className="renew-passport-card">
                         <h3>Application Details</h3>
+                        <div
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                padding: '6px 12px',
+                                marginTop: 6,
+                                marginBottom: 14,
+                                borderRadius: 999,
+                                background: 'rgba(48, 87, 151, 0.08)',
+                                border: '1px solid rgba(48, 87, 151, 0.25)',
+                                color: '#305797',
+                                fontWeight: 600,
+                            }}
+                        >
+                            <span>Renew Passport Fee</span>
+                            <span>PHP 2,000</span>
+                        </div>
                         <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
 
                             <div>

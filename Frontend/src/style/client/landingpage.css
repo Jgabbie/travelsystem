@@ -323,6 +323,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background-color: #305797;
+    padding-bottom: 50px;
+    padding-top: 20px;
 }
 
 .popular-packages-text {
@@ -334,18 +337,90 @@
 }
 
 .popular-packages {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-    margin: 10px;
-    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1200px;
+    margin: 10px auto 30px;
 }
 
-.popular-packages .ant-card {
+.popular-packages-carousel {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+}
+
+.popular-carousel-button {
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.popular-packages-viewport {
+    overflow: hidden;
+    width: 100%;
+}
+
+.popular-packages-track {
+    display: flex;
+    transition: transform 600ms ease;
+}
+
+.popular-packages-slide {
+    min-width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    padding: 6px 0;
+}
+
+.popular-packages-card.ant-card {
     width: 100%;
     max-width: 320px;
+    margin: 0 auto;
+}
+
+.popular-packages-dots {
+    position: absolute;
+    left: 50%;
+    bottom: -26px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.popular-packages-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: transform 200ms ease, background 200ms ease;
+}
+
+.popular-packages-dots span.active {
+    background: #ffffff;
+    transform: scale(1.4);
+}
+
+@media (max-width: 1024px) {
+    .popular-packages-slide {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .popular-packages-carousel {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .popular-carousel-button {
+        justify-self: center;
+    }
+
+    .popular-packages-slide {
+        grid-template-columns: 1fr;
+    }
 }
 
 
@@ -391,6 +466,114 @@
 .explore-local-packages .ant-card {
     width: 100%;
     max-width: 320px;
+}
+
+/* EXPLORE CAROUSEL */
+.explore-carousel-section {
+    margin-top: 50px;
+    padding: 0 16px;
+}
+
+.explore-carousel {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(19, 27, 44, 0.25);
+}
+
+.explore-carousel-track {
+    display: flex;
+    transition: transform 800ms ease;
+}
+
+.explore-carousel-slide {
+    position: relative;
+    min-width: 100%;
+    height: 420px;
+}
+
+.explore-carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.explore-carousel-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.1));
+}
+
+.explore-carousel-text {
+    position: absolute;
+    left: 40px;
+    bottom: 40px;
+    color: #ffffff;
+    max-width: 520px;
+    z-index: 1;
+}
+
+.explore-carousel-text h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.explore-carousel-text p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0;
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+.explore-carousel-dots {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 2;
+}
+
+.explore-carousel-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.5);
+    transition: transform 200ms ease, background 200ms ease;
+}
+
+.explore-carousel-dots span.active {
+    background: #ffffff;
+    transform: scale(1.4);
+}
+
+@media (max-width: 768px) {
+    .explore-carousel-slide {
+        height: 300px;
+    }
+
+    .explore-carousel-text {
+        left: 20px;
+        bottom: 24px;
+        max-width: 320px;
+    }
+
+    .explore-carousel-text h2 {
+        font-size: 28px;
+    }
+
+    .explore-carousel-text p {
+        font-size: 14px;
+    }
 }
 
 
