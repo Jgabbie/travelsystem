@@ -10,8 +10,8 @@ const sendContactEmail = async (req, res) => {
     try {
         await transporter.sendMail({
             from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-            to: process.env.SENDER_EMAIL,
-            replyTo: email,
+            to: process.env.COMPANY_EMAIL, //use actual company email here
+            replyTo: process.env.COMPANY_EMAIL, //use actual company email here
             subject: `Contact Form Submission from ${name}`,
             html: `
                 <div style="font-family: Arial, sans-serif; color: #333;">

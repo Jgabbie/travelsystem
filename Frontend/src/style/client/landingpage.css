@@ -7,6 +7,7 @@
     width: 100%;
     position: relative;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    overflow-x: hidden;
 }
 
 .landingpage-footer {
@@ -727,6 +728,22 @@
     height: auto;
 }
 
+.ourservices-section {
+    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+}
+
+.text-underline {
+    width: 270px;
+    height: 4px;
+    background-color: #ffffff;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
 
 
 /* CONTACT US */
@@ -734,7 +751,6 @@
     display: flex;
     flex-direction: row;
     gap: 40px;
-    margin-top: 40px;
     padding: 0 16px;
     flex-wrap: wrap;
 }
@@ -767,6 +783,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.contactus-section-left {
+    margin-bottom: 50px;
 }
 
 .contactus-section-right-card {
@@ -807,6 +827,7 @@
 .contact-textarea {
     width: 80%;
     height: 100px;
+    resize: none !important;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -1224,6 +1245,22 @@
         max-width: 100%;
     }
 
+    .text-underline {
+        width: 270px;
+        height: 4px;
+        background-color: #ffffff;
+        display: block;
+        margin: 0 auto;
+        margin-top: 12px;
+        margin-bottom: 12px
+    }
+
+    .ourservices-section>div {
+        flex-direction: column !important;
+        gap: 20px !important;
+        align-items: center !important;
+    }
+
     .contactus-section {
         align-items: stretch;
         margin-left: 0;
@@ -1240,6 +1277,10 @@
         margin: 0 auto 20px;
         height: auto;
         padding: 16px 0;
+    }
+
+    .contact-label {
+        font-size: 16px;
     }
 
     .chatbot-modal .ant-modal {
@@ -1308,12 +1349,29 @@
         font-size: 24px;
     }
 
-    .aboutus-text {
+    .aboutus-text,
+    .contactus-text {
         font-size: 12px;
     }
 
     .contactus-text {
         margin-left: 0;
         margin-right: 0;
+    }
+
+    .contact-label {
+        font-size: 12px;
+    }
+
+    .explore-text {
+        font-size: 22px;
+    }
+
+    .text-underline {
+        width: 200px;
+        display: block;
+        margin: 0 auto;
+        margin-top: 12px;
+        margin-bottom: 12px
     }
 }

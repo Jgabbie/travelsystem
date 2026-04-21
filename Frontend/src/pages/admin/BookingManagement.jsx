@@ -361,7 +361,6 @@ export default function BookingManagement() {
             icon={<EyeOutlined />}
             onClick={() => handleView(record.key)}
           >
-            View
           </Button>
           <Button
             className='bookingmanagement-edit-button'
@@ -369,7 +368,6 @@ export default function BookingManagement() {
             icon={<EditOutlined />}
             onClick={() => edit(record)}
           >
-            Edit
           </Button>
           <Button
             className='bookingmanagement-remove-button'
@@ -380,7 +378,6 @@ export default function BookingManagement() {
               setIsDeleteModalOpen(true);
             }}
           >
-            Archive
           </Button>
         </Space>
       )

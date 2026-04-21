@@ -824,60 +824,67 @@ export default function VisaApplication() {
                                         {requirements.length === 0 && (
                                             <div>No requirements found for this service.</div>
                                         )}
-                                        {requirements.map((req, idx) => {
-                                            const requirementKey = req.key || req.req || `${req.label}-${idx}`;
-                                            const uploadedFile = requirementFiles[requirementKey]?.[0];
+                                        <div className="visa-requirements-grid">
+                                            {requirements.map((req, idx) => {
+                                                const requirementKey = req.key || req.req || `${req.label}-${idx}`;
+                                                const uploadedFile = requirementFiles[requirementKey]?.[0];
+                                                const isPdf = uploadedFile?.type === 'application/pdf' ||
+                                                    uploadedFile?.originFileObj?.type === 'application/pdf' ||
+                                                    uploadedFile?.name?.toLowerCase().endsWith('.pdf');
 
-                                            return (
-                                                <div style={{ marginBottom: 24 }} key={requirementKey}>
-                                                    <b>{req.req || req.label || `Requirement ${idx + 1}`}</b>
-                                                    <div style={{ marginTop: 8 }}>
-                                                        {!uploadedFile && (
-                                                            <Upload
-                                                                beforeUpload={beforeUpload}
-                                                                key={requirementKey}
-                                                                name={requirementKey}
-                                                                customRequest={handleUpload(requirementKey)}
-                                                                fileList={requirementFiles[requirementKey] || []}
-                                                                listType="text"
-                                                                accept="image/*,application/pdf"
-                                                                disabled={uploading}
-                                                                onPreview={handlePreview}
-                                                                maxCount={1}
-                                                                showUploadList={false}
-                                                            >
-                                                                <Button icon={<UploadOutlined />} className='visaapplication-upload-button' type='primary'>
-                                                                    Upload Requirement
+                                                return (
+                                                    <div className="visa-requirement-card" key={requirementKey}>
+                                                        <b style={{ fontSize: 12, height: 40, maxWidth: 220 }}>{req.req || req.label || `Requirement ${idx + 1}`}</b>
+                                                        {uploadedFile ? (
+                                                            isPdf ? (
+                                                                <Button
+                                                                    className="visa-requirement-file-preview-button"
+                                                                    type="dashed"
+                                                                    onClick={() => handlePreview(uploadedFile)}
+                                                                >
+                                                                    Open PDF
                                                                 </Button>
-                                                            </Upload>
-                                                        )}
-
-                                                        {uploadedFile?.url && (
-                                                            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                                                                {uploadedFile.name?.toLowerCase().endsWith('.pdf') || (uploadedFile.originFileObj?.type === 'application/pdf') ? (
-                                                                    <Button
-                                                                        type="dashed"
-                                                                        style={{ minWidth: 220 }}
-                                                                        onClick={() => handlePreview(uploadedFile)}
-                                                                        icon={<FilePdfOutlined />}
-                                                                    >
-                                                                        Preview PDF: {uploadedFile.name}
-                                                                    </Button>
-                                                                ) : (
+                                                            ) : (
+                                                                <div className="visa-requirement-placeholder">
                                                                     <Image
-                                                                        src={uploadedFile.url}
+                                                                        src={uploadedFile.url || uploadedFile.preview}
                                                                         alt={req.req || req.label || `Requirement ${idx + 1}`}
-                                                                        style={{ maxWidth: 220, cursor: 'pointer' }}
                                                                         preview={false}
+                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                                         onClick={() => handlePreview(uploadedFile)}
                                                                     />
-                                                                )}
+                                                                </div>
+                                                            )
+                                                        ) : (
+                                                            <div className="visa-requirement-placeholder">
+                                                                <span className="visa-requirement-placeholder-text">No file</span>
+                                                            </div>
+                                                        )}
+                                                        <div style={{ marginTop: 8 }}>
+                                                            {!uploadedFile ? (
+                                                                <Upload
+                                                                    beforeUpload={beforeUpload}
+                                                                    key={requirementKey}
+                                                                    name={requirementKey}
+                                                                    customRequest={handleUpload(requirementKey)}
+                                                                    fileList={requirementFiles[requirementKey] || []}
+                                                                    listType="text"
+                                                                    accept="image/*,application/pdf"
+                                                                    disabled={uploading}
+                                                                    onPreview={handlePreview}
+                                                                    maxCount={1}
+                                                                    showUploadList={false}
+                                                                >
+                                                                    <Button icon={<UploadOutlined />} className='visaapplication-upload-button' type='primary'>
+                                                                        Upload Requirement
+                                                                    </Button>
+                                                                </Upload>
+                                                            ) : (
                                                                 <Button
                                                                     className='visaapplication-removefile-button'
                                                                     icon={<DeleteOutlined />}
                                                                     type="primary"
                                                                     onClick={() => {
-                                                                        // Remove the uploaded file for this requirement
                                                                         const newFiles = { ...requirementFiles };
                                                                         newFiles[requirementKey] = [];
                                                                         setRequirementFiles(newFiles);
@@ -885,12 +892,12 @@ export default function VisaApplication() {
                                                                 >
                                                                     Remove
                                                                 </Button>
-                                                            </div>
-                                                        )}
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            })}
+                                        </div>
                                         <Button style={{ marginTop: 20 }} type="primary" className='visaapplication-submit-button' onClick={confirmSubmitDocuments}>
                                             Submit Documents
                                         </Button>

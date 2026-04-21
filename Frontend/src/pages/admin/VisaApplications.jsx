@@ -280,7 +280,6 @@ export default function VisaApplications() {
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`${basePath}/visa-applications/view`, { state: { applicationId: record.key } })}
                         >
-                            View
                         </Button>
                         {showArchived ? (
                             <Button
@@ -292,7 +291,6 @@ export default function VisaApplications() {
                                     setIsRestoreModalOpen(true);
                                 }}
                             >
-                                Restore
                             </Button>
                         ) : (
                             <Button
@@ -304,7 +302,6 @@ export default function VisaApplications() {
                                     setIsDeleteModalOpen(true);
                                 }}
                             >
-                                Archive
                             </Button>
                         )}
                     </Space>

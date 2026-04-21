@@ -29,7 +29,7 @@
   text-decoration: none;
   padding: 12px 14px;
   border-radius: 2px;
-  font-size: 14px;
+  font-size: 12px;
   transition: 0.2s;
 }
 
@@ -42,13 +42,13 @@
 }
 
 .nav-badge {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
   border-radius: 999px;
   background: #ff4d4f;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 9px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;

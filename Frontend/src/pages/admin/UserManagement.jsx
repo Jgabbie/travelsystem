@@ -280,7 +280,6 @@ export default function UserManagement() {
               setIsViewModalOpen(true);
             }}
           >
-            View
           </Button>
 
           <Button
@@ -289,7 +288,6 @@ export default function UserManagement() {
             icon={<EditOutlined />}
             onClick={() => edit(record)}
           >
-            Edit
           </Button>
 
           <Button
@@ -301,7 +299,6 @@ export default function UserManagement() {
               setIsDeleteModalOpen(true)
             }}
           >
-            Archive
           </Button>
         </Space >
       )

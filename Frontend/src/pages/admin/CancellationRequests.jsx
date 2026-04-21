@@ -328,7 +328,6 @@ export default function CancellationRequests() {
                         icon={<EyeOutlined />}
                         onClick={() => openViewModal(record)}
                     >
-                        View
                     </Button>
                     {showArchived ? (
                         <Button
@@ -340,7 +339,6 @@ export default function CancellationRequests() {
                                 setIsRestoreModalOpen(true)
                             }}
                         >
-                            Restore
                         </Button>
                     ) : (
                         <>
@@ -350,7 +348,6 @@ export default function CancellationRequests() {
                                 icon={<CheckOutlined />}
                                 onClick={() => showConfirmModal(record, 'Approve')}
                             >
-                                Approve
                             </Button>
                             <Button
                                 className="cancellations-reject-button"
@@ -358,7 +355,6 @@ export default function CancellationRequests() {
                                 icon={<CloseOutlined />}
                                 onClick={() => showConfirmModal(record, 'Reject')}
                             >
-                                Reject
                             </Button>
                             <Button
                                 className="cancellations-reject-button"
@@ -369,7 +365,6 @@ export default function CancellationRequests() {
                                     setIsDeleteModalOpen(true)
                                 }}
                             >
-                                Archive
                             </Button>
                         </>
                     )}

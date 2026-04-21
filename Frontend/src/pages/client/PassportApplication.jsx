@@ -1009,109 +1009,261 @@ export default function PassportApplication() {
                                 {application?.status && application?.status?.toLowerCase() === 'payment complete' && (
                                     <Card title="Upload Requirements">
 
-                                        <div style={{ marginBottom: 24 }}>
-                                            <b>PSA-issued Birth Certificate</b>
-                                            <div style={{ marginTop: 8 }}>
-                                                {birthCertList.length === 0 ? (
-                                                    <Upload
-                                                        name="birthCert"
-                                                        fileList={birthCertList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
-                                                        showUploadList={false}
-                                                        accept="image/*,application/pdf"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                    >
-                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Requirement
-                                                        </Button>
-                                                    </Upload>
+                                        <div className="passport-requirements-grid">
+                                            <div className="passport-requirement-card">
+                                                <b style={{ fontSize: 12, height: 40 }}>PSA-issued Birth Certificate</b>
+                                                {birthCertList[0] ? (
+                                                    (() => {
+                                                        const file = birthCertList[0];
+                                                        const isPdf = file.type === 'application/pdf' ||
+                                                            file.originFileObj?.type === 'application/pdf' ||
+                                                            file.name?.toLowerCase().endsWith('.pdf');
+                                                        return isPdf ? (
+                                                            <Button
+                                                                className='passport-requirement-file-preview-button'
+                                                                type="dashed"
+                                                                onClick={() => handlePreview(file)}
+                                                            >
+                                                                Open PDF
+                                                            </Button>
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <Image
+                                                                    src={file.preview || file.url}
+                                                                    alt="PSA-issued Birth Certificate"
+                                                                    preview={false}
+                                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                    onClick={() => handlePreview(file)}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })()
                                                 ) : (
-                                                    renderFilePreview(birthCertList, setBirthCertList)
+                                                    <div className="passport-requirement-placeholder">
+                                                        <span className="passport-requirement-placeholder-text">No file</span>
+                                                    </div>
                                                 )}
-
-
+                                                <div style={{ marginTop: 8 }}>
+                                                    {birthCertList.length === 0 ? (
+                                                        <Upload
+                                                            name="birthCert"
+                                                            fileList={birthCertList}
+                                                            onPreview={handlePreview}
+                                                            onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
+                                                            showUploadList={false}
+                                                            accept="image/*,application/pdf"
+                                                            maxCount={1}
+                                                            disabled={uploading}
+                                                            beforeUpload={() => false}
+                                                            customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        >
+                                                            <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                Upload Requirement
+                                                            </Button>
+                                                        </Upload>
+                                                    ) : (
+                                                        <Button
+                                                            className='passportapplication-removefile-button'
+                                                            icon={<DeleteOutlined />}
+                                                            type="primary"
+                                                            onClick={() => setBirthCertList([])}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div style={{ marginBottom: 24 }}>
-                                            <b>Application Form</b>
-                                            <div style={{ marginTop: 8 }}>
-                                                {applicationFormList.length === 0 ? (
-                                                    <Upload
-                                                        name="applicationForm"
-                                                        fileList={applicationFormList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
-                                                        showUploadList={false}
-                                                        accept="image/*,application/pdf"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                    >
-                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Requirement
-                                                        </Button>
-                                                    </Upload>
+                                            <div className="passport-requirement-card">
+                                                <b style={{ fontSize: 12, height: 40 }}>Application Form</b>
+                                                {applicationFormList[0] ? (
+                                                    (() => {
+                                                        const file = applicationFormList[0];
+                                                        const isPdf = file.type === 'application/pdf' ||
+                                                            file.originFileObj?.type === 'application/pdf' ||
+                                                            file.name?.toLowerCase().endsWith('.pdf');
+                                                        return isPdf ? (
+                                                            <Button
+                                                                className='passport-requirement-file-preview-button'
+                                                                type="dashed"
+                                                                onClick={() => handlePreview(file)}
+                                                            >
+                                                                Open PDF
+                                                            </Button>
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <Image
+                                                                    src={file.preview || file.url}
+                                                                    alt="Application Form"
+                                                                    preview={false}
+                                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                    onClick={() => handlePreview(file)}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })()
                                                 ) : (
-                                                    renderFilePreview(applicationFormList, setApplicationFormList)
+                                                    <div className="passport-requirement-placeholder">
+                                                        <span className="passport-requirement-placeholder-text">No file</span>
+                                                    </div>
                                                 )}
+                                                <div style={{ marginTop: 8 }}>
+                                                    {applicationFormList.length === 0 ? (
+                                                        <Upload
+                                                            name="applicationForm"
+                                                            fileList={applicationFormList}
+                                                            onPreview={handlePreview}
+                                                            onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
+                                                            showUploadList={false}
+                                                            accept="image/*,application/pdf"
+                                                            maxCount={1}
+                                                            disabled={uploading}
+                                                            beforeUpload={() => false}
+                                                            customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        >
+                                                            <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                Upload Requirement
+                                                            </Button>
+                                                        </Upload>
+                                                    ) : (
+                                                        <Button
+                                                            className='passportapplication-removefile-button'
+                                                            icon={<DeleteOutlined />}
+                                                            type="primary"
+                                                            onClick={() => setApplicationFormList([])}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div style={{ marginBottom: 24 }}>
-                                            <b>One Government-issued ID</b>
-                                            <div style={{ marginTop: 8 }}>
-                                                {govIdList.length === 0 ? (
-                                                    <Upload
-                                                        name="govId"
-                                                        fileList={govIdList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
-                                                        showUploadList={false}
-                                                        accept="image/*,application/pdf"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                    >
-                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Requirement
-                                                        </Button>
-                                                    </Upload>
+                                            <div className="passport-requirement-card">
+                                                <b style={{ fontSize: 12, height: 40 }}>One Government-issued ID</b>
+                                                {govIdList[0] ? (
+                                                    (() => {
+                                                        const file = govIdList[0];
+                                                        const isPdf = file.type === 'application/pdf' ||
+                                                            file.originFileObj?.type === 'application/pdf' ||
+                                                            file.name?.toLowerCase().endsWith('.pdf');
+                                                        return isPdf ? (
+                                                            <Button
+                                                                className='passport-requirement-file-preview-button'
+                                                                type="dashed"
+                                                                onClick={() => handlePreview(file)}
+                                                            >
+                                                                Open PDF
+                                                            </Button>
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <Image
+                                                                    src={file.preview || file.url}
+                                                                    alt="Government-issued ID"
+                                                                    preview={false}
+                                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                    onClick={() => handlePreview(file)}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })()
                                                 ) : (
-                                                    renderFilePreview(govIdList, setGovIdList)
+                                                    <div className="passport-requirement-placeholder">
+                                                        <span className="passport-requirement-placeholder-text">No file</span>
+                                                    </div>
                                                 )}
+                                                <div style={{ marginTop: 8 }}>
+                                                    {govIdList.length === 0 ? (
+                                                        <Upload
+                                                            name="govId"
+                                                            fileList={govIdList}
+                                                            onPreview={handlePreview}
+                                                            onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
+                                                            showUploadList={false}
+                                                            accept="image/*,application/pdf"
+                                                            maxCount={1}
+                                                            disabled={uploading}
+                                                            beforeUpload={() => false}
+                                                            customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        >
+                                                            <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                Upload Requirement
+                                                            </Button>
+                                                        </Upload>
+                                                    ) : (
+                                                        <Button
+                                                            className='passportapplication-removefile-button'
+                                                            icon={<DeleteOutlined />}
+                                                            type="primary"
+                                                            onClick={() => setGovIdList([])}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div style={{ marginBottom: 24 }}>
-                                            <b>Additional Documents (optional)</b>
-                                            <div style={{ marginTop: 8 }}>
-                                                {additionalDocsList.length === 0 ? (
-                                                    <Upload
-                                                        name="additionalDocs"
-                                                        fileList={additionalDocsList}
-                                                        onPreview={handlePreview}
-                                                        onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
-                                                        showUploadList={false}
-                                                        accept="image/*,application/pdf"
-                                                        maxCount={1}
-                                                        disabled={uploading}
-                                                        beforeUpload={() => false}
-                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                    >
-                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                            Upload Requirement
-                                                        </Button>
-                                                    </Upload>
+                                            <div className="passport-requirement-card">
+                                                <b style={{ fontSize: 12, height: 40 }}>Additional Documents (optional)</b>
+                                                {additionalDocsList[0] ? (
+                                                    (() => {
+                                                        const file = additionalDocsList[0];
+                                                        const isPdf = file.type === 'application/pdf' ||
+                                                            file.originFileObj?.type === 'application/pdf' ||
+                                                            file.name?.toLowerCase().endsWith('.pdf');
+                                                        return isPdf ? (
+                                                            <Button
+                                                                className='passport-requirement-file-preview-button'
+                                                                type="dashed"
+                                                                onClick={() => handlePreview(file)}
+                                                            >
+                                                                Open PDF
+                                                            </Button>
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <Image
+                                                                    src={file.preview || file.url}
+                                                                    alt="Additional Documents"
+                                                                    preview={false}
+                                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                    onClick={() => handlePreview(file)}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })()
                                                 ) : (
-                                                    renderFilePreview(additionalDocsList, setAdditionalDocsList)
+                                                    <div className="passport-requirement-placeholder">
+                                                        <span className="passport-requirement-placeholder-text">No file</span>
+                                                    </div>
                                                 )}
+                                                <div style={{ marginTop: 8 }}>
+                                                    {additionalDocsList.length === 0 ? (
+                                                        <Upload
+                                                            name="additionalDocs"
+                                                            fileList={additionalDocsList}
+                                                            onPreview={handlePreview}
+                                                            onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
+                                                            showUploadList={false}
+                                                            accept="image/*,application/pdf"
+                                                            maxCount={1}
+                                                            disabled={uploading}
+                                                            beforeUpload={() => false}
+                                                            customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                        >
+                                                            <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                Upload Requirement
+                                                            </Button>
+                                                        </Upload>
+                                                    ) : (
+                                                        <Button
+                                                            className='passportapplication-removefile-button'
+                                                            icon={<DeleteOutlined />}
+                                                            type="primary"
+                                                            onClick={() => setAdditionalDocsList([])}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
 

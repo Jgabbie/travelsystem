@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Spin, Empty, Button, Image, Modal } from 'antd'
-import { FacebookFilled, InstagramFilled, HeartFilled } from '@ant-design/icons'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, Button, Image, Modal, message } from 'antd'
+import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
 import apiFetch from '../../config/fetchConfig'
@@ -21,6 +21,7 @@ export default function DestinationsPackages() {
     const [travelersValue, setTravelersValue] = useState(null)
     const [loading, setLoading] = useState(false)
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
+    const [wishlistEntryMap, setWishlistEntryMap] = useState(() => new Map())
 
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
     const [chatMessage, setChatMessage] = useState('')
@@ -86,31 +87,110 @@ export default function DestinationsPackages() {
         fetchPackages()
     }, [])
 
+    const fetchWishlist = useCallback(async () => {
+        if (!auth) {
+            setWishlistedIds(new Set())
+            setWishlistEntryMap(new Map())
+            return
+        }
+
+        try {
+            const response = await apiFetch.get('/wishlist')
+            const wishlist = response?.wishlist || []
+            const ids = new Set()
+            const entryMap = new Map()
+
+            wishlist.forEach((entry) => {
+                const packageId = entry?.packageId?._id || entry?.packageId
+                if (!packageId) return
+                const packageKey = String(packageId)
+                ids.add(packageKey)
+                if (entry?._id) {
+                    entryMap.set(packageKey, String(entry._id))
+                }
+            })
+
+            setWishlistedIds(ids)
+            setWishlistEntryMap(entryMap)
+        } catch (error) {
+            console.error('Failed to load wishlist:', error)
+            setWishlistedIds(new Set())
+            setWishlistEntryMap(new Map())
+        }
+    }, [auth])
+
     useEffect(() => {
-        const fetchWishlist = async () => {
-            if (!auth) {
-                setWishlistedIds(new Set())
+        fetchWishlist()
+    }, [fetchWishlist])
+
+    const resolveWishlistEntryId = useCallback(async (packageKey) => {
+        const cachedId = wishlistEntryMap.get(packageKey)
+        if (cachedId) return cachedId
+
+        try {
+            const response = await apiFetch.get('/wishlist')
+            const wishlist = response?.wishlist || []
+            const entry = wishlist.find((item) => {
+                const entryPackageId = item?.packageId?._id || item?.packageId
+                return entryPackageId && String(entryPackageId) === packageKey
+            })
+            return entry?._id ? String(entry._id) : null
+        } catch (error) {
+            console.error('Failed to resolve wishlist entry:', error)
+            return null
+        }
+    }, [wishlistEntryMap])
+
+    const handleWishlistToggle = useCallback(async (event, packageId) => {
+        event?.stopPropagation()
+
+        if (!auth) {
+            message.info('Please log in to manage your wishlist.')
+            return
+        }
+
+        const packageKey = String(packageId)
+        const isWishlisted = wishlistedIds.has(packageKey)
+
+        if (isWishlisted) {
+            const wishlistId = await resolveWishlistEntryId(packageKey)
+            if (!wishlistId) {
+                message.error('Unable to remove wishlist item.')
                 return
             }
 
             try {
-                const response = await apiFetch.get('/wishlist')
-                const wishlist = response?.wishlist || []
-                const ids = new Set(
-                    wishlist
-                        .map((entry) => entry?.packageId?._id || entry?.packageId)
-                        .filter(Boolean)
-                        .map((id) => String(id))
-                )
-                setWishlistedIds(ids)
+                await apiFetch.delete(`/wishlist/remove/${wishlistId}`)
+                setWishlistedIds((prev) => {
+                    const next = new Set(prev)
+                    next.delete(packageKey)
+                    return next
+                })
+                setWishlistEntryMap((prev) => {
+                    const next = new Map(prev)
+                    next.delete(packageKey)
+                    return next
+                })
+                message.success('Removed from wishlist')
             } catch (error) {
-                console.error('Failed to load wishlist:', error)
-                setWishlistedIds(new Set())
+                const errorMessage =
+                    error?.data?.message || 'Unable to remove wishlist item.'
+                message.error(errorMessage)
             }
+
+            return
         }
 
-        fetchWishlist()
-    }, [auth])
+        try {
+            await apiFetch.post('/wishlist/add', { packageId: packageKey })
+            message.success('Added to wishlist')
+            await fetchWishlist()
+        } catch (error) {
+            const errorMessage =
+                error?.data?.message || 'Unable to add to wishlist. Please try again.'
+            message.error(errorMessage)
+        }
+    }, [auth, fetchWishlist, resolveWishlistEntryId, wishlistedIds])
 
 
     //gets the values from the search bar from the landing page and sets the filters based on the configuration of the user
@@ -241,9 +321,14 @@ export default function DestinationsPackages() {
                     </div>
 
                     <div className="destinations-controls">
+                        {/* <header className="destinations-controls-header">
+                            <Title level={2}>Filter By</Title>
+                        </header> */}
+
                         <Row gutter={[16, 16]} className="destinations-filter-grid">
                             <Col xs={24} md={12} xl={6}>
                                 <div className="filter-field">
+
                                     <Text className="destinations-label">Budget (₱)</Text>
                                     <div className="filter-range-inputs">
                                         <InputNumber
@@ -403,7 +488,7 @@ export default function DestinationsPackages() {
                         ) : (
                             <Row gutter={[18, 18]}>
                                 {filteredPackages.map((pkg) => (
-                                    <Col xs={24} sm={12} lg={8} key={pkg.id}>
+                                    <Col xs={24} sm={12} lg={12} xl={12} key={pkg.id}>
                                         <Card
                                             className={`destinations-card${pkg.availableSlots <= 0 ? ' destinations-card-disabled' : ''}`}
                                             hoverable={pkg.availableSlots > 0}
@@ -419,69 +504,86 @@ export default function DestinationsPackages() {
                                                     <div className="destinations-card-image-placeholder">No Image</div>
                                                 )}
                                             </div>
-                                            <div className="destinations-card-header">
-                                                <div>
-                                                    <Title level={5} className="destinations-card-title">
-                                                        {pkg.packageName}
-                                                    </Title>
-                                                    <Text type="secondary">{pkg.packageType}</Text>
+                                            <div className="destinations-card-content">
+                                                <div className="destinations-card-header">
+                                                    <div>
+                                                        <Title level={5} className="destinations-card-title">
+                                                            {pkg.packageName}
+                                                        </Title>
+                                                    </div>
                                                 </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                    {wishlistedIds.has(String(pkg.id)) && (
-                                                        <HeartFilled style={{ color: '#cf1322', fontSize: 16 }} />
-                                                    )}
-                                                    {pkg.discountPercent > 0 && (
-                                                        <Tag color="red">-{pkg.discountPercent}%</Tag>
-                                                    )}
-                                                    <Tag className="destinations-rating">⭐ {pkg.rating.toFixed(1)}</Tag>
+                                                <div className="destinations-card-meta">
+                                                    <Tag className="destinations-type">{pkg.packageType}</Tag>
+                                                    <Tag className="destinations-status-tag">
+                                                        {pkg.availableSlots > 0 ? 'AVAILABLE' : 'UNAVAILABLE'}
+                                                    </Tag>
+                                                    <Text type="secondary">{pkg.days} days</Text>
                                                 </div>
-                                            </div>
-                                            <div className="destinations-card-meta">
-                                                <Tag className="destinations-type">{pkg.packageType}</Tag>
-                                                <Tag color={pkg.availableSlots > 0 ? 'green' : 'red'}>
-                                                    {pkg.availableSlots > 0 ? 'AVAILABLE' : 'UNAVAILABLE'}
-                                                </Tag>
-                                                <Text type="secondary">{pkg.days} days</Text>
-                                            </div>
-                                            <div className="destinations-card-meta">
-                                                <Text type="secondary">Slots: {pkg.availableSlots}</Text>
-                                            </div>
-                                            <div className="destinations-card-activities">
-                                                {pkg.tags?.map((tag) => (
-                                                    <Tag key={tag}>{tag}</Tag>
-                                                ))}
-                                            </div>
-                                            <div className="destinations-card-footer">
-                                                {pkg.discountPercent > 0 && (
-                                                    <Text
-                                                        delete
-                                                        className="destinations-price"
-                                                        style={{ color: '#9aa0a6', marginRight: 8 }}
-                                                    >
-                                                        ₱{(
-                                                            Number.isFinite(travelersValue) && travelersValue > 0
-                                                                ? pkg.budget * travelersValue
-                                                                : pkg.budget
-                                                        ).toLocaleString()}
-                                                    </Text>
-                                                )}
-                                                <Text className="destinations-price">
-                                                    ₱{(
-                                                        Number.isFinite(travelersValue) && travelersValue > 0
-                                                            ? pkg.discountedBudget * travelersValue
-                                                            : pkg.discountedBudget
-                                                    ).toLocaleString()}
-                                                    {Number.isFinite(travelersValue) && travelersValue > 0
-                                                        ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
-                                                        : ''}
-                                                </Text>
-                                                <Text className="destinations-budget">
-                                                    {Number.isFinite(travelersValue) && travelersValue > 0
-                                                        ? 'Total Budget'
-                                                        : pkg.discountPercent > 0
-                                                            ? 'Discounted / Pax'
-                                                            : 'Budget / Pax'}
-                                                </Text>
+
+                                                <div className="destinations-card-activities">
+                                                    {pkg.tags?.map((tag) => (
+                                                        <Tag key={tag}>{tag}</Tag>
+                                                    ))}
+                                                </div>
+                                                <div className="destinations-card-footer">
+                                                    <div className="destinations-card-pricing">
+                                                        {pkg.discountPercent > 0 && (
+                                                            <Text
+                                                                delete
+                                                                className="destinations-price destinations-price-old"
+                                                            >
+                                                                ₱{(
+                                                                    Number.isFinite(travelersValue) && travelersValue > 0
+                                                                        ? pkg.budget * travelersValue
+                                                                        : pkg.budget
+                                                                ).toLocaleString()}
+                                                            </Text>
+                                                        )}
+                                                        <Text className="destinations-price">
+                                                            ₱{(
+                                                                Number.isFinite(travelersValue) && travelersValue > 0
+                                                                    ? pkg.discountedBudget * travelersValue
+                                                                    : pkg.discountedBudget
+                                                            ).toLocaleString()}
+                                                            {Number.isFinite(travelersValue) && travelersValue > 0
+                                                                ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
+                                                                : ''}
+                                                        </Text>
+                                                        <Text className="destinations-budget">
+                                                            {Number.isFinite(travelersValue) && travelersValue > 0
+                                                                ? 'Total Budget'
+                                                                : pkg.discountPercent > 0
+                                                                    ? 'Discounted / Pax'
+                                                                    : 'Budget / Pax'}
+                                                        </Text>
+                                                    </div>
+
+                                                </div>
+                                                <div className="destinations-card-badges">
+                                                    <div className="destinations-card-meta">
+                                                        <Text type="secondary">Slots: {pkg.availableSlots}</Text>
+                                                    </div>
+                                                    <Space style={{}}>
+                                                        {pkg.discountPercent > 0 && (
+                                                            <Tag className="destinations-discount-tag">-{pkg.discountPercent}%</Tag>
+                                                        )}
+                                                        <Tag className="destinations-rating">⭐ {pkg.rating.toFixed(1)}</Tag>
+                                                        <button
+                                                            type="button"
+                                                            className="destinations-wishlist-btn"
+                                                            onClick={(event) => handleWishlistToggle(event, pkg.id)}
+                                                            aria-label={wishlistedIds.has(String(pkg.id))
+                                                                ? 'Remove from wishlist'
+                                                                : 'Add to wishlist'}
+                                                        >
+                                                            {wishlistedIds.has(String(pkg.id)) ? (
+                                                                <HeartFilled style={{ color: '#cf1322', fontSize: 25, marginTop: 5 }} />
+                                                            ) : (
+                                                                <HeartOutlined style={{ color: '#305797', fontSize: 25, marginTop: 5 }} />
+                                                            )}
+                                                        </button>
+                                                    </Space>
+                                                </div>
                                             </div>
                                         </Card>
                                     </Col>

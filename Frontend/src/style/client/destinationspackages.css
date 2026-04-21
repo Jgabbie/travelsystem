@@ -36,8 +36,8 @@
     max-width: 1280px;
     margin: 0 auto 24px;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border: 2px solid #d5d8da;
+    border-radius: 8px;
     padding: 18px 20px;
     box-shadow: 0 12px 28px rgba(31, 42, 68, 0.08);
     display: grid;
@@ -48,8 +48,8 @@
     max-width: 1280px;
     margin: 0 auto 16px;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border: 2px solid #d5d8da;
+    border-radius: 8px;
     padding: 16px 20px;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     display: flex;
@@ -157,23 +157,25 @@
     border: 1px solid #e2e8f0;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     height: 100%;
+    overflow: hidden;
 }
 
 .destinations-card .ant-card-body {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 18px;
+    gap: 16px;
+    padding: 16px;
     height: 100%;
 }
 
 .destinations-card-image {
-    width: 100%;
-    height: 160px;
+    flex: 0 0 260px;
+    height: 242px;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 .destinations-card-image img {
@@ -201,18 +203,35 @@
     gap: 12px;
 }
 
+.destinations-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    padding: 20px;
+}
+
+.destinations-card-badges {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .destinations-card-title {
     margin: 0 !important;
     font-size: 16px !important;
     font-family: "Montserrat", sans-serif;
-    color: #1f2a44 !important;
+    color: #305797 !important;
 }
 
 .destinations-rating {
     font-size: 13px;
     font-weight: 600;
-    color: #d97706;
-    background: #fff7ed;
+    color: #305797;
+    background: #edf1fb;
     padding: 4px 8px;
     border-radius: 999px;
     white-space: nowrap;
@@ -223,40 +242,105 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #305797;
 }
 
 .destinations-type {
-    background: #eef2ff;
+    background: #edf1fb;
     color: #305797;
     border: none;
     font-weight: 600;
 }
 
+.destinations-discount-tag {
+    background: #305797;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.destinations-status-tag {
+    background: #edf1fb;
+    border: none;
+    color: #305797;
+    font-weight: 600;
+}
+
 .destinations-card-activities .ant-tag {
     border-radius: 999px;
-    background: #f1f5f9;
+    background: #edf1fb;
     border: none;
     font-size: 11px;
-    color: #4b5563;
+    color: #305797;
     margin-bottom: 6px;
 }
 
 .destinations-card-footer {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     margin-top: auto;
+}
+
+.destinations-card-pricing {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.destinations-card .ant-card-body {
+    padding: 0 !important;
 }
 
 .destinations-price {
     font-size: 16px;
     font-weight: 700;
-    color: #1f2a44;
+    color: #305797;
+    margin-bottom: 5px;
+}
+
+.destinations-price-old {
+    font-size: 13px;
+    color: rgba(48, 87, 151, 0.6) !important;
 }
 
 .destinations-budget {
     font-size: 12px;
-    color: #6b7280;
+    color: rgba(48, 87, 151, 0.7);
+}
+
+.destinations-card .ant-typography {
+    color: #305797;
+}
+
+.destinations-card .ant-typography-secondary {
+    color: #305797;
+}
+
+.destinations-card-cta {
+    border-radius: 999px;
+    height: 36px;
+    padding: 0 18px;
+    font-weight: 600;
+    background: #305797;
+    border-color: #305797;
+}
+
+.destinations-wishlist-btn {
+    border: none;
+    background: transparent;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.destinations-wishlist-btn:focus-visible {
+    outline: 2px solid rgba(48, 87, 151, 0.4);
+    outline-offset: 2px;
+    border-radius: 999px;
 }
 
 .destinations-inputs:hover,
@@ -349,6 +433,14 @@
 
     .filter-range-separator {
         text-align: center;
+    }
+
+    .destinations-card .ant-card-body {
+        flex-direction: column;
+    }
+
+    .destinations-card-image {
+        width: 100%;
     }
 }
 

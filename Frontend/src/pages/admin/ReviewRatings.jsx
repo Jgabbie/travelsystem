@@ -282,7 +282,6 @@ export default function ReviewRatings() {
                             setIsDeleteModalOpen(true);
                         }}
                     >
-                        Archive
                     </Button>
                 )
             ),

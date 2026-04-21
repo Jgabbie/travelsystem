@@ -304,7 +304,6 @@ export default function QuotationManagement() {
                         icon={<EyeOutlined />}
                         onClick={() => handleView(record.key)}
                     >
-                        View
                     </Button>
                     {showArchived ? (
                         <Button
@@ -316,7 +315,6 @@ export default function QuotationManagement() {
                                 setIsRestoreModalOpen(true);
                             }}
                         >
-                            Restore
                         </Button>
                     ) : (
                         <Button
@@ -328,7 +326,6 @@ export default function QuotationManagement() {
                                 setIsDeleteModalOpen(true);
                             }}
                         >
-                            Archive
                         </Button>
                     )}
                 </Space>

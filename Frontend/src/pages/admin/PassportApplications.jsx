@@ -285,7 +285,6 @@ export default function PassportApplications() {
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`view`, { state: { applicationId: record.key } })}
                         >
-                            View
                         </Button>
                         {showArchived ? (
                             <Button
@@ -297,7 +296,7 @@ export default function PassportApplications() {
                                     setIsRestoreModalOpen(true);
                                 }}
                             >
-                                Restore
+
                             </Button>
                         ) : (
                             <Button
@@ -309,7 +308,6 @@ export default function PassportApplications() {
                                     setIsDeleteModalOpen(true);
                                 }}
                             >
-                                Archive
                             </Button>
                         )}
                     </Space>

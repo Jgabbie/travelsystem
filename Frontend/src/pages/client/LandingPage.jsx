@@ -644,40 +644,43 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 60, paddingRight: 20, paddingLeft: 20 }}>
-                        <h2 className='explore-text' style={{ fontSize: 45, fontWeight: 'bold', marginBottom: 5, paddingBottom: 0 }}>THE <span style={{ color: '#305797' }}>SERVICES</span> WE OFFER</h2>
-                        <div style={{ display: 'flex', gap: '50px', flexDirection: 'row', marginTop: 100, justifyContent: 'center' }}>
+                    <div className='ourservices-section' >
+                        <h2 className='explore-text' style={{ fontSize: 45, fontWeight: 'bold', marginBottom: 5, paddingBottom: 0, lineHeight: 1.2 }}>THE <span style={{ color: '#305797' }}>SERVICES</span> WE OFFER</h2>
+
+                        <div style={{ display: 'flex', gap: '50px', flexDirection: 'row', marginTop: 70, justifyContent: 'center' }}>
+
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img src='/images/Packages_Logo.png' alt="Tour Package" width="65" height="65" />
-                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
-                                <p style={{ textAlign: 'center' }}>
+                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Tour Packages</h4>
+                                <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img src='/images/Passport_Logo.png' alt="Tour Package" width="65" height="65" />
-                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Passport Assistance</h4>
-                                <p style={{ textAlign: 'center' }}>
+                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Passport Assistance</h4>
+                                <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img src='/images/Visa_Logo.png' alt="Tour Package" width="65" height="65" />
-                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Visa Assistance</h4>
-                                <p style={{ textAlign: 'center' }}>
+                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Visa Assistance</h4>
+                                <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <img src='/images/Quotation_Logo.png' alt="Tour Package" width="65" height="65" />
-                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Quotations</h4>
-                                <p style={{ textAlign: 'center' }}>
+                                <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Quotations</h4>
+                                <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
                             </div>
+
                         </div>
                     </div>
 
@@ -701,7 +704,7 @@ export default function LandingPage() {
                         <div className='aboutus-text-col'>
                             <div className='aboutus-text-wrap'>
                                 <h1 className='explore-text' style={{ color: '#ffffff', marginBottom: 0, paddingBottom: 0 }}>About Us</h1>
-                                <div style={{ width: '270px', height: '4px', backgroundColor: '#ffffff', marginBottom: '20px', marginTop: 20 }}></div>
+                                <div className='text-underline'></div>
 
                                 <p className='aboutus-text' style={{ color: '#ffffff' }}>
                                     M&RC Travel and Tours humbly started travel business in July 2018 when two vibrant entrepreneur, traveler,
@@ -746,7 +749,7 @@ export default function LandingPage() {
                         <div className='aboutus-vision-mission'>
                             <div style={{ marginBottom: 40 }}>
                                 <h2 className='explore-text' style={{ color: '#ffffff', marginBottom: 0, paddingBottom: 0 }}>Our Vision</h2>
-                                <div style={{ width: '270px', height: '4px', backgroundColor: '#ffffff', marginBottom: '20px', marginTop: 20 }}></div>
+                                <div className='text-underline'></div>
                                 <p className='aboutus-text' style={{ color: '#ffffff' }}>
                                     Our Vision is to be the preferred travel
                                     and tours agency in the country offering
@@ -758,7 +761,7 @@ export default function LandingPage() {
 
                             <div>
                                 <h2 className='explore-text' style={{ color: '#ffffff', marginBottom: 0, paddingBottom: 0 }}>Our Mission</h2>
-                                <div style={{ width: '270px', height: '4px', backgroundColor: '#ffffff', marginBottom: '20px', marginTop: 20 }}></div>
+                                <div className='text-underline'></div>
                                 <p className='aboutus-text' style={{ color: '#ffffff' }}>
                                     We are committed to provide value-added travel
                                     solutions to our Customers by offering good service
@@ -790,8 +793,7 @@ export default function LandingPage() {
 
                     <div className='aboutus-accreditation'>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 60 }}>
-                            <h2 className='explore-text' style={{ fontSize: 45, fontWeight: 'bold', marginBottom: 5, paddingBottom: 0 }}>WHY <span style={{ color: '#305797' }}>BOOK</span> WITH US?</h2>
-                            <h4 style={{ width: 650, textAlign: 'center' }}>We are a company accredited by the Department of Tourism (DOT) of the Philippines and Philippine Government Electronic Procurement System (PhilGEPS)</h4>
+                            <h2 className='explore-text' style={{ fontSize: 45, fontWeight: 'bold', marginBottom: 5, paddingBottom: 0, lineHeight: 1.2 }}>WHY <span style={{ color: '#305797' }}>BOOK</span> WITH US?</h2>
                         </div>
 
 
@@ -827,11 +829,12 @@ export default function LandingPage() {
                 </div>
 
 
-                <div style={{ paddingTop: '25px', marginTop: '50px' }}>
+                <div style={{ paddingTop: '25px' }}>
                     <div className='contactus-container'>
                         <div className='contactus-section'>
                             <div className='contactus-section-left'>
-                                <h1 className='explore-text'>Contact Us</h1>
+                                <h1 className='explore-text' style={{ marginBottom: 0, paddingBottom: 0 }}>Contact Us</h1>
+                                <div className='text-underline' style={{ backgroundColor: '#000000' }}></div>
                                 <p className='contactus-text'>
                                     Have questions or need assistance? Our friendly customer support team is here to help you with all your travel needs. Whether you’re looking for more information about our tour packages, need help with booking, or want to customize your itinerary, we’re just a message away. Contact us today and let us make your travel dreams a reality!
                                 </p>
@@ -887,6 +890,7 @@ export default function LandingPage() {
                                     />
                                     {contactErrors.email && <span className="error-text">{contactErrors.email}</span>}
                                     <Input.TextArea
+                                        resize="none"
                                         placeholder="Your Message"
                                         className='contact-textarea'
                                         rows={4}

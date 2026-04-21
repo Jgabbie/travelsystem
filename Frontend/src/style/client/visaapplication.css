@@ -88,7 +88,7 @@
     height: 30px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
-    margin-top: 7px;
+
 }
 
 .visaapplication-removefile-button:hover {
@@ -104,4 +104,94 @@
 .visaapplication-submitdate-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
+}
+
+.visa-requirements-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.visa-requirement-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.visa-requirement-placeholder {
+    width: 220px;
+    height: 220px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.visa-requirement-placeholder-text {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.visa-requirement-file-preview-button {
+    width: 220px;
+    height: 220px;
+    border: 1px dashed #94a3b8 !important;
+    border-radius: 12px;
+    background: transparent;
+    color: #305797;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 1024px) {
+    .visa-requirements-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .visa-requirement-placeholder,
+    .visa-requirement-file-preview-button {
+        width: 260px;
+        height: 260px;
+    }
+
+    .visaapplication-upload-button,
+    .visaapplication-removefile-button {
+        width: 260px;
+    }
+}
+
+@media (max-width: 768px) {
+    .visa-requirements-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .visa-requirement-placeholder,
+    .visa-requirement-file-preview-button {
+        width: 300px;
+        height: 300px;
+    }
+
+    .visaapplication-upload-button,
+    .visaapplication-removefile-button {
+        width: 300px;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .visa-requirement-placeholder,
+    .visa-requirement-file-preview-button {
+        width: 320px;
+        height: 320px;
+    }
+
+    .visaapplication-upload-button,
+    .visaapplication-removefile-button {
+        width: 320px;
+    }
 }

@@ -412,7 +412,6 @@ export default function TransactionManagement() {
             icon={<EyeOutlined />}
             onClick={() => openViewModal(record)}
           >
-            View
           </Button>
           <Button
             className="transactionmanagement-edit-button"
@@ -420,7 +419,6 @@ export default function TransactionManagement() {
             icon={<EditOutlined />}
             onClick={() => edit(record)}
           >
-            Edit
           </Button>
           <Button
             className="transactionmanagement-remove-button"
@@ -431,7 +429,6 @@ export default function TransactionManagement() {
               setIsDeleteModalOpen(true);
             }}
           >
-            Archive
           </Button>
           {record.methodRaw === "Manual" && record.proofImage && (
             <Button
@@ -440,7 +437,6 @@ export default function TransactionManagement() {
               icon={<FileOutlined />}
               onClick={() => openProofModal(record)}
             >
-              View Proof
             </Button>
           )}
         </Space>
