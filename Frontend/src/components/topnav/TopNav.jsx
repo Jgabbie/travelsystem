@@ -102,7 +102,6 @@ export default function TopNav() {
           />
           <div className="admin-logo-section">
             <img src={"/images/Logo.png"} alt="Logo" className="logo-img" />
-            <div className="brand">TRAVEX M&RC Travel and Tours</div>
           </div>
 
 

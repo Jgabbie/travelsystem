@@ -198,7 +198,6 @@ export default function TopNavUser() {
                 <nav className="navbar">
                     <div className="logo-section">
                         <img src={"/images/Logo.png"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
-                        <span>TRAVEX: M&RC Travel and Tours</span>
                     </div>
 
                     {/* if authenticated, show username, if not, then show signup and login button links */}

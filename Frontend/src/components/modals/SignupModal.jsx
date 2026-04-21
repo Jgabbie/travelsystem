@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Button, Modal, Input, ConfigProvider, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/signupmodal.css';
-import { checkDuplicates } from '../../api/signup/authApi';
 import apiFetch from '../../config/fetchConfig';
 
 

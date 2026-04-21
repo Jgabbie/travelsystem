@@ -646,38 +646,34 @@ export default function LandingPage() {
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 60, paddingRight: 20, paddingLeft: 20 }}>
                         <h2 className='explore-text' style={{ fontSize: 45, fontWeight: 'bold', marginBottom: 5, paddingBottom: 0 }}>THE <span style={{ color: '#305797' }}>SERVICES</span> WE OFFER</h2>
-                        <div style={{ display: 'flex', gap: '50px', flexDirection: 'row', marginTop: 20 }}>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <img>
-                                </img>
+                        <div style={{ display: 'flex', gap: '50px', flexDirection: 'row', marginTop: 100, justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <img src='/images/Packages_Logo.png' alt="Tour Package" width="65" height="65" />
                                 <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
                                 <p style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <img>
-                                </img>
-                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <img src='/images/Passport_Logo.png' alt="Tour Package" width="65" height="65" />
+                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Passport Assistance</h4>
                                 <p style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <img>
-                                </img>
-                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <img src='/images/Visa_Logo.png' alt="Tour Package" width="65" height="65" />
+                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Visa Assistance</h4>
                                 <p style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <img>
-                                </img>
-                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Tour Packages</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <img src='/images/Quotation_Logo.png' alt="Tour Package" width="65" height="65" />
+                                <h4 style={{ marginTop: 20, textAlign: 'center' }}>Quotations</h4>
                                 <p style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
                                 </p>

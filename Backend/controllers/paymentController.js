@@ -1,4 +1,4 @@
-const axios = require("axios");
+
 const crypto = require('crypto');
 const transporter = require('../config/nodemailer')
 const dayjs = require('dayjs');
@@ -14,6 +14,8 @@ const PassportModel = require("../models/passport");
 const VisaModel = require("../models/visas");
 const QuotationModel = require("../models/quotations")
 const logAction = require('../utils/logger')
+const apiFetch = require('../config/fetchConfig');
+const axios = require('axios');
 
 
 const parseAmount = (value) => {
@@ -765,7 +767,7 @@ const createCheckoutSessionPassport = async (req, res) => {
             totalAmountCents: finalTotalCents,
         };
 
-        const response = await axios.post(
+        const response = await apiFetch.post(
             "https://api.paymongo.com/v1/checkout_sessions",
             {
                 data: {
@@ -806,13 +808,7 @@ const createCheckoutSessionPassport = async (req, res) => {
             }
         );
 
-        // Then safely extract checkout URL
-        if (response.status !== 200) {
-            console.error("PayMongo API Error:", response.data);
-            return res.status(500).json({ error: "Failed to create checkout session" });
-        }
-
-        res.json(response.data);
+        res.json(response);
 
     } catch (error) {
         console.error("Passport Checkout Error:", error.response?.data || error.message);
@@ -866,7 +862,7 @@ const createCheckoutSessionVisa = async (req, res) => {
             totalAmountCents: finalTotalCents,
         };
 
-        const response = await axios.post(
+        const response = await apiFetch.post(
             "https://api.paymongo.com/v1/checkout_sessions",
             {
                 data: {
@@ -907,13 +903,7 @@ const createCheckoutSessionVisa = async (req, res) => {
             }
         );
 
-        // Then safely extract checkout URL
-        if (response.status !== 200) {
-            console.error("PayMongo API Error:", response.data);
-            return res.status(500).json({ error: "Failed to create checkout session" });
-        }
-
-        res.json(response.data);
+        res.json(response);
 
     } catch (error) {
         console.error("Visa Checkout Error:", error.response?.data || error.message);
@@ -973,7 +963,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
             totalAmountCents: finalTotalCents
         };
 
-        const response = await axios.post(
+        const response = await apiFetch.post(
             "https://api.paymongo.com/v1/checkout_sessions",
             {
                 data: {
@@ -1015,12 +1005,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
         );
 
 
-        if (response.status !== 200) {
-            console.error("PayMongo API Error:", response.data);
-            return res.status(500).json({ error: "Failed to create checkout session" });
-        }
-
-        res.json(response.data);
+        res.json(response);
     } catch (error) {
         console.error("PayMongo error:", error.response?.data || error.message);
         res.status(500).json({ error: error.response?.data || error.message });
@@ -1082,7 +1067,7 @@ const createCheckoutSession = async (req, res) => {
         };
 
 
-        const response = await axios.post(
+        const response = await apiFetch.post(
             "https://api.paymongo.com/v1/checkout_sessions",
             {
                 data: {
@@ -1124,12 +1109,7 @@ const createCheckoutSession = async (req, res) => {
         );
 
 
-        if (response.status !== 200) {
-            console.error("PayMongo API Error:", response.data);
-            return res.status(500).json({ error: "Failed to create checkout session" });
-        }
-
-        res.json(response.data);
+        res.json(response);
     } catch (error) {
         console.error("PayMongo error:", error.response?.data || error.message);
         res.status(500).json({ error: error.response?.data || error.message });
@@ -1192,7 +1172,7 @@ const createCheckoutSessionQuotation = async (req, res) => {
         };
 
 
-        const response = await axios.post(
+        const response = await apiFetch.post(
             "https://api.paymongo.com/v1/checkout_sessions",
             {
                 data: {
@@ -1233,12 +1213,7 @@ const createCheckoutSessionQuotation = async (req, res) => {
             }
         );
 
-        if (response.status !== 200) {
-            console.error("PayMongo API Error:", response.data);
-            return res.status(500).json({ error: "Failed to create checkout session" });
-        }
-
-        res.json(response.data);
+        res.json(response);
     } catch (error) {
         console.error("PayMongo error:", error.response?.data || error.message);
         res.status(500).json({ error: error.response?.data || error.message });
@@ -1328,7 +1303,7 @@ const handlePayMongoWebhook = async (req, res) => {
         // If we have a session ID, we can make an API call to PayMongo to retrieve the full session details, which should include the metadata we set when creating the checkout session. This is important because sometimes the metadata in the webhook event might be incomplete or missing, so fetching the session details ensures we have all the information we need to process the payment correctly.
         if (sessionId) {
             try {
-                const sessionResponse = await axios.get(
+                const sessionResponse = await apiFetch.get(
                     `https://api.paymongo.com/v1/checkout_sessions/${sessionId}`,
                     {
                         headers: {
@@ -1338,11 +1313,11 @@ const handlePayMongoWebhook = async (req, res) => {
                         },
                     }
                 );
-                sessionAttributes = sessionResponse.data?.data?.attributes;
+                sessionAttributes = sessionResponse?.data?.attributes;
                 metadata = sessionAttributes?.metadata || {};
                 console.log('✅ Session metadata:', metadata);
             } catch (err) {
-                console.log('❌ Failed to fetch session:', err.response?.data || err.message);
+                console.log('❌ Failed to fetch session:', err.data || err.message);
             }
         }
 
