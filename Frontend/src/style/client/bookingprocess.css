@@ -21,22 +21,23 @@
 /* PAGE CONTAINER AND WHOLE PAGE CSS */
 .bookingprocess-container {
     padding: 40px;
-    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    background: #f4f6fb;
 }
 
 .booking-section {
     margin: 40px;
     padding: 32px;
-    border-radius: 24px;
-    border: 1px solid #e0e7ff;
-    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+    border-radius: 4px;
+    background: #ffffff;
+    border: 2px solid #d5d8da;
+    box-shadow: 0 16px 30px rgba(31, 42, 68, 0.08);
 }
 
 .booking-section-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    gap: 16px;
+    align-items: flex-start;
+    flex-direction: column;
     margin-bottom: 24px;
     flex-wrap: wrap;
 }
@@ -72,6 +73,13 @@
     color: #6b7486;
 }
 
+.card-title-secondary {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    color: #1f2a44;
+    margin: 8px 0 6px;
+}
+
 .card-pill {
     display: inline-flex;
     align-items: center;
@@ -94,24 +102,195 @@
 }
 
 .booking-section .booking-summary-images {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
-    flex-wrap: wrap;
 }
 
 .booking-section .booking-summary-image {
-    width: 320px;
-    height: 200px;
+    width: 100%;
+    height: 180px;
     object-fit: cover;
     border-radius: 16px;
-    border: 1px solid #e7ecf7;
+    border: 1px solid #e5e7eb;
     box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+}
+
+.booking-section .booking-summary-image:first-child {
+    grid-column: 1 / -1;
+    height: 280px;
+}
+
+.booking-summary-hero {
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.booking-summary-hero-image-wrap {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+    background: #e5e7eb;
+}
+
+.booking-summary-hero-image {
+    width: 100%;
+    height: 560px;
+    object-fit: cover;
+    display: block;
+}
+
+.booking-summary-hero-placeholder {
+    height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    font-weight: 600;
+    background: #f3f4f6;
+}
+
+.booking-summary-hero-bar {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
+    padding: 16px 20px;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+    display: grid;
+    gap: 8px;
+}
+
+.booking-summary-hero-bar .booking-summary-hero-title {
+    font-size: 20px;
+}
+
+.booking-summary-pill.is-muted {
+    color: #4e5b72;
+    background: rgba(78, 91, 114, 0.12);
+}
+
+.booking-summary-hero-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 22px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.booking-summary-hero-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.booking-summary-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #305797;
+    background: rgba(48, 87, 151, 0.12);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.booking-summary-hero-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.booking-summary-hero-subtitle {
+    margin: 0;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.booking-summary-gallery {
+    margin-bottom: 24px;
+}
+
+.booking-summary-section-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #1f2a44;
+    margin: 0 0 12px;
+}
+
+.booking-summary-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.booking-summary-gallery-image {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.booking-summary-gallery-empty {
+    grid-column: 1 / -1;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px dashed #cbd5f5;
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.booking-summary-overview-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.booking-summary-overview-text {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.booking-summary-content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 24px;
+    margin-top: 24px;
+    align-items: start;
+}
+
+.booking-summary-card-title {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.booking-summary-card-flat {
+    margin: 0;
+    border: none;
+    box-shadow: none;
 }
 
 .booking-section .booking-summary-card {
     background: #ffffff;
     border-radius: 20px;
     padding: 24px;
-    border: 1px solid #e7ecf7;
+    border: 1px solid #e5e7eb;
     box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
 }
 
@@ -271,16 +450,17 @@
     margin: 40px;
     padding: 32px;
     border-radius: 24px;
-    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
-    border: 1px solid #e0e7ff;
-    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 16px 30px rgba(31, 42, 68, 0.08);
 }
 
 .itinerary-section-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    gap: 16px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
     margin-bottom: 24px;
     flex-wrap: wrap;
 }
@@ -308,10 +488,106 @@
 .itinerary-card,
 .inclusions-exclusions-card {
     background: #ffffff;
-    border-radius: 20px;
     padding: 24px;
-    border: 1px solid #e7ecf7;
-    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+
+}
+
+@media (max-width: 1024px) {
+    .bookingprocess-container {
+        padding: 32px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin: 24px;
+        padding: 28px;
+    }
+
+    .booking-summary-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-overview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .bookingprocess-container {
+        padding: 24px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin: 20px;
+        padding: 24px;
+    }
+
+    .booking-section .booking-summary-images {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .booking-section .booking-summary-image:first-child {
+        height: 240px;
+    }
+
+    .itinerary-inclusions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .bookingprocess-container {
+        padding: 16px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin: 16px;
+        padding: 20px;
+    }
+
+    .booking-section .booking-summary-images {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-section .booking-summary-image:first-child {
+        height: 220px;
+    }
+
+    .booking-summary-gallery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-hero-image,
+    .booking-summary-hero-placeholder {
+        height: 240px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bookingprocess-container {
+        padding: 12px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin: 12px;
+        padding: 16px;
+    }
+
+    .booking-section-title,
+    .itinerary-section-title {
+        font-size: 22px;
+    }
 }
 
 .itinerary-list {
@@ -331,6 +607,26 @@
     color: #1f2a44;
     margin-bottom: 10px;
     font-size: 14px;
+    cursor: pointer;
+}
+
+.itinerary-day-label::after {
+    content: "+";
+    font-weight: 700;
+    color: #305797;
+}
+
+.itinerary-day[open] .itinerary-day-label::after {
+    content: "-";
+}
+
+.itinerary-day>summary::-webkit-details-marker {
+    display: none;
+}
+
+.itinerary-day>.itinerary-items,
+.itinerary-day>.itinerary-empty {
+    margin-top: 12px;
 }
 
 .itinerary-items,
@@ -369,6 +665,25 @@
 .exclusions-list li::before {
     background: #b54747;
     box-shadow: 0 0 0 3px rgba(181, 71, 71, 0.14);
+}
+
+.upload-passport-traveler-fields .ant-input,
+.upload-passport-traveler-fields .ant-select-selector,
+.upload-passport-traveler-fields .ant-picker {
+    min-height: 42px;
+    font-size: 14px;
+}
+
+.upload-passport-traveler-fields .ant-input {
+    padding: 8px 12px;
+}
+
+.upload-passport-traveler-fields .ant-select-selector {
+    padding: 4px 12px !important;
+}
+
+.upload-passport-traveler-fields .ant-picker {
+    padding: 6px 12px;
 }
 
 .itinerary-empty {

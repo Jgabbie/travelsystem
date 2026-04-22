@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin } from 'antd';
 import { CheckCircleFilled, HeartFilled, HeartOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../hooks/useAuth';
 import dayjs from 'dayjs';
@@ -485,6 +485,29 @@ export default function PackagePage() {
         : basePackagePricePerPax
     const isWishlisted = Boolean(resolvedPackageId && wishlistedIds.has(String(resolvedPackageId)))
     const hasUserReview = Boolean(userReview)
+    const packageLocation = packageData?.packageDestination || packageData?.packageLocation || packageData?.packageCountry || packageData?.packageOrigin
+    const packageCategory = packageData?.packageCategory || packageData?.packageType
+    const nextAvailableDate = useMemo(() => {
+        const dates = packageData?.packageSpecificDate || []
+        const parsed = dates
+            .map((entry) => dayjs(entry?.date))
+            .filter((date) => date.isValid())
+            .sort((a, b) => a.valueOf() - b.valueOf())
+
+        if (!parsed.length) return 'Flexible'
+        return parsed[0].format('MMM D, YYYY')
+    }, [packageData])
+    const totalSlots = useMemo(() => {
+        return (packageData?.packageSpecificDate || []).reduce(
+            (sum, date) => sum + Number(date?.slots || 0),
+            0
+        )
+    }, [packageData])
+    const heroImages = useMemo(() => {
+        const images = packageData?.images || []
+        if (!images.length) return []
+        return [images[0], images[1] || images[0], images[2] || images[0]]
+    }, [packageData])
 
     return (
         <ConfigProvider
@@ -500,57 +523,120 @@ export default function PackagePage() {
                     <div className="packagepage-container">
                         <div className="package-box">
                             <div className="package-left">
-                                <div className="package-title-group">
-                                    <h1 className="package-title">{packageData?.packageName || 'Package Details'}</h1>
-                                    {packageData?.packageDuration && (
-                                        <p className="package-duration">{packageData.packageDuration} days</p>
-                                    )}
-                                </div>
-
-
-                                <div className="package-actions-left">
-                                    <Button
-                                        type='primary'
-                                        className="package-action-secondary"
-                                        icon={isWishlisted ? <HeartFilled /> : <HeartOutlined />}
-                                        onClick={handleWishlistClick}
-                                    >
-                                        Add to Wishlist
-                                    </Button>
-                                    <Button
-                                        type='primary'
-                                        className="package-action-outline"
-                                        icon={hasUserReview ? <StarFilled /> : <StarOutlined />}
-                                        onClick={() => setShowReviews((prev) => !prev)}
-                                    >
-                                        {showReviews ? 'Back to Details' : 'Review and Ratings'}
-                                    </Button>
-                                </div>
-
-                                <div className="package-left-content">
-                                    <div className="package-description">
-                                        {packageLoading ? (
-                                            <p>Loading package details...</p>
-                                        ) : packageError ? (
-                                            <p>{packageError}</p>
-                                        ) : (
-                                            <p>{packageData?.packageDescription || 'No description available.'}</p>
+                                <div className="package-header">
+                                    <div className="package-title-group">
+                                        <h1 className="package-title">{packageData?.packageName || 'Package Details'}</h1>
+                                        {packageData?.packageDuration && (
+                                            <p className="package-duration">{packageData.packageDuration} days</p>
                                         )}
                                     </div>
 
-                                    <div className="package-image-section">
-                                        {packageData?.images ? (
+                                    <div className="package-actions-left">
+                                        <Button
+                                            type='primary'
+                                            className="package-action-secondary"
+                                            icon={isWishlisted ? <HeartFilled /> : <HeartOutlined />}
+                                            onClick={handleWishlistClick}
+                                        >
+                                            Add to Wishlist
+                                        </Button>
+                                        <Button
+                                            type='primary'
+                                            className="package-action-outline"
+                                            icon={hasUserReview ? <StarFilled /> : <StarOutlined />}
+                                            onClick={() => setShowReviews((prev) => !prev)}
+                                        >
+                                            {showReviews ? 'Back to Details' : 'Review and Ratings'}
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="package-meta-row">
+                                    <span className="package-rating-chip">
+                                        <StarFilled />
+                                        {averageRating ? averageRating.toFixed(1) : '0.0'} ({reviews.length} reviews)
+                                    </span>
+                                </div>
+
+                                <div className="package-gallery">
+                                    <div className="package-gallery-main">
+                                        {heroImages[0] ? (
                                             <img
                                                 className="package-image"
                                                 draggable={false}
-                                                alt={packageData.packageName}
-                                                src={packageData.images[0]}
+                                                alt={packageData?.packageName || 'Package image'}
+                                                src={heroImages[0]}
+                                            />
+                                        ) : (
+                                            <div className="package-image-placeholder">No image available</div>
+                                        )}
+                                    </div>
+                                    <div className="package-gallery-grid">
+                                        {heroImages[1] ? (
+                                            <img
+                                                className="package-image"
+                                                draggable={false}
+                                                alt={`${packageData?.packageName || 'Package'} preview 1`}
+                                                src={heroImages[1]}
+                                            />
+                                        ) : (
+                                            <div className="package-image-placeholder">No image available</div>
+                                        )}
+                                        {heroImages[2] ? (
+                                            <img
+                                                className="package-image"
+                                                draggable={false}
+                                                alt={`${packageData?.packageName || 'Package'} preview 2`}
+                                                src={heroImages[2]}
                                             />
                                         ) : (
                                             <div className="package-image-placeholder">No image available</div>
                                         )}
                                     </div>
                                 </div>
+
+                                <div className="package-detail-section">
+                                    <h3>Package Details</h3>
+                                    <div className="package-detail-grid">
+                                        {packageData?.packageDuration && (
+                                            <div className="package-detail-item">
+                                                <span>Duration</span>
+                                                <strong>{packageData.packageDuration} days</strong>
+                                            </div>
+                                        )}
+                                        <div className="package-detail-item">
+                                            <span>Type</span>
+                                            <strong>{packageData?.packageType?.toUpperCase() || 'Flexible'}</strong>
+                                        </div>
+                                        <div className="package-detail-item">
+                                            <span>Deposit</span>
+                                            <strong>₱{Number(packageData?.packageDeposit || 0).toLocaleString()}</strong>
+                                        </div>
+                                        <div className="package-detail-item">
+                                            <span>Visa</span>
+                                            <strong>{packageData?.visaRequired ? 'Required' : 'Not required'}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="package-description">
+                                    {packageLoading ? (
+                                        <p>Loading package details...</p>
+                                    ) : packageError ? (
+                                        <p>{packageError}</p>
+                                    ) : (
+                                        <p>{packageData?.packageDescription || 'No description available.'}</p>
+                                    )}
+                                </div>
+
+                                {!showReviews && (
+                                    <Tabs
+                                        className="package-tabs"
+                                        defaultActiveKey="1"
+                                        size="large"
+                                        items={itemsTab}
+                                    />
+                                )}
                             </div>
 
                             <div className="package-right">
@@ -748,6 +834,16 @@ export default function PackagePage() {
                                                     </span>
                                                 )}
                                             </div>
+                                            <div className="package-side-meta">
+                                                <div className="package-side-row">
+                                                    <span>Slots</span>
+                                                    <strong>{totalSlots > 0 ? totalSlots : 'Sold out'}</strong>
+                                                </div>
+                                                <div className="package-side-row">
+                                                    <span>Deposit</span>
+                                                    <strong>₱{Number(packageData?.packageDeposit || 0).toLocaleString()}</strong>
+                                                </div>
+                                            </div>
                                             <Button disabled={(() => {
                                                 if (packageLoading || !packageData) return true;
                                                 const totalSlots = (packageData.packageSpecificDate || []).reduce((sum, d) => sum + Number(d.slots || 0), 0);
@@ -756,13 +852,6 @@ export default function PackagePage() {
                                                 Check Availability
                                             </Button>
                                         </div>
-
-                                        <Tabs
-                                            className="package-tabs"
-                                            defaultActiveKey="1"
-                                            size="large"
-                                            items={itemsTab}
-                                        />
                                     </>
                                 )}
                             </div>

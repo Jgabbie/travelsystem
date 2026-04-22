@@ -129,6 +129,10 @@ export default function BookingProcess() {
 
     const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
     const packageName = data.packageName || 'Tour Package'
+    const packageDescription =
+        data.packageDescription ||
+        data.packageShortDescription ||
+        'Secure a memorable trip with curated stays, activities, and guided experiences.'
     const packageType = data.packageType || 'fixed'
     const isDomesticPackage = String(packageType || '').toLowerCase().includes('domestic')
     const travelDocumentLabel = isDomesticPackage ? 'Valid ID' : 'Passport'
@@ -626,74 +630,82 @@ export default function BookingProcess() {
 
                 {/* BOOKING SUMMARY SECTION */}
                 <div className="booking-summary-container booking-section">
-                    <div className="booking-section-header">
-                        <h2 className='booking-summary-title booking-section-title'>Booking Summary</h2>
-                        <p className="upload-passport-text booking-section-subtitle">
-                            Kindly check the details of your booking before proceeding.
-                        </p>
-                    </div>
                     <div className="booking-summary-wrapper">
-
-                        {/* Images Row */}
-                        <div className="booking-summary-images">
-                            {images.map((img, index) => (
-                                <img key={index} className="booking-summary-image" src={img} alt="tour" />
-                            ))}
+                        <div className="booking-summary-hero">
+                            <div className="booking-summary-hero-image-wrap">
+                                {images[0] ? (
+                                    <img className="booking-summary-hero-image" src={images[0]} alt={packageName} />
+                                ) : (
+                                    <div className="booking-summary-hero-placeholder">No image available</div>
+                                )}
+                                <div className="booking-summary-hero-bar">
+                                    <div className="booking-summary-hero-meta">
+                                        <span className="booking-summary-pill">{packageType?.toUpperCase()}</span>
+                                    </div>
+                                    <h3 className="booking-summary-hero-title">{packageName}</h3>
+                                    <p className="booking-summary-hero-subtitle">{packageDescription}</p>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* New Split Content Grid */}
-                        <div className="booking-summary-content-grid" style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 350px',
-                            gap: '24px',
-                            marginTop: '24px',
-                            alignItems: 'start'
-                        }}>
+                        <div className="booking-summary-gallery">
+                            <h3 className="booking-summary-section-title">Gallery</h3>
+                            <div className="booking-summary-gallery-grid">
+                                {(images.length > 1 ? images.slice(1, 4) : []).map((img, index) => (
+                                    <img key={index} className="booking-summary-gallery-image" src={img} alt={`${packageName} ${index + 2}`} />
+                                ))}
+                                {images.length <= 1 && (
+                                    <div className="booking-summary-gallery-empty">No additional images</div>
+                                )}
+                            </div>
+                        </div>
 
-                            {/* Left Column: Detailed Info */}
-                            <div className="booking-summary-card" style={{ margin: 0 }}>
-                                <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-                                    Booking Details
-                                </h3>
+                        <div className="booking-summary-overview-grid">
+                            <div className="booking-summary-overview">
+                                <h3 className="booking-summary-section-title">Overview</h3>
+                                <p className="booking-summary-overview-text">
+                                    Confirm your tour package, travel dates, and traveler details before proceeding.
+                                </p>
 
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Tour Package</span>
-                                    <span className="booking-summary-value"><strong>{packageName}</strong></span>
+                                <div className="booking-summary-card-flat">
+                                    <h4 className="booking-summary-card-title">Booking Details</h4>
+
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Tour Package</span>
+                                        <span className="booking-summary-value"><strong>{packageName}</strong></span>
+                                    </div>
+
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Booking Type</span>
+                                        <span className="booking-summary-value">
+                                            {selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'}
+                                        </span>
+                                    </div>
+
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Travel Date</span>
+                                        <span className="booking-summary-value">
+                                            {`${dayjs(bookingData.travelDate.startDate).format('MMMM D, YYYY')} - ${dayjs(bookingData.travelDate.endDate).format('MMMM D, YYYY')}` || 'Not set'}
+                                        </span>
+                                    </div>
+
+                                    <div className='booking-summary-row'>
+                                        <span className="booking-summary-label">Airline / Hotel</span>
+                                        <span className="booking-summary-value">
+                                            {airlineOptions[0]?.name || 'N/A'} • {hotelOptions[0]?.name || 'N/A'}
+                                        </span>
+                                    </div>
+
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Travelers</span>
+                                        <span className="booking-summary-value">
+                                            {travelersDisplay}
+                                        </span>
+                                    </div>
                                 </div>
-
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Booking Type</span>
-                                    <span className="booking-summary-value">
-                                        {selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'}
-                                    </span>
-                                </div>
-
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Travel Date</span>
-                                    <span className="booking-summary-value">
-                                        {`${dayjs(bookingData.travelDate.startDate).format('MMMM D, YYYY')} - ${dayjs(bookingData.travelDate.endDate).format('MMMM D, YYYY')}` || 'Not set'}
-                                    </span>
-                                </div>
-
-                                <div className='booking-summary-row'>
-                                    <span className="booking-summary-label">Airline / Hotel</span>
-                                    <span className="booking-summary-value">
-                                        {airlineOptions[0]?.name || 'N/A'} • {hotelOptions[0]?.name || 'N/A'}
-                                    </span>
-                                </div>
-
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Travelers</span>
-                                    <span className="booking-summary-value">
-                                        {travelersDisplay}
-                                    </span>
-                                </div>
-
-
                             </div>
 
-                            {/* Right Column: Pricing Summary Card */}
-                            <div className="booking-summary-card price-highlight-card" >
+                            <div className="booking-summary-card price-highlight-card">
                                 <span className='booking-summary-total-amount-label'>
                                     Total Amount
                                 </span>
@@ -805,12 +817,10 @@ export default function BookingProcess() {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* SOLO AND GROUP SELECTION */}
-                <div className='bookingprocess-sologroup-container booking-section'>
 
-                    <div className="solo-group-content">
+
+                    <div className="solo-group-content" style={{ marginTop: 40 }}>
 
                         <div style={{
                             display: 'flex',
@@ -837,7 +847,7 @@ export default function BookingProcess() {
                             >
                                 <div className="solo-group-image solo" />
                                 <h3>Single Supplement / Solo Booking</h3>
-                                <p>Book for yourself with a single traveler setup.</p>
+                                <p className="booking-summary-overview-text">Book for yourself with a single traveler setup.</p>
                                 <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
                             </button>
 
@@ -852,17 +862,18 @@ export default function BookingProcess() {
                             >
                                 <div className="solo-group-image group" />
                                 <h3>Grouped Booking</h3>
-                                <p>Plan a trip for a group with shared activities.</p>
+                                <p className="booking-summary-overview-text">Plan a trip for a group with shared activities.</p>
                                 <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: Group booking should have a minimum of 2 travelers.</p>
                             </button>
                         </div>
                     </div>
-                </div>
 
-                {/* TRAVELER COUNTER */}
-                {selectedSoloGrouped === 'group' && (
-                    <div className='travelers-container booking-section'>
-                        <div className="travelers-content">
+
+
+                    {/* TRAVELER COUNTER */}
+                    {selectedSoloGrouped === 'group' && (
+
+                        <div className="travelers-content" style={{ marginTop: 40 }}>
                             <h3 className="travelers-title booking-section-title" style={{ textAlign: "left" }}>
                                 Number of Travelers
                             </h3>
@@ -930,12 +941,10 @@ export default function BookingProcess() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
 
-                {/* ITINERARY, INCLUSIONS AND EXCLUSIONS */}
-                <div className='itinerary-inclusions-exclusions'>
-                    <div className='itinerary-section-header'>
+                    )}
+
+                    <div className='itinerary-section-header' style={{ marginTop: 40 }}>
                         <h2 className='itinerary-section-title'>Itinerary, Inclusions & Exclusions</h2>
                         <p className='itinerary-section-subtitle'>Review the day-by-day schedule and what your package covers.</p>
                     </div>
@@ -951,8 +960,8 @@ export default function BookingProcess() {
                             {itineraryEntries.length ? (
                                 <div className='itinerary-list'>
                                     {itineraryEntries.map((day) => (
-                                        <div key={day.key} className='itinerary-day'>
-                                            <div className='itinerary-day-label'>{day.label}</div>
+                                        <details key={day.key} className='itinerary-day'>
+                                            <summary className='itinerary-day-label'>{day.label}</summary>
                                             {day.items.length ? (
                                                 <ul className='itinerary-items'>
                                                     {day.items.map((item, index) => (
@@ -961,7 +970,7 @@ export default function BookingProcess() {
                                                                 item
                                                             ) : (
                                                                 <>
-                                                                    <div>{item.activity}</div>
+                                                                    <div style={{ marginTop: 3 }}>{item.activity}</div>
 
                                                                     {item.isOptional && item.optionalActivity && (
                                                                         <div>
@@ -977,7 +986,7 @@ export default function BookingProcess() {
                                             ) : (
                                                 <p className='itinerary-empty'>No activities listed.</p>
                                             )}
-                                        </div>
+                                        </details>
                                     ))}
                                 </div>
                             ) : (
@@ -998,7 +1007,7 @@ export default function BookingProcess() {
                                     {inclusions.length ? (
                                         <ul className='inclusions-list'>
                                             {inclusions.map((item, index) => (
-                                                <li key={`inc-${index}`}>{item}</li>
+                                                <li key={`inc-${index}`}> <div style={{ marginTop: 3 }}>{item}</div></li>
                                             ))}
                                         </ul>
                                     ) : (
@@ -1011,7 +1020,7 @@ export default function BookingProcess() {
                                     {exclusions.length ? (
                                         <ul className='exclusions-list'>
                                             {exclusions.map((item, index) => (
-                                                <li key={`exc-${index}`}>{item}</li>
+                                                <li key={`exc-${index}`}> <div style={{ marginTop: 3 }}>{item}</div></li>
                                             ))}
                                         </ul>
                                     ) : (
@@ -1021,7 +1030,7 @@ export default function BookingProcess() {
                             </div>
 
                             <div className='exclusions-card' style={{ marginTop: '20px' }}>
-                                <h2 >Visa Requirement</h2>
+                                <h2 className='card-title-secondary'>Visa Requirement</h2>
                                 <p className='booking-section-subtitle'>
                                     {requiresVisa
                                         ? 'Please be informed that this package requires a visa. Please ensure you have a valid visa before travel.'
@@ -1030,7 +1039,7 @@ export default function BookingProcess() {
                             </div>
 
                             <div className='exclusions-card' style={{ marginTop: '20px' }}>
-                                <h2 >Cancellation Policy</h2>
+                                <h2 className='card-title-secondary'>Cancellation Policy</h2>
                                 <p className='booking-section-subtitle'>
                                     Please be informed that cancellation request with medical reasons are only accepted and refundable with valid medical certificate.
                                     Cancellation request without medical reasons are non-refundable.
@@ -1039,11 +1048,8 @@ export default function BookingProcess() {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* UPLOAD PASSPORT AND 2BY2 PHOTO */}
-                <div className='upload-passport-container booking-section'>
-                    <div className="booking-section-header">
+                    <div className="booking-section-header" style={{ marginTop: 40 }}>
                         <h2 className="upload-passport-title booking-section-title">Upload {travelDocumentLabel}</h2>
                         <p className="upload-passport-text booking-section-subtitle">
                             Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
@@ -1064,83 +1070,32 @@ export default function BookingProcess() {
                                     </p>
                                     <div className="upload-passport-traveler-fields">
                                         <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
-                                            <Select
-                                                size="small"
-                                                placeholder="Title"
-                                                value={form.getFieldValue(['travelers', index, 'title'])}
-                                                onChange={(value) => updateTravelerField(index, 'title', value)}
-                                                options={[
-                                                    { value: 'MR', label: 'MR' },
-                                                    { value: 'MS', label: 'MS' },
-                                                ]}
-                                            />
-                                            <Input
-                                                maxLength={50}
-                                                size="small"
-                                                placeholder="First name"
-                                                value={form.getFieldValue(['travelers', index, 'firstName'])}
-                                                onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
-                                                onKeyDown={(e) => {
-                                                    const regex = /^[A-Za-z\s'-]$/;
-
-                                                    if (
-                                                        e.key.length === 1 &&
-                                                        !regex.test(e.key)
-                                                    ) {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                            />
-                                            <Input
-                                                maxLength={50}
-                                                size="small"
-                                                placeholder="Last name"
-                                                value={form.getFieldValue(['travelers', index, 'lastName'])}
-                                                onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
-                                                onKeyDown={(e) => {
-                                                    const regex = /^[A-Za-z\s'-]$/;
-
-                                                    if (
-                                                        e.key.length === 1 &&
-                                                        !regex.test(e.key)
-                                                    ) {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
-                                            <Select
-                                                size="small"
-                                                placeholder="Room type"
-                                                value={form.getFieldValue(['travelers', index, 'roomType'])}
-                                                onChange={(value) => updateTravelerField(index, 'roomType', value)}
-                                                options={roomOptions}
-                                                disabled={bookingType === 'Solo Booking'}
-                                            />
-                                            <DatePicker
-                                                size="small"
-                                                placeholder="Birthdate"
-                                                defaultPickerValue={dayjs('2000-01-01')}
-                                                format="MMMM D, YYYY"
-                                                value={form.getFieldValue(['travelers', index, 'birthday'])}
-                                                onChange={(date) => {
-                                                    const age = date ? computeAge(date) : ''
-                                                    updateTravelerField(index, 'birthday', date, { age })
-                                                }}
-                                                disabledDate={(current) => current && current >= dayjs().startOf('day')}
-                                            />
-                                        </div>
-                                        {!isDomesticPackage && (
-                                            <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
-                                                <Input
-                                                    maxLength={7}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label style={{ fontSize: 12, textAlign: 'left' }}>TITLE</label>
+                                                <Select
+                                                    style={{ height: 40 }}
                                                     size="small"
-                                                    placeholder="Passport number"
-                                                    value={form.getFieldValue(['travelers', index, 'passportNo'])}
-                                                    onChange={(event) => updateTravelerField(index, 'passportNo', event.target.value)}
+                                                    placeholder="Title"
+                                                    value={form.getFieldValue(['travelers', index, 'title'])}
+                                                    onChange={(value) => updateTravelerField(index, 'title', value)}
+                                                    options={[
+                                                        { value: 'MR', label: 'MR' },
+                                                        { value: 'MS', label: 'MS' },
+                                                    ]}
+                                                />
+                                            </div>
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label style={{ fontSize: 12, textAlign: 'left' }}>FIRST NAME</label>
+                                                <Input
+                                                    style={{ height: 40 }}
+                                                    maxLength={50}
+                                                    size="small"
+                                                    placeholder="First name"
+                                                    value={form.getFieldValue(['travelers', index, 'firstName'])}
+                                                    onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
                                                     onKeyDown={(e) => {
-                                                        const regex = /^[0-9]$/;
+                                                        const regex = /^[A-Za-z\s'-]$/;
 
                                                         if (
                                                             e.key.length === 1 &&
@@ -1150,18 +1105,98 @@ export default function BookingProcess() {
                                                         }
                                                     }}
                                                 />
-                                                <DatePicker
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label style={{ fontSize: 12, textAlign: 'left' }}>LAST NAME</label>
+                                                <Input
+                                                    style={{ height: 40 }}
+                                                    maxLength={50}
                                                     size="small"
-                                                    placeholder="Passport expiry"
-                                                    format="MMMM D, YYYY"
-                                                    value={form.getFieldValue(['travelers', index, 'passportExpiry'])}
-                                                    onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
-                                                    disabledDate={(current) => {
-                                                        if (!current) return false
-                                                        return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                    placeholder="Last name"
+                                                    value={form.getFieldValue(['travelers', index, 'lastName'])}
+                                                    onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        const regex = /^[A-Za-z\s'-]$/;
+
+                                                        if (
+                                                            e.key.length === 1 &&
+                                                            !regex.test(e.key)
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
                                                     }}
-                                                    defaultPickerValue={dayjs().add(1, 'year')}
                                                 />
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label style={{ fontSize: 12, textAlign: 'left' }}>ROOM TYPE</label>
+                                                <Select
+                                                    style={{ height: 40 }}
+                                                    size="small"
+                                                    placeholder="Room type"
+                                                    value={form.getFieldValue(['travelers', index, 'roomType'])}
+                                                    onChange={(value) => updateTravelerField(index, 'roomType', value)}
+                                                    options={roomOptions}
+                                                    disabled={bookingType === 'Solo Booking'}
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label style={{ fontSize: 12, textAlign: 'left' }}>BIRTHDATE</label>
+                                                <DatePicker
+                                                    style={{ height: 40 }}
+                                                    size="small"
+                                                    placeholder="Birthdate"
+                                                    defaultPickerValue={dayjs('2000-01-01')}
+                                                    format="MMMM D, YYYY"
+                                                    value={form.getFieldValue(['travelers', index, 'birthday'])}
+                                                    onChange={(date) => {
+                                                        const age = date ? computeAge(date) : ''
+                                                        updateTravelerField(index, 'birthday', date, { age })
+                                                    }}
+                                                    disabledDate={(current) => current && current >= dayjs().startOf('day')}
+                                                />
+                                            </div>
+                                        </div>
+                                        {!isDomesticPackage && (
+                                            <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                    <label style={{ fontSize: 12, textAlign: 'left' }}>PASSPORT NUMBER</label>
+                                                    <Input
+                                                        style={{ height: 40 }}
+                                                        maxLength={7}
+                                                        size="small"
+                                                        placeholder="Passport number"
+                                                        value={form.getFieldValue(['travelers', index, 'passportNo'])}
+                                                        onChange={(event) => updateTravelerField(index, 'passportNo', event.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            const regex = /^[0-9]$/;
+
+                                                            if (
+                                                                e.key.length === 1 &&
+                                                                !regex.test(e.key)
+                                                            ) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                    <label style={{ fontSize: 12, textAlign: 'left' }}>PASSPORT EXPIRY</label>
+                                                    <DatePicker
+                                                        style={{ height: 40 }}
+                                                        size="small"
+                                                        placeholder="Passport expiry"
+                                                        format="MMMM D, YYYY"
+                                                        value={form.getFieldValue(['travelers', index, 'passportExpiry'])}
+                                                        onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
+                                                        disabledDate={(current) => {
+                                                            if (!current) return false
+                                                            return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                        }}
+                                                        defaultPickerValue={dayjs().add(1, 'year')}
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -1273,10 +1308,9 @@ export default function BookingProcess() {
                         </div>
 
                     </div>
-                </div>
 
-                {/* BOOKING REGISTRATION */}
-                <div className='booking-form-container booking-section'>
+
+
                     <div className="booking-form-stepper-container">
                         <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                         <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
@@ -1373,6 +1407,12 @@ export default function BookingProcess() {
 
                         </div>
                     </div>
+
+
+
+
+
+
                 </div>
 
             </div>

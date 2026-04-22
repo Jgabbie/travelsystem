@@ -189,6 +189,10 @@ export default function UserBookingInvoice() {
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+    const handleResubmitDocuments = () => {
+        message.info("Resubmission request sent. We'll review your documents shortly.");
+    };
+
     //GO NEXT PAGE
     const next = async () => {
         try {
@@ -814,15 +818,15 @@ export default function UserBookingInvoice() {
 
                     <Card className="user-invoice-card" style={{ marginBottom: 40 }}>
                         <div className="user-invoice-meta">
-                            <div>
+                            <div className="user-invoice-meta-item">
                                 <AntText type="secondary">Reference</AntText>
                                 <div className="user-invoice-value">{reference}</div>
                             </div>
-                            <div>
+                            <div className="user-invoice-meta-item">
                                 <AntText type="secondary">Package</AntText>
                                 <div className="user-invoice-value">{packageName}</div>
                             </div>
-                            <div>
+                            <div className="user-invoice-meta-item">
                                 <AntText type="secondary">Travel Date</AntText>
                                 <div className="user-invoice-value">{travelDate}</div>
                             </div>
@@ -874,62 +878,68 @@ export default function UserBookingInvoice() {
                         </Row>
                     </Card>
 
-                    <div className="display-invoice-wrapper">
-                        <div className="display-invoice-card">
-                            <div className="pdf-viewer-wrapper">
-                                <div></div>
-                                <PDFViewer style={{ width: "100%", height: 727 }}>
-                                    <MyDocument />
-                                </PDFViewer>
+                    <div className="user-invoice-columns">
+                        <div className="user-invoice-column">
+                            <div className="display-invoice-wrapper">
+                                <div className="display-invoice-card">
+                                    <div className="pdf-viewer-wrapper">
+                                        <div></div>
+                                        <PDFViewer style={{ width: "100%", height: 727 }}>
+                                            <MyDocument />
+                                        </PDFViewer>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <Card className="user-invoice-card" title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
-                        <div style={{
-                            backgroundColor: '#f0f5ff',
-                            border: '1px solid #adc6ff',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            marginBottom: '16px',
-                            fontSize: '13px',
-                            color: '#2f54eb'
-                        }}>
-                            <AntText data-info>
-                                <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
-                            </AntText>
+                        <div className="user-invoice-column">
+                            <Card className="user-invoice-card" title="Transaction History" style={{ marginBottom: 24 }}>
+                                <div style={{
+                                    backgroundColor: '#f0f5ff',
+                                    border: '1px solid #adc6ff',
+                                    padding: '8px 12px',
+                                    borderRadius: '6px',
+                                    marginBottom: '16px',
+                                    fontSize: '13px',
+                                    color: '#2f54eb'
+                                }}>
+                                    <AntText data-info>
+                                        <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
+                                    </AntText>
+                                </div>
+
+                                {transactions.length === 0 ? (
+                                    <AntText type="secondary">No transactions yet.</AntText>
+                                ) : (
+                                    <Space orientation="vertical" style={{ width: "100%" }}>
+                                        {transactions.map((txn, index) => (
+                                            <Card key={index} size="small">
+                                                <Row justify="space-between">
+                                                    <Col>
+                                                        <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
+                                                        <div><strong>Method:</strong> {txn.method || "N/A"}</div>
+                                                    </Col>
+                                                    <Col style={{ textAlign: "right" }}>
+                                                        <div><strong>
+                                                            {txn.amount.toLocaleString('en-PH', {
+                                                                style: 'currency',
+                                                                currency: 'PHP',
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </strong></div>
+                                                        <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
+                                                            {txn.status}
+                                                        </Tag>
+                                                    </Col>
+                                                </Row>
+                                            </Card>
+                                        ))}
+                                    </Space>
+                                )}
+                            </Card>
                         </div>
-
-                        {transactions.length === 0 ? (
-                            <AntText type="secondary">No transactions yet.</AntText>
-                        ) : (
-                            <Space orientation="vertical" style={{ width: "100%" }}>
-                                {transactions.map((txn, index) => (
-                                    <Card key={index} size="small">
-                                        <Row justify="space-between">
-                                            <Col>
-                                                <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
-                                                <div><strong>Method:</strong> {txn.method || "N/A"}</div>
-                                            </Col>
-                                            <Col style={{ textAlign: "right" }}>
-                                                <div><strong>
-                                                    {txn.amount.toLocaleString('en-PH', {
-                                                        style: 'currency',
-                                                        currency: 'PHP',
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </strong></div>
-                                                <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
-                                                    {txn.status}
-                                                </Tag>
-                                            </Col>
-                                        </Row>
-                                    </Card>
-                                ))}
-                            </Space>
-                        )}
-                    </Card>
+                    </div>
 
 
                     {remainingBalance > 0 && (
@@ -1182,6 +1192,15 @@ export default function UserBookingInvoice() {
                                 </div>
                             </div>
                         )}
+                        <div className="user-invoice-doc-actions">
+                            <Button
+                                type="primary"
+                                className="user-invoice-form-button"
+                                onClick={handleResubmitDocuments}
+                            >
+                                Resubmit
+                            </Button>
+                        </div>
                     </Card>
 
                     {/* BOOKING REGISTRATION SECTION */}

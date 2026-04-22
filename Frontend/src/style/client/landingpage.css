@@ -764,6 +764,7 @@
     margin-left: 40px;
     flex-wrap: wrap;
     width: 100%;
+    gap: 30px;
 }
 
 .contactus-text {
@@ -774,7 +775,7 @@
     margin-left: 24px;
     margin-right: 24px;
     width: 100%;
-    max-width: 700px;
+    max-width: 650px;
     text-align: justify;
     line-height: 1.5;
 }
@@ -787,53 +788,170 @@
 
 .contactus-section-left {
     margin-bottom: 50px;
+    max-width: 650px;
 }
 
 .contactus-section-right-card {
-    width: 650px;
-    height: 400px;
+    width: 700px;
     background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 18px;
+    box-shadow: 0 14px 30px rgba(20, 30, 50, 0.12);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
     margin-bottom: 20px;
     margin-left: 40px;
     max-width: 100%;
+    overflow: hidden;
+}
+
+.contact-card-left {
+    background: #305797;
+    color: #ffffff;
+    width: 38%;
+    min-width: 260px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+}
+
+.contact-card-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.contact-card-subtitle {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.contact-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.contact-info-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.contact-info-icon {
+    font-size: 18px;
+    margin-top: 2px;
+    color: #ffffff;
+}
+
+.contact-info-heading {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 6px;
+    opacity: 0.8;
+}
+
+.contact-info-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.contact-card-right {
+    flex: 1;
+    padding: 28px 36px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .contact-label {
     font-family: "Montserrat", sans-serif;
     font-size: 18px;
     font-weight: 600;
-    color: #000000;
-    margin-bottom: 10px;
-    margin-top: 10px;
+    color: #305797;
+    margin-bottom: 6px;
+    margin-top: 0;
+}
+
+.contact-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.contact-field-label {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c7a93;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .contact-input {
-    width: 80%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+    width: 100%;
+    padding: 8px 0;
+    border: none;
+    border-bottom: 1px solid #d7dfe8;
+    border-radius: 0;
+    background-color: transparent;
     font-size: 14px;
-    color: #333;
+    color: #1f2937;
+    box-shadow: none;
+}
+
+.contact-input:focus,
+.contact-input .ant-input:focus,
+.contact-input .ant-input-focused {
+    border-bottom-color: #305797 !important;
+    box-shadow: none !important;
+    outline: none;
+}
+
+.contact-input .ant-input,
+.contact-input.ant-input {
+    border: none !important;
+    border-bottom: 1px solid #d7dfe8 !important;
+    border-radius: 0 !important;
+    padding: 8px 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 .contact-textarea {
-    width: 80%;
-    height: 100px;
+    width: 100%;
+    height: 110px;
     resize: none !important;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+    padding: 8px 0;
+    border: none;
+    border-bottom: 1px solid #d7dfe8;
+    border-radius: 0;
+    background-color: transparent;
     font-size: 14px;
-    color: #333;
+    color: #1f2937;
+    box-shadow: none;
+}
+
+.contact-textarea textarea,
+.contact-textarea .ant-input {
+    border: none !important;
+    border-bottom: 1px solid #d7dfe8 !important;
+    border-radius: 0 !important;
+    padding: 8px 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 .contact-submit-button {
@@ -842,16 +960,17 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
-    width: 120px;
-    height: 40px;
+    border-radius: 8px;
+    width: 140px;
+    height: 42px;
     border: none !important;
-    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    box-shadow: 0 10px 20px rgba(48, 87, 151, 0.25);
+    align-self: flex-start;
 }
 
 .contact-submit-button:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #1e3f74 !important;
+    color: #ffffff !important;
 }
 
 .error-text {
@@ -860,7 +979,17 @@
     font-family: "Roboto", sans-serif;
     height: 12px;
     align-self: flex-start;
-    margin-left: 10%;
+}
+
+@media (max-width: 900px) {
+    .contactus-section-right-card {
+        flex-direction: column;
+        margin-left: 0;
+    }
+
+    .contact-card-left {
+        width: 100%;
+    }
 }
 
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Input, Button, message, Spin, Card, Space, ConfigProvider } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
 import apiFetch from '../../config/fetchConfig';
 
@@ -292,192 +292,205 @@ export default function AdminProfile() {
                     <Spin size="large" description="Loading profile..." />
                 </div>
             ) : (
-                <div className="profile-page admin-profile-page">
+                <div className="profile-page admin-profile-page" style={{ marginTop: 0, paddingTop: 0 }}>
                     <div className="profile-container" style={{ marginBottom: 40 }}>
                         <div className="profile-content">
-                            <Card
-                                className="profile-card"
-                                title={
-                                    <div className="profile-card-header">
-                                        <h2>Admin Profile</h2>
-                                        {!editing && (
-                                            <Button
-                                                type="primary"
-                                                className="profile-action-button"
-                                                icon={<EditOutlined />}
-                                                onClick={handleEdit}
-                                            >
-                                                Edit Profile
-                                            </Button>
-                                        )}
-                                    </div>
-                                }
-                            >
-                                <div className="profile-avatar-section">
-                                    <div className="profile-avatar">
+                            <Card className="profile-summary-card">
+                                <div className="profile-summary-body">
+                                    <div className="profile-summary-avatar">
                                         {profileImage ? (
                                             <img src={profileImage} alt="Profile" />
                                         ) : (
-                                            <div className="profile-avatar-placeholder">{getInitials()}</div>
+                                            <div className="profile-summary-initials">{getInitials()}</div>
                                         )}
                                     </div>
-                                    {editing && (
-                                        <>
-                                            <input
-                                                ref={fileInputRef}
-                                                className="profile-avatar-input"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                            />
-                                            <Button
-                                                className="profile-action-button"
-                                                onClick={() => fileInputRef.current?.click()}
-                                            >
-                                                Change Photo
-                                            </Button>
-                                            <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
-                                        </>
+                                    <div className="profile-summary-text">
+                                        <h3 className="profile-summary-name">
+                                            {values.firstname || values.lastname
+                                                ? `${values.firstname} ${values.lastname}`.trim()
+                                                : values.username || 'User'}
+                                        </h3>
+                                        <p className="profile-summary-meta">
+                                            <span>{userData?.role || 'Admin'}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                {editing && (
+                                    <div style={{ marginTop: 16 }}>
+                                        <input
+                                            ref={fileInputRef}
+                                            className="profile-avatar-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                        />
+                                        <Button
+                                            type='primary'
+                                            icon={<FileImageOutlined />}
+                                            className="profile-action-button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            Change Photo
+                                        </Button>
+                                        <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+                                    </div>
+                                )}
+                            </Card>
+
+                            <Card className="profile-section-card">
+                                <div className="profile-section-header">
+                                    <h3 className="profile-section-title">Personal Information</h3>
+                                    {!editing && (
+                                        <Button
+                                            type="primary"
+                                            className="profile-action-button"
+                                            icon={<EditOutlined />}
+                                            onClick={handleEdit}
+                                        >
+                                            Edit
+                                        </Button>
                                     )}
                                 </div>
-
-                                <div className="profile-fields">
-                                    <div className="profile-field">
-                                        <label className="profile-label">Username</label>
-                                        <Input
-                                            placeholder="Username"
-                                            value={values.username}
-                                            disabled
-                                        />
+                                <div className="profile-section-grid">
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Username</span>
+                                        <p className="profile-section-value">{values.username || 'Not set'}</p>
                                     </div>
 
-                                    {userData?.role && (
-                                        <div className="profile-field">
-                                            <label className="profile-label">Role</label>
-                                            <Input value={userData.role} disabled />
-                                        </div>
-                                    )}
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Role</span>
+                                        <p className="profile-section-value">{userData?.role || 'Not set'}</p>
+                                    </div>
 
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">First Name</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your first name"
+                                                allowClear
+                                                status={error.firstname ? "error" : ""}
+                                                value={values.firstname}
+                                                onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                                onKeyDown={(e) => {
+                                                    const value = e.target.value;
+                                                    if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">First Name</label>
-                                        <Input
-                                            placeholder="Enter your first name"
-                                            allowClear
-                                            status={error.firstname ? "error" : ""}
-                                            value={values.firstname}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
-                                            onKeyDown={(e) => {
-                                                const value = e.target.value;
-                                                if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
-                                                if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-
-                                                if (
-                                                    !/^[A-Za-z ]$/.test(e.key) &&
-                                                    e.key !== "Backspace" &&
-                                                    e.key !== "ArrowLeft" &&
-                                                    e.key !== "ArrowRight"
-                                                ) {
-                                                    e.preventDefault();
-                                                }
-                                            }}
-                                        />
+                                                    if (
+                                                        !/^[A-Za-z ]$/.test(e.key) &&
+                                                        e.key !== "Backspace" &&
+                                                        e.key !== "ArrowLeft" &&
+                                                        e.key !== "ArrowRight"
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.firstname || 'Not set'}</p>
+                                        )}
                                         {error.firstname && (
                                             <p className="profile-error-message">{error.firstname}</p>
                                         )}
                                     </div>
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">Last Name</label>
-                                        <Input
-                                            placeholder="Enter your last name"
-                                            allowClear
-                                            status={error.lastname ? "error" : ""}
-                                            value={values.lastname}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
-                                            onKeyDown={(e) => {
-                                                const value = e.target.value;
-                                                if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
-                                                if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-                                                if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
-                                                if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
-                                                if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                                if (
-                                                    !/^[A-Za-z -]$/.test(e.key) &&
-                                                    e.key !== "Backspace" &&
-                                                    e.key !== "ArrowLeft" &&
-                                                    e.key !== "ArrowRight"
-                                                ) {
-                                                    e.preventDefault();
-                                                }
-                                            }}
-                                        />
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Last Name</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your last name"
+                                                allowClear
+                                                status={error.lastname ? "error" : ""}
+                                                value={values.lastname}
+                                                onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                                onKeyDown={(e) => {
+                                                    const value = e.target.value;
+                                                    if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                    if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                                    if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                                    if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                    if (
+                                                        !/^[A-Za-z -]$/.test(e.key) &&
+                                                        e.key !== "Backspace" &&
+                                                        e.key !== "ArrowLeft" &&
+                                                        e.key !== "ArrowRight"
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.lastname || 'Not set'}</p>
+                                        )}
                                         {error.lastname && (
                                             <p className="profile-error-message">{error.lastname}</p>
                                         )}
                                     </div>
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">Email Address</label>
-                                        <Input
-                                            placeholder="Enter your email"
-                                            type="email"
-                                            allowClear
-                                            status={error.email ? "error" : ""}
-                                            value={values.email}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('email', e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === " " && e.key !== "Backspace") {
-                                                    e.preventDefault()
-                                                }
-                                            }}
-                                        />
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Email Address</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your email"
+                                                type="email"
+                                                allowClear
+                                                status={error.email ? "error" : ""}
+                                                value={values.email}
+                                                onChange={(e) => valueHandler('email', e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === " " && e.key !== "Backspace") {
+                                                        e.preventDefault()
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.email || 'Not set'}</p>
+                                        )}
                                         {error.email && (
                                             <p className="profile-error-message">{error.email}</p>
                                         )}
                                     </div>
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">Phone Number</label>
-                                        <Input
-                                            maxLength={13}
-                                            placeholder="Enter your phone number"
-                                            allowClear
-                                            addonBefore="+63"
-                                            status={error.phone ? "error" : ""}
-                                            value={values.phone}
-                                            disabled={!editing}
-                                            onChange={(e) => {
-                                                let value = e.target.value.replace(/\D/g, "");
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Phone Number</span>
+                                        {editing ? (
+                                            <Input
+                                                maxLength={13}
+                                                placeholder="Enter your phone number"
+                                                allowClear
+                                                addonBefore="+63"
+                                                status={error.phone ? "error" : ""}
+                                                value={values.phone}
+                                                onChange={(e) => {
+                                                    let value = e.target.value.replace(/\D/g, "");
 
-                                                value = value.slice(0, 11);
+                                                    value = value.slice(0, 11);
 
-                                                let formatted = value;
+                                                    let formatted = value;
 
-                                                if (value.length > 4 && value.length <= 7) {
-                                                    formatted =
-                                                        value.slice(0, 4) + " " +
-                                                        value.slice(4);
-                                                }
-                                                else if (value.length > 7) {
-                                                    formatted =
-                                                        value.slice(0, 4) + " " +
-                                                        value.slice(4, 7) + " " +
-                                                        value.slice(7);
-                                                }
+                                                    if (value.length > 4 && value.length <= 7) {
+                                                        formatted =
+                                                            value.slice(0, 4) + " " +
+                                                            value.slice(4);
+                                                    }
+                                                    else if (value.length > 7) {
+                                                        formatted =
+                                                            value.slice(0, 4) + " " +
+                                                            value.slice(4, 7) + " " +
+                                                            value.slice(7);
+                                                    }
 
-                                                valueHandler("phone", formatted);
-                                            }}
-                                        />
+                                                    valueHandler("phone", formatted);
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.phone || 'Not set'}</p>
+                                        )}
                                         {error.phone && (
                                             <p className="profile-error-message">{error.phone}</p>
                                         )}
                                     </div>
-
-
                                 </div>
 
                                 {userData?.isAccountVerified && (
@@ -487,7 +500,7 @@ export default function AdminProfile() {
                                 )}
 
                                 {editing && (
-                                    <Space>
+                                    <Space style={{ marginTop: 16 }}>
                                         <Button
                                             type="primary"
                                             className="profile-action-button"
@@ -499,6 +512,7 @@ export default function AdminProfile() {
                                         </Button>
                                         <Button
                                             className="profile-cancel-button"
+                                            type='primary'
                                             icon={<CloseOutlined />}
                                             onClick={handleCancel}
                                             disabled={saving}
@@ -513,7 +527,7 @@ export default function AdminProfile() {
                         <div className="profile-side-column">
                             <Card
                                 className="profile-side-card"
-                                title={<h3>Pending Approvals</h3>}
+                                title={<h3 className="profile-section-title">Pending Approvals</h3>}
                             >
                                 {pendingApprovals.length === 0 ? (
                                     <p className="profile-empty-text">No pending approvals.</p>
@@ -539,7 +553,7 @@ export default function AdminProfile() {
 
                             <Card
                                 className="profile-side-card"
-                                title={<h3>Recent Admin Actions</h3>}
+                                title={<h3 className="profile-section-title">Recent Admin Actions</h3>}
                             >
                                 {recentActions.length === 0 ? (
                                     <p className="profile-empty-text">No recent activity.</p>

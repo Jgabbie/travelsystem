@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin, Slider } from 'antd'
-import { DeleteOutlined, EyeOutlined, CheckCircleFilled } from '@ant-design/icons'
+import { DeleteOutlined, EyeOutlined, CheckCircleFilled, SearchOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/wishlist.css'
@@ -147,7 +147,10 @@ export default function Wishlist() {
                     <Card className="wishlist-controls-card" bordered={false}>
                         <div className="wishlist-controls">
                             <div className="wishlist-search">
-                                <Text className="wishlist-label">Search</Text>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <SearchOutlined className='destinations-primary-label-icon' />
+                                    <Text className="destinations-primary-label">Search</Text>
+                                </div>
                                 <Input
                                     allowClear
                                     placeholder="Search by destination or package name"
@@ -225,7 +228,7 @@ export default function Wishlist() {
                         ) : (
                             <Row gutter={[18, 18]}>
                                 {filteredPackages.map((pkg) => (
-                                    <Col xs={24} sm={12} lg={8} key={pkg.wishlistId || pkg.packageId}>
+                                    <Col xs={24} sm={12} lg={12} xl={12} key={pkg.wishlistId || pkg.packageId}>
                                         <Card
                                             className="wishlist-card"
                                             hoverable
@@ -237,55 +240,71 @@ export default function Wishlist() {
                                                     <div className="wishlist-card-image-placeholder">No image</div>
                                                 )}
                                             </div>
-                                            <div className="wishlist-card-header">
-                                                <div>
-                                                    <Title level={5} className="wishlist-card-title">
-                                                        {pkg.title}
-                                                    </Title>
-                                                    <Text type="secondary" className="wishlist-location">
-                                                        {pkg.location}
-                                                    </Text>
+                                            <div className="wishlist-card-content">
+                                                <div className="wishlist-card-header">
+                                                    <div>
+                                                        <Title level={5} className="wishlist-card-title">
+                                                            {pkg.title}
+                                                        </Title>
+                                                        <Text type="secondary" className="wishlist-location">
+                                                            {pkg.location}
+                                                        </Text>
+                                                    </div>
                                                 </div>
-                                                <Tag className="wishlist-rating">{pkg.typeLabel}</Tag>
-                                            </div>
-                                            <div className="wishlist-card-meta">
-                                                <Text type="secondary">{pkg.duration}</Text>
-                                                <Tag className={`wishlist-badge ${pkg.availability.replace(' ', '-')}`}>
-                                                    {pkg.availability}
-                                                </Tag>
-                                                {pkg.discountPercent > 0 ? (
-                                                    <Tag color="green">{pkg.discountPercent}% OFF</Tag>
-                                                ) : null}
-                                            </div>
-                                            <div className="wishlist-card-meta">
-                                                <Text type="secondary">Slots: {pkg.availableSlots}</Text>
-                                            </div>
-                                            <div className="wishlist-card-footer">
-                                                <Text className="wishlist-price">
-                                                    ₱{Number(pkg.price || 0).toLocaleString()}
-                                                </Text>
-                                                <div className="wishlist-card-actions">
-                                                    <Button
-                                                        icon={<EyeOutlined />}
-                                                        type='primary'
-                                                        className={`wishlist-view-button${pkg.availableSlots <= 0 ? ' wishlist-view-button-disabled' : ''}`}
-                                                        onClick={() => navigate(`/package/${pkg.packageId}`)}
-                                                        disabled={pkg.availableSlots <= 0}
-                                                        style={pkg.availableSlots <= 0 ? { pointerEvents: 'none' } : {}}
-                                                    >
-                                                        View details
-                                                    </Button>
-                                                    <Button
-                                                        icon={<DeleteOutlined />}
-                                                        type='primary'
-                                                        className="wishlist-remove-button"
-                                                        onClick={() => {
-                                                            setIsDeleteModalOpen(true)
-                                                            setSelectedWishlistId(pkg.wishlistId)
-                                                        }}
-                                                    >
-                                                        Remove
-                                                    </Button>
+                                                <div className="wishlist-card-meta">
+                                                    <Tag className="wishlist-type-tag">{pkg.typeLabel}</Tag>
+                                                    <Tag className={`wishlist-status-tag ${pkg.availability.replace(' ', '-')}`}>
+                                                        {pkg.availability}
+                                                    </Tag>
+                                                    <Text type="secondary">{pkg.duration}</Text>
+                                                </div>
+                                                <div className="wishlist-card-footer">
+                                                    <div className="wishlist-card-pricing">
+                                                        {pkg.discountPercent > 0 ? (
+                                                            <Text delete className="wishlist-price wishlist-price-old">
+                                                                ₱{Number(pkg.price || 0).toLocaleString()}
+                                                            </Text>
+                                                        ) : null}
+                                                        <Text className="wishlist-price">
+                                                            ₱{(
+                                                                pkg.discountPercent > 0
+                                                                    ? Number(pkg.price || 0) * (1 - pkg.discountPercent / 100)
+                                                                    : Number(pkg.price || 0)
+                                                            ).toLocaleString()}
+                                                        </Text>
+                                                        <Text className="wishlist-budget">
+                                                            {pkg.discountPercent > 0 ? 'Discounted / Pax' : 'Budget / Pax'}
+                                                        </Text>
+                                                    </div>
+                                                    <div className="wishlist-card-actions">
+                                                        <Button
+                                                            icon={<EyeOutlined />}
+                                                            type='primary'
+                                                            className={`wishlist-view-button${pkg.availableSlots <= 0 ? ' wishlist-view-button-disabled' : ''}`}
+                                                            onClick={() => navigate(`/package/${pkg.packageId}`)}
+                                                            disabled={pkg.availableSlots <= 0}
+                                                            style={pkg.availableSlots <= 0 ? { pointerEvents: 'none' } : {}}
+                                                        >
+                                                            View details
+                                                        </Button>
+                                                        <Button
+                                                            icon={<DeleteOutlined />}
+                                                            type='primary'
+                                                            className="wishlist-remove-button"
+                                                            onClick={() => {
+                                                                setIsDeleteModalOpen(true)
+                                                                setSelectedWishlistId(pkg.wishlistId)
+                                                            }}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <div className="wishlist-card-badges">
+                                                    <Text type="secondary">Slots: {pkg.availableSlots}</Text>
+                                                    {pkg.discountPercent > 0 ? (
+                                                        <Tag className="wishlist-discount-tag">-{pkg.discountPercent}%</Tag>
+                                                    ) : null}
                                                 </div>
                                             </div>
                                         </Card>

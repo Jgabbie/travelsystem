@@ -51,14 +51,6 @@
     color: #1f2a44;
 }
 
-.solo-group-card p {
-    margin: 0;
-    font-family: "Roboto", sans-serif;
-    font-size: 14px;
-    color: #4b5563;
-    line-height: 1.6;
-}
-
 .solo-group-card.is-selected {
     border-color: #305797;
     box-shadow: 0 8px 18px rgba(48, 87, 151, 0.18);

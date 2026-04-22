@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber, message } from 'antd';
-import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
 import apiFetch from '../../config/fetchConfig';
@@ -842,92 +842,124 @@ export default function LandingPage() {
 
                             <div className='contactus-section-right'>
                                 <div className='contactus-section-right-card'>
-                                    <label className='contact-label'>You have an inquiry? Send us a message!</label>
-                                    <Input
-                                        placeholder="Your Name"
-                                        className='contact-input'
-                                        status={contactErrors.name ? 'error' : ''}
-                                        value={contactValues.name}
-                                        onChange={(e) => {
-                                            setContactValues(prev => ({ ...prev, name: e.target.value }));
-                                            setContactErrors(prev => ({ ...prev, name: '' }));
-                                        }}
-                                        onKeyDown={(e) => {
-                                            const value = e.target.value
-                                            if (e.key === " " && value.length === 0) {
-                                                e.preventDefault()
-                                                return
-                                            }
+                                    <div className='contact-card-left'>
+                                        <h3 className='contact-card-title'>Contact Information</h3>
+                                        <p className='contact-card-subtitle'>We are here to help you plan your trip.</p>
+                                        <div className='contact-info-list'>
+                                            <div className='contact-info-item'>
+                                                <EnvironmentOutlined className='contact-info-icon' />
+                                                <div>
+                                                    <p className='contact-info-heading'>Visit us</p>
+                                                    <p className='contact-info-text'>2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy. San Antonio, Parañaque, Philippines, 1715</p>
+                                                </div>
+                                            </div>
+                                            <div className='contact-info-item'>
+                                                <ClockCircleOutlined className='contact-info-icon' />
+                                                <div>
+                                                    <p className='contact-info-heading'>Office hours</p>
+                                                    <p className='contact-info-text'>Monday - Saturday: 9:00 AM - 6:00 PM</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                            if (e.key === " " && value.endsWith(" ")) {
-                                                e.preventDefault()
-                                                return
-                                            }
+                                    <div className='contact-card-right'>
+                                        <label className='contact-label'>You have an inquiry? Send us a message!</label>
+                                        <div className='contact-field'>
+                                            <span className='contact-field-label'>Your Name</span>
+                                            <Input
+                                                placeholder="Your Name"
+                                                className='contact-input'
+                                                status={contactErrors.name ? 'error' : ''}
+                                                value={contactValues.name}
+                                                onChange={(e) => {
+                                                    setContactValues(prev => ({ ...prev, name: e.target.value }));
+                                                    setContactErrors(prev => ({ ...prev, name: '' }));
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    const value = e.target.value
+                                                    if (e.key === " " && value.length === 0) {
+                                                        e.preventDefault()
+                                                        return
+                                                    }
 
-                                            if (!/^[a-zA-Z\s]*$/.test(e.key) &&
-                                                e.key !== "Backspace" &&
-                                                e.key !== "ArrowLeft" &&
-                                                e.key !== "ArrowRight") {
-                                                e.preventDefault()
-                                            }
-                                        }}
-                                    />
-                                    {contactErrors.name && <span className="error-text">{contactErrors.name}</span>}
-                                    <Input
-                                        placeholder="Your Email"
-                                        className='contact-input'
-                                        status={contactErrors.email ? 'error' : ''}
-                                        value={contactValues.email}
-                                        onChange={(e) => {
-                                            setContactValues(prev => ({ ...prev, email: e.target.value }))
-                                            setContactErrors(prev => ({ ...prev, email: '' }))
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === " ") {
-                                                e.preventDefault()
-                                            }
-                                        }}
-                                    />
-                                    {contactErrors.email && <span className="error-text">{contactErrors.email}</span>}
-                                    <Input.TextArea
-                                        resize="none"
-                                        placeholder="Your Message"
-                                        className='contact-textarea'
-                                        rows={4}
-                                        status={contactErrors.message ? 'error' : ''}
-                                        value={contactValues.message}
-                                        onChange={(e) => {
-                                            setContactValues(prev => ({ ...prev, message: e.target.value }))
-                                            setContactErrors(prev => ({ ...prev, message: '' }))
-                                        }}
-                                        onKeyDown={(e) => {
-                                            const value = e.target.value
+                                                    if (e.key === " " && value.endsWith(" ")) {
+                                                        e.preventDefault()
+                                                        return
+                                                    }
 
-                                            if (e.key === " " && value.length === 0) {
-                                                e.preventDefault()
+                                                    if (!/^[a-zA-Z\s]*$/.test(e.key) &&
+                                                        e.key !== "Backspace" &&
+                                                        e.key !== "ArrowLeft" &&
+                                                        e.key !== "ArrowRight") {
+                                                        e.preventDefault()
+                                                    }
+                                                }}
+                                            />
+                                            {contactErrors.name && <span className="error-text">{contactErrors.name}</span>}
+                                        </div>
+                                        <div className='contact-field'>
+                                            <span className='contact-field-label'>Your Email</span>
+                                            <Input
+                                                placeholder="Your Email"
+                                                className='contact-input'
+                                                status={contactErrors.email ? 'error' : ''}
+                                                value={contactValues.email}
+                                                onChange={(e) => {
+                                                    setContactValues(prev => ({ ...prev, email: e.target.value }))
+                                                    setContactErrors(prev => ({ ...prev, email: '' }))
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === " ") {
+                                                        e.preventDefault()
+                                                    }
+                                                }}
+                                            />
+                                            {contactErrors.email && <span className="error-text">{contactErrors.email}</span>}
+                                        </div>
+                                        <div className='contact-field'>
+                                            <span className='contact-field-label'>Message</span>
+                                            <Input.TextArea
+                                                resize="none"
+                                                placeholder="Your Message"
+                                                className='contact-textarea'
+                                                rows={4}
+                                                status={contactErrors.message ? 'error' : ''}
+                                                value={contactValues.message}
+                                                onChange={(e) => {
+                                                    setContactValues(prev => ({ ...prev, message: e.target.value }))
+                                                    setContactErrors(prev => ({ ...prev, message: '' }))
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    const value = e.target.value
+
+                                                    if (e.key === " " && value.length === 0) {
+                                                        e.preventDefault()
+                                                    }
+                                                }}
+                                            />
+                                            {contactErrors.message && <span className="error-text">{contactErrors.message}</span>}
+                                        </div>
+                                        <Button
+                                            type="primary"
+                                            loading={isSending}
+                                            className={`contact-submit-button${(!contactValues.name.trim() ||
+                                                !contactValues.email.trim() ||
+                                                !contactValues.message.trim())
+                                                ? ' contact-submit-button-disabled'
+                                                : ''
+                                                }`}
+                                            disabled={
+                                                isSending ||
+                                                !contactValues.name.trim() ||
+                                                !contactValues.email.trim() ||
+                                                !contactValues.message.trim()
                                             }
-                                        }}
-                                    />
-                                    {contactErrors.message && <span className="error-text">{contactErrors.message}</span>}
-                                    <Button
-                                        type="primary"
-                                        loading={isSending}
-                                        className={`contact-submit-button${(!contactValues.name.trim() ||
-                                            !contactValues.email.trim() ||
-                                            !contactValues.message.trim())
-                                            ? ' contact-submit-button-disabled'
-                                            : ''
-                                            }`}
-                                        disabled={
-                                            isSending ||
-                                            !contactValues.name.trim() ||
-                                            !contactValues.email.trim() ||
-                                            !contactValues.message.trim()
-                                        }
-                                        onClick={sendMessage}
-                                    >
-                                        {isSending ? 'Sending...' : 'Submit'}
-                                    </Button>
+                                            onClick={sendMessage}
+                                        >
+                                            {isSending ? 'Sending...' : 'Submit'}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 

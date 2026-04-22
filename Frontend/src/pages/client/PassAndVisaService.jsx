@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Input, Typography, ConfigProvider, Empty, Modal, Image } from 'antd'
-import { FacebookFilled, InstagramFilled } from '@ant-design/icons'
+import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
@@ -80,15 +80,18 @@ export default function PassAndVisaService() {
                         <section className="visa-section">
                             <div className="section-header">
                                 <h3>Visa Services</h3>
-                                <p>Search and filter the visa type you need to apply.</p>
+                                <p>Search and filter the visa you need to apply.</p>
                             </div>
 
                             <div className="visa-controls">
                                 <div className="visa-search">
-                                    <span className="field-label">Search</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                        <SearchOutlined className='field-label-icon' />
+                                        <span className="field-label">Search</span>
+                                    </div>
                                     <Input
                                         allowClear
-                                        placeholder="Search visa type"
+                                        placeholder="Search visa"
                                         value={search}
                                         onChange={(event) => setSearch(event.target.value)}
                                     />
@@ -102,7 +105,7 @@ export default function PassAndVisaService() {
                                     filteredVisas.map((visa) => (
                                         <div className="visa-card" key={visa._id}>
                                             <div>
-                                                <h4>{visa.visaName}</h4>
+                                                <h3>{visa.visaName}</h3>
                                                 <p>{visa.visaDescription}</p>
                                                 {visa.visaPrice && (
                                                     <p className="visa-price">{`₱ ${visa.visaPrice}`}</p>

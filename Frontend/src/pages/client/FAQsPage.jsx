@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react'
-import { Button, Collapse, ConfigProvider, Input, Modal, Image } from 'antd'
-import { FacebookFilled, InstagramFilled } from '@ant-design/icons'
+import { Button, Collapse, ConfigProvider, Input, Modal, Image, Typography } from 'antd'
+import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import '../../style/client/faqspage.css'
 
+const { Title, Text } = Typography
 
 const { Panel } = Collapse
 
@@ -91,7 +92,7 @@ export default function FAQsPage() {
                 }
             }}
         >
-            <div className="faq-page">
+            <div className="faq-container">
 
                 <div className="faq-hero">
                     <div className="faq-hero-overlay"></div>
@@ -101,7 +102,14 @@ export default function FAQsPage() {
                     </div>
                 </div>
 
-                <div className="faq-container">
+                <div className="faq-page">
+                    <header className="faq-header">
+                        <Title level={2}>Frequently Asked Questions</Title>
+                        <Text type="secondary">
+                            Browse our FAQs to find quick answers about bookings, payments, and services.
+                            Can't find what you're looking for? Contact us for personalized support.
+                        </Text>
+                    </header>
                     <div className="faq-filters">
                         {categories.map((category) => (
                             <Button
@@ -114,7 +122,12 @@ export default function FAQsPage() {
                         ))}
                     </div>
 
+
                     <div className="faq-search">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                            <SearchOutlined className='destinations-primary-label-icon' />
+                            <Text className="destinations-primary-label">Search</Text>
+                        </div>
                         <Input
                             placeholder="Search a question or keyword"
                             value={searchTerm}
@@ -141,6 +154,7 @@ export default function FAQsPage() {
                         </Collapse>
                     )}
                 </div>
+
 
                 <div style={{ paddingTop: '10px', marginTop: '20px' }}>
                     <div className='landingpage-footer'>
@@ -184,6 +198,7 @@ export default function FAQsPage() {
                         </div>
                     </div>
                 </div>
+
 
             </div>
         </ConfigProvider>

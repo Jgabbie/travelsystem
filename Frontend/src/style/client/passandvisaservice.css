@@ -66,8 +66,8 @@
 .visa-section,
 .passport-section {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border: 2px solid #d5d8da;
+    border-radius: 8px;
     padding: 22px;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
     position: sticky;
@@ -114,6 +114,11 @@
     color: #1f2a44;
 }
 
+.field-label-icon {
+    color: #305797;
+    font-size: 18px;
+}
+
 .visa-list {
     display: grid;
     gap: 14px;
@@ -130,9 +135,10 @@
     background: #f8fafc;
 }
 
-.visa-card h4 {
+.visa-card h3 {
     margin: 0 0 6px;
-    font-size: 16px;
+    font-size: 19px;
+    font-weight: 700;
     color: #0f172a;
     font-family: "Montserrat", sans-serif;
 }
@@ -140,8 +146,8 @@
 .visa-card p {
     margin: 0;
     color: #475569;
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 .visa-price {
@@ -239,6 +245,11 @@
     color: #475569;
     font-size: 14px;
     line-height: 1.6;
+}
+
+.passport-price {
+    font-weight: 600;
+    color: #1f2a44;
 }
 
 .passport-card:hover,

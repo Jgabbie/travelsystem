@@ -441,252 +441,223 @@ export default function ProfilePage() {
                     {/* profile */}
                     <div className="profile-container" style={{ marginBottom: 40 }}>
                         <div className="profile-content">
-                            <Card
-                                className="profile-card"
-                                title={
-                                    <div className="profile-card-header">
-                                        <h2>My Profile</h2>
-                                        {!editing && (
-                                            <Button
-                                                type="primary"
-                                                className="profile-action-button"
-                                                icon={<EditOutlined />}
-                                                onClick={handleEdit}
-                                            >
-                                                Edit Profile
-                                            </Button>
-                                        )}
-                                    </div>
-                                }
-                            >
-
-                                <div className="profile-avatar-section">
-                                    <div className="profile-avatar">
+                            <Card className="profile-summary-card">
+                                <div className="profile-summary-body">
+                                    <div className="profile-summary-avatar">
                                         {profileImage ? (
                                             <img src={profileImage} alt="Profile" />
                                         ) : (
-                                            <div className="profile-avatar-placeholder">{getInitials()}</div>
+                                            <div className="profile-summary-initials">{getInitials()}</div>
                                         )}
                                     </div>
-                                    {editing && (
-                                        <>
-                                            <input
-                                                ref={fileInputRef}
-                                                className="profile-avatar-input"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                            />
-                                            <Button
-                                                type="primary"
-                                                icon={<FileImageOutlined />}
-                                                className="profile-action-button"
-                                                onClick={() => fileInputRef.current?.click()}
-                                            >
-                                                Change Photo
-                                            </Button>
-                                            <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
-                                        </>
+                                    <div className="profile-summary-text">
+                                        <h3 className="profile-summary-name">
+                                            {values.firstname || values.lastname
+                                                ? `${values.firstname} ${values.lastname}`.trim()
+                                                : values.username || 'User'}
+                                        </h3>
+                                        <p className="profile-summary-meta">
+                                            <span>{userData?.role || 'Traveler'}</span>
+                                        </p>
+                                        <p className="profile-summary-meta">
+                                            {values.homeAddress || values.nationality || 'Location not set'}
+                                        </p>
+                                    </div>
+                                </div>
+                                {editing && (
+                                    <div style={{ marginTop: 16 }}>
+                                        <input
+                                            ref={fileInputRef}
+                                            className="profile-avatar-input"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                        />
+                                        <Button
+                                            type="primary"
+                                            icon={<FileImageOutlined />}
+                                            className="profile-action-button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            Change Photo
+                                        </Button>
+                                        <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+                                    </div>
+                                )}
+                            </Card>
+
+                            <Card className="profile-section-card">
+                                <div className="profile-section-header">
+                                    <h3 className="profile-section-title">Personal Information</h3>
+                                    {!editing && (
+                                        <Button
+                                            type="primary"
+                                            className="profile-action-button"
+                                            icon={<EditOutlined />}
+                                            onClick={handleEdit}
+                                        >
+                                            Edit
+                                        </Button>
                                     )}
                                 </div>
+                                <div className="profile-section-grid">
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">First Name</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your first name"
+                                                allowClear
+                                                status={error.firstname ? "error" : ""}
+                                                value={values.firstname}
+                                                onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                                onKeyDown={(e) => {
+                                                    const value = e.target.value;
+                                                    if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
 
-                                <div className="profile-fields">
-                                    <div className="profile-field">
-                                        <label className="profile-label">Username</label>
-                                        <Input
-                                            placeholder="Username"
-                                            value={values.username}
-                                            disabled
-                                        />
-                                    </div>
-
-                                    {userData?.role && (
-                                        <div className="profile-field">
-                                            <label className="profile-label">Role</label>
-                                            <Input value={userData.role} disabled />
-                                        </div>
-                                    )}
-
-                                    <div className="profile-field">
-                                        <label className="profile-label">First Name</label>
-                                        <Input
-                                            placeholder="Enter your first name"
-                                            allowClear
-                                            status={error.firstname ? "error" : ""}
-                                            value={values.firstname}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
-                                            onKeyDown={(e) => {
-                                                const value = e.target.value;
-                                                if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
-                                                if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-
-                                                if (
-                                                    !/^[A-Za-z ]$/.test(e.key) &&
-                                                    e.key !== "Backspace" &&
-                                                    e.key !== "ArrowLeft" &&
-                                                    e.key !== "ArrowRight"
-                                                ) {
-                                                    e.preventDefault();
-                                                }
-                                            }}
-                                        />
+                                                    if (
+                                                        !/^[A-Za-z ]$/.test(e.key) &&
+                                                        e.key !== "Backspace" &&
+                                                        e.key !== "ArrowLeft" &&
+                                                        e.key !== "ArrowRight"
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.firstname || 'Not set'}</p>
+                                        )}
                                         {error.firstname && (
                                             <p className="profile-error-message">{error.firstname}</p>
                                         )}
                                     </div>
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">Last Name</label>
-                                        <Input
-                                            placeholder="Enter your last name"
-                                            allowClear
-                                            status={error.lastname ? "error" : ""}
-                                            value={values.lastname}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
-                                            onKeyDown={(e) => {
-                                                const value = e.target.value;
-                                                if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
-                                                if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-                                                if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
-                                                if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
-                                                if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                                if (
-                                                    !/^[A-Za-z -]$/.test(e.key) &&
-                                                    e.key !== "Backspace" &&
-                                                    e.key !== "ArrowLeft" &&
-                                                    e.key !== "ArrowRight"
-                                                ) {
-                                                    e.preventDefault();
-                                                }
-                                            }}
-                                        />
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Last Name</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your last name"
+                                                allowClear
+                                                status={error.lastname ? "error" : ""}
+                                                value={values.lastname}
+                                                onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                                onKeyDown={(e) => {
+                                                    const value = e.target.value;
+                                                    if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                    if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                                    if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                                    if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                    if (
+                                                        !/^[A-Za-z -]$/.test(e.key) &&
+                                                        e.key !== "Backspace" &&
+                                                        e.key !== "ArrowLeft" &&
+                                                        e.key !== "ArrowRight"
+                                                    ) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.lastname || 'Not set'}</p>
+                                        )}
                                         {error.lastname && (
                                             <p className="profile-error-message">{error.lastname}</p>
                                         )}
                                     </div>
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">Email Address</label>
-                                        <Input
-                                            placeholder="Enter your email"
-                                            type="email"
-                                            allowClear
-                                            status={error.email ? "error" : ""}
-                                            value={values.email}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('email', e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === " " && e.key !== "Backspace") {
-                                                    e.preventDefault()
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Date of Birth</span>
+                                        {editing ? (
+                                            <DatePicker
+                                                placeholder="Select birthdate"
+                                                value={values.birthdate ? dayjs(values.birthdate) : null}
+                                                onChange={(date) =>
+                                                    valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
                                                 }
-                                            }}
-                                        />
+                                                format="YYYY-MM-DD"
+                                                allowClear
+                                                style={{ width: '100%' }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.birthdate || 'Not set'}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Email Address</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your email"
+                                                type="email"
+                                                allowClear
+                                                status={error.email ? "error" : ""}
+                                                value={values.email}
+                                                onChange={(e) => valueHandler('email', e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === " " && e.key !== "Backspace") {
+                                                        e.preventDefault()
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.email || 'Not set'}</p>
+                                        )}
                                         {error.email && (
                                             <p className="profile-error-message">{error.email}</p>
                                         )}
                                     </div>
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">Phone Number</label>
-                                        <Input
-                                            maxLength={13}
-                                            placeholder="Enter your phone number"
-                                            allowClear
-                                            addonBefore="+63"
-                                            status={error.phone ? "error" : ""}
-                                            value={values.phone}
-                                            disabled={!editing}
-                                            onChange={(e) => {
-                                                let value = e.target.value.replace(/\D/g, "");
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Phone Number</span>
+                                        {editing ? (
+                                            <Input
+                                                maxLength={13}
+                                                placeholder="Enter your phone number"
+                                                allowClear
+                                                addonBefore="+63"
+                                                status={error.phone ? "error" : ""}
+                                                value={values.phone}
+                                                onChange={(e) => {
+                                                    let value = e.target.value.replace(/\D/g, "");
 
-                                                value = value.slice(0, 11);
+                                                    value = value.slice(0, 11);
 
-                                                let formatted = value;
+                                                    let formatted = value;
 
-                                                if (value.length > 4 && value.length <= 7) {
-                                                    formatted =
-                                                        value.slice(0, 4) + " " +
-                                                        value.slice(4);
-                                                }
-                                                else if (value.length > 7) {
-                                                    formatted =
-                                                        value.slice(0, 4) + " " +
-                                                        value.slice(4, 7) + " " +
-                                                        value.slice(7);
-                                                }
+                                                    if (value.length > 4 && value.length <= 7) {
+                                                        formatted =
+                                                            value.slice(0, 4) + " " +
+                                                            value.slice(4);
+                                                    }
+                                                    else if (value.length > 7) {
+                                                        formatted =
+                                                            value.slice(0, 4) + " " +
+                                                            value.slice(4, 7) + " " +
+                                                            value.slice(7);
+                                                    }
 
-                                                valueHandler("phone", formatted);
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                                    e.preventDefault()
-                                                }
-                                            }}
-                                        />
+                                                    valueHandler("phone", formatted);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                        e.preventDefault()
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.phone || 'Not set'}</p>
+                                        )}
                                         {error.phone && (
                                             <p className="profile-error-message">{error.phone}</p>
                                         )}
                                     </div>
 
-                                    <div className="profile-field">
-                                        <label className="profile-label">Home Address</label>
-                                        <Input
-                                            placeholder="Enter your home address"
-                                            allowClear
-                                            value={values.homeAddress}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('homeAddress', e.target.value)}
-                                        />
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">User Role</span>
+                                        <p className="profile-section-value">{userData?.role || 'Not set'}</p>
                                     </div>
-
-                                    <div className="profile-field">
-                                        <label className="profile-label">Nationality</label>
-                                        <Input
-                                            placeholder="Enter your nationality"
-                                            allowClear
-                                            value={values.nationality}
-                                            disabled={!editing}
-                                            onChange={(e) => valueHandler('nationality', e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div className="profile-field">
-                                        <label className="profile-label">Gender</label>
-                                        <Select
-                                            placeholder="Select gender"
-                                            value={values.gender || undefined}
-                                            disabled={!editing}
-                                            onChange={(value) => valueHandler('gender', value || '')}
-                                            options={[
-                                                { value: 'Male', label: 'Male' },
-                                                { value: 'Female', label: 'Female' },
-                                                { value: 'Other', label: 'Other' },
-                                                { value: 'Prefer not to say', label: 'Prefer not to say' }
-                                            ]}
-                                            allowClear
-                                        />
-                                    </div>
-
-                                    <div className="profile-field">
-                                        <label className="profile-label">Birthdate</label>
-                                        <DatePicker
-                                            placeholder="Select birthdate"
-                                            value={values.birthdate ? dayjs(values.birthdate) : null}
-                                            disabled={!editing}
-                                            onChange={(date) =>
-                                                valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
-                                            }
-                                            format="YYYY-MM-DD"
-                                            allowClear
-                                            style={{ width: '100%' }}
-                                        />
-                                    </div>
-
-
-
-
                                 </div>
 
                                 {userData?.isAccountVerified && (
@@ -694,9 +665,64 @@ export default function ProfilePage() {
                                         <p>✓ Account Verified</p>
                                     </div>
                                 )}
+                            </Card>
+
+                            <Card className="profile-section-card">
+                                <div className="profile-section-header">
+                                    <h3 className="profile-section-title">Additional Information</h3>
+                                </div>
+                                <div className="profile-section-grid">
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Home Address</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your home address"
+                                                allowClear
+                                                value={values.homeAddress}
+                                                onChange={(e) => valueHandler('homeAddress', e.target.value)}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.homeAddress || 'Not set'}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Nationality</span>
+                                        {editing ? (
+                                            <Input
+                                                placeholder="Enter your nationality"
+                                                allowClear
+                                                value={values.nationality}
+                                                onChange={(e) => valueHandler('nationality', e.target.value)}
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.nationality || 'Not set'}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="profile-section-item">
+                                        <span className="profile-section-label">Gender</span>
+                                        {editing ? (
+                                            <Select
+                                                placeholder="Select gender"
+                                                value={values.gender || undefined}
+                                                onChange={(value) => valueHandler('gender', value || '')}
+                                                options={[
+                                                    { value: 'Male', label: 'Male' },
+                                                    { value: 'Female', label: 'Female' },
+                                                    { value: 'Other', label: 'Other' },
+                                                    { value: 'Prefer not to say', label: 'Prefer not to say' }
+                                                ]}
+                                                allowClear
+                                            />
+                                        ) : (
+                                            <p className="profile-section-value">{values.gender || 'Not set'}</p>
+                                        )}
+                                    </div>
+                                </div>
 
                                 {editing && (
-                                    <Space>
+                                    <Space style={{ marginTop: 16 }}>
                                         <Button
                                             type="primary"
                                             className="profile-action-button"
@@ -718,13 +744,13 @@ export default function ProfilePage() {
                                 )}
                             </Card>
 
-
                             <Card
                                 className="profile-card"
-                                title=
-                                {
-                                    <div className='profile-card-header'>
-                                        <h2>Preferences</h2>
+                                style={{ marginTop: '20px' }}
+                            >
+                                <div className="preference-section">
+                                    <div className='profile-card-header' style={{ marginBottom: 15 }}>
+                                        <h3 className="profile-section-title">My Preferences</h3>
                                         <Button
                                             type="primary"
                                             onClick={() => setEditingPreferences(true)}
@@ -735,12 +761,6 @@ export default function ProfilePage() {
                                             Edit Preferences
                                         </Button>
                                     </div>
-
-                                }
-                                style={{ marginTop: '20px' }}
-                            >
-                                <div className="preference-section">
-
                                     {/* MOODS */}
                                     <div className="preference-block">
                                         <h3>What are you in the mood for?</h3>
@@ -821,7 +841,7 @@ export default function ProfilePage() {
                         <div className="profile-side-column">
                             <Card
                                 className="profile-side-card"
-                                title={<h3>My Recent Reviews</h3>}
+                                title={<h3 className="profile-section-title">My Recent Reviews</h3>}
                             >
                                 {recentReviews.length === 0 ? (
                                     <p className="profile-empty-text">No reviews yet.</p>
@@ -843,7 +863,7 @@ export default function ProfilePage() {
 
                             <Card
                                 className="profile-side-card"
-                                title={<h3>My Recent Bookings</h3>}
+                                title={<h3 className="profile-section-title">My Recent Bookings</h3>}
                             >
                                 {recentBookings.length === 0 ? (
                                     <p className="profile-empty-text">No bookings yet.</p>

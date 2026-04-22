@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, Button, Image, Modal, message } from 'antd'
-import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined } from '@ant-design/icons'
+import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined, SlidersOutlined, SearchOutlined, StarFilled } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
 import apiFetch from '../../config/fetchConfig'
@@ -309,7 +309,11 @@ export default function DestinationsPackages() {
                     </header>
 
                     <div className="destinations-search">
-                        <Text className="destinations-label">Search</Text>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <SearchOutlined className='destinations-primary-label-icon' />
+                            <Text className="destinations-primary-label">Search</Text>
+                        </div>
+
                         <Input
                             maxLength={60}
                             className='destinations-inputs'
@@ -321,9 +325,11 @@ export default function DestinationsPackages() {
                     </div>
 
                     <div className="destinations-controls">
-                        {/* <header className="destinations-controls-header">
-                            <Title level={2}>Filter By</Title>
-                        </header> */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <SlidersOutlined className='destinations-primary-label-icon' />
+                            <Text className="destinations-primary-label">Filter By</Text>
+                        </div>
+
 
                         <Row gutter={[16, 16]} className="destinations-filter-grid">
                             <Col xs={24} md={12} xl={6}>
@@ -567,7 +573,7 @@ export default function DestinationsPackages() {
                                                         {pkg.discountPercent > 0 && (
                                                             <Tag className="destinations-discount-tag">-{pkg.discountPercent}%</Tag>
                                                         )}
-                                                        <Tag className="destinations-rating">⭐ {pkg.rating.toFixed(1)}</Tag>
+                                                        <Tag className="destinations-rating"><StarFilled style={{ color: "#FFDE21", fontSize: 20 }} /> {pkg.rating.toFixed(1)}</Tag>
                                                         <button
                                                             type="button"
                                                             className="destinations-wishlist-btn"

@@ -655,65 +655,84 @@ export default function QuotationBookingProcess() {
                         </p>
                     </div>
                     <div className="booking-summary-wrapper">
-
-                        {/* Images Row */}
-                        <div className="booking-summary-images">
-                            {images.map((img, index) => (
-                                <img key={index} className="booking-summary-image" src={img} alt="tour" />
-                            ))}
+                        <div className="booking-summary-hero">
+                            <div className="booking-summary-hero-image-wrap">
+                                {images[0] ? (
+                                    <img className="booking-summary-hero-image" src={images[0]} alt={packageName} />
+                                ) : (
+                                    <div className="booking-summary-hero-placeholder">No image available</div>
+                                )}
+                            </div>
+                            <div className="booking-summary-hero-card">
+                                <div className="booking-summary-hero-meta">
+                                    <span className="booking-summary-pill">{bookingType}</span>
+                                    <span className="booking-summary-pill">{totalTravelersCount === 1 ? '1 Person' : `${totalTravelersCount} Persons`}</span>
+                                </div>
+                                <h3 className="booking-summary-hero-title">{packageName}</h3>
+                                <p className="booking-summary-hero-subtitle">
+                                    Review your booking details, inclusions, and itinerary below.
+                                </p>
+                            </div>
                         </div>
 
-                        {/* New Split Content Grid */}
-                        <div className="booking-summary-content-grid" style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 350px',
-                            gap: '24px',
-                            marginTop: '24px',
-                            alignItems: 'start'
-                        }}>
+                        <div className="booking-summary-gallery">
+                            <h3 className="booking-summary-section-title">Gallery</h3>
+                            <div className="booking-summary-gallery-grid">
+                                {(images.length > 1 ? images.slice(1, 4) : []).map((img, index) => (
+                                    <img key={index} className="booking-summary-gallery-image" src={img} alt={`${packageName} ${index + 2}`} />
+                                ))}
+                                {images.length <= 1 && (
+                                    <div className="booking-summary-gallery-empty">No additional images</div>
+                                )}
+                            </div>
+                        </div>
 
-                            {/* Left Column: Detailed Info */}
-                            <div className="booking-summary-card" style={{ margin: 0 }}>
-                                <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>
-                                    Booking Details
-                                </h3>
+                        <div className="booking-summary-overview-grid">
+                            <div className="booking-summary-overview">
+                                <h3 className="booking-summary-section-title">Overview</h3>
+                                <p className="booking-summary-overview-text">
+                                    Confirm your tour package, travel dates, and traveler details before proceeding.
+                                </p>
 
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Tour Package</span>
-                                    <span className="booking-summary-value"><strong>{packageName}</strong></span>
-                                </div>
+                                <div className="booking-summary-card booking-summary-card-flat">
+                                    <h4 className="booking-summary-card-title">Booking Details</h4>
 
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Booking Type</span>
-                                    <span className="booking-summary-value">
-                                        {bookingType}
-                                    </span>
-                                </div>
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Tour Package</span>
+                                        <span className="booking-summary-value"><strong>{packageName}</strong></span>
+                                    </div>
 
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Travel Date</span>
-                                    <span className="booking-summary-value">
-                                        {quotationBookingData.travelDate}
-                                    </span>
-                                </div>
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Booking Type</span>
+                                        <span className="booking-summary-value">
+                                            {bookingType}
+                                        </span>
+                                    </div>
 
-                                <div className='booking-summary-row'>
-                                    <span className="booking-summary-label">Airline / Hotel</span>
-                                    <span className="booking-summary-value">
-                                        {airlineOptions[0]?.name || 'N/A'} • {hotelOptions[0]?.name || 'N/A'}
-                                    </span>
-                                </div>
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Travel Date</span>
+                                        <span className="booking-summary-value">
+                                            {quotationBookingData.travelDate}
+                                        </span>
+                                    </div>
 
-                                <div className="booking-summary-row">
-                                    <span className="booking-summary-label">Travelers</span>
-                                    <span className="booking-summary-value">
-                                        {totalTravelersCount === 1 ? '1 Person' : `${totalTravelersCount} Person(s)`}
-                                    </span>
+                                    <div className='booking-summary-row'>
+                                        <span className="booking-summary-label">Airline / Hotel</span>
+                                        <span className="booking-summary-value">
+                                            {airlineOptions[0]?.name || 'N/A'} • {hotelOptions[0]?.name || 'N/A'}
+                                        </span>
+                                    </div>
+
+                                    <div className="booking-summary-row">
+                                        <span className="booking-summary-label">Travelers</span>
+                                        <span className="booking-summary-value">
+                                            {totalTravelersCount === 1 ? '1 Person' : `${totalTravelersCount} Person(s)`}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Right Column: Pricing Summary Card */}
-                            <div className="booking-summary-card price-highlight-card" >
+                            <div className="booking-summary-card price-highlight-card">
                                 <span className='booking-summary-total-amount-label'>
                                     Total Amount
                                 </span>
@@ -752,8 +771,8 @@ export default function QuotationBookingProcess() {
                             {itineraryEntries.length ? (
                                 <div className='itinerary-list'>
                                     {itineraryEntries.map((day) => (
-                                        <div key={day.key} className='itinerary-day'>
-                                            <div className='itinerary-day-label'>{day.label}</div>
+                                        <details key={day.key} className='itinerary-day'>
+                                            <summary className='itinerary-day-label'>{day.label}</summary>
                                             {day.items.length ? (
                                                 <ul className='itinerary-items'>
                                                     {day.items.map((item, index) => (
@@ -763,7 +782,7 @@ export default function QuotationBookingProcess() {
                                             ) : (
                                                 <p className='itinerary-empty'>No activities listed.</p>
                                             )}
-                                        </div>
+                                        </details>
                                     ))}
                                 </div>
                             ) : (

@@ -63,6 +63,19 @@
     color: #1f2a44;
 }
 
+.destinations-primary-label {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.destinations-primary-label-icon {
+    color: #305797;
+    font-size: 22px;
+}
+
 .destinations-search .ant-input {
     border-radius: 10px;
     padding: 10px 12px;
@@ -236,6 +249,10 @@
     border-radius: 999px;
     white-space: nowrap;
     height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
 }
 
 .destinations-card-meta {

@@ -1,32 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
 
 .packagepage-container {
     min-height: 100vh;
-    padding: 50px 32px 48px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    font-family: "Roboto", sans-serif;
+    padding: 48px 32px 64px;
+    background: radial-gradient(circle at top, #f7f3ee 0%, #f2f6fb 40%, #eef2f9 100%);
+    font-family: "Plus Jakarta Sans", sans-serif;
+    color: #1f2a44;
 }
 
 .package-box {
     max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    gap: 36px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 32px;
+    align-items: start;
 }
 
 .package-left {
     background: #ffffff;
-    height: 551px;
     width: 100%;
-    max-width: 740px;
-    border-radius: 16px;
+    border-radius: 4px;
+    border: 2px solid #e5e7eb;
     padding: 28px;
-    box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
+    box-shadow: 0 20px 40px rgba(31, 42, 68, 0.08);
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 20px;
+}
+
+.package-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .package-title-group {
@@ -37,24 +47,54 @@
 
 .package-title {
     margin: 0;
-    font-family: "Montserrat", sans-serif;
-    font-size: 28px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 34px;
+    font-weight: 700;
     color: #305797;
 }
 
 .package-duration {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.6px;
     color: #6b7280;
 }
 
+.package-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.package-chip {
+    background: #eef2fb;
+    color: #305797;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.package-rating-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #fff6e6;
+    color: #ad6a00;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .package-description p {
     margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.7;
     color: #374151;
 }
 
@@ -66,7 +106,7 @@
 
 .package-action-secondary,
 .package-action-outline {
-    font-family: "Roboto", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #305797;
@@ -85,7 +125,7 @@
 }
 
 .package-action-remove {
-    font-family: "Roboto", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 13px;
     font-weight: 600;
     background-color: #992A46;
@@ -102,23 +142,24 @@
     color: #992A46 !important;
 }
 
-.package-left-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
+.package-gallery {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 14px;
 }
 
-.package-image-section {
-    border-radius: 12px;
+.package-gallery-main,
+.package-gallery-grid {
+    border-radius: 18px;
     overflow: hidden;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
-    flex: 1;
-    min-height: 0;
-    display: flex;
+    background: #f3f5f9;
+    border: 1px solid #e6e8ee;
+}
+
+.package-gallery-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
 }
 
 .packagepage-container .package-image {
@@ -126,7 +167,6 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    flex: 1;
 }
 
 .packagepage-container .package-image-placeholder {
@@ -141,24 +181,52 @@
     text-transform: uppercase;
 }
 
+.package-detail-section h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: #1f2a44;
+}
+
+.package-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px 18px;
+}
+
+.package-detail-item {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f7f9fc;
+    border: 1px solid #e6e8ee;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.package-detail-item strong {
+    font-size: 14px;
+    color: #1f2a44;
+}
+
 .package-right {
     display: flex;
     flex-direction: column;
-    height: 540px;
     width: 100%;
-    max-width: 610px;
-    margin-bottom: 40px;
     gap: 18px;
+    position: sticky;
+    top: 140px;
 }
 
 .package-price-card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 22px 24px;
-    box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
+    border-radius: 4px;
+    border: 2px solid #e5e7eb;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(31, 42, 68, 0.12);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
 }
 
@@ -171,13 +239,13 @@
 }
 
 .package-pricepax {
-    font-size: 43px;
+    font-size: 36px;
     font-weight: 700;
     color: #305797;
 }
 
 .package-availability-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -194,13 +262,34 @@
     color: #305797 !important;
 }
 
+.package-side-meta {
+    display: grid;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+}
+
+.package-side-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.package-side-row strong {
+    color: #1f2a44;
+    font-weight: 600;
+}
+
 .package-tabs {
-    height: 345px;
     width: 100%;
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 18px;
-    box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
+    border: 1px solid #e6e8ee;
 }
 
 .package-tabs .ant-tabs-nav {
@@ -219,10 +308,15 @@
 
 .package-reviews {
     display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "summary"
+        "breakdown"
+        "list"
+        "form";
+    align-items: start;
     gap: 16px;
-    max-height: 515px;
-    overflow-y: auto;
-    padding-right: 8px;
+    padding: 6px 4px 8px;
 }
 
 .package-tab-content-scroll {
@@ -233,10 +327,11 @@
 
 
 .package-reviews-card {
-    border-radius: 16px;
-    box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
+    border-radius: 4px;
+    background: #ffffff;
+    border: 1px solid #e6e8ee;
+    box-shadow: 0 18px 32px rgba(16, 24, 40, 0.12);
     width: 100%;
-    margin-bottom: 40px;
 }
 
 @media (max-width: 1100px) {
@@ -248,7 +343,6 @@
     .package-left,
     .package-right {
         max-width: 900px;
-        height: auto;
     }
 
     .package-tabs {
@@ -272,11 +366,20 @@
     }
 
     .package-title {
-        font-size: 22px;
+        font-size: 26px;
     }
 
     .package-pricepax {
-        font-size: 32px;
+        font-size: 30px;
+    }
+
+    .package-gallery {
+        grid-template-columns: 1fr;
+    }
+
+    .package-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: minmax(0, 1fr);
     }
 
     .package-review-summary {
@@ -306,26 +409,30 @@
 }
 
 .package-reviews-card .ant-card-body {
-    padding: 18px;
+    padding: 20px;
 }
 
 .package-review-list {
+    grid-area: list;
     display: grid;
-    gap: 12px;
+    gap: 14px;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
 }
 
 .package-review-breakdown {
+    grid-area: breakdown;
     display: grid;
     gap: 8px;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    padding: 14px 12px;
+    border-radius: 16px;
+    border: 1px solid #e6ecf3;
     background: #ffffff;
 }
 
 .package-review-breakdown-title {
     margin: 0 0 10px;
-    /* padding: 20px; */
     font-size: 14px;
     font-weight: 700;
     text-align: center;
@@ -334,7 +441,7 @@
 
 .package-review-breakdown-row {
     display: grid;
-    grid-template-columns: 60px minmax(0, 1fr) 32px;
+    grid-template-columns: 48px minmax(0, 1fr) 32px;
     align-items: center;
     gap: 10px;
     font-size: 12px;
@@ -347,8 +454,8 @@
 }
 
 .package-review-breakdown-bar {
-    height: 8px;
-    background: #e5e7eb;
+    height: 7px;
+    background: #edf1f5;
     border-radius: 999px;
     overflow: hidden;
 }
@@ -356,7 +463,27 @@
 .package-review-breakdown-fill {
     display: block;
     height: 100%;
-    background: #fadb14;
+    background: #305797;
+}
+
+.package-review-breakdown-row:nth-child(2) .package-review-breakdown-fill {
+    background: rgba(48, 87, 151, 0.95);
+}
+
+.package-review-breakdown-row:nth-child(3) .package-review-breakdown-fill {
+    background: rgba(48, 87, 151, 0.85);
+}
+
+.package-review-breakdown-row:nth-child(4) .package-review-breakdown-fill {
+    background: rgba(48, 87, 151, 0.75);
+}
+
+.package-review-breakdown-row:nth-child(5) .package-review-breakdown-fill {
+    background: rgba(48, 87, 151, 0.6);
+}
+
+.package-review-breakdown-row:nth-child(6) .package-review-breakdown-fill {
+    background: rgba(48, 87, 151, 0.45);
 }
 
 .package-review-breakdown-count {
@@ -366,14 +493,15 @@
 }
 
 .package-review-summary {
+    grid-area: summary;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    background: #f8fafc;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 18px 16px;
+    border-radius: 18px;
+    border: 1px solid #e6ecf3;
+    background: #f6f8fb;
 }
 
 .package-review-label {
@@ -394,6 +522,22 @@
     flex-wrap: wrap;
 }
 
+.package-review-average span {
+    font-size: 22px;
+    font-weight: 700;
+    color: #305797;
+}
+
+.package-reviews .ant-rate {
+    font-size: 14px;
+}
+
+.package-reviews .ant-rate-star-full .ant-rate-star-second,
+.package-reviews .ant-rate-star-half .ant-rate-star-first,
+.package-reviews .ant-rate-star-half .ant-rate-star-second {
+    color: #305797;
+}
+
 .package-review-count {
     font-size: 12px;
     color: #6b7280;
@@ -401,10 +545,11 @@
 }
 
 .package-review-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px 14px;
-    background: #f9fafb;
+    border: 1px solid #e6ecf3;
+    border-radius: 16px;
+    padding: 14px 16px;
+    background: #ffffff;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
 }
 
 .package-review-header {
@@ -426,7 +571,7 @@
     height: 36px;
     border-radius: 50%;
     overflow: hidden;
-    background: #e2e8f0;
+    background: #e6ecf3;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -461,6 +606,7 @@
     margin: 0;
     color: #374151;
     font-size: 14px;
+    line-height: 1.5;
 }
 
 .package-review-date {
@@ -470,17 +616,31 @@
 }
 
 .package-review-form {
+    grid-area: form;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-top: 8px;
-    border-top: 1px solid #e5e7eb;
+    padding-top: 6px;
 }
 
 .package-review-form h3 {
     margin: 0;
     font-size: 16px;
     color: #305797;
+}
+
+.package-review-form .ant-input,
+.package-review-form .ant-input-textarea {
+    border-radius: 12px;
+    border-color: #dfe7f1;
+}
+
+.package-review-form .ant-input:focus,
+.package-review-form .ant-input-textarea:focus,
+.package-review-form .ant-input-focused,
+.package-review-form .ant-input-textarea-focused {
+    border-color: #305797;
+    box-shadow: 0 0 0 2px rgba(48, 87, 151, 0.12);
 }
 
 .package-wishlist-modal .ant-modal-content {
@@ -544,6 +704,21 @@
 
     .package-review-comment {
         font-size: 13px;
+    }
+}
+
+@media (max-width: 900px) {
+    .package-reviews {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "summary"
+            "breakdown"
+            "list"
+            "form";
+    }
+
+    .package-review-list {
+        max-height: none;
     }
 }
 
