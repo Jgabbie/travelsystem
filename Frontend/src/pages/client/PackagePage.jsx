@@ -11,6 +11,7 @@ import '../../style/client/packagepage.css'
 import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArrangementModal'
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
+import SignupModal from '../../components/modals/SignupModal';
 import TopNavUser from '../../components/topnav/TopNavUser';
 
 
@@ -24,6 +25,7 @@ export default function PackagePage() {
 
     //login state
     const [isLoginVisible, setIsLoginVisible] = useState(false);
+    const [isSignupVisible, setIsSignupVisible] = useState(false);
 
     //states for modals
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
@@ -893,8 +895,21 @@ export default function PackagePage() {
                     <LoginModal
                         isOpenLogin={isLoginVisible}
                         isCloseLogin={() => setIsLoginVisible(false)}
+                        onOpenSignup={() => {
+                            setIsLoginVisible(false);
+                            setIsSignupVisible(true);
+                        }}
                         onLoginSuccess={() => {
                             setIsLoginVisible(false);
+                        }}
+                    />
+
+                    <SignupModal
+                        isOpenSignup={isSignupVisible}
+                        isCloseSignup={() => setIsSignupVisible(false)}
+                        onOpenLogin={() => {
+                            setIsSignupVisible(false);
+                            setIsLoginVisible(true);
                         }}
                     />
 

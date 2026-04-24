@@ -1,19 +1,34 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Input, Typography, ConfigProvider, Empty, Modal, Image } from 'antd'
+import { Button, Input, Typography, ConfigProvider, Empty } from 'antd'
 import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
+import { useAuth } from '../../hooks/useAuth'
+import LoginModal from '../../components/modals/LoginModal'
+import SignupModal from '../../components/modals/SignupModal'
 
 export default function PassAndVisaService() {
     const [search, setSearch] = useState('')
     const [visaType, setVisaType] = useState('All')
     const [processing, setProcessing] = useState('All')
     const [services, setServices] = useState([])
-    const [isChatbotOpen, setIsChatbotOpen] = useState(false)
-    const [chatMessage, setChatMessage] = useState('')
+    const [loginModalVisible, setLoginModalVisible] = useState(false)
+    const [signupModalVisible, setSignupModalVisible] = useState(false)
+    const [pendingNavigation, setPendingNavigation] = useState(null)
     const { Title, Text } = Typography
     const navigate = useNavigate()
+    const { auth } = useAuth()
+
+    const handleProtectedNavigation = (path, state = undefined) => {
+        if (!auth || !auth?.username) {
+            setPendingNavigation({ path, state })
+            setLoginModalVisible(true)
+            return
+        }
+
+        navigate(path, state ? { state } : undefined)
+    }
 
     useEffect(() => {
         const loadServices = async () => {
@@ -62,6 +77,34 @@ export default function PassAndVisaService() {
                 }
             }}
         >
+            <LoginModal
+                isOpenLogin={loginModalVisible}
+                isCloseLogin={() => setLoginModalVisible(false)}
+                onOpenSignup={() => {
+                    setLoginModalVisible(false)
+                    setSignupModalVisible(true)
+                }}
+                onLoginSuccess={() => {
+                    setLoginModalVisible(false)
+                    if (pendingNavigation?.path) {
+                        navigate(
+                            pendingNavigation.path,
+                            pendingNavigation.state ? { state: pendingNavigation.state } : undefined
+                        )
+                        setPendingNavigation(null)
+                    }
+                }}
+            />
+
+            <SignupModal
+                isOpenSignup={signupModalVisible}
+                isCloseSignup={() => setSignupModalVisible(false)}
+                onOpenLogin={() => {
+                    setSignupModalVisible(false)
+                    setLoginModalVisible(true)
+                }}
+            />
+
             <div className='passandvisa-container'>
                 <div className="passandvisa-hero-section">
                     <div className="passandvisa-hero-overlay"></div>
@@ -115,9 +158,7 @@ export default function PassAndVisaService() {
                                                 <Button
                                                     className="visa-apply-btn"
                                                     type='primary'
-                                                    onClick={() => navigate('/apply-visa', {
-                                                        state: { visaName: visa.visaName }
-                                                    })}
+                                                    onClick={() => handleProtectedNavigation('/apply-visa', { visaName: visa.visaName })}
                                                 >
                                                     Apply
                                                 </Button>
@@ -138,10 +179,10 @@ export default function PassAndVisaService() {
                                     className="passport-card"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => navigate('/new-passport')}
+                                    onClick={() => handleProtectedNavigation('/new-passport')}
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
-                                            navigate('/new-passport')
+                                            handleProtectedNavigation('/new-passport')
                                         }
                                     }}
                                 >
@@ -153,10 +194,10 @@ export default function PassAndVisaService() {
                                     className="passport-card"
                                     role="button"
                                     tabIndex={0}
-                                    onClick={() => navigate('/renew-passport')}
+                                    onClick={() => handleProtectedNavigation('/renew-passport')}
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
-                                            navigate('/renew-passport')
+                                            handleProtectedNavigation('/renew-passport')
                                         }
                                     }}
                                 >

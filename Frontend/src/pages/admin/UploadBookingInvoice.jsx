@@ -22,7 +22,7 @@ const getFrequencyWeeks = (value) => {
     return 2;
 };
 
-const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
+const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0, bookingDate = null) => {
     const items = invoice?.items || [];
     const subtotal = items.reduce((sum, item) => {
         const qty = Number(item.qty) || 0;
@@ -31,10 +31,12 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
     }, 0);
 
     const totalAmount = subtotal;
-    const today = dayjs();
+    const baseDate = bookingDate && dayjs(bookingDate).isValid()
+        ? dayjs(bookingDate)
+        : dayjs();
     const travelDateValue = bookingDetails?.travelDate?.startDate;
-    const travelDateComputation = travelDateValue ? dayjs(travelDateValue) : today;
-    const maxAllowedDate = today.add(45, "day");
+    const travelDateComputation = travelDateValue ? dayjs(travelDateValue) : baseDate;
+    const maxAllowedDate = baseDate.add(45, "day");
     const dueCutoffDate = travelDateComputation.isBefore(maxAllowedDate)
         ? travelDateComputation
         : maxAllowedDate;
@@ -44,7 +46,7 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
 
     const frequencyWeeks = getFrequencyWeeks(bookingDetails?.paymentDetails?.frequency);
     const paymentDates = [];
-    let nextDate = dayjs(today).add(frequencyWeeks, "week");
+    let nextDate = dayjs(baseDate).add(frequencyWeeks, "week");
 
     while (nextDate.isBefore(dueCutoffDate) || nextDate.isSame(dueCutoffDate)) {
         paymentDates.push(nextDate);
@@ -64,7 +66,7 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0) => {
         {
             label: "Deposit",
             amount: depositAmount,
-            date: today,
+            date: baseDate,
             status: paidAmount >= (depositAmount - 0.01) ? "PAID" : "PENDING"
         },
         ...paymentDates.map((date, index) => {
@@ -257,7 +259,7 @@ export default function UploadBookingInvoice() {
         }, 0) * 100) / 100;
     const paidAmountFallback = Number(bookingDetails.paidAmount || bookingDetails.amountPaid || 0);
     const paidAmount = paidAmountFromTransactions > 0 ? paidAmountFromTransactions : paidAmountFallback;
-    const remainingBalance = Math.max(totalPrice - paidAmount, 0);
+    const persistedPenalty = Number(booking?.paymentPenaltyTotal || 0);
     const packageName =
         bookingDetails.tourPackageTitle ||
         bookingDetails.packageName ||
@@ -278,34 +280,55 @@ export default function UploadBookingInvoice() {
             ? `${dayjs(travelStart).format("MMM D, YYYY")} - ${dayjs(travelEnd).format("MMM D, YYYY")}`
             : dayjs(travelStart).format("MMM D, YYYY"))
         : "--";
-    const issueDate = booking?.createdAt ? dayjs(booking.createdAt) : dayjs();
+    const issueDate = booking?.bookingDate ? dayjs(booking.bookingDate) : dayjs();
     const paymentMode = bookingDetails?.paymentMode
         || (bookingDetails?.paymentDetails?.paymentType === "deposit" ? "Deposit" : "Full Payment");
     const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
 
     const buildInvoiceNumber = (allBookings, currentBooking) => {
         if (!currentBooking) return "";
-        const createdAtValue = currentBooking.createdAt || currentBooking.bookingDate;
+        const createdAtValue = currentBooking.bookingDate || currentBooking.createdAt;
         const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
         if (!createdAt || !createdAt.isValid()) return "";
+
+        const getIdentity = (item) =>
+            String(item?._id || item?.id || item?.reference || item?.ref || "");
+
+        const currentIdentity = getIdentity(currentBooking);
 
         const monthKey = createdAt.format("MM");
         const monthBookings = (allBookings || [])
             .map((item) => ({
                 ...item,
-                _createdAt: item.createdAt || item.bookingDate
+                _createdAt: item.bookingDate || item.createdAt,
+                _identity: getIdentity(item)
             }))
             .filter((item) => item._createdAt && dayjs(item._createdAt).isValid())
             .filter((item) => dayjs(item._createdAt).isSame(createdAt, "month"));
 
-        monthBookings.sort((a, b) => new Date(a._createdAt) - new Date(b._createdAt));
-        const index = monthBookings.findIndex((item) => String(item._id) === String(currentBooking._id));
+        monthBookings.sort((a, b) => {
+            const timeDiff = dayjs(a._createdAt).valueOf() - dayjs(b._createdAt).valueOf();
+            if (timeDiff !== 0) return timeDiff;
+            return a._identity.localeCompare(b._identity);
+        });
+
+        let index = monthBookings.findIndex((item) => item._identity === currentIdentity);
+
+        if (index < 0) {
+            const currentRef = String(currentBooking.reference || currentBooking.ref || "");
+            if (currentRef) {
+                index = monthBookings.findIndex(
+                    (item) => String(item.reference || item.ref || "") === currentRef
+                );
+            }
+        }
+
         const sequence = index >= 0 ? index + 1 : monthBookings.length + 1;
         return `${monthKey}${String(sequence).padStart(2, "0")}`;
     };
 
     useEffect(() => {
-        if (!reference) return;
+        if (!reference || !booking) return;
         const fetchInvoiceNumber = async () => {
 
             try {
@@ -323,7 +346,7 @@ export default function UploadBookingInvoice() {
             }
 
             // fallback
-            const createdAtValue = booking.createdAt || booking.bookingDate;
+            const createdAtValue = booking.bookingDate || booking.createdAt;
             const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
 
             if (createdAt && createdAt.isValid()) {
@@ -378,8 +401,8 @@ export default function UploadBookingInvoice() {
     const totals = calculateTotals(invoice.items);
 
     const installmentData = useMemo(() => {
-        return runInstallmentLogic(invoice, bookingDetails, paidAmount);
-    }, [invoice, bookingDetails, paidAmount]);
+        return runInstallmentLogic(invoice, bookingDetails, paidAmount, issueDate);
+    }, [invoice, bookingDetails, paidAmount, issueDate]);
 
     const installmentsOnly = installmentData.paymentSchedule?.filter((item) =>
         item.label.toLowerCase().includes("installment")
@@ -392,6 +415,9 @@ export default function UploadBookingInvoice() {
     const lastInstallmentDate = lastInstallment
         ? dayjs(lastInstallment.date).format("MMMM D, YYYY")
         : null;
+
+    const totalPriceWithPenalty = totalPrice + persistedPenalty;
+    const remainingBalance = Math.max(totalPriceWithPenalty - paidAmount, 0);
 
     invoice.invoice.dueDate = lastInstallmentDate
         ? dayjs(lastInstallmentDate).format("MMMM D, YYYY")
@@ -468,7 +494,7 @@ export default function UploadBookingInvoice() {
                         <View style={[styles.summaryCol, styles.darkBg]}>
                             <Text style={[styles.label, { color: "#FFF" }]}>TOTAL PRICE</Text>
                             <Text style={[styles.summaryValue, { color: "#FFF" }]}>
-                                PHP {Number(totals.subtotal).toLocaleString('en-PH', {
+                                PHP {Number(totals.subtotal + persistedPenalty).toLocaleString('en-PH', {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}
@@ -568,7 +594,7 @@ export default function UploadBookingInvoice() {
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL DUE</Text>
                             <Text style={styles.totalDueValue}>
-                                PHP {Number(totals.subtotal).toLocaleString('en-PH', {
+                                PHP {Number(totals.subtotal + persistedPenalty).toLocaleString('en-PH', {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}
@@ -637,7 +663,7 @@ export default function UploadBookingInvoice() {
                                     <Card className="upload-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
                                         <AntText type="secondary">Total Price</AntText>
                                         <div className="upload-invoice-amount">
-                                            {Number(totalPrice).toLocaleString('en-PH', {
+                                            {Number(totalPriceWithPenalty).toLocaleString('en-PH', {
                                                 style: 'currency',
                                                 currency: 'PHP',
                                                 minimumFractionDigits: 2,
@@ -708,6 +734,22 @@ export default function UploadBookingInvoice() {
                                             <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
                                         </AntText>
                                     </div>
+
+                                    {persistedPenalty > 0 && (
+                                        <div style={{
+                                            backgroundColor: "#fff7e6",
+                                            border: "1px solid #ffd591",
+                                            padding: "8px 12px",
+                                            borderRadius: "6px",
+                                            marginBottom: "16px",
+                                            fontSize: "13px",
+                                            color: "#ad4e00"
+                                        }}>
+                                            <AntText>
+                                                <strong>Penalty Notice:</strong> PHP {Number(persistedPenalty).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} has been added to this customer's balance for late payment beyond the allowed timeframe.
+                                            </AntText>
+                                        </div>
+                                    )}
 
                                     {transactions.length === 0 ? (
                                         <AntText type="secondary">No transactions yet.</AntText>
