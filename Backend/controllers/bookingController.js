@@ -11,6 +11,7 @@ const transporter = require('../config/nodemailer')
 const crypto = require('crypto');
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs');
+const { processBillingForBookingId } = require('../utils/billingDeadlineScheduler')
 
 
 const generateBookingReference = () => {
@@ -194,16 +195,25 @@ const getBookingByReference = async (req, res) => {
         const user = await UserModel.findById(userId).select('role').lean();
         const isAdmin = user?.role === 'Admin' || user?.role === 'Employee';
 
+        const bookingMatch = await BookingModel.findOne(
+            isAdmin ? { reference } : { reference, userId }
+        )
+            .select('_id')
+            .lean();
+
+        if (!bookingMatch) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Ensure penalty/reminder computation is up to date before returning invoice data.
+        await processBillingForBookingId(bookingMatch._id);
+
         const bookingData = await BookingModel.findOne(
             isAdmin ? { reference } : { reference, userId }
         )
             .populate('packageId', 'packageName packageType')
             .select('-__v -userId -statusHistory -createdAt -updatedAt -expiresAt')
             .lean();
-
-        if (!bookingData) {
-            return res.status(404).json({ message: 'Booking not found' });
-        }
 
         const transactionData = await TransactionModel.find({ bookingId: bookingData._id })
             .sort({ createdAt: -1 })
@@ -482,6 +492,9 @@ const deleteBooking = async (req, res) => {
             photoFiles: booking.photoFiles,
             statusHistory: booking.statusHistory,
             slotDecremented: booking.slotDecremented,
+            paymentPenaltyTotal: booking.paymentPenaltyTotal,
+            paymentPenaltyKeys: booking.paymentPenaltyKeys,
+            paymentReminderKeys: booking.paymentReminderKeys,
             createdAt: booking.createdAt,
             expiresAt: booking.expiresAt
         })
@@ -526,6 +539,9 @@ const restoreArchivedBooking = async (req, res) => {
             photoFiles: archivedBooking.photoFiles,
             statusHistory: archivedBooking.statusHistory,
             slotDecremented: archivedBooking.slotDecremented,
+            paymentPenaltyTotal: archivedBooking.paymentPenaltyTotal,
+            paymentPenaltyKeys: archivedBooking.paymentPenaltyKeys,
+            paymentReminderKeys: archivedBooking.paymentReminderKeys,
             createdAt: archivedBooking.createdAt,
             expiresAt: restoredExpiresAt
         })

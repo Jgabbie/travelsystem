@@ -27,6 +27,7 @@ const sendEmailRoutes = require("./routes/sendEmailRoutes")
 const preferencesRoutes = require("./routes/preferencesRoutes")
 const uploadRoutes = require("./routes/uploadRoutes")
 const chatbotRoutes = require("./routes/chatbotRoutes")
+const { startBillingDeadlineScheduler } = require('./utils/billingDeadlineScheduler');
 
 const rateLimit = require('express-rate-limit');
 
@@ -58,9 +59,7 @@ app.use(cookieParser())
 app.use(express.json({
     limit: '10mb',
     verify: (req, res, buf) => {
-        // Only store rawBody for the webhook route to save memory
         if (req.originalUrl.includes('/api/payment/webhook')) {
-            console.log('✅ RawBody captured for:', req.originalUrl);
             req.rawBody = buf;
         }
     }
@@ -146,6 +145,15 @@ if (!isServerless) {
     // Remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {
         console.log(`Server is up and running on port ${PORT}`);
+
+        connectToDatabase()
+            .then(() => {
+                startBillingDeadlineScheduler();
+                console.log('Billing deadline scheduler started.');
+            })
+            .catch((error) => {
+                console.error('Failed to start billing deadline scheduler:', error);
+            });
     });
 }
 

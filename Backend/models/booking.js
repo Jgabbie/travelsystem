@@ -21,6 +21,9 @@ const BookingSchema = new mongoose.Schema({
         }
     ],
     slotDecremented: { type: Boolean, default: false },
+    paymentPenaltyTotal: { type: Number, default: 0 },
+    paymentPenaltyKeys: [{ type: String }],
+    paymentReminderKeys: [{ type: String }],
     createdAt: { type: Date, default: Date.now, index: true },
     expiresAt: { type: Date, required: true, index: true }
 }, { timestamps: true })
