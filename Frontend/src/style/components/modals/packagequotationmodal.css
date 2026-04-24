@@ -358,7 +358,8 @@
     max-width: 100%;
     margin: 0;
     box-sizing: border-box;
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
 }
 
 .quotation-flight-details {
@@ -408,7 +409,8 @@
     font-size: 1.4rem;
     color: #305797;
     /* matching your theme */
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
 }
 
 .quotation-field label {

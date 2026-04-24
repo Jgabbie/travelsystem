@@ -202,7 +202,8 @@
 .application-doc-preview-media {
     width: 100%;
     max-width: 250px;
-    aspect-ratio: 1 / 1;
+    height: 250px;
+    object-fit: cover;
 }
 
 .application-doc-download {

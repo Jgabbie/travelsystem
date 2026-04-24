@@ -221,7 +221,8 @@
 .application-doc-preview-box {
     width: 100%;
     max-width: 250px;
-    aspect-ratio: 1 / 1;
+    height: 250px;
+    overflow: hidden;
 }
 
 .application-doc-preview-media {

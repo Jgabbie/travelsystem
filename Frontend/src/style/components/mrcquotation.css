@@ -49,12 +49,12 @@
 
 .mrc-quotation-page::before {
     background: #1f6aa5;
-    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    border-radius: 0 0 100% 100%;
 }
 
 .mrc-quotation-page::after {
     background: #1f6aa5;
-    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    border-radius: 100% 100% 0 0;
 }
 
 .mrc-quotation-page::before,

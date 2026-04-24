@@ -117,7 +117,8 @@
 }
 
 .booking-section .booking-summary-image:first-child {
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
     height: 280px;
 }
 
@@ -244,7 +245,8 @@
 }
 
 .booking-summary-gallery-empty {
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
     padding: 20px;
     border-radius: 12px;
     border: 1px dashed #cbd5f5;
