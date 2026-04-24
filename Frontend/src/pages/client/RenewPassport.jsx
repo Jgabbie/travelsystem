@@ -75,7 +75,6 @@ export default function RenewPassport() {
                 applicationType: 'Renewal Passport'
             });
             setSentModalVisible(true);
-            console.log('Submitting passport application request');
         } catch (error) {
             console.error('Error submitting passport application request:', error);
         }

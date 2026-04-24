@@ -67,16 +67,15 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
         setIsLoading(true);
         try {
-            const response = await apiFetch('/auth/loginUser', {
-                method: 'POST',
-                body: JSON.stringify({ username: values.username, password: values.password })
+            const response = await apiFetch.post('/auth/loginUser', {
+                username: values.username,
+                password: values.password,
             });
 
             if (response) {
                 if (onLoginSuccess) {
                     const userData = response.user;
                     const userRole = userData?.role;
-                    console.log("userRole:", userRole)
                     setIsLoading(false);
 
                     if (userData) {
@@ -110,10 +109,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             if (status === 403) {
                 try {
                     const email = data.email
-                    await apiFetch('/auth/send-verify-otp', {
-                        method: 'POST',
-                        body: JSON.stringify({ email: email })
-                    })
+                    await apiFetch.post('/auth/send-verify-otp', { email: email })
                     setEmail(email)
                     setIsLoading(false);
                     setIsOTPModalVisible(true)
@@ -140,9 +136,11 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         setIsLoading(true);
 
         try {
-            const response = await apiFetch('/auth/verify-account', {
-                method: 'POST',
-                body: JSON.stringify({ otp: getOTP, email: email, username: values.username, password: values.password })
+            const response = await apiFetch.post('/auth/verify-account', {
+                otp: getOTP,
+                email: email,
+                username: values.username,
+                password: values.password,
             });
 
             if (response?.user || response?.accessToken || response?.message) {
@@ -151,9 +149,9 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 setIsVerifiedModalOpen(false);
 
                 try {
-                    const loginResponse = await apiFetch('/auth/loginUser', {
-                        method: 'POST',
-                        body: JSON.stringify({ username: values.username, password: values.password })
+                    const loginResponse = await apiFetch.post('/auth/loginUser', {
+                        username: values.username,
+                        password: values.password,
                     });
 
                     const userData = loginResponse.user;
@@ -193,10 +191,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
-            await apiFetch('/auth/send-verify-otp', {
-                method: 'POST',
-                body: JSON.stringify({ email: email })
-            })
+            await apiFetch.post('/auth/send-verify-otp', { email: email })
             alert("OTP sent!")
             setTimer(60)
         } catch (err) {

@@ -290,10 +290,11 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                             noStyle
                                             rules={[
                                                 { required: true, message: 'Full name is required' },
-                                                { pattern: /^[A-Za-z\s-]+$/, message: 'Full name must contain letters only' }
+                                                { pattern: /^[A-Za-z\s'-]+$/, message: 'Full name must contain letters only' }
                                             ]}
                                         >
                                             <Input
+                                                autoComplete='off'
                                                 maxLength={50}
                                                 variant="borderless"
                                                 size="small"

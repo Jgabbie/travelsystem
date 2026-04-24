@@ -169,7 +169,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                 }));
             })
             .catch((err) => {
-                console.log("RAW ERROR:", err);
 
                 const message = err?.data.message || "Username already exists";
 
@@ -193,7 +192,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                 }));
             })
             .catch((err) => {
-                console.log("RAW ERROR:", err);
 
                 const message = err?.data.message || "Email already exists";
 
@@ -258,7 +256,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             }
         } catch (err) {
             setIsLoading(false);
-            console.log("Invalid Inputs" + err);
         }
     };
 

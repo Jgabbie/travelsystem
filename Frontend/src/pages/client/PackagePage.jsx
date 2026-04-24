@@ -155,6 +155,8 @@ export default function PackagePage() {
         return total / reviews.length
     }, [reviews])
 
+    const averageRatingStars = useMemo(() => Math.round(averageRating || 0), [averageRating])
+
     const ratingBreakdown = useMemo(() => {
         const breakdown = [0, 0, 0, 0, 0]
         reviews.forEach((review) => {
@@ -648,10 +650,14 @@ export default function PackagePage() {
                                                     <p className="package-review-label">Average rating</p>
                                                     <div className="package-review-average">
                                                         <Rate
-                                                            allowHalf
+                                                            className='package-review-average-stars'
                                                             disabled
-                                                            value={averageRating} />
-                                                        <span>{averageRating ? averageRating.toFixed(1) : '0.0'}</span>
+                                                            allowHalf
+                                                            value={averageRatingStars}
+                                                        />
+                                                        <span className="package-review-average-value">
+                                                            {averageRating ? averageRating.toFixed(1) : '0.0'}
+                                                        </span>
                                                     </div>
                                                 </div>
                                                 <span className="package-review-count">{reviews.length} reviews</span>

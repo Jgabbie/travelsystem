@@ -35,7 +35,6 @@ export default function ChooseDateIntModal({
         const { startDate, endDate } = selectedDateRange;
         if (!startDate || !endDate) return;
 
-        console.log('Proceeding with date:', startDate, 'and price:', selectedDatePrice);
         onProceed({
             selectedDate: startDate,
             selectedTravelerPrice: selectedDatePrice,

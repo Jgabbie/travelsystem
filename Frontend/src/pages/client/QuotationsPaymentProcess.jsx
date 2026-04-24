@@ -40,9 +40,6 @@ export default function QuotationsPaymentProcess() {
     const passportFiles = quotationBookingData?.passportFiles || [];
     const photoFiles = quotationBookingData?.photoFiles || [];
 
-    console.log("Passport Files:", passportFiles);
-    console.log("Photo Files:", photoFiles);
-
     //REDIRECT IF NO BOOKING DATA
     useEffect(() => {
         if (!quotationBookingData) {
@@ -122,11 +119,6 @@ export default function QuotationsPaymentProcess() {
         processFiles(passportFiles, 'passport');
         processFiles(photoFiles, 'photo');
 
-        // DEBUG: Check if FormData is actually populated before sending
-        for (let pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
-        }
-
         // If no files were added, don't even make the request
         if (!formData.has("files")) {
             throw new Error("No files selected for upload");
@@ -158,8 +150,6 @@ export default function QuotationsPaymentProcess() {
     const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
 
-    console.log("Booking Data in PaymentProcess:", quotationBookingData);
-
     //COMPUTATION OF AMOUNT FOR INVOICE DISPLAY AND PAYMENT PAYLOAD
     const travelerCountAdult = quotationBookingData?.travelersCount?.adult || 0;
     const travelerCountChild = quotationBookingData?.travelersCount?.child || 0;
@@ -170,8 +160,6 @@ export default function QuotationsPaymentProcess() {
     const soloRate = quotationBookingData?.adultRate || 0;
     const childRate = quotationBookingData?.childRate || 0;
     const infantRate = quotationBookingData?.infantRate || 0;
-
-    console.log("Rates - Adult:", packagePricePerPax, "Child:", childRate, "Infant:", infantRate);
 
     const bookingType = quotationBookingData?.bookingType || 'Group Booking';
     const computedTotalAmount =
@@ -190,8 +178,6 @@ export default function QuotationsPaymentProcess() {
     const endTravelDate = dayjs(quotationBookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
 
     const travelDate = startTravelDate === 'TBD' ? 'TBD' : `${startTravelDate} - ${endTravelDate}`;
-
-    console.log("Booking Data in PaymentProcess:", travelDate);
 
     const name = quotationBookingData?.leadFullName || 'Customer';
     const email = quotationBookingData?.leadEmail || 'Email'
@@ -230,8 +216,6 @@ export default function QuotationsPaymentProcess() {
         emergencyTitle: quotationBookingData.emergencyTitle,
         paymentDetails: paymentDetails
     }
-
-    console.log("Booking Details for Payment Payload:", bookingDetails);
 
     //checkout
     const proceedBooking = async () => {
@@ -319,9 +303,6 @@ export default function QuotationsPaymentProcess() {
                 const formData = new FormData();
                 formData.append("file", file); // 
 
-                console.log("Uploading file:", file);
-                console.log("FormData file:", formData.get("file"));
-
                 const uploadRes = await apiFetch.post(
                     "/upload/upload-receipt",
                     formData,
@@ -333,8 +314,6 @@ export default function QuotationsPaymentProcess() {
                 );
 
                 const imageUrl = uploadRes?.url;
-
-                console.log("Booking data from new booking:", bookingRes);
 
                 const manualDepositRes = await apiFetch.post('/payment/manual-quotation', {
                     bookingId: bookingRes.booking._id,
@@ -357,8 +336,6 @@ export default function QuotationsPaymentProcess() {
                 quotationId: quotationBookingData.quotationId,
                 paymentToken: paymentToken
             }
-
-            console.log(paymongoPayload)
 
             const paymongoResponse = await apiFetch.post(
                 '/payment/create-checkout-session-quotation',
@@ -399,8 +376,6 @@ export default function QuotationsPaymentProcess() {
 
     const travelDateStart = quotationBookingData?.travelDate.split(" - ")?.[0] || today;
     const travelDateComputation = travelDateStart ? dayjs(travelDateStart, "MMM D, YYYY") : today;
-
-    console.log("Travel Date for Computation:", travelDateComputation);
 
     const maxAllowedDate = today.add(45, 'day');
 

@@ -27,8 +27,6 @@ export default function Wishlist() {
                 const response = await apiFetch.get('/wishlist')
                 const wishlist = response?.wishlist || []
 
-                //console.log('Wishlist data:', wishlist)
-
                 setWishlistItems(wishlist)
             } catch (error) {
                 const errorMessage =
@@ -46,6 +44,7 @@ export default function Wishlist() {
     const wishlistPackages = useMemo(() => {
         return wishlistItems.map((entry) => {
             const pkg = entry?.packageId || {}
+            const resolvedPackageId = pkg?._id || entry?.packageId?._id || entry?.packageId || null
             const availableSlots = (pkg.packageSpecificDate || []).reduce(
                 (total, item) => total + Number(item.slots || 0),
                 0
@@ -57,11 +56,9 @@ export default function Wishlist() {
                         ? 'Few slots'
                         : 'Available'
 
-            console.log(availableSlots)
-
             return {
                 wishlistId: entry._id,
-                packageId: pkg._id || entry.packageId,
+                packageId: resolvedPackageId,
                 title: pkg.packageName || 'Package',
                 location: pkg.packageCode || pkg.packageType || 'Package',
                 duration: pkg.packageDuration ? `${pkg.packageDuration} DAYS` : 'N/A',
@@ -281,7 +278,7 @@ export default function Wishlist() {
                                                             icon={<EyeOutlined />}
                                                             type='primary'
                                                             className={`wishlist-view-button${pkg.availableSlots <= 0 ? ' wishlist-view-button-disabled' : ''}`}
-                                                            onClick={() => navigate(`/package/${pkg.packageId}`)}
+                                                            onClick={() => navigate(`/package`, { state: { packageId: pkg.packageId } })}
                                                             disabled={pkg.availableSlots <= 0}
                                                             style={pkg.availableSlots <= 0 ? { pointerEvents: 'none' } : {}}
                                                         >

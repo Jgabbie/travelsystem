@@ -78,8 +78,6 @@ export default function TransactionManagement() {
       const response = await apiFetch.get("/transaction/all-transactions");
       const transactions = mapTransactions(response);
 
-      console.log(transactions)
-
       setData(transactions);
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -305,7 +303,6 @@ export default function TransactionManagement() {
 
   //HANDLE ARCHIVE TRANSACTION ----------------------------
   const handleArchive = async (key) => {
-    console.log("Archiving transaction with ID:", key);
     try {
       await apiFetch.delete(`/transaction/${key}`);
       setData((prev) => prev.filter((item) => item.key !== key));
@@ -316,7 +313,6 @@ export default function TransactionManagement() {
   };
 
   const handleRestore = async (key) => {
-    console.log("Restoring transaction with archived ID:", key);
     try {
       await apiFetch.post(`/transaction/archived-transactions/${key}/restore`);
       setIsTransactionRestoredModalOpen(true);

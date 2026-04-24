@@ -174,7 +174,6 @@ export default function UserBookings() {
                 );
 
                 imageUrl = res.url;
-                console.log('Image uploaded to Cloudinary:', res);
             }
 
             // Send cancellation payload
@@ -183,8 +182,6 @@ export default function UserBookings() {
                 comments: cancelComments || '',
                 imageProof: imageUrl
             };
-
-            console.log('Cancel payload:', payload);
 
             const cancelEndpoint = `/booking/cancel/${cancelTargetKey}`;
             await apiFetch.post(cancelEndpoint, payload);

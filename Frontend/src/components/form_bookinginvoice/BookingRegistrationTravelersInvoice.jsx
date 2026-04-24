@@ -8,6 +8,32 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const [userProfile, setUserProfile] = useState({})
 
+    const normalizeRoomType = (value) => String(value || '').trim().replace(/\s+\d+$/, '')
+
+    const getRoomOccupancy = (roomType) => {
+        const normalized = normalizeRoomType(roomType)
+        if (normalized === 'TRIPLE') return 3
+        if (normalized === 'TWIN' || normalized === 'DOUBLE') return 2
+        return 1
+    }
+
+    const getDisplayRoomType = (travelers, index) => {
+        const traveler = travelers[index] || {}
+        const roomType = normalizeRoomType(traveler.roomType)
+
+        if (!roomType) return ''
+        if (roomType === 'SINGLE') return 'SINGLE'
+
+        const sameRoomTypeIndex = travelers
+            .slice(0, index)
+            .filter((item) => normalizeRoomType(item?.roomType) === roomType)
+            .length
+
+        const roomNumber = Math.floor(sameRoomTypeIndex / getRoomOccupancy(roomType)) + 1
+
+        return `${roomType} ${roomNumber}`
+    }
+
     const formatTravelDate = (value) => {
         if (!value) return '';
         if (typeof value === 'string') return value;
@@ -23,10 +49,6 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
     };
 
     const bookingType = summaryInvoice.bookingType || 'No Booking';
-    console.log('Summary Invoice:', summaryInvoice);
-    console.log('EXPECTED:', totalCount);
-    console.log('ACTUAL:', form.getFieldValue('travelers')?.length);
-
 
     useEffect(() => {
         if (!summaryInvoice) return;
@@ -323,7 +345,14 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
 
                                                     {/* Room Type */}
                                                     <td style={{ border: '1px solid #000' }}>
-                                                        <Form.Item {...restField} name={[name, 'roomType']} noStyle>
+                                                        <Form.Item
+                                                            {...restField}
+                                                            name={[name, 'roomType']}
+                                                            noStyle
+                                                            getValueProps={() => ({
+                                                                value: getDisplayRoomType(form.getFieldValue('travelers') || [], index)
+                                                            })}
+                                                        >
                                                             <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
                                                         </Form.Item>
                                                     </td>

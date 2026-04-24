@@ -13,6 +13,13 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const labelStyle = { fontSize: '11px', fontWeight: 'bold', color: '#000' };
 
+    const handleRequestChange = (requestField, detailsField, value) => {
+        form.setFieldsValue({
+            [requestField]: value,
+            [detailsField]: value === 'N' ? 'N/A' : ''
+        });
+    };
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -38,7 +45,6 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                     signatureDate: dayjs().format('MMMM DD, YYYY')
                 });
 
-                console.log("user data response:", user);
                 setUserProfile(user);
 
             } catch (error) {
@@ -90,6 +96,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                         size="small"
                                         style={{ ...boxStyle, width: '60px' }}
                                         placeholder="Y/N"
+                                        onChange={(value) => handleRequestChange('dietaryRequest', 'dietaryDetails', value)}
                                         options={[
                                             { value: 'Y', label: 'Y' },
                                             { value: 'N', label: 'N' },
@@ -107,10 +114,11 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                             wrapperCol={{ span: 18 }}
                             dependencies={['dietaryRequest']}
                             disabled={form.getFieldValue('dietaryRequest') !== 'Y'}
+                            initialValue={form.getFieldValue('dietaryRequest') === 'N' ? 'N/A' : ''}
                             rules={[
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                        if (getFieldValue('dietaryRequest') === 'Y' && !value) {
+                                        if (getFieldValue('dietaryRequest') === 'Y' && (!value || value === 'N/A')) {
                                             return Promise.reject('Please provide dietary details');
                                         }
                                         return Promise.resolve();
@@ -136,6 +144,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                         size="small"
                                         style={{ ...boxStyle, width: '60px' }}
                                         placeholder="Y/N"
+                                        onChange={(value) => handleRequestChange('medicalRequest', 'medicalDetails', value)}
                                         options={[
                                             { value: 'Y', label: 'Y' },
                                             { value: 'N', label: 'N' },
@@ -153,10 +162,11 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                             style={{ marginTop: '5px' }}
                             dependencies={['medicalRequest']}
                             disabled={form.getFieldValue('medicalRequest') !== 'Y'}
+                            initialValue={form.getFieldValue('medicalRequest') === 'N' ? 'N/A' : ''}
                             rules={[
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                        if (getFieldValue('medicalRequest') === 'Y' && !value) {
+                                        if (getFieldValue('medicalRequest') === 'Y' && (!value || value === 'N/A')) {
                                             return Promise.reject('Please provide medical details');
                                         }
                                         return Promise.resolve();
@@ -291,10 +301,11 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                             noStyle
                                             rules={[
                                                 { required: true, message: 'Full name is required' },
-                                                { pattern: /^[A-Za-z\s-]+$/, message: 'Full name must contain letters only' }
+                                                { pattern: /^[A-Za-z\s'-]+$/, message: 'Full name must contain letters only' }
                                             ]}
                                         >
                                             <Input
+                                                autoComplete='off'
                                                 maxLength={50}
                                                 variant="borderless"
                                                 size="small"

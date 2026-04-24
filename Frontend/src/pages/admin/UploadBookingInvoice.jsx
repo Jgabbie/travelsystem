@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Form, Tag, Typography, message, Steps } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { Document, Image, Page, PDFViewer, StyleSheet, Text, View } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -91,12 +91,25 @@ export default function UploadBookingInvoice() {
     const bookingDetails = booking?.bookingDetails || {};
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
+    const [isRequestingResubmission, setIsRequestingResubmission] = useState(false);
     const reference = booking?.reference || booking?.ref || booking?._id;
+    const handleBackNavigation = () => {
+        const fromState = location.state?.from;
+        if (typeof fromState === "string" && fromState.trim()) {
+            navigate(fromState);
+            return;
+        }
+
+        const isEmployeeRoute = location.pathname.startsWith("/employee");
+        navigate(isEmployeeRoute ? "/employee/bookings" : "/bookings");
+    };
+
     const logoUrl = typeof window !== "undefined"
         ? `${window.location.origin}/images/Logo.png`
         : "/images/Logo.png";
 
     const stepsToCapture = [0, 1, 2, 3];
+    const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
 
     //FETCH BOOKING DETAILS
     useEffect(() => {
@@ -201,6 +214,27 @@ export default function UploadBookingInvoice() {
         }
     };
 
+    const handleRequestDocumentsResubmission = async (travelerIndex = null) => {
+        if (!booking?._id) {
+            message.error("Booking ID not found.");
+            return;
+        }
+
+        setIsRequestingResubmission(true);
+        try {
+            const response = await apiFetch.post(`/booking/${booking._id}/request-document-resubmission`,
+                Number.isInteger(travelerIndex) ? { travelerIndex } : {}
+            );
+            const updatedBooking = response?.booking || booking;
+            setBooking(updatedBooking);
+            message.success("Document resubmission request sent to customer.");
+        } catch (error) {
+            message.error(error?.data?.message || "Unable to request resubmission.");
+        } finally {
+            setIsRequestingResubmission(false);
+        }
+    };
+
 
     const formatCurrency = useMemo(
         () => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }),
@@ -277,7 +311,6 @@ export default function UploadBookingInvoice() {
             try {
                 const response = await apiFetch.get("/booking/all-bookings");
                 const allBookings = response?.bookings || response || [];
-                console.log("Fetched all bookings for invoice number generation:", allBookings);
 
                 const number = buildInvoiceNumber(allBookings, booking);
 
@@ -563,64 +596,81 @@ export default function UploadBookingInvoice() {
             }}
         >
             {loading ? (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
-                    <Spin spinning={loading} description="Loading booking details..." size="large" />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '75vh' }}>
+                    <Spin description="Loading booking details..." size="large" />
                 </div>
             ) : (
-                <div className="upload-invoice-page">
-                    <Button type="primary" className="upload-invoice-back-button" onClick={() => navigate(-1)}>
-                        <ArrowLeftOutlined />
-                        Back
-                    </Button>
-                    <div className="upload-invoice-header">
-                        <div>
-                            <Title level={2} className="page-header">Booking Invoice</Title>
-                            <AntText className="upload-invoice-subtitle">
-                                Review the remaining balance and attach the final invoice for this booking.
-                            </AntText>
+                <div className="user-invoice-container">
+                    <div className="upload-invoice-page">
+                        <Button type="primary" className="upload-invoice-back-button" onClick={handleBackNavigation}>
+                            <ArrowLeftOutlined />
+                            Back
+                        </Button>
+
+                        <div className="upload-invoice-header">
+                            <div>
+                                <Title level={2} className="page-header">Booking Invoice</Title>
+                                <AntText className="upload-invoice-subtitle">
+                                    Review the remaining balance and attach the final invoice for this booking.
+                                </AntText>
+                            </div>
                         </div>
-                    </div>
-                    <>
+
                         <Card className="upload-invoice-card" style={{ marginBottom: 40 }}>
                             <div className="upload-invoice-meta">
-                                <div>
+                                <div className="user-invoice-meta-item">
                                     <AntText type="secondary">Reference</AntText>
-                                    <div className="upload-invoice-value">
-                                        {booking?.reference || booking?.ref || booking?._id || "--"}
-                                    </div>
+                                    <div className="upload-invoice-value">{booking?.reference || booking?.ref || booking?._id || "--"}</div>
                                 </div>
-                                <div>
+                                <div className="user-invoice-meta-item">
                                     <AntText type="secondary">Package</AntText>
-                                    <div className="upload-invoice-value">
-                                        {packageName || "Package"}
-                                    </div>
+                                    <div className="upload-invoice-value">{packageName}</div>
                                 </div>
-                                <div>
+                                <div className="user-invoice-meta-item">
                                     <AntText type="secondary">Travel Date</AntText>
                                     <div className="upload-invoice-value">{travelDate}</div>
                                 </div>
                             </div>
 
-                            <Divider className="upload-invoice-divider" />
-
                             <Row gutter={[16, 16]} className="upload-invoice-summary">
                                 <Col xs={24} md={8}>
-                                    <Card className="upload-invoice-stat" variant={false}>
+                                    <Card className="upload-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
                                         <AntText type="secondary">Total Price</AntText>
-                                        <div className="upload-invoice-amount">{formatCurrency.format(totalPrice)}</div>
+                                        <div className="upload-invoice-amount">
+                                            {Number(totalPrice).toLocaleString('en-PH', {
+                                                style: 'currency',
+                                                currency: 'PHP',
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </div>
                                     </Card>
                                 </Col>
                                 <Col xs={24} md={8}>
-                                    <Card className="upload-invoice-stat" variant={false}>
+                                    <Card className="upload-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
                                         <AntText type="secondary">Paid Amount</AntText>
-                                        <div className="upload-invoice-amount">{formatCurrency.format(paidAmount)}</div>
+                                        <div className="upload-invoice-amount">
+                                            {Number(paidAmount).toLocaleString('en-PH', {
+                                                style: 'currency',
+                                                currency: 'PHP',
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </div>
                                     </Card>
                                 </Col>
                                 <Col xs={24} md={8}>
                                     <Card className="upload-invoice-stat upload-invoice-highlight" variant={false}>
                                         <Space orientation="vertical" size={4}>
                                             <AntText type="secondary">Remaining Bal.</AntText>
-                                            <div className="upload-invoice-amount">{formatCurrency.format(remainingBalance)}</div>
+                                            <div className="upload-invoice-amount">
+                                                {Number(remainingBalance).toLocaleString('en-PH', {
+                                                    style: 'currency',
+                                                    currency: 'PHP',
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </div>
                                             <Tag color={remainingBalance > 0 ? "orange" : "green"}>
                                                 {remainingBalance > 0 ? "Balance Due" : "Fully Paid"}
                                             </Tag>
@@ -628,84 +678,155 @@ export default function UploadBookingInvoice() {
                                     </Card>
                                 </Col>
                             </Row>
-                        </Card>
 
-                        <div className="display-invoice-wrapper">
-                            <div className="display-invoice-card">
-                                <div className="pdf-viewer-wrapper">
-                                    <PDFViewer style={{ width: "100%", height: 727 }}>
-                                        <MyDocument />
-                                    </PDFViewer>
+
+                            <Row gutter={[24, 24]} style={{ marginTop: 24, marginBottom: 24 }}>
+                                <Col xs={24} lg={16}>
+                                    <div className="display-invoice-wrapper" style={{ marginBottom: 0 }}>
+
+                                        <div className="pdf-viewer-wrapper">
+                                            <PDFViewer style={{ width: "100%", height: 727 }}>
+                                                <MyDocument />
+                                            </PDFViewer>
+                                        </div>
+
+                                    </div>
+                                </Col>
+
+                                <Col style={{ marginTop: 10 }} xs={24} lg={8}>
+                                    <h2>Transaction History</h2>
+                                    <div style={{
+                                        backgroundColor: "#f0f5ff",
+                                        border: "1px solid #adc6ff",
+                                        padding: "8px 12px",
+                                        borderRadius: "6px",
+                                        marginBottom: "16px",
+                                        fontSize: "13px",
+                                        color: "#2f54eb"
+                                    }}>
+                                        <AntText>
+                                            <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
+                                        </AntText>
+                                    </div>
+
+                                    {transactions.length === 0 ? (
+                                        <AntText type="secondary">No transactions yet.</AntText>
+                                    ) : (
+                                        <Space orientation="vertical" style={{ width: "100%" }}>
+                                            {transactions.map((txn, index) => (
+                                                <Card key={index} size="small">
+                                                    <Row justify="space-between">
+                                                        <Col>
+                                                            <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
+                                                            <div><strong>Method:</strong> {txn.method || "N/A"}</div>
+                                                        </Col>
+                                                        <Col style={{ textAlign: "right" }}>
+                                                            <div><strong>₱{txn.amount}</strong></div>
+                                                            <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
+                                                                {txn.status}
+                                                            </Tag>
+                                                        </Col>
+                                                    </Row>
+                                                </Card>
+                                            ))}
+                                        </Space>
+                                    )}
+
+                                </Col>
+                            </Row>
+
+                            {/* DOCUMENTS SECTION */}
+                            <div>
+                                <div style={{ marginBottom: 30 }}>
+                                    <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Travelers Information</h2>
+                                    <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                                        Review and request update traveler information as needed.
+                                    </p>
                                 </div>
-                            </div>
-                        </div>
 
-                        <Card className="upload-invoice-card" title="Transaction History" style={{ marginBottom: 24, marginTop: 24 }}>
-                            <div style={{
-                                backgroundColor: "#f0f5ff",
-                                border: "1px solid #adc6ff",
-                                padding: "8px 12px",
-                                borderRadius: "6px",
-                                marginBottom: "16px",
-                                fontSize: "13px",
-                                color: "#2f54eb"
-                            }}>
-                                <AntText>
-                                    <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
-                                </AntText>
-                            </div>
+                                {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
+                                    <AntText type="secondary">No documents uploaded yet.</AntText>
+                                ) : travelersWithDocs.length ? (
+                                    <div>
+                                        {travelersWithDocs.map((traveler, index) => (
+                                            <div key={index} style={{ marginBottom: 24 }}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+                                                    <h4 style={{ marginBottom: 0 }}>
+                                                        Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
+                                                    </h4>
+                                                    <Button
+                                                        type="primary"
+                                                        className="upload-invoice-form-button"
+                                                        onClick={() => handleRequestDocumentsResubmission(index)}
+                                                        loading={isRequestingResubmission}
+                                                        disabled={!booking?._id || isRequestingResubmission}
+                                                    >
+                                                        Resubmit Traveler
+                                                    </Button>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13 }}>
+                                                    <div><strong>Title:</strong> {traveler?.title || "N/A"}</div>
+                                                    <div><strong>Room:</strong> {traveler?.roomType || "N/A"}</div>
+                                                    <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format("MMM D, YYYY") : "N/A"}</div>
+                                                    <div><strong>Age:</strong> {traveler?.age ?? "N/A"}</div>
+                                                    <div><strong>Passport #:</strong> {traveler?.passportNo || "N/A"}</div>
+                                                    <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format("MMM D, YYYY") : "N/A"}</div>
+                                                </div>
 
-                            {transactions.length === 0 ? (
-                                <AntText type="secondary">No transactions yet.</AntText>
-                            ) : (
-                                <Space orientation="vertical" style={{ width: "100%" }}>
-                                    {transactions.map((txn, index) => (
-                                        <Card key={index} size="small">
-                                            <Row justify="space-between">
-                                                <Col>
-                                                    <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
-                                                    <div><strong>Method:</strong> {txn.method || "N/A"}</div>
-                                                </Col>
-                                                <Col style={{ textAlign: "right" }}>
-                                                    <div><strong>₱{txn.amount}</strong></div>
-                                                    <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
-                                                        {txn.status}
-                                                    </Tag>
-                                                </Col>
-                                            </Row>
-                                        </Card>
-                                    ))}
-                                </Space>
-                            )}
-                        </Card>
+                                                <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
+                                                    {traveler?.passportFile && (
+                                                        <div style={{ marginBottom: 16 }}>
+                                                            <AntText strong>Passport / Valid ID:</AntText>
+                                                            <div style={{ marginTop: 8 }}>
+                                                                <img
+                                                                    src={traveler.passportFile}
+                                                                    alt={`Traveler ${index + 1} Passport`}
+                                                                    style={{
+                                                                        width: 350,
+                                                                        height: 340,
+                                                                        objectFit: "cover",
+                                                                        borderRadius: 8,
+                                                                        border: "1px solid #ccc"
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
 
-                        <Card className="upload-invoice-card" title="Booking Documents" style={{ marginTop: 24 }}>
-                            {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
-                                <AntText type="secondary">No documents uploaded yet.</AntText>
-                            ) : travelersWithDocs.length ? (
-                                <div>
-                                    {travelersWithDocs.map((traveler, index) => (
-                                        <div key={index} style={{ marginBottom: 24 }}>
-                                            <h4 style={{ marginBottom: 8 }}>
-                                                Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
-                                            </h4>
-                                            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13 }}>
-                                                <div><strong>Title:</strong> {traveler?.title || "N/A"}</div>
-                                                <div><strong>Room:</strong> {traveler?.roomType || "N/A"}</div>
-                                                <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format("MMM D, YYYY") : "N/A"}</div>
-                                                <div><strong>Age:</strong> {traveler?.age ?? "N/A"}</div>
-                                                <div><strong>Passport #:</strong> {traveler?.passportNo || "N/A"}</div>
-                                                <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format("MMM D, YYYY") : "N/A"}</div>
+                                                    {traveler?.photoFile && (
+                                                        <div style={{ marginBottom: 16 }}>
+                                                            <AntText strong>2x2 Photo:</AntText>
+                                                            <div style={{ marginTop: 8 }}>
+                                                                <img
+                                                                    src={traveler.photoFile}
+                                                                    alt={`Traveler ${index + 1} Photo`}
+                                                                    style={{
+                                                                        width: 200,
+                                                                        height: 200,
+                                                                        objectFit: "cover",
+                                                                        borderRadius: 8,
+                                                                        border: "1px solid #ccc"
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-
-                                            <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
-                                                {traveler?.passportFile && (
-                                                    <div style={{ marginBottom: 16 }}>
-                                                        <AntText strong>Passport / Valid ID:</AntText>
-                                                        <div style={{ marginTop: 8 }}>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
+                                            {passportFiles.length > 0 && (
+                                                <div style={{ marginBottom: 16 }}>
+                                                    <AntText strong>Passport Files:</AntText>
+                                                    <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+                                                        {passportFiles.map((url, index) => (
                                                             <img
-                                                                src={traveler.passportFile}
-                                                                alt={`Traveler ${index + 1} Passport`}
+                                                                key={index}
+                                                                src={url}
+                                                                alt={`Traveler Passport ${index + 1}`}
                                                                 style={{
                                                                     width: 350,
                                                                     height: 340,
@@ -714,17 +835,20 @@ export default function UploadBookingInvoice() {
                                                                     border: "1px solid #ccc"
                                                                 }}
                                                             />
-                                                        </div>
+                                                        ))}
                                                     </div>
-                                                )}
+                                                </div>
+                                            )}
 
-                                                {traveler?.photoFile && (
-                                                    <div style={{ marginBottom: 16 }}>
-                                                        <AntText strong>2x2 Photo:</AntText>
-                                                        <div style={{ marginTop: 8 }}>
+                                            {photoFiles.length > 0 && (
+                                                <div style={{ marginBottom: 16 }}>
+                                                    <AntText strong>Photo Files:</AntText>
+                                                    <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+                                                        {photoFiles.map((url, index) => (
                                                             <img
-                                                                src={traveler.photoFile}
-                                                                alt={`Traveler ${index + 1} Photo`}
+                                                                key={index}
+                                                                src={url}
+                                                                alt={`Traveler Photo ${index + 1}`}
                                                                 style={{
                                                                     width: 200,
                                                                     height: 200,
@@ -733,157 +857,142 @@ export default function UploadBookingInvoice() {
                                                                     border: "1px solid #ccc"
                                                                 }}
                                                             />
-                                                        </div>
+                                                        ))}
                                                     </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div>
-                                    <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
-                                        {passportFiles.length > 0 && (
-                                            <div style={{ marginBottom: 16 }}>
-                                                <AntText strong>Passport Files:</AntText>
-                                                <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
-                                                    {passportFiles.map((url, index) => (
-                                                        <img
-                                                            key={index}
-                                                            src={url}
-                                                            alt={`Traveler Passport ${index + 1}`}
-                                                            style={{
-                                                                width: 350,
-                                                                height: 340,
-                                                                objectFit: "cover",
-                                                                borderRadius: 8,
-                                                                border: "1px solid #ccc"
-                                                            }}
-                                                        />
-                                                    ))}
                                                 </div>
-                                            </div>
-                                        )}
-
-                                        {photoFiles.length > 0 && (
-                                            <div style={{ marginBottom: 16 }}>
-                                                <AntText strong>Photo Files:</AntText>
-                                                <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
-                                                    {photoFiles.map((url, index) => (
-                                                        <img
-                                                            key={index}
-                                                            src={url}
-                                                            alt={`Traveler Photo ${index + 1}`}
-                                                            style={{
-                                                                width: 200,
-                                                                height: 200,
-                                                                objectFit: "cover",
-                                                                borderRadius: 8,
-                                                                border: "1px solid #ccc"
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </Card>
-
-
-                        {/* BOOKING REGISTRATION SECTION */}
-                        <Card className="upload-invoice-card" style={{ marginTop: 25 }}>
-                            <div className="booking-form-stepper-container">
-                                <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                                <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
-                                    Please upload a clear image of your passport bio page for each traveler.
-                                </p>
-                                <Steps
-                                    current={currentStep}
-                                    items={[
-                                        { title: 'Traveler Info' },
-                                        { title: 'Dietary & Insurance' },
-                                        { title: 'General Package Disclaimer' },
-                                        { title: 'Terms & Conditions' }
-                                    ]}
-                                    style={{ marginBottom: '30px' }}
-                                />
-
-
-                                {/* PAGES FOR PDF GENERATION */}
-                                <div
-                                    className="form-content-wrapper pdf-capture"
-                                    ref={pdfStepRef}
-                                    style={{
-                                        position: isGeneratingPdf ? "absolute" : "relative",
-                                        left: isGeneratingPdf ? "-9999px" : "0"
-                                    }}
-                                >
-                                    {currentStep === 0 && (
-                                        <BookingRegistrationTravelersInvoice
-                                            form={form}
-                                            summaryInvoice={summaryInvoice}
-                                            totalCount={bookingDetails?.travelerCounts?.total || 1}
-                                        />
-                                    )}
-
-                                    {currentStep === 1 && (
-                                        <BookingRegistrationDietInvoice
-                                            form={form}
-                                            summaryInvoice={summaryInvoice}
-                                        />
-                                    )}
-
-                                    {currentStep === 2 && (
-                                        <BookingRegistrationTermsInvoicePart1
-                                            form={form}
-                                            summaryInvoice={summaryInvoice}
-                                        />
-                                    )}
-
-                                    {currentStep === 3 && (
-                                        <BookingRegistrationTermsInvoicePart2
-                                            form={form}
-                                            summaryInvoice={summaryInvoice}
-                                        />
-                                    )}
-                                </div>
-
-                                {/* BUTTONS FOR BOOKING REGISTRATION */}
-                                {!isGeneratingPdf && (
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-
-                                        <div>
-                                            {currentStep > 0 && (
-                                                <Button type="primary" className="upload-invoice-form-button" onClick={prev}>
-                                                    Back
-                                                </Button>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            {currentStep < 3 ? (
-                                                <Button type="primary" className="upload-invoice-form-button" onClick={next}>
-                                                    Next Step
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    type="primary"
-                                                    className="upload-invoice-form-button"
-                                                    onClick={handleFinalSubmit}
-                                                    loading={isGeneratingPdf}
-                                                >
-                                                    Download
-                                                </Button>
                                             )}
                                         </div>
                                     </div>
                                 )}
-                            </div>
-                        </Card>
-                    </>
 
+                                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                                    <Button
+                                        type="primary"
+                                        className="upload-invoice-form-button"
+                                        onClick={() => handleRequestDocumentsResubmission()}
+                                        loading={isRequestingResubmission}
+                                        disabled={!booking?._id || isRequestingResubmission}
+                                    >
+                                        Resubmit All
+                                    </Button>
+                                </div>
+
+                            </div>
+
+
+                            {/* BOOKING REGISTRATION SECTION */}
+                            <div>
+
+                                <div className="booking-form-stepper-container">
+                                    <div style={{ marginBottom: 30 }}>
+                                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                                            The form below is a summary of the traveler's booking registration details.
+                                        </p>
+                                    </div>
+                                    <Steps
+                                        current={currentStep}
+                                        items={[
+                                            { title: 'Traveler Info' },
+                                            { title: 'Dietary & Insurance' },
+                                            { title: 'General Package Disclaimer' },
+                                            { title: 'Terms & Conditions' }
+                                        ]}
+                                        style={{ marginBottom: '30px' }}
+                                    />
+
+                                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+
+                                        {currentStep > 0 && (
+                                            <Button
+                                                type="primary"
+                                                className="user-invoice-form-button"
+                                                onClick={prev}
+                                                aria-label="Previous step"
+                                                style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                            >
+                                                <ArrowLeftOutlined />
+                                            </Button>
+                                        )}
+
+
+                                        {/* PAGES FOR PDF GENERATION */}
+                                        <div
+                                            className="form-content-wrapper pdf-capture"
+                                            ref={pdfStepRef}
+                                            style={{
+                                                position: isGeneratingPdf ? "absolute" : "relative",
+                                                left: isGeneratingPdf ? "-9999px" : "0"
+                                            }}
+                                        >
+                                            {currentStep === 0 && (
+                                                <BookingRegistrationTravelersInvoice
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                    totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                                />
+                                            )}
+
+                                            {currentStep === 1 && (
+                                                <BookingRegistrationDietInvoice
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+
+                                            {currentStep === 2 && (
+                                                <BookingRegistrationTermsInvoicePart1
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+
+                                            {currentStep === 3 && (
+                                                <BookingRegistrationTermsInvoicePart2
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+                                        </div>
+
+                                        {currentStep < 3 && (
+                                            <Button
+                                                type="primary"
+                                                className="user-invoice-form-button"
+                                                onClick={next}
+                                                aria-label="Next step"
+                                                style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                            >
+                                                <ArrowRightOutlined />
+                                            </Button>
+                                        )}
+
+                                    </div>
+
+
+                                    {!isGeneratingPdf && currentStep === 3 && (
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                            <Button
+                                                type="primary"
+                                                className="upload-invoice-form-button"
+                                                onClick={handleFinalSubmit}
+                                                loading={isGeneratingPdf}
+                                            >
+                                                Download
+                                            </Button>
+                                        </div>
+                                    )}
+
+
+                                </div>
+
+                            </div>
+
+
+                        </Card>
+
+
+                    </div>
                 </div>
             )}
         </ConfigProvider>

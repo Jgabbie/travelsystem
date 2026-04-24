@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, message, Steps, Form, Upload, Spin, Modal } from "antd";
-import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined } from "@ant-design/icons";
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -105,10 +105,14 @@ export default function UserBookingInvoice() {
     const [method, setMethod] = useState(null);
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [fileList, setFileList] = useState([]);
+    const [passportUploadLists, setPassportUploadLists] = useState([]);
+    const [photoUploadLists, setPhotoUploadLists] = useState([]);
 
     const [loading, setLoading] = useState(true);
+    const [submittingTravelerIndex, setSubmittingTravelerIndex] = useState(null);
 
     const stepsToCapture = [0, 1, 2, 3];
+    const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
 
     //PAYMENT STATUS COMPUTATION
     const formatCurrency = useMemo(
@@ -182,6 +186,44 @@ export default function UserBookingInvoice() {
         : booking?.travelers || []
     const passportFiles = booking.passportFiles || [];
     const photoFiles = booking.photoFiles || [];
+    const resubmissionTravelerIndexes = useMemo(() => {
+        const normalizedIndexes = new Set();
+
+        if (Array.isArray(booking?.documentsResubmissionTravelerIndexes)) {
+            booking.documentsResubmissionTravelerIndexes.forEach((index) => {
+                const numericIndex = Number(index);
+                if (Number.isInteger(numericIndex)) {
+                    normalizedIndexes.add(numericIndex);
+                }
+            });
+        }
+
+        travelersWithDocs.forEach((traveler, index) => {
+            if (traveler?.documentsResubmissionRequired) {
+                normalizedIndexes.add(index);
+            }
+        });
+
+        // Fallback: if booking-level resubmission is true but traveler-level flags are missing,
+        // request resubmission only for travelers with missing document images.
+        if (!normalizedIndexes.size && booking?.documentsResubmissionRequired) {
+            travelersWithDocs.forEach((traveler, index) => {
+                const hasPassport = Boolean(traveler?.passportFile || passportFiles?.[index]);
+                const hasPhoto = Boolean(traveler?.photoFile || photoFiles?.[index]);
+                if (!hasPassport || !hasPhoto) {
+                    normalizedIndexes.add(index);
+                }
+            });
+        }
+
+        return Array.from(normalizedIndexes).sort((a, b) => a - b);
+    }, [
+        booking?.documentsResubmissionRequired,
+        booking?.documentsResubmissionTravelerIndexes,
+        travelersWithDocs,
+        passportFiles,
+        photoFiles
+    ]);
 
     //REGISTRATION FORM
     const [form] = Form.useForm();
@@ -189,8 +231,134 @@ export default function UserBookingInvoice() {
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-    const handleResubmitDocuments = () => {
-        message.info("Resubmission request sent. We'll review your documents shortly.");
+    const enhanceFilePreviews = async (files) => {
+        const updated = await Promise.all(
+            files.map(async (file) => {
+                if (file.originFileObj && !file.preview) {
+                    file.preview = await getBase64(file.originFileObj);
+                }
+                return file;
+            })
+        );
+        return updated;
+    };
+
+    const handlePassportUploadChange = async (index, { fileList: newFileList }) => {
+        const updated = await enhanceFilePreviews(newFileList);
+        setPassportUploadLists((prev) => {
+            const next = [...prev];
+            next[index] = updated;
+            return next;
+        });
+    };
+
+    const handlePhotoUploadChange = async (index, { fileList: newFileList }) => {
+        const updated = await enhanceFilePreviews(newFileList);
+        setPhotoUploadLists((prev) => {
+            const next = [...prev];
+            next[index] = updated;
+            return next;
+        });
+    };
+
+    const beforeDocumentUpload = (file) => {
+        const isImage = file.type === "image/jpeg" || file.type === "image/png";
+        if (!isImage) {
+            message.error("Only JPG/PNG files are allowed");
+            return Upload.LIST_IGNORE;
+        }
+
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            message.error("Image must be smaller than 2MB");
+            return Upload.LIST_IGNORE;
+        }
+        return false;
+    };
+
+    const uploadBookingDocuments = async (files) => {
+        if (!files.length) return [];
+        const formData = new FormData();
+        files.forEach((file) => {
+            if (file.originFileObj) {
+                formData.append("files", file.originFileObj);
+            }
+        });
+
+        const uploadRes = await apiFetch.post("/upload/upload-booking-documents", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+
+        return uploadRes?.urls || [];
+    };
+
+    const handleSubmitTravelerResubmission = async (index) => {
+        if (!booking?._id) {
+            message.error("Booking ID not found.");
+            return;
+        }
+
+        const passportList = passportUploadLists[index] || [];
+        const photoList = photoUploadLists[index] || [];
+
+        if (passportList.length === 0 && photoList.length === 0) {
+            message.warning("Please upload passport/ID or 2x2 photo.");
+            return;
+        }
+
+        setSubmittingTravelerIndex(index);
+        try {
+            const [passportUrls, photoUrls] = await Promise.all([
+                uploadBookingDocuments(passportList),
+                uploadBookingDocuments(photoList)
+            ]);
+
+            const updatedTravelers = (travelersWithDocs || []).map((traveler, travelerIndex) => {
+                if (travelerIndex !== index) return traveler;
+                return {
+                    ...traveler,
+                    documentsResubmissionRequired: false,
+                    passportFile: passportUrls[0] || traveler?.passportFile || null,
+                    photoFile: photoUrls[0] || traveler?.photoFile || null
+                };
+            });
+
+            const updatedPassportFiles = [...(passportFiles || [])];
+            const updatedPhotoFiles = [...(photoFiles || [])];
+            if (passportUrls[0]) {
+                updatedPassportFiles[index] = passportUrls[0];
+            }
+            if (photoUrls[0]) {
+                updatedPhotoFiles[index] = photoUrls[0];
+            }
+
+            const response = await apiFetch.post(`/booking/${booking._id}/resubmit-documents`, {
+                passportFiles: updatedPassportFiles,
+                photoFiles: updatedPhotoFiles,
+                travelers: updatedTravelers,
+                travelerIndex: index
+            });
+
+            const updatedBooking = response?.booking || booking;
+            setBooking(updatedBooking);
+            setPassportUploadLists((prev) => {
+                const next = [...prev];
+                next[index] = [];
+                return next;
+            });
+            setPhotoUploadLists((prev) => {
+                const next = [...prev];
+                next[index] = [];
+                return next;
+            });
+            message.success("Documents submitted successfully.");
+        } catch (error) {
+            message.error(error?.data?.message || "Unable to submit documents.");
+        } finally {
+            setSubmittingTravelerIndex(null);
+        }
     };
 
     //GO NEXT PAGE
@@ -778,8 +946,6 @@ export default function UserBookingInvoice() {
     });
 
 
-
-
     return (
         <ConfigProvider
             theme={{
@@ -788,502 +954,573 @@ export default function UserBookingInvoice() {
                 }
             }}
         >
-            <div className="user-invoice-container">
 
+            {loading ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "80vh" }}>
+                    <Spin description="Loading invoice..." size="large" />
+                </div>
+            ) : (
+                <div className="user-invoice-container">
+                    <div className="user-invoice-page">
+                        <Button className="user-invoice-back-button" type="primary" onClick={() => navigate("/user-bookings")}>
+                            <ArrowLeftOutlined />
+                            Back
+                        </Button>
 
-                <div className="user-invoice-page">
-                    {(loading || isGeneratingPdf) && (
-                        <div className="booking-loading-overlay">
-                            <Spin
-                                description={isGeneratingPdf ? "Preparing your PDF..." : "Loading invoice..."}
-                                size="large"
-                            />
-                        </div>
-                    )}
-                    <div className="user-invoice-header">
-
-
-                        <div>
-                            <Button className="user-invoice-back-button" type="primary" onClick={() => navigate("/user-bookings")}>
-                                <ArrowLeftOutlined />
-                                Back
-                            </Button>
-                            <Title level={2} className="page-header">Booking Invoice</Title>
-                            <AntText className="user-invoice-subtitle">
-                                Review your balance and download the booking invoice.
-                            </AntText>
-                        </div>
-
-                    </div>
-
-                    <Card className="user-invoice-card" style={{ marginBottom: 40 }}>
-                        <div className="user-invoice-meta">
-                            <div className="user-invoice-meta-item">
-                                <AntText type="secondary">Reference</AntText>
-                                <div className="user-invoice-value">{reference}</div>
-                            </div>
-                            <div className="user-invoice-meta-item">
-                                <AntText type="secondary">Package</AntText>
-                                <div className="user-invoice-value">{packageName}</div>
-                            </div>
-                            <div className="user-invoice-meta-item">
-                                <AntText type="secondary">Travel Date</AntText>
-                                <div className="user-invoice-value">{travelDate}</div>
+                        <div className="user-invoice-header">
+                            <div>
+                                <Title level={2} className="page-header">Booking Invoice</Title>
+                                <AntText className="user-invoice-subtitle">
+                                    Review your balance and download the booking invoice.
+                                </AntText>
                             </div>
                         </div>
 
-                        <Row gutter={[16, 16]} className="user-invoice-summary">
-                            <Col xs={24} md={8}>
-                                <Card className="user-invoice-stat" variant={false}>
-                                    <AntText type="secondary">Total Price</AntText>
-                                    <div className="user-invoice-amount">
-                                        {Number(totalPrice).toLocaleString('en-PH', {
-                                            style: 'currency',
-                                            currency: 'PHP',
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}</div>
-                                </Card>
-                            </Col>
-                            <Col xs={24} md={8}>
-                                <Card className="user-invoice-stat" variant={false}>
-                                    <AntText type="secondary">Paid Amount</AntText>
-                                    <div className="user-invoice-amount">
-                                        {Number(paidAmount).toLocaleString('en-PH', {
-                                            style: 'currency',
-                                            currency: 'PHP',
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}</div>
-                                </Card>
-                            </Col>
-                            <Col xs={24} md={8}>
-                                <Card className="user-invoice-stat user-invoice-highlight" variant={false}>
-                                    <Space orientation="vertical" size={4}>
-                                        <AntText type="secondary">Remaining Balance</AntText>
+                        {/* RESUBMISSION NOTE */}
+                        {documentsResubmissionRequired && (
+                            <div className="user-invoice-resubmission-alert">
+                                Document Resubmission is required, kindly comply immediately!
+                            </div>
+                        )}
+
+                        <Card className="user-invoice-card" style={{ marginBottom: 40 }}>
+                            <div className="user-invoice-meta">
+                                <div className="user-invoice-meta-item">
+                                    <AntText type="secondary">Reference</AntText>
+                                    <div className="user-invoice-value">{reference}</div>
+                                </div>
+                                <div className="user-invoice-meta-item">
+                                    <AntText type="secondary">Package</AntText>
+                                    <div className="user-invoice-value">{packageName}</div>
+                                </div>
+                                <div className="user-invoice-meta-item">
+                                    <AntText type="secondary">Travel Date</AntText>
+                                    <div className="user-invoice-value">{travelDate}</div>
+                                </div>
+                            </div>
+
+                            <Row gutter={[16, 16]} className="user-invoice-summary">
+                                <Col xs={24} md={8}>
+                                    <Card className="user-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
+                                        <AntText type="secondary">Total Price</AntText>
                                         <div className="user-invoice-amount">
-                                            {Number(remainingBalance).toLocaleString('en-PH', {
+                                            {Number(totalPrice).toLocaleString('en-PH', {
                                                 style: 'currency',
                                                 currency: 'PHP',
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             })}
                                         </div>
-                                        <Tag color={paymentStatus.color}>
-                                            {paymentStatus.label}
-                                        </Tag>
-                                    </Space>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Card>
-
-                    <div className="user-invoice-columns">
-                        <div className="user-invoice-column">
-                            <div className="display-invoice-wrapper">
-                                <div className="display-invoice-card">
-                                    <div className="pdf-viewer-wrapper">
-                                        <div></div>
-                                        <PDFViewer style={{ width: "100%", height: 727 }}>
-                                            <MyDocument />
-                                        </PDFViewer>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="user-invoice-column">
-                            <Card className="user-invoice-card" title="Transaction History" style={{ marginBottom: 24 }}>
-                                <div style={{
-                                    backgroundColor: '#f0f5ff',
-                                    border: '1px solid #adc6ff',
-                                    padding: '8px 12px',
-                                    borderRadius: '6px',
-                                    marginBottom: '16px',
-                                    fontSize: '13px',
-                                    color: '#2f54eb'
-                                }}>
-                                    <AntText data-info>
-                                        <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
-                                    </AntText>
-                                </div>
-
-                                {transactions.length === 0 ? (
-                                    <AntText type="secondary">No transactions yet.</AntText>
-                                ) : (
-                                    <Space orientation="vertical" style={{ width: "100%" }}>
-                                        {transactions.map((txn, index) => (
-                                            <Card key={index} size="small">
-                                                <Row justify="space-between">
-                                                    <Col>
-                                                        <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
-                                                        <div><strong>Method:</strong> {txn.method || "N/A"}</div>
-                                                    </Col>
-                                                    <Col style={{ textAlign: "right" }}>
-                                                        <div><strong>
-                                                            {txn.amount.toLocaleString('en-PH', {
-                                                                style: 'currency',
-                                                                currency: 'PHP',
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}
-                                                        </strong></div>
-                                                        <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
-                                                            {txn.status}
-                                                        </Tag>
-                                                    </Col>
-                                                </Row>
-                                            </Card>
-                                        ))}
-                                    </Space>
-                                )}
-                            </Card>
-                        </div>
-                    </div>
-
-
-                    {remainingBalance > 0 && (
-                        <div className='payment-methods-container payment-section' style={{ marginTop: 24, maxWidth: 1300 }}>
-                            <div className="payment-methods-wrapper">
-                                <div className="payment-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
-                                        <p className="payment-section-subtitle">
-                                            Select a payment method to complete your booking.
-                                        </p>
-                                    </div>
-                                    {/* Displaying balance here for clarity during checkout */}
-                                    <div style={{ textAlign: 'right' }}>
-                                        <AntText type="secondary">Amount to Pay:</AntText>
-                                        <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#b91c1c' }}>
-                                            {disablePayment ? "Pending Payments..." : currentUnpaidInstallment?.amount
-                                                ? formatCurrency.format(currentUnpaidInstallment.amount)
-                                                : "Calculating..."}
+                                    </Card>
+                                </Col>
+                                <Col xs={24} md={8}>
+                                    <Card className="user-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
+                                        <AntText type="secondary">Paid Amount</AntText>
+                                        <div className="user-invoice-amount">
+                                            {Number(paidAmount).toLocaleString('en-PH', {
+                                                style: 'currency',
+                                                currency: 'PHP',
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
                                         </div>
+                                    </Card>
+                                </Col>
+                                <Col xs={24} md={8}>
+                                    <Card className="user-invoice-stat user-invoice-highlight" variant={false}>
+                                        <Space orientation="vertical" size={4}>
+                                            <AntText type="secondary">Remaining Balance</AntText>
+                                            <div className="user-invoice-amount">
+                                                {Number(remainingBalance).toLocaleString('en-PH', {
+                                                    style: 'currency',
+                                                    currency: 'PHP',
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </div>
+                                            <Tag color={paymentStatus.color}>
+                                                {paymentStatus.label}
+                                            </Tag>
+                                        </Space>
+                                    </Card>
+                                </Col>
+                            </Row>
+
+
+                            <div className="user-invoice-columns">
+                                <div className="user-invoice-column">
+                                    <div className="display-invoice-wrapper">
+
+                                        <div className="pdf-viewer-wrapper">
+                                            <div></div>
+                                            <PDFViewer style={{ width: "100%", height: 727 }}>
+                                                <MyDocument />
+                                            </PDFViewer>
+                                        </div>
+
                                     </div>
                                 </div>
 
-                                <Radio.Group
-                                    onChange={(e) => handleSelectPaymentMethod(e.target.value)}
-                                    value={method}
-                                    className="payment-methods-cards"
-                                    style={{ width: '100%', display: 'flex', gap: '16px', marginBottom: '24px' }}
-                                >
-                                    <Radio.Button
-                                        value="paymongo"
-                                        disabled={remainingBalance <= 0 || disablePayment}
-                                        className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
-                                    >
-                                        <div className="card-content">
-                                            <h3>Paymongo</h3>
-                                            <p>Pay securely via Credit Card, GCash, or Maya. (3.5% + ₱15 fee applies)</p>
-                                        </div>
-                                    </Radio.Button>
+                                <div className="user-invoice-column" style={{ marginTop: 10 }}>
+                                    <h2>Transaction History</h2>
+                                    <div style={{
+                                        backgroundColor: '#f0f5ff',
+                                        border: '1px solid #adc6ff',
+                                        padding: '8px 12px',
+                                        borderRadius: '6px',
+                                        marginBottom: '16px',
+                                        fontSize: '13px',
+                                        color: '#2f54eb'
+                                    }}>
+                                        <AntText data-info>
+                                            <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
+                                        </AntText>
+                                    </div>
 
-                                    <Radio.Button
-                                        value="manual"
-                                        disabled={remainingBalance <= 0 || disablePayment}
-                                        className={`payment-card ${method === "manual" ? "selected" : ""}`}
-                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
-                                    >
-                                        <div className="card-content">
-                                            <h3>Manual Payment</h3>
-                                            <p>Direct bank deposit. Requires manual verification of receipt.</p>
-                                        </div>
-                                    </Radio.Button>
-                                </Radio.Group>
+                                    {transactions.length === 0 ? (
+                                        <AntText type="secondary">No transactions yet.</AntText>
+                                    ) : (
+                                        <Space orientation="vertical" style={{ width: "100%" }}>
+                                            {transactions.map((txn, index) => (
+                                                <Card key={index} size="small">
+                                                    <Row justify="space-between">
+                                                        <Col>
+                                                            <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
+                                                            <div><strong>Method:</strong> {txn.method || "N/A"}</div>
+                                                        </Col>
+                                                        <Col style={{ textAlign: "right" }}>
+                                                            <div><strong>
+                                                                {txn.amount.toLocaleString('en-PH', {
+                                                                    style: 'currency',
+                                                                    currency: 'PHP',
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}
+                                                            </strong></div>
+                                                            <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
+                                                                {txn.status}
+                                                            </Tag>
+                                                        </Col>
+                                                    </Row>
+                                                </Card>
+                                            ))}
+                                        </Space>
+                                    )}
 
-                                {/* Proceed Button */}
-                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                    <Button
-                                        className="user-invoice-checkout-button"
-                                        type="primary"
-                                        size="large"
-                                        style={{ padding: '0 50px', height: '50px', fontSize: '16px', fontWeight: 'bold', margin: 30 }}
-                                        onClick={proceedBooking}
-                                        disabled={remainingBalance <= 0 || disablePayment}
-                                    >
-                                        Proceed to Checkout
-                                    </Button>
                                 </div>
                             </div>
 
-                            {method === 'manual' && (
-                                <div className="manual-transfer-details">
-                                    <div className="bank-accounts-section">
-                                        <h4 className="section-subtitle">Available Bank Accounts</h4>
-                                        <div className="bank-grid">
-                                            <div className="bank-item">
-                                                <span className="bank-name">BDO Unibank</span>
-                                                <span className="account-number">0012-3456-7890</span>
-                                                <span className="account-holder">M&RC Travel and Tours</span>
+                            {/* DEPOSIT PAYMENT */}
+                            {remainingBalance > 0 && (
+                                <div style={{ marginTop: 24, maxWidth: 1300 }}>
+                                    <div className="payment-methods-wrapper">
+                                        <div className="payment-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
+                                                <p className="payment-section-subtitle">
+                                                    Select a payment method to complete your booking.
+                                                </p>
                                             </div>
-                                            <div className="bank-item">
-                                                <span className="bank-name">BPI</span>
-                                                <span className="account-number">9876-5432-10</span>
-                                                <span className="account-holder">M&RC Travel and Tours</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="bank-accounts-section">
-                                        <div className="bank-grid">
-                                            <div className="bank-item">
-                                                <span className="bank-name">Metro Bank</span>
-                                                <span className="account-number">0012-3456-7890</span>
-                                                <span className="account-holder">M&RC Travel and Tours</span>
-                                            </div>
-                                            <div className="bank-item">
-                                                <span className="bank-name">Land Bank</span>
-                                                <span className="account-number">9876-5432-10</span>
-                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                            {/* Displaying balance here for clarity during checkout */}
+                                            <div style={{ textAlign: 'right' }}>
+                                                <AntText type="secondary">Amount to Pay:</AntText>
+                                                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#b91c1c' }}>
+                                                    {disablePayment ? "Pending Payments..." : currentUnpaidInstallment?.amount
+                                                        ? formatCurrency.format(currentUnpaidInstallment.amount)
+                                                        : "Calculating..."}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="upload-section">
-                                        <h4 className="section-subtitle">Upload Proof of Payment</h4>
-                                        <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
-                                        <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
-
-                                        <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
-
-                                        <Upload
-                                            listType="picture"
-                                            maxCount={1}
-                                            fileList={fileList}
-                                            onChange={handleUploadChange}
-                                            beforeUpload={beforeUpload}
-                                            accept=".jpg,.jpeg,.png"
+                                        <Radio.Group
+                                            onChange={(e) => handleSelectPaymentMethod(e.target.value)}
+                                            value={method}
+                                            className="payment-methods-cards"
+                                            style={{ width: '100%', display: 'flex', gap: '16px', marginBottom: '24px' }}
                                         >
-                                            <Button type="primary" icon={<UploadOutlined />} className="user-invoice-receipt-button">
-                                                Select Receipt Image
+                                            <Radio.Button
+                                                value="paymongo"
+                                                disabled={remainingBalance <= 0 || disablePayment}
+                                                className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                                style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                            >
+                                                <div className="card-content">
+                                                    <h3>Paymongo</h3>
+                                                    <p>Pay securely via Credit Card, GCash, or Maya. (3.5% + ₱15 fee applies)</p>
+                                                </div>
+                                            </Radio.Button>
+
+                                            <Radio.Button
+                                                value="manual"
+                                                disabled={remainingBalance <= 0 || disablePayment}
+                                                className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                                style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                            >
+                                                <div className="card-content">
+                                                    <h3>Manual Payment</h3>
+                                                    <p>Direct bank deposit. Requires manual verification of receipt.</p>
+                                                </div>
+                                            </Radio.Button>
+                                        </Radio.Group>
+
+                                        {/* Proceed Button */}
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 0, margin: 0 }}>
+                                            <Button
+                                                className="user-invoice-checkout-button"
+                                                type="primary"
+                                                size="large"
+                                                style={{ padding: '0 50px', height: '50px', fontSize: '16px', fontWeight: 'bold' }}
+                                                onClick={proceedBooking}
+                                                disabled={remainingBalance <= 0 || disablePayment}
+                                            >
+                                                Proceed to Checkout
                                             </Button>
-                                        </Upload>
+                                        </div>
+                                    </div>
 
-                                        {fileList.length > 0 && (
-                                            <div className="upload-preview-container">
-                                                <h4 className="section-subtitle">Preview</h4>
+                                    {method === 'manual' && (
+                                        <div className="manual-transfer-details">
+                                            <div className="bank-accounts-section">
+                                                <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                                <div className="bank-grid">
+                                                    <div className="bank-item">
+                                                        <span className="bank-name">BDO Unibank</span>
+                                                        <span className="account-number">0012-3456-7890</span>
+                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                    </div>
+                                                    <div className="bank-item">
+                                                        <span className="bank-name">BPI</span>
+                                                        <span className="account-number">9876-5432-10</span>
+                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                                <div className="upload-preview-box">
-                                                    <img
-                                                        src={fileList[0].preview}
-                                                        alt="Receipt Preview"
-                                                        className="upload-preview-image"
-                                                    />
+                                            <div className="bank-accounts-section">
+                                                <div className="bank-grid">
+                                                    <div className="bank-item">
+                                                        <span className="bank-name">Metro Bank</span>
+                                                        <span className="account-number">0012-3456-7890</span>
+                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                    </div>
+                                                    <div className="bank-item">
+                                                        <span className="bank-name">Land Bank</span>
+                                                        <span className="account-number">9876-5432-10</span>
+                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="upload-section">
+                                                <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                                <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                                <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                                <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                                <Upload
+                                                    listType="picture"
+                                                    maxCount={1}
+                                                    fileList={fileList}
+                                                    onChange={handleUploadChange}
+                                                    beforeUpload={beforeUpload}
+                                                    accept=".jpg,.jpeg,.png"
+                                                >
+                                                    <Button type="primary" icon={<UploadOutlined />} className="user-invoice-receipt-button">
+                                                        Select Receipt Image
+                                                    </Button>
+                                                </Upload>
+
+                                                {fileList.length > 0 && (
+                                                    <div className="upload-preview-container">
+                                                        <h4 className="section-subtitle">Preview</h4>
+
+                                                        <div className="upload-preview-box">
+                                                            <img
+                                                                src={fileList[0].preview}
+                                                                alt="Receipt Preview"
+                                                                className="upload-preview-image"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+
+                            {/* DOCUMENTS SECTION */}
+                            <div style={{ marginBottom: 30 }}>
+                                <h2 className="payment-methods-title payment-section-title">Travelers Information</h2>
+                                <p className="payment-section-subtitle">
+                                    Review and update traveler information as needed.
+                                </p>
+                            </div>
+                            {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
+                                <AntText type="secondary">No documents uploaded yet.</AntText>
+                            ) : travelersWithDocs.length ? (
+                                <div>
+                                    {travelersWithDocs.map((traveler, index) => (
+                                        <div key={index} style={{ marginBottom: 24 }}>
+                                            {(() => {
+                                                const needsResubmission = traveler?.documentsResubmissionRequired || resubmissionTravelerIndexes.includes(index);
+
+                                                return (
+                                                    <>
+                                                        <h4 style={{ marginBottom: 8 }}>
+                                                            Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
+                                                        </h4>
+                                                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
+                                                            <div><strong>Title:</strong> {traveler?.title || 'N/A'}</div>
+                                                            <div><strong>Room:</strong> {traveler?.roomType || 'N/A'}</div>
+                                                            <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format('MMM D, YYYY') : 'N/A'}</div>
+                                                            <div><strong>Age:</strong> {traveler?.age ?? 'N/A'}</div>
+                                                            <div><strong>Passport #:</strong> {traveler?.passportNo || 'N/A'}</div>
+                                                            <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format('MMM D, YYYY') : 'N/A'}</div>
+                                                        </div>
+
+                                                        <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
+                                                            {(needsResubmission
+                                                                ? passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl
+                                                                : traveler?.passportFile) && (
+                                                                    <div style={{ marginBottom: 16 }}>
+                                                                        <AntText strong>Passport / Valid ID:</AntText>
+                                                                        <div style={{ marginTop: 8 }}>
+                                                                            <img
+                                                                                src={needsResubmission
+                                                                                    ? (passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl)
+                                                                                    : traveler.passportFile}
+                                                                                alt={`Traveler ${index + 1} Passport`}
+                                                                                style={{
+                                                                                    width: 380,
+                                                                                    height: 450,
+                                                                                    objectFit: 'cover',
+                                                                                    borderRadius: 8,
+                                                                                    border: '1px solid #ccc'
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+
+                                                            {(needsResubmission
+                                                                ? photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl
+                                                                : traveler?.photoFile) && (
+                                                                    <div style={{ marginBottom: 16 }}>
+                                                                        <AntText strong>2x2 Photo:</AntText>
+                                                                        <div style={{ marginTop: 8 }}>
+                                                                            <img
+                                                                                src={needsResubmission
+                                                                                    ? (photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl)
+                                                                                    : traveler.photoFile}
+                                                                                alt={`Traveler ${index + 1}`}
+                                                                                style={{
+                                                                                    width: 200,
+                                                                                    height: 200,
+                                                                                    objectFit: 'cover',
+                                                                                    borderRadius: 8,
+                                                                                    border: '1px solid #ccc'
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                        </div>
+                                                        {needsResubmission && (
+                                                            <div className="user-invoice-doc-actions">
+                                                                <Upload
+                                                                    listType="picture"
+                                                                    fileList={passportUploadLists[index] || []}
+                                                                    beforeUpload={beforeDocumentUpload}
+                                                                    onChange={(info) => handlePassportUploadChange(index, info)}
+                                                                    accept="image/jpeg,image/png"
+                                                                    maxCount={1}
+                                                                >
+                                                                    <Button type="primary" className="user-invoice-form-button">
+                                                                        Upload Passport/ID
+                                                                    </Button>
+                                                                </Upload>
+                                                                <Upload
+                                                                    listType="picture"
+                                                                    fileList={photoUploadLists[index] || []}
+                                                                    beforeUpload={beforeDocumentUpload}
+                                                                    onChange={(info) => handlePhotoUploadChange(index, info)}
+                                                                    accept="image/jpeg,image/png"
+                                                                    maxCount={1}
+                                                                >
+                                                                    <Button type="primary" className="user-invoice-form-button">
+                                                                        Upload 2x2 Photo
+                                                                    </Button>
+                                                                </Upload>
+                                                                <Button
+                                                                    type="primary"
+                                                                    className="user-invoice-form-button"
+                                                                    onClick={() => handleSubmitTravelerResubmission(index)}
+                                                                    loading={submittingTravelerIndex === index}
+                                                                >
+                                                                    Submit Traveler {index + 1}
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div>
+                                    <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
+                                        {(documentsResubmissionRequired ? passportUploadLists.length > 0 : passportFiles.length > 0) && (
+                                            <div style={{ marginBottom: 16 }}>
+                                                <AntText strong>Passport Files:</AntText>
+                                                <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+                                                    {(documentsResubmissionRequired
+                                                        ? passportUploadLists.flatMap((list) => (list || []).map((file) => file.preview || file.thumbUrl))
+                                                        : passportFiles)
+                                                        .filter(Boolean)
+                                                        .map((url, index) => (
+                                                            <img
+                                                                key={index}
+                                                                src={url}
+                                                                alt={`Traveler Passport ${index + 1}`}
+                                                                style={{
+                                                                    width: 350,
+                                                                    height: 340,
+                                                                    objectFit: 'cover',
+                                                                    borderRadius: 8,
+                                                                    border: '1px solid #ccc'
+                                                                }}
+                                                            />
+                                                        ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {(documentsResubmissionRequired ? photoUploadLists.length > 0 : photoFiles.length > 0) && (
+                                            <div style={{ marginBottom: 16 }}>
+                                                <AntText strong>Photo Files:</AntText>
+                                                <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
+                                                    {(documentsResubmissionRequired
+                                                        ? photoUploadLists.flatMap((list) => (list || []).map((file) => file.preview || file.thumbUrl))
+                                                        : photoFiles)
+                                                        .filter(Boolean)
+                                                        .map((url, index) => (
+                                                            <img
+                                                                key={index}
+                                                                src={url}
+                                                                alt={`Traveler ${index + 1}`}
+                                                                style={{
+                                                                    width: 200,
+                                                                    height: 200,
+                                                                    objectFit: 'cover',
+                                                                    borderRadius: 8,
+                                                                    border: '1px solid #ccc'
+                                                                }}
+                                                            />
+                                                        ))}
                                                 </div>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             )}
-                        </div>
-                    )}
 
 
-                    <Card className="user-invoice-card" title="Documents" style={{ marginTop: 24 }}>
-                        {travelersWithDocs.length === 0 && passportFiles.length === 0 && photoFiles.length === 0 ? (
-                            <AntText type="secondary">No documents uploaded yet.</AntText>
-                        ) : travelersWithDocs.length ? (
+                            {/* BOOKING REGISTRATION SECTION */}
                             <div>
-                                {travelersWithDocs.map((traveler, index) => (
-                                    <div key={index} style={{ marginBottom: 24 }}>
-                                        <h4 style={{ marginBottom: 8 }}>
-                                            Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
-                                        </h4>
-                                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
-                                            <div><strong>Title:</strong> {traveler?.title || 'N/A'}</div>
-                                            <div><strong>Room:</strong> {traveler?.roomType || 'N/A'}</div>
-                                            <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format('MMM D, YYYY') : 'N/A'}</div>
-                                            <div><strong>Age:</strong> {traveler?.age ?? 'N/A'}</div>
-                                            <div><strong>Passport #:</strong> {traveler?.passportNo || 'N/A'}</div>
-                                            <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format('MMM D, YYYY') : 'N/A'}</div>
-                                        </div>
 
-                                        <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
-                                            {traveler?.passportFile && (
-                                                <div style={{ marginBottom: 16 }}>
-                                                    <AntText strong>Passport / Valid ID:</AntText>
-                                                    <div style={{ marginTop: 8 }}>
-                                                        <img
-                                                            src={traveler.passportFile}
-                                                            alt={`Traveler ${index + 1} Passport`}
-                                                            style={{
-                                                                width: 380,
-                                                                height: 450,
-                                                                objectFit: 'cover',
-                                                                borderRadius: 8,
-                                                                border: '1px solid #ccc'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {traveler?.photoFile && (
-                                                <div style={{ marginBottom: 16 }}>
-                                                    <AntText strong>2x2 Photo:</AntText>
-                                                    <div style={{ marginTop: 8 }}>
-                                                        <img
-                                                            src={traveler.photoFile}
-                                                            alt={`Traveler ${index + 1}`}
-                                                            style={{
-                                                                width: 200,
-                                                                height: 200,
-                                                                objectFit: 'cover',
-                                                                borderRadius: 8,
-                                                                border: '1px solid #ccc'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                <div className="booking-form-stepper-container">
+                                    <div style={{ marginBottom: 30 }}>
+                                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                                            The form below is a summary of the traveler's booking registration details.
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div>
-                                <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap" }}>
-                                    {passportFiles.length > 0 && (
-                                        <div style={{ marginBottom: 16 }}>
-                                            <AntText strong>Passport Files:</AntText>
-                                            <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
-                                                {passportFiles.map((url, index) => (
-                                                    <img
-                                                        key={index}
-                                                        src={url}
-                                                        alt={`Traveler Passport ${index + 1}`}
-                                                        style={{
-                                                            width: 350,
-                                                            height: 340,
-                                                            objectFit: 'cover',
-                                                            borderRadius: 8,
-                                                            border: '1px solid #ccc'
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {photoFiles.length > 0 && (
-                                        <div style={{ marginBottom: 16 }}>
-                                            <AntText strong>Photo Files:</AntText>
-                                            <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap' }}>
-                                                {photoFiles.map((url, index) => (
-                                                    <img
-                                                        key={index}
-                                                        src={url}
-                                                        alt={`Traveler ${index + 1}`}
-                                                        style={{
-                                                            width: 200,
-                                                            height: 200,
-                                                            objectFit: 'cover',
-                                                            borderRadius: 8,
-                                                            border: '1px solid #ccc'
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                        <div className="user-invoice-doc-actions">
-                            <Button
-                                type="primary"
-                                className="user-invoice-form-button"
-                                onClick={handleResubmitDocuments}
-                            >
-                                Resubmit
-                            </Button>
-                        </div>
-                    </Card>
-
-                    {/* BOOKING REGISTRATION SECTION */}
-                    <Card className="user-invoice-card" style={{ marginTop: 25 }}>
-                        <div className="booking-form-stepper-container">
-                            <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                            <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
-                                Please upload a clear image of your passport bio page for each traveler.
-                            </p>
-                            <Steps
-                                current={currentStep}
-                                items={[
-                                    { title: 'Traveler Info' },
-                                    { title: 'Dietary & Insurance' },
-                                    { title: 'General Package Disclaimer' },
-                                    { title: 'Terms & Conditions' }
-                                ]}
-                                style={{ marginBottom: '30px' }}
-                            />
-
-
-                            {/* PAGES FOR PDF GENERATION */}
-                            <div
-                                className="form-content-wrapper pdf-capture"
-                                ref={pdfStepRef}
-                                style={{
-                                    position: isGeneratingPdf ? "absolute" : "relative",
-                                    left: isGeneratingPdf ? "-9999px" : "0"
-                                }}
-                            >
-                                {currentStep === 0 && (
-                                    <BookingRegistrationTravelersInvoice
-                                        form={form}
-                                        summaryInvoice={summaryInvoice}
-                                        totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                    <Steps
+                                        current={currentStep}
+                                        items={[
+                                            { title: 'Traveler Info' },
+                                            { title: 'Dietary & Insurance' },
+                                            { title: 'General Package Disclaimer' },
+                                            { title: 'Terms & Conditions' }
+                                        ]}
+                                        style={{ marginBottom: '30px' }}
                                     />
-                                )}
 
-                                {currentStep === 1 && (
-                                    <BookingRegistrationDietInvoice
-                                        form={form}
-                                        summaryInvoice={summaryInvoice}
-                                    />
-                                )}
 
-                                {currentStep === 2 && (
-                                    <BookingRegistrationTermsInvoicePart1
-                                        form={form}
-                                        summaryInvoice={summaryInvoice}
-                                    />
-                                )}
+                                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
 
-                                {currentStep === 3 && (
-                                    <BookingRegistrationTermsInvoicePart2
-                                        form={form}
-                                        summaryInvoice={summaryInvoice}
-                                    />
-                                )}
-                            </div>
-
-                            {/* BUTTONS FOR BOOKING REGISTRATION */}
-                            {!isGeneratingPdf && (
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-
-                                    <div>
                                         {currentStep > 0 && (
-                                            <Button type="primary"
-                                                className="user-invoice-form-button"
-                                                onClick={prev}>
-                                                Back
-                                            </Button>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        {currentStep < 3 ? (
                                             <Button
                                                 type="primary"
                                                 className="user-invoice-form-button"
-                                                onClick={next}>
-                                                Next Step
+                                                onClick={prev}
+                                                aria-label="Previous step"
+                                                style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                            >
+                                                <ArrowLeftOutlined />
                                             </Button>
-                                        ) : (
+                                        )}
+
+                                        {/* PAGES FOR PDF GENERATION */}
+                                        <div
+                                            className="form-content-wrapper pdf-capture"
+                                            ref={pdfStepRef}
+                                            style={{
+                                                flex: 1,
+                                                position: isGeneratingPdf ? "absolute" : "relative",
+                                                left: isGeneratingPdf ? "-9999px" : "0"
+                                            }}
+                                        >
+                                            {currentStep === 0 && (
+                                                <BookingRegistrationTravelersInvoice
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                    totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                                />
+                                            )}
+
+                                            {currentStep === 1 && (
+                                                <BookingRegistrationDietInvoice
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+
+                                            {currentStep === 2 && (
+                                                <BookingRegistrationTermsInvoicePart1
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+
+                                            {currentStep === 3 && (
+                                                <BookingRegistrationTermsInvoicePart2
+                                                    form={form}
+                                                    summaryInvoice={summaryInvoice}
+                                                />
+                                            )}
+                                        </div>
+
+                                        {currentStep < 3 && (
+                                            <Button
+                                                type="primary"
+                                                className="user-invoice-form-button"
+                                                onClick={next}
+                                                aria-label="Next step"
+                                                style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                            >
+                                                <ArrowRightOutlined />
+                                            </Button>
+                                        )}
+
+                                    </div>
+
+                                    {!isGeneratingPdf && currentStep === 3 && (
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
                                             <Button
                                                 type="primary"
                                                 className="user-invoice-form-button"
@@ -1292,14 +1529,18 @@ export default function UserBookingInvoice() {
                                             >
                                                 Download
                                             </Button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                    </Card>
-                </div>
-            </div>
+
+                            </div>
+
+                        </Card>
+
+                    </div>
+                </div >
+            )}
+
         </ConfigProvider >
     );
 }

@@ -37,4 +37,6 @@ router.post('/archived-cancellations/:id/restore', userAuth, adminOnly, bookingC
 router.post('/cancellations/:id/approve', userAuth, adminOnly, bookingController.approveCancellation)
 router.post('/cancellations/:id/reject', userAuth, adminOnly, bookingController.disApproveCancellation)
 router.post('/verify-payment', userAuth, bookingController.verifyTokenCheckout)
+router.post('/:id/request-document-resubmission', userAuth, adminOnly, bookingController.requestDocumentResubmission)
+router.post('/:id/resubmit-documents', userAuth, bookingController.resubmitBookingDocuments)
 module.exports = router

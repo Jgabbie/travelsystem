@@ -73,8 +73,6 @@ export default function BookingProcess() {
         setIsProceedModalOpen(false);
     }
 
-    console.log('Booking Data in BookingProcess:', bookingData);
-
     //GET SUMMARY DATA
     const summary = bookingData || {}
     const data = summary
@@ -191,31 +189,12 @@ export default function BookingProcess() {
 
 
     //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
-    const groupRoomOptions = (() => {
-        if (travelersTotal === 2) {
-            return [
-                { value: 'TWIN', label: 'TWIN' },
-                { value: 'DOUBLE', label: 'DOUBLE' }
-            ]
-        }
-
-        if (travelersTotal === 3) {
-            return [{ value: 'TRIPLE', label: 'TRIPLE' }]
-        }
-
-        if (travelersTotal === 4) {
-            return [
-                { value: 'TWIN', label: 'TWIN' },
-                { value: 'DOUBLE', label: 'DOUBLE' }
-            ]
-        }
-
-        return [
-            { value: 'TWIN', label: 'TWIN' },
-            { value: 'DOUBLE', label: 'DOUBLE' },
-            { value: 'TRIPLE', label: 'TRIPLE' }
-        ]
-    })()
+    const groupRoomOptions = [
+        { value: 'TWIN', label: 'TWIN' },
+        { value: 'DOUBLE', label: 'DOUBLE' },
+        { value: 'TRIPLE', label: 'TRIPLE' },
+        { value: 'SINGLE', label: 'SINGLE' }
+    ]
 
     const roomOptions = bookingType === 'Solo Booking'
         ? [{ value: 'SINGLE', label: 'SINGLE' }]
@@ -394,17 +373,6 @@ export default function BookingProcess() {
             }));
 
             setCurrentStep(currentStep + 1);
-
-            console.log('Current Form Values on Next:', currentFormValues);
-            console.log('Updated Booking Data on Next:', {
-                ...bookingData,
-                ...currentFormValues,
-                travelerCounts: travelersCount,
-                bookingType: bookingType,
-                totalPrice: totalPrice,
-                passportFiles: passportFilesFormatted,
-                photoFiles: photoFilesFormatted
-            });
             console.log('Save Successful, moving to next step');
 
 
@@ -494,10 +462,6 @@ export default function BookingProcess() {
 
     //HANDLE FORM VALUE CHANGES
     const handleValuesChange = (changedValues, allValues) => {
-        console.log('Form values changed:', changedValues);
-        console.log('All current form values:', allValues);
-        console.log("Current Form Data:", allValues.travelers);
-
         if (changedValues.travelers) {
             setBookingData(prev => ({
                 ...prev,

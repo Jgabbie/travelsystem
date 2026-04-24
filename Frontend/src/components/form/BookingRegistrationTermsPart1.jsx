@@ -45,7 +45,6 @@ export default function BookingRegistrationTermsPart1({ form, onValuesChange }) 
                     termsDate: dayjs().format('MMMM DD, YYYY')
                 });
 
-                console.log("user data response:", user);
                 setUserProfile(user);
 
             } catch (error) {

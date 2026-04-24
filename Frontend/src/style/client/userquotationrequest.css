@@ -1,34 +1,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
-
-/* HEADER CSS */
-
 .userquotationrequest-container {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
+.userquotationrequest-page {
+    padding: 24px;
+    max-width: 1300px;
+    margin: 0 auto;
+    font-family: "Montserrat", sans-serif;
+}
+
+.userquotationrequest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.userquotationrequest-header .page-header {
+    margin-bottom: 0;
+    color: #1f2937;
+}
+
+.userquotationrequest-subtitle {
+    display: block;
+    margin-top: 4px;
+    color: #6b7280;
+}
 
 .quotation-section-card {
     margin: 40px;
     padding: 32px;
-    border-radius: 24px;
+    border-radius: 4px;
     background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
-    border: 1px solid #e0e7ff;
+    border: 2px solid #e5e7eb;
     box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
 }
 
-
 .quotation-card {
-    border-radius: 8px;
+    border-radius: 4px;
     background: #ffffff;
-    border: 1px solid #e0e7ff;
+    border: 2px solid #e5e7eb;
     box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
-    border: 1px solid #eaeaea;
-    border-top: 5px solid #305797;
     padding: 20px 24px;
-    max-width: 600px;
-    font-family: sans-serif;
+    max-width: 1300px;
+    font-family: "Montserrat", sans-serif;
     margin-bottom: 40px;
 }
 
@@ -36,13 +56,14 @@
     color: #305797;
     margin-top: 0;
     margin-bottom: 12px;
-    font-size: 1.5rem;
+    font-size: 34px;
+    font-weight: 700;
 }
 
 .quotation-details {
     color: #555555;
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 14px;
 }
 
 .divider {
@@ -66,6 +87,7 @@
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 24px;
     margin-bottom: 30px;
+    margin-top: 30px;
 }
 
 .custom-history-card {
@@ -146,10 +168,6 @@
 
 /* INPUT REVISION REQUEST AND BUTTONS */
 .quotation-feedback-section {
-    background: #ffffff;
-    border: 1px solid #e0e7ff;
-    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
-    padding: 20px;
     border-radius: 8px;
 }
 

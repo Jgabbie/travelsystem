@@ -22,8 +22,6 @@ export default function SuccessfulPaymentPassport() {
         // Call backend API to verify payment using token
         apiFetch.post(`/passport/verify-payment`, { token })
             .then(res => {
-                console.log("Payment verification response:", res);
-
                 if (res.success) {
                     console.log("Payment verified successfully.");
                 } else {

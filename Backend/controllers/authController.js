@@ -135,14 +135,14 @@ const loginUser = async (req, res) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'none',
+            sameSite: 'Strict',
             maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'none',
+            sameSite: 'Strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
@@ -153,11 +153,8 @@ const loginUser = async (req, res) => {
 
         res.status(200).json({
             message: "Login Successful!",
-            accessToken,
             user: {
-                id: user._id,
                 username: user.username,
-                email: user.email,
                 profileImage: user.profileImage,
                 role: user.role,
                 loginOnce: user.loginOnce
@@ -187,7 +184,7 @@ const refreshToken = async (req, res) => {
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'none',
+            sameSite: 'Strict',
             maxAge: 2 * 60 * 60 * 1000
         });
 
@@ -230,8 +227,8 @@ const logoutUser = async (req, res) => {
         const { refreshToken } = req.cookies;
 
         if (!refreshToken) {
-            res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
-            res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
+            res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
+            res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
             return res.status(200).json({ message: "Logged Out" })
         }
 
@@ -241,9 +238,9 @@ const logoutUser = async (req, res) => {
             await user.save()
         }
 
-        res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
-        res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
-        res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'none', path: '/' })
+        res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
+        res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
+        res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
 
 
         // Determine action based on the user found (if any)
@@ -383,14 +380,14 @@ const verifyEmail = async (req, res) => {
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'none',
+            sameSite: 'Strict',
             maxAge: 2 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'none',
+            sameSite: 'Strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
@@ -402,11 +399,8 @@ const verifyEmail = async (req, res) => {
 
         res.status(200).json({
             message: "Login Successful!",
-            accessToken,
             user: {
-                id: userName._id,
                 username: userName.username,
-                email: userName.email,
                 role: userName.role,
                 profileImage: userName.profileImage
             }
@@ -434,10 +428,8 @@ const isAuthenticated = async (req, res) => {
         return res.status(200).json({
             message: "User is Authenticated",
             user: {
-                id: currentUser._id,
                 username: currentUser.username,
                 profileImage: currentUser.profileImage,
-                email: currentUser.email,
                 role: currentUser.role,
                 loginOnce: currentUser.loginOnce
             }

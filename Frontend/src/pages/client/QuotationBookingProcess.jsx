@@ -168,11 +168,6 @@ export default function QuotationBookingProcess() {
                     + (Number(quoteTravelers?.child) || 0)
                     + (Number(quoteTravelers?.infant) || 0);
 
-                console.log("Response from API:", response);
-                console.log("Package Response:", packageResponse);
-                console.log("Computed Total Travelers:", computeTotalTravelers);
-                console.log("Quote Travelers Data:", quoteTravelers);
-
                 const packageType = packageResponse?.packageType || 'fixed';
                 const packageImages = packageResponse?.images || packageResponse?.packageImages || [];
 
@@ -244,34 +239,14 @@ export default function QuotationBookingProcess() {
         };
     }, [quotationBookingData?.quotationId, quotationBookingData?.travelersCount, setQuotationBookingData]);
 
-    console.log("Booking Data in QuotationBookingProcess:", data)
 
     //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
-    const groupRoomOptions = (() => {
-        if (travelersTotal === 2) {
-            return [
-                { value: 'TWIN', label: 'TWIN' },
-                { value: 'DOUBLE', label: 'DOUBLE' }
-            ]
-        }
-
-        if (travelersTotal === 3) {
-            return [{ value: 'TRIPLE', label: 'TRIPLE' }]
-        }
-
-        if (travelersTotal === 4) {
-            return [
-                { value: 'TWIN', label: 'TWIN' },
-                { value: 'DOUBLE', label: 'DOUBLE' }
-            ]
-        }
-
-        return [
-            { value: 'TWIN', label: 'TWIN' },
-            { value: 'DOUBLE', label: 'DOUBLE' },
-            { value: 'TRIPLE', label: 'TRIPLE' }
-        ]
-    })()
+    const groupRoomOptions = [
+        { value: 'TWIN', label: 'TWIN' },
+        { value: 'DOUBLE', label: 'DOUBLE' },
+        { value: 'TRIPLE', label: 'TRIPLE' },
+        { value: 'SINGLE', label: 'SINGLE' }
+    ]
 
     const roomOptions = bookingType === 'Solo Booking'
         ? [{ value: 'SINGLE', label: 'SINGLE' }]
@@ -445,17 +420,6 @@ export default function QuotationBookingProcess() {
             }));
 
             setCurrentStep(currentStep + 1);
-
-            console.log('Current Form Values on Next:', currentFormValues);
-            console.log('Updated Booking Data on Next:', {
-                ...quotationBookingData,
-                ...currentFormValues,
-                travelerCounts: travelersCount,
-                bookingType: bookingType,
-                totalPrice: totalPrice,
-                passportFiles: passportFilesFormatted,
-                photoFiles: photoFilesFormatted
-            });
             console.log('Save Successful, moving to next step');
 
 
@@ -531,9 +495,7 @@ export default function QuotationBookingProcess() {
 
     //HANDLE FORM VALUE CHANGES
     const handleValuesChange = (changedValues, allValues) => {
-        console.log('Form values changed:', changedValues);
-        console.log('All current form values:', allValues);
-        console.log("Current Form Data:", allValues.travelers);
+
     };
 
     //HANDLE FILE UPLOAD CHANGES

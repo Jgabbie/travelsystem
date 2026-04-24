@@ -204,6 +204,209 @@ const getBookingByReference = async (req, res) => {
     }
 }
 
+//REQUEST DOCUMENT RESUBMISSION (ADMIN) -----------------------------------------------------------------
+const requestDocumentResubmission = async (req, res) => {
+    const { id } = req.params
+    const { travelerIndex } = req.body
+
+    try {
+        const booking = await BookingModel.findById(id)
+            .populate('packageId', 'packageName')
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' })
+        }
+
+        booking.documentsResubmissionRequired = true
+        booking.documentsResubmissionRequestedAt = new Date()
+
+        const hasTravelerIndex = Number.isInteger(travelerIndex)
+        const travelerList = Array.isArray(booking.bookingDetails?.travelers)
+            ? booking.bookingDetails.travelers
+            : []
+
+        if (hasTravelerIndex && travelerList[travelerIndex]) {
+            const existingIndexes = Array.isArray(booking.documentsResubmissionTravelerIndexes)
+                ? booking.documentsResubmissionTravelerIndexes
+                : []
+            const updatedIndexes = existingIndexes.includes(travelerIndex)
+                ? existingIndexes
+                : [...existingIndexes, travelerIndex]
+            booking.documentsResubmissionTravelerIndexes = updatedIndexes
+
+            booking.bookingDetails.travelers = travelerList.map((traveler, index) => {
+                if (index !== travelerIndex) return traveler
+                return {
+                    ...traveler,
+                    documentsResubmissionRequired: true,
+                    passportFile: null,
+                    photoFile: null
+                }
+            })
+
+            if (Array.isArray(booking.passportFiles)) {
+                const updatedPassportFiles = [...booking.passportFiles]
+                updatedPassportFiles[travelerIndex] = null
+                booking.passportFiles = updatedPassportFiles
+            }
+            if (Array.isArray(booking.photoFiles)) {
+                const updatedPhotoFiles = [...booking.photoFiles]
+                updatedPhotoFiles[travelerIndex] = null
+                booking.photoFiles = updatedPhotoFiles
+            }
+            booking.markModified('bookingDetails')
+        } else {
+            booking.documentsResubmissionTravelerIndexes = travelerList.map((_traveler, index) => index)
+            booking.passportFiles = []
+            booking.photoFiles = []
+
+            if (travelerList.length) {
+                booking.bookingDetails.travelers = travelerList.map((traveler) => ({
+                    ...traveler,
+                    documentsResubmissionRequired: true,
+                    passportFile: null,
+                    photoFile: null
+                }))
+                booking.markModified('bookingDetails')
+            }
+        }
+        await booking.save()
+
+        await NotificationModel.create({
+            userId: booking.userId,
+            title: 'Document Resubmission Required',
+            message: `Please resubmit your documents for booking ${booking.reference}.`,
+            type: 'booking',
+            link: '/user-bookings'
+        })
+
+        const user = await UserModel.findById(booking.userId).select('email username').lean()
+        if (user?.email) {
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Document Resubmission Required - ${booking.reference}`,
+                    html: `
+                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+                        <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+                            <h2 style="color:#b91c1c; margin-bottom:10px;">Document Resubmission Required</h2>
+                            <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Our team needs you to resubmit your booking documents.
+                            </p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                <b>Booking Reference:</b> ${booking.reference}<br/>
+                                <b>Package:</b> ${booking.packageId?.packageName || 'Package'}
+                            </p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Please upload the updated documents from your booking invoice page.
+                            </p>
+                            <p style="color:#777; font-size:13px; margin-top:24px;">
+                                If you have questions, please contact support.
+                            </p>
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>support@mrctravelandtours.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+                        </div>
+                    </div>
+                    `
+                })
+            } catch (emailError) {
+                console.error('Failed to send document resubmission email:', emailError)
+            }
+        }
+
+        logAction('DOCUMENT_RESUBMISSION_REQUESTED', req.userId, {
+            'Document Resubmission Requested': `Booking Reference: ${booking.reference}`
+        })
+
+        return res.status(200).json({ message: 'Document resubmission requested', booking })
+    } catch (error) {
+        return res.status(500).json({ message: 'Error requesting document resubmission', error })
+    }
+}
+
+//RESUBMIT BOOKING DOCUMENTS (USER) -----------------------------------------------------------------
+const resubmitBookingDocuments = async (req, res) => {
+    const { id } = req.params
+    const userId = req.userId
+    const { passportFiles = [], photoFiles = [], travelers = [], travelerIndex } = req.body
+
+    try {
+        const booking = await BookingModel.findById(id)
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' })
+        }
+
+        if (String(booking.userId) !== String(userId)) {
+            return res.status(403).json({ message: 'Unauthorized to update this booking' })
+        }
+
+        if (Array.isArray(passportFiles) && passportFiles.length) {
+            booking.passportFiles = passportFiles
+        }
+        if (Array.isArray(photoFiles) && photoFiles.length) {
+            booking.photoFiles = photoFiles
+        }
+
+        if (Array.isArray(travelers) && travelers.length) {
+            if (!booking.bookingDetails) {
+                booking.bookingDetails = {}
+            }
+            booking.bookingDetails.travelers = travelers
+            booking.markModified('bookingDetails')
+        }
+
+        const travelersSource = Array.isArray(travelers) && travelers.length
+            ? travelers
+            : booking.bookingDetails?.travelers || []
+
+        if (Number.isInteger(travelerIndex)) {
+            const existingIndexes = Array.isArray(booking.documentsResubmissionTravelerIndexes)
+                ? booking.documentsResubmissionTravelerIndexes
+                : []
+            booking.documentsResubmissionTravelerIndexes = existingIndexes.filter(
+                (index) => index !== travelerIndex
+            )
+        }
+
+        const anyResubmissionPending = travelersSource.some(
+            (traveler) => traveler?.documentsResubmissionRequired
+        ) || (Array.isArray(booking.documentsResubmissionTravelerIndexes)
+            && booking.documentsResubmissionTravelerIndexes.length > 0)
+
+        booking.documentsResubmissionRequired = anyResubmissionPending
+        if (!anyResubmissionPending) {
+            booking.documentsResubmissionRequestedAt = null
+        }
+
+        await booking.save()
+
+        await NotificationModel.create({
+            userId: booking.userId,
+            title: 'Documents Resubmitted',
+            message: `Documents for booking ${booking.reference} were resubmitted.`,
+            type: 'booking',
+            link: '/user-bookings'
+        })
+
+        logAction('DOCUMENTS_RESUBMITTED', userId, {
+            'Documents Resubmitted': `Booking Reference: ${booking.reference}`
+        })
+
+        return res.status(200).json({ message: 'Documents resubmitted', booking })
+    } catch (error) {
+        return res.status(500).json({ message: 'Error resubmitting documents', error })
+    }
+}
+
 //UPDATE BOOKING (ADMIN) -----------------------------------------------------------------
 const updateBooking = async (req, res) => {
     const { id } = req.params
@@ -694,4 +897,4 @@ const verifyTokenCheckout = async (req, res) => {
         return { valid: false, message: 'Error verifying token' }
     }
 }
-module.exports = { createBooking, getUserBookings, getAllBookings, getArchivedBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, restoreArchivedBooking, cancelBooking, getcancellations, getArchivedCancellations, archiveCancellation, restoreArchivedCancellation, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation }
+module.exports = { createBooking, getUserBookings, getAllBookings, getArchivedBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, restoreArchivedBooking, cancelBooking, getcancellations, getArchivedCancellations, archiveCancellation, restoreArchivedCancellation, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation, requestDocumentResubmission, resubmitBookingDocuments }

@@ -31,7 +31,6 @@ export default function ApplyVisa() {
         const loadServices = async () => {
             try {
                 const response = await apiFetch.get('/services/services')
-                console.log('Loaded visa services:', response)
                 setServices(response || [])
             } catch (loadError) {
                 console.error('Failed to load visa services:', loadError)
@@ -113,8 +112,6 @@ export default function ApplyVisa() {
             return
         }
 
-        console.log("User: ", auth)
-
         if (!auth || !auth?.username) {
             setLoginModalVisible(true)
             return
@@ -130,7 +127,6 @@ export default function ApplyVisa() {
                 status: steps[0]
             })
             setSentModalVisible(true)
-            console.log('Submitting visa application request')
         } catch (submitError) {
             console.error('Error submitting visa application request:', submitError)
         }

@@ -45,8 +45,6 @@ export default function DestinationsPackages() {
                     ])
                 )
 
-                console.log('packages response:', response)
-
                 const packages = response.map((pkg) => {
                     const rating = ratingMap.get(String(pkg._id)) || 0
                     const discountPercent = Number(pkg.packageDiscountPercent || 0)
@@ -57,8 +55,6 @@ export default function DestinationsPackages() {
                     // const availableSlots = Array.isArray(pkg.packageSpecificDate)
                     //     ? pkg.packageSpecificDate.reduce((sum, entry) => sum + (Number(entry?.slots) || 0), 0)
                     //     : (pkg.packageAvailableSlots || 0)
-
-                    console.log('discountPercent:', discountPercent)
                     return {
                         id: pkg._id,
                         packageName: pkg.packageName,
@@ -73,8 +69,6 @@ export default function DestinationsPackages() {
                         rating
                     };
                 });
-
-                console.log('Fetched packages:', packages)
 
                 setPackages(packages)
             } catch (error) {

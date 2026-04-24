@@ -131,7 +131,6 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                 }));
             })
             .catch((err) => {
-                console.log("RAW ERROR:", err);
 
                 const message = err?.data.message || "Username already exists";
 
@@ -155,7 +154,6 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                 }));
             })
             .catch((err) => {
-                console.log("RAW ERROR:", err);
 
                 const message = err?.data.message || "Email already exists";
 

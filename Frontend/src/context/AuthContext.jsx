@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
 
             const { user } = res;
             setAuth({
-                id: user.id,
                 username: user.username,
                 role: user.role,
                 profileImage: user.profileImage,

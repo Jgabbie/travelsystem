@@ -71,7 +71,6 @@ export default function NewPassport() {
                 applicationType: 'New Passport'
             });
             setSentModalVisible(true);
-            console.log('Submitting passport application request');
         } catch (error) {
             console.error('Error submitting passport application request:', error);
         }

@@ -49,9 +49,6 @@ export default function PaymentProcess() {
         ? bookingData.photoFiles
         : travelerDocuments.photo) || []
 
-    console.log("Passport Files:", passportFiles);
-    console.log("Photo Files:", photoFiles);
-
 
     //REDIRECT IF NO BOOKING DATA
     useEffect(() => {
@@ -148,8 +145,6 @@ export default function PaymentProcess() {
     const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
 
-    console.log("Booking Data in PaymentProcess:", bookingData);
-
     //COMPUTATION OF AMOUNT FOR INVOICE DISPLAY AND PAYMENT PAYLOAD
     const travelerCountAdult = bookingData?.travelerCounts?.adult || 0;
     const travelerCountChild = bookingData?.travelerCounts?.child || 0;
@@ -186,8 +181,6 @@ export default function PaymentProcess() {
     const endTravelDate = dayjs(bookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
 
     const travelDate = startTravelDate === 'TBD' ? 'TBD' : `${startTravelDate} - ${endTravelDate}`;
-
-    console.log("Booking Data in PaymentProcess:", travelDate);
 
     const name = bookingData?.leadFullName || 'Customer';
     const email = bookingData?.leadEmail || 'Email'
@@ -226,8 +219,6 @@ export default function PaymentProcess() {
         emergencyTitle: bookingData.emergencyTitle,
         paymentDetails: paymentDetails
     }
-
-    console.log("Booking Details for Payment Payload:", bookingDetails);
 
     //checkout
     const proceedBooking = async () => {
@@ -308,9 +299,6 @@ export default function PaymentProcess() {
                 const formData = new FormData();
                 formData.append("file", file); // 
 
-                console.log("Uploading file:", file);
-                console.log("FormData file:", formData.get("file"));
-
                 const uploadRes = await apiFetch.post(
                     "/upload/upload-receipt",
                     formData,
@@ -322,8 +310,6 @@ export default function PaymentProcess() {
                 );
 
                 const imageUrl = uploadRes?.url;
-
-                console.log("Booking data from new booking:", bookingRes);
 
                 const manualDepositRes = await apiFetch.post('/payment/manual', {
                     bookingId: bookingRes.booking._id,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Modal, Checkbox, DatePicker, TimePicker } from "antd";
+import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Modal, Checkbox, DatePicker, TimePicker } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
@@ -25,6 +25,20 @@ export default function ViewVisaApplication() {
     ]);
     const [isSuggestedDatesSentModalOpen, setIsSuggestedDatesSentModalOpen] = useState(false);
     const [isResubmitDocumentsSentModalOpen, setIsResubmitDocumentsSentModalOpen] = useState(false);
+    const [descriptionColumn, setDescriptionColumn] = useState(2);
+
+    useEffect(() => {
+        const updateDescriptionColumn = () => {
+            setDescriptionColumn(window.innerWidth <= 640 ? 1 : 2);
+        };
+
+        updateDescriptionColumn();
+        window.addEventListener("resize", updateDescriptionColumn);
+
+        return () => {
+            window.removeEventListener("resize", updateDescriptionColumn);
+        };
+    }, []);
 
     const isBusy = loading || isSubmittingSlots || isUpdatingStatus;
 
@@ -366,25 +380,30 @@ export default function ViewVisaApplication() {
                             <ArrowLeftOutlined />
                             Back
                         </Button>
-                        <Title level={2} style={{ marginBottom: 16 }}>Visa Application Details</Title>
+                        <div className="app-detail-header">
+                            <div className="app-detail-titleblock">
+                                <Title level={2} style={{ marginBottom: 4 }}>Visa Application Details</Title>
+                                <p className="app-detail-subtitle">Handle scheduling, status progression, and visa document review.</p>
+                            </div>
+                        </div>
 
                         {/* WAITING FOR APPLICANT TO CHOOSE SUGGESTED APPOINTMENT OPTION */}
                         {statusText && statusText.toLowerCase() === "application submitted" &&
                             application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" &&
                             application.suggestedAppointmentSchedules !== null && application.suggestedAppointmentSchedules.length > 0 &&
                             (
-                                <Card style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6' }}>
+                                <div style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6', padding: 16, borderRadius: 8 }}>
                                     <Tag color="gold"><h2>AWAITING APPLICANT RESPONSE</h2></Tag>
                                     <p style={{ margin: 0, fontSize: 14 }}>
                                         You have suggested appointment schedules for this application. Kindly wait for the applicant's response. We will notify you once they have chosen an option.
                                     </p>
-                                </Card>
+                                </div>
                             )}
 
                         {/* APPLICANT HAS CHOSEN A SUGGESTED APPOINTMENT OPTION */}
                         {statusText && statusText.toLowerCase() === "application submitted" &&
                             application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                                <Card style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}>
+                                <div style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
                                     <Tag color="green"><h2>APPLICANT RESPONSE RECEIVED</h2></Tag>
                                     <p style={{ margin: 0, fontSize: 14 }}>
                                         The applicant has chosen their preferred appointment schedule.
@@ -392,12 +411,12 @@ export default function ViewVisaApplication() {
                                     <strong>
                                         {dayjs(application.suggestedAppointmentScheduleChosen?.date).format("MMM DD, YYYY")} at {application.suggestedAppointmentScheduleChosen?.time}
                                     </strong>
-                                </Card>
+                                </div>
                             )}
 
                         {/* PASSPORT RELEASE PASSPORT OPTION CHOSEN BY THE APPLICANT */}
                         {statusText && statusText.toLowerCase() === "passport released" && (
-                            <Card style={{ marginTop: 16, borderLeft: '4px solid #354ad8', backgroundColor: '#edf2ff' }}>
+                            <div style={{ marginTop: 16, borderLeft: '4px solid #354ad8', backgroundColor: '#edf2ff', padding: 16, borderRadius: 8 }}>
                                 <Tag color="blue"><h2>APPLICANT'S RELEASE PASSPORT OPTION</h2></Tag>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     This is the chosen release passport option of the applicant.
@@ -405,246 +424,258 @@ export default function ViewVisaApplication() {
                                 <strong>
                                     {application.passportReleaseOption === "pickup" ? "Pickup at MRC Travel and Tours office" : `Delivery to ${application.deliveryAddress || "N/A"}`}
                                 </strong>
-                            </Card>
+                            </div>
                         )}
 
-                        <div style={{ display: "flex", flexDirection: "row", gap: 32, marginTop: 24, flexWrap: "wrap" }}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 24, minWidth: 800 }}>
-                                <Card>
-                                    <Descriptions bordered column={2} size="middle">
-                                        <Descriptions.Item label="Application Number">{application.applicationNumber}</Descriptions.Item>
-                                        <Descriptions.Item label="Applicant Name">{application.applicantName}</Descriptions.Item>
-                                        <Descriptions.Item label="Purpose of Travel">{application.purposeOfTravel}</Descriptions.Item>
-                                        <Descriptions.Item label="Preferred Date">{application.preferredDate ? dayjs(application.preferredDate).format("MMM DD, YYYY") : "Not Set"}</Descriptions.Item>
-                                        <Descriptions.Item label="Preferred Time">{application.preferredTime || "Not Set"} </Descriptions.Item>
-                                        <Descriptions.Item label="Visa Type">
-                                            <Tag color="blue">{application.serviceName}</Tag>
-                                        </Descriptions.Item>
-                                        <Descriptions.Item label="Status">
-                                            <Tag color={
-                                                statusText === "Pending" ? "orange" :
-                                                    statusText === "Approved" ? "green" :
-                                                        statusText === "Rejected" ? "red" :
-                                                            statusText === "Processing" ? "blue" : "default"
-                                            }>
-                                                {statusText}
-                                            </Tag>
-                                        </Descriptions.Item>
-                                        <Descriptions.Item label="Date Submitted">{application.createdAt ? dayjs(application.createdAt).format("MMM DD, YYYY hh:mm A") : "N/A"}</Descriptions.Item>
-                                        <Descriptions.Item label="Progress Editable">
-                                            <Switch checked={progressEditable} onChange={setProgressEditable} />
-                                        </Descriptions.Item>
-                                    </Descriptions>
-                                </Card>
+                        <div className="app-detail-shell" style={{ marginTop: 24, border: '1px solid #dde4ef', borderRadius: 12, padding: 20, background: '#ffffff', boxShadow: '0 6px 20px rgba(18, 24, 38, 0.06)', display: "flex", flexDirection: "column", gap: 24 }}>
+                            <div>
+                                <div style={{ display: "flex", flexDirection: "row", gap: 24, flexWrap: "wrap" }}>
+                                    <div style={{ flex: "1 1 620px", minWidth: 320 }}>
+                                        <Descriptions bordered column={descriptionColumn} size="middle">
+                                            <Descriptions.Item label="Application Number">{application.applicationNumber}</Descriptions.Item>
+                                            <Descriptions.Item label="Applicant Name">{application.applicantName}</Descriptions.Item>
+                                            <Descriptions.Item label="Purpose of Travel">{application.purposeOfTravel}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Date">{application.preferredDate ? dayjs(application.preferredDate).format("MMM DD, YYYY") : "Not Set"}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Time">{application.preferredTime || "Not Set"} </Descriptions.Item>
+                                            <Descriptions.Item label="Visa Type">
+                                                <Tag color="blue">{application.serviceName}</Tag>
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Date Submitted">{application.createdAt ? dayjs(application.createdAt).format("MMM DD, YYYY hh:mm A") : "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Progress Editable">
+                                                <Switch checked={progressEditable} onChange={setProgressEditable} />
+                                            </Descriptions.Item>
+                                        </Descriptions>
 
-                                {/* DFA APPROVE OR REJECT OPTION WHEN STATUS IS PROCESSING BY DFA */}
-                                {statusText && String(statusText).toLowerCase() === "processing by embassy" && (
-                                    <Card title="Embassy Processing Actions" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                                        <Button type="primary" onClick={handleEmbassyApproved} className="viewpassportapplication-dfa-processing-approve-button">
-                                            Embassy Approved
-                                        </Button>
-                                        <Button type="primary" onClick={handleEmbassyRejected} className="viewpassportapplication-dfa-processing-reject-button" style={{ marginLeft: 8 }}>
-                                            Embassy Rejected
-                                        </Button>
-                                    </Card>
-                                )}
+                                        {/* DFA APPROVE OR REJECT OPTION WHEN STATUS IS PROCESSING BY DFA */}
+                                        {statusText && String(statusText).toLowerCase() === "processing by embassy" && (
+                                            <div style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                                <h3 style={{ marginTop: 0 }}>Embassy Processing Actions</h3>
+                                                <Button type="primary" onClick={handleEmbassyApproved} className="viewpassportapplication-dfa-processing-approve-button">
+                                                    Embassy Approved
+                                                </Button>
+                                                <Button type="primary" onClick={handleEmbassyRejected} className="viewpassportapplication-dfa-processing-reject-button" style={{ marginLeft: 8 }}>
+                                                    Embassy Rejected
+                                                </Button>
+                                            </div>
+                                        )}
 
-                                {statusText && String(statusText).toLowerCase() === "application submitted" && (
-                                    <Card title="Suggested Appointment Options" style={{ marginTop: 16 }}>
-                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                            {alternateSlots.map((slot, idx) => (
-                                                <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                                                    <span style={{ minWidth: 20 }}>{idx + 1}.</span>
-                                                    <DatePicker
-                                                        disabledDate={disableDates}
-                                                        placeholder="Select date"
-                                                        value={slot.date}
-                                                        onChange={(date) => {
-                                                            const next = [...alternateSlots];
-                                                            next[idx] = { ...next[idx], date };
-                                                            setAlternateSlots(next);
-                                                        }}
-                                                    />
-                                                    <TimePicker
-                                                        format="h:mm A"
-                                                        use12Hours
-                                                        showNow={false}
-                                                        minuteStep={30}
-                                                        disabledTime={() => ({
-                                                            disabledHours
-                                                        })}
-                                                        placeholder="Select time"
-                                                        value={slot.time}
-                                                        onChange={(time) => {
-                                                            const next = [...alternateSlots];
-                                                            next[idx] = { ...next[idx], time };
-                                                            setAlternateSlots(next);
-                                                        }}
-                                                    />
+                                        {statusText && String(statusText).toLowerCase() === "application submitted" && (
+                                            <div style={{ marginTop: 16, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                                <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
+                                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                    {alternateSlots.map((slot, idx) => (
+                                                        <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                                                            <span style={{ minWidth: 20 }}>{idx + 1}.</span>
+                                                            <DatePicker
+                                                                disabledDate={disableDates}
+                                                                placeholder="Select date"
+                                                                value={slot.date}
+                                                                onChange={(date) => {
+                                                                    const next = [...alternateSlots];
+                                                                    next[idx] = { ...next[idx], date };
+                                                                    setAlternateSlots(next);
+                                                                }}
+                                                            />
+                                                            <TimePicker
+                                                                format="h:mm A"
+                                                                use12Hours
+                                                                showNow={false}
+                                                                minuteStep={30}
+                                                                disabledTime={() => ({
+                                                                    disabledHours
+                                                                })}
+                                                                placeholder="Select time"
+                                                                value={slot.time}
+                                                                onChange={(time) => {
+                                                                    const next = [...alternateSlots];
+                                                                    next[idx] = { ...next[idx], time };
+                                                                    setAlternateSlots(next);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                                        <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewvisaapplication-submit-button">
+                                                            Submit Options
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                            ))}
-                                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                                <Button type="primary" onClick={handleSubmitAlternateSlots} className="viewvisaapplication-submit-button">
-                                                    Submit Options
+                                            </div>
+                                        )}
+
+                                        <div style={{ marginTop: 16, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                            <h3 style={{ marginTop: 0 }}>Submitted Documents</h3>
+                                            {submittedDocuments.length > 0 ? (
+                                                <div className="application-documents-grid">
+                                                    {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
+                                                        if (!value) return null;
+                                                        const label = getRequirementLabel(key, entryIndex);
+
+                                                        const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
+                                                        const getDownloadUrl = (originalUrl) => {
+                                                            if (!originalUrl.includes('cloudinary.com')) return originalUrl;
+                                                            return originalUrl.replace('/upload/', '/upload/fl_attachment/');
+                                                        };
+
+                                                        const renderFilePreview = (url, identifier) => {
+                                                            const isPdfFile = isPdf(url);
+
+                                                            return (
+                                                                <div key={identifier} className="application-doc-item" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                                    <div className="application-doc-preview-box" style={{
+                                                                        border: '1px solid #d9d9d9',
+                                                                        borderRadius: 8,
+                                                                        overflow: 'hidden',
+                                                                        backgroundColor: '#f5f5f5',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}>
+                                                                        {isPdfFile ? (
+                                                                            <Button
+                                                                                className="application-doc-preview-media"
+                                                                                type="dashed"
+                                                                                icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
+                                                                                onClick={() => window.open(url, '_blank')}
+                                                                                style={{
+                                                                                    width: '100%',
+                                                                                    display: 'flex', flexDirection: 'column',
+                                                                                    alignItems: 'center', justifyContent: 'center',
+                                                                                    borderRadius: 8,
+                                                                                    backgroundColor: '#fafafa'
+                                                                                }}
+                                                                            >
+                                                                                <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
+                                                                            </Button>
+                                                                        ) : (
+                                                                            <Image
+                                                                                className="application-doc-preview-media"
+                                                                                src={url}
+                                                                                alt={`${label}-${identifier}`}
+                                                                                width="100%"
+                                                                                style={{ objectFit: 'cover' }}
+                                                                            />
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* DOWNLOAD BUTTON */}
+                                                                    <Button
+                                                                        className='visaapplication-download-button application-doc-download'
+                                                                        type="default"
+                                                                        icon={<DownloadOutlined />}
+                                                                        size="small"
+                                                                        block
+                                                                        onClick={() => {
+                                                                            const downloadUrl = getDownloadUrl(url);
+                                                                            window.location.href = downloadUrl; // Directly triggers the attachment download
+                                                                        }}
+                                                                    >
+                                                                        Download {isPdfFile ? 'PDF' : 'Image'}
+                                                                    </Button>
+                                                                </div>
+                                                            );
+                                                        };
+
+                                                        return (
+                                                            <div key={key} style={{ minWidth: 0 }}>
+                                                                <b style={{ display: 'block', marginBottom: 8, fontSize: 10 }}>{label}:</b>
+                                                                <div style={{ gap: 12 }}>
+                                                                    {Array.isArray(value) ? (
+                                                                        <Image.PreviewGroup>
+                                                                            {value.map((url, idx) => (
+                                                                                <div key={`${key}-${idx}`}>
+                                                                                    {renderFilePreview(url, idx)}
+                                                                                </div>
+                                                                            ))}
+                                                                        </Image.PreviewGroup>
+                                                                    ) : (
+                                                                        renderFilePreview(value, 'single')
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <div style={{ padding: "20px", textAlign: "center", color: "#999" }}>
+                                                    No documents submitted.
+                                                </div>
+                                            )}
+                                            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                                                <Button
+                                                    className="viewvisaapplication-submitdocu-button"
+                                                    type="primary"
+                                                    onClick={handleResubmitDocuments}
+                                                    disabled={statusText?.toLowerCase() === "payment complete" || statusText?.toLowerCase() === "application approved" || statusText?.toLowerCase() === "application submitted" || isUpdatingStatus}
+                                                >
+                                                    Resubmit Documents
                                                 </Button>
                                             </div>
                                         </div>
-                                    </Card>
-                                )}
 
-                                <Card title="Submitted Documents" style={{ marginTop: 16, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                                    {submittedDocuments.length > 0 ? (
-                                        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                                            {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
-                                                if (!value) return null;
-                                                const label = getRequirementLabel(key, entryIndex);
 
-                                                const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
-                                                const getDownloadUrl = (originalUrl) => {
-                                                    if (!originalUrl.includes('cloudinary.com')) return originalUrl;
-                                                    return originalUrl.replace('/upload/', '/upload/fl_attachment/');
-                                                };
 
-                                                const renderFilePreview = (url, identifier) => {
-                                                    const isPdfFile = isPdf(url);
 
-                                                    return (
-                                                        <div key={identifier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                                            <div style={{
-                                                                width: 250,
-                                                                height: 250,
-                                                                border: '1px solid #d9d9d9',
-                                                                borderRadius: 8,
-                                                                overflow: 'hidden',
-                                                                backgroundColor: '#f5f5f5',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center'
-                                                            }}>
-                                                                {isPdfFile ? (
-                                                                    <Button
-                                                                        type="dashed"
-                                                                        icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
-                                                                        onClick={() => window.open(url, '_blank')}
-                                                                        style={{
-                                                                            height: 250, width: 250,
-                                                                            display: 'flex', flexDirection: 'column',
-                                                                            alignItems: 'center', justifyContent: 'center',
-                                                                            borderRadius: 8,
-                                                                            backgroundColor: '#fafafa'
-                                                                        }}
-                                                                    >
-                                                                        <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
-                                                                    </Button>
-                                                                ) : (
-                                                                    <Image
-                                                                        src={url}
-                                                                        alt={`${label}-${identifier}`}
-                                                                        width="100%"
-                                                                        height="100%"
-                                                                        style={{ objectFit: 'cover' }}
-                                                                    />
-                                                                )}
-                                                            </div>
 
-                                                            {/* DOWNLOAD BUTTON */}
-                                                            <Button
-                                                                className='visaapplication-download-button'
-                                                                type="default"
-                                                                icon={<DownloadOutlined />}
-                                                                size="small"
-                                                                block
-                                                                onClick={() => {
-                                                                    const downloadUrl = getDownloadUrl(url);
-                                                                    window.location.href = downloadUrl; // Directly triggers the attachment download
-                                                                }}
-                                                            >
-                                                                Download {isPdfFile ? 'PDF' : 'Image'}
-                                                            </Button>
-                                                        </div>
-                                                    );
-                                                };
-
-                                                return (
-                                                    <div key={key}>
-                                                        <b style={{ display: 'block', marginBottom: 8 }}>{label}:</b>
-                                                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                                                            {Array.isArray(value) ? (
-                                                                <Image.PreviewGroup>
-                                                                    {value.map((url, idx) => (
-                                                                        <div key={`${key}-${idx}`}>
-                                                                            {renderFilePreview(url, idx)}
-                                                                        </div>
-                                                                    ))}
-                                                                </Image.PreviewGroup>
-                                                            ) : (
-                                                                renderFilePreview(value, 'single')
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <div style={{ padding: "20px", textAlign: "center", color: "#999" }}>
-                                            No documents submitted.
-                                        </div>
-                                    )}
-                                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                                        <Button
-                                            className="viewvisaapplication-submitdocu-button"
-                                            type="primary"
-                                            onClick={handleResubmitDocuments}
-                                            disabled={statusText?.toLowerCase() === "payment complete" || statusText?.toLowerCase() === "application approved" || statusText?.toLowerCase() === "application submitted" || isUpdatingStatus}
-                                        >
-                                            Resubmit Documents
-                                        </Button>
                                     </div>
-                                </Card>
 
-                            </div>
-
-                            <div style={{ display: "flex", flexDirection: "column", minWidth: 300 }}>
-                                <div style={{ maxWidth: 300, margin: "0 auto 0 auto", paddingBottom: 12 }}>
-                                    <Card title="Progress Tracker" style={{ minWidth: 280, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                                        <div className="steps-vertical-line">
-                                            <Steps
-                                                orientation="vertical"
-                                                current={currentStep}
-                                                // This is the only place that should handle the click
-                                                onChange={undefined}
-                                                items={application.visaProcessSteps.map((step, idx) => ({
-                                                    title: (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                            <span style={{
-                                                                fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                color: "#305797",
-                                                            }}>
-                                                                {typeof step === "string" ? step : step?.title}
-                                                            </span>
-                                                            <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
-                                                                Description for {step}
-                                                            </p>
-                                                            <Checkbox
-                                                                checked={idx <= currentStep}
-                                                                disabled={!progressEditable}
-                                                                onChange={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleStepChange(idx);
-                                                                }}
-                                                            >
-                                                                Done
-                                                            </Checkbox>
-                                                        </div>
-                                                    )
-                                                }))}
-                                                className="no-line"
-                                            />
+                                    <div style={{ flex: "1 1 300px", minWidth: 280 }}>
+                                        <div style={{ marginBottom: 16, border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#f9fbff" }}>
+                                            <p className="app-detail-kicker" style={{ marginBottom: 6 }}>Overview</p>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                                                <span>Status</span>
+                                                <Tag color="blue">{statusText || "N/A"}</Tag>
+                                            </div>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                                <span>Service</span>
+                                                <strong>{application?.serviceName || "N/A"}</strong>
+                                            </div>
                                         </div>
 
-                                    </Card>
+                                        <div style={{ border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#ffffff", minWidth: 280 }}>
+                                            <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
+                                            <div className="steps-vertical-line">
+                                                <Steps
+                                                    orientation="vertical"
+                                                    current={currentStep}
+                                                    // This is the only place that should handle the click
+                                                    onChange={undefined}
+                                                    items={application.visaProcessSteps.map((step, idx) => ({
+                                                        title: (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                                <span style={{
+                                                                    fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                                    color: "#305797",
+                                                                }}>
+                                                                    {typeof step === "string" ? step : step?.title}
+                                                                </span>
+                                                                <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
+                                                                    Description for {step}
+                                                                </p>
+                                                                <Checkbox
+                                                                    checked={idx <= currentStep}
+                                                                    disabled={!progressEditable}
+                                                                    onChange={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleStepChange(idx);
+                                                                    }}
+                                                                >
+                                                                    Done
+                                                                </Checkbox>
+                                                            </div>
+                                                        )
+                                                    }))}
+                                                    className="no-line"
+                                                />
+                                            </div>
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+
+
                         </div>
                     </div>
                 )}

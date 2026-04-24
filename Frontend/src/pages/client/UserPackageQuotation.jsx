@@ -44,8 +44,6 @@ export default function UserPackageQuotation() {
                     };
                 });
 
-                console.log('Fetched quotations:', quotations);
-
                 setQuotations(quotations);
             } catch (error) {
                 console.error('Error fetching quotations:', error);
@@ -59,7 +57,6 @@ export default function UserPackageQuotation() {
 
     const viewQuotation = (id) => {
         navigate(`/user-quotation-request`, { state: { quotationId: id } });
-        console.log('View quotation with ID:', id)
     }
 
     const filteredDataSource = quotations.filter(item => {

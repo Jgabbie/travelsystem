@@ -9,7 +9,32 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const [userProfile, setUserProfile] = useState({})
 
-    console.log("summary in travelers:", summary);
+    const normalizeRoomType = (value) => String(value || '').trim().replace(/\s+\d+$/, '')
+
+    const getRoomOccupancy = (roomType) => {
+        const normalized = normalizeRoomType(roomType)
+        if (normalized === 'TRIPLE') return 3
+        if (normalized === 'TWIN' || normalized === 'DOUBLE') return 2
+        return 1
+    }
+
+    const getDisplayRoomType = (travelers, index) => {
+        const traveler = travelers[index] || {}
+        const roomType = normalizeRoomType(traveler.roomType)
+
+        if (!roomType) return ''
+        if (roomType === 'SINGLE') return 'SINGLE'
+
+        const sameRoomTypeIndex = travelers
+            .slice(0, index)
+            .filter((item) => normalizeRoomType(item?.roomType) === roomType)
+            .length
+
+        const roomNumber = Math.floor(sameRoomTypeIndex / getRoomOccupancy(roomType)) + 1
+
+        return `${roomType} ${roomNumber}`
+    }
+
 
     const bookingType = summary.bookingType || 'No Booking';
     const packageType = summary.packageType || 'fixed';
@@ -56,7 +81,6 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                     travelersSignature: user.fullName
                 });
 
-                console.log("user data response:", user);
                 setUserProfile(user);
 
             } catch (error) {
@@ -103,7 +127,9 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                     ? 'SINGLE'
                     : isGroup && t?.roomType === 'SINGLE'
                         ? undefined
-                        : t?.roomType
+                        : t?.roomType,
+            passportNo: isDomesticPackage ? 'N/A' : t?.passportNo,
+            passportExpiry: isDomesticPackage ? 'N/A' : t?.passportExpiry
         }));
 
         form.setFieldsValue({
@@ -393,6 +419,9 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                             name={[name, 'roomType']}
                                                             noStyle
                                                             rules={[{ required: true, message: 'Please select a room type' }]}
+                                                            getValueProps={() => ({
+                                                                value: getDisplayRoomType(form.getFieldValue('travelers') || [], index)
+                                                            })}
                                                         >
                                                             <Input
                                                                 size="small"
@@ -504,7 +533,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                                                                     ]
                                                             }
                                                             getValueProps={(value) => ({
-                                                                value: value ? dayjs(value).format('MMM DD, YYYY') : '',
+                                                                value: value ? "N/A" : dayjs(value).format('MMM DD, YYYY'),
                                                             })}
                                                         >
                                                             <Input

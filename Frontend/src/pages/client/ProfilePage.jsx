@@ -172,8 +172,6 @@ export default function ProfilePage() {
                     tours: data.tours || []
                 });
 
-                console.log("Fetched preferences:", data);
-                console.log("Set preferences state:", preferences);
             }
         } catch (error) {
             console.error('Error fetching preferences:', error);
@@ -238,8 +236,6 @@ export default function ProfilePage() {
                 travelersCount: b.travelers || {},
                 status: b.status?.charAt(0).toUpperCase() + b.status?.slice(1) || 'No Status',
             }))
-
-            console.log('Fetched bookings:', bookings)
 
             setRecentBookings(bookings)
         } catch (error) {

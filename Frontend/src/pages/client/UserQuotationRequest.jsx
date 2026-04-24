@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Modal, message, Button, Input, Card, ConfigProvider, Spin, Tag } from "antd"
+import { Modal, message, Button, Input, Card, ConfigProvider, Spin, Tag, Typography } from "antd"
 import { ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons"
 import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import { useQuotationBooking } from "../../context/BookingQuotationContext";
 import '../../style/client/userquotationrequest.css'
+
+
+const { Title, Text: AntText } = Typography;
 
 export default function UserQuotationRequest() {
     const [notes, setNotes] = useState("");
@@ -34,11 +37,9 @@ export default function UserQuotationRequest() {
         const fetchQuotationDetails = async () => {
             setLoading(true);
             try {
-                console.log("Calling API for quotation ID:", id);
                 const response = await apiFetch.get(`/quotation/get-quotation/${id}`);
                 const quotationData = response;
 
-                console.log("Quotation data received from API:", quotationData);
 
                 setQuotation({
                     packageId: quotationData.packageId || null,
@@ -155,214 +156,252 @@ export default function UserQuotationRequest() {
 
                 ) : (
                     quotation && (
-                        <div className="userquotationrequest-container" style={{ padding: "20px" }}>
-                            <Button
-                                type="primary"
-                                className="userquotationrequest-back-button"
-                                style={{ marginBottom: "15px" }}
-                                onClick={() => navigate("/user-package-quotation")}
-                            >
-                                <ArrowLeftOutlined />
-                                Back
-                            </Button>
-
-                            {/* BOOKED OR COMPLETE STATUS */}
-                            {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
-                                <Card
-                                    style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                    title={<Tag color="green">Quotation {quotation.status}</Tag>}
+                        <div className="userquotationrequest-container">
+                            <div className="userquotationrequest-page">
+                                <Button
+                                    type="primary"
+                                    className="userquotationrequest-back-button"
+                                    style={{ marginBottom: "15px" }}
+                                    onClick={() => navigate("/user-package-quotation")}
                                 >
-                                    <p style={{ margin: 0, fontSize: 14 }}>
-                                        Your quotation is marked as {quotation.status.toLowerCase()}. If you need help, contact support.
-                                    </p>
-                                </Card>
-                            ) : null}
+                                    <ArrowLeftOutlined />
+                                    Back
+                                </Button>
 
-                            {/* HEADER */}
-                            <div className="quotation-card">
-                                <div className="quotation-content">
-                                    <h2 className="quotation-title">{quotation.packageName}</h2>
-                                    <p className="quotation-details">
-                                        <strong>Reference:</strong> {quotation.reference} <span className="divider">|</span>{" "}
-                                        <strong>Status:</strong> <span className="status-badge">{quotation.status}</span>
-                                    </p>
+                                <div className="userquotationrequest-header">
+                                    <div>
+                                        <Title level={2} className="page-header">Booking Quotation Request</Title>
+                                        <AntText className="userquotationrequest-subtitle">
+                                            Review your the details of your booking quotation request here. You can view the latest quotation PDF, check the revision history, and provide feedback for any necessary revisions.
+                                        </AntText>
+                                    </div>
                                 </div>
-                            </div>
+
+                                {/* BOOKED OR COMPLETE STATUS */}
+                                {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
+                                    <Card
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                        title={<Tag color="green">Quotation {quotation.status}</Tag>}
+                                    >
+                                        <p style={{ margin: 0, fontSize: 14 }}>
+                                            Your quotation is marked as {quotation.status.toLowerCase()}. If you need help, contact support.
+                                        </p>
+                                    </Card>
+                                ) : null}
 
 
-                            {/* QUOTATION PDF REVISIONS HISTORY */}
-                            <div className="history-grid-container">
-                                <Card title="Quotation Revision History" className="custom-history-card">
-                                    {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
-                                        <p className="empty-state">No PDF revisions uploaded yet.</p>
-                                    ) : (
-                                        <div className="history-list">
-                                            {quotation.pdfRevisions
-                                                .filter((rev) => rev?.url)
-                                                .map((rev, index) => (
-                                                    <div key={index} className="history-item">
-                                                        <div className="history-header">
-                                                            <strong>Version {rev.version}</strong>
-                                                            <span className="history-date">{new Date(rev.uploadedAt).toLocaleString()}</span>
-                                                        </div>
-                                                        <p className="history-uploader">Uploaded by {rev.uploaderName}</p>
-                                                        <a href={rev.url} target="_blank" rel="noopener noreferrer" className="history-link">
-                                                            View PDF Document
-                                                        </a>
-                                                    </div>
-                                                ))}
-                                        </div>
-                                    )}
-                                </Card>
+                                <div className="quotation-card">
+                                    {/* HEADER */}
+                                    <div className="quotation-content">
+                                        <h2 className="quotation-title">{quotation.packageName}</h2>
+                                        <p className="quotation-details">
+                                            <strong>Reference:</strong> {quotation.reference} <span className="divider">|</span>{" "}
+                                            <strong>Status:</strong> <span className="status-badge">{quotation.status}</span>
+                                        </p>
+                                    </div>
 
-                                <Card title="Revision Notes History" className="custom-history-card">
-                                    {quotation.revisionComments.length === 0 ? (
-                                        <p className="empty-state">No revision comments yet.</p>
-                                    ) : (
-                                        <div className="history-list">
-                                            {quotation.revisionComments.map((comment, index) => (
-                                                <div key={index} className="history-item">
-                                                    <div className="history-header">
-                                                        <strong>{comment.authorName}</strong>
-                                                        <span className="history-role">{comment.role}</span>
-                                                    </div>
-                                                    <p className="history-comment">"{comment.comments}"</p>
-                                                    <div className="history-date">{new Date(comment.createdAt).toLocaleString()}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </Card>
-                            </div>
 
-                            {/* PDF VIEWER */}
-                            <div >
-                                <h1>Latest Revision</h1>
-                                <div style={{ border: "1px solid #ccc", height: "600px", marginBottom: "20px", position: "relative" }}>
-                                    {signedPdfUrl ? (
-                                        <>
-                                            {pdfLoading && (
-                                                <div style={{
-                                                    position: "absolute",
-                                                    inset: 0,
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    background: "rgba(255, 255, 255, 0.8)",
-                                                    zIndex: 1
-                                                }}>
-                                                    <Spin spinning={true} description="Loading PDF..." />
+                                    {/* QUOTATION PDF REVISIONS HISTORY */}
+                                    <div className="history-grid-container">
+                                        <div className="custom-hisory-card">
+                                            <h2>Quotation Revision History</h2>
+                                            {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
+                                                <p className="empty-state">No PDF revisions uploaded yet.</p>
+                                            ) : (
+                                                <div className="history-list">
+                                                    {quotation.pdfRevisions
+                                                        .filter((rev) => rev?.url)
+                                                        .map((rev, index) => (
+                                                            <div key={index} className="history-item">
+                                                                <div className="history-header">
+                                                                    <strong>Version {rev.version}</strong>
+                                                                    <span className="history-date">{new Date(rev.uploadedAt).toLocaleString()}</span>
+                                                                </div>
+                                                                <p className="history-uploader">Uploaded by {rev.uploaderName}</p>
+                                                                <a href={rev.url} target="_blank" rel="noopener noreferrer" className="history-link">
+                                                                    View PDF Document
+                                                                </a>
+                                                            </div>
+                                                        ))}
                                                 </div>
                                             )}
-                                            <iframe
-                                                src={signedPdfUrl}
-                                                title="Quotation PDF"
-                                                width="100%"
-                                                height="100%"
-                                                style={{ border: "none" }}
-                                                onLoad={() => setPdfLoading(false)}
-                                                onError={() => setPdfLoading(false)}
-                                            />
-                                        </>
-                                    ) : (
-                                        <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
-                                    )}
-                                </div>
-                            </div>
+                                        </div>
+
+                                        <div className="custom-hisory-card">
+                                            <h2>Revision Notes History</h2>
+                                            {quotation.revisionComments.length === 0 ? (
+                                                <p className="empty-state">No revision comments yet.</p>
+                                            ) : (
+                                                <div className="history-list">
+                                                    {quotation.revisionComments.map((comment, index) => (
+                                                        <div key={index} className="history-item">
+                                                            <div className="history-header">
+                                                                <strong>{comment.authorName}</strong>
+                                                                <span className="history-role">{comment.role}</span>
+                                                            </div>
+                                                            <p className="history-comment">"{comment.comments}"</p>
+                                                            <div className="history-date">{new Date(comment.createdAt).toLocaleString()}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                    </div>
 
 
-                            {/* INPUT REVISION REQUEST AND BUTTONS */}
-                            {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? null : (
-                                <div className="quotation-feedback-section">
-                                    <div className="input-wrapper">
-                                        <Input.TextArea
-                                            maxLength={200}
-                                            rows={4}
-                                            placeholder="Kindly provide any notes for revision (max 200 characters). Please be as detailed as possible."
-                                            value={notes}
-                                            onChange={(e) => setNotes(e.target.value)}
-                                            className="quotation-input-request"
-                                            disabled={isDisabled}
-                                        />
+                                    {/* PDF VIEWER */}
+                                    <div >
+                                        <div style={{ marginBottom: 30 }}>
+                                            <h1 style={{ paddingBottom: 0, marginBottom: 0 }}>Latest Revision</h1>
+                                            <AntText className="userquotationrequest-subtitle">
+                                                The file below shows the latest revision of your quotation. If you have requested a revision, please wait for the provider to upload the updated quotation.
+                                            </AntText>
+                                        </div>
 
-                                        <div className={`char-counter ${notes.length >= 200 ? 'limit' : ''}`}>
-                                            {notes.length}/200
+                                        <div style={{ border: "1px solid #ccc", height: "600px", marginBottom: "20px", position: "relative" }}>
+                                            {signedPdfUrl ? (
+                                                <>
+                                                    {pdfLoading && (
+                                                        <div style={{
+                                                            position: "absolute",
+                                                            inset: 0,
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            background: "rgba(255, 255, 255, 0.8)",
+                                                            zIndex: 1
+                                                        }}>
+                                                            <Spin spinning={true} description="Loading PDF..." />
+                                                        </div>
+                                                    )}
+                                                    <iframe
+                                                        src={signedPdfUrl}
+                                                        title="Quotation PDF"
+                                                        width="100%"
+                                                        height="100%"
+                                                        style={{ border: "none" }}
+                                                        onLoad={() => setPdfLoading(false)}
+                                                        onError={() => setPdfLoading(false)}
+                                                    />
+                                                </>
+                                            ) : (
+                                                <p style={{ padding: 20 }}>No PDF uploaded yet.</p>
+                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="buttons-container-userquotationrequest">
-                                        <Button
-                                            type="primary"
-                                            className="acceptbutton-userquotationrequest"
-                                            onClick={() => setIsAcceptModalOpen(true)}
-                                            disabled={isDisabled}
-                                        >
-                                            Accept Quotation
-                                        </Button>
-                                        <Button
-                                            type="primary"
-                                            className="revisebutton-userquotationrequest"
-                                            onClick={handleRevise}
-                                            disabled={isDisabled || !notes.trim()}
-                                        >
-                                            Request Revision
-                                        </Button>
-                                    </div>
+
+                                    {/* INPUT REVISION REQUEST AND BUTTONS */}
+                                    {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? null : (
+
+
+                                        <div className="quotation-feedback-section">
+                                            <div style={{ marginBottom: 30 }}>
+                                                <h1 style={{ paddingBottom: 0, marginBottom: 0 }}>Revision Notes</h1>
+                                                <AntText className="userquotationrequest-subtitle">
+                                                    Provide feedback for revision if you want to request changes to the quotation. If you are satisfied with the quotation, you can proceed to accept it.
+                                                </AntText>
+                                            </div>
+                                            <div className="input-wrapper">
+                                                <Input.TextArea
+                                                    maxLength={200}
+                                                    rows={4}
+                                                    placeholder="Kindly provide any notes for revision (max 200 characters). Please be as detailed as possible."
+                                                    value={notes}
+                                                    onChange={(e) => setNotes(e.target.value)}
+                                                    className="quotation-input-request"
+                                                    disabled={isDisabled}
+                                                />
+
+                                                <div className={`char-counter ${notes.length >= 200 ? 'limit' : ''}`}>
+                                                    {notes.length}/200
+                                                </div>
+                                            </div>
+
+                                            <div className="buttons-container-userquotationrequest">
+                                                <Button
+                                                    type="primary"
+                                                    className="acceptbutton-userquotationrequest"
+                                                    onClick={() => setIsAcceptModalOpen(true)}
+                                                    disabled={isDisabled}
+                                                >
+                                                    Accept Quotation
+                                                </Button>
+                                                <Button
+                                                    type="primary"
+                                                    className="revisebutton-userquotationrequest"
+                                                    onClick={handleRevise}
+                                                    disabled={isDisabled || !notes.trim()}
+                                                >
+                                                    Request Revision
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                 </div>
-                            )}
 
 
-                            {/* REVISION REQUEST MODAL */}
-                            <Modal
-                                className="userquotationrequest-revision-modal"
-                                open={isRevisionModalOpen}
-                                footer={null}
-                                onCancel={() => setIsRevisionModalOpen(false)}
-                                style={{ top: 200 }}
-                            >
-                                <div className="userquotationrequest-revision-container">
-                                    <h2 className="userquotationrequest-revision-heading">Revision Requested</h2>
 
-                                    <div>
-                                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+
+
+
+
+
+
+
+                                {/* REVISION REQUEST MODAL */}
+                                <Modal
+                                    className="userquotationrequest-revision-modal"
+                                    open={isRevisionModalOpen}
+                                    footer={null}
+                                    onCancel={() => setIsRevisionModalOpen(false)}
+                                    style={{ top: 200 }}
+                                >
+                                    <div className="userquotationrequest-revision-container">
+                                        <h2 className="userquotationrequest-revision-heading">Revision Requested</h2>
+
+                                        <div>
+                                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                        </div>
+
+                                        <p className="userquotationrequest-revision-text">Your revision request has been submitted.</p>
+                                        <div className="userquotationrequest-revision-actions">
+                                            <Button type="primary" className="userquotationrequest-revision-button" onClick={() => {
+                                                setIsRevisionModalOpen(false)
+                                            }}>
+                                                Continue
+                                            </Button>
+                                        </div>
                                     </div>
+                                </Modal>
 
-                                    <p className="userquotationrequest-revision-text">Your revision request has been submitted.</p>
-                                    <div className="userquotationrequest-revision-actions">
-                                        <Button type="primary" className="userquotationrequest-revision-button" onClick={() => {
-                                            setIsRevisionModalOpen(false)
+                                {/* ACCEPT QUOTATION MODAL */}
+                                <Modal
+                                    className="userquotationrequest-accept-modal"
+                                    open={isAcceptModalOpen}
+                                    footer={null}
+                                    onCancel={() => setIsAcceptModalOpen(false)}
+                                    style={{ top: 200 }}
+                                >
+                                    <div className="userquotationrequest-accept-container">
+                                        <h2 className="userquotationrequest-accept-heading">Accepting Quotation</h2>
+                                        <p className="userquotationrequest-accept-text">Are you sure you want to proceed with this quotation?</p>
+                                    </div>
+                                    <div className="userquotationrequest-accept-actions">
+                                        <Button type="primary" className="userquotationrequest-accept-button" onClick={handleAccept}>
+                                            Proceed
+                                        </Button>
+
+                                        <Button type="primary" className="userquotationrequest-accept-button-cancel" onClick={() => {
+                                            setIsAcceptModalOpen(false)
                                         }}>
-                                            Continue
+                                            Cancel
                                         </Button>
                                     </div>
-                                </div>
-                            </Modal>
-
-                            {/* ACCEPT QUOTATION MODAL */}
-                            <Modal
-                                className="userquotationrequest-accept-modal"
-                                open={isAcceptModalOpen}
-                                footer={null}
-                                onCancel={() => setIsAcceptModalOpen(false)}
-                                style={{ top: 200 }}
-                            >
-                                <div className="userquotationrequest-accept-container">
-                                    <h2 className="userquotationrequest-accept-heading">Accepting Quotation</h2>
-                                    <p className="userquotationrequest-accept-text">Are you sure you want to proceed with this quotation?</p>
-                                </div>
-                                <div className="userquotationrequest-accept-actions">
-                                    <Button type="primary" className="userquotationrequest-accept-button" onClick={handleAccept}>
-                                        Proceed
-                                    </Button>
-
-                                    <Button type="primary" className="userquotationrequest-accept-button-cancel" onClick={() => {
-                                        setIsAcceptModalOpen(false)
-                                    }}>
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </Modal>
-
+                                </Modal>
+                            </div>
                         </div>
                     ))
                 }

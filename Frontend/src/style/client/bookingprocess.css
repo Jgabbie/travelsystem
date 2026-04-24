@@ -728,7 +728,6 @@
 }
 
 .booking-form-stepper-container {
-    padding: 40px;
     clear: both;
 }
 
@@ -738,7 +737,6 @@
     color: #1f2a44;
     margin: 0;
     text-align: center;
-    padding-bottom: 10px;
 }
 
 .booking-form-stepper-text {

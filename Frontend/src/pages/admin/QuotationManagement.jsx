@@ -76,7 +76,6 @@ export default function QuotationManagement() {
                 status: q.status
             }))
 
-            console.log("Fetched quotations:", quotations);
             setData(quotations);
         } catch (error) {
             console.error("Error fetching quotations:", error);
@@ -213,7 +212,6 @@ export default function QuotationManagement() {
     const handleView = (key) => {
         const quotation = data.find((item) => item.key === key);
         if (quotation) {
-            console.log("Viewing quotation:", quotation);
             navigate(`${basePath}/quotation`, { state: { quotationId: key } });
         }
     }
