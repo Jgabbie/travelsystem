@@ -59,6 +59,7 @@ export default function Wishlist() {
             return {
                 wishlistId: entry._id,
                 packageId: resolvedPackageId,
+                packageCode: pkg.packageCode || null,
                 title: pkg.packageName || 'Package',
                 location: pkg.packageCode || pkg.packageType || 'Package',
                 duration: pkg.packageDuration ? `${pkg.packageDuration} DAYS` : 'N/A',

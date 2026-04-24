@@ -22,6 +22,7 @@ export default function PackageDomesticQuotation() {
 
     const navigate = useNavigate()
     const location = useLocation()
+    const packageCode = location.state?.packageCode
     const packageId = location.state?.packageId
     const currentYear = dayjs().year();
     const today = dayjs();
@@ -33,14 +34,14 @@ export default function PackageDomesticQuotation() {
 
 
     useEffect(() => {
-        if (!packageId) {
+        if (!packageCode) {
             message.error('No package selected for quotation.')
             return
         }
 
         try {
             setLoading(true)
-            apiFetch.get(`/package/get-package/${packageId}`)
+            apiFetch.get(`/package/get-package/${encodeURIComponent(packageCode)}`)
                 .then((response) => {
                     setPackageData(response)
                 })
@@ -55,7 +56,7 @@ export default function PackageDomesticQuotation() {
         } finally {
             setLoading(false)
         }
-    }, [packageId])
+    }, [packageCode])
 
     const { hotels, airlines, fixedItinerary, days, basePrice, dateRanges, inclusions, exclusions, images } = useMemo(() => ({
         hotels: packageData?.packageHotels || [],

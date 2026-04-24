@@ -6,10 +6,33 @@ const NotificationModel = require("../models/notification");
 const logAction = require("../utils/logger");
 const dayjs = require("dayjs");
 const transporter = require("../config/nodemailer");
+const mongoose = require("mongoose");
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 const sumSlots = (ranges = []) => ranges.reduce((total, range) => total + Number(range?.slots || 0), 0);
+
+const findPackageByCodeParam = async (packageCodeParam) => {
+    const byCode = await PackageModel.findOne({ packageCode: packageCodeParam });
+    if (byCode) return byCode;
+
+    if (mongoose.Types.ObjectId.isValid(packageCodeParam)) {
+        return PackageModel.findById(packageCodeParam);
+    }
+
+    return null;
+};
+
+const findArchivedPackageByCodeParam = async (packageCodeParam) => {
+    const byCode = await ArchivedPackageModel.findOne({ packageCode: packageCodeParam }).sort({ archivedAt: -1 });
+    if (byCode) return byCode;
+
+    if (mongoose.Types.ObjectId.isValid(packageCodeParam)) {
+        return ArchivedPackageModel.findById(packageCodeParam);
+    }
+
+    return null;
+};
 
 const notifyWishlistUsers = async ({ packageId, title, message, type, link, metadata, emailSubject, emailHtml }) => {
     const wishlistEntries = await WishlistModel.find({ packageId })
@@ -115,7 +138,8 @@ const addPackage = async (req, res) => {
             }
         );
 
-        res.status(201).json({ message: "Package created successfully", package: newPackage });
+
+        res.status(201).json({ message: "Package created successfully" });
 
     } catch (err) {
         console.error(err);
@@ -128,7 +152,34 @@ const addPackage = async (req, res) => {
 const getPackages = async (req, res) => {
     try {
         const packages = await PackageModel.find();
-        res.status(200).json(packages);
+
+        const packagePayload = packages.map(pkg => {
+
+            const availableSlots = (pkg.packageSpecificDate || [])
+                .reduce((total, dateRange) => {
+                    return total + (dateRange?.slots || 0);
+                }, 0);
+
+            return {
+                packageCode: pkg.packageCode,
+                packageName: pkg.packageName,
+                packageDescription: pkg.packageDescription,
+                packageDuration: pkg.packageDuration,
+                packagePricePerPax: pkg.packagePricePerPax,
+                packageDeposit: pkg.packageDeposit,
+                packageSoloRate: pkg.packageSoloRate,
+                packageChildRate: pkg.packageChildRate,
+                packageInfantRate: pkg.packageInfantRate,
+                packageAvailableSlots: availableSlots,
+                packageSpecificDate: pkg.packageSpecificDate || [],
+                packageType: pkg.packageType,
+                packageImages: pkg.images || [],
+                packageTags: pkg.packageTags || [],
+                packageDiscountPercent: pkg.packageDiscountPercent || 0
+            };
+        });
+
+        res.status(200).json(packagePayload);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -139,7 +190,34 @@ const getPackages = async (req, res) => {
 const getArchivedPackages = async (_req, res) => {
     try {
         const packages = await ArchivedPackageModel.find().sort({ archivedAt: -1 });
-        res.status(200).json(packages);
+
+        const packagePayload = packages.map(pkg => {
+
+            const availableSlots = (pkg.packageSpecificDate || [])
+                .reduce((total, dateRange) => {
+                    return total + (dateRange?.slots || 0);
+                }, 0);
+
+            return {
+                packageCode: pkg.packageCode,
+                packageName: pkg.packageName,
+                packageDescription: pkg.packageDescription,
+                packageDuration: pkg.packageDuration,
+                packagePricePerPax: pkg.packagePricePerPax,
+                packageDeposit: pkg.packageDeposit,
+                packageSoloRate: pkg.packageSoloRate,
+                packageChildRate: pkg.packageChildRate,
+                packageInfantRate: pkg.packageInfantRate,
+                packageAvailableSlots: availableSlots,
+                packageSpecificDate: pkg.packageSpecificDate || [],
+                packageType: pkg.packageType,
+                packageImages: pkg.images || [],
+                packageTags: pkg.packageTags || [],
+                packageDiscountPercent: pkg.packageDiscountPercent || 0
+            };
+        });
+
+        res.status(200).json(packagePayload);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -158,7 +236,7 @@ const getPackagesForUsers = async (req, res) => {
                 }, 0);
 
             return {
-                _id: pkg._id,
+                packageCode: pkg.packageCode,
                 packageName: pkg.packageName,
                 packageDescription: pkg.packageDescription,
                 packageDuration: pkg.packageDuration,
@@ -179,9 +257,9 @@ const getPackagesForUsers = async (req, res) => {
 };
 
 const removePackage = async (req, res) => {
-    const { id } = req.params;
+    const { packageCode } = req.params;
     try {
-        const pkg = await PackageModel.findById(id);
+        const pkg = await findPackageByCodeParam(packageCode);
         if (!pkg) {
             return res.status(404).json({ message: "Package not found" });
         }
@@ -213,7 +291,7 @@ const removePackage = async (req, res) => {
             createdAt: pkg.createdAt
         });
 
-        await PackageModel.findByIdAndDelete(id);
+        await PackageModel.findByIdAndDelete(pkg._id);
 
         await logAction(
             "PACKAGE_ARCHIVED",
@@ -232,10 +310,10 @@ const removePackage = async (req, res) => {
 
 //RESTORE PACKAGE (ADMIN)
 const restoreArchivedPackage = async (req, res) => {
-    const { id } = req.params;
+    const { packageCode } = req.params;
 
     try {
-        const archivedPackage = await ArchivedPackageModel.findById(id);
+        const archivedPackage = await findArchivedPackageByCodeParam(packageCode);
         if (!archivedPackage) {
             return res.status(404).json({ message: "Archived package not found" });
         }
@@ -271,7 +349,7 @@ const restoreArchivedPackage = async (req, res) => {
             visaRequired: archivedPackage.visaRequired
         });
 
-        await ArchivedPackageModel.findByIdAndDelete(id);
+        await ArchivedPackageModel.findByIdAndDelete(archivedPackage._id);
 
         await logAction(
             "PACKAGE_RESTORED",
@@ -290,13 +368,45 @@ const restoreArchivedPackage = async (req, res) => {
 
 const getPackage = async (req, res) => {
     try {
-        const { id } = req.params;
-        const pkg = await PackageModel.findById(id);
+        const { packageCode } = req.params;
+        const pkg = await PackageModel.findOne({ packageCode });
+
 
         if (!pkg) return res.status(404).json({ message: "Package not found" });
 
+        const availableSlots = (pkg.packageSpecificDate || [])
+            .reduce((total, dateRange) => {
+                return total + (dateRange?.slots || 0);
+            }, 0);
+
+
+        const packagePayload = {
+            packageCode: pkg.packageCode,
+            packageName: pkg.packageName,
+            packageDescription: pkg.packageDescription,
+            packageDuration: pkg.packageDuration,
+            packagePricePerPax: pkg.packagePricePerPax,
+            packageDeposit: pkg.packageDeposit,
+            packageSoloRate: pkg.packageSoloRate,
+            packageChildRate: pkg.packageChildRate,
+            packageInfantRate: pkg.packageInfantRate,
+            packageSpecificDate: pkg.packageSpecificDate || [],
+            availableSlots: availableSlots,
+            packageType: pkg.packageType,
+            images: pkg.images || [],
+            packageHotels: pkg.packageHotels,
+            packageAirlines: pkg.packageAirlines,
+            packageInclusions: pkg.packageInclusions,
+            packageExclusions: pkg.packageExclusions,
+            packageTermsConditions: pkg.packageTermsConditions,
+            packageItineraries: pkg.packageItineraries,
+            visaRequired: pkg.visaRequired || false,
+            packageTags: pkg.packageTags || [],
+            packageDiscountPercent: pkg.packageDiscountPercent || 0
+        }
+
         // send everything as-is
-        res.status(200).json(pkg);
+        res.status(200).json(packagePayload);
     } catch (err) {
         console.error("getPackage error:", err);
         res.status(500).json({ error: err.message });
@@ -304,10 +414,10 @@ const getPackage = async (req, res) => {
 };
 
 const updatePackage = async (req, res) => {
-    const { id } = req.params;
+    const { packageCode } = req.params;
 
     try {
-        const existingPackage = await PackageModel.findById(id);
+        const existingPackage = await findPackageByCodeParam(packageCode);
         if (!existingPackage) {
             return res.status(404).json({ message: "Package not found" });
         }
@@ -316,7 +426,7 @@ const updatePackage = async (req, res) => {
         const updatedSlots = sumSlots(req.body.dateRanges || []);
 
         const updatedPackage = await PackageModel.findByIdAndUpdate(
-            id,
+            existingPackage._id,
             {
                 packageName: req.body.name,
                 packageCode: req.body.code,
@@ -362,8 +472,14 @@ const updatePackage = async (req, res) => {
                 title: "Package now available",
                 message: `${updatedPackage.packageName} is now available for booking.`,
                 type: "wishlist",
-                link: `/package/${updatedPackage._id}`,
-                metadata: { availability: "available" },
+                link: '/package',
+                metadata: {
+                    availability: "available",
+                    routeState: {
+                        packageCode: updatedPackage.packageCode,
+                        packageId: updatedPackage._id
+                    }
+                },
                 emailSubject: `Now available: ${updatedPackage.packageName}`,
                 emailHtml: (user) => `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
@@ -432,11 +548,24 @@ const getPopularPackages = async (req, res) => {
             }
         ]);
 
+        const packagePayload = popularPackages.map(entry => ({
+            packageCode: entry.package.packageCode,
+            packageName: entry.package.packageName,
+            packageDescription: entry.package.packageDescription,
+            packageDuration: entry.package.packageDuration,
+            packagePricePerPax: entry.package.packagePricePerPax,
+            packageAvailableSlots: (entry.package.packageSpecificDate || []).reduce((total, dateRange) => {
+                return total + (dateRange?.slots || 0);
+            }, 0),
+            packageType: entry.package.packageType,
+            packageImages: entry.package.images || [],
+            packageTags: entry.package.packageTags || [],
+            packageDiscountPercent: entry.package.packageDiscountPercent || 0,
+            bookingCount: entry.bookingCount
+        }));
+
         res.status(200).json(
-            popularPackages.map((entry) => ({
-                ...entry.package,
-                bookingCount: entry.bookingCount
-            }))
+            packagePayload
         );
     } catch (err) {
         console.error('getPopularPackages error:', err);
@@ -446,13 +575,13 @@ const getPopularPackages = async (req, res) => {
 
 const updateSlots = async (req, res) => {
     const slotsPayload = req.body;
-    const packageId = slotsPayload.packageId;
+    const packageCode = slotsPayload.packageCode || slotsPayload.packageId;
     const dateRanges = Array.isArray(slotsPayload.dateRanges)
         ? slotsPayload.dateRanges
         : [];
 
     try {
-        const pkg = await PackageModel.findById(packageId);
+        const pkg = await findPackageByCodeParam(packageCode);
         if (!pkg) {
             return res.status(404).json({ message: "Package not found" });
         }
@@ -489,7 +618,10 @@ const updateSlots = async (req, res) => {
                 link: '/package',
                 metadata: {
                     availability: "available",
-                    routeState: { packageId: pkg._id }
+                    routeState: {
+                        packageCode: pkg.packageCode,
+                        packageId: pkg._id
+                    }
                 },
                 emailSubject: `Now available: ${pkg.packageName}`,
                 emailHtml: (user) => `
@@ -527,11 +659,12 @@ const updateSlots = async (req, res) => {
 };
 
 const updateDiscount = async (req, res) => {
-    const { packageId, discountPercent } = req.body;
+    const { packageCode, packageId, discountPercent } = req.body;
+    const lookupCode = packageCode || packageId;
     const parsedDiscount = Number(discountPercent);
 
-    if (!packageId) {
-        return res.status(400).json({ message: "Package id is required" });
+    if (!lookupCode) {
+        return res.status(400).json({ message: "Package code is required" });
     }
 
     if (!Number.isFinite(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 100) {
@@ -539,7 +672,7 @@ const updateDiscount = async (req, res) => {
     }
 
     try {
-        const pkg = await PackageModel.findById(packageId);
+        const pkg = await findPackageByCodeParam(lookupCode);
         if (!pkg) {
             return res.status(404).json({ message: "Package not found" });
         }
@@ -558,7 +691,10 @@ const updateDiscount = async (req, res) => {
                 link: '/package',
                 metadata: {
                     discountPercent: parsedDiscount,
-                    routeState: { packageId: pkg._id }
+                    routeState: {
+                        packageCode: pkg.packageCode,
+                        packageId: pkg._id
+                    }
                 },
                 emailSubject: `Discount alert: ${pkg.packageName}`,
                 emailHtml: (user) => `

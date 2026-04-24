@@ -492,7 +492,7 @@ export default function AddPackageDomestic() {
 
     try {
       if (isEdit) {
-        await apiFetch.put(`/package/update-package/${id}`, payload);
+        await apiFetch.put(`/package/update-package/${encodeURIComponent(id)}`, payload);
       } else {
         await apiFetch.post("/package/add-package", payload);
       }
@@ -512,7 +512,7 @@ export default function AddPackageDomestic() {
     const getPackage = async () => {
       setLoadingPackage(true);
       try {
-        const pkg = await apiFetch.get(`/package/get-package/${id}`);
+        const pkg = await apiFetch.get(`/package/get-package/${encodeURIComponent(id)}`);
 
         setValues(prev => ({
           ...prev,

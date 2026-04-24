@@ -39,14 +39,14 @@ export default function DestinationsPackages() {
                 const ratingResponse = await apiFetch.get('/rating/average-ratings')
 
                 const ratingMap = new Map(
-                    (ratingResponse?.averages || []).map((item) => [
-                        String(item.packageId),
+                    (ratingResponse?.averagesPayload || []).map((item) => [
+                        String(item.packageCode),
                         Number(item.averageRating || 0)
                     ])
                 )
 
                 const packages = response.map((pkg) => {
-                    const rating = ratingMap.get(String(pkg._id)) || 0
+                    const rating = ratingMap.get(String(pkg.packageCode)) || 0
                     const discountPercent = Number(pkg.packageDiscountPercent || 0)
                     const budget = Number(pkg.packagePricePerPax || 0)
                     const discountedBudget = discountPercent > 0
@@ -57,6 +57,7 @@ export default function DestinationsPackages() {
                     //     : (pkg.packageAvailableSlots || 0)
                     return {
                         id: pkg._id,
+                        packageCode: pkg.packageCode,
                         packageName: pkg.packageName,
                         packageType: pkg.packageType === 'international' ? 'International' : 'Domestic',
                         days: pkg.packageDuration,
@@ -64,7 +65,9 @@ export default function DestinationsPackages() {
                         discountedBudget,
                         discountPercent,
                         availableSlots: pkg.packageAvailableSlots || 0,
-                        images: pkg.packageImages && pkg.packageImages.length > 0 ? pkg.packageImages[0] : '',
+                        images: Array.isArray(pkg.packageImages)
+                            ? (pkg.packageImages[0] || '')
+                            : (Array.isArray(pkg.images) ? (pkg.images[0] || '') : ''),
                         tags: pkg.packageTags || [],
                         rating
                     };
@@ -247,7 +250,6 @@ export default function DestinationsPackages() {
 
     const filteredPackages = packages.filter((item) => {
         const matchesSearch =
-            (item.id.toLowerCase().includes(search.toLowerCase())) ||
             (item.packageName.toLowerCase().includes(search.toLowerCase())) ||
             (item.packageType.toLowerCase().includes(search.toLowerCase())) ||
             (item.days.toString().toLowerCase().includes(search.toLowerCase())) ||
@@ -493,7 +495,7 @@ export default function DestinationsPackages() {
                                             className={`destinations-card${pkg.availableSlots <= 0 ? ' destinations-card-disabled' : ''}`}
                                             hoverable={pkg.availableSlots > 0}
                                             onClick={() => {
-                                                if (pkg.availableSlots > 0) navigate('/package', { state: { packageId: pkg.id } })
+                                                if (pkg.availableSlots > 0) navigate('/package', { state: { packageCode: pkg.packageCode } })
                                             }}
                                             style={pkg.availableSlots <= 0 ? { opacity: 0.6, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
                                         >

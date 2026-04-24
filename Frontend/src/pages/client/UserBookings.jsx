@@ -35,30 +35,14 @@ export default function UserBookings() {
             try {
                 const response = await apiFetch.get('/booking/my-bookings')
                 const bookings = response.map((b) => ({
-                    key: b._id,
-                    ref: b.reference || b._id,
-                    reference: b.reference || b._id,
-                    packageName: b.packageId?.packageName || 'Tour Package',
-                    packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
+                    key: b.bookingItem,
+                    reference: b.reference,
+                    packageName: b.packageName || 'Tour Package',
+                    packageType: b.packageType?.toUpperCase() || 'Package Type',
                     travelDate: b.travelDate ? `${dayjs(b.travelDate.startDate).format('MMM D, YYYY')} - ${dayjs(b.travelDate.endDate).format('MMM D, YYYY')}` : 'TBD',
                     bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
                     travelersCount: b.travelers || {},
-                    paidAmount: Number(b.paidAmount || 0),
-                    status: (() => {
-                        const rawStatus = b.status || '';
-                        const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
-                        const normalized = formatted.toLowerCase();
-                        if (normalized === 'cancelled' || normalized === 'cancellation requested') {
-                            return formatted || 'Cancelled';
-                        }
-                        if (Number(b.paidAmount || 0) <= 0) {
-                            return 'Not Paid';
-                        }
-                        if (normalized === 'successful' || normalized === 'fully paid') {
-                            return 'Fully Paid';
-                        }
-                        return formatted || 'No Status';
-                    })(),
+                    status: b.status || 'N/A'
                 }))
 
                 setBookings(bookings)
@@ -197,8 +181,8 @@ export default function UserBookings() {
     const columns = [
         {
             title: 'Reference',
-            dataIndex: 'ref',
-            key: 'ref'
+            dataIndex: 'reference',
+            key: 'reference'
         },
         {
             title: 'Travel Package',

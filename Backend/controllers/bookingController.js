@@ -88,37 +88,48 @@ const createBooking = async (req, res) => {
     }
 }
 
-
 //GET USER BOOKINGS -----------------------------------------------------------------
 const getUserBookings = async (req, res) => {
-    const userId = req.userId
-    try {
-        const bookings = await BookingModel.find({ userId }).sort({ createdAt: -1 })
-            .populate('userId', 'username')
-            .populate('packageId', 'packageName packageType')
-            .lean()
+    const userId = req.userId;
 
-        const bookingIds = bookings.map((booking) => booking._id)
+    try {
+        const bookings = await BookingModel.find({ userId })
+            .sort({ createdAt: -1 })
+            .populate('packageId', 'packageName packageType')
+            .select('-__v -paidAmount -documentsResubmissionTravelerIndexes -slotDecremented -documentsResubmissionRequestedAt -documentsResubmissionRequired -passportFiles -photoFiles -bookingDetails -userId -expiresAt -createdAt -updatedAt -statusHistory')
+            .lean();
+
+        if (!bookings.length) {
+            return res.status(200).json([]);
+        }
+
+        const bookingIds = bookings.map((b) => b._id);
         const paidAgg = await TransactionModel.aggregate([
             { $match: { bookingId: { $in: bookingIds }, status: 'Successful' } },
             { $group: { _id: '$bookingId', totalPaid: { $sum: '$amount' } } }
-        ])
+        ]);
 
         const paidMap = paidAgg.reduce((acc, entry) => {
-            acc[entry._id.toString()] = entry.totalPaid
-            return acc
-        }, {})
+            acc[entry._id.toString()] = entry.totalPaid;
+            return acc;
+        }, {});
 
-        const enriched = bookings.map((booking) => ({
-            ...booking,
-            paidAmount: paidMap[booking._id.toString()] || 0
-        }))
+        const enriched = bookings.map((booking) => {
+            const { _id, packageId, ...rest } = booking;
 
-        res.status(200).json(enriched)
+            return {
+                bookingItem: _id,
+                packageName: packageId?.packageName || "N/A",
+                packageType: packageId?.packageType || "N/A",
+                ...rest,
+            };
+        });
+
+        res.status(200).json(enriched);
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching bookings', error })
+        res.status(500).json({ message: 'Error fetching bookings' });
     }
-}
+};
 
 
 //GET BOOKINGS TOTAL BASED ON MONTH -----------------------------------------------------------------
@@ -139,7 +150,6 @@ const getBookingsTotalBaseOnMonth = async (req, res) => {
         res.status(500).json({ message: 'Error fetching bookings total', error });
     }
 };
-
 
 //GET ALL BOOKINGS (ADMIN) -----------------------------------------------------------------
 const getAllBookings = async (_req, res) => {
@@ -172,37 +182,52 @@ const getArchivedBookings = async (_req, res) => {
 }
 
 
-//GET BOOKING BY REFERENCE (USER) -----------------------------------------------------------------
 const getBookingByReference = async (req, res) => {
-    const userId = req.userId
-    const { reference } = req.params
+    const userId = req.userId;
+    const { reference } = req.params;
 
     if (!reference) {
-        return res.status(400).json({ message: 'Reference is required' })
+        return res.status(400).json({ message: 'Reference is required' });
     }
 
     try {
-        const user = await UserModel.findById(userId).select('role').lean()
-        const isAdmin = user?.role === 'Admin' || user?.role === 'Employee'
+        const user = await UserModel.findById(userId).select('role').lean();
+        const isAdmin = user?.role === 'Admin' || user?.role === 'Employee';
 
-        const booking = await BookingModel.findOne(
+        const bookingData = await BookingModel.findOne(
             isAdmin ? { reference } : { reference, userId }
         )
             .populate('packageId', 'packageName packageType')
+            .select('-__v -userId -statusHistory -createdAt -updatedAt -expiresAt')
+            .lean();
 
-        if (!booking) {
-            return res.status(404).json({ message: 'Booking not found' })
+        if (!bookingData) {
+            return res.status(404).json({ message: 'Booking not found' });
         }
 
-        const transactions = await TransactionModel.find({ bookingId: booking._id })
-            .sort({ createdAt: -1 }) // latest first
-            .populate('packageId', 'packageName')
+        const transactionData = await TransactionModel.find({ bookingId: bookingData._id })
+            .sort({ createdAt: -1 })
+            .select('-__v -_id -bookingId -packageId -userId -createdAt -updatedAt')
+            .lean();
 
-        return res.status(200).json({ booking, transactions })
+        const { packageId, _id, ...restOfBooking } = bookingData;
+
+        const cleanedBooking = {
+            bookingItem: _id,
+            packageName: packageId?.packageName || "N/A",
+            packageType: packageId?.packageType || "N/A",
+            ...restOfBooking
+        };
+
+        return res.status(200).json({
+            booking: cleanedBooking,
+            transactions: transactionData
+        });
+
     } catch (error) {
-        return res.status(500).json({ message: 'Error fetching booking details', error })
+        return res.status(500).json({ message: 'Error fetching booking details' });
     }
-}
+};
 
 //REQUEST DOCUMENT RESUBMISSION (ADMIN) -----------------------------------------------------------------
 const requestDocumentResubmission = async (req, res) => {

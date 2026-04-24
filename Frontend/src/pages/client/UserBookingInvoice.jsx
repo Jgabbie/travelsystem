@@ -568,24 +568,15 @@ export default function UserBookingInvoice() {
 
 
     //BOOKING INVOICE NUMBER LOGIC
-    const buildInvoiceNumber = (allBookings, currentBooking) => {
+    const buildInvoiceNumber = (currentBooking, monthlyCount) => {
         if (!currentBooking) return "";
+
         const createdAtValue = currentBooking.createdAt || currentBooking.bookingDate;
         const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
         if (!createdAt || !createdAt.isValid()) return "";
 
         const monthKey = createdAt.format("MM");
-        const monthBookings = (allBookings || [])
-            .map((item) => ({
-                ...item,
-                _createdAt: item.createdAt || item.bookingDate
-            }))
-            .filter((item) => item._createdAt && dayjs(item._createdAt).isValid())
-            .filter((item) => dayjs(item._createdAt).isSame(createdAt, "month"));
-
-        monthBookings.sort((a, b) => new Date(a._createdAt) - new Date(b._createdAt));
-        const index = monthBookings.findIndex((item) => String(item._id) === String(currentBooking._id));
-        const sequence = index >= 0 ? index + 1 : monthBookings.length + 1;
+        const sequence = Math.max(Number(monthlyCount || 0), 1);
         return `${monthKey}${String(sequence).padStart(2, "0")}`;
     };
 
@@ -604,10 +595,11 @@ export default function UserBookingInvoice() {
                 setTransactions(fetchedTransactions);
 
 
-                if (fetchedBooking?._id) {
+                if (fetchedBooking?.bookingItem) {
                     try {
-                        const allBookingsRes = await apiFetch.get("/booking/all-bookings");
-                        const number = buildInvoiceNumber(allBookingsRes || [], fetchedBooking);
+                        const monthlyBookingsRes = await apiFetch.get("/booking/bookings-total-month");
+                        const monthlyCount = monthlyBookingsRes?.totalBookings ?? 0;
+                        const number = buildInvoiceNumber(fetchedBooking, monthlyCount);
 
                         if (number) {
                             setInvoiceNumber(number);
@@ -619,6 +611,7 @@ export default function UserBookingInvoice() {
                                 setInvoiceNumber(`${createdAt.format("MM")}01`);
                             }
                         }
+
                     } catch (err) {
                         console.error("Error fetching invoice number list:", err);
 

@@ -49,6 +49,8 @@ export default function ViewVisaApplication() {
                 // 1. Fetch the application first
                 const appData = await apiFetch.get(`/visa/applications/${applicationId}`);
 
+                console.log("Fetched application data:", appData); // Debug log
+
                 // 2. Determine current step
                 const visaProcessSteps = appData.visaProcessSteps || []; // might be undefined if service not fetched yet
 

@@ -33,7 +33,19 @@ const getAllServices = async (req, res) => {
 
     try {
         const services = await ServiceModel.find({});
-        res.status(200).json(services);
+
+        const servicesPayload = services.map(service => ({
+            visaItem: service._id,
+            visaName: service.visaName,
+            visaDescription: service.visaDescription,
+            visaPrice: service.visaPrice,
+            visaRequirements: service.visaRequirements,
+            visaAdditionalRequirements: service.visaAdditionalRequirements,
+            visaProcessSteps: service.visaProcessSteps,
+            visaReminders: service.visaReminders,
+        }));
+
+        res.status(200).json(servicesPayload);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving services', error: error.message });
     }
@@ -41,8 +53,8 @@ const getAllServices = async (req, res) => {
 
 const updateService = async (req, res) => {
     const { id } = req.params;
-    const { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders } = req.body;
     const userId = req.userId;
+    const { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders } = req.body;
 
     try {
         const updatedService = await ServiceModel.findByIdAndUpdate(
@@ -73,7 +85,7 @@ const deleteService = async (req, res) => {
         }
 
         await ArchivedServiceModel.create({
-            originalServiceId: service._id,
+            originalServiceItem: service._id,
             visaName: service.visaName,
             visaPrice: service.visaPrice,
             visaDescription: service.visaDescription,
@@ -137,7 +149,18 @@ const getService = async (req, res) => {
         const { id } = req.params;
         const service = await ServiceModel.findById(id);
 
-        res.status(200).json(service);
+        const servicePayload = {
+            visaItem: service._id,
+            visaName: service.visaName,
+            visaDescription: service.visaDescription,
+            visaPrice: service.visaPrice,
+            visaRequirements: service.visaRequirements,
+            visaAdditionalRequirements: service.visaAdditionalRequirements,
+            visaProcessSteps: service.visaProcessSteps,
+            visaReminders: service.visaReminders,
+        }
+
+        res.status(200).json(servicePayload);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving service', error: error.message });
     }

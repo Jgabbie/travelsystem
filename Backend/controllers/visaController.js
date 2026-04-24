@@ -14,8 +14,10 @@ const generateApplicationNumber = () => {
 }
 
 const applyVisa = async (req, res) => {
-    const { serviceId, preferredDate, preferredTime, purposeOfTravel, status } = req.body
+    const { serviceName, preferredDate, preferredTime, purposeOfTravel, status } = req.body
     const userId = req.userId
+
+    const serviceId = await ServiceModel.findOne({ visaName: serviceName }).select('_id')
 
     if (!serviceId || !preferredDate || !preferredTime || !purposeOfTravel) {
         return res.status(400).json({ message: 'Missing required fields' })
@@ -23,23 +25,17 @@ const applyVisa = async (req, res) => {
 
     try {
         const user = await UserModel.findById(userId).select('firstname lastname username')
-        const serviceName = await ServiceModel.findById(serviceId).select('visaName')
-
-        if (!serviceName) {
-            return res.status(404).json({ message: 'Visa service not found' })
-        }
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' })
         }
         const applicantName = `${user.firstname} ${user.lastname}`.trim() || user.username
 
-
         const application = await VisaModel.create({
             applicationNumber: generateApplicationNumber(),
             userId,
-            serviceId,
-            serviceName: serviceName.visaName,
+            serviceId: serviceId,
+            serviceName: serviceName,
             applicantName,
             preferredDate,
             preferredTime,
@@ -61,6 +57,7 @@ const applyVisa = async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ message: 'Error creating visa application', error: error.message })
+        console.error('Error creating visa application:', error)
     }
 }
 
@@ -163,7 +160,19 @@ const getVisaApplications = async (_req, res) => {
             .populate('serviceId', 'visaName')
             .sort({ createdAt: -1 })
 
-        res.status(200).json(applications)
+        const applicationsPayload = applications.map(app => ({
+            applicationNumber: app.applicationNumber,
+            applicantName: app.applicantName,
+            serviceName: app.serviceId?.visaName || app.serviceName || "N/A",
+            preferredDate: app.preferredDate,
+            preferredTime: app.preferredTime,
+            purposeOfTravel: app.purposeOfTravel,
+            status: app.status,
+            suggestedAppointmentSchedules: app.suggestedAppointmentSchedules,
+            suggestedAppointmentScheduleChosen: app.suggestedAppointmentScheduleChosen,
+        }))
+
+        res.status(200).json(applicationsPayload)
     } catch (error) {
         res.status(500).json({ message: 'Error fetching visa applications', error: error.message })
     }

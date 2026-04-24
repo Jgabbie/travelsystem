@@ -17,9 +17,9 @@ export default function AddPackage() {
 
 
   const location = useLocation();
-  const { packageId } = location.state || {};
+  const { packageCode } = location.state || {};
   const fileInputRef = useRef(null);
-  const isEdit = Boolean(packageId);
+  const isEdit = Boolean(packageCode);
 
   const [backEndErrors, setBackEndErrors] = useState(null);
   const [loadingPackage, setLoadingPackage] = useState(false);
@@ -613,7 +613,7 @@ export default function AddPackage() {
 
     try {
       if (isEdit) {
-        await apiFetch.put(`/package/update-package/${packageId}`, payload);
+        await apiFetch.put(`/package/update-package/${encodeURIComponent(packageCode)}`, payload);
       } else {
         await apiFetch.post("/package/add-package", payload);
       }
@@ -633,7 +633,7 @@ export default function AddPackage() {
     const getPackage = async () => {
       setLoadingPackage(true);
       try {
-        const pkg = await apiFetch.get(`/package/get-package/${packageId}`);
+        const pkg = await apiFetch.get(`/package/get-package/${encodeURIComponent(packageCode)}`);
 
         setValues((prev) => ({
           ...prev,
@@ -675,7 +675,7 @@ export default function AddPackage() {
     };
 
     getPackage();
-  }, [packageId]);
+  }, [packageCode]);
 
   useEffect(() => {
     if (isEdit) return; // skip if editing

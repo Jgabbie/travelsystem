@@ -103,7 +103,7 @@ export default function PassAndVisaService() {
                                     <Empty description="No visa services found" />
                                 ) : (
                                     filteredVisas.map((visa) => (
-                                        <div className="visa-card" key={visa._id}>
+                                        <div className="visa-card" key={visa.visaItem}>
                                             <div>
                                                 <h3>{visa.visaName}</h3>
                                                 <p>{visa.visaDescription}</p>
@@ -116,7 +116,7 @@ export default function PassAndVisaService() {
                                                     className="visa-apply-btn"
                                                     type='primary'
                                                     onClick={() => navigate('/apply-visa', {
-                                                        state: { serviceId: visa._id }
+                                                        state: { visaName: visa.visaName }
                                                     })}
                                                 >
                                                     Apply

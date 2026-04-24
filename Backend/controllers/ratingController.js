@@ -1,5 +1,6 @@
 const Rating = require('../models/rating')
 const ArchivedRatingModel = require('../models/archivedratings')
+const PackageModel = require('../models/package')
 const mongoose = require('mongoose')
 const logAction = require('../utils/logger')
 
@@ -62,9 +63,12 @@ const submitRating = async (req, res) => {
 };
 
 const getPackageRatings = async (req, res) => {
-    const { packageId } = req.params
+    const { packageCode } = req.params
 
     try {
+
+        const packageId = await PackageModel.find({ packageCode }).select('_id')
+
         const ratings = await Rating.find({ packageId })
             .populate('userId', 'username firstname lastname profileImage')
             .sort({ createdAt: -1 })
@@ -200,8 +204,9 @@ const getAllRatings = async (_req, res) => {
 
 const getAverageRating = async (req, res) => {
     try {
-        const { packageId } = req.params;
+        const { packageCode } = req.params;
 
+        const packageId = await PackageModel.findOne({ packageCode }).select('_id');
         const result = await Rating.aggregate([
             {
                 $match: {
@@ -220,6 +225,8 @@ const getAverageRating = async (req, res) => {
         if (result.length === 0) {
             return res.json({ averageRating: 0, totalRatings: 0 });
         }
+
+        console.log("Average rating result for packageCode", packageCode, ":", result[0]); // Debug log
 
         res.json(result[0]);
 
@@ -247,7 +254,20 @@ const getAverageRatings = async (_req, res) => {
             totalRatings: item.totalRatings
         }));
 
-        return res.json({ averages });
+        const populated = await PackageModel.populate(averages, {
+            path: 'packageId',
+            select: 'packageCode packageName'
+        });
+
+        const cleanPayload = populated.map(item => ({
+            packageCode: item.packageId?.packageCode,
+            packageName: item.packageId?.packageName,
+            averageRating: item.averageRating,
+            totalRatings: item.totalRatings
+        }));
+
+        return res.json({ averagesPayload: cleanPayload });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });

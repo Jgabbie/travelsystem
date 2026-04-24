@@ -12,13 +12,20 @@ export default function ApplyVisa() {
     const [sentModalVisible, setSentModalVisible] = useState(false)
 
     const [services, setServices] = useState([])
-    const [selectedServiceId, setSelectedServiceId] = useState(undefined)
+    const [selectedServiceId, setSelectedServiceId] = useState('')
     const [preferredDate, setPreferredDate] = useState('')
     const [preferredTime, setPreferredTime] = useState('')
     const [purpose, setPurpose] = useState('')
 
     const { auth } = useAuth()
     const location = useLocation()
+
+    const normalizeServiceValue = (value) => String(value || '').trim().toLowerCase()
+
+    const routeServiceValue = useMemo(
+        () => location?.state?.visaName || location?.state?.serviceId || location?.state?.visaItem || '',
+        [location?.state]
+    )
 
     const [error, setError] = useState({
         selectedServiceId: '',
@@ -41,16 +48,27 @@ export default function ApplyVisa() {
     }, [])
 
     useEffect(() => {
-        if (location?.state?.serviceId) {
-            setSelectedServiceId(location.state.serviceId)
+        if (routeServiceValue) {
+            setSelectedServiceId(routeServiceValue)
         }
-    }, [location])
+    }, [routeServiceValue])
 
 
     const selectedService = useMemo(
-        () => services.find((service) => service._id === selectedServiceId),
+        () => services.find((service) => {
+            const serviceName = normalizeServiceValue(service?.visaName)
+            const serviceItem = normalizeServiceValue(service?.visaItem)
+            const selectedValue = normalizeServiceValue(selectedServiceId)
+            return serviceName === selectedValue || serviceItem === selectedValue
+        }),
         [services, selectedServiceId]
     )
+
+    useEffect(() => {
+        if (!selectedServiceId && services.length > 0) {
+            setSelectedServiceId(services[0].visaName)
+        }
+    }, [selectedServiceId, services])
 
     const requirements = selectedService?.visaRequirements || []
     const reminders = selectedService?.visaReminders || []
@@ -92,6 +110,8 @@ export default function ApplyVisa() {
 
         if (!selectedServiceId) {
             newErrors.selectedServiceId = 'Please select a visa service'
+        } else if (!selectedService) {
+            newErrors.selectedServiceId = 'Please wait for the selected visa service to load'
         }
 
         if (!preferredDate) {
@@ -119,7 +139,7 @@ export default function ApplyVisa() {
 
         try {
             await apiFetch.post('/visa/apply', {
-                serviceId: selectedServiceId,
+                serviceName: selectedService?.visaName || selectedServiceId,
                 preferredDate,
                 preferredTime,
                 purposeOfTravel: purpose,
@@ -127,6 +147,7 @@ export default function ApplyVisa() {
                 status: steps[0]
             })
             setSentModalVisible(true)
+            console.log('Submitting visa application request')
         } catch (submitError) {
             console.error('Error submitting visa application request:', submitError)
         }
@@ -340,7 +361,7 @@ export default function ApplyVisa() {
                             }}
                         >
                             <span>Visa Fee</span>
-                            <span>₱{selectedService.visaPrice}</span>
+                            <span>₱{selectedService?.visaPrice || 0}</span>
                         </div>
                         <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
 

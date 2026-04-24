@@ -194,9 +194,14 @@ export default function LandingPage() {
 
                 const packages = (response || []).map((pkg) => ({
                     id: pkg._id,
+                    packageCode: pkg.packageCode,
                     packageName: pkg.packageName,
                     packageDescription: pkg.packageDescription,
-                    image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : '',
+                    packageImages: Array.isArray(pkg.images)
+                        ? pkg.images
+                        : Array.isArray(pkg.packageImages)
+                            ? pkg.packageImages
+                            : [],
                     bookingCount: pkg.bookingCount || 0
                 }))
 
@@ -209,9 +214,14 @@ export default function LandingPage() {
                         .slice(0, 3)
                         .map((pkg) => ({
                             id: pkg._id,
+                            packageCode: pkg.packageCode,
                             packageName: pkg.packageName,
                             packageDescription: pkg.packageDescription,
-                            image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : ''
+                            packageImages: Array.isArray(pkg.images)
+                                ? pkg.images
+                                : Array.isArray(pkg.packageImages)
+                                    ? pkg.packageImages
+                                    : []
                         }))
 
                     setFallbackPopularPackages(fallbackPackages)
@@ -227,9 +237,14 @@ export default function LandingPage() {
                         .slice(0, 3)
                         .map((pkg) => ({
                             id: pkg._id,
+                            packageCode: pkg.packageCode,
                             packageName: pkg.packageName,
                             packageDescription: pkg.packageDescription,
-                            image: Array.isArray(pkg.images) && pkg.images.length > 0 ? pkg.images[0] : ''
+                            packageImages: Array.isArray(pkg.images)
+                                ? pkg.images
+                                : Array.isArray(pkg.packageImages)
+                                    ? pkg.packageImages
+                                    : []
                         }))
 
                     setFallbackPopularPackages(fallbackPackages)
@@ -544,16 +559,16 @@ export default function LandingPage() {
                                                     {slide.map((pkg) => (
                                                         <Card
                                                             className='package-card popular-packages-card'
-                                                            key={pkg.id}
+                                                            key={pkg.packageCode}
                                                             hoverable
-                                                            onClick={() => navigate(`/package/${pkg.id}`)}
+                                                            onClick={() => navigate('/package', { state: { packageCode: pkg.packageCode } })}
                                                             cover={
-                                                                pkg.image ? (
+                                                                pkg.packageImages && pkg.packageImages.length > 0 ? (
                                                                     <img
                                                                         style={{ height: 250 }}
                                                                         draggable={false}
                                                                         alt={pkg.packageName}
-                                                                        src={pkg.image}
+                                                                        src={pkg.packageImages[0]}
                                                                     />
                                                                 ) : (
                                                                     <div

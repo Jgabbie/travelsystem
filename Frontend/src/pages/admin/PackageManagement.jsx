@@ -93,7 +93,7 @@ export default function PackageManagement() {
     try {
 
       const slotsPayload = {
-        packageId: slotsPackage._id,
+        packageCode: slotsPackage.packageCode,
         dateRanges: editableSlots.map((slot) => ({
           startdaterange: slot.startdaterange,
           enddaterange: slot.enddaterange,
@@ -114,7 +114,7 @@ export default function PackageManagement() {
     if (!slotsPackage) return;
     setPackagesData((prev) =>
       prev.map((p) =>
-        p._id === slotsPackage._id
+        p.packageCode === slotsPackage.packageCode
           ? { ...p, packageSpecificDate: editableSlots }
           : p
       )
@@ -129,7 +129,7 @@ export default function PackageManagement() {
 
     try {
       await apiFetch.put('/package/update-discount', {
-        packageId: discountPackage._id,
+        packageCode: discountPackage.packageCode,
         discountPercent: Number(discountPercent) || 0
       });
 
@@ -142,7 +142,7 @@ export default function PackageManagement() {
 
     setPackagesData((prev) =>
       prev.map((p) =>
-        p._id === discountPackage._id
+        p.packageCode === discountPackage.packageCode
           ? { ...p, packageDiscountPercent: Number(discountPercent) || 0 }
           : p
       )
@@ -162,7 +162,7 @@ export default function PackageManagement() {
   //REMOVE PACKAGE ----------------------------------------------------------
   const handleArchive = async (key) => {
     try {
-      await apiFetch.delete(`/package/remove-package/${key}`);
+      await apiFetch.delete(`/package/remove-package/${encodeURIComponent(key)}`);
       setIsPackageDeletedModalOpen(true);
       getPackages();
     } catch (error) {
@@ -175,9 +175,9 @@ export default function PackageManagement() {
   const handleRestore = async (key) => {
 
     try {
-      await apiFetch.post(`/package/archived-packages/${key}/restore`);
+      await apiFetch.post(`/package/archived-packages/${encodeURIComponent(key)}/restore`);
       setIsPackageRestoredModalOpen(true);
-      setArchivedPackagesData((prev) => prev.filter((item) => item._id !== key));
+      setArchivedPackagesData((prev) => prev.filter((item) => item.packageCode !== key));
     } catch (error) {
       console.error("Error restoring package:", error);
       message.error(error?.response?.data?.message || "Package restore failed");
@@ -195,8 +195,8 @@ export default function PackageManagement() {
         if (a.createdAt && b.createdAt) {
           return new Date(b.createdAt) - new Date(a.createdAt);
         }
-        // Fallback: sort by ObjectId timestamp
-        return b._id.localeCompare(a._id); // b first for newest
+        // Fallback: sort by package code
+        return String(b.packageCode || '').localeCompare(String(a.packageCode || ''));
       });
 
       setPackagesData(sortedPackages);
@@ -216,7 +216,7 @@ export default function PackageManagement() {
         if (a.archivedAt && b.archivedAt) {
           return new Date(b.archivedAt) - new Date(a.archivedAt);
         }
-        return b._id.localeCompare(a._id);
+        return String(b.packageCode || '').localeCompare(String(a.packageCode || ''));
       });
 
       setArchivedPackagesData(sortedPackages);
@@ -373,11 +373,11 @@ export default function PackageManagement() {
         <Spin spinning={loading}>
           {filteredPackages.length > 0 ? (
             filteredPackages.map(pkg => (
-              <Card key={pkg._id} className="package-card">
+              <Card key={pkg.packageCode} className="package-card">
                 <div className="package-container">
                   <div className="package-media">
-                    {pkg.images && pkg.images.length > 0 ? (
-                      <img className="package-image" src={pkg.images[0]} alt={pkg.packageName} />
+                    {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                      <img className="package-image" src={pkg.packageImages[0]} alt={pkg.packageName} />
                     ) : (
                       <div className="package-image-placeholder">No Image</div>
                     )}
@@ -413,7 +413,7 @@ export default function PackageManagement() {
                     type="primary"
                     icon={<EditOutlined />}
                     onClick={() =>
-                      navigate(`${basePath}/packages/edit`, { state: { packageId: pkg._id } })
+                      navigate(`${basePath}/packages/edit`, { state: { packageCode: pkg.packageCode } })
                     }
                     disabled={showArchived}
                   >
@@ -445,7 +445,7 @@ export default function PackageManagement() {
                     type="primary"
                     icon={<DeleteOutlined />}
                     onClick={() => {
-                      setEditingPackage({ key: pkg._id });
+                      setEditingPackage({ key: pkg.packageCode });
                       setIsDeleteModalOpen(true);
                     }}
                     disabled={showArchived}
@@ -459,7 +459,7 @@ export default function PackageManagement() {
                       type="primary"
                       icon={<CheckCircleOutlined />}
                       onClick={() => {
-                        setEditingPackage({ key: pkg._id });
+                        setEditingPackage({ key: pkg.packageCode });
                         setIsRestoreModalOpen(true);
                       }}
                     >
@@ -497,8 +497,8 @@ export default function PackageManagement() {
 
           <div className="package-details-body">
             <div className="package-details-media">
-              {pkg.images && pkg.images.length > 0 ? (
-                <img className="package-details-image" src={pkg.images[0]} alt={pkg.packageName} />
+              {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                <img className="package-details-image" src={pkg.packageImages[0]} alt={pkg.packageName} />
               ) : (
                 <div className="package-details-image-placeholder">No Image</div>
               )}
@@ -562,7 +562,7 @@ export default function PackageManagement() {
                   </div>
                   {editableSlots.map((slot, idx) => (
                     <div
-                      key={`${slotsPackage._id}-${idx}`}
+                      key={`${slotsPackage.packageCode}-${idx}`}
                       style={{
                         display: "grid",
                         gridTemplateColumns: "1fr 140px",

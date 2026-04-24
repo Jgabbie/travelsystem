@@ -16,7 +16,7 @@ import TopNavUser from '../../components/topnav/TopNavUser';
 
 export default function PackagePage() {
     const location = useLocation()
-    const { packageId } = location.state || {}
+    const { packageCode } = location.state || {}
     const { auth } = useAuth();
     const { setBookingData } = useBooking();
 
@@ -74,18 +74,19 @@ export default function PackagePage() {
         setIsArrangementModalOpen(false)
     }
 
-    const resolvedPackageId = packageData?._id || packageId
+    const resolvedPackageCode = packageCode
 
     //fetch package details from backend using the id from the URL and handle loading and error states
     useEffect(() => {
         const fetchPackage = async () => {
-            if (!packageId) {
+            if (!packageCode) {
                 setPackageLoading(false)
                 return
             }
             try {
                 setPackageLoading(true)
-                const response = await apiFetch.get(`/package/get-package/${packageId}`)
+                const response = await apiFetch.get(`/package/get-package/${packageCode}`)
+
                 setPackageData(response); //temp origin and destination for testing, replace with actual data from package when available
                 setPackageError('')
             } catch (error) {
@@ -97,7 +98,7 @@ export default function PackagePage() {
             }
         }
         fetchPackage()
-    }, [packageId])
+    }, [packageCode])
 
     useEffect(() => {
         const fetchWishlist = async () => {
@@ -110,7 +111,7 @@ export default function PackagePage() {
                 const wishlist = response?.wishlist || []
                 const ids = new Set(
                     wishlist
-                        .map((entry) => entry?.packageId?._id || entry?.packageId)
+                        .map((entry) => entry?.packageCode)
                         .filter(Boolean)
                         .map((id) => String(id))
                 )
@@ -125,9 +126,9 @@ export default function PackagePage() {
 
     //get ratings for this package and map to display format, also used in fetchRatings function after submitting review to refresh the reviews
     const fetchRatings = useCallback(async () => {
-        if (!packageId) return
+        if (!packageCode) return
         try {
-            const response = await apiFetch.get(`/rating/package/${packageId}/ratings`)
+            const response = await apiFetch.get(`/rating/package/${packageCode}/ratings`)
             const mapped = (response || []).map((rating) => ({
                 id: rating._id,
                 userId: rating.userId?._id,
@@ -143,7 +144,7 @@ export default function PackagePage() {
         } catch {
             setReviews([])
         }
-    }, [packageId])
+    }, [packageCode])
 
     useEffect(() => {
         fetchRatings()
@@ -286,24 +287,24 @@ export default function PackagePage() {
             return;
         }
 
-        const targetPackageId = packageData?._id || packageId
-        if (!targetPackageId) {
+        const targetPackage = packageCode
+        if (!targetPackage) {
             message.error('Unable to add wishlist item. Package is missing.')
             return
         }
 
-        if (wishlistedIds.has(String(targetPackageId))) {
+        if (wishlistedIds.has(String(targetPackage))) {
             message.info('This package is already in your wishlist.')
             return
         }
 
         try {
-            await apiFetch.post('/wishlist/add', { packageId: targetPackageId })
+            await apiFetch.post('/wishlist/add', { packageCode: packageCode })
             setIsWishlistModalOpen(true)
             setIsPackageWishlistedModalOpen(true)
             setWishlistedIds((prev) => {
                 const next = new Set(prev)
-                next.add(String(targetPackageId))
+                next.add(String(targetPackage))
                 return next
             })
         } catch (error) {
@@ -332,7 +333,7 @@ export default function PackagePage() {
     const totalPrice = (packageData?.packagePricePerPax || 0) * totalTravelers
 
     const summaryData = {
-        packageId: packageData?._id || null,
+        packageCode: packageCode,
         packageName: packageData?.packageName || 'Package Details',
         packagePricePerPax: packageData?.packagePricePerPax + selectedDateRate || 0,
         packageSoloRate: packageData?.packageSoloRate + selectedDateRate || 0,
@@ -384,7 +385,7 @@ export default function PackagePage() {
             } else {
                 // CREATE review
                 await apiFetch.post('/rating/submit-rating', {
-                    packageId: packageId,
+                    packageCode: packageCode,
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
                 });
@@ -474,9 +475,9 @@ export default function PackagePage() {
         if (arrangementSelection === 'fixed') {
             setIsDateModalOpen(true)
         } else if (arrangementSelection === 'private' && packageData.packageType === "international") {
-            navigate('/international-quotation', { state: { packageId: packageData?._id } })
+            navigate('/international-quotation', { state: { packageCode: packageData?.packageCode } })
         } else {
-            navigate('/domestic-quotation', { state: { packageId: packageData?._id } })
+            navigate('/domestic-quotation', { state: { packageCode: packageData?.packageCode } })
         }
     }
 
@@ -485,7 +486,7 @@ export default function PackagePage() {
     const discountedPackagePricePerPax = packageDiscountPercent > 0
         ? basePackagePricePerPax * (1 - packageDiscountPercent / 100)
         : basePackagePricePerPax
-    const isWishlisted = Boolean(resolvedPackageId && wishlistedIds.has(String(resolvedPackageId)))
+    const isWishlisted = Boolean(resolvedPackageCode && wishlistedIds.has(String(resolvedPackageCode)))
     const hasUserReview = Boolean(userReview)
     const packageLocation = packageData?.packageDestination || packageData?.packageLocation || packageData?.packageCountry || packageData?.packageOrigin
     const packageCategory = packageData?.packageCategory || packageData?.packageType

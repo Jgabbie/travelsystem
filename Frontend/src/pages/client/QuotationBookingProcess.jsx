@@ -158,8 +158,11 @@ export default function QuotationBookingProcess() {
                 const response = await apiFetch.get(`/quotation/get-quotation/${quotationBookingData.quotationId}`);
                 const latestDetails = response?.latestPdfRevision?.travelDetails;
 
+                const packageCode = response?.packageId?.packageCode
                 const packageId = response?.packageId?._id
-                const packageResponse = await apiFetch.get(`/package/get-package/${packageId}`);
+                const packageResponse = packageCode
+                    ? await apiFetch.get(`/package/get-package/${encodeURIComponent(packageCode)}`)
+                    : await apiFetch.get(`/package/get-package/${packageId}`);
 
                 const quoteTravelers = latestDetails?.travelers || [];
                 const computeTotalTravelers = typeof quoteTravelers === 'number'
