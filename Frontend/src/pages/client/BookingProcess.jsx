@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button, message, Upload, Form, Steps, ConfigProvider, Spin, Modal, Input, Select, DatePicker } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
 import dayjs from 'dayjs';
@@ -56,6 +56,75 @@ const computeAge = (birthDate) => {
         age -= 1
     }
     return age < 0 ? '' : age
+}
+
+const getAgeCategoryFromAge = (age) => {
+    const numericAge = Number(age)
+    if (!Number.isFinite(numericAge) || numericAge < 0) return ''
+    if (numericAge < 2) return 'INFANT'
+    if (numericAge < 12) return 'CHILD'
+    return 'ADULT'
+}
+
+const isMinorTravelerType = (travelerType) => {
+    const normalized = String(travelerType || '').toLowerCase()
+    return normalized === 'child' || normalized === 'infant'
+}
+
+const getTravelerCategory = (travelerType) => String(travelerType || '').toLowerCase()
+
+const getBirthdayBounds = (travelerType) => {
+    const today = dayjs().startOf('day')
+    const category = getTravelerCategory(travelerType)
+
+    if (category === 'infant') {
+        return {
+            minDate: today.subtract(2, 'year'),
+            maxDate: today,
+            minAge: 0,
+            maxAge: 2
+        }
+    }
+
+    if (category === 'child') {
+        return {
+            minDate: today.subtract(11, 'year'),
+            maxDate: today.subtract(3, 'year'),
+            minAge: 3,
+            maxAge: 11
+        }
+    }
+
+    return {
+        minDate: null,
+        maxDate: today,
+        minAge: 12,
+        maxAge: null
+    }
+}
+
+const isDateAllowedForTraveler = (date, travelerType) => {
+    if (!date || !dayjs(date).isValid()) return false
+
+    const age = computeAge(date)
+    if (age === '') return false
+
+    const { minAge, maxAge } = getBirthdayBounds(travelerType)
+    if (typeof minAge === 'number' && age < minAge) return false
+    if (typeof maxAge === 'number' && age > maxAge) return false
+
+    return true
+}
+
+const getBirthdayDisabledDate = (travelerType) => {
+    const { minDate, maxDate } = getBirthdayBounds(travelerType)
+
+    return (current) => {
+        if (!current) return false
+        if (maxDate && current.isAfter(maxDate, 'day')) return true
+        if (minDate && current.isBefore(minDate, 'day')) return true
+        return false
+    }
 }
 
 export default function BookingProcess() {
@@ -192,8 +261,7 @@ export default function BookingProcess() {
     const groupRoomOptions = [
         { value: 'TWIN', label: 'TWIN' },
         { value: 'DOUBLE', label: 'DOUBLE' },
-        { value: 'TRIPLE', label: 'TRIPLE' },
-        { value: 'SINGLE', label: 'SINGLE' }
+        { value: 'TRIPLE', label: 'TRIPLE' }
     ]
 
     const roomOptions = bookingType === 'Solo Booking'
@@ -237,11 +305,11 @@ export default function BookingProcess() {
         Array.from({ length: travelers.length || 1 }, () => null)
     );
 
-    //STATE FOR CURRENT STEP AND PDF GENERATION
+    //STATE FOR CURRENT STEP AND PDF GENERATION--------------------------------------
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-    //UPDATE BOOKING TYPE IN CONTEXT WHEN SOLO/GROUP SELECTION CHANGES
+    //UPDATE BOOKING TYPE IN CONTEXT WHEN SOLO/GROUP SELECTION CHANGES---------------
     useEffect(() => {
         setBookingData(prev => ({
             ...prev,
@@ -249,7 +317,8 @@ export default function BookingProcess() {
         }));
     }, [selectedSoloGrouped]);
 
-    //ADJUST TRAVELERS ARRAY IN FORM BASED ON UPLOAD COUNT
+
+    //ADJUST TRAVELERS ARRAY IN FORM BASED ON UPLOAD COUNT--------------------------------
     useEffect(() => {
         const currentTravelers = form.getFieldValue('travelers') || []
         if (currentTravelers.length === uploadTravelerCount) return
@@ -264,7 +333,8 @@ export default function BookingProcess() {
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [form, uploadTravelerCount, setBookingData])
 
-    //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM
+
+    //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM--------------------------------
     useEffect(() => {
         if (bookingType !== 'Solo Booking') return
         const travelers = form.getFieldValue('travelers') || []
@@ -278,12 +348,61 @@ export default function BookingProcess() {
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [bookingType, form, setBookingData])
 
-    //GO TO NEXT PAGE OF REGISTRATION
+
+    //IF GROUP BOOKING, ENSURE NO TRAVELER IS SET TO SINGLE ROOM--------------------------------
+    useEffect(() => {
+        if (bookingType !== 'Group Booking') return
+
+        const travelers = form.getFieldValue('travelers') || []
+        if (!travelers.length) return
+
+        const allowedRoomType = groupRoomOptions[0]?.value || 'TWIN'
+        const nextTravelers = travelers.map((traveler) => ({
+            ...traveler,
+            roomType: traveler?.roomType === 'SINGLE' ? allowedRoomType : traveler?.roomType
+        }))
+
+        form.setFieldsValue({ travelers: nextTravelers })
+        setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [bookingType, form, setBookingData])
+
+    //IF CHILD/INFANT TRAVELER, FORCE ROOM TYPE TO N/A--------------------------------
+    useEffect(() => {
+        const travelers = form.getFieldValue('travelers') || []
+        if (!travelers.length) return
+
+        let hasChanges = false
+        const nextTravelers = travelers.map((traveler, travelerIndex) => {
+            const travelerType = travelerTypeLabels[travelerIndex] || 'Adult'
+            const isMinorTraveler = isMinorTravelerType(travelerType)
+
+            if (isMinorTraveler) {
+                if (traveler?.roomType === 'N/A') return traveler
+                hasChanges = true
+                return { ...traveler, roomType: 'N/A' }
+            }
+
+            if (traveler?.roomType !== 'N/A') return traveler
+            hasChanges = true
+            return {
+                ...traveler,
+                roomType: bookingType === 'Solo Booking' ? 'SINGLE' : undefined
+            }
+        })
+
+        if (!hasChanges) return
+
+        form.setFieldsValue({ travelers: nextTravelers })
+        setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [form, travelerTypeLabels, bookingType, setBookingData])
+
+
+    //GO TO NEXT PAGE OF REGISTRATION--------------------------------
     const next = async () => {
         try {
             await form.validateFields();
 
-            if (currentStep === 2) {
+            if (currentStep === 0) {
                 const missingUploads = fileLists.some(list => !list || list.length === 0);
                 const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
@@ -381,12 +500,9 @@ export default function BookingProcess() {
             const firstError = error?.errorFields?.[0];
             if (firstError?.name) {
                 form.scrollToField(firstError.name);
-                const fieldPath = Array.isArray(firstError.name)
-                    ? firstError.name.join(' > ')
-                    : String(firstError.name)
                 const errorMessage = firstError.errors?.[0]
-                    ? `${firstError.errors[0]} (${fieldPath})`
-                    : `Please complete all required fields before proceeding. (${fieldPath})`
+                    ? firstError.errors[0]
+                    : 'Please complete all required fields before proceeding.'
                 message.error(errorMessage);
                 return;
             }
@@ -394,10 +510,12 @@ export default function BookingProcess() {
         }
     };
 
-    //GO TO PREVIOUS PAGE OF REGISTRATION
+
+    //GO TO PREVIOUS PAGE OF REGISTRATION--------------------------------
     const prev = () => setCurrentStep(currentStep - 1);
 
-    //VALIDATE UPLOADED FILES
+
+    //VALIDATE UPLOADED FILES--------------------------------
     const validateFile = (file) => {
         const isValidType =
             file.type === 'image/jpeg' ||
@@ -417,7 +535,7 @@ export default function BookingProcess() {
         return false;
     };
 
-    //FINAL SUBMISSION OF REGISTRATION
+    //FINAL SUBMISSION OF REGISTRATION--------------------------------
     const handleFinalSubmit = async () => {
         setIsProceedModalOpen(false);
 
@@ -460,7 +578,7 @@ export default function BookingProcess() {
     };
 
 
-    //HANDLE FORM VALUE CHANGES
+    //HANDLE FORM VALUE CHANGES--------------------------------
     const handleValuesChange = (changedValues, allValues) => {
         if (changedValues.travelers) {
             setBookingData(prev => ({
@@ -470,7 +588,7 @@ export default function BookingProcess() {
         }
     };
 
-    //HANDLE FILE UPLOAD CHANGES
+    //HANDLE FILE UPLOAD CHANGES--------------------------------
     const handleChange = (info, index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = info.fileList;
@@ -490,7 +608,7 @@ export default function BookingProcess() {
         setPreviews(newPreviews);
     };
 
-    //HANDLE 2BY2 PHOTO UPLOAD CHANGES
+    //HANDLE 2BY2 PHOTO UPLOAD CHANGES--------------------------------
     const handlePhotoChange = (info, index) => {
         const newFileLists = [...photoFileLists];
         newFileLists[index] = info.fileList;
@@ -510,7 +628,7 @@ export default function BookingProcess() {
         setPhotoPreviews(newPreviews);
     };
 
-    //HANDLE RESET OF UPLOADED FILES
+    //HANDLE RESET OF UPLOADED FILES--------------------------------
     const handleResetUploads = (index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = [];
@@ -529,7 +647,7 @@ export default function BookingProcess() {
         setPhotoPreviews(newPhotoPreviews);
     };
 
-    //UPDATE TRAVELER FIELD IN FORM AND CONTEXT
+    //UPDATE TRAVELER FIELD IN FORM AND CONTEXT--------------------------------
     const updateTravelerField = (index, field, value, extras = {}) => {
         const travelers = form.getFieldValue('travelers') || []
         const nextTravelers = travelers.map((traveler, travelerIndex) =>
@@ -541,7 +659,7 @@ export default function BookingProcess() {
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }
 
-    //CLEAN UP OBJECT URLS TO PREVENT MEMORY LEAKS
+    //CLEAN UP OBJECT URLS TO PREVENT MEMORY LEAKS--------------------------------
     useEffect(() => {
         return () => {
             [...previews, ...photoPreviews].forEach(url => {
@@ -551,7 +669,7 @@ export default function BookingProcess() {
     }, [previews, photoPreviews]);
 
 
-    //FUNCTIONS TO INCREASE AND DECREASE TRAVELER COUNTS WITHIN MAX LIMITS
+    //FUNCTIONS TO INCREASE AND DECREASE TRAVELER COUNTS WITHIN MAX LIMITS--------------------------------
     const increaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.min(prev.adult + 1, maxAdults) }));
     const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(2, prev.adult - 1) }));
     const increaseChild = () => setCounts(prev => ({ ...prev, child: Math.min(prev.child + 1, maxChildren) }));
@@ -559,7 +677,7 @@ export default function BookingProcess() {
     const increaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.min(prev.infant + 1, maxInfants) }));
     const decreaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.max(0, prev.infant - 1) }));
 
-    //REDIRECT TO HOME IF NO BOOKING DATA
+    //REDIRECT TO HOME IF NO BOOKING DATA---------------------------------
     useEffect(() => {
         if (!bookingData) {
             navigate('/home', { replace: true });
@@ -1095,30 +1213,62 @@ export default function BookingProcess() {
                                         <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                 <label style={{ fontSize: 12, textAlign: 'left' }}>ROOM TYPE</label>
+                                                {(() => {
+                                                    const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                    const isMinorTraveler = isMinorTravelerType(travelerType)
+                                                    return (
                                                 <Select
                                                     style={{ height: 40 }}
                                                     size="small"
                                                     placeholder="Room type"
-                                                    value={form.getFieldValue(['travelers', index, 'roomType'])}
+                                                    value={isMinorTraveler ? 'N/A' : form.getFieldValue(['travelers', index, 'roomType'])}
                                                     onChange={(value) => updateTravelerField(index, 'roomType', value)}
-                                                    options={roomOptions}
-                                                    disabled={bookingType === 'Solo Booking'}
+                                                    options={isMinorTraveler ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
+                                                    disabled={bookingType === 'Solo Booking' || isMinorTraveler}
                                                 />
+                                                    )
+                                                })()}
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                 <label style={{ fontSize: 12, textAlign: 'left' }}>BIRTHDATE</label>
                                                 <DatePicker
+                                                    showToday={false}
                                                     style={{ height: 40 }}
                                                     size="small"
                                                     placeholder="Birthdate"
-                                                    defaultPickerValue={dayjs('2000-01-01')}
+                                                    defaultPickerValue={
+                                                        travelerTypeLabels[index] === 'Child'
+                                                            ? dayjs().subtract(5, 'year')
+                                                            : travelerTypeLabels[index] === 'Infant'
+                                                                ? dayjs().subtract(1, 'year')
+                                                                : dayjs().subtract(25, 'year')
+                                                    }
                                                     format="MMMM D, YYYY"
                                                     value={form.getFieldValue(['travelers', index, 'birthday'])}
                                                     onChange={(date) => {
+                                                        const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                        if (date && !isDateAllowedForTraveler(date, travelerType)) {
+                                                            const ageBounds = getBirthdayBounds(travelerType)
+                                                            const ageLabel = ageBounds.minAge === 0 && ageBounds.maxAge === 2
+                                                                ? '0-2'
+                                                                : ageBounds.minAge === 3 && ageBounds.maxAge === 11
+                                                                    ? '3-11'
+                                                                    : '12+'
+                                                            message.error(`Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`)
+                                                            return
+                                                        }
+
                                                         const age = date ? computeAge(date) : ''
-                                                        updateTravelerField(index, 'birthday', date, { age })
+                                                        const ageCategory = date ? getAgeCategoryFromAge(age) : ''
+                                                        const isMinorTraveler = isMinorTravelerType(travelerType)
+                                                        const roomType = isMinorTraveler
+                                                            ? 'N/A'
+                                                            : bookingType === 'Solo Booking'
+                                                                ? 'SINGLE'
+                                                                : form.getFieldValue(['travelers', index, 'roomType'])
+                                                        updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
                                                     }}
-                                                    disabledDate={(current) => current && current >= dayjs().startOf('day')}
+                                                    disabledDate={getBirthdayDisabledDate(travelerTypeLabels[index] || 'Adult')}
                                                 />
                                             </div>
                                         </div>
@@ -1148,6 +1298,7 @@ export default function BookingProcess() {
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                     <label style={{ fontSize: 12, textAlign: 'left' }}>PASSPORT EXPIRY</label>
                                                     <DatePicker
+                                                        showToday={false}
                                                         style={{ height: 40 }}
                                                         size="small"
                                                         placeholder="Passport expiry"
@@ -1275,11 +1426,14 @@ export default function BookingProcess() {
 
 
 
-                    <div className="booking-form-stepper-container">
-                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
-                            Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
-                        </p>
+                    <div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
+                        <div className="booking-section-header" style={{ marginBottom: 30 }}>
+                            <h2 className="upload-passport-title booking-section-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                            <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>
+                                Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
+                            </p>
+                        </div>
+
                         <Steps
                             current={currentStep}
                             items={[
@@ -1291,94 +1445,88 @@ export default function BookingProcess() {
                             style={{ marginBottom: '30px' }}
                         />
 
-                        <div
-                            className="form-content-wrapper pdf-capture"
-                            ref={pdfStepRef}
-                            style={{
-                                position: isGeneratingPdf ? "absolute" : "relative",
-                                left: isGeneratingPdf ? "-9999px" : "0"
-                            }}
-                        >
-                            {currentStep === 0 && (
-                                <BookingRegistrationTravelers
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                    totalCount={selectedSoloGrouped === 'solo' ? 1 : travelersTotal}
-                                />
-                            )}
-
-                            {currentStep === 1 && (
-                                <BookingRegistrationDiet
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-
-                            {currentStep === 2 && (
-                                <BookingRegistrationTermsPart1
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-
-                            {currentStep === 3 && (
-                                <BookingRegistrationTermsPart2
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-                        </div>
-
-                        <div className='booking-form-button-controls'>
+                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                             {currentStep > 0 && (
                                 <Button
                                     type='primary'
                                     className='booking-form-button'
-                                    size="large"
                                     onClick={prev}
-                                    style={{ padding: '0 40px' }}
+                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                 >
-                                    Previous Page
+                                    <ArrowLeftOutlined />
                                 </Button>
                             )}
 
-                            {currentStep < 3 ? (
+
+                            <div
+                                className="form-content-wrapper pdf-capture"
+                                ref={pdfStepRef}
+                                style={{
+                                    position: isGeneratingPdf ? "absolute" : "relative",
+                                    left: isGeneratingPdf ? "-9999px" : "0"
+                                }}
+                            >
+                                {currentStep === 0 && (
+                                    <BookingRegistrationTravelers
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                        totalCount={selectedSoloGrouped === 'solo' ? 1 : travelersTotal}
+                                    />
+                                )}
+
+                                {currentStep === 1 && (
+                                    <BookingRegistrationDiet
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                    />
+                                )}
+
+                                {currentStep === 2 && (
+                                    <BookingRegistrationTermsPart1
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                    />
+                                )}
+
+                                {currentStep === 3 && (
+                                    <BookingRegistrationTermsPart2
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                    />
+                                )}
+                            </div>
+
+                            {currentStep < 3 && (
                                 <Button
                                     type='primary'
                                     className='booking-form-button'
-                                    size="large"
                                     onClick={next}
-                                    style={{ padding: '0 40px' }}
+                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                 >
-                                    Next Page
-                                </Button>
-                            ) : (
-                                <Button
-                                    type='primary'
-                                    className='booking-form-button-proceed'
-                                    size="large"
-                                    onClick={() => setIsProceedModalOpen(true)}
-                                    style={{ padding: '0 40px' }}
-                                >
-                                    Proceed to Payment
+                                    <ArrowRightOutlined />
                                 </Button>
                             )}
 
-
                         </div>
+
+                        {currentStep === 3 && (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                <Button
+                                    type='primary'
+                                    className='booking-form-button-proceed'
+                                    onClick={() => setIsProceedModalOpen(true)}
+                                >
+                                    Proceed to Payment
+                                </Button>
+                            </div>
+                        )}
+
                     </div>
-
-
-
-
-
-
                 </div>
-
             </div>
 
             <Modal

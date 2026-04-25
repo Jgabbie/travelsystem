@@ -10,9 +10,18 @@ const { TextArea } = Input;
 export default function BookingRegistrationDiet({ form, onValuesChange, summary }) {
 
     const [userProfile, setUserProfile] = React.useState(null);
+    const packageType = summary?.packageType || ''
+    const isDomesticPackage = String(packageType).toLowerCase().includes('domestic')
 
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const labelStyle = { fontSize: '11px', fontWeight: 'bold', color: '#000' };
+
+    const handleRequestChange = (requestField, detailsField, value) => {
+        form.setFieldsValue({
+            [requestField]: value,
+            [detailsField]: value === 'N' ? 'N/A' : ''
+        });
+    };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -82,13 +91,14 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                             <Col span={4}>
                                 <Form.Item
                                     name="dietaryRequest"
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Dietary Request' }]}
                                     noStyle
                                 >
                                     <Select
                                         size="small"
                                         style={{ ...boxStyle, width: '60px' }}
                                         placeholder="Y/N"
+                                        onChange={(value) => handleRequestChange('dietaryRequest', 'dietaryDetails', value)}
                                         options={[
                                             { value: 'Y', label: 'Y' },
                                             { value: 'N', label: 'N' },
@@ -106,10 +116,11 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                             wrapperCol={{ span: 18 }}
                             dependencies={['dietaryRequest']}
                             disabled={form.getFieldValue('dietaryRequest') !== 'Y'}
+                            initialValue={form.getFieldValue('dietaryRequest') === 'N' ? 'N/A' : ''}
                             rules={[
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                        if (getFieldValue('dietaryRequest') === 'Y' && !value) {
+                                        if (getFieldValue('dietaryRequest') === 'Y' && (!value || value === 'N/A')) {
                                             return Promise.reject('Please provide dietary details');
                                         }
                                         return Promise.resolve();
@@ -128,13 +139,14 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                             <Col span={4}>
                                 <Form.Item
                                     name="medicalRequest"
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Medical Request' }]}
                                     noStyle
                                 >
                                     <Select
                                         size="small"
                                         style={{ ...boxStyle, width: '60px' }}
                                         placeholder="Y/N"
+                                        onChange={(value) => handleRequestChange('medicalRequest', 'medicalDetails', value)}
                                         options={[
                                             { value: 'Y', label: 'Y' },
                                             { value: 'N', label: 'N' },
@@ -152,10 +164,11 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                             style={{ marginTop: '5px' }}
                             dependencies={['medicalRequest']}
                             disabled={form.getFieldValue('medicalRequest') !== 'Y'}
+                            initialValue={form.getFieldValue('medicalRequest') === 'N' ? 'N/A' : ''}
                             rules={[
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
-                                        if (getFieldValue('medicalRequest') === 'Y' && !value) {
+                                        if (getFieldValue('medicalRequest') === 'Y' && (!value || value === 'N/A')) {
                                             return Promise.reject('Please provide medical details');
                                         }
                                         return Promise.resolve();
@@ -182,7 +195,7 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                 <Form.Item
                                     name="purchaseInsurance"
                                     noStyle
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Insurance Agreement' }]}
                                 >
                                     <Select
                                         size="small"
@@ -210,7 +223,7 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                 <Form.Item
                                     name="ownInsurance"
                                     noStyle
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Insurance Agreement' }]}
                                 >
                                     <Select
                                         size="small"

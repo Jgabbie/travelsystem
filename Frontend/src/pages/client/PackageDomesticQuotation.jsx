@@ -22,11 +22,12 @@ export default function PackageDomesticQuotation() {
 
     const navigate = useNavigate()
     const location = useLocation()
-    const packageCode = location.state?.packageCode
-    const packageId = location.state?.packageId
+    const { packageItem } = location.state
     const currentYear = dayjs().year();
     const today = dayjs();
     dayjs.extend(isSameOrBefore);
+
+    console.log('Received packageItem from navigation state:', packageItem)
 
 
     const [packageData, setPackageData] = useState(null)
@@ -34,14 +35,14 @@ export default function PackageDomesticQuotation() {
 
 
     useEffect(() => {
-        if (!packageCode) {
+        if (!packageItem) {
             message.error('No package selected for quotation.')
             return
         }
 
         try {
             setLoading(true)
-            apiFetch.get(`/package/get-package/${encodeURIComponent(packageCode)}`)
+            apiFetch.get(`/package/get-package/${packageItem}`)
                 .then((response) => {
                     setPackageData(response)
                 })
@@ -56,7 +57,7 @@ export default function PackageDomesticQuotation() {
         } finally {
             setLoading(false)
         }
-    }, [packageCode])
+    }, [packageItem])
 
     const { hotels, airlines, fixedItinerary, days, basePrice, dateRanges, inclusions, exclusions, images } = useMemo(() => ({
         hotels: packageData?.packageHotels || [],
@@ -108,7 +109,7 @@ export default function PackageDomesticQuotation() {
     const [infantCount, setInfantCount] = useState(0)
     const [preferredAirlines, setPreferredAirlines] = useState('')
     const [preferredHotels, setPreferredHotels] = useState('')
-    const [prefferedDate, setPrefferedDate] = useState(null)
+    const [preferredDates, setPreferredDates] = useState(null)
     const [budgetRange, setBudgetRange] = useState([minBudget, maxBudget])
     const [itineraryNotes, setItineraryNotes] = useState(
         itineraryLabels.map(() => '')
@@ -134,7 +135,7 @@ export default function PackageDomesticQuotation() {
         setInfantCount(0);
         setPreferredAirlines('');
         setPreferredHotels('');
-        setPrefferedDate(null);
+        setPreferredDates(null);
         setBudgetRange([minBudget, maxBudget]);
         setItineraryNotes(itineraryLabels.map(() => ''));
         setAdditionalComments('');
@@ -192,8 +193,8 @@ export default function PackageDomesticQuotation() {
         if (!preferredHotels.trim()) {
             newErrors.preferredHotels = 'Please provide your preferred hotels'
         }
-        if (!prefferedDate) {
-            newErrors.prefferedDate = 'Please select your preferred date'
+        if (!preferredDates) {
+            newErrors.preferredDates = 'Please select your preferred date'
         }
         if (!Array.isArray(budgetRange) || budgetRange.length !== 2) {
             newErrors.budgetRange = 'Please set your budget range.'
@@ -227,12 +228,12 @@ export default function PackageDomesticQuotation() {
                 : { adult: adultCount, child: childCount, infant: infantCount };
 
             await apiFetch.post('/quotation/create-quotation', {
-                packageId: packageId,
+                packageId: packageItem,
                 quotationDetails: {
                     travelers: travelersPayload,
                     preferredAirlines,
                     preferredHotels,
-                    prefferedDate,
+                    preferredDates,
                     budgetRange,
                     itineraryNotes,
                     additionalComments,
@@ -246,7 +247,7 @@ export default function PackageDomesticQuotation() {
             setTravelers(1)
             setPreferredAirlines('')
             setPreferredHotels('')
-            setPrefferedDate(null)
+            setPreferredDates(null)
             setBudgetRange([minBudget, maxBudget])
             setItineraryNotes(itineraryLabels.map(() => ''))
             setAdditionalComments('')
@@ -472,13 +473,13 @@ export default function PackageDomesticQuotation() {
                                         </div>
 
                                         <div className="quotation-field">
-                                            <label htmlFor="quotation-prefferedDate">Preferred Date <span style={{ color: 'red' }}>*</span></label>
+                                            <label htmlFor="quotation-preferredDates">Preferred Date <span style={{ color: 'red' }}>*</span></label>
                                             <Select
-                                                id="quotation-prefferedDate"
+                                                id="quotation-preferredDates"
                                                 placeholder="Select preferred date"
-                                                value={prefferedDate || undefined}
-                                                onChange={(value) => setPrefferedDate(value)}
-                                                className={`quotation-input ${error.prefferedDate ? 'input-error' : ''}`}
+                                                value={preferredDates || undefined}
+                                                onChange={(value) => setPreferredDates(value)}
+                                                className={`quotation-input ${error.preferredDates ? 'input-error' : ''}`}
                                                 options={dateRanges
                                                     .filter((range) => dayjs(range.startdaterange).isAfter(today, 'day'))
                                                     .map((range) => {
@@ -491,7 +492,7 @@ export default function PackageDomesticQuotation() {
                                                         };
                                                     })}
                                             />
-                                            <p className='package-quotation-error'>{error.prefferedDate}</p>
+                                            <p className='package-quotation-error'>{error.preferredDates}</p>
                                         </div>
 
                                         <div className="quotation-field quotation-budget">

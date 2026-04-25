@@ -272,7 +272,7 @@ export default function QuotationsPaymentProcess() {
                         startDate,
                         endDate
                     },
-                    travelers: quotationBookingData?.travelersCount.adult + quotationBookingData?.travelersCount.child + quotationBookingData?.travelersCount.infant || 0,
+                    travelers: { adult: quotationBookingData?.travelersCount.adult, child: quotationBookingData?.travelersCount.child, infant: quotationBookingData?.travelersCount.infant } || { adult: 0, child: 0, infant: 0 },
                     bookingDetails: bookingDetailsWithUrls,
                     paymentType,
                     paymentMode,
@@ -496,6 +496,7 @@ export default function QuotationsPaymentProcess() {
                         <Text style={styles.label}>BILL TO</Text>
                         <Text style={styles.customerName}>{Invoice.customer.name.toUpperCase()}</Text>
                         <Text style={styles.muted}>{Invoice.customer.phone}</Text>
+                        <Text style={styles.muted}>Travel Date: {Invoice.booking.travelDates}</Text>
                     </View>
 
                     <View style={styles.summaryTable}>
@@ -505,7 +506,12 @@ export default function QuotationsPaymentProcess() {
                         </View>
                         <View style={[styles.summaryCol, styles.darkBg]}>
                             <Text style={[styles.label, { color: '#FFF' }]}>PLEASE PAY</Text>
-                            <Text style={[styles.summaryValue, { color: '#FFF' }]}>{totalAmount}</Text>
+                            <Text style={[styles.summaryValue, { color: '#FFF' }]}>
+                                PHP {Number(totalAmount).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                         <View style={styles.summaryCol}>
                             <Text style={styles.label}>DUE DATE</Text>
@@ -531,8 +537,18 @@ export default function QuotationsPaymentProcess() {
                             <Text style={[styles.cell, { flex: 2 }]}>{item.activity}</Text>
                             <Text style={[styles.cell, { flex: 4 }]}>{item.description}</Text>
                             <Text style={[styles.cell, { flex: 1, textAlign: 'center' }]}>{item.qty}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>{item.rate.toLocaleString()}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>{(item.qty * item.rate).toLocaleString()}</Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>
+                                PHP {Number(item.rate).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>
+                                PHP {Number(item.rate * item.qty).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                     ))}
                 </View>
@@ -549,7 +565,12 @@ export default function QuotationsPaymentProcess() {
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL DUE</Text>
-                            <Text style={styles.totalDueValue}>{formatCurrency(totalAmount)}</Text>
+                            <Text style={styles.totalDueValue}>
+                                PHP {Number(totalAmount).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                         <Text style={styles.thankYou}>THANK YOU.</Text>
                     </View>
@@ -567,7 +588,7 @@ export default function QuotationsPaymentProcess() {
                                 <Text style={styles.scheduleAmount}>{formatScheduleAmount(entry.amount)}</Text>
                             </View>
                         ))}
-                        <Text style={styles.scheduleNote}>Note: A penalty of PHP 500 applies for late deposit payments.</Text>
+                        <Text style={styles.scheduleNote}>Note: A penalty of PHP 200 applies for late deposit payments.</Text>
                     </View>
                 )}
             </Page>
@@ -723,7 +744,7 @@ export default function QuotationsPaymentProcess() {
                                         ))}
                                     </div>
                                     <p className="payment-schedule-note">
-                                        Note: A penalty of PHP 500 applies for late deposit payments.
+                                        Note: A penalty of PHP 200 applies for late deposit payments.
                                     </p>
                                 </div>
                             )}

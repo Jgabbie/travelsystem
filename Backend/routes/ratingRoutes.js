@@ -18,7 +18,7 @@ const adminOnly = async (req, res, next) => {
 }
 
 router.post('/submit-rating', userAuthOptional, ratingController.submitRating)
-router.get('/package/:packageCode/ratings', ratingController.getPackageRatings)
+router.get('/package/:id/ratings', ratingController.getPackageRatings)
 router.get('/my-ratings', userAuth, ratingController.getUserRatings)
 router.delete('/:id', userAuth, ratingController.deleteRating)
 router.get('/all-ratings', userAuth, adminOnly, ratingController.getAllRatings)
@@ -26,7 +26,7 @@ router.get('/archived-ratings', userAuth, adminOnly, ratingController.getArchive
 router.post('/archived-ratings/:id/restore', userAuth, adminOnly, ratingController.restoreArchivedRating)
 router.delete('/delete/:id', userAuth, adminOnly, ratingController.adminDeleteRating)
 router.put('/:id', userAuth, ratingController.updateRating)
-router.get('/average-rating/:packageCode', ratingController.getAverageRating)
+router.get('/average-rating/:id', ratingController.getAverageRating)
 router.get('/average-ratings', ratingController.getAverageRatings)
 
 module.exports = router

@@ -191,10 +191,14 @@ export default function PaymentProcess() {
         paymentType,
         frequency,
         depositAmount: bookingData?.packageDeposit ? (bookingData.packageDeposit * travelerTotal) : 0,
+        adultRate: packagePricePerPax,
+        childRate: childRate,
+        infantRate: infantRate,
     }
 
     //PAYLOAD FOR BOOKINGS
     const bookingDetails = {
+        bookingType: bookingType,
         dateOfRegistration: bookingData.dateOfRegistration,
         travelDate: bookingData?.travelDate,
         tourPackageTitle: bookingData.tourPackageTitle,
@@ -268,12 +272,10 @@ export default function PaymentProcess() {
                 bookingPayload: {
                     packageId,
                     travelDate: bookingData?.travelDate,
-                    travelers: bookingData?.travelerCounts.adult + bookingData?.travelerCounts.child + bookingData?.travelerCounts.infant || 0,
+                    travelers: { adult: bookingData?.travelerCounts.adult, child: bookingData?.travelerCounts.child, infant: bookingData?.travelerCounts.infant },
                     bookingDetails: bookingDetailsWithUrls,
                     paymentType,
                     paymentMode,
-                    passportFiles: passportUrls,
-                    photoFiles: photoUrls,
                     amount: amountToCharge //for checkoutToken
                 }
             });
@@ -496,6 +498,7 @@ export default function PaymentProcess() {
                         <Text style={styles.label}>BILL TO</Text>
                         <Text style={styles.customerName}>{Invoice.customer.name.toUpperCase()}</Text>
                         <Text style={styles.muted}>{Invoice.customer.phone}</Text>
+                        <Text style={styles.muted}>Travel Date: {Invoice.booking.travelDates}</Text>
                     </View>
 
                     <View style={styles.summaryTable}>
@@ -505,7 +508,12 @@ export default function PaymentProcess() {
                         </View>
                         <View style={[styles.summaryCol, styles.darkBg]}>
                             <Text style={[styles.label, { color: '#FFF' }]}>PLEASE PAY</Text>
-                            <Text style={[styles.summaryValue, { color: '#FFF' }]}>{formatCurrency(totals.subtotal)}</Text>
+                            <Text style={[styles.summaryValue, { color: '#FFF' }]}>
+                                PHP {Number(totals.subtotal).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                         <View style={styles.summaryCol}>
                             <Text style={styles.label}>DUE DATE</Text>
@@ -531,8 +539,18 @@ export default function PaymentProcess() {
                             <Text style={[styles.cell, { flex: 2 }]}>{item.activity}</Text>
                             <Text style={[styles.cell, { flex: 4 }]}>{item.description}</Text>
                             <Text style={[styles.cell, { flex: 1, textAlign: 'center' }]}>{item.qty}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>{item.rate.toLocaleString()}</Text>
-                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>{(item.qty * item.rate).toLocaleString()}</Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>
+                                PHP {Number(item.rate).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
+                            <Text style={[styles.cell, { flex: 1.5, textAlign: 'right' }]}>
+                                PHP {Number(item.qty * item.rate).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                     ))}
                 </View>
@@ -549,7 +567,12 @@ export default function PaymentProcess() {
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>
                             <Text style={styles.totalDueLabel}>TOTAL DUE</Text>
-                            <Text style={styles.totalDueValue}>{formatCurrency(totals.subtotal)}</Text>
+                            <Text style={styles.totalDueValue}>
+                                PHP {Number(totals.subtotal).toLocaleString('en-PH', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </Text>
                         </View>
                         <Text style={styles.thankYou}>THANK YOU.</Text>
                     </View>
@@ -567,7 +590,7 @@ export default function PaymentProcess() {
                                 <Text style={styles.scheduleAmount}>{formatScheduleAmount(entry.amount)}</Text>
                             </View>
                         ))}
-                        <Text style={styles.scheduleNote}>Note: A penalty of PHP 500 applies for late deposit payments.</Text>
+                        <Text style={styles.scheduleNote}>Note: A penalty of PHP 200 applies for late deposit payments.</Text>
                     </View>
                 )}
             </Page>
@@ -724,7 +747,7 @@ export default function PaymentProcess() {
                                         ))}
                                     </div>
                                     <p className="payment-schedule-note">
-                                        Note: A penalty of PHP 500 applies for late deposit payments.
+                                        Note: A penalty of PHP 200 applies for late deposit payments.
                                     </p>
                                 </div>
                             )}

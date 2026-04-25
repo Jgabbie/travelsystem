@@ -63,11 +63,11 @@ const submitRating = async (req, res) => {
 };
 
 const getPackageRatings = async (req, res) => {
-    const { packageCode } = req.params
+    const { id } = req.params
 
     try {
 
-        const packageId = await PackageModel.find({ packageCode }).select('_id')
+        const packageId = await PackageModel.findById(id)
 
         const ratings = await Rating.find({ packageId })
             .populate('userId', 'username firstname lastname profileImage')
@@ -204,9 +204,9 @@ const getAllRatings = async (_req, res) => {
 
 const getAverageRating = async (req, res) => {
     try {
-        const { packageCode } = req.params;
+        const { id } = req.params;
 
-        const packageId = await PackageModel.findOne({ packageCode }).select('_id');
+        const packageId = await PackageModel.findById(id);
         const result = await Rating.aggregate([
             {
                 $match: {

@@ -276,6 +276,7 @@
 
 .mrc-quotation-subtitle {
     font-weight: 700;
+    background: #f7e04f;
     text-transform: uppercase;
     margin-bottom: 6px;
 }
@@ -332,10 +333,11 @@
 
 .mrc-quotation-note {
     margin-top: 10px;
-    background: #f7e04f;
+    background: #2f4f78;
     padding: 4px 8px;
     font-size: 10px;
     font-weight: 700;
+    color: #fff;
     text-align: center;
 }
 

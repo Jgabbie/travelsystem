@@ -76,7 +76,7 @@ export default function BookingManagement() {
       travelDateRaw: travelStart,
       bookingDate: bookingDateDisplay,
       bookingDateRaw: b.createdAt || null,
-      qty: b.travelers || 0,
+      qty: b.travelers?.[0]?.adult + b.travelers?.[0]?.child + b.travelers?.[0]?.infant || 0,
       status: (() => {
         const rawStatus = b.status || "";
         const formatted = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);

@@ -17,17 +17,17 @@ import TopNavUser from '../../components/topnav/TopNavUser';
 
 export default function PackagePage() {
     const location = useLocation()
-    const { packageCode } = location.state || {}
+    const { packageItem } = location.state || {}
     const { auth } = useAuth();
     const { setBookingData } = useBooking();
 
     const navigate = useNavigate();
 
-    //login state
+    //LOGIN STATE --------------------------------------------------
     const [isLoginVisible, setIsLoginVisible] = useState(false);
     const [isSignupVisible, setIsSignupVisible] = useState(false);
 
-    //states for modals
+    //STATES FOR MODALS --------------------------------------------------
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -38,7 +38,7 @@ export default function PackagePage() {
     const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false)
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
 
-    //states for booking details
+    //STATES FOR BOOKING FLOW --------------------------------------------------
     const [selectedDate, setSelectedDate] = useState(null)
     const [selectedDatePrice, setSelectedDatePrice] = useState(0)
     const [selectedDateRate, setSelectedDateRate] = useState(0)
@@ -47,7 +47,7 @@ export default function PackagePage() {
     const [arrangementSelection, setArrangementSelection] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
 
-    //states for reviews
+    //STATES FOR REVIEWS --------------------------------------------------
     const [showReviews, setShowReviews] = useState(false)
     const [isEditingReview, setIsEditingReview] = useState(false);
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -57,12 +57,12 @@ export default function PackagePage() {
         comment: ''
     });
 
-    //states for package details
+    //STATES FOR PACKAGE DATA --------------------------------------------------
     const [packageData, setPackageData] = useState(null)
     const [packageLoading, setPackageLoading] = useState(true)
     const [packageError, setPackageError] = useState('')
 
-    //reset all booking states, used when user cancels booking flow
+    //RESET ALL BOOKING FLOW STATES WHEN USER CANCELS OR COMPLETES BOOKING TO START FRESH ON NEXT BOOKING ATTEMPT----------------------------
     const resetBookingFlow = () => {
         setSelectedDate(null)
         setSelectedDatePrice(0)
@@ -76,18 +76,18 @@ export default function PackagePage() {
         setIsArrangementModalOpen(false)
     }
 
-    const resolvedPackageCode = packageCode
+    const resolvedPackageItem = packageItem
 
-    //fetch package details from backend using the id from the URL and handle loading and error states
+    //FETCH PACKAGE DATA BASED ON PACKAGE ITEM FORM LOCATION STATE -----------------------------------
     useEffect(() => {
         const fetchPackage = async () => {
-            if (!packageCode) {
+            if (!packageItem) {
                 setPackageLoading(false)
                 return
             }
             try {
                 setPackageLoading(true)
-                const response = await apiFetch.get(`/package/get-package/${packageCode}`)
+                const response = await apiFetch.get(`/package/get-package/${packageItem}`)
 
                 setPackageData(response); //temp origin and destination for testing, replace with actual data from package when available
                 setPackageError('')
@@ -100,8 +100,9 @@ export default function PackagePage() {
             }
         }
         fetchPackage()
-    }, [packageCode])
+    }, [packageItem])
 
+    //FETCH WISHLIST TO CHECK IF PACKAGE IS WISHLISTED------------------------------------------------
     useEffect(() => {
         const fetchWishlist = async () => {
             if (!auth) {
@@ -113,7 +114,7 @@ export default function PackagePage() {
                 const wishlist = response?.wishlist || []
                 const ids = new Set(
                     wishlist
-                        .map((entry) => entry?.packageCode)
+                        .map((entry) => entry?.id)
                         .filter(Boolean)
                         .map((id) => String(id))
                 )
@@ -126,11 +127,11 @@ export default function PackagePage() {
         fetchWishlist()
     }, [auth])
 
-    //get ratings for this package and map to display format, also used in fetchRatings function after submitting review to refresh the reviews
+    //GET RATINGS FOR THIS PACKAGE AND MAP TO REVIEW OBJECTS FOR DISPLAY IN REVIEWS SECTION------------------------------------------------
     const fetchRatings = useCallback(async () => {
-        if (!packageCode) return
+        if (!packageItem) return
         try {
-            const response = await apiFetch.get(`/rating/package/${packageCode}/ratings`)
+            const response = await apiFetch.get(`/rating/package/${packageItem}/ratings`)
             const mapped = (response || []).map((rating) => ({
                 id: rating._id,
                 userId: rating.userId?._id,
@@ -146,7 +147,7 @@ export default function PackagePage() {
         } catch {
             setReviews([])
         }
-    }, [packageCode])
+    }, [packageItem])
 
     useEffect(() => {
         fetchRatings()
@@ -171,18 +172,17 @@ export default function PackagePage() {
         return breakdown
     }, [reviews])
 
-    //user has already rated
+    //USER ALREADY RATED ------------------------------------------------
     const userReview = useMemo(() => {
         if (!auth) return null
 
         const currentUserId = auth?.id
-
         return reviews.find(
             review => String(review.userId) === String(currentUserId)
         )
     }, [reviews, auth])
 
-    //content for itinerary tab, shows list of itinerary items grouped by day
+    //ITINERARY CONTENT ------------------------------------------------
     const itineraryContent = useMemo(() => {
         const itineraries = packageData?.packageItineraries || {}
         const days = Object.keys(itineraries)
@@ -214,7 +214,7 @@ export default function PackagePage() {
         )
     }, [packageData])
 
-    //content for inclusions and exclusions tab, shows list of inclusions and exclusions in 2 columns
+    //INCLUSIONS AND EXCLUSIONS CONTENT ------------------------------------------------
     const inclusionsExclusionsContent = useMemo(() => {
         const inclusions = packageData?.packageInclusions || []
         const exclusions = packageData?.packageExclusions || []
@@ -248,7 +248,7 @@ export default function PackagePage() {
         )
     }, [packageData])
 
-    //terms content for package details tab, shows list of terms and conditions
+    //TERMS AND CONDITIONS CONTENT ------------------------------------------------
     const termsContent = useMemo(() => {
         const terms = packageData?.packageTermsConditions || []
         if (!terms.length) return <p>No terms and conditions listed.</p>
@@ -261,7 +261,7 @@ export default function PackagePage() {
         )
     }, [packageData])
 
-    //tab items for package details section
+    //TAB ITEMS FOR PACKAGE DETAILS SECTION ------------------------------------------------
     const itemsTab = useMemo(() => [
         {
             label: 'Itinerary',
@@ -281,7 +281,7 @@ export default function PackagePage() {
     ], [itineraryContent, inclusionsExclusionsContent, termsContent])
 
 
-    // when wishlist button is clicked, add to wishlist and show confirmation modal
+    // HANDLE WISHLIST CLICK ------------------------------------------------
     const handleWishlistClick = async () => {
 
         if (!auth) {
@@ -289,7 +289,7 @@ export default function PackagePage() {
             return;
         }
 
-        const targetPackage = packageCode
+        const targetPackage = packageItem
         if (!targetPackage) {
             message.error('Unable to add wishlist item. Package is missing.')
             return
@@ -301,7 +301,7 @@ export default function PackagePage() {
         }
 
         try {
-            await apiFetch.post('/wishlist/add', { packageCode: packageCode })
+            await apiFetch.post('/wishlist/add', { packageId: targetPackage })
             setIsWishlistModalOpen(true)
             setIsPackageWishlistedModalOpen(true)
             setWishlistedIds((prev) => {
@@ -316,7 +316,7 @@ export default function PackagePage() {
         }
     }
 
-
+    //PACKAGE DATA SUMMARY FOR BOOKING PROCESS ------------------------------------------------
     const travelerSummary = [
         ['adult', 'Adult'],
         ['child', 'Child'],
@@ -335,7 +335,7 @@ export default function PackagePage() {
     const totalPrice = (packageData?.packagePricePerPax || 0) * totalTravelers
 
     const summaryData = {
-        packageCode: packageCode,
+        packageId: packageItem,
         packageName: packageData?.packageName || 'Package Details',
         packagePricePerPax: packageData?.packagePricePerPax + selectedDateRate || 0,
         packageSoloRate: packageData?.packageSoloRate + selectedDateRate || 0,
@@ -361,7 +361,7 @@ export default function PackagePage() {
         images: packageData?.images || []
     }
 
-    //submit review to backend and refresh reviews after successful submission
+    //SUBMIT REVIEW FUNCTION ------------------------------------------------
     const handleSubmitReview = async () => {
         if (!auth) {
             setIsLoginVisible(true)
@@ -387,7 +387,7 @@ export default function PackagePage() {
             } else {
                 // CREATE review
                 await apiFetch.post('/rating/submit-rating', {
-                    packageCode: packageCode,
+                    packageId: packageItem,
                     rating: reviewForm.rating,
                     review: reviewForm.comment.trim()
                 });
@@ -408,6 +408,7 @@ export default function PackagePage() {
         }
     };
 
+    //DELETE REVIEW FUNCTION ------------------------------------------------
     const handleDeleteReview = async () => {
         if (!auth) {
             setIsLoginVisible(true)
@@ -439,6 +440,7 @@ export default function PackagePage() {
         }
     }
 
+    //DELETE REVIEW FUNCTION ------------------------------------------------
     const handleOpenDeleteModal = () => {
         if (!auth) {
             setIsLoginVisible(true)
@@ -453,6 +455,7 @@ export default function PackagePage() {
         setIsDeleteModalOpen(true)
     }
 
+    //PROCEED TO BOOKING PROCESS WITH SELECTED ARRANGEMENT ------------------------------------------------
     const handleProceedDate = () => {
         setIsDateModalOpen(false)
 
@@ -460,35 +463,34 @@ export default function PackagePage() {
         navigate("/booking-process")
     }
 
+    //OPEN ARRANGEMENT SELECTION MODAL OR LOGIN MODAL IF NOT AUTHENTICATED WHEN BOOKING PROCESS IS INITIATED ------------------------------------------------
     const handleBookingProcess = () => {
         if (!auth) {
             setIsLoginVisible(true);
             return;
         }
-
-
         setIsArrangementModalOpen(true)
-
     };
 
+    //PROCEED TO BOOKING PROCESS WITH SELECTED ARRANGEMENT ------------------------------------------------
     const handleProceedArrangement = () => {
         setIsArrangementModalOpen(false)
-
         if (arrangementSelection === 'fixed') {
             setIsDateModalOpen(true)
         } else if (arrangementSelection === 'private' && packageData.packageType === "international") {
-            navigate('/international-quotation', { state: { packageCode: packageData?.packageCode } })
+            navigate('/international-quotation', { state: { packageItem: packageItem } })
         } else {
-            navigate('/domestic-quotation', { state: { packageCode: packageData?.packageCode } })
+            navigate('/domestic-quotation', { state: { packageItem: packageItem } })
         }
     }
 
+    //DERIVE VARIOUS DATA POINTS FROM PACKAGE DATA FOR DISPLAY AND LOGIC ------------------------------------------------
     const packageDiscountPercent = Number(packageData?.packageDiscountPercent || 0)
     const basePackagePricePerPax = Number(packageData?.packagePricePerPax || 0)
     const discountedPackagePricePerPax = packageDiscountPercent > 0
         ? basePackagePricePerPax * (1 - packageDiscountPercent / 100)
         : basePackagePricePerPax
-    const isWishlisted = Boolean(resolvedPackageCode && wishlistedIds.has(String(resolvedPackageCode)))
+    const isWishlisted = Boolean(resolvedPackageItem && wishlistedIds.has(String(resolvedPackageItem)))
     const hasUserReview = Boolean(userReview)
     const packageLocation = packageData?.packageDestination || packageData?.packageLocation || packageData?.packageCountry || packageData?.packageOrigin
     const packageCategory = packageData?.packageCategory || packageData?.packageType
@@ -524,7 +526,7 @@ export default function PackagePage() {
         >
 
             <div>
-                <Spin spinning={packageLoading} tip="Loading package details..." size="large">
+                <Spin spinning={packageLoading} description="Loading package details..." size="large">
                     <div className="packagepage-container">
                         <div className="package-box">
                             <div className="package-left">

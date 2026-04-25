@@ -90,6 +90,7 @@ export default function UploadBookingInvoice() {
 
     const [booking, setBooking] = useState(location.state?.booking || null);
     const [loading, setLoading] = useState(false);
+    const [downloading, setDownloading] = useState(false);
     const bookingDetails = booking?.bookingDetails || {};
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [transactions, setTransactions] = useState([]);
@@ -161,7 +162,7 @@ export default function UploadBookingInvoice() {
 
     const handleFinalSubmit = async () => {
         try {
-
+            setDownloading(true);
             setIsGeneratingPdf(true);
 
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
@@ -213,6 +214,9 @@ export default function UploadBookingInvoice() {
         } catch (err) {
             message.error("Submission failed.");
             console.error("Error during PDF generation:", err);
+        } finally {
+            setDownloading(false);
+            setIsGeneratingPdf(false);
         }
     };
 
@@ -280,6 +284,17 @@ export default function UploadBookingInvoice() {
             ? `${dayjs(travelStart).format("MMM D, YYYY")} - ${dayjs(travelEnd).format("MMM D, YYYY")}`
             : dayjs(travelStart).format("MMM D, YYYY"))
         : "--";
+
+
+    const adultRate = bookingDetails?.paymentDetails?.adultRate
+    const childRate = bookingDetails?.paymentDetails?.childRate
+    const infantRate = bookingDetails?.paymentDetails?.infantRate
+
+    const travelerCountAdult = booking?.travelers?.[0]?.adult
+    const travelerCountChild = booking?.travelers?.[0]?.child
+    const travelerCountInfant = booking?.travelers?.[0]?.infant
+
+
     const issueDate = booking?.bookingDate ? dayjs(booking.bookingDate) : dayjs();
     const paymentMode = bookingDetails?.paymentMode
         || (bookingDetails?.paymentDetails?.paymentType === "deposit" ? "Deposit" : "Full Payment");
@@ -381,14 +396,17 @@ export default function UploadBookingInvoice() {
             travelDate
         },
         items: [
-            {
-                date: issueDate.format("MMMM D, YYYY"),
-                activity: "Package",
-                description: packageName,
-                qty: 1,
-                rate: totalPrice
-            }
-        ]
+            travelerCountAdult
+                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: adultRate }
+                : null,
+            travelerCountChild
+                ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
+                : null,
+            travelerCountInfant
+                ? { date: issueDate, activity: 'Infant', description: packageName || 'Tour Package', qty: travelerCountInfant, rate: infantRate }
+                : null,
+        ].filter(Boolean),
+        notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
 
     const calculateTotals = (items) => {
@@ -621,9 +639,9 @@ export default function UploadBookingInvoice() {
                 }
             }}
         >
-            {loading ? (
+            {loading || downloading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '75vh' }}>
-                    <Spin description="Loading booking details..." size="large" />
+                    <Spin description={loading ? "Loading Booking Details..." : "Downloading Registration Form..."} size="large" />
                 </div>
             ) : (
                 <div className="user-invoice-container">
@@ -811,6 +829,7 @@ export default function UploadBookingInvoice() {
                                                     <div><strong>Room:</strong> {traveler?.roomType || "N/A"}</div>
                                                     <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format("MMM D, YYYY") : "N/A"}</div>
                                                     <div><strong>Age:</strong> {traveler?.age ?? "N/A"}</div>
+                                                    <div><strong>Passenger Type:</strong> {traveler?.ageCategory ?? "N/A"}</div>
                                                     <div><strong>Passport #:</strong> {traveler?.passportNo || "N/A"}</div>
                                                     <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format("MMM D, YYYY") : "N/A"}</div>
                                                 </div>
@@ -950,7 +969,6 @@ export default function UploadBookingInvoice() {
                                                 type="primary"
                                                 className="user-invoice-form-button"
                                                 onClick={prev}
-                                                aria-label="Previous step"
                                                 style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                             >
                                                 <ArrowLeftOutlined />
@@ -1002,13 +1020,11 @@ export default function UploadBookingInvoice() {
                                                 type="primary"
                                                 className="user-invoice-form-button"
                                                 onClick={next}
-                                                aria-label="Next step"
                                                 style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                             >
                                                 <ArrowRightOutlined />
                                             </Button>
                                         )}
-
                                     </div>
 
 
@@ -1024,15 +1040,11 @@ export default function UploadBookingInvoice() {
                                             </Button>
                                         </div>
                                     )}
-
-
                                 </div>
 
                             </div>
 
-
                         </Card>
-
 
                     </div>
                 </div>

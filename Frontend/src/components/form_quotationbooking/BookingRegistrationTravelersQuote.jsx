@@ -18,11 +18,22 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
         return 1
     }
 
+    const isChildOrInfantTraveler = (traveler) => {
+        const category = String(traveler?.ageCategory || '').toUpperCase()
+        if (category === 'CHILD' || category === 'INFANT') return true
+
+        const numericAge = Number(traveler?.age)
+        return Number.isFinite(numericAge) && numericAge >= 0 && numericAge < 12
+    }
+
     const getDisplayRoomType = (travelers, index) => {
         const traveler = travelers[index] || {}
+        if (isChildOrInfantTraveler(traveler)) return 'N/A'
+
         const roomType = normalizeRoomType(traveler.roomType)
 
         if (!roomType) return ''
+        if (roomType === 'N/A') return 'N/A'
         if (roomType === 'SINGLE') return 'SINGLE'
 
         const sameRoomTypeIndex = travelers
@@ -49,6 +60,13 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
         let age = today.diff(birthDate, 'year')
         if (birthDate.add(age, 'year').isAfter(today)) {
             age -= 1
+        }
+        if (age >= 0 && age < 2) {
+            return traveler.ageCategory === 'INFANT' ? 'INFANT' : '0'
+        } else if (age >= 2 && age < 12) {
+            return traveler.ageCategory === 'CHILD' ? 'CHILD' : age
+        } else if (age >= 12) {
+            return traveler.ageCategory === 'ADULT' ? 'ADULT' : age
         }
         return age < 0 ? '' : age
     }
@@ -434,7 +452,7 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                                 {
                                                                     validator: (_, value) => {
                                                                         if (!value || !dayjs(value).isValid()) {
-                                                                            return Promise.reject('Please enter birthday');
+                                                                            return Promise.reject(new Error('Please enter birthday'));
                                                                         }
                                                                         return Promise.resolve();
                                                                     },
@@ -526,7 +544,11 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                                     ]
                                                             }
                                                             getValueProps={(value) => ({
-                                                                value: value ? "N/A" : dayjs(value).format('MMM DD, YYYY'),
+                                                                value: isDomesticPackage
+                                                                    ? 'N/A'
+                                                                    : value && dayjs(value).isValid()
+                                                                        ? dayjs(value).format('MMM DD, YYYY')
+                                                                        : '',
                                                             })}
                                                         >
                                                             <Input

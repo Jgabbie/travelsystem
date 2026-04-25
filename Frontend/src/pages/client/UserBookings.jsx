@@ -34,6 +34,8 @@ export default function UserBookings() {
             setLoading(true)
             try {
                 const response = await apiFetch.get('/booking/my-bookings')
+
+                console.log("Raw Bookings Response:", response)
                 const bookings = response.map((b) => ({
                     key: b.bookingItem,
                     reference: b.reference,
@@ -41,7 +43,7 @@ export default function UserBookings() {
                     packageType: b.packageType?.toUpperCase() || 'Package Type',
                     travelDate: b.travelDate ? `${dayjs(b.travelDate.startDate).format('MMM D, YYYY')} - ${dayjs(b.travelDate.endDate).format('MMM D, YYYY')}` : 'TBD',
                     bookingDate: dayjs(b.createdAt).format('MMM D, YYYY'),
-                    travelersCount: b.travelers || {},
+                    travelersCount: b.travelers?.[0]?.adult + b.travelers?.[0]?.child + b.travelers?.[0]?.infant || 0,
                     status: b.status || 'N/A'
                 }))
 

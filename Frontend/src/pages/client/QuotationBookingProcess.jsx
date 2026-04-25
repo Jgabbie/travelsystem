@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button, message, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker, Space } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useQuotationBooking } from '../../context/BookingQuotationContext';
 import apiFetch from '../../config/fetchConfig';
@@ -34,6 +34,75 @@ const computeAge = (birthDate) => {
     return age < 0 ? '' : age
 }
 
+const getAgeCategoryFromAge = (age) => {
+    const numericAge = Number(age)
+    if (!Number.isFinite(numericAge) || numericAge < 0) return ''
+    if (numericAge < 2) return 'INFANT'
+    if (numericAge < 12) return 'CHILD'
+    return 'ADULT'
+}
+
+const isMinorTravelerType = (travelerType) => {
+    const normalized = String(travelerType || '').toLowerCase()
+    return normalized === 'child' || normalized === 'infant'
+}
+
+const getTravelerCategory = (travelerType) => String(travelerType || '').toLowerCase()
+
+const getBirthdayBounds = (travelerType) => {
+    const today = dayjs().startOf('day')
+    const category = getTravelerCategory(travelerType)
+
+    if (category === 'infant') {
+        return {
+            minDate: today.subtract(2, 'year'),
+            maxDate: today,
+            minAge: 0,
+            maxAge: 2
+        }
+    }
+
+    if (category === 'child') {
+        return {
+            minDate: today.subtract(11, 'year'),
+            maxDate: today.subtract(3, 'year'),
+            minAge: 3,
+            maxAge: 11
+        }
+    }
+
+    return {
+        minDate: null,
+        maxDate: today,
+        minAge: 12,
+        maxAge: null
+    }
+}
+
+const isDateAllowedForTraveler = (date, travelerType) => {
+    if (!date || !dayjs(date).isValid()) return false
+
+    const age = computeAge(date)
+    if (age === '') return false
+
+    const { minAge, maxAge } = getBirthdayBounds(travelerType)
+    if (typeof minAge === 'number' && age < minAge) return false
+    if (typeof maxAge === 'number' && age > maxAge) return false
+
+    return true
+}
+
+const getBirthdayDisabledDate = (travelerType) => {
+    const { minDate, maxDate } = getBirthdayBounds(travelerType)
+
+    return (current) => {
+        if (!current) return false
+        if (maxDate && current.isAfter(maxDate, 'day')) return true
+        if (minDate && current.isBefore(minDate, 'day')) return true
+        return false
+    }
+}
+
 export default function QuotationBookingProcess() {
     const [form] = Form.useForm();
     const { quotationBookingData, setQuotationBookingData, clearQuotationBookingData } = useQuotationBooking();
@@ -51,6 +120,7 @@ export default function QuotationBookingProcess() {
     //GET SUMMARY DATA FROM BOOKING QUOTATION CONTEXT
     const summary = quotationBookingData || {}
     const data = summary
+    const packageDescription = data.packageDescription || 'Secure a memorable trip with curated stays, activities, and guided experiences.'
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : []
     const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : []
     const travelersCount = (() => {
@@ -86,6 +156,35 @@ export default function QuotationBookingProcess() {
 
     const rawPrice = data?.travelDatePrice;
     const totalPrice = Number(rawPrice) || 0;
+    const adultRate = Number(data?.adultRate) || 0
+    const childRate = Number(data?.childRate) || 0
+    const infantRate = Number(data?.infantRate) || 0
+    const adultCount = Number(travelersCount.adult) || 0
+    const childCount = Number(travelersCount.child) || 0
+    const infantCount = Number(travelersCount.infant) || 0
+    const travelerFareBreakdown = [
+        {
+            key: 'adult',
+            label: 'Adult',
+            count: adultCount,
+            rate: adultRate,
+            amount: adultCount * adultRate
+        },
+        {
+            key: 'child',
+            label: 'Child',
+            count: childCount,
+            rate: childRate,
+            amount: childCount * childRate
+        },
+        {
+            key: 'infant',
+            label: 'Infant',
+            count: infantCount,
+            rate: infantRate,
+            amount: infantCount * infantRate
+        }
+    ]
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
     const isDomesticPackage = String(packageType || '').toLowerCase().includes('domestic')
@@ -247,8 +346,7 @@ export default function QuotationBookingProcess() {
     const groupRoomOptions = [
         { value: 'TWIN', label: 'TWIN' },
         { value: 'DOUBLE', label: 'DOUBLE' },
-        { value: 'TRIPLE', label: 'TRIPLE' },
-        { value: 'SINGLE', label: 'SINGLE' }
+        { value: 'TRIPLE', label: 'TRIPLE' }
     ]
 
     const roomOptions = bookingType === 'Solo Booking'
@@ -328,12 +426,59 @@ export default function QuotationBookingProcess() {
         setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [bookingType, form, setQuotationBookingData])
 
+    //IF GROUP BOOKING, ENSURE NO TRAVELER IS SET TO SINGLE ROOM
+    useEffect(() => {
+        if (bookingType !== 'Group Booking') return
+
+        const travelers = form.getFieldValue('travelers') || []
+        if (!travelers.length) return
+
+        const allowedRoomType = groupRoomOptions[0]?.value || 'TWIN'
+        const nextTravelers = travelers.map((traveler) => ({
+            ...traveler,
+            roomType: traveler?.roomType === 'SINGLE' ? allowedRoomType : traveler?.roomType
+        }))
+
+        form.setFieldsValue({ travelers: nextTravelers })
+        setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [bookingType, form, setQuotationBookingData])
+
+    //IF CHILD/INFANT TRAVELER, FORCE ROOM TYPE TO N/A
+    useEffect(() => {
+        const travelers = form.getFieldValue('travelers') || []
+        if (!travelers.length) return
+
+        let hasChanges = false
+        const nextTravelers = travelers.map((traveler, travelerIndex) => {
+            const travelerType = travelerTypeLabels[travelerIndex] || 'Adult'
+            const isMinorTraveler = isMinorTravelerType(travelerType)
+
+            if (isMinorTraveler) {
+                if (traveler?.roomType === 'N/A') return traveler
+                hasChanges = true
+                return { ...traveler, roomType: 'N/A' }
+            }
+
+            if (traveler?.roomType !== 'N/A') return traveler
+            hasChanges = true
+            return {
+                ...traveler,
+                roomType: bookingType === 'Solo Booking' ? 'SINGLE' : undefined
+            }
+        })
+
+        if (!hasChanges) return
+
+        form.setFieldsValue({ travelers: nextTravelers })
+        setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
+    }, [form, travelerTypeLabels, bookingType, setQuotationBookingData])
+
     //GO TO THE NEXT PAGE OF REGISTRATION
     const next = async () => {
         try {
             await form.validateFields();
 
-            if (currentStep === 2) {
+            if (currentStep === 0) {
                 const missingUploads = fileLists.some(list => !list || list.length === 0);
                 const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
@@ -431,12 +576,9 @@ export default function QuotationBookingProcess() {
             const firstError = error?.errorFields?.[0];
             if (firstError?.name) {
                 form.scrollToField(firstError.name);
-                const fieldPath = Array.isArray(firstError.name)
-                    ? firstError.name.join(' > ')
-                    : String(firstError.name)
                 const errorMessage = firstError.errors?.[0]
-                    ? `${firstError.errors[0]} (${fieldPath})`
-                    : `Please complete all required fields before proceeding. (${fieldPath})`
+                    ? firstError.errors[0]
+                    : 'Please complete all required fields before proceeding.'
                 message.error(errorMessage);
                 return;
             }
@@ -627,17 +769,15 @@ export default function QuotationBookingProcess() {
                                 ) : (
                                     <div className="booking-summary-hero-placeholder">No image available</div>
                                 )}
-                            </div>
-                            <div className="booking-summary-hero-card">
-                                <div className="booking-summary-hero-meta">
-                                    <span className="booking-summary-pill">{bookingType}</span>
-                                    <span className="booking-summary-pill">{totalTravelersCount === 1 ? '1 Person' : `${totalTravelersCount} Persons`}</span>
+                                <div className="booking-summary-hero-bar">
+                                    <div className="booking-summary-hero-meta">
+                                        <span className="booking-summary-pill">{packageType?.toUpperCase()}</span>
+                                    </div>
+                                    <h3 className="booking-summary-hero-title">{packageName}</h3>
+                                    <p className="booking-summary-hero-subtitle">{packageDescription}</p>
                                 </div>
-                                <h3 className="booking-summary-hero-title">{packageName}</h3>
-                                <p className="booking-summary-hero-subtitle">
-                                    Review your booking details, inclusions, and itinerary below.
-                                </p>
                             </div>
+
                         </div>
 
                         <div className="booking-summary-gallery">
@@ -659,7 +799,7 @@ export default function QuotationBookingProcess() {
                                     Confirm your tour package, travel dates, and traveler details before proceeding.
                                 </p>
 
-                                <div className="booking-summary-card booking-summary-card-flat">
+                                <div className="booking-summary-card-flat">
                                     <h4 className="booking-summary-card-title">Booking Details</h4>
 
                                     <div className="booking-summary-row">
@@ -704,8 +844,44 @@ export default function QuotationBookingProcess() {
                                 <h2 className='booking-summary-total-amount-value'>
                                     ₱{totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                 </h2>
+
+                                {bookingType === 'Group Booking' && (
+                                    <div style={{ marginTop: '12px' }}>
+                                        {travelersCount.adult > 0 && (
+                                            <div className="booking-summary-row">
+                                                <span className="booking-summary-label">
+                                                    Adults ({travelersCount.adult} x ₱{adultRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
+                                                </span>
+                                                <span className="booking-summary-value">
+                                                    ₱{(travelersCount.adult * adultRate).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {travelersCount.child > 0 && (
+                                            <div className="booking-summary-row">
+                                                <span className="booking-summary-label">
+                                                    Children ({travelersCount.child} x ₱{childRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
+                                                </span>
+                                                <span className="booking-summary-value">
+                                                    ₱{(travelersCount.child * childRate).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {travelersCount.infant > 0 && (
+                                            <div className="booking-summary-row">
+                                                <span className="booking-summary-label">
+                                                    Infants ({travelersCount.infant} x ₱{infantRate.toLocaleString('en-PH', { minimumFractionDigits: 2 })})
+                                                </span>
+                                                <span className="booking-summary-value">
+                                                    ₱{(travelersCount.infant * infantRate).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className='booking-summary-total-amount-note'>
-                                    *All inclusions fees are already factored in the total price.
+                                    *All inclusions fees for this package are already factored in the total price, execpt for Visas and other additionals. For solo booking, rate has already been applied in the total price.
                                 </div>
 
                                 <div className='booking-summary-package-type-card' >
@@ -713,14 +889,11 @@ export default function QuotationBookingProcess() {
                                     <strong style={{ color: '#305797' }}>{packageType?.toUpperCase()}</strong>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-                </div>
 
-                {/* ITINERARY, INCLUSIONS, EXCLUSIONS */}
-                <div className='itinerary-inclusions-exclusions'>
-                    <div className='itinerary-section-header'>
+                    {/* ITINERARY, INCLUSIONS, EXCLUSIONS */}
+                    <div className='itinerary-section-header' style={{ marginTop: 40 }}>
                         <h2 className='itinerary-section-title'>Itinerary, Inclusions & Exclusions</h2>
                         <p className='itinerary-section-subtitle'>Review the day-by-day schedule and what your package covers.</p>
                     </div>
@@ -755,7 +928,7 @@ export default function QuotationBookingProcess() {
                             )}
                         </div>
 
-                        <div className='inclusions-exclusions-card'>
+                        <div className='inclusions-exclusions-card' >
                             <div className='card-title'>
                                 <span className='card-pill'>Package</span>
                                 <h3>Inclusions & Exclusions</h3>
@@ -791,11 +964,11 @@ export default function QuotationBookingProcess() {
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* UPLOAD PASSPORT AND 2BY2 PHOTO */}
-                <div className='upload-passport-container booking-section'>
-                    <div className="booking-section-header">
+
+
+                    {/* UPLOAD PASSPORT AND 2BY2 PHOTO */}
+                    <div className="booking-section-header" style={{ marginTop: 40 }}>
                         <h2 className="upload-passport-title booking-section-title">Upload {travelDocumentLabel}</h2>
                         <p className="upload-passport-text booking-section-subtitle">
                             Please upload a clear image of your {travelDocumentShortLabel} for each traveler.
@@ -865,22 +1038,48 @@ export default function QuotationBookingProcess() {
                                             <Select
                                                 size="small"
                                                 placeholder="Room type"
-                                                value={form.getFieldValue(['travelers', index, 'roomType'])}
+                                                value={isMinorTravelerType(travelerTypeLabels[index]) ? 'N/A' : form.getFieldValue(['travelers', index, 'roomType'])}
                                                 onChange={(value) => updateTravelerField(index, 'roomType', value)}
-                                                options={roomOptions}
-                                                disabled={bookingType === 'Solo Booking'}
+                                                options={isMinorTravelerType(travelerTypeLabels[index]) ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
+                                                disabled={bookingType === 'Solo Booking' || isMinorTravelerType(travelerTypeLabels[index])}
                                             />
                                             <DatePicker
+                                                showToday={false}
                                                 size="small"
                                                 placeholder="Birthdate"
-                                                defaultPickerValue={dayjs('2000-01-01')}
+                                                defaultPickerValue={
+                                                    travelerTypeLabels[index] === 'Child'
+                                                        ? dayjs().subtract(5, 'year')
+                                                        : travelerTypeLabels[index] === 'Infant'
+                                                            ? dayjs().subtract(1, 'year')
+                                                            : dayjs().subtract(25, 'year')
+                                                }
                                                 format="MMMM D, YYYY"
                                                 value={form.getFieldValue(['travelers', index, 'birthday'])}
                                                 onChange={(date) => {
+                                                    const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                    if (date && !isDateAllowedForTraveler(date, travelerType)) {
+                                                        const ageBounds = getBirthdayBounds(travelerType)
+                                                        const ageLabel = ageBounds.minAge === 0 && ageBounds.maxAge === 2
+                                                            ? '0-2'
+                                                            : ageBounds.minAge === 3 && ageBounds.maxAge === 11
+                                                                ? '3-11'
+                                                                : '12+'
+                                                        message.error(`Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`)
+                                                        return
+                                                    }
+
                                                     const age = date ? computeAge(date) : ''
-                                                    updateTravelerField(index, 'birthday', date, { age })
+                                                    const ageCategory = date ? getAgeCategoryFromAge(age) : ''
+                                                    const isMinorTraveler = isMinorTravelerType(travelerType)
+                                                    const roomType = isMinorTraveler
+                                                        ? 'N/A'
+                                                        : bookingType === 'Solo Booking'
+                                                            ? 'SINGLE'
+                                                            : form.getFieldValue(['travelers', index, 'roomType'])
+                                                    updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
                                                 }}
-                                                disabledDate={(current) => current && current >= dayjs().startOf('day')}
+                                                disabledDate={getBirthdayDisabledDate(travelerTypeLabels[index] || 'Adult')}
                                             />
                                         </div>
                                         {!isDomesticPackage && (
@@ -903,6 +1102,7 @@ export default function QuotationBookingProcess() {
                                                     }}
                                                 />
                                                 <DatePicker
+                                                    showToday={false}
                                                     size="small"
                                                     placeholder="Passport expiry"
                                                     format="MMMM D, YYYY"
@@ -1025,16 +1225,18 @@ export default function QuotationBookingProcess() {
                         </div>
 
                     </div>
-                </div>
 
 
-                {/* BOOKING REGISTRATION */}
-                <div className='booking-form-container booking-section'>
-                    <div className="booking-form-stepper-container">
-                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
-                            Please upload a clear image of your passport bio page for each traveler.
-                        </p>
+
+                    {/* BOOKING REGISTRATION */}
+                    <div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
+                        <div className="booking-section-header" style={{ marginBottom: 30 }}>
+                            <h2 className="upload-passport-title booking-section-title" style={{ textAlign: "left" }}>Booking Registration</h2>
+                            <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>
+                                Please upload a clear image of your passport bio page for each traveler.
+                            </p>
+                        </div>
+
                         <Steps
                             current={currentStep}
                             items={[
@@ -1046,78 +1248,99 @@ export default function QuotationBookingProcess() {
                             style={{ marginBottom: '30px' }}
                         />
 
-                        <div className="form-content-wrapper pdf-capture" ref={pdfStepRef}>
-                            {currentStep === 0 && (
-                                <BookingRegistrationTravelersQuote
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                    totalCount={travelersCount}
-                                />
-                            )}
 
-                            {currentStep === 1 && (
-                                <BookingRegistrationDietQuote
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-
-                            {currentStep === 2 && (
-                                <BookingRegistrationTermsQuotePart1
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-
-                            {currentStep === 3 && (
-                                <BookingRegistrationTermsQuotePart2
-                                    form={form}
-                                    onValuesChange={handleValuesChange}
-                                    summary={summary}
-                                />
-                            )}
-                        </div>
-
-                        <div className='booking-form-button-controls'>
+                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                             {currentStep > 0 && (
                                 <Button
                                     type='primary'
                                     className='booking-form-button'
-                                    size="large"
                                     onClick={prev}
-                                    style={{ padding: '0 40px' }}
+                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                 >
-                                    Previous Page
+                                    <ArrowLeftOutlined />
                                 </Button>
                             )}
 
-                            {currentStep < 3 ? (
+                            <div
+                                className="form-content-wrapper pdf-capture"
+                                ref={pdfStepRef}
+                            >
+                                {currentStep === 0 && (
+                                    <BookingRegistrationTravelersQuote
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                        totalCount={travelersCount}
+                                    />
+                                )}
+
+                                {currentStep === 1 && (
+                                    <BookingRegistrationDietQuote
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                    />
+                                )}
+
+                                {currentStep === 2 && (
+                                    <BookingRegistrationTermsQuotePart1
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                    />
+                                )}
+
+                                {currentStep === 3 && (
+                                    <BookingRegistrationTermsQuotePart2
+                                        form={form}
+                                        onValuesChange={handleValuesChange}
+                                        summary={summary}
+                                    />
+                                )}
+                            </div>
+
+                            {currentStep < 3 && (
                                 <Button
                                     type='primary'
                                     className='booking-form-button'
-                                    size="large"
                                     onClick={next}
-                                    style={{ padding: '0 40px' }}
+                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                 >
-                                    Next Page
-                                </Button>
-                            ) : (
-                                <Button
-                                    type='primary'
-                                    className='booking-form-button-proceed'
-                                    size="large"
-                                    onClick={() => setIsProceedModalOpen(true)}
-                                    style={{ padding: '0 40px' }}
-                                >
-                                    Proceed to Payment
+                                    <ArrowRightOutlined />
                                 </Button>
                             )}
                         </div>
+
+
+                        {currentStep === 3 && (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                <Button
+                                    type='primary'
+                                    className='booking-form-button-proceed'
+                                    onClick={() => setIsProceedModalOpen(true)}
+                                >
+                                    Proceed to Payment
+                                </Button>
+                            </div>
+                        )}
+
+
+
                     </div>
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
 
             </div >
 

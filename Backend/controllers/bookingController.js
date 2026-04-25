@@ -25,6 +25,7 @@ const generateCancellationReference = () => {
 
 //CREATE BOOKING -----------------------------------------------------------------
 const createBooking = async (req, res) => {
+
     const { bookingPayload } = req.body
     const userId = req.userId
 

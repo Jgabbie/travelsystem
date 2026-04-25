@@ -17,11 +17,22 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
         return 1
     }
 
+    const isChildOrInfantTraveler = (traveler) => {
+        const category = String(traveler?.ageCategory || '').toUpperCase()
+        if (category === 'CHILD' || category === 'INFANT') return true
+
+        const numericAge = Number(traveler?.age)
+        return Number.isFinite(numericAge) && numericAge >= 0 && numericAge < 12
+    }
+
     const getDisplayRoomType = (travelers, index) => {
         const traveler = travelers[index] || {}
+        if (isChildOrInfantTraveler(traveler)) return 'N/A'
+
         const roomType = normalizeRoomType(traveler.roomType)
 
         if (!roomType) return ''
+        if (roomType === 'N/A') return 'N/A'
         if (roomType === 'SINGLE') return 'SINGLE'
 
         const sameRoomTypeIndex = travelers
@@ -58,9 +69,9 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
 
         let travelersData = (summaryInvoice.travelers || []).map((t) => ({
             ...t,
-            birthday: t.birthday || '',
-            passportExpiry: t.passportExpiry || '',
-            passportNo: t.passportNumber || 'N/A',
+            birthday: dayjs(t.birthday).format('MMM D, YYYY') || '',
+            passportExpiry: dayjs(t.passportExpiry).format('MMM D, YYYY') || '',
+            passportNo: t.passportNo || 'N/A',
             roomType: isSolo
                 ? 'SINGLE'
                 : (isGroup && t?.roomType === 'SINGLE' ? undefined : t?.roomType)
@@ -290,8 +301,8 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
                                 <colgroup>
                                     <col style={{ width: '4%' }} />
                                     <col style={{ width: '8%' }} />
-                                    <col style={{ width: '18%' }} />
-                                    <col style={{ width: '18%' }} />
+                                    <col style={{ width: '12%' }} />
+                                    <col style={{ width: '12%' }} />
                                     <col style={{ width: '12%' }} />
                                     <col style={{ width: '12%' }} />
                                     <col style={{ width: '5%' }} />
@@ -332,14 +343,14 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
                                                     {/* First Name */}
                                                     <td style={{ border: '1px solid #000' }}>
                                                         <Form.Item {...restField} name={[name, 'firstName']} noStyle>
-                                                            <Input variant="borderless" style={{ padding: '0 6px' }} readOnly />
+                                                            <Input variant="borderless" style={{ padding: '0 5px' }} readOnly />
                                                         </Form.Item>
                                                     </td>
 
                                                     {/* Last Name */}
                                                     <td style={{ border: '1px solid #000' }}>
                                                         <Form.Item {...restField} name={[name, 'lastName']} noStyle>
-                                                            <Input variant="borderless" style={{ padding: '0 6px' }} readOnly />
+                                                            <Input variant="borderless" style={{ padding: '0 5px' }} readOnly />
                                                         </Form.Item>
                                                     </td>
 
@@ -374,14 +385,14 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
                                                     {/* Passport No */}
                                                     <td style={{ border: '1px solid #000' }}>
                                                         <Form.Item {...restField} name={[name, 'passportNo']} noStyle>
-                                                            <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
+                                                            <Input variant="borderless" style={{ padding: '0 3px', textAlign: 'center' }} readOnly />
                                                         </Form.Item>
                                                     </td>
 
                                                     {/* Passport Expiry */}
                                                     <td style={{ border: '1px solid #000' }}>
                                                         <Form.Item {...restField} name={[name, 'passportExpiry']} noStyle>
-                                                            <Input variant="borderless" style={{ padding: '0 2px', textAlign: 'center' }} readOnly />
+                                                            <Input variant="borderless" style={{ padding: '0 3px', textAlign: 'center' }} readOnly />
                                                         </Form.Item>
                                                     </td>
                                                 </tr>

@@ -112,10 +112,59 @@ export default function UserBookingInvoice() {
     const [photoUploadLists, setPhotoUploadLists] = useState([]);
 
     const [loading, setLoading] = useState(true);
+    const [downloading, setDownloading] = useState(false);
     const [submittingTravelerIndex, setSubmittingTravelerIndex] = useState(null);
 
     const stepsToCapture = [0, 1, 2, 3];
     const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
+    const reference = booking?.reference || booking?.ref || booking?._id || "--";
+
+    useEffect(() => {
+        if (!reference || reference === "--") return;
+
+        const fetchAllData = async () => {
+            setLoading(true);
+            try {
+
+                const bookingRes = await apiFetch.get(`/booking/by-reference/${reference}`);
+                const fetchedBooking = bookingRes?.booking || null;
+                const fetchedTransactions = bookingRes?.transactions || [];
+
+                setBooking(fetchedBooking);
+                setTransactions(fetchedTransactions);
+
+
+                if (fetchedBooking) {
+                    try {
+                        const response = await apiFetch.get("/booking/all-bookings");
+                        const allBookings = response?.bookings || response || [];
+                        const number = buildInvoiceNumber(allBookings, fetchedBooking);
+
+                        if (number) {
+                            setInvoiceNumber(number);
+                        } else {
+                            const createdAtValue = fetchedBooking.bookingDate || fetchedBooking.createdAt;
+                            const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
+                            if (createdAt?.isValid()) {
+                                setInvoiceNumber(`${createdAt.format("MM")}01`);
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Error fetching invoice number list:", err);
+                    }
+                }
+
+            } catch (err) {
+                message.error("Failed to load booking details.");
+                console.error("Primary fetch error:", err);
+            } finally {
+
+                setLoading(false);
+            }
+        };
+
+        fetchAllData();
+    }, [reference]);
 
     //PAYMENT STATUS COMPUTATION
     const formatCurrency = useMemo(
@@ -153,8 +202,6 @@ export default function UserBookingInvoice() {
     };
 
     const paymentStatus = getPaymentStatus();
-
-    const reference = booking?.reference || booking?.ref || booking?._id || "--";
     const packageName =
         bookingDetails.tourPackageTitle ||
         bookingDetails.packageName ||
@@ -174,6 +221,14 @@ export default function UserBookingInvoice() {
             ? `${dayjs(travelStart).format("MMM D, YYYY")} - ${dayjs(travelEnd).format("MMM D, YYYY")}`
             : dayjs(travelStart).format("MMM D, YYYY"))
         : "--";
+
+    const adultRate = bookingDetails?.paymentDetails?.adultRate
+    const childRate = bookingDetails?.paymentDetails?.childRate
+    const infantRate = bookingDetails?.paymentDetails?.infantRate
+
+    const travelerCountAdult = booking?.travelers?.[0]?.adult
+    const travelerCountChild = booking?.travelers?.[0]?.child
+    const travelerCountInfant = booking?.travelers?.[0]?.infant
 
     const issueDate = booking?.bookingDate ? dayjs(booking.bookingDate) : dayjs();
     const customerName = bookingDetails.leadFullName || booking?.leadFullName || "Customer";
@@ -378,9 +433,11 @@ export default function UserBookingInvoice() {
     //GO PREVIOUS PAGE
     const prev = () => setCurrentStep(currentStep - 1);
 
+
+    //DOWNLOAD BOOKING REGISTRATION PDF
     const handleFinalSubmit = async () => {
         try {
-
+            setDownloading(true);
             setIsGeneratingPdf(true);
 
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
@@ -425,13 +482,12 @@ export default function UserBookingInvoice() {
             pdf.save(`Booking_${reference}.pdf`);
             message.success("Booking Registration PDF downloaded successfully.");
 
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-
         } catch (err) {
             message.error("Submission failed.");
             console.error("Error during PDF generation:", err);
+        } finally {
+            setDownloading(false);
+            setIsGeneratingPdf(false);
         }
     };
 
@@ -614,52 +670,7 @@ export default function UserBookingInvoice() {
         return `${monthKey}${String(sequence).padStart(2, "0")}`;
     };
 
-    useEffect(() => {
-        if (!reference || reference === "--") return;
 
-        const fetchAllData = async () => {
-            setLoading(true);
-            try {
-
-                const bookingRes = await apiFetch.get(`/booking/by-reference/${reference}`);
-                const fetchedBooking = bookingRes?.booking || null;
-                const fetchedTransactions = bookingRes?.transactions || [];
-
-                setBooking(fetchedBooking);
-                setTransactions(fetchedTransactions);
-
-
-                if (fetchedBooking) {
-                    try {
-                        const response = await apiFetch.get("/booking/all-bookings");
-                        const allBookings = response?.bookings || response || [];
-                        const number = buildInvoiceNumber(allBookings, fetchedBooking);
-
-                        if (number) {
-                            setInvoiceNumber(number);
-                        } else {
-                            const createdAtValue = fetchedBooking.bookingDate || fetchedBooking.createdAt;
-                            const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
-                            if (createdAt?.isValid()) {
-                                setInvoiceNumber(`${createdAt.format("MM")}01`);
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Error fetching invoice number list:", err);
-                    }
-                }
-
-            } catch (err) {
-                message.error("Failed to load booking details.");
-                console.error("Primary fetch error:", err);
-            } finally {
-
-                setLoading(false);
-            }
-        };
-
-        fetchAllData();
-    }, [reference]);
 
     //INSTALLMENT COMPUTATION
     const [currentUnpaidInstallment, setCurrentUnpaidInstallment] = useState(null);
@@ -688,14 +699,17 @@ export default function UserBookingInvoice() {
             travelDate
         },
         items: [
-            {
-                date: issueDate.format("MMMM D, YYYY"),
-                activity: "Package",
-                description: packageName,
-                qty: 1,
-                rate: totalPrice
-            }
-        ]
+            travelerCountAdult
+                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: adultRate }
+                : null,
+            travelerCountChild
+                ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
+                : null,
+            travelerCountInfant
+                ? { date: issueDate, activity: 'Infant', description: packageName || 'Tour Package', qty: travelerCountInfant, rate: infantRate }
+                : null,
+        ].filter(Boolean),
+        notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
 
     const installmentData = useMemo(() => {
@@ -829,10 +843,6 @@ export default function UserBookingInvoice() {
                             <Text style={styles.summaryValue}>{dayjs(invoice.invoice.dueDate).format("MM/DD/YYYY")}</Text>
                         </View>
                     </View>
-                </View>
-
-                <View style={styles.paidRow}>
-                    <Text style={styles.label}>PAID AMOUNT</Text>
                 </View>
 
                 <View style={styles.table}>
@@ -989,9 +999,9 @@ export default function UserBookingInvoice() {
             }}
         >
 
-            {loading ? (
+            {loading || downloading ? (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "80vh" }}>
-                    <Spin description="Loading invoice..." size="large" />
+                    <Spin description={loading ? "Loading Booking Details..." : "Downloading Registration Form..."} size="large" />
                 </div>
             ) : (
                 <div className="user-invoice-container">
@@ -1327,6 +1337,7 @@ export default function UserBookingInvoice() {
                                                             <div><strong>Room:</strong> {traveler?.roomType || 'N/A'}</div>
                                                             <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format('MMM D, YYYY') : 'N/A'}</div>
                                                             <div><strong>Age:</strong> {traveler?.age ?? 'N/A'}</div>
+                                                            <div><strong>Passenger Type:</strong> {traveler?.ageCategory ?? 'N/A'}</div>
                                                             <div><strong>Passport #:</strong> {traveler?.passportNo || 'N/A'}</div>
                                                             <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format('MMM D, YYYY') : 'N/A'}</div>
                                                         </div>
@@ -1508,7 +1519,6 @@ export default function UserBookingInvoice() {
                                                 type="primary"
                                                 className="user-invoice-form-button"
                                                 onClick={prev}
-                                                aria-label="Previous step"
                                                 style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                             >
                                                 <ArrowLeftOutlined />
@@ -1560,7 +1570,6 @@ export default function UserBookingInvoice() {
                                                 type="primary"
                                                 className="user-invoice-form-button"
                                                 onClick={next}
-                                                aria-label="Next step"
                                                 style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                                             >
                                                 <ArrowRightOutlined />

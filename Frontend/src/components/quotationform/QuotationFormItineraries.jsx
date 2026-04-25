@@ -13,8 +13,6 @@ export default function QuotationFormIntineraries({
     pdfMode = false
 }) {
 
-    console.log('Received quotationData in QuotationFormInEx:', quotationData); // Debug log to check received data
-
     const inclusions = quotationData.inclusions || [];
     const exclusions = quotationData.exclusions || [];
 

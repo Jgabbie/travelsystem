@@ -40,23 +40,20 @@ export default function DestinationsPackages() {
 
                 const ratingMap = new Map(
                     (ratingResponse?.averagesPayload || []).map((item) => [
-                        String(item.packageCode),
+                        String(item.id),
                         Number(item.averageRating || 0)
                     ])
                 )
 
                 const packages = response.map((pkg) => {
-                    const rating = ratingMap.get(String(pkg.packageCode)) || 0
+                    const rating = ratingMap.get(String(pkg.id)) || 0
                     const discountPercent = Number(pkg.packageDiscountPercent || 0)
                     const budget = Number(pkg.packagePricePerPax || 0)
                     const discountedBudget = discountPercent > 0
                         ? budget * (1 - discountPercent / 100)
                         : budget
-                    // const availableSlots = Array.isArray(pkg.packageSpecificDate)
-                    //     ? pkg.packageSpecificDate.reduce((sum, entry) => sum + (Number(entry?.slots) || 0), 0)
-                    //     : (pkg.packageAvailableSlots || 0)
                     return {
-                        id: pkg._id,
+                        id: pkg.packageItem,
                         packageCode: pkg.packageCode,
                         packageName: pkg.packageName,
                         packageType: pkg.packageType === 'international' ? 'International' : 'Domestic',
@@ -495,7 +492,7 @@ export default function DestinationsPackages() {
                                             className={`destinations-card${pkg.availableSlots <= 0 ? ' destinations-card-disabled' : ''}`}
                                             hoverable={pkg.availableSlots > 0}
                                             onClick={() => {
-                                                if (pkg.availableSlots > 0) navigate('/package', { state: { packageCode: pkg.packageCode } })
+                                                if (pkg.availableSlots > 0) navigate('/package', { state: { packageItem: pkg.id } })
                                             }}
                                             style={pkg.availableSlots <= 0 ? { opacity: 0.6, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
                                         >

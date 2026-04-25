@@ -89,7 +89,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                             <Col span={4}>
                                 <Form.Item
                                     name="dietaryRequest"
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Dietary Request' }]}
                                     noStyle
                                 >
                                     <Select
@@ -137,7 +137,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                             <Col span={4}>
                                 <Form.Item
                                     name="medicalRequest"
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Medical Request' }]}
                                     noStyle
                                 >
                                     <Select
@@ -176,6 +176,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                         >
                             <TextArea maxLength={200} rows={2} style={boxStyle} />
                         </Form.Item>
+
                     </div>
 
                     {/* INSURANCE SECTION */}
@@ -193,7 +194,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                 <Form.Item
                                     name="purchaseInsurance"
                                     noStyle
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Insurance Agreement' }]}
                                 >
                                     <Select
                                         size="small"
@@ -221,7 +222,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                 <Form.Item
                                     name="ownInsurance"
                                     noStyle
-                                    rules={[{ required: true, message: 'Required' }]}
+                                    rules={[{ required: true, message: 'Required Insurance Agreement' }]}
                                 >
                                     <Select
                                         size="small"

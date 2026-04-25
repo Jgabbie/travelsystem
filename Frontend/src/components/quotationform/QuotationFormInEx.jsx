@@ -11,7 +11,6 @@ export default function QuotationFormInEx({
     pdfMode = false
 }) {
 
-    console.log('Received quotationData in QuotationFormInEx:', quotationData); // Debug log to check received data
 
     const inclusions = quotationData.inclusions || [];
     const exclusions = quotationData.exclusions || [];
@@ -113,6 +112,10 @@ export default function QuotationFormInEx({
         <div className="mrc-overlay-wrapper">
             {/* PAGE 1 */}
             <div className="mrc-form-page mrc-quotation-page" data-quotation-page>
+                <p className="mrc-quotation-note">
+                    KINDLY BE INFORMED WITH THE INCLUSIONS AND EXCLUSIONS FOR THE QUOTATED TOUR PACKAGE STATED BELOW.
+                    Changes may apply when revision is requested. Please refer to the quotation details for more information.
+                </p>
                 <div className="mrc-quotation-section">
                     <div className="mrc-quotation-subtitle">INCLUSIONS:</div>
                     {pdfMode ? (
@@ -168,6 +171,6 @@ export default function QuotationFormInEx({
                 </div>
             </div>
 
-        </div>
+        </div >
     );
 }

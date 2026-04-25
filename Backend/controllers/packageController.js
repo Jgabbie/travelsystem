@@ -161,6 +161,7 @@ const getPackages = async (req, res) => {
                 }, 0);
 
             return {
+                packageItem: pkg._id,
                 packageCode: pkg.packageCode,
                 packageName: pkg.packageName,
                 packageDescription: pkg.packageDescription,
@@ -199,6 +200,7 @@ const getArchivedPackages = async (_req, res) => {
                 }, 0);
 
             return {
+                packageItem: pkg._id,
                 packageCode: pkg.packageCode,
                 packageName: pkg.packageName,
                 packageDescription: pkg.packageDescription,
@@ -236,6 +238,7 @@ const getPackagesForUsers = async (req, res) => {
                 }, 0);
 
             return {
+                packageItem: pkg._id,
                 packageCode: pkg.packageCode,
                 packageName: pkg.packageName,
                 packageDescription: pkg.packageDescription,
@@ -368,8 +371,8 @@ const restoreArchivedPackage = async (req, res) => {
 
 const getPackage = async (req, res) => {
     try {
-        const { packageCode } = req.params;
-        const pkg = await PackageModel.findOne({ packageCode });
+        const { id } = req.params;
+        const pkg = await PackageModel.findById(id);
 
 
         if (!pkg) return res.status(404).json({ message: "Package not found" });
@@ -381,6 +384,7 @@ const getPackage = async (req, res) => {
 
 
         const packagePayload = {
+            packageItem: pkg._id,
             packageCode: pkg.packageCode,
             packageName: pkg.packageName,
             packageDescription: pkg.packageDescription,
@@ -414,10 +418,10 @@ const getPackage = async (req, res) => {
 };
 
 const updatePackage = async (req, res) => {
-    const { packageCode } = req.params;
+    const { id } = req.params;
 
     try {
-        const existingPackage = await findPackageByCodeParam(packageCode);
+        const existingPackage = await PackageModel.findById(id);
         if (!existingPackage) {
             return res.status(404).json({ message: "Package not found" });
         }

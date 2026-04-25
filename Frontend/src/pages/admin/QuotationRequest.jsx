@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Tag, Input, Modal } from "antd";
-import { UploadOutlined, SendOutlined, ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { UploadOutlined, SendOutlined, ArrowLeftOutlined, ArrowRightOutlined, CheckCircleFilled } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import dayjs from "dayjs";
@@ -198,7 +198,7 @@ export default function QuotationRequest() {
     const customerName = quotation?.userId?.username || "N/A";
     const hotel = quotation?.quotationDetails?.preferredHotels || "N/A";
     const airline = quotation?.quotationDetails?.preferredAirlines || "N/A";
-    const travelDates = quotation?.quotationDetails?.preferredDates || quotation?.quotationDetails?.prefferedDate || "N/A";
+    const travelDates = quotation?.quotationDetails?.preferredDates || quotation?.quotationDetails?.preferredDates || "N/A";
     const budgetRange = Array.isArray(quotation?.quotationDetails?.budgetRange)
         ? `₱${quotation.quotationDetails.budgetRange.join(" - ")}`
         : "N/A";
@@ -773,95 +773,113 @@ export default function QuotationRequest() {
 
                     {viewMode === "form" && !isBooked && (
                         <Card title={previewItems[previewStep].title} style={{ margin: 20 }}>
-                            {previewItems[previewStep].content}
-
-                            {previewStep === 0 && (
-                                <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                                    <Button className="quotationrequest-form-button" type="primary" onClick={addPackageRow}>
-                                        Add Row
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                {previewStep > 0 ? (
+                                    <Button
+                                        className="quotationrequest-form-button"
+                                        onClick={() => setPreviewStep((prev) => prev - 1)}
+                                        style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, flexShrink: 0 }}
+                                    >
+                                        <ArrowLeftOutlined />
                                     </Button>
+                                ) : (
+                                    <div style={{ width: 48, height: 48, flexShrink: 0 }} />
+                                )}
 
-                                    {formData.dynamicRows && formData.dynamicRows.length > 0 && (
-                                        <Button
-                                            className="quotationrequest-formremove-button"
-                                            type="primary"
-                                            onClick={() =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    dynamicRows: prev.dynamicRows.slice(0, -1), // removes last row
-                                                }))
-                                            }
-                                        >
-                                            Remove Last Row
-                                        </Button>
-                                    )}
-                                </div>
-                            )}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    {previewItems[previewStep].content}
 
-                            <div
-                                style={{
-                                    marginTop: 16,
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    minHeight: 40,
-                                }}
-                            >
-                                <div>
-                                    {previewStep > 0 && (
-                                        <Button className="quotationrequest-form-button" onClick={() => setPreviewStep((prev) => prev - 1)}>
-                                            Previous
-                                        </Button>
-                                    )}
-                                </div>
+                                    {previewStep === 0 && (
+                                        <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginTop: 16 }}>
+                                            <Button className="quotationrequest-form-button" type="primary" onClick={addPackageRow}>
+                                                Add Row
+                                            </Button>
 
-                                <div>
-                                    {previewStep < previewItems.length - 1 && (
-                                        <Button className="quotationrequest-form-button" type="primary" onClick={handleNextPreview}>
-                                            Next
-                                        </Button>
+                                            {formData.dynamicRows && formData.dynamicRows.length > 0 && (
+                                                <Button
+                                                    className="quotationrequest-formremove-button"
+                                                    type="primary"
+                                                    onClick={() =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            dynamicRows: prev.dynamicRows.slice(0, -1),
+                                                        }))
+                                                    }
+                                                >
+                                                    Remove Last Row
+                                                </Button>
+                                            )}
+                                        </div>
                                     )}
+
                                     {previewStep === previewItems.length - 1 && (
-                                        <Button className="quotationrequest-formgenerate-button" type="primary" onClick={generateAndUploadPdf} loading={uploading}>
-                                            Generate & Upload PDF
-                                        </Button>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                            <Button className="quotationrequest-formgenerate-button" type="primary" onClick={generateAndUploadPdf} loading={uploading}>
+                                                Generate & Upload PDF
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
+
+                                {previewStep < previewItems.length - 1 ? (
+                                    <Button
+                                        className="quotationrequest-form-button"
+                                        type="primary"
+                                        onClick={handleNextPreview}
+                                        style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, flexShrink: 0 }}
+                                    >
+                                        <ArrowRightOutlined />
+                                    </Button>
+                                ) : (
+                                    <div style={{ width: 48, height: 48, flexShrink: 0 }} />
+                                )}
                             </div>
                         </Card>
                     )}
 
                     {viewMode === "form" && !isBooked && (
-                        <div
-                            ref={pdfContainerRef}
-                            style={{ position: "absolute", left: -9999, top: 0, width: 800 }}
-                        >
-                            <div className="pdf-content">
-                                <QuotationFormDetails
-                                    quotationData={quotationData}
-                                    formData={formData}
-                                    setFormData={setFormData}
-                                    formErrors={formErrors}
-                                    dynamicRows={formData.dynamicRows}
-                                    updateDynamicRow={updateDynamicRow}
-                                />
-                                <QuotationFormInEx
-                                    quotationData={quotationData}
-                                    formData={formData}
-                                    setFormData={setFormData}
-                                    formErrors={formErrors}
-                                    pdfMode={true}
-                                />
-                                <QuotationFormItineraries
-                                    quotationData={quotationData}
-                                    editableItinerary={editableItinerary}
-                                    setEditableItinerary={setEditableItinerary}
-                                    formData={formData}
-                                    setFormData={setFormData}
-                                    formErrors={formErrors}
-                                    pdfMode={true}
-                                />
-                                <QuotationFormTermsConditions quotationData={quotationData} />
+                        <div style={{
+                            display: 'flex', gap: 16, alignItems: 'center'
+                        }}>
+
+
+
+
+                            <div
+                                ref={pdfContainerRef}
+                                style={{ position: "absolute", left: -9999, top: 0, width: 800 }}
+                            >
+
+                                <div className="pdf-content">
+                                    <QuotationFormDetails
+                                        quotationData={quotationData}
+                                        formData={formData}
+                                        setFormData={setFormData}
+                                        formErrors={formErrors}
+                                        dynamicRows={formData.dynamicRows}
+                                        updateDynamicRow={updateDynamicRow}
+                                    />
+                                    <QuotationFormInEx
+                                        quotationData={quotationData}
+                                        formData={formData}
+                                        setFormData={setFormData}
+                                        formErrors={formErrors}
+                                        pdfMode={true}
+                                    />
+                                    <QuotationFormItineraries
+                                        quotationData={quotationData}
+                                        editableItinerary={editableItinerary}
+                                        setEditableItinerary={setEditableItinerary}
+                                        formData={formData}
+                                        setFormData={setFormData}
+                                        formErrors={formErrors}
+                                        pdfMode={true}
+                                    />
+                                    <QuotationFormTermsConditions quotationData={quotationData} />
+                                </div>
                             </div>
+
+
                         </div>
                     )}
 
@@ -1199,7 +1217,8 @@ export default function QuotationRequest() {
                         </div>
                     </Modal>
                 </div>
-            )}
-        </ConfigProvider>
+            )
+            }
+        </ConfigProvider >
     );
 }
