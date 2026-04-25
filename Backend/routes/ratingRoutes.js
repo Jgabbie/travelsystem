@@ -18,7 +18,7 @@ const adminOnly = async (req, res, next) => {
 }
 
 router.post('/submit-rating', userAuthOptional, ratingController.submitRating)
-router.get('/package/:id/ratings', ratingController.getPackageRatings)
+router.get('/package/:packageItem/ratings', ratingController.getPackageRatings)
 router.get('/my-ratings', userAuth, ratingController.getUserRatings)
 router.delete('/:id', userAuth, ratingController.deleteRating)
 router.get('/all-ratings', userAuth, adminOnly, ratingController.getAllRatings)

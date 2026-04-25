@@ -4,7 +4,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import '../../style/components/modals/packagequotationmodal.css'
+import '../../style/client/packagequotation.css'
 import '../../style/components/modals/modaldesign.css'
 import apiFetch from '../../config/fetchConfig'
 
@@ -114,6 +114,7 @@ export default function PackageInternationalQuotation() {
     const [preferredAirlines, setPreferredAirlines] = useState('')
     const [preferredHotels, setPreferredHotels] = useState('')
     const [preferredDates, setPreferredDates] = useState('')
+    const [selectedDateSlots, setSelectedDateSlots] = useState(null)
     const [budgetRange, setBudgetRange] = useState([minBudget, maxBudget])
     const [itineraryNotes, setItineraryNotes] = useState(
         itineraryLabels.map(() => '')
@@ -133,6 +134,7 @@ export default function PackageInternationalQuotation() {
         setPreferredAirlines('');
         setPreferredHotels('');
         setPreferredDates(null);
+        setSelectedDateSlots(null);
         setBudgetRange([minBudget, maxBudget]);
         setItineraryNotes(itineraryLabels.map(() => ''));
         setAdditionalComments('');
@@ -158,6 +160,52 @@ export default function PackageInternationalQuotation() {
         setTravelers(total);
     }, [travelerType, adultCount, childCount, infantCount]);
 
+    useEffect(() => {
+        if (travelerType !== 'group' || !selectedDateSlots || selectedDateSlots <= 0) return
+
+        const currentTotal = adultCount + childCount + infantCount
+        if (currentTotal <= selectedDateSlots) return
+
+        let excess = currentTotal - selectedDateSlots
+        let nextInfant = infantCount
+        let nextChild = childCount
+        let nextAdult = adultCount
+
+        const infantReduction = Math.min(excess, nextInfant)
+        nextInfant -= infantReduction
+        excess -= infantReduction
+
+        const childReduction = Math.min(excess, nextChild)
+        nextChild -= childReduction
+        excess -= childReduction
+
+        const adultReduction = Math.min(excess, Math.max(0, nextAdult - 2))
+        nextAdult -= adultReduction
+
+        setInfantCount(nextInfant)
+        setChildCount(nextChild)
+        setAdultCount(nextAdult)
+    }, [selectedDateSlots, travelerType, adultCount, childCount, infantCount])
+
+    const handleTravelerCounterChange = (setter, currentValue, minValue) => {
+        setter(Math.max(minValue, currentValue - 1))
+    }
+
+    const handleTravelerIncrease = (setter, currentValue) => {
+        if (selectedDateSlots && selectedDateSlots > 0 && travelerType === 'group') {
+            const currentTotal = adultCount + childCount + infantCount
+            if (currentTotal >= selectedDateSlots) return
+        }
+
+        setter(currentValue + 1)
+    }
+
+    const totalTravelers = travelerType === 'solo'
+        ? 1
+        : Math.max(0, adultCount) + Math.max(0, childCount) + Math.max(0, infantCount)
+
+    const travelerSlotsRemaining = selectedDateSlots ? Math.max(selectedDateSlots - totalTravelers, 0) : null
+
 
     const onCancelModal = () => {
         setIsBookingSuccessOpen(false)
@@ -182,6 +230,9 @@ export default function PackageInternationalQuotation() {
 
         if (!totalTravelers || totalTravelers < 1) {
             newErrors.travelers = 'Please enter the number of travelers'
+        }
+        if (selectedDateSlots && totalTravelers > selectedDateSlots) {
+            newErrors.travelers = `The selected date only has ${selectedDateSlots} slot${selectedDateSlots === 1 ? '' : 's'} left.`
         }
         if (packageCategory !== 'Land Arrangement') {
             if (!preferredAirlines.trim()) newErrors.preferredAirlines = 'Please provide your preferred airlines';
@@ -279,248 +330,255 @@ export default function PackageInternationalQuotation() {
                             Back
                         </Button>
 
-
-                        <div className="quotation-header quotation-section">
-                            <div className="header-top-row">
-                                <div className="header-text">
-                                    <h2 className="quotation-section-title">Package Quotation</h2>
-                                    <p className="quotation-section-subtitle">Kindly input your preferrences and requests so that we can tailor your customized package.</p>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div className="package-info-display quotation-section">
-                            {images.length ? (
-                                <div className="package-image-grid">
-                                    {images.map((img, index) => (
-                                        <div key={`pkg-img-${index}`} className="package-image-card">
-                                            <img src={img} alt={`${packageName} ${index + 1}`} />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : null}
-
-                            <div className="info-main">
-                                <span className="info-tag">{packageType.toUpperCase()}</span>
-                                <h3>{packageName}</h3>
-                            </div>
-                            <p className="info-description">{packageDescription}</p>
-
-                            <div className="package-info-lists">
-                                <div className="info-list">
-                                    <h4 className="info-list-title">Inclusions</h4>
-                                    {inclusions.length ? (
-                                        <ul>
-                                            {inclusions.map((item, index) => (
-                                                <li key={`inc-${index}`}>{item}</li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="info-list-empty">No inclusions listed.</p>
-                                    )}
-                                </div>
-                                <div className="info-list">
-                                    <h4 className="info-list-title">Exclusions</h4>
-                                    {exclusions.length ? (
-                                        <ul>
-                                            {exclusions.map((item, index) => (
-                                                <li key={`exc-${index}`}>{item}</li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="info-list-empty">No exclusions listed.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="quotation-top-grid">
-                            <div className="quotation-left">
-                                <div className="package-type-selector quotation-section">
-
-                                    <label className="section-label" > <span className='packagequotation-steps'>1</span>Select Arrangement Type</label>
-                                    <div className="selection-cards">
-                                        <div
-                                            className={`selection-card ${packageCategory === 'All in Package' ? 'active' : ''}`}
-                                            onClick={() => setPackageCategory('All in Package')}
-                                        >
-                                            <div className="card-content">
-                                                <span className="card-title">All-in Package</span>
-                                                <p className="card-desc">Includes flights, hotel, and tours.</p>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            className={`selection-card ${packageCategory === 'Land Arrangement' ? 'active' : ''}`}
-                                            onClick={() => setPackageCategory('Land Arrangement')}
-                                        >
-                                            <div className="card-content">
-                                                <span className="card-title">Land Arrangement</span>
-                                                <p className="card-desc">Excludes flights. Best if you have your own tickets.</p>
-                                            </div>
-                                        </div>
+                        <div className="quotation-section">
+                            <div className="quotation-header">
+                                <div className="header-top-row">
+                                    <div className="header-text">
+                                        <h2 className="quotation-section-title">Package Quotation</h2>
+                                        <p className="quotation-section-subtitle">Kindly input your preferrences and requests so that we can tailor your customized package.</p>
                                     </div>
+                                </div>
 
-                                    <label className="section-label" style={{ marginTop: 16 }}> <span className='packagequotation-steps'>4</span>Select If "Solo Booking" or "Group Booking"</label>
-                                    <div className="selection-cards">
-                                        <div
-                                            className={`selection-card ${travelerType === 'solo' ? 'active' : ''}`}
-                                            onClick={() => setTravelerType('solo')}
-                                        >
-                                            <div className="card-content">
-                                                <span className="card-title">Solo</span>
-                                                <p className="card-desc">Note: If you are a solo traveler, an additional single supplement rate may apply.</p>
-                                            </div>
-                                        </div>
+                            </div>
 
-                                        <div
-                                            className={`selection-card ${travelerType === 'group' ? 'active' : ''}`}
-                                            onClick={() => setTravelerType('group')}
-                                        >
-                                            <div className="card-content">
-                                                <span className="card-title">Group</span>
-                                                <p className="card-desc">Note: Group bookings may have different pricing and availability. The maximum pax allowed per booking is 2 or more.</p>
+                            <div >
+                                {images.length ? (
+                                    <div className="package-image-grid">
+                                        {images.map((img, index) => (
+                                            <div key={`pkg-img-${index}`} className="package-image-card">
+                                                <img src={img} alt={`${packageName} ${index + 1}`} />
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
+                                ) : null}
 
-                                    {travelerType === 'group' && (
-                                        <div className="traveler-counters">
-                                            {[
-                                                { label: 'Adult', value: adultCount, setter: setAdultCount, min: 2 },
-                                                { label: 'Child', value: childCount, setter: setChildCount, min: 0 },
-                                                { label: 'Infant', value: infantCount, setter: setInfantCount, min: 0 }
-                                            ].map((row) => (
-                                                <div key={row.label} className="traveler-counter-row">
-                                                    <span className="traveler-counter-label">{row.label}</span>
-                                                    <div className="traveler-counter-controls">
-                                                        <Button
-                                                            size="small"
-                                                            className="traveler-counter-btn"
-                                                            onClick={() => row.setter(Math.max(row.min, row.value - 1))}
-                                                        >
-                                                            -
-                                                        </Button>
-                                                        <span className="traveler-counter-value">{row.value}</span>
-                                                        <Button
-                                                            size="small"
-                                                            className="traveler-counter-btn"
-                                                            onClick={() => row.setter(row.value + 1)}
-                                                        >
-                                                            +
-                                                        </Button>
-                                                    </div>
+                                <div className="info-main">
+                                    <span className="info-tag">{packageType.toUpperCase()}</span>
+                                    <h3 className="info-title">{packageName}</h3>
+                                </div>
+                                <p className="info-description">{packageDescription}</p>
+
+                                <div className="package-info-lists">
+                                    <div className="info-list">
+                                        <h4 className="info-list-title">Inclusions</h4>
+                                        {inclusions.length ? (
+                                            <ul>
+                                                {inclusions.map((item, index) => (
+                                                    <li key={`inc-${index}`}>{item}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="info-list-empty">No inclusions listed.</p>
+                                        )}
+                                    </div>
+                                    <div className="info-list">
+                                        <h4 className="info-list-title">Exclusions</h4>
+                                        {exclusions.length ? (
+                                            <ul>
+                                                {exclusions.map((item, index) => (
+                                                    <li key={`exc-${index}`}>{item}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="info-list-empty">No exclusions listed.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="quotation-top-grid">
+                                <div className="quotation-left">
+                                    <div className="package-type-selector">
+                                        <label className="section-label" > <span className='packagequotation-steps'>1</span>Select Arrangement Type</label>
+                                        <div className="selection-cards">
+                                            <div
+                                                className={`selection-card ${packageCategory === 'All in Package' ? 'active' : ''}`}
+                                                onClick={() => setPackageCategory('All in Package')}
+                                            >
+                                                <div className="card-content">
+                                                    <span className="card-title">All-in Package</span>
+                                                    <p className="card-desc">Includes flights, hotel, and tours.</p>
                                                 </div>
-                                            ))}
+                                            </div>
+
+                                            <div
+                                                className={`selection-card ${packageCategory === 'Land Arrangement' ? 'active' : ''}`}
+                                                onClick={() => setPackageCategory('Land Arrangement')}
+                                            >
+                                                <div className="card-content">
+                                                    <span className="card-title">Land Arrangement</span>
+                                                    <p className="card-desc">Excludes flights. Best if you have your own tickets.</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            </div>
 
-                            <div className="quotation-right">
-                                <div className="quotation-section">
-                                    <label className="section-label"> <span className='packagequotation-steps'>3</span>Fill up the required details below</label>
-                                    <div className="quotation-grid">
+                                        <label className="section-label" style={{ marginTop: 16 }}> <span className='packagequotation-steps'>4</span>Select If "Solo Booking" or "Group Booking"</label>
+                                        <div className="selection-cards">
+                                            <div
+                                                className={`selection-card ${travelerType === 'solo' ? 'active' : ''}`}
+                                                onClick={() => setTravelerType('solo')}
+                                            >
+                                                <div className="card-content">
+                                                    <span className="card-title">Solo</span>
+                                                    <p className="card-desc"> If you are a solo traveler, an additional single supplement rate may apply.</p>
+                                                </div>
+                                            </div>
 
-                                        {packageCategory === 'All in Package' && (
-                                            <div className="quotation-field">
-                                                <label htmlFor="quotation-airlines">Preferred Airlines <span style={{ color: 'red' }}>*</span></label>
-                                                <Select
-                                                    id="quotation-airlines"
-                                                    disabled={packageType === 'Land Arrangement'}
-                                                    placeholder={packageType === 'Land Arrangement' ? "Not applicable" : "Select preferred airline"}
-                                                    value={preferredAirlines || undefined}
-                                                    onChange={(value) => setPreferredAirlines(value)}
-                                                    className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
-                                                    options={airlines?.map((airline) => ({
-                                                        label: airline.name,
-                                                        value: airline.name
-                                                    }))}
-                                                />
-                                                <p className='package-quotation-error'>{error.preferredAirlines}</p>
-                                                <p className='quotation-airline-note'>Note: Airfare may increase from the usual inclusion in the package, if you choose an airline other than the fixed one.</p>
+                                            <div
+                                                className={`selection-card ${travelerType === 'group' ? 'active' : ''}`}
+                                                onClick={() => setTravelerType('group')}
+                                            >
+                                                <div className="card-content">
+                                                    <span className="card-title">Group</span>
+                                                    <p className="card-desc"> Group bookings may have different pricing and availability. The maximum pax allowed per booking is 2 or more.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {travelerType === 'group' && (
+                                            <div className="traveler-counters">
+                                                {[
+                                                    { label: 'Adult', value: adultCount, setter: setAdultCount, min: 2 },
+                                                    { label: 'Child', value: childCount, setter: setChildCount, min: 0 },
+                                                    { label: 'Infant', value: infantCount, setter: setInfantCount, min: 0 }
+                                                ].map((row) => (
+                                                    <div key={row.label} className="traveler-counter-row">
+                                                        <span className="traveler-counter-label">{row.label}</span>
+                                                        <div className="traveler-counter-controls">
+                                                            <Button
+                                                                size="small"
+                                                                className="traveler-counter-btn"
+                                                                onClick={() => handleTravelerCounterChange(row.setter, row.value, row.min)}
+                                                            >
+                                                                -
+                                                            </Button>
+                                                            <span className="traveler-counter-value">{row.value}</span>
+                                                            <Button
+                                                                size="small"
+                                                                className="traveler-counter-btn"
+                                                                onClick={() => handleTravelerIncrease(row.setter, row.value)}
+                                                                disabled={Boolean(travelerSlotsRemaining === 0)}
+                                                            >
+                                                                +
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+
+                                <div className="quotation-right">
+                                    <div>
+                                        <label className="section-label"> <span className='packagequotation-steps'>2</span>Fill up the required details below</label>
+                                        <div className="quotation-grid">
+
+                                            {packageCategory === 'All in Package' && (
+                                                <div className="quotation-field">
+                                                    <label htmlFor="quotation-airlines">Preferred Airlines <span style={{ color: '#e72323' }}>*</span></label>
+                                                    <Select
+                                                        id="quotation-airlines"
+                                                        disabled={packageType === 'Land Arrangement'}
+                                                        placeholder={packageType === 'Land Arrangement' ? "Not applicable" : "Select preferred airline"}
+                                                        value={preferredAirlines || undefined}
+                                                        onChange={(value) => setPreferredAirlines(value)}
+                                                        className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
+                                                        options={airlines?.map((airline) => ({
+                                                            label: airline.name,
+                                                            value: airline.name
+                                                        }))}
+                                                    />
+                                                    <p className='package-quotation-error'>{error.preferredAirlines}</p>
+                                                    <p className='quotation-airline-note'>Note: Airfare may increase from the usual inclusion in the package, if you choose an airline other than the fixed one.</p>
+                                                </div>
+                                            )}
 
 
-                                        <div className="quotation-field">
-                                            <label htmlFor="quotation-hotels">Preferred Hotels <span style={{ color: 'red' }}>*</span></label>
-                                            <Select
-                                                id="quotation-hotels"
-                                                placeholder="Select preferred hotel"
-                                                value={preferredHotels || undefined}
-                                                onChange={(value) => setPreferredHotels(value)}
-                                                className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
-                                                options={[
-                                                    {
-                                                        label: '5 Star Hotels',
-                                                        options: hotels.filter(h => h.stars === 5).map(h => ({ label: h.name, value: h.name }))
-                                                    },
-                                                    {
-                                                        label: '4 Star Hotels',
-                                                        options: hotels.filter(h => h.stars === 4).map(h => ({ label: h.name, value: h.name }))
-                                                    },
-                                                    {
-                                                        label: '3 Star Hotels',
-                                                        options: hotels.filter(h => h.stars === 3).map(h => ({ label: h.name, value: h.name }))
-                                                    }
-                                                ].filter(group => group.options.length > 0)}
-                                            />
-                                            <p className='package-quotation-error'>{error.preferredHotels}</p>
-                                            <p className='quotation-hotel-note'>Note: Hotel rates may increase from the usual inclusion in the package, if you choose a hotel other than the fixed one. Rates may also increase or decrease depending on the stars of the chosen hotel.</p>
-                                        </div>
-
-                                        <div className="quotation-field">
-                                            <label htmlFor="quotation-dates">Preferred Travel Dates <span style={{ color: 'red' }}>*</span></label>
-                                            <Select
-                                                id="quotation-dates"
-                                                placeholder="Select preferred dates"
-                                                value={preferredDates || undefined}
-                                                onChange={(value) => setPreferredDates(value)}
-                                                className={`quotation-input ${error.preferredDates ? 'input-error' : ''}`}
-                                                options={dateRanges
-                                                    .filter((range) => dayjs(range.startdaterange).isAfter(today, 'day'))
-                                                    .map((range) => {
-                                                        const rangeString = `${formatDate(range.startdaterange)} - ${formatDate(range.enddaterange)}`;
-                                                        const hasSlots = Number(range.slots) > 0;
-                                                        return {
-                                                            label: `${rangeString} (Slots: ${range.slots})`,
-                                                            value: rangeString,
-                                                            disabled: !hasSlots
-                                                        };
-                                                    })}
-                                            />
-                                            <p className='package-quotation-error'>{error.preferredDates}</p>
-                                        </div>
-
-                                        <div className="quotation-field quotation-budget">
-                                            <label>Budget Range (per pax) <span style={{ color: 'red' }}>*</span></label>
-                                            <div className="quotation-budget-values">
-                                                <span>₱ {budgetRange[0].toLocaleString()}</span>
-                                                <span>₱ {budgetRange[1].toLocaleString()}</span>
+                                            <div className="quotation-field">
+                                                <label htmlFor="quotation-hotels">Preferred Hotels <span style={{ color: '#e72323' }}>*</span></label>
+                                                <Select
+                                                    id="quotation-hotels"
+                                                    placeholder="Select preferred hotel"
+                                                    value={preferredHotels || undefined}
+                                                    onChange={(value) => setPreferredHotels(value)}
+                                                    className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
+                                                    options={[
+                                                        {
+                                                            label: '5 Star Hotels',
+                                                            options: hotels.filter(h => h.stars === 5).map(h => ({ label: h.name, value: h.name }))
+                                                        },
+                                                        {
+                                                            label: '4 Star Hotels',
+                                                            options: hotels.filter(h => h.stars === 4).map(h => ({ label: h.name, value: h.name }))
+                                                        },
+                                                        {
+                                                            label: '3 Star Hotels',
+                                                            options: hotels.filter(h => h.stars === 3).map(h => ({ label: h.name, value: h.name }))
+                                                        }
+                                                    ].filter(group => group.options.length > 0)}
+                                                />
+                                                <p className='package-quotation-error'>{error.preferredHotels}</p>
+                                                <p className='quotation-hotel-note'>Note: Hotel rates may increase from the usual inclusion in the package, if you choose a hotel other than the fixed one. Rates may also increase or decrease depending on the stars of the chosen hotel.</p>
                                             </div>
-                                            <Slider
-                                                range
-                                                min={minBudget}
-                                                max={maxBudget}
-                                                step={500}
-                                                value={budgetRange}
-                                                onChange={setBudgetRange}
-                                                className={`quotation-slider ${error.budgetRange ? 'input-error' : ''}`}
-                                                tooltip={{ formatter: (value) => `₱ ${value}` }}
-                                            />
-                                            <p className='package-quotation-error'>{error.budgetRange}</p>
+
+                                            <div className="quotation-field">
+                                                <label htmlFor="quotation-dates">Preferred Travel Dates <span style={{ color: '#e72323' }}>*</span></label>
+                                                <Select
+                                                    id="quotation-dates"
+                                                    placeholder="Select preferred dates"
+                                                    value={preferredDates || undefined}
+                                                    onChange={(value) => {
+                                                        setPreferredDates(value)
+                                                        const selectedRange = dateRanges.find((range) => {
+                                                            const rangeString = `${formatDate(range.startdaterange)} - ${formatDate(range.enddaterange)}`
+                                                            return rangeString === value
+                                                        })
+                                                        setSelectedDateSlots(Number(selectedRange?.slots) || 0)
+                                                    }}
+                                                    className={`quotation-input ${error.preferredDates ? 'input-error' : ''}`}
+                                                    options={dateRanges
+                                                        .filter((range) => dayjs(range.startdaterange).isAfter(today, 'day'))
+                                                        .map((range) => {
+                                                            const rangeString = `${formatDate(range.startdaterange)} - ${formatDate(range.enddaterange)}`;
+                                                            const hasSlots = Number(range.slots) > 0;
+                                                            return {
+                                                                label: `${rangeString} (Slots: ${range.slots})`,
+                                                                value: rangeString,
+                                                                disabled: !hasSlots
+                                                            };
+                                                        })}
+                                                />
+                                                <p className='package-quotation-error'>{error.preferredDates}</p>
+                                            </div>
+
+                                            <div className="quotation-field quotation-budget">
+                                                <label>Budget Range (per pax) <span style={{ color: '#e72323' }}>*</span></label>
+                                                <div className="quotation-budget-values">
+                                                    <span>₱ {budgetRange[0].toLocaleString()}</span>
+                                                    <span>₱ {budgetRange[1].toLocaleString()}</span>
+                                                </div>
+                                                <Slider
+                                                    range
+                                                    min={minBudget}
+                                                    max={maxBudget}
+                                                    step={500}
+                                                    value={budgetRange}
+                                                    onChange={setBudgetRange}
+                                                    className={`quotation-slider ${error.budgetRange ? 'input-error' : ''}`}
+                                                    tooltip={{ formatter: (value) => `₱ ${value}` }}
+                                                />
+                                                <p className='package-quotation-error'>{error.budgetRange}</p>
+                                            </div>
                                         </div>
 
                                         {/* Land Arrangement Flight Details */}
                                         {packageCategory === 'Land Arrangement' && (
-                                            <div className="quotation-flight-details quotation-section">
+                                            <div className="quotation-flight-details">
                                                 <label className="section-label" style={{ width: 700 }}> <span className='packagequotation-steps'>4</span>If you are booking for Land Arrangement, Fill up the required details below</label>
                                                 <h3>Flight Details</h3>
-
                                                 <div className="quotation-field">
-                                                    <label htmlFor="flight-airline">Airline <span style={{ color: 'red' }}>*</span></label>
+                                                    <label htmlFor="flight-airline">Airline <span style={{ color: '#e72323' }}>*</span></label>
                                                     <Input
                                                         id="flight-airline"
                                                         placeholder="Enter airline name"
@@ -532,7 +590,7 @@ export default function PackageInternationalQuotation() {
                                                 </div>
 
                                                 <div className="quotation-field">
-                                                    <label htmlFor="flight-date">Flight Date <span style={{ color: 'red' }}>*</span></label>
+                                                    <label htmlFor="flight-date">Flight Date <span style={{ color: '#e72323' }}>*</span></label>
                                                     <DatePicker
                                                         id="flight-date"
                                                         placeholder="Select flight date"
@@ -549,7 +607,7 @@ export default function PackageInternationalQuotation() {
                                                 </div>
 
                                                 <div className="quotation-field">
-                                                    <label htmlFor="flight-time">Flight Time <span style={{ color: 'red' }}>*</span></label>
+                                                    <label htmlFor="flight-time">Flight Time <span style={{ color: '#e72323' }}>*</span></label>
                                                     <TimePicker
                                                         id="flight-time"
                                                         placeholder="Select flight time"
@@ -563,7 +621,7 @@ export default function PackageInternationalQuotation() {
                                                 </div>
 
                                                 <div className='flightdetails-right'>
-                                                    <p className='quotation-flight-note'>
+                                                    <p className='quotation-flight-note' >
                                                         Note: If you choose the "Land Arrangement" option, please provide your flight details.
                                                         This will help us coordinate your airport transfers and ensure a seamless experience.
                                                         If you haven't booked your flights yet, please provide your estimated flight schedule.
@@ -574,91 +632,98 @@ export default function PackageInternationalQuotation() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="quotation-section">
-                            <div className="quotation-itinerary">
-                                {fixedItineraryEntries.length ? (
-                                    <div className="quotation-fixed-itinerary">
-                                        <h3>Fixed Itinerary</h3>
-                                        <div className="quotation-fixed-list">
-                                            {fixedItineraryEntries.map((entry) => (
-                                                <div key={entry.label} className="quotation-fixed-day">
-                                                    <h4>{entry.label}</h4>
-                                                    <ul>
-                                                        {(entry.items || []).map((item, index) => (
-                                                            <li key={`${entry.label}-${index}`}>
-                                                                {typeof item === 'string' ? (
-                                                                    item
-                                                                ) : (
-                                                                    <>
-                                                                        <div>{item.activity}</div>
+                            <div style={{ marginTop: 40 }}>
+                                <div className="quotation-itinerary">
+                                    {fixedItineraryEntries.length ? (
+                                        <div>
+                                            <h2 className="quotation-section-title">Fixed Itinerary</h2>
+                                            <p className="quotation-section-subtitle">The following is a list of fixed activities for your trip.</p>
+                                            <div className="quotation-fixed-list">
+                                                {fixedItineraryEntries.map((entry) => (
+                                                    <div key={entry.label} className="quotation-fixed-day">
+                                                        <h4>{entry.label}</h4>
+                                                        <ul>
+                                                            {(entry.items || []).map((item, index) => (
+                                                                <li key={`${entry.label}-${index}`}>
+                                                                    {typeof item === 'string' ? (
+                                                                        item
+                                                                    ) : (
+                                                                        <>
+                                                                            <div>{item.activity}</div>
 
-                                                                        {item.isOptional && item.optionalActivity && (
-                                                                            <div>
-                                                                                Optional: {item.optionalActivity}
-                                                                                {item.optionalPrice && ` - ₱${item.optionalPrice.toLocaleString()}`}
-                                                                            </div>
-                                                                        )}
-                                                                    </>
-                                                                )}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                                                            {item.isOptional && item.optionalActivity && (
+                                                                                <div>
+                                                                                    Optional: {item.optionalActivity}
+                                                                                    {item.optionalPrice && ` - ₱${item.optionalPrice.toLocaleString()}`}
+                                                                                </div>
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                    <div style={{ marginTop: 30 }}>
+                                        <label className="section-label" style={{ width: 700 }}> <span className='packagequotation-steps'>5</span>Provide comments or details about the itinerary for possible changes</label>
+                                        <h2 className='quotation-section-title'>Itinerary Notes</h2>
+                                        <p className="quotation-section-subtitle">Provide any additional information or modifications you would like to make to the itinerary.</p>
+                                        <div className="quotation-itinerary-grid">
+                                            {itineraryLabels.map((label, index) => (
+                                                <div key={`${label}-${index}`} className="quotation-field">
+                                                    <label htmlFor={`quotation-itinerary-${index}`}>{label}</label>
+                                                    <Input.TextArea
+                                                        style={{ resize: 'none' }}
+                                                        maxLength={200}
+                                                        id={`quotation-itinerary-${index}`}
+                                                        rows={3}
+                                                        placeholder={`Notes for ${label.toLowerCase()}. Type "NONE" if no changes`}
+                                                        value={itineraryNotes[index]}
+                                                        onChange={(e) => {
+                                                            const updated = [...itineraryNotes]
+                                                            updated[index] = e.target.value
+                                                            setItineraryNotes(updated)
+                                                        }}
+                                                        className={`quotation-input ${error.itineraryNotes ? 'input-error' : ''}`}
+                                                        required
+                                                    />
+                                                    <p className='package-quotation-error'>{error.itineraryNotes}</p>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                ) : null}
-                                <label className="section-label" style={{ width: 700 }}> <span className='packagequotation-steps'>5</span>Provide comments or details about the itinerary for possible changes</label>
-                                <h3>Itinerary Notes</h3>
-                                <div className="quotation-itinerary-grid">
-                                    {itineraryLabels.map((label, index) => (
-                                        <div key={`${label}-${index}`} className="quotation-field">
-                                            <label htmlFor={`quotation-itinerary-${index}`}>{label}</label>
-                                            <Input.TextArea
-                                                maxLength={200}
-                                                id={`quotation-itinerary-${index}`}
-                                                rows={3}
-                                                placeholder={`Notes for ${label.toLowerCase()}. Type "NONE" if no changes`}
-                                                value={itineraryNotes[index]}
-                                                onChange={(e) => {
-                                                    const updated = [...itineraryNotes]
-                                                    updated[index] = e.target.value
-                                                    setItineraryNotes(updated)
-                                                }}
-                                                className={`quotation-input ${error.itineraryNotes ? 'input-error' : ''}`}
-                                                required
-                                            />
-                                            <p className='package-quotation-error'>{error.itineraryNotes}</p>
-                                        </div>
-                                    ))}
+
+                                    <p className='quotation-itinerary-note'>Note: If you wish to not have any changes in the following Itinerary, kindly type "NONE" in the fields of the Itinerary notes.</p>
+                                </div>
+                            </div>
+
+                            <div >
+                                <div className="quotation-field">
+                                    <label htmlFor="quotation-comments">Additional Comments</label>
+                                    <Input.TextArea
+                                        style={{ resize: 'none' }}
+                                        maxLength={200}
+                                        id="quotation-comments"
+                                        rows={4}
+                                        placeholder="Anything else we should know?"
+                                        value={additionalComments}
+                                        onChange={(e) => setAdditionalComments(e.target.value)}
+                                        className="quotation-input"
+                                    />
                                 </div>
 
-                                <p className='quotation-itinerary-note'>Note: If you wish to not have any changes in the following Itinerary, kindly type "NONE" in the fields of the Itinerary notes.</p>
+                                <div className="quotation-actions">
+                                    <Button type="primary" className="quotation-submit" onClick={handleSubmit}>
+                                        Submit Request
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="quotation-section">
-                            <div className="quotation-field">
-                                <label htmlFor="quotation-comments">Additional Comments</label>
-                                <Input.TextArea
-                                    maxLength={200}
-                                    id="quotation-comments"
-                                    rows={4}
-                                    placeholder="Anything else we should know?"
-                                    value={additionalComments}
-                                    onChange={(e) => setAdditionalComments(e.target.value)}
-                                    className="quotation-input"
-                                />
-                            </div>
-
-                            <div className="quotation-actions">
-                                <Button type="primary" className="quotation-submit" onClick={handleSubmit}>
-                                    Submit Request
-                                </Button>
-                            </div>
-                        </div>
                     </div>
 
                     <Modal

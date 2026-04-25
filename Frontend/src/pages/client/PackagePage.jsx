@@ -62,6 +62,9 @@ export default function PackagePage() {
     const [packageLoading, setPackageLoading] = useState(true)
     const [packageError, setPackageError] = useState('')
 
+    const currentAuthUserId = auth?.id || auth?._id || null
+    const currentAuthUsername = auth?.username ? String(auth.username).trim().toLowerCase() : null
+
     //RESET ALL BOOKING FLOW STATES WHEN USER CANCELS OR COMPLETES BOOKING TO START FRESH ON NEXT BOOKING ATTEMPT----------------------------
     const resetBookingFlow = () => {
         setSelectedDate(null)
@@ -114,7 +117,7 @@ export default function PackagePage() {
                 const wishlist = response?.wishlist || []
                 const ids = new Set(
                     wishlist
-                        .map((entry) => entry?.id)
+                        .map((entry) => entry?.packageId?._id || entry?.packageId || entry?.id)
                         .filter(Boolean)
                         .map((id) => String(id))
                 )
@@ -176,11 +179,19 @@ export default function PackagePage() {
     const userReview = useMemo(() => {
         if (!auth) return null
 
-        const currentUserId = auth?.id
         return reviews.find(
-            review => String(review.userId) === String(currentUserId)
+            (review) => {
+                const sameUserId = currentAuthUserId
+                    ? String(review.userId) === String(currentAuthUserId)
+                    : false
+
+                if (sameUserId) return true
+
+                if (!currentAuthUsername) return false
+                return String(review.name || '').trim().toLowerCase() === currentAuthUsername
+            }
         )
-    }, [reviews, auth])
+    }, [reviews, auth, currentAuthUserId, currentAuthUsername])
 
     //ITINERARY CONTENT ------------------------------------------------
     const itineraryContent = useMemo(() => {
@@ -342,7 +353,13 @@ export default function PackagePage() {
         packageChildRate: packageData?.packageChildRate + selectedDateRate || 0,
         packageInfantRate: packageData?.packageInfantRate + selectedDateRate || 0,
         packageDiscountPercent: packageData?.packageDiscountPercent || 0,
-        packageDeposit: packageData?.packageDeposit || 0,
+        packageDeposit: (() => {
+            const baseDeposit = Number(packageData?.packageDeposit || 0)
+            const discountPercent = Number(packageData?.packageDiscountPercent || 0)
+            return discountPercent > 0
+                ? baseDeposit * (1 - discountPercent / 100)
+                : baseDeposit
+        })(),
         packageType: packageData?.packageType || 'fixed',
         travelers: travelerSummary,
         travelerCount: travelerCounts,
@@ -487,9 +504,13 @@ export default function PackagePage() {
     //DERIVE VARIOUS DATA POINTS FROM PACKAGE DATA FOR DISPLAY AND LOGIC ------------------------------------------------
     const packageDiscountPercent = Number(packageData?.packageDiscountPercent || 0)
     const basePackagePricePerPax = Number(packageData?.packagePricePerPax || 0)
+    const basePackageDeposit = Number(packageData?.packageDeposit || 0)
     const discountedPackagePricePerPax = packageDiscountPercent > 0
         ? basePackagePricePerPax * (1 - packageDiscountPercent / 100)
         : basePackagePricePerPax
+    const discountedPackageDeposit = packageDiscountPercent > 0
+        ? basePackageDeposit * (1 - packageDiscountPercent / 100)
+        : basePackageDeposit
     const isWishlisted = Boolean(resolvedPackageItem && wishlistedIds.has(String(resolvedPackageItem)))
     const hasUserReview = Boolean(userReview)
     const packageLocation = packageData?.packageDestination || packageData?.packageLocation || packageData?.packageCountry || packageData?.packageOrigin
@@ -617,7 +638,21 @@ export default function PackagePage() {
                                         </div>
                                         <div className="package-detail-item">
                                             <span>Deposit</span>
-                                            <strong>₱{Number(packageData?.packageDeposit || 0).toLocaleString()}</strong>
+                                            <strong>
+                                                {packageDiscountPercent > 0 && (
+                                                    <span
+                                                        style={{
+                                                            textDecoration: 'line-through',
+                                                            color: '#9aa0a6',
+                                                            fontSize: '0.85rem',
+                                                            marginRight: 8
+                                                        }}
+                                                    >
+                                                        ₱{basePackageDeposit.toLocaleString()}
+                                                    </span>
+                                                )}
+                                                <span>₱{discountedPackageDeposit.toLocaleString()}</span>
+                                            </strong>
                                         </div>
                                         <div className="package-detail-item">
                                             <span>Visa</span>
@@ -694,7 +729,14 @@ export default function PackagePage() {
                                             <div className="package-review-list">
                                                 {reviews.length ? (
                                                     reviews.map((review) => {
-                                                        const isUserReview = auth && String(review.userId) === String(auth?.id);
+                                                        const reviewOwnerId = review?.userId ? String(review.userId) : null
+                                                        const reviewOwnerName = String(review?.name || '').trim().toLowerCase()
+                                                        const isUserReview = Boolean(
+                                                            auth && (
+                                                                (currentAuthUserId && reviewOwnerId === String(currentAuthUserId)) ||
+                                                                (currentAuthUsername && reviewOwnerName === currentAuthUsername)
+                                                            )
+                                                        )
 
                                                         return (
                                                             <div key={review.id} className="package-review-card">
@@ -836,7 +878,7 @@ export default function PackagePage() {
                                                     <span
                                                         style={{
                                                             marginLeft: 8,
-                                                            color: '#cf1322',
+                                                            color: '#e72323',
                                                             fontWeight: 600,
                                                             fontSize: '0.85rem'
                                                         }}
@@ -852,7 +894,21 @@ export default function PackagePage() {
                                                 </div>
                                                 <div className="package-side-row">
                                                     <span>Deposit</span>
-                                                    <strong>₱{Number(packageData?.packageDeposit || 0).toLocaleString()}</strong>
+                                                    <strong>
+                                                        {packageDiscountPercent > 0 && (
+                                                            <span
+                                                                style={{
+                                                                    textDecoration: 'line-through',
+                                                                    color: '#9aa0a6',
+                                                                    fontSize: '0.85rem',
+                                                                    marginRight: 8
+                                                                }}
+                                                            >
+                                                                ₱{basePackageDeposit.toLocaleString()}
+                                                            </span>
+                                                        )}
+                                                        <span>₱{discountedPackageDeposit.toLocaleString()}</span>
+                                                    </strong>
                                                 </div>
                                             </div>
                                             <Button disabled={(() => {
@@ -862,6 +918,24 @@ export default function PackagePage() {
                                             })()} type='primary' className="package-availability-button" onClick={handleBookingProcess}>
                                                 Check Availability
                                             </Button>
+
+                                            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #eee' }}>
+                                                <p className="package-price-label">CANCELLATION POLICY</p>
+                                                <p style={{ fontSize: '13px', color: '#555', textAlign: 'justify' }}>
+                                                    All tour packages will not be converted to any travel funds in case the tour will not push through whether it
+                                                    be government mandated, due to natural calamities, etc. Tour package purchase is non-refundable , non-reroutable, non-rebookable, and non-transferable
+                                                    unless otherwise stated and is due to natural calamities and force majeur that is beyond our control otherwise NON-REFUNDABLE.
+                                                </p>
+                                            </div>
+
+
+
+
+
+
+
+
+
                                         </div>
                                     </>
                                 )}

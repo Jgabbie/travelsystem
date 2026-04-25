@@ -930,7 +930,7 @@ export default function BookingProcess() {
                                 <div className="solo-group-image solo" />
                                 <h3>Single Supplement / Solo Booking</h3>
                                 <p className="booking-summary-overview-text">Book for yourself with a single traveler setup.</p>
-                                <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
+                                <p style={{ fontStyle: "italic", color: "#e72323", fontWeight: "500", fontSize: "14px" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
                             </button>
 
                             <button
@@ -945,7 +945,7 @@ export default function BookingProcess() {
                                 <div className="solo-group-image group" />
                                 <h3>Grouped Booking</h3>
                                 <p className="booking-summary-overview-text">Plan a trip for a group with shared activities.</p>
-                                <p style={{ color: "#FF4D4F", fontWeight: "500" }}>Note: Group booking should have a minimum of 2 travelers.</p>
+                                <p style={{ fontStyle: "italic", color: "#e72323", fontWeight: "500", fontSize: "14px" }}>Note: Group booking should have a minimum of 2 travelers.</p>
                             </button>
                         </div>
                     </div>
@@ -1217,15 +1217,15 @@ export default function BookingProcess() {
                                                     const travelerType = travelerTypeLabels[index] || 'Adult'
                                                     const isMinorTraveler = isMinorTravelerType(travelerType)
                                                     return (
-                                                <Select
-                                                    style={{ height: 40 }}
-                                                    size="small"
-                                                    placeholder="Room type"
-                                                    value={isMinorTraveler ? 'N/A' : form.getFieldValue(['travelers', index, 'roomType'])}
-                                                    onChange={(value) => updateTravelerField(index, 'roomType', value)}
-                                                    options={isMinorTraveler ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
-                                                    disabled={bookingType === 'Solo Booking' || isMinorTraveler}
-                                                />
+                                                        <Select
+                                                            style={{ height: 40 }}
+                                                            size="small"
+                                                            placeholder="Room type"
+                                                            value={isMinorTraveler ? 'N/A' : form.getFieldValue(['travelers', index, 'roomType'])}
+                                                            onChange={(value) => updateTravelerField(index, 'roomType', value)}
+                                                            options={isMinorTraveler ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
+                                                            disabled={bookingType === 'Solo Booking' || isMinorTraveler}
+                                                        />
                                                     )
                                                 })()}
                                             </div>

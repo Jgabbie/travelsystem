@@ -214,7 +214,8 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                         <p style={{ fontSize: '9px', lineHeight: '1.2' }}>
                             Note: Purchasing of travel insurance from our Travel & Tours company does not hold us liable for any claims and
                             anything about the process of claims from the insurance company. We can only provide the documents from our suppliers,
-                            operators, and airlines' end if necessary.
+                            operators, and airlines' end if necessary. Kindly email us immediately at <span style={{ color: '#305797', fontWeight: 'bold' }}>info1@mrctravel.com</span> if you plan to purchase travel
+                            insurance from us.
                         </p>
 
                         <Row align="middle" style={{ marginBottom: '5px' }}>
@@ -246,7 +247,7 @@ export default function BookingRegistrationDiet({ form, onValuesChange, summary 
                                 If YES, please indicate details:
                             </Col>
                             <Col span={16} style={{ border: '1px solid #000', borderLeft: 'none', padding: '5px', fontSize: '9px', fontStyle: 'italic' }}>
-                                Please check the conditions and coverage carefully and send us a copy of the policy so we can review as well.
+                                Please check the conditions and coverage carefully and send us a copy of the policy to our email <span style={{ color: '#305797', fontWeight: 'bold' }}>info1@mrctravel.com</span> so we can review as well.
                             </Col>
                         </Row>
                         <Row>

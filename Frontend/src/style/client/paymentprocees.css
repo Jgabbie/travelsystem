@@ -21,13 +21,13 @@
 /* PAGE CONTAINER AND WHOLE PAGE CSS */
 .payment-process-container {
     padding: 40px;
-    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .payment-process-backbutton {
     display: flex;
     justify-content: flex-start;
-    margin: 40px 40px;
+    margin: 40px 0;
 }
 
 
@@ -44,10 +44,21 @@
     margin: 0;
 }
 
+.payment-top-column {
+    min-width: 0;
+}
+
+.payment-mode-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
 .payment-section {
     border-radius: 24px;
     border: 1px solid #ffffff;
     box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+    background: #ffffff;
 }
 
 .payment-section-header {
@@ -62,7 +73,7 @@
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
     color: #1f2a44;
-    margin: 0;
+    margin-bottom: 5px;
 }
 
 .payment-section-subtitle {
@@ -71,6 +82,8 @@
     font-size: 14px;
     max-width: 520px;
 }
+
+.display-invoice-wrapper {}
 
 .payment-section .display-invoice-card,
 .payment-section .payment-methods-wrapper,
@@ -98,10 +111,9 @@
 
 .payment-section .payment-methods-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
     align-items: stretch;
-    padding: 20px;
 }
 
 .payment-methods-container.payment-section {
@@ -109,11 +121,19 @@
 }
 
 .payment-mode-container.payment-section {
-    min-height: 925px;
+    padding-top: 40px;
+    margin: 40px;
+    border-radius: 4px;
+    background: #ffffff;
+    border: 2px solid #d5d8da;
 }
 
 .pdf-viewer-wrapper {
     width: 100%;
+}
+
+.payment-methods {
+    padding: 40px;
 }
 
 .payment-section .payment-methods-title,
@@ -130,6 +150,7 @@
     flex-direction: column;
     justify-content: flex-start;
     height: 100%;
+    width: 100%;
     text-align: left;
 }
 
@@ -149,7 +170,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 0;
-    borderBottom: 1px dashed #e6eaf4;
+    border-bottom: 1px dashed #e6eaf4;
 }
 
 .payment-schedule-label {
@@ -170,9 +191,10 @@
 }
 
 .payment-schedule-note {
+    font-style: italic;
     margin-top: 12px;
     font-size: 12px;
-    color: #8a4b1b;
+    color: #e72323;
 }
 
 

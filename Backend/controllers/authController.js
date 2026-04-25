@@ -4,6 +4,13 @@ const jwt = require("jsonwebtoken")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
 const connectToDatabase = require('../utils/mongodb');
+const {
+    clearAuthCookies,
+    setAccessTokenCookie,
+    setRefreshTokenCookie,
+    IDLE_LOGOUT_MESSAGE,
+    isSessionIdleExpired,
+} = require('../utils/sessionAuth');
 
 
 //signup
@@ -130,21 +137,11 @@ const loginUser = async (req, res) => {
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
 
         user.refreshToken = refreshToken
+        user.lastActivityAt = Date.now()
         await user.save()
 
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            maxAge: 2 * 60 * 60 * 1000
-        })
-
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        })
+        setAccessTokenCookie(res, accessToken)
+        setRefreshTokenCookie(res, refreshToken)
 
         // Check role to determine action name
         //LOG SUCCESSFUL LOGIN
@@ -179,16 +176,22 @@ const refreshToken = async (req, res) => {
             return res.status(403).json({ message: "Invalid refresh token" });
         }
 
+        if (isSessionIdleExpired(user.lastActivityAt)) {
+            user.refreshToken = ''
+            user.lastActivityAt = 0
+            await user.save()
+            clearAuthCookies(res)
+            return res.status(401).json({ message: IDLE_LOGOUT_MESSAGE, idleLogout: true })
+        }
+
         const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '2h' });
 
-        res.cookie('accessToken', newAccessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            maxAge: 2 * 60 * 60 * 1000
-        });
+        setAccessTokenCookie(res, newAccessToken);
 
-        res.status(200).json({ message: "Access token refreshed" });
+        user.lastActivityAt = Date.now()
+        await user.save()
+
+        res.status(200).json({ message: "Access token refreshed", accessToken: newAccessToken });
     } catch (err) {
         res.status(500).json({ message: "Refresh Token Function failed " + err.message });
     }
@@ -235,11 +238,11 @@ const logoutUser = async (req, res) => {
         const user = await UserModel.findOne({ refreshToken })
         if (user) {
             user.refreshToken = ''
+            user.lastActivityAt = 0
             await user.save()
         }
 
-        res.clearCookie('accessToken', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
-        res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
+        clearAuthCookies(res)
         res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'Strict', path: '/' })
 
 
@@ -375,21 +378,11 @@ const verifyEmail = async (req, res) => {
         const refreshToken = jwt.sign({ id: userName._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
 
         userName.refreshToken = refreshToken
+        userName.lastActivityAt = Date.now()
         await userName.save()
 
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            maxAge: 2 * 60 * 60 * 1000
-        })
-
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'Strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        })
+        setAccessTokenCookie(res, accessToken)
+        setRefreshTokenCookie(res, refreshToken)
 
 
         // Check role to determine action name

@@ -17,5 +17,6 @@ router.post('/send-reset-otp', authController.sendResetOtp)
 router.post('/check-reset-otp', authController.checkResetOtp)
 router.post('/reset-password', authController.resetPassword)
 router.post('/refresh-token', authController.refreshToken)
+router.get('/refresh', authController.refreshToken)
 
 module.exports = router;

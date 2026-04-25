@@ -1,5 +1,5 @@
 .userapplications-page {
-    min-height: 100vh;
+    min-height: 80vh;
     display: flex;
     flex-direction: column;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -7,7 +7,9 @@
 
 .userapplications-container {
     flex: 1;
-    padding: 60px 32px 40px;
+    padding-top: 40px;
+    padding-left: 24px;
+    padding-right: 24px;
     max-width: 1320px;
     width: 100%;
     margin: 0 auto;
@@ -16,7 +18,8 @@
 .userapplications-header {
     margin-bottom: 24px;
     background: #ffffff;
-    border-radius: 12px;
+    border: 2px solid #d5d8da;
+    border-radius: 8px;
     padding: 20px 24px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -25,7 +28,8 @@
     margin: 0 0 6px;
     font-family: "Montserrat", sans-serif;
     font-size: 26px;
-    color: #305797;
+    font-weight: 600;
+    color: #1f2a44;
 }
 
 .userapplications-header p {
@@ -36,7 +40,8 @@
 
 .userapplications-table {
     background: #ffffff;
-    border-radius: 12px;
+    border: 2px solid #d5d8da;
+    border-radius: 8px;
     padding: 16px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
@@ -44,12 +49,14 @@
 .userapplications-table .ant-table-thead>tr>th {
     background: #eef2f7 !important;
     color: #305797 !important;
+    font-size: 12px;
     font-family: "Montserrat", sans-serif;
     font-weight: 600;
 }
 
 .userapplications-table .ant-table-tbody>tr>td {
     font-family: "Roboto", sans-serif;
+    font-size: 12px;
     color: #2f3a4a;
 }
 

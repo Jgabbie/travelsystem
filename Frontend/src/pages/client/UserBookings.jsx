@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, ConfigProvider, Spin } from 'antd'
-import { UploadOutlined, SearchOutlined, EyeOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { UploadOutlined, SearchOutlined, EyeOutlined, CloseCircleOutlined, CheckCircleFilled } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/userbookings.css'
@@ -13,7 +13,9 @@ export default function UserBookings() {
     const [loading, setLoading] = useState(false)
     const [loadingCancel, setLoadingCancel] = useState(false)
 
+    const [policyModalOpen, setPolicyModalOpen] = useState(false)
     const [cancelModalOpen, setCancelModalOpen] = useState(false)
+    const [cancellationRequestedModalOpen, setCancellationRequestedModalOpen] = useState(false)
     const [cancelReason, setCancelReason] = useState('')
     const [cancelOtherReason, setCancelOtherReason] = useState('')
     const [cancelTargetKey, setCancelTargetKey] = useState(null)
@@ -86,12 +88,23 @@ export default function UserBookings() {
         navigate('/user-booking-invoice', { state: { booking } })
     }
 
-    const openCancelModal = (key) => {
+    const openPolicyModal = (key) => {
         setCancelTargetKey(key)
+        setPolicyModalOpen(true)
+    }
+
+    const closePolicyModal = () => {
+        setPolicyModalOpen(false)
+        setCancelTargetKey(null)
+    }
+
+    const proceedToCancelModal = () => {
+        setPolicyModalOpen(false)
         setCancelReason('')
         setCancelOtherReason('')
         setCancelImages([])
         setCancelComments('')
+        setPreviewImage(null)
         setCancelModalOpen(true)
     }
 
@@ -172,11 +185,18 @@ export default function UserBookings() {
             const cancelEndpoint = `/booking/cancel/${cancelTargetKey}`;
             await apiFetch.post(cancelEndpoint, payload);
 
-            setLoadingCancel(false)
-            message.success('Booking cancelled');
+            setCancelTargetKey(null)
+            setPreviewImage(null);
+            setCancelReason('')
+            setCancelOtherReason('')
+            setCancelImages([])
+            setCancelComments('')
+            setCancellationRequestedModalOpen(true)
         } catch (error) {
             console.error(error);
             message.error('Unable to cancel booking');
+        } finally {
+            setLoadingCancel(false)
         }
     };
 
@@ -240,7 +260,7 @@ export default function UserBookings() {
                     <Button
                         className="user-bookings-cancel-button"
                         type='primary'
-                        onClick={() => openCancelModal(record.key)}
+                        onClick={() => openPolicyModal(record.key)}
                     >
                         <CloseCircleOutlined />
                         Cancel
@@ -259,12 +279,10 @@ export default function UserBookings() {
             }}
         >
             {loadingCancel ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                     <Spin size="large" description="Cancelling booking..." />
                 </div>
             ) : (
-
-
                 <div className="user-bookings-page">
                     <div className="user-bookings-container">
                         <div className="user-bookings-header">
@@ -316,6 +334,7 @@ export default function UserBookings() {
 
                         <div className="user-bookings-table">
                             <Table
+                                fontSize={12}
                                 columns={columns}
                                 dataSource={filteredData}
                                 loading={loading}
@@ -325,26 +344,77 @@ export default function UserBookings() {
                         </div>
                     </div>
 
+                    <Modal
+                        open={policyModalOpen}
+                        onCancel={() => {
+                            setPolicyModalOpen(false)
+                        }}
+                        footer={null}
+                        style={{ top: 140 }}
+                    >
+                        <div className='modal-container' style={{ textAlign: 'center' }}>
+                            <h1 className='modal-heading'>Continue Cancellation?</h1>
+                            <p className='modal-text'>
+                                Please review our cancellation policy before proceeding.
+                            </p>
+                            <p className='modal-text' style={{ marginBottom: 8 }}>
+                                All tour packages will not be converted to any travel funds in case the tour will not push through whether it
+                                be government mandated, due to natural calamities, etc. Tour package purchase is non-refundable , non-reroutable, non-rebookable, and non-transferable
+                                unless otherwise stated and is due to natural calamities and force majeur that is beyond our control otherwise NON-REFUNDABLE.
+                            </p>
+                            <p className='modal-text' style={{ marginBottom: 8, color: '#e72323', fontStyle: 'italic', fontSize: '12px' }}>
+                                Note: Cancellation of bookings is allowed but will be subject for reviewing and approval.
+                            </p>
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        setPolicyModalOpen(false);
+                                        setCancelModalOpen(true);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                                <Button
+                                    type='primary'
+                                    className='modal-button-cancel'
+                                    onClick={() => {
+                                        setPolicyModalOpen(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+
+                            </div>
+                        </div>
+
+
+
+                    </Modal>
 
                     <Modal
-                        className="logout-confirm-modal"
                         open={cancelModalOpen}
-                        onCancel={closeCancelModal}
-                        onOk={confirmCancelBooking}
-                        okText="Cancel Booking"
-                        cancelText="Keep Booking"
-                        okButtonProps={{ className: 'logout-confirm-btn' }}
-                        cancelButtonProps={{ className: 'logout-cancel-btn' }}
+                        onCancel={() => {
+                            setCancelModalOpen(false)
+                            setCancelTargetKey(null)
+                            setPreviewImage(null);
+                            setCancelReason('')
+                            setCancelOtherReason('')
+                            setCancelImages([])
+                            setCancelComments('')
+                        }}
+                        footer={null}
                         title={(
                             <div className="logout-confirm-title" style={{ textAlign: 'center' }}>
                                 Confirm Cancellation
                             </div>
                         )}
-                        style={{ top: 65 }}
+                        style={{ top: 55 }}
                     >
-                        <div className="logout-confirm-content" style={{ textAlign: 'center' }}>
-                            <p className="logout-confirm-text">Are you sure you want to cancel this booking?</p>
+                        <div className="modal-container" style={{ textAlign: 'center' }}>
+                            <p className="modal-text">Are you sure you want to cancel this booking?</p>
                             <Select
                                 value={cancelReason || undefined}
                                 onChange={(value) => setCancelReason(value)}
@@ -382,6 +452,7 @@ export default function UserBookings() {
                                 />
                                 <Button
                                     className="user-bookings-upload-btn"
+                                    type='primary'
                                     onClick={() => fileInputRef.current.click()}
                                     icon={<UploadOutlined />}
                                     block
@@ -412,8 +483,93 @@ export default function UserBookings() {
                                     Uploading at least one file is required.
                                 </div>
                             </div>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        setCancelModalOpen(false);
+                                        setCancelTargetKey(null)
+                                        setPreviewImage(null);
+                                        setCancelReason('')
+                                        setCancelOtherReason('')
+                                        setCancelImages([])
+                                        setCancelComments('')
+                                    }}
+                                >
+                                    Keep Booking
+                                </Button>
+                                <Button
+                                    type='primary'
+                                    className='modal-button-cancel'
+                                    onClick={() => {
+                                        confirmCancelBooking();
+                                        setCancelModalOpen(false);
+                                        setCancelTargetKey(null)
+                                        setPreviewImage(null);
+                                        setCancelReason('')
+                                        setCancelOtherReason('')
+                                        setCancelImages([])
+                                        setCancelComments('')
+                                    }}
+                                >
+                                    Cancel Booking
+                                </Button>
+
+                            </div>
                         </div>
                     </Modal>
+
+
+                    <Modal
+                        open={cancellationRequestedModalOpen}
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        style={{ top: 220 }}
+                        onCancel={() => {
+                            setCancellationRequestedModalOpen(false);
+                        }}
+                    >
+                        <div className='modal-container'>
+                            <h1 className='modal-heading'>Cancellation Requested!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='modal-text'>Your cancellation request has been submitted.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='modal-button'
+                                    onClick={() => {
+                                        setCancellationRequestedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 </div>
             )}
         </ConfigProvider>

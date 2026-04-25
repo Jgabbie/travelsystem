@@ -279,7 +279,7 @@ export default function Wishlist() {
                                                             icon={<EyeOutlined />}
                                                             type='primary'
                                                             className={`wishlist-view-button${pkg.availableSlots <= 0 ? ' wishlist-view-button-disabled' : ''}`}
-                                                            onClick={() => navigate(`/package`, { state: { packageId: pkg.packageId } })}
+                                                            onClick={() => navigate(`/package`, { state: { packageItem: pkg.packageId } })}
                                                             disabled={pkg.availableSlots <= 0}
                                                             style={pkg.availableSlots <= 0 ? { pointerEvents: 'none' } : {}}
                                                         >

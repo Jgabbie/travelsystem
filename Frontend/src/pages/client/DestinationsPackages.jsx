@@ -40,13 +40,13 @@ export default function DestinationsPackages() {
 
                 const ratingMap = new Map(
                     (ratingResponse?.averagesPayload || []).map((item) => [
-                        String(item.id),
+                        String(item.packageItem),
                         Number(item.averageRating || 0)
                     ])
                 )
 
                 const packages = response.map((pkg) => {
-                    const rating = ratingMap.get(String(pkg.id)) || 0
+                    const rating = ratingMap.get(String(pkg.packageItem)) || 0
                     const discountPercent = Number(pkg.packageDiscountPercent || 0)
                     const budget = Number(pkg.packagePricePerPax || 0)
                     const discountedBudget = discountPercent > 0

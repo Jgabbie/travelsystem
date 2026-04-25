@@ -63,12 +63,11 @@ const submitRating = async (req, res) => {
 };
 
 const getPackageRatings = async (req, res) => {
-    const { id } = req.params
+    const { packageItem } = req.params
 
     try {
 
-        const packageId = await PackageModel.findById(id)
-
+        const packageId = await PackageModel.findById(packageItem)
         const ratings = await Rating.find({ packageId })
             .populate('userId', 'username firstname lastname profileImage')
             .sort({ createdAt: -1 })
@@ -226,8 +225,6 @@ const getAverageRating = async (req, res) => {
             return res.json({ averageRating: 0, totalRatings: 0 });
         }
 
-        console.log("Average rating result for packageCode", packageCode, ":", result[0]); // Debug log
-
         res.json(result[0]);
 
     } catch (error) {
@@ -260,7 +257,7 @@ const getAverageRatings = async (_req, res) => {
         });
 
         const cleanPayload = populated.map(item => ({
-            packageCode: item.packageId?.packageCode,
+            packageItem: item.packageId?._id,
             packageName: item.packageId?.packageName,
             averageRating: item.averageRating,
             totalRatings: item.totalRatings

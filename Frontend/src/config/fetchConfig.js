@@ -44,6 +44,15 @@ const apiFetch = async (endpoint, options = {}) => {
     // Fetch doesn't throw on 4xx/5xx errors, so we handle it manually
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+
+        if (errorData?.idleLogout && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('auth:idle-logout', {
+                detail: {
+                    message: errorData?.message || 'You have been logged out by the system for idling'
+                }
+            }));
+        }
+
         throw {
             status: response.status,
             data: errorData,

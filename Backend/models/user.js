@@ -18,6 +18,7 @@ const UserSchema = new mongoose.Schema({
     resetOtp: { type: String, default: '' },
     resetOtpExpireAt: { type: Number, default: 0 },
     refreshToken: { type: String, default: '' },
+    lastActivityAt: { type: Number, default: 0 },
     loginOnce: { type: Boolean, default: false },
     isArchived: { type: Boolean, default: false }
 }, { timestamps: true });

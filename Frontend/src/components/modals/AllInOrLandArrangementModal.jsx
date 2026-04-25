@@ -70,7 +70,7 @@ export default function AllInOrLandArrangementModal({
                         <p style={{ textAlign: "justify" }}>
                             In this selection, you can customize the itinerary of the current package. This allows you to send quotation request for more personalized experience.
                         </p>
-                        <p style={{ color: "#FF4D4F", fontWeight: "500", textAlign: "justify" }}>
+                        <p style={{ color: "#e72323", fontWeight: "500", textAlign: "justify", fontStyle: "italic", fontSize: '12px' }}>
                             Note: This option may have a higher price than the All in Package arrangement, as it offers more flexibility and customization. The final price will depend on the specific changes you request.
                         </p>
                     </button>

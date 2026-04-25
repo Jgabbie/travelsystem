@@ -579,7 +579,7 @@ const cancelBooking = async (req, res) => {
             return res.status(400).json({ message: 'Cancellation reason and image proof are required' })
         }
 
-        booking.status = 'cancellation requested'
+        booking.status = 'Cancellation Requested'
         await booking.save()
         const cancellation = await CancellationModel.create({
             bookingId: id,
@@ -734,7 +734,7 @@ const disApproveCancellation = async (req, res) => {
             if (Array.isArray(booking.statusHistory) && booking.statusHistory.length) {
                 for (let i = booking.statusHistory.length - 1; i >= 0; i -= 1) {
                     const candidate = booking.statusHistory[i]?.status
-                    if (candidate && candidate !== 'cancellation requested') {
+                    if (candidate && candidate !== 'Cancellation Requested') {
                         previousStatus = candidate
                         break
                     }
@@ -742,7 +742,7 @@ const disApproveCancellation = async (req, res) => {
             }
 
             if (!previousStatus) {
-                previousStatus = booking.status === 'cancellation requested' ? 'Pending' : booking.status
+                previousStatus = booking.status === 'Cancellation Requested' ? 'Pending' : booking.status
             }
 
             booking.status = previousStatus

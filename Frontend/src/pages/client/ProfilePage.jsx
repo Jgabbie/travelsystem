@@ -67,6 +67,16 @@ export default function ProfilePage() {
     };
 
     const savePreferences = async () => {
+        if ((preferences.moods || []).length <= 0 && (preferences.moods || []).length > 3) {
+            message.error('Please select up to 3 mood preferences.');
+            return;
+        }
+
+        if ((preferences.tours || []).length < 1) {
+            message.error('Please select at least 1 tour type preference.');
+            return;
+        }
+
         try {
             await apiFetch.post('/preferences/save', {
                 userId: userData._id,
@@ -219,12 +229,15 @@ export default function ProfilePage() {
     const fetchRecentBookings = async () => {
         try {
             const response = await apiFetch.get('/booking/my-bookings')
+
+            console.log('Raw bookings response:', response) // Debug log
+
             const bookings = response.map((b) => ({
-                _id: b._id,
-                key: b._id,
-                ref: b.reference || b._id,
-                packageName: b.packageId?.packageName || 'Tour Package',
-                packageType: b.packageId?.packageType?.toUpperCase() || 'Package Type',
+                _id: b.bookingItem,
+                key: b.bookingItem,
+                ref: b.reference,
+                packageName: b.packageName || 'Tour Package',
+                packageType: b.packageType?.toUpperCase() || 'Package Type',
                 travelDate: b.travelDate
                     ? dayjs(
                         typeof b.travelDate === 'string'
@@ -773,7 +786,7 @@ export default function ProfilePage() {
                                                             ? 'preference-chip is-selected'
                                                             : 'preference-chip'
                                                     }
-                                                    onClick={() => togglePreference('moods', option, 3)}
+                                                    onClick={() => togglePreference('moods', option, 4)}
                                                 >
                                                     {option}
                                                 </button>
@@ -866,7 +879,7 @@ export default function ProfilePage() {
                                 ) : (
                                     <div className="profile-booking-list">
                                         {recentBookings.slice(0, 3).map((booking, index) => (
-                                            <div className="profile-booking-item" key={booking?._id || index}>
+                                            <div className="profile-booking-item" key={booking?.bookingItem || index}>
                                                 <div className="profile-booking-header">
                                                     <div>
                                                         <p className="profile-booking-title">{booking?.packageName || 'Untitled Booking'}</p>

@@ -635,7 +635,7 @@ export default function QuotationsPaymentProcess() {
         scheduleLabel: { fontSize: 8, fontWeight: 'bold', color: '#333' },
         scheduleDate: { fontSize: 8, color: '#555' },
         scheduleAmount: { fontSize: 8, fontWeight: 'bold', color: '#305797' },
-        scheduleNote: { marginTop: 6, fontSize: 8, color: '#8a4b1b' }
+        scheduleNote: { marginTop: 6, fontSize: 8, color: '#e72323', fontStyle: 'italic' }
     });
 
 
@@ -667,120 +667,116 @@ export default function QuotationsPaymentProcess() {
                         </Button>
                     </Space>
 
-                    <div className="payment-top-grid">
-                        <div className='payment-mode-container payment-section'>
-                            <div className="payment-methods-wrapper">
+                    <div className='payment-mode-container payment-section'>
+                        <div className="payment-top-grid">
+                            <div className="payment-top-column payment-mode-column">
                                 <div className="payment-section-header">
                                     <div>
-                                        <h2 className="payment-methods-title payment-section-title">Mode of Payment</h2>
-                                        <p className="payment-methods-subtitle payment-section-subtitle">
+                                        <h2 className="payment-section-title">Mode of Payment</h2>
+                                        <p className="payment-section-subtitle">
                                             Select your mode of payment.
                                         </p>
                                     </div>
                                 </div>
 
-                                <Radio.Group
-                                    onChange={(e) => setPaymentType(e.target.value)}
-                                    value={paymentType}
-                                    className="payment-methods-cards"
-                                >
-                                    <div className='payment-cards-group'>
-                                        <Radio.Button value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
-                                            <div style={{ width: '100%' }}>
-                                                <h3>Deposit</h3>
-                                                <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
+                                <div>
+                                    <Radio.Group
+                                        onChange={(e) => setPaymentType(e.target.value)}
+                                        value={paymentType}
+                                        className="payment-methods-cards"
+                                    >
+                                        <div className='payment-cards-group'>
+                                            <Radio.Button value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
+                                                <div style={{ width: '100%' }}>
+                                                    <h3>Deposit</h3>
+                                                    <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
 
-                                                {paymentType === 'deposit' && (
-                                                    <div style={{ marginTop: '12px' }} onClick={(e) => e.stopPropagation()}>
-                                                        <p style={{ marginBottom: '8px', fontSize: '12px', fontWeight: 'bold' }}>
-                                                            Payment Schedule:
-                                                        </p>
-                                                        <Select
-                                                            defaultValue="Every 2 weeks"
-                                                            style={{ width: '100%' }}
-                                                            onChange={(value) => setFrequency(value)}
-                                                            options={[
-                                                                { value: 'Every week', label: 'Every week' },
-                                                                { value: 'Every 2 weeks', label: 'Every 2 weeks' },
-                                                                { value: 'Every 3 weeks', label: 'Every 3 weeks' },
-                                                            ]}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </Radio.Button>
+                                                    {paymentType === 'deposit' && (
+                                                        <div style={{ marginTop: '12px' }} onClick={(e) => e.stopPropagation()}>
+                                                            <p style={{ marginBottom: '8px', fontSize: '12px', fontWeight: 'bold' }}>
+                                                                Payment Schedule:
+                                                            </p>
+                                                            <Select
+                                                                defaultValue="Every 2 weeks"
+                                                                style={{ width: '100%' }}
+                                                                onChange={(value) => setFrequency(value)}
+                                                                options={[
+                                                                    { value: 'Every week', label: 'Every week' },
+                                                                    { value: 'Every 2 weeks', label: 'Every 2 weeks' },
+                                                                    { value: 'Every 3 weeks', label: 'Every 3 weeks' },
+                                                                ]}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Radio.Button>
 
-                                        <Radio.Button value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
-                                            <div>
-                                                <h3>Full Payment</h3>
-                                                <p>Pay the full amount to secure your booking and not worry about future payment deadlines.</p>
-                                            </div>
-                                        </Radio.Button>
-                                    </div>
-
-                                </Radio.Group>
-                            </div>
-                            {paymentType === 'deposit' && (
-                                <div style={{ marginTop: '16px', padding: '16px 20px', borderRadius: '14px', background: '#f7f9ff', border: '1px dashed #cfd8ee' }}>
-                                    <p style={{ marginBottom: '8px', fontSize: '28px', fontWeight: 500, color: '#1f2a44' }}>
-                                        Payment Schedule
-                                    </p>
-                                    <div className="payment-schedule-list">
-                                        {paymentSchedule.map((entry) => (
-                                            <div
-                                                key={entry.label}
-                                                className="payment-schedule-item"
-                                            >
+                                            <Radio.Button value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
                                                 <div>
-                                                    <div className="payment-schedule-label">{entry.label}</div>
-                                                    <div className="payment-schedule-date">
-                                                        {entry.date.format('MMM D, YYYY')}
+                                                    <h3>Full Payment</h3>
+                                                    <p>Pay the full amount to secure your booking and not worry about future payment deadlines.</p>
+                                                </div>
+                                            </Radio.Button>
+                                        </div>
+
+                                    </Radio.Group>
+
+                                    {paymentType === 'deposit' && (
+                                        <div style={{ marginTop: '16px', padding: '16px 20px', borderRadius: '14px', background: '#f7f9ff', border: '1px dashed #cfd8ee' }}>
+                                            <p style={{ marginBottom: '8px', fontSize: '28px', fontWeight: 500, color: '#1f2a44' }}>
+                                                Payment Schedule
+                                            </p>
+                                            <div className="payment-schedule-list">
+                                                {paymentSchedule.map((entry) => (
+                                                    <div
+                                                        key={entry.label}
+                                                        className="payment-schedule-item"
+                                                    >
+                                                        <div>
+                                                            <div className="payment-schedule-label">{entry.label}</div>
+                                                            <div className="payment-schedule-date">
+                                                                {entry.date.format('MMM D, YYYY')}
+                                                            </div>
+                                                        </div>
+                                                        <div className="payment-schedule-amount">
+                                                            {formatScheduleAmount(entry.amount)}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="payment-schedule-amount">
-                                                    {formatScheduleAmount(entry.amount)}
-                                                </div>
+                                                ))}
                                             </div>
-                                        ))}
-                                    </div>
-                                    <p className="payment-schedule-note">
-                                        Note: A penalty of PHP 200 applies for late deposit payments.
-                                    </p>
+                                            <p className="payment-schedule-note">
+                                                Note: A penalty of PHP 200 applies for late deposit payments.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-
-                        <div className='display-invoice-container payment-section'>
-                            <div className="payment-section-header">
-                                <div>
-                                    <h2 className="display-invoice-title payment-section-title">Booking Invoice</h2>
-                                    <p className="display-invoice-subtitle payment-section-subtitle">
-                                        Please review your booking invoice before proceeding to payment.
-                                    </p>
-                                </div>
-
-
                             </div>
-                            <div className="display-invoice-wrapper">
-                                <div className="display-invoice-card">
-                                    <div className="pdf-viewer-wrapper">
-                                        <div className="pdf-toolbar-mask"></div>
-                                        <PDFViewer style={{ width: '100%', height: 727 }}>
-                                            <MyDocument />
-                                        </PDFViewer>
-                                    </div>
 
+
+                            <div >
+                                <div className="payment-section-header">
+                                    <div>
+                                        <h2 className="payment-section-title">Booking Invoice</h2>
+                                        <p className="payment-section-subtitle">
+                                            Please review your booking invoice before proceeding to payment.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div >
+                                    <div className="pdf-toolbar-mask"></div>
+                                    <PDFViewer style={{ width: '100%', height: 727 }}>
+                                        <MyDocument />
+                                    </PDFViewer>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className='payment-methods-container payment-section'>
-                        <div className="payment-methods-wrapper">
+
+                        <div className='payment-methods'>
                             <div className="payment-section-header">
                                 <div>
-                                    <h2 className="payment-methods-title payment-section-title">Payment Methods</h2>
-                                    <p className="payment-methods-subtitle payment-section-subtitle">
+                                    <h2 className="payment-section-title">Payment Methods</h2>
+                                    <p className="payment-section-subtitle">
                                         Select a payment method to complete your booking.
                                     </p>
                                 </div>
@@ -792,7 +788,7 @@ export default function QuotationsPaymentProcess() {
                                 className="payment-methods-cards"
                                 style={{ width: '100%', display: 'flex', gap: '16px' }}
                             >
-                                <Radio
+                                <Radio.Button
                                     value="paymongo"
                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                     style={{ flex: 1, height: 'auto', padding: '20px' }}
@@ -800,11 +796,11 @@ export default function QuotationsPaymentProcess() {
                                     <div className="card-content">
                                         <h3>Paymongo</h3>
                                         <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
+                                        <p style={{ color: "#e72323", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
                                     </div>
-                                </Radio>
+                                </Radio.Button>
 
-                                <Radio
+                                <Radio.Button
                                     value="manual"
                                     className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                     style={{ flex: 1, height: 'auto', padding: '20px' }}
@@ -812,102 +808,100 @@ export default function QuotationsPaymentProcess() {
                                     <div className="card-content">
                                         <h3>Manual Payment</h3>
                                         <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
-                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                        <p style={{ color: "#e72323", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
                                     </div>
-                                </Radio>
+                                </Radio.Button>
                             </Radio.Group>
-                        </div>
 
-                        {method === 'manual' && (
 
-                            <div className="manual-transfer-details">
-                                <div className="bank-accounts-section">
-                                    <h4 className="section-subtitle">Available Bank Accounts</h4>
-                                    <div className="bank-grid">
-                                        <div className="bank-item">
-                                            <span className="bank-name">BDO Unibank</span>
-                                            <span className="account-number">0012-3456-7890</span>
-                                            <span className="account-holder">M&RC Travel and Tours</span>
-                                        </div>
-                                        <div className="bank-item">
-                                            <span className="bank-name">BPI</span>
-                                            <span className="account-number">9876-5432-10</span>
-                                            <span className="account-holder">M&RC Travel and Tours</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            {method === 'manual' && (
 
-                                <div className="bank-accounts-section">
-                                    <div className="bank-grid">
-                                        <div className="bank-item">
-                                            <span className="bank-name">Metro Bank</span>
-                                            <span className="account-number">0012-3456-7890</span>
-                                            <span className="account-holder">M&RC Travel and Tours</span>
-                                        </div>
-                                        <div className="bank-item">
-                                            <span className="bank-name">Land Bank</span>
-                                            <span className="account-number">9876-5432-10</span>
-                                            <span className="account-holder">M&RC Travel and Tours</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="upload-section">
-                                    <h4 className="section-subtitle">Upload Proof of Payment</h4>
-                                    <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
-                                    <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
-
-                                    <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
-
-                                    <Upload
-                                        listType="picture"
-                                        maxCount={1}
-                                        fileList={fileList}
-                                        onChange={handleUploadChange}
-                                        beforeUpload={beforeUpload}
-                                        accept=".jpg,.jpeg,.png"
-                                    >
-                                        <Button type='primary' icon={<UploadOutlined />} className="payment-process-upload-button">
-                                            Select Receipt Image
-                                        </Button>
-                                    </Upload>
-
-                                    {fileList.length > 0 && (
-                                        <div className="upload-preview-container">
-                                            <h4 className="section-subtitle">Preview</h4>
-
-                                            <div className="upload-preview-box">
-                                                <img
-                                                    src={fileList[0].preview}
-                                                    alt="Receipt Preview"
-                                                    className="upload-preview-image"
-                                                />
+                                <div className="manual-transfer-details">
+                                    <div className="bank-accounts-section">
+                                        <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                        <div className="bank-grid">
+                                            <div className="bank-item">
+                                                <span className="bank-name">BDO Unibank</span>
+                                                <span className="account-number">0012-3456-7890</span>
+                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                            </div>
+                                            <div className="bank-item">
+                                                <span className="bank-name">BPI</span>
+                                                <span className="account-number">9876-5432-10</span>
+                                                <span className="account-holder">M&RC Travel and Tours</span>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
+
+                                    <div className="bank-accounts-section">
+                                        <div className="bank-grid">
+                                            <div className="bank-item">
+                                                <span className="bank-name">Metro Bank</span>
+                                                <span className="account-number">0012-3456-7890</span>
+                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                            </div>
+                                            <div className="bank-item">
+                                                <span className="bank-name">Land Bank</span>
+                                                <span className="account-number">9876-5432-10</span>
+                                                <span className="account-holder">M&RC Travel and Tours</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="upload-section">
+                                        <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                        <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                        <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                        <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                        <Upload
+                                            listType="picture"
+                                            maxCount={1}
+                                            fileList={fileList}
+                                            onChange={handleUploadChange}
+                                            beforeUpload={beforeUpload}
+                                            accept=".jpg,.jpeg,.png"
+                                        >
+                                            <Button type='primary' icon={<UploadOutlined />} className="payment-process-upload-button">
+                                                Select Receipt Image
+                                            </Button>
+                                        </Upload>
+
+                                        {fileList.length > 0 && (
+                                            <div className="upload-preview-container">
+                                                <h4 className="section-subtitle">Preview</h4>
+
+                                                <div className="upload-preview-box">
+                                                    <img
+                                                        src={fileList[0].preview}
+                                                        alt="Receipt Preview"
+                                                        className="upload-preview-image"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
 
-                        )}
+                            )}
+                        </div>
+
+                        <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
+                            <Button
+                                type='primary'
+                                className='payment-process-proceed-button'
+                                onClick={() => setIsProceedModalOpen(true)}
+                                disabled={
+                                    !paymentType ||
+                                    !method ||
+                                    (method === 'manual' && fileList.length === 0)
+                                }
+                            >
+                                Proceed
+                            </Button>
+                        </div>
                     </div>
-
-
-
-                    <div className="payment-process-actions" style={{ paddingRight: 40, display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 20 }}>
-                        <Button
-                            type='primary'
-                            className='payment-process-proceed-button'
-                            onClick={() => setIsProceedModalOpen(true)}
-                            disabled={
-                                !paymentType ||
-                                !method ||
-                                (method === 'manual' && fileList.length === 0)
-                            }
-                        >
-                            Proceed
-                        </Button>
-                    </div>
-
                 </div>
 
                 <Modal

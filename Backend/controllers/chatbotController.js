@@ -8,13 +8,12 @@ const MAX_HISTORY = 3;
 const MAX_MESSAGE_CHARS = 500;
 const MAX_TOKENS = 150;
 const OFF_TOPIC_REPLY = "Sorry, I can't help you with that.";
-const BLOCKED_REPLY = "Sorry, I can't help you with that.";
 const VECTOR_INDEX = process.env.MONGODB_VECTOR_INDEX || 'knowledgeIndex';
 const VECTOR_CANDIDATES = 100;
 const VECTOR_LIMIT = 5;
 
 const TRAVEX_PROMPT_ID = 'pmpt_69e4a9003a4c8195923e2db164ea4f6208e21becb823361f';
-const TRAVEX_PROMPT_VERSION = 'v1';
+const TRAVEX_PROMPT_VERSION = 'v6';
 
 const faqData = [
     {
@@ -83,50 +82,6 @@ const faqKeywords = new Set(
         ...extractKeywords(item.answer)
     ])
 );
-
-const blockedTerms = [
-    'fuck',
-    'shit',
-    'bitch',
-    'asshole',
-    'bastard',
-    'dick',
-    'pussy',
-    'cunt',
-    'motherfucker',
-    'porn',
-    'nude',
-    'sex'
-];
-
-const blockedPattern = new RegExp(`\\b(${blockedTerms.join('|')})\\b`, 'i');
-
-const containsBlockedContent = (text) => blockedPattern.test(normalizeText(text));
-
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-const formatReply = (text, { packageNames = [], serviceNames = [] } = {}) => {
-    if (!text) return text;
-
-    let output = text;
-
-    output = output.replace(
-        /(price(?: per pax)?|solo|child|infant)\s*:\s*(\d[\d,]*(?:\.\d+)?)/gi,
-        (_match, label, amount) => `${label}: ₱${amount}`
-    );
-
-    output = output.replace(/₱\s*\d[\d,]*(?:\.\d+)?/g, (match) => `**${match}**`);
-
-    const names = [...new Set([...packageNames, ...serviceNames].filter(Boolean))]
-        .sort((a, b) => b.length - a.length);
-
-    names.forEach((name) => {
-        const pattern = new RegExp(`\\b${escapeRegExp(name)}\\b`, 'gi');
-        output = output.replace(pattern, (match) => `**${match}**`);
-    });
-
-    return output;
-};
 
 const chunkText = (text, chunkSize = 1200, overlap = 200) => {
     const chunks = [];
@@ -351,10 +306,6 @@ const chatAction = async (req, res) => {
             return res.status(400).json({ error: 'No user message provided.' });
         }
 
-        if (containsBlockedContent(lastUserMessage.content)) {
-            return res.json({ reply: BLOCKED_REPLY });
-        }
-
         const userQuery = lastUserMessage.content;
         const queryEmbedding = await getEmbedding(userQuery);
         let knowledgeChunks = [];
@@ -372,21 +323,17 @@ const chatAction = async (req, res) => {
             : 'No relevant PDF context found.';
 
         let packageContext = '';
-        let packageNames = [];
         try {
             const result = await buildPackageContext(userQuery);
             packageContext = result.text;
-            packageNames = result.names;
         } catch (packageError) {
             console.error('Package context error:', packageError);
         }
 
         let visaServiceContext = '';
-        let serviceNames = [];
         try {
             const result = await buildVisaServiceContext();
             visaServiceContext = result.text;
-            serviceNames = result.names;
         } catch (serviceError) {
             console.error('Visa service context error:', serviceError);
         }
@@ -427,8 +374,7 @@ const chatAction = async (req, res) => {
             return res.status(502).json({ error: 'Empty response from AI provider.' });
         }
 
-        const formattedReply = formatReply(reply, { packageNames, serviceNames });
-        res.json({ reply: formattedReply });
+        res.json({ reply });
     } catch (error) {
 
         console.error("--- OPENAI API ERROR ---");

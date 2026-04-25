@@ -8,6 +8,7 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
 
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const [userProfile, setUserProfile] = useState({})
+    const hasLeadAddress = Boolean(String(userProfile.homeAddress || '').trim())
 
     const normalizeRoomType = (value) => String(value || '').trim().replace(/\s+\d+$/, '')
 
@@ -304,7 +305,8 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                         <Input
                                             size="small"
                                             style={{ borderRadius: 0, height: '22px', borderBottom: '1px solid black', borderTop: 0, borderLeft: 0, borderRight: 0, fontSize: '11px' }}
-                                            readOnly
+                                            readOnly={hasLeadAddress}
+                                            placeholder={hasLeadAddress ? '' : 'Enter address'}
                                         />
                                     </Form.Item>
                                 </Col>
