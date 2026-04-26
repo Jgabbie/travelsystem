@@ -161,6 +161,7 @@ const getVisaApplications = async (_req, res) => {
             .sort({ createdAt: -1 })
 
         const applicationsPayload = applications.map(app => ({
+            applicationItem: app._id,
             applicationNumber: app.applicationNumber,
             applicantName: app.applicantName,
             serviceName: app.serviceId?.visaName || app.serviceName || "N/A",

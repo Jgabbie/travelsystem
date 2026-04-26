@@ -462,7 +462,7 @@ export default function CancellationRequests() {
                         </Button>
                         <Button
                             icon={showArchived ? <SafetyCertificateOutlined /> : <InboxOutlined />}
-                            className='cancellations-export-button'
+                            className='cancellations-archive-button'
                             type="primary"
                             onClick={() => {
                                 const nextValue = !showArchived
@@ -477,7 +477,7 @@ export default function CancellationRequests() {
                                 }
                             }}
                         >
-                            {showArchived ? 'Back to Requests' : 'Archives'}
+                            {showArchived ? 'Back' : 'Archives'}
                         </Button>
                     </Space>
                 </div>

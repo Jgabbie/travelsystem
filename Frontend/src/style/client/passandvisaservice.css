@@ -3,7 +3,7 @@
 
 
 .passandvisa-container {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #e9f0f7;
 }
 
 .passport-assistance {
@@ -14,7 +14,7 @@
 
 .passandvisa-header {
     max-width: 1280px;
-    margin: 0 auto 20px;
+    margin: 0 auto 28px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -23,19 +23,21 @@
 .passandvisa-header h2 {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
+    font-weight: 600;
     color: #1f2a44;
     margin: 0;
 
 }
 
 .passandvisa-header p {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #5b6476;
+    color: #3c424f;
     font-size: 14px;
 }
 
 .passport-visa-layout {
-    max-width: 1320px;
+    max-width: 1280px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
@@ -66,10 +68,9 @@
 .visa-section,
 .passport-section {
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
     padding: 22px;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
     position: sticky;
     top: 120px;
     align-self: start;

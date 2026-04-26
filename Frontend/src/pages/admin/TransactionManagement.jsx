@@ -606,7 +606,7 @@ export default function TransactionManagement() {
               </Button>
               <Button
                 icon={showArchived ? <TransactionOutlined /> : <InboxOutlined />}
-                className='transactionmanagement-export-button'
+                className='transactionmanagement-archive-button'
                 type="primary"
                 onClick={() => {
                   const nextValue = !showArchived;
@@ -622,7 +622,7 @@ export default function TransactionManagement() {
                   }
                 }}
               >
-                {showArchived ? 'Back to Transactions' : 'Archives'}
+                {showArchived ? 'Back' : 'Archives'}
               </Button>
             </Space>
           </div>

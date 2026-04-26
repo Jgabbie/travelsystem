@@ -471,7 +471,7 @@ export default function QuotationManagement() {
                         </Button>
                         <Button
                             icon={showArchived ? <FileTextOutlined /> : <InboxOutlined />}
-                            className='quotation-export'
+                            className='quotation-archive'
                             type="primary"
                             onClick={() => {
                                 const nextValue = !showArchived
@@ -487,7 +487,7 @@ export default function QuotationManagement() {
                                 }
                             }}
                         >
-                            {showArchived ? 'Back to Quotations' : 'Archives'}
+                            {showArchived ? 'Back' : 'Archives'}
                         </Button>
                     </Space>
                 </div>

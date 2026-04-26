@@ -294,11 +294,11 @@ export default function DestinationsPackages() {
 
                 <div className="destinations-page">
                     <header className="destinations-header">
-                        <Title level={2}>Destinations & Packages</Title>
-                        <Text type="secondary">
+                        <h2>Destinations & Packages</h2>
+                        <p>
                             Find the best tour packages that match your budget, activities,
                             and schedule.
-                        </Text>
+                        </p>
                     </header>
 
                     <div className="destinations-search">

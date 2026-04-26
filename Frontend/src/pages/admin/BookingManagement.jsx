@@ -514,7 +514,7 @@ export default function BookingManagement() {
           <Space style={{ marginLeft: 'auto' }}>
             <Button className='bookingmanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
             <Button
-              className='bookingmanagement-export-button'
+              className='bookingmanagement-archive-button'
               icon={showArchived ? <BookOutlined /> : <InboxOutlined />}
               type="primary"
               onClick={() => {
@@ -531,7 +531,7 @@ export default function BookingManagement() {
                 }
               }}
             >
-              {showArchived ? 'Back to Bookings' : 'Archives'}
+              {showArchived ? 'Back' : 'Archives'}
             </Button>
           </Space>
         </div>

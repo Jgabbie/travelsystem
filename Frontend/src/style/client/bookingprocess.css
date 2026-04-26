@@ -21,16 +21,15 @@
 /* PAGE CONTAINER AND WHOLE PAGE CSS */
 .bookingprocess-container {
     padding: 40px;
-    background: #f4f6fb;
+    background: #e9f0f7;
 }
 
 .booking-section {
     margin: 40px;
     padding: 32px;
-    border-radius: 4px;
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    box-shadow: 0 16px 30px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .booking-section-header {

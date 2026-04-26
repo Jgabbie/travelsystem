@@ -138,8 +138,8 @@ export default function Wishlist() {
 
                 <div className="wishlist-page">
                     <header className="wishlist-header">
-                        <Title level={2}>Your Wishlist</Title>
-                        <Text type="secondary">Search and filter the packages you saved for later.</Text>
+                        <h2>Your Wishlist</h2>
+                        <p>Search and filter the packages you saved for later.</p>
                     </header>
 
                     <Card className="wishlist-controls-card" bordered={false}>

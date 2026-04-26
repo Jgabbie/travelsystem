@@ -170,10 +170,10 @@ export default function UserQuotationRequest() {
 
                                 <div className="userquotationrequest-header">
                                     <div>
-                                        <Title level={2} className="page-header">Booking Quotation Request</Title>
-                                        <AntText className="userquotationrequest-subtitle">
+                                        <h2>Booking Quotation Request</h2>
+                                        <p>
                                             Review your the details of your booking quotation request here. You can view the latest quotation PDF, check the revision history, and provide feedback for any necessary revisions.
-                                        </AntText>
+                                        </p>
                                     </div>
                                 </div>
 
@@ -305,6 +305,7 @@ export default function UserQuotationRequest() {
                                             </div>
                                             <div className="input-wrapper">
                                                 <Input.TextArea
+                                                    style={{ resize: 'none' }}
                                                     maxLength={200}
                                                     rows={4}
                                                     placeholder="Kindly provide any notes for revision (max 200 characters). Please be as detailed as possible."

@@ -333,16 +333,12 @@ export default function PackageDomesticQuotation() {
                             Back
                         </Button>
 
-                        <div className='quotation-section'>
-                            <div className="quotation-header">
-                                <div className="header-top-row">
-                                    <div className="header-text">
-                                        <h2 className="quotation-section-title">Package Quotation</h2>
-                                        <p className="quotation-section-subtitle">Kindly input your preferrences and requests so that we can tailor your customized package.</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="quotation-header">
+                            <h2 >Package Quotation</h2>
+                            <p >Kindly input your preferrences and requests so that we can tailor your customized package.</p>
+                        </div>
 
+                        <div className='quotation-section'>
                             <div>
                                 {images.length ? (
                                     <div className="package-image-grid">

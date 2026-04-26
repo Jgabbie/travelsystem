@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin } from 'antd';
+import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin, Typography } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
 import '../../style/client/userpreference.css';
+
+
+const { Title, Text } = Typography;
 
 
 export default function ProfilePage() {
@@ -445,464 +448,471 @@ export default function ProfilePage() {
                     <Spin size="large" description="Loading Profile..." />
                 </div>
             ) : (
-                <div className="profile-page" >
-
-                    {/* profile */}
-                    <div className="profile-container" style={{ marginBottom: 40 }}>
-                        <div className="profile-content">
-                            <Card className="profile-summary-card">
-                                <div className="profile-summary-body">
-                                    <div className="profile-summary-avatar">
-                                        {profileImage ? (
-                                            <img src={profileImage} alt="Profile" />
-                                        ) : (
-                                            <div className="profile-summary-initials">{getInitials()}</div>
-                                        )}
-                                    </div>
-                                    <div className="profile-summary-text">
-                                        <h3 className="profile-summary-name">
-                                            {values.firstname || values.lastname
-                                                ? `${values.firstname} ${values.lastname}`.trim()
-                                                : values.username || 'User'}
-                                        </h3>
-                                        <p className="profile-summary-meta">
-                                            <span>{userData?.role || 'Traveler'}</span>
-                                        </p>
-                                        <p className="profile-summary-meta">
-                                            {values.homeAddress || values.nationality || 'Location not set'}
-                                        </p>
-                                    </div>
-                                </div>
-                                {editing && (
-                                    <div style={{ marginTop: 16 }}>
-                                        <input
-                                            ref={fileInputRef}
-                                            className="profile-avatar-input"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                        />
-                                        <Button
-                                            type="primary"
-                                            icon={<FileImageOutlined />}
-                                            className="profile-action-button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            Change Photo
-                                        </Button>
-                                        <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
-                                    </div>
-                                )}
-                            </Card>
-
-                            <Card className="profile-section-card">
-                                <div className="profile-section-header">
-                                    <h3 className="profile-section-title">Personal Information</h3>
-                                    {!editing && (
-                                        <Button
-                                            type="primary"
-                                            className="profile-action-button"
-                                            icon={<EditOutlined />}
-                                            onClick={handleEdit}
-                                        >
-                                            Edit
-                                        </Button>
-                                    )}
-                                </div>
-                                <div className="profile-section-grid">
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">First Name</span>
-                                        {editing ? (
-                                            <Input
-                                                placeholder="Enter your first name"
-                                                allowClear
-                                                status={error.firstname ? "error" : ""}
-                                                value={values.firstname}
-                                                onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
-                                                onKeyDown={(e) => {
-                                                    const value = e.target.value;
-                                                    if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
-                                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-
-                                                    if (
-                                                        !/^[A-Za-z ]$/.test(e.key) &&
-                                                        e.key !== "Backspace" &&
-                                                        e.key !== "ArrowLeft" &&
-                                                        e.key !== "ArrowRight"
-                                                    ) {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.firstname || 'Not set'}</p>
-                                        )}
-                                        {error.firstname && (
-                                            <p className="profile-error-message">{error.firstname}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Last Name</span>
-                                        {editing ? (
-                                            <Input
-                                                placeholder="Enter your last name"
-                                                allowClear
-                                                status={error.lastname ? "error" : ""}
-                                                value={values.lastname}
-                                                onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
-                                                onKeyDown={(e) => {
-                                                    const value = e.target.value;
-                                                    if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
-                                                    if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
-                                                    if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
-                                                    if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
-                                                    if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
-                                                    if (
-                                                        !/^[A-Za-z -]$/.test(e.key) &&
-                                                        e.key !== "Backspace" &&
-                                                        e.key !== "ArrowLeft" &&
-                                                        e.key !== "ArrowRight"
-                                                    ) {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.lastname || 'Not set'}</p>
-                                        )}
-                                        {error.lastname && (
-                                            <p className="profile-error-message">{error.lastname}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Date of Birth</span>
-                                        {editing ? (
-                                            <DatePicker
-                                                placeholder="Select birthdate"
-                                                value={values.birthdate ? dayjs(values.birthdate) : null}
-                                                onChange={(date) =>
-                                                    valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
-                                                }
-                                                format="YYYY-MM-DD"
-                                                allowClear
-                                                style={{ width: '100%' }}
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.birthdate || 'Not set'}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Email Address</span>
-                                        {editing ? (
-                                            <Input
-                                                placeholder="Enter your email"
-                                                type="email"
-                                                allowClear
-                                                status={error.email ? "error" : ""}
-                                                value={values.email}
-                                                onChange={(e) => valueHandler('email', e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === " " && e.key !== "Backspace") {
-                                                        e.preventDefault()
-                                                    }
-                                                }}
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.email || 'Not set'}</p>
-                                        )}
-                                        {error.email && (
-                                            <p className="profile-error-message">{error.email}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Phone Number</span>
-                                        {editing ? (
-                                            <Input
-                                                maxLength={13}
-                                                placeholder="Enter your phone number"
-                                                allowClear
-                                                addonBefore="+63"
-                                                status={error.phone ? "error" : ""}
-                                                value={values.phone}
-                                                onChange={(e) => {
-                                                    let value = e.target.value.replace(/\D/g, "");
-
-                                                    value = value.slice(0, 11);
-
-                                                    let formatted = value;
-
-                                                    if (value.length > 4 && value.length <= 7) {
-                                                        formatted =
-                                                            value.slice(0, 4) + " " +
-                                                            value.slice(4);
-                                                    }
-                                                    else if (value.length > 7) {
-                                                        formatted =
-                                                            value.slice(0, 4) + " " +
-                                                            value.slice(4, 7) + " " +
-                                                            value.slice(7);
-                                                    }
-
-                                                    valueHandler("phone", formatted);
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                                        e.preventDefault()
-                                                    }
-                                                }}
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.phone || 'Not set'}</p>
-                                        )}
-                                        {error.phone && (
-                                            <p className="profile-error-message">{error.phone}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">User Role</span>
-                                        <p className="profile-section-value">{userData?.role || 'Not set'}</p>
-                                    </div>
-                                </div>
-
-                                {userData?.isAccountVerified && (
-                                    <div className="verification-status">
-                                        <p>✓ Account Verified</p>
-                                    </div>
-                                )}
-                            </Card>
-
-                            <Card className="profile-section-card">
-                                <div className="profile-section-header">
-                                    <h3 className="profile-section-title">Additional Information</h3>
-                                </div>
-                                <div className="profile-section-grid">
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Home Address</span>
-                                        {editing ? (
-                                            <Input
-                                                placeholder="Enter your home address"
-                                                allowClear
-                                                value={values.homeAddress}
-                                                onChange={(e) => valueHandler('homeAddress', e.target.value)}
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.homeAddress || 'Not set'}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Nationality</span>
-                                        {editing ? (
-                                            <Input
-                                                placeholder="Enter your nationality"
-                                                allowClear
-                                                value={values.nationality}
-                                                onChange={(e) => valueHandler('nationality', e.target.value)}
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.nationality || 'Not set'}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Gender</span>
-                                        {editing ? (
-                                            <Select
-                                                placeholder="Select gender"
-                                                value={values.gender || undefined}
-                                                onChange={(value) => valueHandler('gender', value || '')}
-                                                options={[
-                                                    { value: 'Male', label: 'Male' },
-                                                    { value: 'Female', label: 'Female' },
-                                                    { value: 'Other', label: 'Other' },
-                                                    { value: 'Prefer not to say', label: 'Prefer not to say' }
-                                                ]}
-                                                allowClear
-                                            />
-                                        ) : (
-                                            <p className="profile-section-value">{values.gender || 'Not set'}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {editing && (
-                                    <Space style={{ marginTop: 16 }}>
-                                        <Button
-                                            type="primary"
-                                            className="profile-action-button"
-                                            icon={<SaveOutlined />}
-                                            onClick={handleSave}
-                                        >
-                                            Save Changes
-                                        </Button>
-                                        <Button
-                                            type="primary"
-                                            className="profile-cancel-button"
-                                            icon={<CloseOutlined />}
-                                            onClick={handleCancel}
-                                            disabled={saving}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Space>
-                                )}
-                            </Card>
-
-                            <Card
-                                className="profile-card"
-                                style={{ marginTop: '20px' }}
-                            >
-                                <div className="preference-section">
-                                    <div className='profile-card-header' style={{ marginBottom: 15 }}>
-                                        <h3 className="profile-section-title">My Preferences</h3>
-                                        <Button
-                                            type="primary"
-                                            onClick={() => setEditingPreferences(true)}
-                                            icon={<EditOutlined />}
-                                            disabled={editingPreferences}
-                                            className='profile-action-button'
-                                        >
-                                            Edit Preferences
-                                        </Button>
-                                    </div>
-                                    {/* MOODS */}
-                                    <div className="preference-block">
-                                        <h3>What are you in the mood for?</h3>
-                                        <p>Choose up to 3</p>
-
-                                        <div className="preference-chip-grid">
-                                            {moodOptions.map((option) => (
-                                                <button
-                                                    key={option}
-                                                    type="button"
-                                                    disabled={!editingPreferences}
-                                                    className={
-                                                        preferences.moods.includes(option)
-                                                            ? 'preference-chip is-selected'
-                                                            : 'preference-chip'
-                                                    }
-                                                    onClick={() => togglePreference('moods', option, 4)}
-                                                >
-                                                    {option}
-                                                </button>
-                                            ))}
+                <div>
+                    <div className="profile-page" >
+                        {/* profile */}
+                        <header className="profile-header">
+                            <h2>Profile Page</h2>
+                            <p>
+                                View and edit your personal information, manage your preferences, and see your recent activity.
+                            </p>
+                        </header>
+                        <div className="profile-container" style={{ marginBottom: 40 }}>
+                            <div className="profile-content">
+                                <Card className="profile-summary-card">
+                                    <div className="profile-summary-body">
+                                        <div className="profile-summary-avatar">
+                                            {profileImage ? (
+                                                <img src={profileImage} alt="Profile" />
+                                            ) : (
+                                                <div className="profile-summary-initials">{getInitials()}</div>
+                                            )}
+                                        </div>
+                                        <div className="profile-summary-text">
+                                            <h3 className="profile-summary-name">
+                                                {values.firstname || values.lastname
+                                                    ? `${values.firstname} ${values.lastname}`.trim()
+                                                    : values.username || 'User'}
+                                            </h3>
+                                            <p className="profile-summary-meta">
+                                                <span>{userData?.role || 'Traveler'}</span>
+                                            </p>
+                                            <p className="profile-summary-meta">
+                                                {values.homeAddress || values.nationality || 'Location not set'}
+                                            </p>
                                         </div>
                                     </div>
-
-                                    {/* TOURS */}
-                                    <div className="preference-block" style={{ marginTop: '20px' }}>
-                                        <h3>What type of tour do you like?</h3>
-
-                                        <div className="preference-chip-grid">
-                                            {tourOptions.map((option) => (
-                                                <button
-                                                    key={option}
-                                                    type="button"
-                                                    disabled={!editingPreferences}
-                                                    className={
-                                                        preferences.tours.includes(option)
-                                                            ? 'preference-chip is-selected'
-                                                            : 'preference-chip'
-                                                    }
-                                                    onClick={() => togglePreference('tours', option)}
-                                                >
-                                                    {option}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-
-                                    {editingPreferences && (
-                                        <div style={{ marginTop: '20px' }}>
+                                    {editing && (
+                                        <div style={{ marginTop: 16 }}>
+                                            <input
+                                                ref={fileInputRef}
+                                                className="profile-avatar-input"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                            />
                                             <Button
                                                 type="primary"
-                                                onClick={savePreferences}
-                                                icon={<SaveOutlined />}
+                                                icon={<FileImageOutlined />}
                                                 className="profile-action-button"
+                                                onClick={() => fileInputRef.current?.click()}
                                             >
-                                                Save Preferences
+                                                Change Photo
                                             </Button>
+                                            <p className="profile-avatar-help">PNG/JPG up to 2MB.</p>
+                                        </div>
+                                    )}
+                                </Card>
 
+                                <Card className="profile-section-card">
+                                    <div className="profile-section-header">
+                                        <h3 className="profile-section-title">Personal Information</h3>
+                                        {!editing && (
                                             <Button
                                                 type="primary"
-                                                style={{ marginLeft: '10px' }}
-                                                onClick={() => setEditingPreferences(false)}
-                                                icon={<CloseOutlined />}
+                                                className="profile-action-button"
+                                                icon={<EditOutlined />}
+                                                onClick={handleEdit}
+                                            >
+                                                Edit
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="profile-section-grid">
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">First Name</span>
+                                            {editing ? (
+                                                <Input
+                                                    placeholder="Enter your first name"
+                                                    allowClear
+                                                    status={error.firstname ? "error" : ""}
+                                                    value={values.firstname}
+                                                    onChange={(e) => valueHandler('firstname', toProperCase(e.target.value))}
+                                                    onKeyDown={(e) => {
+                                                        const value = e.target.value;
+                                                        if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
+                                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+
+                                                        if (
+                                                            !/^[A-Za-z ]$/.test(e.key) &&
+                                                            e.key !== "Backspace" &&
+                                                            e.key !== "ArrowLeft" &&
+                                                            e.key !== "ArrowRight"
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.firstname || 'Not set'}</p>
+                                            )}
+                                            {error.firstname && (
+                                                <p className="profile-error-message">{error.firstname}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">Last Name</span>
+                                            {editing ? (
+                                                <Input
+                                                    placeholder="Enter your last name"
+                                                    allowClear
+                                                    status={error.lastname ? "error" : ""}
+                                                    value={values.lastname}
+                                                    onChange={(e) => valueHandler('lastname', toProperCase(e.target.value))}
+                                                    onKeyDown={(e) => {
+                                                        const value = e.target.value;
+                                                        if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
+                                                        if (e.key === " " && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                        if (e.key === "-" && value.endsWith("-")) { e.preventDefault(); return; }
+                                                        if (e.key === " " && value.endsWith("-")) { e.preventDefault(); return; }
+                                                        if (e.key === "-" && value.endsWith(" ")) { e.preventDefault(); return; }
+                                                        if (
+                                                            !/^[A-Za-z -]$/.test(e.key) &&
+                                                            e.key !== "Backspace" &&
+                                                            e.key !== "ArrowLeft" &&
+                                                            e.key !== "ArrowRight"
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.lastname || 'Not set'}</p>
+                                            )}
+                                            {error.lastname && (
+                                                <p className="profile-error-message">{error.lastname}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">Date of Birth</span>
+                                            {editing ? (
+                                                <DatePicker
+                                                    placeholder="Select birthdate"
+                                                    value={values.birthdate ? dayjs(values.birthdate) : null}
+                                                    onChange={(date) =>
+                                                        valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
+                                                    }
+                                                    format="YYYY-MM-DD"
+                                                    allowClear
+                                                    style={{ width: '100%' }}
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.birthdate || 'Not set'}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">Email Address</span>
+                                            {editing ? (
+                                                <Input
+                                                    placeholder="Enter your email"
+                                                    type="email"
+                                                    allowClear
+                                                    status={error.email ? "error" : ""}
+                                                    value={values.email}
+                                                    onChange={(e) => valueHandler('email', e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === " " && e.key !== "Backspace") {
+                                                            e.preventDefault()
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.email || 'Not set'}</p>
+                                            )}
+                                            {error.email && (
+                                                <p className="profile-error-message">{error.email}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">Phone Number</span>
+                                            {editing ? (
+                                                <Input
+                                                    maxLength={13}
+                                                    placeholder="Enter your phone number"
+                                                    allowClear
+                                                    addonBefore="+63"
+                                                    status={error.phone ? "error" : ""}
+                                                    value={values.phone}
+                                                    onChange={(e) => {
+                                                        let value = e.target.value.replace(/\D/g, "");
+
+                                                        value = value.slice(0, 11);
+
+                                                        let formatted = value;
+
+                                                        if (value.length > 4 && value.length <= 7) {
+                                                            formatted =
+                                                                value.slice(0, 4) + " " +
+                                                                value.slice(4);
+                                                        }
+                                                        else if (value.length > 7) {
+                                                            formatted =
+                                                                value.slice(0, 4) + " " +
+                                                                value.slice(4, 7) + " " +
+                                                                value.slice(7);
+                                                        }
+
+                                                        valueHandler("phone", formatted);
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                            e.preventDefault()
+                                                        }
+                                                    }}
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.phone || 'Not set'}</p>
+                                            )}
+                                            {error.phone && (
+                                                <p className="profile-error-message">{error.phone}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">User Role</span>
+                                            <p className="profile-section-value">{userData?.role || 'Not set'}</p>
+                                        </div>
+                                    </div>
+
+                                    {userData?.isAccountVerified && (
+                                        <div className="verification-status">
+                                            <p>✓ Account Verified</p>
+                                        </div>
+                                    )}
+                                </Card>
+
+                                <Card className="profile-section-card">
+                                    <div className="profile-section-header">
+                                        <h3 className="profile-section-title">Additional Information</h3>
+                                    </div>
+                                    <div className="profile-section-grid">
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">Home Address</span>
+                                            {editing ? (
+                                                <Input
+                                                    placeholder="Enter your home address"
+                                                    allowClear
+                                                    value={values.homeAddress}
+                                                    onChange={(e) => valueHandler('homeAddress', e.target.value)}
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.homeAddress || 'Not set'}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">Nationality</span>
+                                            {editing ? (
+                                                <Input
+                                                    placeholder="Enter your nationality"
+                                                    allowClear
+                                                    value={values.nationality}
+                                                    onChange={(e) => valueHandler('nationality', e.target.value)}
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.nationality || 'Not set'}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="profile-section-item">
+                                            <span className="profile-section-label">Gender</span>
+                                            {editing ? (
+                                                <Select
+                                                    placeholder="Select gender"
+                                                    value={values.gender || undefined}
+                                                    onChange={(value) => valueHandler('gender', value || '')}
+                                                    options={[
+                                                        { value: 'Male', label: 'Male' },
+                                                        { value: 'Female', label: 'Female' },
+                                                        { value: 'Other', label: 'Other' },
+                                                        { value: 'Prefer not to say', label: 'Prefer not to say' }
+                                                    ]}
+                                                    allowClear
+                                                />
+                                            ) : (
+                                                <p className="profile-section-value">{values.gender || 'Not set'}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {editing && (
+                                        <Space style={{ marginTop: 16 }}>
+                                            <Button
+                                                type="primary"
+                                                className="profile-action-button"
+                                                icon={<SaveOutlined />}
+                                                onClick={handleSave}
+                                            >
+                                                Save Changes
+                                            </Button>
+                                            <Button
+                                                type="primary"
                                                 className="profile-cancel-button"
+                                                icon={<CloseOutlined />}
+                                                onClick={handleCancel}
+                                                disabled={saving}
                                             >
                                                 Cancel
                                             </Button>
+                                        </Space>
+                                    )}
+                                </Card>
+
+                                <Card
+                                    className="profile-card"
+                                >
+                                    <div className="preference-section">
+                                        <div className='profile-card-header' style={{ marginBottom: 15 }}>
+                                            <h3 className="profile-section-title">My Preferences</h3>
+                                            <Button
+                                                type="primary"
+                                                onClick={() => setEditingPreferences(true)}
+                                                icon={<EditOutlined />}
+                                                disabled={editingPreferences}
+                                                className='profile-action-button'
+                                            >
+                                                Edit Preferences
+                                            </Button>
+                                        </div>
+                                        {/* MOODS */}
+                                        <div className="preference-block">
+                                            <h3>What are you in the mood for?</h3>
+                                            <p>Choose up to 3</p>
+
+                                            <div className="preference-chip-grid">
+                                                {moodOptions.map((option) => (
+                                                    <button
+                                                        key={option}
+                                                        type="button"
+                                                        disabled={!editingPreferences}
+                                                        className={
+                                                            preferences.moods.includes(option)
+                                                                ? 'preference-chip is-selected'
+                                                                : 'preference-chip'
+                                                        }
+                                                        onClick={() => togglePreference('moods', option, 4)}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* TOURS */}
+                                        <div className="preference-block" style={{ marginTop: '20px' }}>
+                                            <h3>What type of tour do you like?</h3>
+
+                                            <div className="preference-chip-grid">
+                                                {tourOptions.map((option) => (
+                                                    <button
+                                                        key={option}
+                                                        type="button"
+                                                        disabled={!editingPreferences}
+                                                        className={
+                                                            preferences.tours.includes(option)
+                                                                ? 'preference-chip is-selected'
+                                                                : 'preference-chip'
+                                                        }
+                                                        onClick={() => togglePreference('tours', option)}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+
+                                        {editingPreferences && (
+                                            <div style={{ marginTop: '20px' }}>
+                                                <Button
+                                                    type="primary"
+                                                    onClick={savePreferences}
+                                                    icon={<SaveOutlined />}
+                                                    className="profile-action-button"
+                                                >
+                                                    Save Preferences
+                                                </Button>
+
+                                                <Button
+                                                    type="primary"
+                                                    style={{ marginLeft: '10px' }}
+                                                    onClick={() => setEditingPreferences(false)}
+                                                    icon={<CloseOutlined />}
+                                                    className="profile-cancel-button"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                </Card>
+
+                            </div>
+
+                            {/* recent bookings and reviews */}
+                            <div className="profile-side-column">
+                                <Card
+                                    className="profile-side-card"
+                                    title={<h3 className="profile-section-title">My Recent Reviews</h3>}
+                                >
+                                    {recentReviews.length === 0 ? (
+                                        <p className="profile-empty-text">No reviews yet.</p>
+                                    ) : (
+                                        <div className="profile-review-list">
+                                            {recentReviews.slice(0, 3).map((review, index) => (
+                                                <div className="profile-review-item" key={review?._id || index}>
+                                                    <div>
+                                                        <p className="profile-review-title">{review?.packageName || 'Untitled Review'}</p>
+                                                        <p className="profile-review-meta">{review?.date || 'Recently'}</p>
+                                                        <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
+                                                    </div>
+                                                    <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
+                                </Card>
 
-                                </div>
-                            </Card>
+                                <Card
+                                    className="profile-side-card"
+                                    title={<h3 className="profile-section-title">My Recent Bookings</h3>}
+                                >
+                                    {recentBookings.length === 0 ? (
+                                        <p className="profile-empty-text">No bookings yet.</p>
+                                    ) : (
+                                        <div className="profile-booking-list">
+                                            {recentBookings.slice(0, 3).map((booking, index) => (
+                                                <div className="profile-booking-item" key={booking?.bookingItem || index}>
+                                                    <div className="profile-booking-header">
+                                                        <div>
+                                                            <p className="profile-booking-title">{booking?.packageName || 'Untitled Booking'}</p>
+                                                            <p className="profile-booking-meta">{booking?.bookingDate || 'Recently'}</p>
+                                                        </div>
 
-                        </div>
+                                                        <Tag color={
+                                                            booking?.status === 'Fully Paid' ? 'green' :
+                                                                booking?.status === 'Cancelled' ? 'blue' :
+                                                                    booking?.status === 'Not Paid' ? 'red' :
+                                                                        'orange'
+                                                        }>
+                                                            {booking?.status || 'Pending'}
+                                                        </Tag>
 
-                        {/* recent bookings and reviews */}
-                        <div className="profile-side-column">
-                            <Card
-                                className="profile-side-card"
-                                title={<h3 className="profile-section-title">My Recent Reviews</h3>}
-                            >
-                                {recentReviews.length === 0 ? (
-                                    <p className="profile-empty-text">No reviews yet.</p>
-                                ) : (
-                                    <div className="profile-review-list">
-                                        {recentReviews.slice(0, 3).map((review, index) => (
-                                            <div className="profile-review-item" key={review?._id || index}>
-                                                <div>
-                                                    <p className="profile-review-title">{review?.packageName || 'Untitled Review'}</p>
-                                                    <p className="profile-review-meta">{review?.date || 'Recently'}</p>
-                                                    <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
-                                                </div>
-                                                <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </Card>
-
-                            <Card
-                                className="profile-side-card"
-                                title={<h3 className="profile-section-title">My Recent Bookings</h3>}
-                            >
-                                {recentBookings.length === 0 ? (
-                                    <p className="profile-empty-text">No bookings yet.</p>
-                                ) : (
-                                    <div className="profile-booking-list">
-                                        {recentBookings.slice(0, 3).map((booking, index) => (
-                                            <div className="profile-booking-item" key={booking?.bookingItem || index}>
-                                                <div className="profile-booking-header">
-                                                    <div>
-                                                        <p className="profile-booking-title">{booking?.packageName || 'Untitled Booking'}</p>
-                                                        <p className="profile-booking-meta">{booking?.bookingDate || 'Recently'}</p>
                                                     </div>
-
-                                                    <Tag color={
-                                                        booking?.status === 'Fully Paid' ? 'green' :
-                                                            booking?.status === 'Cancelled' ? 'blue' :
-                                                                booking?.status === 'Not Paid' ? 'red' :
-                                                                    'orange'
-                                                    }>
-                                                        {booking?.status || 'Pending'}
-                                                    </Tag>
-
+                                                    <p className="profile-booking-details">Reference No. {booking?.ref || 'BK-00000'} • {booking?.packageType}</p>
                                                 </div>
-                                                <p className="profile-booking-details">Reference No. {booking?.ref || 'BK-00000'} • {booking?.packageType}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </Card>
+                                            ))}
+                                        </div>
+                                    )}
+                                </Card>
+                            </div>
                         </div>
+
                     </div>
 
                     {/* USER PROFILE HAS BEEN EDITED MODAL */}

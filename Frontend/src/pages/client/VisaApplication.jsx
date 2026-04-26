@@ -478,8 +478,8 @@ export default function VisaApplication() {
                     <Spin size="large" description={uploading ? "Uploading Documents..." : "Loading..."} />
                 </div>
             ) : (
-                <div className="user-bookings-page">
-                    <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
+                <div className='visaapplication-container'>
+                    <div className='visaapplication-container'>
                         <Button
                             className='visaapplication-back-button'
                             type='primary'
@@ -489,11 +489,10 @@ export default function VisaApplication() {
                         >
                             Back
                         </Button>
+
                         <div className="app-detail-header">
-                            <div className="app-detail-titleblock">
-                                <h2 style={{ marginTop: 6, marginBottom: 4 }}>Visa Application Details</h2>
-                                <p className="app-detail-subtitle">Track every milestone and complete requirements in one place.</p>
-                            </div>
+                            <h2 >Visa Application Details</h2>
+                            <p >Track every milestone and complete requirements in one place.</p>
                         </div>
 
                         {application && (
@@ -581,9 +580,6 @@ export default function VisaApplication() {
                                 )}
 
                                 <div className="app-detail-shell">
-
-
-
                                     <div style={{ marginBottom: 32, width: '100%' }}>
                                         <div style={{ display: 'flex', flexDirection: 'row', gap: 24, flexWrap: 'wrap' }}>
                                             <div style={{ flex: '1 1 620px', minWidth: 320 }}>

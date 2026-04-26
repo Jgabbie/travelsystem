@@ -241,6 +241,8 @@ export default function UserBookings() {
                 if (value === 'Pending') color = 'gold'
                 if (value === 'Not Paid') color = 'red'
                 if (value === 'Completed') color = 'blue'
+                if (value === 'Cancellation Requested') color = 'orange'
+                if (value === 'Cancelled') color = 'volcano'
                 return <Tag color={color}>{value}</Tag>
             }
         },

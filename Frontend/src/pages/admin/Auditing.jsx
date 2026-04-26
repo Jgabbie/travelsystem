@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Tag, Table, Input, ConfigProvider, Select } from 'antd';
+import { Tag, Table, Input, ConfigProvider, Select, Card } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 
@@ -52,7 +52,7 @@ export default function Auditing() {
             title: 'Date/Time',
             dataIndex: 'timestamp',
             key: 'timestamp',
-            width: 170,
+            width: 150,
             sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
             render: (text) => new Date(text).toLocaleString(),
         },
@@ -60,7 +60,7 @@ export default function Auditing() {
             title: 'Action',
             dataIndex: 'action',
             key: 'action',
-            width: 160,
+            width: 220,
             onFilter: (value, record) => record.action?.includes(value),
             render: (text) => <Tag color="purple">{text}</Tag>
         },
@@ -68,7 +68,7 @@ export default function Auditing() {
             title: 'Performed By',
             dataIndex: 'performedBy',
             key: 'performedBy',
-            width: 220,
+            width: 180,
             render: (user) => user ? (
                 <div>
                     <div style={{ fontWeight: 'bold' }}>{user.username} ({user.role})</div>
@@ -135,14 +135,17 @@ export default function Auditing() {
                     onChange={(e) => setSearchText(e.target.value)}
                 />
 
-                <Table
-                    columns={columns}
-                    dataSource={filteredLogs}
-                    rowKey="_id"
-                    loading={loading}
-                    tableLayout="fixed"
-                    pagination={{ pageSize: 10, showSizeChanger: false }}
-                />
+                <Card>
+                    <Table
+                        columns={columns}
+                        dataSource={filteredLogs}
+                        rowKey="_id"
+                        loading={loading}
+                        tableLayout="fixed"
+                        pagination={{ pageSize: 10, showSizeChanger: false }}
+                    />
+                </Card>
+
             </div>
         </ConfigProvider>
     );

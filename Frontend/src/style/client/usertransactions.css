@@ -1,8 +1,9 @@
 .user-transactions-page {
-    min-height: 80vh;
+    min-height: 100vh;
+    padding-top: 20px;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #e9f0f7;
 }
 
 .user-transactions-container {
@@ -18,10 +19,9 @@
 .user-transactions-header {
     margin-bottom: 24px;
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
     padding: 20px 24px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .user-transactions-header h2 {
@@ -33,24 +33,23 @@
 }
 
 .user-transactions-header p {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #6b7280;
-    font-family: "Roboto", sans-serif;
+    color: #3c424f;
 }
 
 .user-transactions-table {
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
+    border-radius: 16px;
     padding: 16px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .user-transactions-table .ant-table-thead>tr>th {
     background: #eef2f7 !important;
     color: #305797 !important;
     font-family: "Montserrat", sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
 }
 
@@ -68,26 +67,26 @@
 
 .user-transactions-view-button {
     font-family: "Roboto", sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 85px;
-    height: 30px;
+    width: 75px;
+    height: 28px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
 .user-transactions-viewproof-button {
     font-family: "Roboto", sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 115px;
-    height: 30px;
+    width: 100px;
+    height: 28px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }

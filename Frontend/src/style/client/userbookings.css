@@ -1,8 +1,9 @@
 .user-bookings-page {
-    min-height: 80vh;
+    min-height: 100vh;
+    padding-top: 20px;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #e9f0f7;
 }
 
 .user-bookings-container {
@@ -18,10 +19,9 @@
 .user-bookings-header {
     margin-bottom: 24px;
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
     padding: 20px 24px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .user-bookings-header h2 {
@@ -33,24 +33,23 @@
 }
 
 .user-bookings-header p {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #6b7280;
-    font-family: "Roboto", sans-serif;
+    color: #3c424f;
 }
 
 .user-bookings-table {
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     padding: 16px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
 .user-bookings-table .ant-table-thead>tr>th {
     background: #eef2f7 !important;
     color: #305797 !important;
     font-family: "Montserrat", sans-serif;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
 }
 
@@ -75,13 +74,13 @@
 
 .user-bookings-view-button {
     font-family: "Roboto", sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 85px;
-    height: 30px;
+    width: 75px;
+    height: 28px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
@@ -93,13 +92,13 @@
 
 .user-bookings-cancel-button {
     font-family: "Roboto", sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     background-color: #992A46;
     color: #fff;
     border-radius: 10px;
-    width: 85px;
-    height: 30px;
+    width: 75px;
+    height: 28px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }

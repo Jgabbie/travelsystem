@@ -1,37 +1,48 @@
 .passport-page {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: radial-gradient(circle at top, #f4f7ff 0%, #e7edf7 45%, #d5deef 100%);
+    padding: 20px 32px 40px;
+    font-family: "Roboto", sans-serif;
+    margin-bottom: 40px;
 }
 
 .passport-container {
-    flex: 1;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 60px 32px 48px;
+    background: #e9f0f7;
+    padding-left: 60px;
+    padding-right: 60px;
+    margin-bottom: 40px;
+    padding-top: 80px;
     width: 100%;
 }
 
-.passport-header {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px 28px;
-    box-shadow: 0 12px 28px rgba(48, 87, 151, 0.16);
+.passport-content {
     margin-bottom: 24px;
+    background: #ffffff;
+    padding: 20px 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+}
+
+.passport-header {
+    margin-left: 40px;
+    max-width: 1280px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .passport-header h2 {
     margin: 0 0 6px;
     font-family: "Montserrat", sans-serif;
-    font-size: 28px;
-    color: #2f4c8a;
+    font-size: 26px;
+    font-weight: 600;
+    color: #1f2a44;
 }
 
 .passport-header p {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #5b677a;
-    font-family: "Roboto", sans-serif;
+    color: #3c424f;
+    font-size: 14px;
 }
 
 .passport-grid {
@@ -42,16 +53,12 @@
 }
 
 .passport-panel {
-    background: #ffffff;
-    border-radius: 16px;
     padding: 22px 24px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
 .passport-panel h3 {
     margin: 0 0 16px;
     font-size: 20px;
-    color: #2f4c8a;
     font-family: "Montserrat", sans-serif;
 }
 
@@ -111,16 +118,13 @@
 }
 
 .renew-passport-card {
-    background: #ffffff;
     border-radius: 18px;
     padding: 24px 28px;
-    box-shadow: 0 12px 30px rgba(48, 87, 151, 0.18);
 }
 
 .renew-passport-card h3 {
     margin: 0 0 16px;
     font-size: 20px;
-    color: #2f4c8a;
     font-family: "Montserrat", sans-serif;
 }
 

@@ -116,8 +116,8 @@ export default function PassAndVisaService() {
 
                 <div className="passport-assistance">
                     <header className='passandvisa-header'>
-                        <Title level={2}>Passport and VISA Services</Title>
-                        <Text type="secondary">Search and filter VISAs or apply for Passport services.</Text>
+                        <h2>Passport and VISA Services</h2>
+                        <p>Search and filter VISAs or apply for Passport services.</p>
                     </header>
                     <div className="passport-visa-layout">
                         <section className="visa-section">

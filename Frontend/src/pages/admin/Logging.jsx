@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Tag, Table, Input, ConfigProvider, Select } from 'antd';
+import { Tag, Table, Input, ConfigProvider, Select, Card } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 
@@ -130,14 +130,17 @@ export default function Logging() {
                     onChange={(e) => setSearchText(e.target.value)}
                 />
 
-                <Table
-                    columns={columns}
-                    dataSource={filteredLogs}
-                    rowKey="_id"
-                    loading={loading}
-                    tableLayout="fixed"
-                    pagination={{ pageSize: 10, showSizeChanger: false }}
-                />
+                <Card>
+                    <Table
+                        columns={columns}
+                        dataSource={filteredLogs}
+                        rowKey="_id"
+                        loading={loading}
+                        tableLayout="fixed"
+                        pagination={{ pageSize: 10, showSizeChanger: false }}
+                    />
+                </Card>
+
             </div>
         </ConfigProvider>
     );

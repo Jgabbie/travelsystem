@@ -145,145 +145,149 @@ export default function NewPassport() {
                 </div>
             </Modal>
 
-            <div className="passport-page">
-                <div className="passport-container">
-                    <header className="passport-header">
-                        <h2>New Passport Assistance</h2>
-                        <p>Prepare your documents and pick a schedule for your application.</p>
-                    </header>
+            <div className="passport-container">
+                <header className="passport-header">
+                    <h2>New Passport Assistance</h2>
+                    <p>Prepare your documents and pick a schedule for your application.</p>
+                </header>
+                <div className="passport-page">
 
-                    <section className="passport-grid">
-                        <div className="passport-panel">
-                            <h3>Requirements</h3>
-                            <ul className="passport-list">
-                                <li>Confirmed DFA appointment</li>
-                                <li>Accomplished application form</li>
-                                <li>Original PSA birth certificate</li>
-                                <li>Valid government-issued ID</li>
-                                <li>Supporting documents (if required)</li>
-                            </ul>
-                        </div>
+                    <div className='passport-content'>
+                        <section className="passport-grid">
+                            <div className="passport-panel">
+                                <h3>Requirements</h3>
+                                <ul className="passport-list">
+                                    <li>Confirmed DFA appointment</li>
+                                    <li>Accomplished application form</li>
+                                    <li>Original PSA birth certificate</li>
+                                    <li>Valid government-issued ID</li>
+                                    <li>Supporting documents (if required)</li>
+                                </ul>
+                            </div>
 
-                        <div className="passport-panel">
-                            <h3>Step-by-step process</h3>
-                            <div className="passport-steps">
-                                <div className="passport-step">
-                                    <span className="passport-step-number">1</span>
-                                    <div>
-                                        <h4>Book your DFA appointment</h4>
-                                        <p>Select your preferred DFA site and date.</p>
+                            <div className="passport-panel">
+                                <h3>Step-by-step process</h3>
+                                <div className="passport-steps">
+                                    <div className="passport-step">
+                                        <span className="passport-step-number">1</span>
+                                        <div>
+                                            <h4>Book your DFA appointment</h4>
+                                            <p>Select your preferred DFA site and date.</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="passport-step">
-                                    <span className="passport-step-number">2</span>
-                                    <div>
-                                        <h4>Prepare requirements</h4>
-                                        <p>Complete forms and secure supporting documents.</p>
+                                    <div className="passport-step">
+                                        <span className="passport-step-number">2</span>
+                                        <div>
+                                            <h4>Prepare requirements</h4>
+                                            <p>Complete forms and secure supporting documents.</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="passport-step">
-                                    <span className="passport-step-number">3</span>
-                                    <div>
-                                        <h4>Attend appointment</h4>
-                                        <p>Submit documents and complete biometrics.</p>
+                                    <div className="passport-step">
+                                        <span className="passport-step-number">3</span>
+                                        <div>
+                                            <h4>Attend appointment</h4>
+                                            <p>Submit documents and complete biometrics.</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="passport-step">
-                                    <span className="passport-step-number">4</span>
-                                    <div>
-                                        <h4>Track release</h4>
-                                        <p>Wait for delivery or pick-up availability.</p>
+                                    <div className="passport-step">
+                                        <span className="passport-step-number">4</span>
+                                        <div>
+                                            <h4>Track release</h4>
+                                            <p>Wait for delivery or pick-up availability.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
 
-                    <section className="renew-passport-card">
-                        <h3>Application Details</h3>
-                        <div
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                padding: '6px 12px',
-                                marginTop: 6,
-                                marginBottom: 14,
-                                borderRadius: 999,
-                                background: 'rgba(48, 87, 151, 0.08)',
-                                border: '1px solid rgba(48, 87, 151, 0.25)',
-                                color: '#305797',
-                                fontWeight: 600,
-                            }}
-                        >
-                            <span>Passport Fee</span>
-                            <span>PHP 2,000</span>
-                        </div>
-                        <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
+                        <section className="renew-passport-card">
+                            <h3>Application Details</h3>
+                            <div
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    padding: '6px 12px',
+                                    marginTop: 6,
+                                    marginBottom: 14,
+                                    borderRadius: 999,
+                                    background: 'rgba(48, 87, 151, 0.08)',
+                                    border: '1px solid rgba(48, 87, 151, 0.25)',
+                                    color: '#305797',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                <span>Passport Fee</span>
+                                <span>PHP 2,000</span>
+                            </div>
+                            <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
 
-                            <div>
-                                <div className="form-group">
-                                    <label className="passport-label">Select DFA location</label>
-                                    <Select
-                                        className={`passport-select ${error.location ? 'input-error' : ''}`}
-                                        placeholder="Choose a DFA site"
-                                        value={location}
-                                        onChange={(value) => setLocation(value)}
-                                        options={dfaLocations.map((item) => ({ value: item, label: item }))}
-                                        popupRender={(menu) => (
-                                            <>
-                                                {menu}
-                                                <div style={{ padding: '8px', textAlign: 'center' }}>
-                                                    <em>More locations available on the official DFA website</em>
-                                                </div>
-                                            </>
-                                        )}
-                                    />
-                                    <p className="error-message">
-                                        {error.location || ''}
-                                    </p>
+                                <div>
+                                    <div className="form-group">
+                                        <label className="passport-label">Select DFA location</label>
+                                        <Select
+                                            className={`passport-select ${error.location ? 'input-error' : ''}`}
+                                            placeholder="Choose a DFA site"
+                                            value={location}
+                                            onChange={(value) => setLocation(value)}
+                                            options={dfaLocations.map((item) => ({ value: item, label: item }))}
+                                            popupRender={(menu) => (
+                                                <>
+                                                    {menu}
+                                                    <div style={{ padding: '8px', textAlign: 'center' }}>
+                                                        <em>More locations available on the official DFA website</em>
+                                                    </div>
+                                                </>
+                                            )}
+                                        />
+                                        <p className="error-message">
+                                            {error.location || ''}
+                                        </p>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="passport-label">Preferred date</label>
+                                        <DatePicker
+                                            value={preferredDate ? dayjs(preferredDate) : null}
+                                            disabledDate={disableDates}
+                                            showNow={false}
+                                            onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
+                                            className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
+                                        />
+                                        <p className="error-message">
+                                            {error.preferredDate || ''}
+                                        </p>
+                                    </div>
+
+                                    <div className='form-group'>
+                                        <label className="passport-label">Preferred time</label>
+                                        <TimePicker
+                                            value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
+                                            format="h:mm A"
+                                            use12Hours
+                                            showNow={false}
+                                            minuteStep={30}
+                                            disabledTime={() => ({
+                                                disabledHours
+                                            })}
+                                            onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
+                                            className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
+                                        />
+                                        <p className="error-message">
+                                            {error.preferredTime || ''}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div className="form-group">
-                                    <label className="passport-label">Preferred date</label>
-                                    <DatePicker
-                                        value={preferredDate ? dayjs(preferredDate) : null}
-                                        disabledDate={disableDates}
-                                        showNow={false}
-                                        onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
-                                        className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
-                                    />
-                                    <p className="error-message">
-                                        {error.preferredDate || ''}
-                                    </p>
-                                </div>
-
-                                <div className='form-group'>
-                                    <label className="passport-label">Preferred time</label>
-                                    <TimePicker
-                                        value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
-                                        format="h:mm A"
-                                        use12Hours
-                                        showNow={false}
-                                        minuteStep={30}
-                                        disabledTime={() => ({
-                                            disabledHours
-                                        })}
-                                        onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
-                                        className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
-                                    />
-                                    <p className="error-message">
-                                        {error.preferredTime || ''}
-                                    </p>
-                                </div>
                             </div>
 
-                        </div>
+                            <Button className="passport-submit" type="primary" onClick={submitRequest}>
+                                Submit request
+                            </Button>
+                        </section>
+                    </div>
 
-                        <Button className="passport-submit" type="primary" onClick={submitRequest}>
-                            Submit request
-                        </Button>
-                    </section>
+
                 </div>
             </div>
         </ConfigProvider>

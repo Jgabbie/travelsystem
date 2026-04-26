@@ -28,21 +28,24 @@
     margin-bottom: 16px;
 }
 
-.user-invoice-header .page-header {
-    margin-bottom: 0;
+.user-invoice-header h2 {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 28px;
+    font-weight: 600;
     color: #1f2937;
 }
 
-.user-invoice-subtitle {
-    display: block;
-    margin-top: 4px;
-    color: #6b7280;
+.user-invoice-header p {
+    font-family: "Montserrat", sans-serif;
+    margin: 0;
+    color: #3c424f;
+    font-size: 14px;
 }
 
 .user-invoice-card {
-    border-radius: 4px;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-    border: 2px solid #e5e7eb;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
     background: #ffffff;
 }
 

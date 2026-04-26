@@ -386,7 +386,7 @@ export default function UserManagement() {
             </Button>
             <Button
               icon={showArchived ? <UserOutlined /> : <InboxOutlined />}
-              className='usermanagement-export-button'
+              className='usermanagement-archive-button'
               type="primary"
               onClick={() => {
                 const nextValue = !showArchived;
@@ -401,7 +401,7 @@ export default function UserManagement() {
                 }
               }}
             >
-              {showArchived ? 'Back to Users' : 'Archives'}
+              {showArchived ? 'Back' : 'Archives'}
             </Button>
           </Space>
         </div>

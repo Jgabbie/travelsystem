@@ -167,6 +167,19 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.packagemanagement-archive {
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #305797;
+  color: #fff;
+  border-radius: 10px;
+  width: 100px;
+  height: 30px;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .packagemanagement-remove-button {
   font-family: "Roboto", sans-serif;
   font-size: 13px;
@@ -188,7 +201,8 @@
 .packagemanagement-view-button:hover,
 .packagemanagement-edit-button:hover,
 .packagemanagement-slotsdiscount-button:hover,
-.packagemanagement-addpackage:hover {
+.packagemanagement-addpackage:hover,
+.packagemanagement-archive:hover {
   background-color: #e9e9e9 !important;
   color: #305797 !important;
 }

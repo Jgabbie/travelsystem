@@ -184,7 +184,7 @@ export default function VisaServices() {
                         </Button>
                         <Button
                             icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
-                            className="visaservices-add-button"
+                            className="visaservices-archive-button"
                             type="primary"
                             onClick={() => {
                                 const nextValue = !showArchived;
@@ -197,7 +197,7 @@ export default function VisaServices() {
                                 }
                             }}
                         >
-                            {showArchived ? 'Back to Services' : 'Archives'}
+                            {showArchived ? 'Back' : 'Archives'}
                         </Button>
                     </Space>
                 </div>

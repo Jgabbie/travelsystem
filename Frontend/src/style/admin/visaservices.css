@@ -134,6 +134,19 @@
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
+.visaservices-archive-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 100px;
+    height: 30px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
 .visaservices-remove-button {
     font-family: "Roboto", sans-serif;
     font-size: 13px;

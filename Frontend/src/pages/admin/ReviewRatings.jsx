@@ -391,7 +391,7 @@ export default function ReviewRatings() {
                         </Button>
                         <Button
                             icon={showArchived ? <FundOutlined /> : <InboxOutlined />}
-                            className='reviewratings-export-button'
+                            className='reviewratings-archive-button'
                             type="primary"
                             onClick={() => {
                                 const nextValue = !showArchived;
@@ -406,7 +406,7 @@ export default function ReviewRatings() {
                                 }
                             }}
                         >
-                            {showArchived ? 'Back to Reviews' : 'Archives'}
+                            {showArchived ? 'Back' : 'Archives'}
                         </Button>
                     </Space>
                 </div>

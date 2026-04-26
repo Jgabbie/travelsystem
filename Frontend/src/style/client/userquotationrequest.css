@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 .userquotationrequest-container {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #e9f0f7;
 }
 
 .userquotationrequest-page {
@@ -21,31 +21,33 @@
     margin-bottom: 16px;
 }
 
-.userquotationrequest-header .page-header {
-    margin-bottom: 0;
-    color: #1f2937;
+.userquotationrequest-header h2 {
+    margin: 0 0 6px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #1f2a44;
 }
 
-.userquotationrequest-subtitle {
-    display: block;
-    margin-top: 4px;
-    color: #6b7280;
+.userquotationrequest-header p {
+    font-family: "Montserrat", sans-serif;
+    margin: 0;
+    color: #3c424f;
 }
 
 .quotation-section-card {
     margin: 40px;
     padding: 32px;
     border-radius: 4px;
-    background: linear-gradient(135deg, #f7faff 0%, #eef4ff 60%, #fdf7f2 100%);
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+    background: #e9f0f7;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .quotation-card {
-    border-radius: 4px;
     background: #ffffff;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 18px 40px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     padding: 20px 24px;
     max-width: 1300px;
     font-family: "Montserrat", sans-serif;
@@ -57,7 +59,6 @@
     margin-top: 0;
     margin-bottom: 12px;
     font-size: 34px;
-    font-weight: 700;
 }
 
 .quotation-details {

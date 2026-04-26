@@ -54,7 +54,7 @@ export default function VisaApplications() {
             const response = await apiFetch.get('/visa/applications')
 
             const applications = response.map((a) => ({
-                key: a._id,
+                key: a.applicationItem,
                 applicationNumber: a.applicationNumber,
                 applicantName: a.applicantName,
                 serviceName: a.serviceName,
@@ -62,6 +62,8 @@ export default function VisaApplications() {
                 preferredTime: a.preferredTime ? dayjs(a.preferredTime, 'HH:mm').format('hh:mm A') : 'Not Set',
                 status: a.status,
             }))
+
+            console.log("Fetched applications:", applications)
 
             setApplications(applications)
         } catch (error) {
@@ -278,7 +280,7 @@ export default function VisaApplications() {
                             className='viewbutton-visa-application'
                             type="primary"
                             icon={<EyeOutlined />}
-                            onClick={() => navigate(`${basePath}/visa-applications/view`, { state: { applicationId: record.key } })}
+                            onClick={() => navigate(`${basePath}/visa-applications/view`, { state: { applicationItem: record.key } })}
                         >
                         </Button>
                         {showArchived ? (
@@ -431,7 +433,7 @@ export default function VisaApplications() {
                         </Button>
                         <Button
                             icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
-                            className='visaapplications-export'
+                            className='visaapplications-archive'
                             type="primary"
                             onClick={() => {
                                 const nextValue = !showArchived
@@ -446,7 +448,7 @@ export default function VisaApplications() {
                                 }
                             }}
                         >
-                            {showArchived ? 'Back to Applications' : 'Archives'}
+                            {showArchived ? 'Back' : 'Archives'}
                         </Button>
                     </Space>
                 </div>

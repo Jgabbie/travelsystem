@@ -501,8 +501,8 @@ export default function PassportApplication() {
                     <Spin size="large" description={uploading ? "Uploading Documents..." : "Loading..."} />
                 </div>
             ) : (
-                <div className="user-bookings-page">
-                    <div className="user-bookings-container" style={{ maxWidth: 1300, margin: '0 auto' }}>
+                <div className='passportapplication-container'>
+                    <div className='passportapplication-container'>
                         <Button
                             type='primary'
                             className='passportapplication-back-button'
@@ -513,10 +513,8 @@ export default function PassportApplication() {
                             Back
                         </Button>
                         <div className="app-detail-header">
-                            <div className="app-detail-titleblock">
-                                <h2 style={{ marginTop: 6, marginBottom: 4 }}>Passport Application Details</h2>
-                                <p className="app-detail-subtitle">Monitor progress, payment, and document actions with a cleaner workflow view.</p>
-                            </div>
+                            <h2 >Passport Application Details</h2>
+                            <p >Monitor progress, payment, and document actions with a cleaner workflow view.</p>
                         </div>
 
                         {/* SUGGESTED APPOINTMENT */}

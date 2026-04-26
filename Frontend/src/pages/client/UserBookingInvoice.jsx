@@ -1013,10 +1013,10 @@ export default function UserBookingInvoice() {
 
                         <div className="user-invoice-header">
                             <div>
-                                <Title level={2} className="page-header">Booking Invoice</Title>
-                                <AntText className="user-invoice-subtitle">
+                                <h2>Booking Invoice</h2>
+                                <p>
                                     Review your balance and download the booking invoice.
-                                </AntText>
+                                </p>
                             </div>
                         </div>
 

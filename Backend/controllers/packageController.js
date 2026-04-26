@@ -260,9 +260,14 @@ const getPackagesForUsers = async (req, res) => {
 };
 
 const removePackage = async (req, res) => {
-    const { packageCode } = req.params;
+    const { packageItem } = req.params;
+
+    if (!packageItem) {
+        return res.status(400).json({ message: "Package identifier is required" });
+    }
+
     try {
-        const pkg = await findPackageByCodeParam(packageCode);
+        const pkg = await PackageModel.findById(packageItem);
         if (!pkg) {
             return res.status(404).json({ message: "Package not found" });
         }
@@ -313,17 +318,26 @@ const removePackage = async (req, res) => {
 
 //RESTORE PACKAGE (ADMIN)
 const restoreArchivedPackage = async (req, res) => {
-    const { packageCode } = req.params;
+    const { packageItem } = req.params;
+
+    if (!packageItem) {
+        return res.status(400).json({ message: "Archived package identifier is required" });
+    }
 
     try {
-        const archivedPackage = await findArchivedPackageByCodeParam(packageCode);
+        const archivedPackage = await ArchivedPackageModel.findById(packageItem);
         if (!archivedPackage) {
             return res.status(404).json({ message: "Archived package not found" });
         }
 
-        const existingPackage = await PackageModel.findOne({ packageCode: archivedPackage.packageCode });
-        if (existingPackage) {
-            return res.status(409).json({ message: "Package with this code already exists" });
+        const existingPackageByOriginalId = await PackageModel.findById(archivedPackage.originalPackageId);
+        if (existingPackageByOriginalId) {
+            return res.status(409).json({ message: "Package already exists" });
+        }
+
+        const existingPackageByCode = await PackageModel.findOne({ packageCode: archivedPackage.packageCode });
+        if (existingPackageByCode) {
+            return res.status(409).json({ message: "Package code already exists" });
         }
 
         const restoredPackage = await PackageModel.create({
@@ -579,7 +593,7 @@ const getPopularPackages = async (req, res) => {
 
 const updateSlots = async (req, res) => {
     const slotsPayload = req.body;
-    const packageCode = slotsPayload.packageCode || slotsPayload.packageId;
+    const packageCode = slotsPayload.packageItem || slotsPayload.packageCode || slotsPayload.packageId;
     const dateRanges = Array.isArray(slotsPayload.dateRanges)
         ? slotsPayload.dateRanges
         : [];
@@ -663,8 +677,8 @@ const updateSlots = async (req, res) => {
 };
 
 const updateDiscount = async (req, res) => {
-    const { packageCode, packageId, discountPercent } = req.body;
-    const lookupCode = packageCode || packageId;
+    const { packageItem, packageCode, packageId, discountPercent } = req.body;
+    const lookupCode = packageItem || packageCode || packageId;
     const parsedDiscount = Number(discountPercent);
 
     if (!lookupCode) {

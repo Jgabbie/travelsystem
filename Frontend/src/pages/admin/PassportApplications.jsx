@@ -413,7 +413,7 @@ export default function PassportApplications() {
                         </Button>
                         <Button
                             icon={showArchived ? <TeamOutlined /> : <InboxOutlined />}
-                            className='passportapplications-export'
+                            className='passportapplications-archive'
                             type="primary"
                             onClick={() => {
                                 const nextValue = !showArchived
@@ -428,7 +428,7 @@ export default function PassportApplications() {
                                 }
                             }}
                         >
-                            {showArchived ? 'Back to Applications' : 'Archives'}
+                            {showArchived ? 'Back' : 'Archives'}
                         </Button>
                     </Space>
                 </div>

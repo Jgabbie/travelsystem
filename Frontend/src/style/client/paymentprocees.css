@@ -123,9 +123,8 @@
 .payment-mode-container.payment-section {
     padding-top: 40px;
     margin: 40px;
-    border-radius: 4px;
-    background: #ffffff;
-    border: 2px solid #d5d8da;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .pdf-viewer-wrapper {

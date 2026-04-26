@@ -10,7 +10,7 @@ const { Title } = Typography;
 
 export default function ViewVisaApplication() {
     const location = useLocation();
-    const { applicationId } = location.state || {};
+    const { applicationItem } = location.state
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [isSubmittingSlots, setIsSubmittingSlots] = useState(false);
@@ -47,7 +47,7 @@ export default function ViewVisaApplication() {
             try {
                 setLoading(true);
                 // 1. Fetch the application first
-                const appData = await apiFetch.get(`/visa/applications/${applicationId}`);
+                const appData = await apiFetch.get(`/visa/applications/${applicationItem}`);
 
                 console.log("Fetched application data:", appData); // Debug log
 
@@ -100,7 +100,7 @@ export default function ViewVisaApplication() {
         };
 
         fetchApplicationAndService();
-    }, [applicationId, navigate]);
+    }, [applicationItem, navigate]);
 
     //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
     const handleSubmitAlternateSlots = async () => {
@@ -119,7 +119,7 @@ export default function ViewVisaApplication() {
                 return;
             }
 
-            await apiFetch.put(`/visa/applications/${applicationId}/suggest-appointments`, { slots });
+            await apiFetch.put(`/visa/applications/${applicationItem}/suggest-appointments`, { slots });
 
             setAlternateSlots([
                 { date: null, time: null },
@@ -259,7 +259,7 @@ export default function ViewVisaApplication() {
         try {
             setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
-            await apiFetch.put(`/visa/applications/${applicationId}/status`, { status: newStatus });
+            await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
             setCurrentStep(stepIdx);
             message.success(`Status updated to ${newStatus}`);
@@ -275,7 +275,7 @@ export default function ViewVisaApplication() {
 
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/visa/applications/${applicationId}/resubmit-documents`);
+            await apiFetch.put(`/visa/applications/${applicationItem}/resubmit-documents`);
 
             setApplication((prev) => ({
                 ...prev,
@@ -306,7 +306,7 @@ export default function ViewVisaApplication() {
     const handleEmbassyRejected = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/visa/applications/${applicationId}/status`, { status: "Rejected" });
+            await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Rejected" });
             setApplication((prev) => ({ ...prev, status: "Rejected" }));
             message.success("Application marked as Embassy Rejected");
         } catch (err) {
@@ -319,7 +319,7 @@ export default function ViewVisaApplication() {
     const handleEmbassyApproved = async () => {
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/visa/applications/${applicationId}/status`, { status: "Embassy Approved" });
+            await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Embassy Approved" });
             setApplication((prev) => ({ ...prev, status: "Embassy Approved" }));
             message.success("Application marked as Embassy Approved");
         } catch (err) {

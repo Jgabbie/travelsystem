@@ -224,201 +224,205 @@ export default function ApplyVisa() {
                 </div>
             </Modal>
 
-            <div className="passport-page">
-                <div className="passport-container">
-                    <header className="passport-header">
-                        <h2>Visa Application Assistance</h2>
-                        <p>Choose a visa service, review the requirements, and submit your preferred schedule.</p>
-                    </header>
+            <div className="passport-container">
+                <header className="passport-header">
+                    <h2>Visa Application Assistance</h2>
+                    <p>Choose a visa service, review the requirements, and submit your preferred schedule.</p>
+                </header>
 
-                    <section className="passport-grid">
-                        <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
-                            <h3>Requirements</h3>
-
-                            <h4>Required</h4>
-                            {requiredRequirements.length ? (
-                                <ul className="passport-list">
-                                    {requiredRequirements.map((item, index) => (
-                                        <li key={`req-required-${index}`}>
-                                            <strong>{item.req}</strong>
-                                            <br />
-                                            <span>{item.desc}</span>
-                                            {item.applicationLink && (
-                                                <div style={{ marginTop: 8 }}>
-                                                    <Button
-                                                        className='visaapplication-link-button'
-                                                        size="small"
-                                                        type="link"
-                                                        onClick={() => handleOpenLink(item.applicationLink)}
-                                                    >
-                                                        Open Application Link
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No required items.</p>
-                            )}
-
-                            <h4 style={{ marginTop: 12 }}>Optional</h4>
-                            {optionalRequirements.length ? (
-                                <ul className="passport-list">
-                                    {optionalRequirements.map((item, index) => (
-                                        <li key={`req-optional-${index}`}>
-                                            <strong>{item.req}</strong>
-                                            <br />
-                                            <span>{item.desc}</span>
-                                            {item.applicationLink && (
-                                                <div style={{ marginTop: 8 }}>
-                                                    <Button
-                                                        size="small"
-                                                        type="primary"
-                                                        onClick={() => handleOpenLink(item.applicationLink)}
-                                                    >
-                                                        Open Application Link
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No optional items.</p>
-                            )}
-                        </div>
-
-                        {hasAdditionalRequirements ? (
+                <div className="passport-page">
+                    <div className='passport-content'>
+                        <section className="passport-grid">
                             <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
-                                <h3>Additional Requirements</h3>
-                                {additionalRequirements.map((group, groupIndex) => (
-                                    <div key={`additional-group-${groupIndex}`} style={{ marginBottom: 16 }}>
-                                        <h4 style={{ marginBottom: 8 }}>{group.customer || `Customer ${groupIndex + 1}`}</h4>
-                                        <ul className="passport-list">
-                                            {(group.requirements || []).map((reqItem, reqIndex) => (
-                                                <li key={`additional-req-${groupIndex}-${reqIndex}`}>
-                                                    <strong>{reqItem.requirement}</strong>
-                                                    {reqItem.isReq ? <span>{` (${reqItem.isReq})`}</span> : null}
-                                                    <br />
-                                                    <span>{reqItem.description}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                ))}
+                                <h3>Requirements</h3>
+
+                                <h4>Required</h4>
+                                {requiredRequirements.length ? (
+                                    <ul className="passport-list">
+                                        {requiredRequirements.map((item, index) => (
+                                            <li key={`req-required-${index}`}>
+                                                <strong>{item.req}</strong>
+                                                <br />
+                                                <span>{item.desc}</span>
+                                                {item.applicationLink && (
+                                                    <div style={{ marginTop: 8 }}>
+                                                        <Button
+                                                            className='visaapplication-link-button'
+                                                            size="small"
+                                                            type="link"
+                                                            onClick={() => handleOpenLink(item.applicationLink)}
+                                                        >
+                                                            Open Application Link
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>No required items.</p>
+                                )}
+
+                                <h4 style={{ marginTop: 12 }}>Optional</h4>
+                                {optionalRequirements.length ? (
+                                    <ul className="passport-list">
+                                        {optionalRequirements.map((item, index) => (
+                                            <li key={`req-optional-${index}`}>
+                                                <strong>{item.req}</strong>
+                                                <br />
+                                                <span>{item.desc}</span>
+                                                {item.applicationLink && (
+                                                    <div style={{ marginTop: 8 }}>
+                                                        <Button
+                                                            size="small"
+                                                            type="primary"
+                                                            onClick={() => handleOpenLink(item.applicationLink)}
+                                                        >
+                                                            Open Application Link
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>No optional items.</p>
+                                )}
                             </div>
-                        ) : null}
 
-                        <div className="passport-panel">
-                            <h3>Reminders</h3>
-                            {reminders.length ? (
-                                <ul className="passport-list">
-                                    {reminders.map((item, index) => (
-                                        <li key={`reminder-${index}`}>{item}</li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No reminders available.</p>
-                            )}
-                        </div>
-
-                        <div className="passport-panel">
-                            <h3>Step-by-step process</h3>
-                            <div className="passport-steps">
-                                {steps.map((step, index) => (
-                                    <div className="passport-step" key={`step-${index}`}>
-                                        <span className="passport-step-number">{index + 1}</span>
-                                        <div>
-                                            <h4>{`Step ${index + 1}`}</h4>
-                                            <p>
-                                                <strong>{step}</strong><br />
-
-                                            </p>
+                            {hasAdditionalRequirements ? (
+                                <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
+                                    <h3>Additional Requirements</h3>
+                                    {additionalRequirements.map((group, groupIndex) => (
+                                        <div key={`additional-group-${groupIndex}`} style={{ marginBottom: 16 }}>
+                                            <h4 style={{ marginBottom: 8 }}>{group.customer || `Customer ${groupIndex + 1}`}</h4>
+                                            <ul className="passport-list">
+                                                {(group.requirements || []).map((reqItem, reqIndex) => (
+                                                    <li key={`additional-req-${groupIndex}-${reqIndex}`}>
+                                                        <strong>{reqItem.requirement}</strong>
+                                                        {reqItem.isReq ? <span>{` (${reqItem.isReq})`}</span> : null}
+                                                        <br />
+                                                        <span>{reqItem.description}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
+                                    ))}
+                                </div>
+                            ) : null}
+
+                            <div className="passport-panel">
+                                <h3>Reminders</h3>
+                                {reminders.length ? (
+                                    <ul className="passport-list">
+                                        {reminders.map((item, index) => (
+                                            <li key={`reminder-${index}`}>{item}</li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>No reminders available.</p>
+                                )}
+                            </div>
+
+                            <div className="passport-panel">
+                                <h3>Step-by-step process</h3>
+                                <div className="passport-steps">
+                                    {steps.map((step, index) => (
+                                        <div className="passport-step" key={`step-${index}`}>
+                                            <span className="passport-step-number">{index + 1}</span>
+                                            <div>
+                                                <h4>{`Step ${index + 1}`}</h4>
+                                                <p>
+                                                    <strong>{step}</strong><br />
+
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="renew-passport-card">
+
+                            <h3>Application Details</h3>
+                            <div
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    padding: '6px 12px',
+                                    marginTop: 6,
+                                    marginBottom: 14,
+                                    borderRadius: 999,
+                                    background: 'rgba(48, 87, 151, 0.08)',
+                                    border: '1px solid rgba(48, 87, 151, 0.25)',
+                                    color: '#305797',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                <span>Visa Fee</span>
+                                <span>₱{selectedService?.visaPrice || 0}</span>
+                            </div>
+                            <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
+
+                                <div>
+                                    <div className="form-group">
+                                        <label className="passport-label">Preferred appointment date</label>
+                                        <DatePicker
+                                            value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
+                                            disabledDate={disableDates}
+                                            onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
+                                            className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
+                                        />
+                                        <p className="error-message">
+                                            {error.preferredDate || ''}
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="renew-passport-card">
-
-                        <h3>Application Details</h3>
-                        <div
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                padding: '6px 12px',
-                                marginTop: 6,
-                                marginBottom: 14,
-                                borderRadius: 999,
-                                background: 'rgba(48, 87, 151, 0.08)',
-                                border: '1px solid rgba(48, 87, 151, 0.25)',
-                                color: '#305797',
-                                fontWeight: 600,
-                            }}
-                        >
-                            <span>Visa Fee</span>
-                            <span>₱{selectedService?.visaPrice || 0}</span>
-                        </div>
-                        <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
-
-                            <div>
-                                <div className="form-group">
-                                    <label className="passport-label">Preferred appointment date</label>
-                                    <DatePicker
-                                        value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
-                                        disabledDate={disableDates}
-                                        onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
-                                        className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
-                                    />
-                                    <p className="error-message">
-                                        {error.preferredDate || ''}
-                                    </p>
-                                </div>
 
 
-                                <div className="form-group">
-                                    <label className="passport-label">Preferred appointment time</label>
-                                    <TimePicker
-                                        value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
-                                        format="h:mm A"
-                                        use12Hours
-                                        showNow={false}
-                                        minuteStep={30}
-                                        disabledTime={() => ({
-                                            disabledHours
-                                        })}
-                                        onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
-                                        className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
-                                    />
-                                    <p className="error-message">
-                                        {error.preferredTime || ''}
-                                    </p>
-                                </div>
+                                    <div className="form-group">
+                                        <label className="passport-label">Preferred appointment time</label>
+                                        <TimePicker
+                                            value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
+                                            format="h:mm A"
+                                            use12Hours
+                                            showNow={false}
+                                            minuteStep={30}
+                                            disabledTime={() => ({
+                                                disabledHours
+                                            })}
+                                            onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
+                                            className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
+                                        />
+                                        <p className="error-message">
+                                            {error.preferredTime || ''}
+                                        </p>
+                                    </div>
 
 
-                                <div className="form-group">
-                                    <label className="passport-label">Purpose of travel</label>
-                                    <Input.TextArea
-                                        className={`passport-input ${error.purpose ? 'input-error' : ''}`}
-                                        rows={3}
-                                        placeholder="Share your purpose of travel"
-                                        value={purpose}
-                                        onChange={(event) => setPurpose(event.target.value)}
-                                    />
-                                    <p className="error-message">
-                                        {error.purpose || ''}
-                                    </p>
+                                    <div className="form-group">
+                                        <label className="passport-label">Purpose of travel</label>
+                                        <Input.TextArea
+                                            className={`passport-input ${error.purpose ? 'input-error' : ''}`}
+                                            rows={3}
+                                            placeholder="Share your purpose of travel"
+                                            value={purpose}
+                                            onChange={(event) => setPurpose(event.target.value)}
+                                        />
+                                        <p className="error-message">
+                                            {error.purpose || ''}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <Button className="passport-submit" type="primary" onClick={submitRequest}>
-                            Submit request
-                        </Button>
-                    </section>
+                            <Button className="passport-submit" type="primary" onClick={submitRequest}>
+                                Submit request
+                            </Button>
+                        </section>
+                    </div>
+
+
                 </div>
             </div>
         </ConfigProvider>

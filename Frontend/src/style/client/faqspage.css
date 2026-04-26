@@ -1,5 +1,5 @@
 .faq-container {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #f2f7ff;
 }
 
 .faq-page {
@@ -65,13 +65,15 @@
 .faq-header h2 {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
+    font-weight: 600;
     color: #1f2a44;
     margin: 0;
 }
 
 .faq-header p {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #5b6476;
+    color: #3c424f;
     font-size: 14px;
 }
 
@@ -115,9 +117,8 @@
     max-width: 1280px;
     background: #ffffff;
     padding: 20px;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(30, 58, 104, 0.08);
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
     margin: 0 auto 28px;
     display: flex;
     flex-direction: column;
@@ -127,9 +128,8 @@
 .faq-collapse {
     max-width: 1280px;
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(30, 58, 104, 0.08);
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
     padding: 8px 0;
     margin: 0 auto 28px;
     display: flex;
@@ -156,9 +156,8 @@
     padding: 32px;
     color: #6b7280;
     background: #ffffff;
-    border: 2px solid #d5d8da;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(30, 58, 104, 0.08);
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
     margin: 0 auto 28px;
     display: flex;
     flex-direction: column;

@@ -104,11 +104,11 @@ export default function FAQsPage() {
 
                 <div className="faq-page">
                     <header className="faq-header">
-                        <Title level={2}>Frequently Asked Questions</Title>
-                        <Text type="secondary">
+                        <h2>Frequently Asked Questions</h2>
+                        <p>
                             Browse our FAQs to find quick answers about bookings, payments, and services.
                             Can't find what you're looking for? Contact us for personalized support.
-                        </Text>
+                        </p>
                     </header>
                     <div className="faq-filters">
                         {categories.map((category) => (
