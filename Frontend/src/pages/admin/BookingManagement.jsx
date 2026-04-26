@@ -257,9 +257,7 @@ export default function BookingManagement() {
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
-      const invoicePath = isEmployee
-        ? `${basePath}/bookings/${key}/invoice`
-        : `${basePath}/bookings/invoice`;
+      const invoicePath = `${basePath}/bookings/invoice`;
       navigate(invoicePath, { state: { booking } });
     }
   };
@@ -453,88 +451,107 @@ export default function BookingManagement() {
         {!showArchived && (
           <Row gutter={16} style={{ marginBottom: 20 }}>
             <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
+              <Card >
                 <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />
               </Card>
             </Col>
             <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
+              <Card >
                 <Statistic title="Pending" value={totalPending} prefix={<ClockCircleOutlined />} />
               </Card>
             </Col>
             <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
+              <Card >
                 <Statistic title="Fully Paid" value={totalFullyPaid} prefix={<CheckCircleOutlined />} />
               </Card>
             </Col>
             <Col xs={24} sm={6}>
-              <Card className="booking-management-card">
+              <Card >
                 <Statistic title="Cancelled" value={totalCancelled} prefix={<CloseCircleOutlined />} />
               </Card>
             </Col>
           </Row>
         )}
 
-        <div className="booking-actions">
-          <Input
-            prefix={<SearchOutlined />}
-            placeholder="Search reference, package or status..."
-            className="search-input"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-          />
-          <Select
-            className="booking-select"
-            placeholder="Status"
-            style={{ width: 140 }}
-            allowClear
-            value={statusFilter || undefined}
-            onChange={(v) => setStatusFilter(v || "")}
-            options={[
-              { value: "Fully Paid", label: "Fully Paid" },
-              { value: "Pending", label: "Pending" },
-              { value: "Cancelled", label: "Cancelled" }
-            ]}
-          />
-          <DatePicker
-            className="booking-date-filter"
-            placeholder="Booking Date"
-            value={bookingDateFilter}
-            onChange={(d) => setBookingDateFilter(d)}
-            allowClear
-          />
-          <DatePicker
-            className="booking-date-filter"
-            placeholder="Travel Date"
-            value={travelDateFilter}
-            onChange={(d) => setTravelDateFilter(d)}
-            allowClear
-          />
-          <Space style={{ marginLeft: 'auto' }}>
-            <Button className='bookingmanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
-            <Button
-              className='bookingmanagement-archive-button'
-              icon={showArchived ? <BookOutlined /> : <InboxOutlined />}
-              type="primary"
-              onClick={() => {
-                const nextValue = !showArchived;
-                setShowArchived(nextValue);
-                setSearchText("");
-                setStatusFilter("");
-                setBookingDateFilter(null);
-                setTravelDateFilter(null);
-                if (nextValue) {
-                  fetchArchivedBookings();
-                } else {
-                  fetchBookings();
-                }
-              }}
-            >
-              {showArchived ? 'Back' : 'Archives'}
-            </Button>
-          </Space>
-        </div>
+        <Card className="bookingmanagement-actions">
+          <div className="bookingmanagement-actions-row">
+            <div className="bookingmanagement-actions-filters">
+              <div className="bookingmanagement-actions-field bookingmanagement-actions-field--search">
+                <label className="bookingmanagement-label">Search</label>
+                <Input
+                  prefix={<SearchOutlined />}
+                  placeholder="Search reference, package or status..."
+                  className="bookingmanagement-search-input"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  allowClear
+                />
+              </div>
+
+              <div className="bookingmanagement-actions-field">
+                <label className="bookingmanagement-label">Status</label>
+                <Select
+                  className="bookingmanagement-select"
+                  placeholder="Status"
+                  allowClear
+                  value={statusFilter || undefined}
+                  onChange={(v) => setStatusFilter(v || "")}
+                  options={[
+                    { value: "Fully Paid", label: "Fully Paid" },
+                    { value: "Pending", label: "Pending" },
+                    { value: "Cancelled", label: "Cancelled" }
+                  ]}
+                />
+              </div>
+
+              <div className="bookingmanagement-actions-field">
+                <label className="bookingmanagement-label">Booking Date</label>
+                <DatePicker
+                  className="booking-date-filter"
+                  placeholder="Booking Date"
+                  value={bookingDateFilter}
+                  onChange={(d) => setBookingDateFilter(d)}
+                  allowClear
+                />
+              </div>
+
+              <div className="bookingmanagement-actions-field">
+                <label className="bookingmanagement-label">Travel Date</label>
+                <DatePicker
+                  className="booking-date-filter"
+                  placeholder="Travel Date"
+                  value={travelDateFilter}
+                  onChange={(d) => setTravelDateFilter(d)}
+                  allowClear
+                />
+              </div>
+            </div>
+
+            <div className="bookingmanagement-actions-buttons">
+              <Button className='bookingmanagement-export-button' type="primary" icon={<FilePdfOutlined />} onClick={generatePDF}>Export to PDF</Button>
+              <Button
+                className='bookingmanagement-archive-button'
+                icon={showArchived ? <BookOutlined /> : <InboxOutlined />}
+                type="primary"
+                onClick={() => {
+                  const nextValue = !showArchived;
+                  setShowArchived(nextValue);
+                  setSearchText("");
+                  setStatusFilter("");
+                  setBookingDateFilter(null);
+                  setTravelDateFilter(null);
+                  if (nextValue) {
+                    fetchArchivedBookings();
+                  } else {
+                    fetchBookings();
+                  }
+                }}
+              >
+                {showArchived ? 'Back' : 'Archives'}
+              </Button>
+            </div>
+          </div>
+        </Card>
 
         <Card>
           <Table
@@ -555,7 +572,7 @@ export default function BookingManagement() {
           footer={null}
           onOk={save}
           okText="Save Changes"
-          style={{ top: 170 }}
+          centered={true}
           className="booking-edit-modal"
         >
           <Form form={editForm} layout="vertical" className="booking-edit-form">
@@ -643,7 +660,7 @@ export default function BookingManagement() {
           open={isDeleteModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsDeleteModalOpen(false);
           }}
@@ -684,7 +701,7 @@ export default function BookingManagement() {
           open={isRestoreModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsRestoreModalOpen(false);
           }}
@@ -725,7 +742,7 @@ export default function BookingManagement() {
           open={isBookingEditedModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsBookingEditedModalOpen(false);
           }}
@@ -761,7 +778,7 @@ export default function BookingManagement() {
           open={isBookingDeletedModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsBookingDeletedModalOpen(false);
           }}
@@ -798,7 +815,7 @@ export default function BookingManagement() {
           open={isBookingRestoredModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsBookingRestoredModalOpen(false);
           }}

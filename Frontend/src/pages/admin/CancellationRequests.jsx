@@ -420,67 +420,80 @@ export default function CancellationRequests() {
                     </Row>
                 )}
 
-                <div className="cancel-actions">
-                    <Input
-                        prefix={<SearchOutlined />}
-                        placeholder="Search username, package or reason..."
-                        className="search-input"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        allowClear
-                    />
+                <Card className="cancel-actions">
+                    <div className="cancel-actions-row">
+                        <div className="cancel-actions-filters">
+                            <div className="cancel-actions-field cancel-actions-field--search">
+                                <label className="cancellationrequests-label">Search</label>
+                                <Input
+                                    prefix={<SearchOutlined />}
+                                    placeholder="Search username, package or reason..."
+                                    className="cancellationrequests-search-input"
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    allowClear
+                                />
+                            </div>
 
-                    <Select
-                        className="quotation-select"
-                        placeholder="Status"
-                        style={{ width: 160 }}
-                        allowClear
-                        value={statusFilter || undefined}
-                        onChange={(value) => setStatusFilter(value || "")}
-                        options={[
-                            { value: "Pending", label: "Pending" },
-                            { value: "Approved", label: "Approved" },
-                            { value: "Disapproved", label: "Disapproved" },
-                        ]}
-                    />
+                            <div className="cancel-actions-field">
+                                <label className="cancellationrequests-label">Status</label>
+                                <Select
+                                    className="cancellationrequests-select"
+                                    placeholder="Status"
+                                    allowClear
+                                    value={statusFilter || undefined}
+                                    onChange={(value) => setStatusFilter(value || "")}
+                                    options={[
+                                        { value: "Pending", label: "Pending" },
+                                        { value: "Approved", label: "Approved" },
+                                        { value: "Disapproved", label: "Disapproved" },
+                                    ]}
+                                />
+                            </div>
 
-                    <DatePicker
-                        placeholder="Cancellation Date"
-                        value={dateFilter}
-                        onChange={(date) => setDateFilter(date)}
-                        allowClear
-                    />
+                            <div className="cancel-actions-field">
+                                <label className="cancellationrequests-label">Cancellation Date</label>
+                                <DatePicker
+                                    className="cancellation-date-filter"
+                                    placeholder="Cancellation Date"
+                                    value={dateFilter}
+                                    onChange={(date) => setDateFilter(date)}
+                                    allowClear
+                                />
+                            </div>
+                        </div>
 
-                    <Space style={{ marginLeft: 'auto' }}>
-                        <Button
-                            className='cancellations-export-button'
-                            type="primary"
-                            icon={<FilePdfOutlined />}
-                            onClick={generatePDF}
-                        >
-                            Export to PDF
-                        </Button>
-                        <Button
-                            icon={showArchived ? <SafetyCertificateOutlined /> : <InboxOutlined />}
-                            className='cancellations-archive-button'
-                            type="primary"
-                            onClick={() => {
-                                const nextValue = !showArchived
-                                setShowArchived(nextValue)
-                                setSearchText("")
-                                setStatusFilter("")
-                                setDateFilter(null)
-                                if (nextValue) {
-                                    getArchivedCancellationRequests()
-                                } else {
-                                    getCancellationRequests()
-                                }
-                            }}
-                        >
-                            {showArchived ? 'Back' : 'Archives'}
-                        </Button>
-                    </Space>
-                </div>
+                        <div className="cancel-actions-buttons">
+                            <Button
+                                className='cancellations-export-button'
+                                type="primary"
+                                icon={<FilePdfOutlined />}
+                                onClick={generatePDF}
+                            >
+                                Export to PDF
+                            </Button>
+                            <Button
+                                icon={showArchived ? <SafetyCertificateOutlined /> : <InboxOutlined />}
+                                className='cancellations-archive-button'
+                                type="primary"
+                                onClick={() => {
+                                    const nextValue = !showArchived
+                                    setShowArchived(nextValue)
+                                    setSearchText("")
+                                    setStatusFilter("")
+                                    setDateFilter(null)
+                                    if (nextValue) {
+                                        getArchivedCancellationRequests()
+                                    } else {
+                                        getCancellationRequests()
+                                    }
+                                }}
+                            >
+                                {showArchived ? 'Back' : 'Archives'}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
 
                 <Card style={{ marginTop: 20 }}>
                     <Table

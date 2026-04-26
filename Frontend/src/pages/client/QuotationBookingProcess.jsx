@@ -275,7 +275,15 @@ export default function QuotationBookingProcess() {
 
                 if (!latestDetails || !isMounted) return;
 
-                const travelDateValue = latestDetails.travelDate || latestDetails.travelDates || latestDetails.date || null;
+                const formattedStartTravelDate = dayjs(latestDetails.travelDates.split('-')[0].trim()).format("YYYY-MM-DD") || dayjs(latestDetails.travelDate).format("YYYY-MM-DD") || dayjs(latestDetails.date).format("YYYY-MM-DD") || null;
+                const formattedEndTravelDate = dayjs(latestDetails.travelDates.split('-')[1].trim()).format("YYYY-MM-DD") || dayjs(latestDetails.travelDate).format("YYYY-MM-DD") || dayjs(latestDetails.date).format("YYYY-MM-DD") || null;
+
+                const formattedTravelDates = {
+                    startDate: formattedStartTravelDate,
+                    endDate: formattedEndTravelDate
+                }
+
+                const travelDateValue = formattedTravelDates
                 const priceValue = latestDetails.totalPrice || "N/A"
                 const travelersValue = latestDetails.travelers || 0;
                 const hotelValue = latestDetails.preferredHotels || latestDetails.hotel || "";
@@ -287,7 +295,6 @@ export default function QuotationBookingProcess() {
                 const infantRate = latestDetails.totalInfantRate || 0;
 
                 const quotationId = quotationBookingData.quotationId
-
 
                 const totalTravelers = typeof travelersValue === 'number'
                     ? travelersValue
@@ -818,6 +825,7 @@ export default function QuotationBookingProcess() {
                                         <span className="booking-summary-label">Travel Date</span>
                                         <span className="booking-summary-value">
                                             {quotationBookingData.travelDate}
+                                            {/* {`${quotationBookingData.travelDate.startDate.dayjs().format("MMM D, YYYY")} - ${quotationBookingData.travelDate.endDate.dayjs().format("MMM D, YYYY")}`} */}
                                         </span>
                                     </div>
 

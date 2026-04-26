@@ -1,13 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Tag, Table, Input, ConfigProvider, Select, Card } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
+import '../../style/admin/logging-auditing.css';
 
 export default function Logging() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [roleFilter, setRoleFilter] = useState('');
+    const [actionFilter, setActionFilter] = useState('');
     const [searchText, setSearchText] = useState('');
+
+    const roleOptions = useMemo(() => {
+        const uniqueRoles = Array.from(
+            new Set(logs.map((log) => log?.performedBy?.role).filter(Boolean))
+        );
+        return uniqueRoles.map((role) => ({ label: role, value: role }));
+    }, [logs]);
+
+    const actionOptions = useMemo(() => {
+        const uniqueActions = Array.from(new Set(logs.map((log) => log.action))).filter(Boolean);
+        return uniqueActions.map((action) => ({ label: action, value: action }));
+    }, [logs]);
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -33,8 +47,9 @@ export default function Logging() {
             log.performedBy?.email?.toLowerCase().includes(searchLower);
 
         const matchesRole = roleFilter ? log.performedBy?.role === roleFilter : true;
+        const matchesAction = actionFilter ? log.action === actionFilter : true;
 
-        return matchesSearch && matchesRole;
+        return matchesSearch && matchesRole && matchesAction;
     });
 
     const columns = [
@@ -119,19 +134,54 @@ export default function Logging() {
                 }
             }}
         >
-            <div>
+            <div className="logging-page">
                 <h1 className="page-header">System Logs</h1>
 
-                <Input
-                    placeholder="Search logs by action, username, or email..."
-                    prefix={<SearchOutlined />}
-                    className="logs-search-input"
-                    style={{ marginBottom: 20, width: 500 }}
-                    onChange={(e) => setSearchText(e.target.value)}
-                />
+                <Card className="logging-actions">
+                    <div className="logging-actions-row">
+                        <div className="logging-actions-filters">
+                            <div className="logging-actions-field logging-actions-field--search">
+                                <label className="logging-label">Search</label>
+                                <Input
+                                    placeholder="Search logs by action, username, or email..."
+                                    prefix={<SearchOutlined />}
+                                    className="logging-search-input"
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="logging-actions-field">
+                                <label className="logging-label">Role</label>
+                                <Select
+                                    allowClear
+                                    placeholder="All roles"
+                                    className="logging-select"
+                                    value={roleFilter || undefined}
+                                    onChange={(value) => setRoleFilter(value || '')}
+                                    options={roleOptions}
+                                />
+                            </div>
+
+                            <div className="logging-actions-field">
+                                <label className="logging-label">Action</label>
+                                <Select
+                                    allowClear
+                                    placeholder="All actions"
+                                    className="logging-select"
+                                    value={actionFilter || undefined}
+                                    onChange={(value) => setActionFilter(value || '')}
+                                    options={actionOptions}
+                                    showSearch
+                                    optionFilterProp="label"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </Card>
 
                 <Card>
                     <Table
+                        className="logging-table"
                         columns={columns}
                         dataSource={filteredLogs}
                         rowKey="_id"

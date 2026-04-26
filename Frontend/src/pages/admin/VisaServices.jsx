@@ -29,7 +29,7 @@ export default function VisaServices() {
     const formatListItem = (item) => {
         if (typeof item === "string") return item;
         if (item && typeof item === "object") {
-            return item.req || item.desc || "";
+            return item.title || item.req || item.description || item.desc || "";
         }
         return "";
     };
@@ -164,43 +164,50 @@ export default function VisaServices() {
                     </Row>
                 )}
 
-                <div className="package-actions">
-                    <Input
-                        className="search-input"
-                        prefix={<SearchOutlined />}
-                        placeholder="Search service..."
-                        onChange={(event) => setSearchText(event.target.value)}
-                    />
+                <Card className="visaservices-actions">
+                    <div className="visaservices-actions-row">
+                        <div className="visaservices-actions-filters">
+                            <div className="visaservices-actions-field visaservices-actions-field--search">
+                                <label className="visaservices-label">Search</label>
+                                <Input
+                                    className="visaservices-search-input"
+                                    prefix={<SearchOutlined />}
+                                    placeholder="Search service..."
+                                    onChange={(event) => setSearchText(event.target.value)}
+                                />
+                            </div>
+                        </div>
 
-                    <Space style={{ marginLeft: 'auto' }}>
-                        <Button
-                            className="visaservices-add-button"
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            onClick={() => navigate(`${basePath}/visa-services/add`)}
-                            disabled={showArchived}
-                        >
-                            Add Service
-                        </Button>
-                        <Button
-                            icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
-                            className="visaservices-archive-button"
-                            type="primary"
-                            onClick={() => {
-                                const nextValue = !showArchived;
-                                setShowArchived(nextValue);
-                                setSearchText("");
-                                if (nextValue) {
-                                    getArchivedServices();
-                                } else {
-                                    getServices();
-                                }
-                            }}
-                        >
-                            {showArchived ? 'Back' : 'Archives'}
-                        </Button>
-                    </Space>
-                </div>
+                        <div className="visaservices-actions-buttons">
+                            <Button
+                                className="visaservices-add-button"
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={() => navigate(`${basePath}/visa-services/add`)}
+                                disabled={showArchived}
+                            >
+                                Add Service
+                            </Button>
+                            <Button
+                                icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
+                                className="visaservices-archive-button"
+                                type="primary"
+                                onClick={() => {
+                                    const nextValue = !showArchived;
+                                    setShowArchived(nextValue);
+                                    setSearchText("");
+                                    if (nextValue) {
+                                        getArchivedServices();
+                                    } else {
+                                        getServices();
+                                    }
+                                }}
+                            >
+                                {showArchived ? 'Back' : 'Archives'}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
 
                 <Spin spinning={loading}>
                     {filteredServices.length > 0 ? filteredServices.map(service => (

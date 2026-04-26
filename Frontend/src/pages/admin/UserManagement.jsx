@@ -353,62 +353,104 @@ export default function UserManagement() {
         <h1 className="page-header">User Management</h1>
 
         {!showArchived && (
-          <Row gutter={16} style={{ marginBottom: 20 }}>
+          <Row className='usermanagement-statistics' gutter={16} style={{ marginBottom: 20 }}>
             <Col xs={24} sm={8}><Card><Statistic title="Total Users" value={users.length} prefix={<UserOutlined />} /></Card></Col>
             <Col xs={24} sm={8}><Card><Statistic title="Verified Users" value={users.filter(u => u.status === "Verified").length} prefix={<CheckCircleOutlined />} /></Card></Col>
             <Col xs={24} sm={8}><Card><Statistic title="Unverified Users" value={users.filter(u => u.status === "Pending").length} prefix={<ExclamationCircleOutlined />} /></Card></Col>
           </Row>
         )}
 
-        <div className="user-actions">
-          <Input prefix={<SearchOutlined />} placeholder="Search..." className="search-input" value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
-          <Select placeholder="Role" style={{ width: 140 }} allowClear onChange={(v) => setRoleFilter(v || "")} options={[{ value: "Admin", label: "Admin" }, { value: "Customer", label: "Customer" }, { value: "Employee", label: "Employee" }]} />
-          <Select placeholder="Status" style={{ width: 140 }} allowClear onChange={(v) => setStatusFilter(v || "")} options={[{ value: "Verified", label: "Verified" }, { value: "Pending", label: "Pending" }]} />
+        <Card className="usermanagement-actions">
+          <div className="usermanagement-actions-row">
+            <div className="usermanagement-actions-filters">
+              <div className="usermanagement-actions-field usermanagement-actions-field--search">
+                <label className="usermanagement-label">Search</label>
+                <Input
+                  prefix={<SearchOutlined />}
+                  placeholder="Search..."
+                  className="usermanagement-search-input"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  allowClear />
+              </div>
 
-          <Space style={{ marginLeft: 'auto' }}>
-            {/* RESTORED original classes */}
-            <Button
-              className='usermanagement-add-button'
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsModalOpen(true)}
-              disabled={showArchived}
-            >
-              Add User
-            </Button>
-            <Button
-              className='usermanagement-export-button'
-              type="primary"
-              icon={<FilePdfOutlined />}
-              onClick={generatePDF}
-            >
-              Export to PDF
-            </Button>
-            <Button
-              icon={showArchived ? <UserOutlined /> : <InboxOutlined />}
-              className='usermanagement-archive-button'
-              type="primary"
-              onClick={() => {
-                const nextValue = !showArchived;
-                setShowArchived(nextValue);
-                setSearchText("");
-                setRoleFilter("");
-                setStatusFilter("");
-                if (nextValue) {
-                  getArchivedUsers();
-                } else {
-                  getUsers();
-                }
-              }}
-            >
-              {showArchived ? 'Back' : 'Archives'}
-            </Button>
-          </Space>
-        </div>
+              <div className="usermanagement-actions-field">
+                <label className="usermanagement-label">Role</label>
+                <Select
+                  placeholder="Role"
+                  className="usermanagement-select"
+                  allowClear
+                  onChange={(v) => setRoleFilter(v || "")}
+                  options={[
+                    { value: "Admin", label: "Admin" },
+                    { value: "Customer", label: "Customer" },
+                    { value: "Employee", label: "Employee" }
+                  ]}
+                />
+              </div>
+
+              <div className="usermanagement-actions-field">
+                <label className="usermanagement-label">Status</label>
+                <Select
+                  placeholder="Status"
+                  className="usermanagement-select"
+                  allowClear
+                  onChange={(v) => setStatusFilter(v || "")}
+                  options={[
+                    { value: "Verified", label: "Verified" },
+                    { value: "Pending", label: "Pending" }
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="usermanagement-actions-buttons">
+              <Button
+                className='usermanagement-add-button'
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setIsModalOpen(true)}
+                disabled={showArchived}
+              >
+                Add User
+              </Button>
+
+              <Button
+                className='usermanagement-export-button'
+                type="primary"
+                icon={<FilePdfOutlined />}
+                onClick={generatePDF}
+              >
+                Export to PDF
+              </Button>
+
+              <Button
+                icon={showArchived ? <UserOutlined /> : <InboxOutlined />}
+                className='usermanagement-archive-button'
+                type="primary"
+                onClick={() => {
+                  const nextValue = !showArchived;
+                  setShowArchived(nextValue);
+                  setSearchText("");
+                  setRoleFilter("");
+                  setStatusFilter("");
+                  if (nextValue) {
+                    getArchivedUsers();
+                  } else {
+                    getUsers();
+                  }
+                }}
+              >
+                {showArchived ? 'Back' : 'Archives'}
+              </Button>
+            </div>
+          </div>
+        </Card>
 
         <Card style={{ marginTop: 20 }}>
           <Form form={form} component={false}>
             <Table
+              className='usermanagement-table'
               loading={loading}
               columns={showArchived ? archivedColumns : columns}
               dataSource={filteredUsers}
@@ -425,7 +467,7 @@ export default function UserManagement() {
           footer={null}
           className="users-view-modal"
           width={720}
-          destroyOnClose
+          centered={true}
         >
           {selectedUser && (
             <div className="users-view-content">
@@ -465,7 +507,7 @@ export default function UserManagement() {
           setEditingUser(null);
         }}
         footer={null}
-        style={{ top: 120 }}
+        centered={true}
         className="users-edit-modal"
       >
         <Form form={editForm} layout="vertical" className="users-edit-form">
@@ -535,7 +577,7 @@ export default function UserManagement() {
         open={isDeleteModalOpen}
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
-        style={{ top: 220 }}
+        centered={true}
         onCancel={() => {
           setIsDeleteModalOpen(false);
         }}
@@ -578,7 +620,7 @@ export default function UserManagement() {
         open={isRestoreModalOpen}
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
-        style={{ top: 220 }}
+        centered={true}
         onCancel={() => {
           setIsRestoreModalOpen(false);
         }}
@@ -609,27 +651,16 @@ export default function UserManagement() {
             >
               Cancel
             </Button>
-
           </div>
-
         </div>
       </Modal>
-
-
-
-
-
-
-
-
-
 
       {/* USER HAS BEEN EDITED MODAL */}
       <Modal
         open={isUserEditedModalOpen}
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
-        style={{ top: 220 }}
+        centered={true}
         onCancel={() => {
           setIsUserEditedModalOpen(false);
         }}
@@ -664,7 +695,7 @@ export default function UserManagement() {
         open={isUserDeletedModalOpen}
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
-        style={{ top: 220 }}
+        centered={true}
         onCancel={() => {
           setIsUserDeletedModalOpen(false);
         }}
@@ -700,7 +731,7 @@ export default function UserManagement() {
         open={isUserRestoredModalOpen}
         closable={{ 'aria-label': 'Custom Close Button' }}
         footer={null}
-        style={{ top: 220 }}
+        centered={true}
         onCancel={() => {
           setIsUserRestoredModalOpen(false);
         }}

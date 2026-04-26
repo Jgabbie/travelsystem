@@ -133,7 +133,6 @@ export default function QuotationsPaymentProcess() {
         return res.urls;
     };
 
-
     //GET THE INVOICE NUMBER
     useEffect(() => {
         const fetchMonthBookings = async () => {
@@ -174,26 +173,38 @@ export default function QuotationsPaymentProcess() {
     const packageId = quotationBookingData?.packageId;
     const packageName = quotationBookingData?.packageName || 'Tour Package';
 
-    const startTravelDate = dayjs(quotationBookingData?.travelDate?.startDate).format("MMM D, YYYY") || 'TBD';
-    const endTravelDate = dayjs(quotationBookingData?.travelDate?.endDate).add(4, 'day').format("MMM D, YYYY") || 'TBD';
+    const startTravelDate = dayjs(quotationBookingData?.travelDate.split('-')[0].trim()).format("MMM D, YYYY") || 'TBD';
+    const endTravelDate = dayjs(quotationBookingData?.travelDate.split('-')[1].trim()).format("MMM D, YYYY") || 'TBD';
 
-    const travelDate = startTravelDate === 'TBD' ? 'TBD' : `${startTravelDate} - ${endTravelDate}`;
+    const displayTravelDate = quotationBookingData?.travelDate
+    const travelDate = {
+        startDate: dayjs(startTravelDate).format("YYYY-MM-DD"),
+        endDate: dayjs(endTravelDate).format("YYYY-MM-DD")
+    };
+
+    console.log(startTravelDate)
 
     const name = quotationBookingData?.leadFullName || 'Customer';
     const email = quotationBookingData?.leadEmail || 'Email'
     const phone = quotationBookingData?.leadContact || 'Phone Number';
+
+    console.log(quotationBookingData)
 
     //PAYLOAD FOR PAYMENT
     const paymentDetails = {
         paymentType,
         frequency,
         depositAmount: quotationBookingData?.deposit ? (quotationBookingData.deposit * travelerTotal) : 0,
+        adultRate: packagePricePerPax,
+        childRate: childRate,
+        infantRate: infantRate
     }
 
     //PAYLOAD FOR BOOKINGS
     const bookingDetails = {
+        bookingType: bookingType,
         dateOfRegistration: quotationBookingData.dateOfRegistration,
-        travelDate: quotationBookingData?.travelDate,
+        travelDate: travelDate,
         tourPackageTitle: quotationBookingData.tourPackageTitle,
         tourPackageVia: quotationBookingData.tourPackageVia,
         leadTitle: quotationBookingData.leadTitle,
@@ -262,16 +273,12 @@ export default function QuotationsPaymentProcess() {
             const startDate = quotationBookingData?.travelDate.split(" - ")?.[0] || dayjs().format("MMM D, YYYY");
             const endDate = quotationBookingData?.travelDate.split(" - ")?.[1] || dayjs().format("MMM D, YYYY");
 
-
             const paymentMode = paymentType === 'deposit' ? 'Deposit' : 'Full Payment';
 
             const bookingRes = await apiFetch.post('/booking/create-booking', {
                 bookingPayload: {
                     packageId,
-                    travelDate: {
-                        startDate,
-                        endDate
-                    },
+                    travelDate,
                     travelers: { adult: quotationBookingData?.travelersCount.adult, child: quotationBookingData?.travelersCount.child, infant: quotationBookingData?.travelersCount.infant } || { adult: 0, child: 0, infant: 0 },
                     bookingDetails: bookingDetailsWithUrls,
                     paymentType,
@@ -374,7 +381,7 @@ export default function QuotationsPaymentProcess() {
 
     const today = dayjs();
 
-    const travelDateStart = quotationBookingData?.travelDate.split(" - ")?.[0] || today;
+    const travelDateStart = startTravelDate;
     const travelDateComputation = travelDateStart ? dayjs(travelDateStart, "MMM D, YYYY") : today;
 
     const maxAllowedDate = today.add(45, 'day');
@@ -383,7 +390,7 @@ export default function QuotationsPaymentProcess() {
         ? travelDateComputation
         : maxAllowedDate;
 
-    const depositAmount = (quotationBookingData?.deposit || 0) * travelerTotal;
+    const depositAmount = (quotationBookingData?.deposit) * (travelerTotal || 0) || 0;
     const remainingAmount = Math.max(totalAmount - depositAmount, 0);
 
     const paymentDates = [];

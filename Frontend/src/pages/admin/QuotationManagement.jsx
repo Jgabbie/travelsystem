@@ -413,84 +413,99 @@ export default function QuotationManagement() {
                     </Row>
                 )}
 
-                <div className="quotation-management-actions">
-                    <Input
-                        prefix={<SearchOutlined />}
-                        placeholder="Search request, package, customer or status..."
-                        className="search-input"
-                        value={searchText}
-                        onChange={(event) => setSearchText(event.target.value)}
-                        allowClear
-                    />
+                <Card className="quotation-management-actions">
+                    <div className="quotation-management-actions-row">
+                        <div className="quotation-management-actions-filters">
+                            <div className="quotation-management-actions-field quotation-management-actions-field--search">
+                                <label className="quotationmanagement-label">Search</label>
+                                <Input
+                                    prefix={<SearchOutlined />}
+                                    placeholder="Search request, package, customer or status..."
+                                    className="quotationmanagement-search-input"
+                                    value={searchText}
+                                    onChange={(event) => setSearchText(event.target.value)}
+                                    allowClear
+                                />
+                            </div>
 
-                    <Select
-                        className="quotation-select"
-                        placeholder="Status"
-                        style={{ width: 160 }}
-                        allowClear
-                        value={statusFilter || undefined}
-                        onChange={(value) => setStatusFilter(value || "")}
-                        options={[
-                            { value: "Pending", label: "Pending" },
-                            { value: "Under Review", label: "Under Review" },
-                            { value: "Booked", label: "Booked" },
-                            { value: "Revision Requested", label: "Revision Requested" },
-                            { value: "Expired", label: "Expired" }
-                        ]}
-                    />
+                            <div className="quotation-management-actions-field">
+                                <label className="quotationmanagement-label">Status</label>
+                                <Select
+                                    className="quotation-select"
+                                    placeholder="Status"
+                                    allowClear
+                                    value={statusFilter || undefined}
+                                    onChange={(value) => setStatusFilter(value || "")}
+                                    options={[
+                                        { value: "Pending", label: "Pending" },
+                                        { value: "Under Review", label: "Under Review" },
+                                        { value: "Booked", label: "Booked" },
+                                        { value: "Revision Requested", label: "Revision Requested" },
+                                        { value: "Expired", label: "Expired" }
+                                    ]}
+                                />
+                            </div>
 
-                    <Select
-                        className="quotation-select"
-                        placeholder="Package Type"
-                        style={{ width: 160 }}
-                        allowClear
-                        value={packageTypeFilter || undefined}
-                        onChange={(value) => setPackageTypeFilter(value || "")}
-                        options={[
-                            { value: "All Types", label: "All Types" },
-                            { value: "Domestic", label: "Domestic" },
-                            { value: "International", label: "International" },
-                        ]}
-                    />
+                            <div className="quotation-management-actions-field">
+                                <label className="quotationmanagement-label">Package Type</label>
+                                <Select
+                                    className="quotation-select"
+                                    placeholder="Package Type"
+                                    allowClear
+                                    value={packageTypeFilter || undefined}
+                                    onChange={(value) => setPackageTypeFilter(value || "")}
+                                    options={[
+                                        { value: "All Types", label: "All Types" },
+                                        { value: "Domestic", label: "Domestic" },
+                                        { value: "International", label: "International" },
+                                    ]}
+                                />
+                            </div>
 
-                    <DatePicker
-                        placeholder="Request Date"
-                        value={dateFilter}
-                        onChange={(date) => setDateFilter(date)}
-                        allowClear
-                    />
+                            <div className="quotation-management-actions-field">
+                                <label className="quotationmanagement-label">Request Date</label>
+                                <DatePicker
+                                    className="quotation-date-filter"
+                                    placeholder="Request Date"
+                                    value={dateFilter}
+                                    onChange={(date) => setDateFilter(date)}
+                                    allowClear
+                                />
+                            </div>
+                        </div>
 
-                    <Space style={{ marginLeft: 'auto' }}>
-                        <Button
-                            className='quotation-export'
-                            type="primary"
-                            icon={<FilePdfOutlined />}
-                            onClick={generatePDF}
-                        >
-                            Export to PDF
-                        </Button>
-                        <Button
-                            icon={showArchived ? <FileTextOutlined /> : <InboxOutlined />}
-                            className='quotation-archive'
-                            type="primary"
-                            onClick={() => {
-                                const nextValue = !showArchived
-                                setShowArchived(nextValue)
-                                setSearchText("")
-                                setStatusFilter("")
-                                setDateFilter(null)
-                                setPackageTypeFilter("")
-                                if (nextValue) {
-                                    fetchArchivedQuotations()
-                                } else {
-                                    fetchQuotations()
-                                }
-                            }}
-                        >
-                            {showArchived ? 'Back' : 'Archives'}
-                        </Button>
-                    </Space>
-                </div>
+                        <div className="quotation-management-actions-buttons">
+                            <Button
+                                className='quotation-export'
+                                type="primary"
+                                icon={<FilePdfOutlined />}
+                                onClick={generatePDF}
+                            >
+                                Export to PDF
+                            </Button>
+                            <Button
+                                icon={showArchived ? <FileTextOutlined /> : <InboxOutlined />}
+                                className='quotation-archive'
+                                type="primary"
+                                onClick={() => {
+                                    const nextValue = !showArchived
+                                    setShowArchived(nextValue)
+                                    setSearchText("")
+                                    setStatusFilter("")
+                                    setDateFilter(null)
+                                    setPackageTypeFilter("")
+                                    if (nextValue) {
+                                        fetchArchivedQuotations()
+                                    } else {
+                                        fetchQuotations()
+                                    }
+                                }}
+                            >
+                                {showArchived ? 'Back' : 'Archives'}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
 
                 <Card>
                     <Form form={form} component={false}>

@@ -6,7 +6,7 @@ const serviceSchema = new mongoose.Schema({
     visaDescription: { type: String, required: true },
     visaRequirements: { type: [Object], required: true },
     visaAdditionalRequirements: { type: [Object], required: false, default: [] },
-    visaProcessSteps: { type: [String], required: true },
+    visaProcessSteps: { type: [mongoose.Schema.Types.Mixed], required: true },
     visaReminders: { type: [String], required: true }
 });
 

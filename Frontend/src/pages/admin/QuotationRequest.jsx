@@ -505,7 +505,7 @@ export default function QuotationRequest() {
                 itinerary: itineraryPayload,
                 dynamicRows: formData.dynamicRows,
                 baggageAllowance: formData.baggageAllowance,
-                travelers: formData.travelers,
+                travelers: travelers,
                 totalRate: formData.totalRate,
                 totalChildRate: formData.totalChildRate,
                 totalInfantRate: formData.totalInfantRate,
@@ -982,7 +982,7 @@ export default function QuotationRequest() {
                                     {formErrors.totalPrice && <div className="quotationrequest-error">{formErrors.totalPrice}</div>}
                                 </div>
                                 <div>
-                                    <label className="quotationrequest-label">Total Deposit</label>
+                                    <label className="quotationrequest-label">Deposit Per PAX</label>
                                     <Input
                                         placeholder="Deposit"
                                         value={formData.totalDeposit}

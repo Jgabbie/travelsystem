@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Table, Tag, Button, Space, Input, Select, ConfigProvider, DatePicker } from 'antd'
+import { Table, Tag, Button, Space, Input, Select, ConfigProvider, DatePicker, Card } from 'antd'
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -142,43 +142,54 @@ export default function UserPackageQuotation() {
                         <p>Review your customized package quotation requests.</p>
                     </div>
 
-                    <div className="booking-actions">
-                        <Input
-                            prefix={<SearchOutlined />}
-                            placeholder="Search reference, package or status..."
-                            className="search-input"
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            allowClear
-                        />
+                    <Card className="user-quotation-actions">
+                        <div className="user-quotation-actions-row">
+                            <div className="user-quotation-actions-filters">
+                                <div className="user-quotation-actions-field user-quotation-actions-field--search">
+                                    <label className="user-quotation-label">Search</label>
+                                    <Input
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search reference, package or status..."
+                                        className="user-quotation-search-input"
+                                        value={searchText}
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                        allowClear
+                                    />
+                                </div>
 
-                        <Select
-                            className="booking-select"
-                            placeholder="Status"
-                            style={{ width: 140 }}
-                            allowClear
-                            value={statusFilter || undefined}
-                            onChange={(v) => setStatusFilter(v || "")}
-                            options={[
-                                { value: "Successful", label: "Successful" },
-                                { value: "Pending", label: "Pending" },
-                                { value: "Cancelled", label: "Cancelled" },
-                                { value: "Approved", label: "Approved" },
-                                { value: "Rejected", label: "Rejected" },
-                                { value: "Under Review", label: "Under Review" },
-                                { value: "Revision Requested", label: "Revision Requested" }
-                            ]}
-                        />
+                                <div className="user-quotation-actions-field">
+                                    <label className="user-quotation-label">Status</label>
+                                    <Select
+                                        className="user-quotation-select"
+                                        placeholder="Status"
+                                        allowClear
+                                        value={statusFilter || undefined}
+                                        onChange={(v) => setStatusFilter(v || "")}
+                                        options={[
+                                            { value: "Successful", label: "Successful" },
+                                            { value: "Pending", label: "Pending" },
+                                            { value: "Cancelled", label: "Cancelled" },
+                                            { value: "Approved", label: "Approved" },
+                                            { value: "Rejected", label: "Rejected" },
+                                            { value: "Under Review", label: "Under Review" },
+                                            { value: "Revision Requested", label: "Revision Requested" }
+                                        ]}
+                                    />
+                                </div>
 
-                        <DatePicker
-                            className="booking-date-filter"
-                            placeholder="Booking Date"
-                            value={quotationDateFilter}
-                            onChange={(d) => setQuotationDateFilter(d)}
-                            allowClear
-                        />
-
-                    </div>
+                                <div className="user-quotation-actions-field">
+                                    <label className="user-quotation-label">Requested Date</label>
+                                    <DatePicker
+                                        className="user-quotation-date-filter"
+                                        placeholder="Requested Date"
+                                        value={quotationDateFilter}
+                                        onChange={(d) => setQuotationDateFilter(d)}
+                                        allowClear
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
 
                     <div className="user-quotation-table">
                         <Table

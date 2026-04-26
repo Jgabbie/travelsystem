@@ -25,22 +25,81 @@
 }
 
 .reviewratings-actions {
-    display: flex;
-    gap: 12px;
+    width: 100%;
     margin-bottom: 20px;
-    align-items: center;
+}
+
+.reviewratings-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
-.search-input,
-.reviewratings-select,
+.reviewratings-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.reviewratings-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.reviewratings-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.reviewratings-actions-buttons {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.reviewratings-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.reviewratings-container .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
+    color: #305797;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.reviewratings-container .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    color: #1f2a44;
+    font-size: 12px;
+}
+
+.reviewratings-search-input,
+.reviewratings-select .ant-select-selector,
 .reviewratings-date-filter,
-.ant-picker {
+.reviewratings-date-filter {
     height: 32px !important;
     line-height: 32px !important;
     padding: 0 8px !important;
     font-size: 14px !important;
     box-shadow: none !important;
+}
+
+.reviewratings-search-input,
+.reviewratings-select,
+.reviewratings-date-filter {
+    width: 100% !important;
 }
 
 /* BUTTONS CSS */
@@ -114,35 +173,46 @@
 }
 
 @media (max-width: 768px) {
-    .reviewratings-actions {
+
+    .reviewratings-actions-row,
+    .reviewratings-actions-filters,
+    .reviewratings-actions-buttons {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .search-input,
-    .ant-picker {
-        width: 100%;
+    .reviewratings-actions-field,
+    .reviewratings-actions-field--search,
+    .reviewratings-actions-buttons .ant-btn,
+    .reviewratings-search-input,
+    .reviewratings-select,
+    .reviewratings-date-filter {
+        width: 100% !important;
+        flex: none !important;
     }
 }
 
 /* Table styling */
-.ant-table {
+.reviewratings-container .ant-table {
     border-radius: 16px;
     overflow: hidden;
 }
 
-.ant-table-thead>tr>th {
-    background-color: #f0f4ff;
+.reviewratings-container .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
     color: #305797;
+    font-size: 13px;
     font-weight: 600;
 }
 
-.ant-table-tbody>tr>td {
-    font-size: 14px;
-    color: #4b5563;
+.reviewratings-container .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    color: #1f2a44;
 }
 
-.ant-table-tbody>tr:hover>td {
+.reviewratings-container .ant-table-tbody>tr:hover>td {
     background-color: #f9faff;
 }
 
@@ -154,7 +224,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 576px) {
-    .ant-table {
+    .reviewratings-container .ant-table {
         font-size: 12px;
     }
 

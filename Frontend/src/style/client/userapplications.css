@@ -65,11 +65,65 @@
 }
 
 .userapplications-actions {
-    display: flex;
-    gap: 12px;
+    width: 100%;
     margin-bottom: 20px;
-    align-items: center;
+}
+
+.userapplications-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
+}
+
+.userapplications-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.userapplications-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.userapplications-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.userapplications-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.userapplications-search-input,
+.userapplications-select .ant-select-selector,
+.userapplications-date-filter {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.userapplications-search-input {
+    width: 100% !important;
+    border-radius: 4px !important;
+}
+
+.userapplications-select,
+.userapplications-date-filter {
+    width: 100% !important;
 }
 
 .userapplications-view-button {
@@ -150,15 +204,19 @@
         height: 40px;
     }
 
-    .userapplications-actions {
+    .userapplications-actions-row,
+    .userapplications-actions-filters {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
     }
 
-    .userapplications-actions .search-input,
-    .userapplications-actions .userapplications-select,
-    .userapplications-actions .userapplications-date-filter {
+    .userapplications-actions-field,
+    .userapplications-actions-field--search,
+    .userapplications-search-input,
+    .userapplications-select,
+    .userapplications-date-filter {
         width: 100% !important;
+        max-width: 100%;
     }
 }

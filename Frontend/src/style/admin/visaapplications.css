@@ -4,11 +4,80 @@
 }
 
 .visaapplications-actions {
-    display: flex;
-    gap: 12px;
+    width: 100%;
     margin-bottom: 20px;
-    align-items: center;
+}
+
+.visaapplications-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
+}
+
+.visaapplications-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.visaapplications-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.visaapplications-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.visaapplications-actions-buttons {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.visaapplications-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.visa-applications-container .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
+    color: #305797;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.visa-applications-container .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    color: #1f2a44;
+    font-size: 12px;
+}
+
+.visaapplications-search-input,
+.visaapplications-select,
+.visaapplications-date-filter {
+    width: 100% !important;
+}
+
+.visaapplications-search-input,
+.visaapplications-select .ant-select-selector,
+.visaapplications-date-filter {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
 }
 
 .visaapplications-export {
@@ -91,4 +160,24 @@
 .visaapplications-restore-button:hover {
     background-color: #e9e9e9 !important;
     color: #1f8f3a !important;
+}
+
+@media (max-width: 768px) {
+
+    .visaapplications-actions-row,
+    .visaapplications-actions-filters,
+    .visaapplications-actions-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .visaapplications-actions-field,
+    .visaapplications-actions-field--search,
+    .visaapplications-actions-buttons .ant-btn,
+    .visaapplications-search-input,
+    .visaapplications-select,
+    .visaapplications-date-filter {
+        width: 100% !important;
+        flex: none !important;
+    }
 }

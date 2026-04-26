@@ -652,7 +652,9 @@ export default function ViewVisaApplication() {
                                                                     {typeof step === "string" ? step : step?.title}
                                                                 </span>
                                                                 <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
-                                                                    Description for {step}
+                                                                    {typeof step === 'object' && step?.description
+                                                                        ? step.description
+                                                                        : `Description for ${typeof step === 'string' ? step : step?.title || ''}`}
                                                                 </p>
                                                                 <Checkbox
                                                                     checked={idx <= currentStep}

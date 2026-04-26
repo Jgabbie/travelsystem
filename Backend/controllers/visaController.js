@@ -135,10 +135,10 @@ const requestVisaDocumentResubmission = async (req, res) => {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: "Visa documents resubmission requested",
+                subject: "Visa Documents Resubmission Requested",
                 html: `
                     <div style="font-family: Arial, sans-serif; color: #333;">
-                        <h2 style="color: #305797;">Visa documents resubmission requested</h2>
+                        <h2 style="color: #305797;">Visa Documents Resubmission Requested</h2>
                         <p>Hello ${user.firstname || user.username},</p>
                         <p>Our team needs you to resubmit your visa documents for your application.</p>
                         <p>Please log in to your account to upload the updated documents.</p>
@@ -241,7 +241,7 @@ const suggestAppointmentSchedules = async (req, res) => {
 
             await NotificationModel.create({
                 userId: user._id,
-                title: "Visa appointment options",
+                title: "Visa Appointment Options",
                 message: `We suggested appointment options for your visa application. ${summary}`,
                 type: "visa",
                 link: "/user-applications",
@@ -251,7 +251,7 @@ const suggestAppointmentSchedules = async (req, res) => {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: "Visa appointment options available",
+                subject: "Visa Appointment Options Available",
                 html: `
                 <div style="font-family: Arial, sans-serif; background:#ffffff; padding:20px;">
         
@@ -391,8 +391,8 @@ const updateVisaApplicationStatus = async (req, res) => {
             if (user) {
                 await NotificationModel.create({
                     userId: user._id,
-                    title: 'Visa application status updated',
-                    message: `Your visa application status is now ${status}.`,
+                    title: 'Visa Application Status Updated',
+                    message: `Your Visa Application Status is now ${status}.`,
                     type: 'visa',
                     link: '/user-applications',
                     metadata: { applicationId: updated._id, status }
@@ -401,7 +401,7 @@ const updateVisaApplicationStatus = async (req, res) => {
                 await transporter.sendMail({
                     from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                     to: user.email,
-                    subject: 'Visa application status update',
+                    subject: 'Visa Application Status Update',
                     html: `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:20px;">
                             <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:25px; text-align:center;">
@@ -412,7 +412,7 @@ const updateVisaApplicationStatus = async (req, res) => {
 
                                 <div style="text-align:center; color:#333; margin-top:15px;">
                                     <p style="font-size:16px; margin-bottom:10px;">Hello ${user.firstname || user.username},</p>
-                                    <p>Your visa application status is now <strong>${status}</strong>.</p>
+                                    <p>Your Visa Application Status is now <strong>${status}</strong>.</p>
                                 </div>
 
                                 <a href="https://mrctravelandtours.com/home"
@@ -432,8 +432,6 @@ const updateVisaApplicationStatus = async (req, res) => {
                     `
                 });
             }
-
-
 
             logAction('UPDATE_VISA_STATUS', req.userId, { "Visa Application Status Updated": `Application Number: ${updated.applicationNumber}, New Status: ${status}` });
 

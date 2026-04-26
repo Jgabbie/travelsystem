@@ -2,41 +2,56 @@
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 
-  body {
-    overflow: hidden;
-    height: 100%;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  }
-
   .add-package-container {
     flex: 1;
     overflow-y: auto;
     padding-right: 10px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
+  }
+
+  .add-package-header {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 16px;
+  }
+
+  .add-package-header h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .add-package-header p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+  }
+
+  .section-headers {
+    font-family: "Montserrat", sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
   }
 
   .add-package-section {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #ffffff;
-    padding: 16px 18px 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-  }
-
-  .add-package-section:last-child {
-    margin-bottom: 0;
-  }
-
-  .add-package-section .section-headers {
-    margin-top: 0;
+    background: #fcfcff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 18px 20px;
   }
 
   .add-package-sections-row {
     display: flex;
     gap: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
+    margin-top: 40px;
     align-items: flex-start;
     flex-wrap: wrap;
   }
@@ -46,45 +61,16 @@
     min-width: 340px;
   }
 
-  .add-package-form.ant-card {
-    height: 80vh;
+  .package-type-card-group {
     display: flex;
-    flex-direction: column;
-  }
-
-  .add-package-form-error {
-    border: 1px solid #d9534f !important;
-  }
-
-
-  .add-package-form .ant-card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-
-  .add-package-header-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    gap: 15px;
     flex-wrap: wrap;
-    gap: 12px;
   }
-
-  .footer-add-packages {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    margin-top: auto;
-  }
-
 
   .package-type-card {
     transition: all 0.2s ease;
     border-radius: 10px;
+    min-width: 120px;
   }
 
   .package-type-card:hover {
@@ -96,61 +82,15 @@
     box-shadow: 0 0 8px rgba(48, 87, 151, 0.3);
   }
 
-
-  .save-package-button {
-    background-color: #305797 !important;
-    color: white !important;
-    width: 200px !important;
-  }
-
-
   .startenddates-add-package {
     display: flex;
     flex-direction: column;
   }
 
-
-  .add-package-inputs {
-    font-size: 16px !important;
-    width: 500px !important;
-  }
-
-  .add-package-section-half .add-package-inputs,
-  .add-package-section-half .add-package-duration-select {
-    width: 100% !important;
-  }
-
-
-  .add-package-form .ant-form-item {
-    margin-bottom: 0px !important;
-  }
-
-
-  .add-package-inputs,
-  .add-package-input-textarea {
-    margin-bottom: 0 !important;
-  }
-
-  .add-package-inputs-error {
-    border-color: #d9534f !important;
-  }
-
-  .add-package-input-textarea-error {
-    border-color: #d9534f !important;
-  }
-
-
-  .add-package-error-message {
-    margin-top: 0px;
-    height: auto;
-  }
-
-
   .add-package-input-textarea {
     font-size: 16px !important;
     min-height: 80px !important;
   }
-
 
   .add-package-input-labels {
     color: #305797;
@@ -163,50 +103,26 @@
     width: 500px !important;
   }
 
-  .add-package-select-error .ant-select-selector {
-    border-color: #d9534f !important;
+  .add-package-inputs {
+    font-size: 16px !important;
+    width: 500px !important;
+  }
+
+  .add-package-section-half .add-package-inputs,
+  .add-package-section-half .add-package-duration-select {
+    width: 100% !important;
+  }
+
+  .add-package-inputs,
+  .add-package-input-textarea {
+    margin-bottom: 0 !important;
+  }
+
+  .add-package-form .ant-form-item {
+    margin-bottom: 0px !important;
   }
 
 
-  .section-headers {
-    font-size: 22px;
-    font-weight: 600;
-    height: 10px;
-    line-height: .5;
-    margin-bottom: 20px;
-    margin-top: 20px;
-  }
-
-
-  .delete-add-package-button {
-    background-color: #fff !important;
-    color: #d93025 !important;
-  }
-
-
-  .delete-add-package-button:hover {
-    background-color: #d93025 !important;
-    color: #fff !important;
-  }
-
-  .add-package-card-error {
-    border: 1px solid #d9534f !important;
-  }
-
-  .back-add-package-button {
-    border-color: #305797 !important;
-    color: #305797 !important;
-  }
-
-  .back-add-package-button:hover {
-    background-color: #305797 !important;
-    color: #fff !important;
-  }
-
-  .add-package-add-button:hover {
-    border-color: #305797 !important;
-    color: #305797 !important;
-  }
 
   .add-package-container .ant-checkbox-inner {
     transition: all 0.2s ease;
@@ -244,6 +160,7 @@
     margin-top: 5px;
   }
 
+
   .package-image-preview {
     margin-top: 12px;
     width: 320px;
@@ -260,11 +177,46 @@
     object-fit: cover;
   }
 
+
+  .footer-add-packages {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+
+  .add-package-form-error {
+    border: 1px solid #d9534f !important;
+  }
+
+  .add-package-inputs-error {
+    border-color: #d9534f !important;
+  }
+
+  .add-package-input-textarea-error {
+    border-color: #d9534f !important;
+  }
+
+  .add-package-select-error .ant-select-selector {
+    border-color: #d9534f !important;
+  }
+
   .add-package-error-message {
     color: #d9534f;
     font-size: 12px;
     font-family: "Roboto", sans-serif;
     height: 10px;
+    margin-top: 0px;
+  }
+
+  .package-image-container {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   }
 
   .package-image-preview {
@@ -319,6 +271,12 @@
     color: #fff;
   }
 
+  .save-package-button {
+    background-color: #305797 !important;
+    color: white !important;
+    width: 200px !important;
+  }
+
   .highlighted-button {
     font-family: "Roboto", sans-serif;
     font-size: 11px;
@@ -366,7 +324,15 @@
     color: #305797 !important;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1300px) {
+
+    .add-package-duration-select,
+    .add-package-inputs {
+      width: 100% !important;
+    }
+  }
+
+  @media (max-width: 1024px) {
     body {
       overflow: auto;
     }
@@ -386,7 +352,25 @@
     }
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 768px) {
+    .add-package-form.ant-card {
+      height: auto;
+    }
+
+    .add-package-inputs,
+    .add-package-duration-select {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    .add-package-section-half {
+      min-width: 0;
+    }
+  }
+
+
+  @media (max-width: 640px) {
+
     .package-image-action-button,
     .save-package-button {
       width: 100% !important;
@@ -396,8 +380,103 @@
       gap: 16px;
     }
 
-    .package-image-preview > div {
+    .package-image-preview>div {
       width: 100%;
       height: 180px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .add-package-header h1 {
+      font-size: 24px;
+    }
+
+    .add-package-header p {
+      font-size: 12px;
+    }
+
+    .add-package-inputs,
+    .add-package-duration-select {
+      font-size: 14px !important;
+    }
+
+    .package-image-action-button,
+    .save-package-button {
+      width: 100% !important;
+    }
+
+    .package-image-preview {
+      gap: 16px;
+    }
+
+    .package-image-preview>div {
+      width: 100%;
+      height: 180px;
+    }
+
+    .add-package-section {
+      padding: 12px 16px;
+    }
+
+    .add-package-sections-row {
+      gap: 16px;
+    }
+
+    .add-package-section-half {
+      flex: 1 1 100%;
+    }
+
+    .package-type-card-group {
+      gap: 12px;
+    }
+
+    .package-type-card {
+      width: 100%;
+    }
+
+    .footer-add-packages {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .backsubmit-button,
+    .save-package-button {
+      width: 100% !important;
+    }
+
+    .package-image-action-button {
+      width: 100% !important;
+    }
+
+    .package-image-container {
+      width: 100%;
+      height: auto;
+    }
+
+    .add-package-section {
+      padding: 12px 16px;
+    }
+
+    .add-package-sections-row {
+      gap: 16px;
+    }
+
+    .add-package-section-half {
+      flex: 1 1 100%;
+      min-width: 0;
+    }
+
+    .add-package-date-range,
+    .add-package-hotels {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .footer-add-packages {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
     }
   }

@@ -1,13 +1,67 @@
-.user-actions {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-  align-items: center;
-  width: 100%;
-}
-
 .page-header {
   margin-bottom: 16px;
+}
+
+.usermanagement-actions {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.usermanagement-actions-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.usermanagement-actions-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1 1 620px;
+  flex-wrap: wrap;
+}
+
+.usermanagement-actions-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.usermanagement-actions-field--search {
+  min-width: 260px;
+  flex: 1 1 300px;
+  max-width: 420px;
+}
+
+.usermanagement-actions-buttons {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 1px;
+  flex-wrap: wrap;
+}
+
+.usermanagement-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.usermanagement-table .ant-table-thead>tr>th {
+  font-family: "Montserrat", sans-serif;
+  background-color: #f8fafc;
+  color: #305797;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.usermanagement-table .ant-table-tbody>tr>td {
+  font-family: "Roboto", sans-serif;
+  color: #1f2a44;
+  font-size: 12px;
 }
 
 
@@ -90,7 +144,6 @@
   box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
-
 .usermanagement-view-button:hover,
 .usermanagement-edit-button:hover,
 .usermanagement-export-button:hover,
@@ -138,8 +191,8 @@
 }
 
 
-.search-input,
-.user-select .ant-select-selector {
+.usermanagement-search-input,
+.usermanagement-select .ant-select-selector {
   height: 32px !important;
   line-height: 32px !important;
   padding: 0 8px !important;
@@ -149,16 +202,17 @@
   border: 1px solid #d9d9d9 !important;
 }
 
-.user-select {
+.usermanagement-select {
   width: 100% !important;
 }
 
-.search-input {
-  flex: 0 0 calc(33.33% - 11px) !important;
+.usermanagement-search-input {
+  width: 100% !important;
+  flex: none !important;
   border-radius: 4px !important;
 }
 
-.search-input::placeholder {
+.usermanagement-search-input::placeholder {
   line-height: normal;
   font-size: 14px;
   color: #888;
@@ -171,16 +225,73 @@
 }
 
 @media (max-width: 768px) {
-  .user-actions {
+  .users-view-modal .ant-modal-content {
+    padding: 18px;
+  }
+
+  .users-view-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .users-view-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+
+  .usermanagement-actions-row,
+  .usermanagement-actions-filters,
+  .usermanagement-actions-buttons {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .search-input,
-  .ant-select-selector {
+  .usermanagement-actions-filters {
+    flex: none !important;
+    gap: 12px;
+  }
+
+  .usermanagement-actions-field,
+  .usermanagement-actions-field--search,
+  .usermanagement-actions-buttons .ant-btn,
+  .usermanagement-search-input,
+  .usermanagement-select {
     width: 100% !important;
     flex: none !important;
   }
+}
+
+@media (max-width: 480px) {
+
+  .usermanagement-actions-row,
+  .usermanagement-actions-filters,
+  .usermanagement-actions-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .usermanagement-actions-filters {
+    flex: none !important;
+    gap: 12px;
+  }
+
+  .usermanagement-actions-field,
+  .usermanagement-actions-field--search,
+  .usermanagement-actions-buttons .ant-btn,
+  .usermanagement-search-input,
+  .usermanagement-select {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .usermanagement-statistics {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+
 }
 
 
@@ -388,19 +499,4 @@
   font-size: 14px;
   color: #1f2a44;
   word-break: break-word;
-}
-
-@media (max-width: 768px) {
-  .users-view-modal .ant-modal-content {
-    padding: 18px;
-  }
-
-  .users-view-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .users-view-grid {
-    grid-template-columns: 1fr;
-  }
 }

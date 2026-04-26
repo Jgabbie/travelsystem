@@ -119,6 +119,7 @@ export default function UserBookingInvoice() {
     const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
     const reference = booking?.reference || booking?.ref || booking?._id || "--";
 
+
     useEffect(() => {
         if (!reference || reference === "--") return;
 
@@ -574,9 +575,10 @@ export default function UserBookingInvoice() {
                     return;
                 }
 
+
                 const manualDepositRes = await apiFetch.post('/payment/manual-deposit', {
-                    bookingId: booking?._id,
-                    packageId: booking?.packageId._id,
+                    bookingId: booking?.bookingItem,
+                    packageId: booking?.packageItem,
                     amount: paymentMode === 'Deposit'
                         ? {
                             ...(currentUnpaidInstallment || {}),
@@ -596,9 +598,9 @@ export default function UserBookingInvoice() {
             }
 
             const paymentPayload = {
-                bookingId: booking?._id,
+                bookingId: booking?.bookingItem,
                 bookingReference: reference,
-                packageId: booking?.packageId._id,
+                packageId: booking?.packageItem,
                 totalPrice: amountToPayNow,
             };
 
@@ -1157,7 +1159,7 @@ export default function UserBookingInvoice() {
                                                                     maximumFractionDigits: 2,
                                                                 })}
                                                             </strong></div>
-                                                            <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
+                                                            <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : txn.status === "Pending" ? "yellow" : "red"}>
                                                                 {txn.status}
                                                             </Tag>
                                                         </Col>

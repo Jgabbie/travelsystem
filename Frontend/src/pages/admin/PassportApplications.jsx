@@ -369,69 +369,81 @@ export default function PassportApplications() {
                     </Row>
                 )}
 
-                <div className="passportapplications-actions">
-                    <Input
-                        prefix={<SearchOutlined />}
-                        placeholder="Search reference, package, method or status..."
-                        className="search-input"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        allowClear
-                    />
+                <Card className="passportapplications-actions">
+                    <div className="passportapplications-actions-row">
+                        <div className="passportapplications-actions-filters">
+                            <div className="passportapplications-actions-field passportapplications-actions-field--search">
+                                <label className="passportapplications-label">Search</label>
+                                <Input
+                                    prefix={<SearchOutlined />}
+                                    placeholder="Search reference, package, method or status..."
+                                    className="passportapplications-search-input"
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    allowClear
+                                />
+                            </div>
 
-                    <Select
-                        className="transaction-select"
-                        placeholder="Status"
-                        style={{ width: 140 }}
-                        allowClear
-                        value={statusFilter || undefined}
-                        onChange={(v) => setStatusFilter(v || "")}
-                        options={[
-                            { value: "Successful", label: "Successful" },
-                            { value: "Pending", label: "Pending" },
-                            { value: "Failed", label: "Failed" }
-                        ]}
-                    />
+                            <div className="passportapplications-actions-field">
+                                <label className="passportapplications-label">Status</label>
+                                <Select
+                                    className="passportapplications-select"
+                                    placeholder="Status"
+                                    allowClear
+                                    value={statusFilter || undefined}
+                                    onChange={(v) => setStatusFilter(v || "")}
+                                    options={[
+                                        { value: "Successful", label: "Successful" },
+                                        { value: "Pending", label: "Pending" },
+                                        { value: "Failed", label: "Failed" }
+                                    ]}
+                                />
+                            </div>
 
-                    <DatePicker
-                        className="transaction-date-filter"
-                        placeholder="Preferred Date"
-                        value={submissionDateFilter}
-                        onChange={(d) => setSubmissionDateFilter(d)}
-                        allowClear
-                        showToday={false}
-                    />
+                            <div className="passportapplications-actions-field">
+                                <label className="passportapplications-label">Preferred Date</label>
+                                <DatePicker
+                                    className="passportapplications-date-filter"
+                                    placeholder="Preferred Date"
+                                    value={submissionDateFilter}
+                                    onChange={(d) => setSubmissionDateFilter(d)}
+                                    allowClear
+                                    showToday={false}
+                                />
+                            </div>
+                        </div>
 
-                    <Space style={{ marginLeft: "auto" }}>
-                        <Button
-                            className='passportapplications-export'
-                            type="primary"
-                            icon={<FilePdfOutlined />}
-                            onClick={generatePDF}
-                        >
-                            Export to PDF
-                        </Button>
-                        <Button
-                            icon={showArchived ? <TeamOutlined /> : <InboxOutlined />}
-                            className='passportapplications-archive'
-                            type="primary"
-                            onClick={() => {
-                                const nextValue = !showArchived
-                                setShowArchived(nextValue)
-                                setSearchText("")
-                                setStatusFilter("")
-                                setSubmissionDateFilter(null)
-                                if (nextValue) {
-                                    getArchivedPassportApplications()
-                                } else {
-                                    getPassportApplications()
-                                }
-                            }}
-                        >
-                            {showArchived ? 'Back' : 'Archives'}
-                        </Button>
-                    </Space>
-                </div>
+                        <div className="passportapplications-actions-buttons">
+                            <Button
+                                className='passportapplications-export'
+                                type="primary"
+                                icon={<FilePdfOutlined />}
+                                onClick={generatePDF}
+                            >
+                                Export to PDF
+                            </Button>
+                            <Button
+                                icon={showArchived ? <TeamOutlined /> : <InboxOutlined />}
+                                className='passportapplications-archive'
+                                type="primary"
+                                onClick={() => {
+                                    const nextValue = !showArchived
+                                    setShowArchived(nextValue)
+                                    setSearchText("")
+                                    setStatusFilter("")
+                                    setSubmissionDateFilter(null)
+                                    if (nextValue) {
+                                        getArchivedPassportApplications()
+                                    } else {
+                                        getPassportApplications()
+                                    }
+                                }}
+                            >
+                                {showArchived ? 'Back' : 'Archives'}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
 
                 <Card>
                     <Table

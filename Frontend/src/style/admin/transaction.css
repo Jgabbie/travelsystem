@@ -9,26 +9,81 @@
 }
 
 .transaction-actions {
-  display: flex;
-  gap: 12px;
+  width: 100%;
   margin-bottom: 20px;
-  align-items: center;
+}
+
+.transaction-actions-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.search-input {
-  width: 200px;
+.transaction-actions-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1 1 620px;
+  flex-wrap: wrap;
 }
 
-.search-input,
+.transaction-actions-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.transaction-actions-field--search {
+  min-width: 260px;
+  flex: 1 1 300px;
+  max-width: 420px;
+}
+
+.transaction-actions-buttons {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.transactionmanagement-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.transaction-management-container .ant-table-thead>tr>th {
+  font-family: "Montserrat", sans-serif;
+  background-color: #f8fafc;
+  color: #305797;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.transaction-management-container .ant-table-tbody>tr>td {
+  font-family: "Roboto", sans-serif;
+  color: #1f2a44;
+  font-size: 12px;
+}
+
+.transaction-search-input,
 .transaction-select,
 .transaction-date-filter,
-.ant-select-selector {
+.transaction-select .ant-select-selector {
   height: 32px !important;
   line-height: 32px !important;
   padding: 0 8px !important;
   font-size: 14px !important;
   box-shadow: none !important;
+}
+
+.transaction-search-input,
+.transaction-select,
+.transaction-date-filter {
+  width: 100% !important;
 }
 
 /* BUTTONS CSS */
@@ -159,6 +214,26 @@
 .transactionmanagement-archive-button:hover {
   background-color: #e9e9e9 !important;
   color: #305797 !important;
+}
+
+@media (max-width: 768px) {
+
+  .transaction-actions-row,
+  .transaction-actions-filters,
+  .transaction-actions-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .transaction-actions-field,
+  .transaction-actions-field--search,
+  .transaction-actions-buttons .ant-btn,
+  .transaction-search-input,
+  .transaction-select,
+  .transaction-date-filter {
+    width: 100% !important;
+    flex: none !important;
+  }
 }
 
 

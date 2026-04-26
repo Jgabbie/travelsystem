@@ -161,8 +161,10 @@ export default function PackageManagement() {
 
   //REMOVE PACKAGE ----------------------------------------------------------
   const handleArchive = async (key) => {
+    console.log("Archiving package with key:", key); // Debug log
+
     try {
-      await apiFetch.delete(`/package/remove-package/${encodeURIComponent(key)}`);
+      await apiFetch.delete(`/package/remove-package/${key}`);
       setIsPackageDeletedModalOpen(true);
       getPackages();
     } catch (error) {
@@ -312,60 +314,76 @@ export default function PackageManagement() {
 
 
         {/* FILTER ACTIONS */}
-        <div className="package-actions">
-          <Input className="search-input" prefix={<SearchOutlined />} placeholder="Search package..." onChange={(e) => setSearchText(e.target.value)} />
+        <Card className="packagemanagement-actions">
+          <div className="packagemanagement-actions-row">
+            <div className="packagemanagement-actions-filters">
+              <div className="packagemanagement-actions-field packagemanagement-actions-field--search">
+                <label className="packagemanagement-label">Search</label>
+                <Input
+                  className="packagemanagement-search-input"
+                  prefix={<SearchOutlined />}
+                  placeholder="Search package..."
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
+              </div>
 
-          <Select
-            className="package-date-filter"
-            placeholder="Package Type"
-            allowClear
-            style={{ width: 150 }}
-            value={filters.packageType}
-            onChange={(value) => setFilters({ ...filters, packageType: value })}
-            options={packageTypeOptions}
-          />
+              <div className="packagemanagement-actions-field">
+                <label className="packagemanagement-label">Package Type</label>
+                <Select
+                  className="packagemanagement-select"
+                  placeholder="Package Type"
+                  allowClear
+                  value={filters.packageType}
+                  onChange={(value) => setFilters({ ...filters, packageType: value })}
+                  options={packageTypeOptions}
+                />
+              </div>
 
-          <Select
-            className="package-date-filter"
-            placeholder="Availability"
-            allowClear
-            style={{ width: 150 }}
-            value={filters.availability}
-            onChange={(value) => setFilters({ ...filters, availability: value })}
-            options={availabilityOptions}
-          />
+              <div className="packagemanagement-actions-field">
+                <label className="packagemanagement-label">Availability</label>
+                <Select
+                  className="packagemanagement-select"
+                  placeholder="Availability"
+                  allowClear
+                  value={filters.availability}
+                  onChange={(value) => setFilters({ ...filters, availability: value })}
+                  options={availabilityOptions}
+                />
+              </div>
+            </div>
 
-          <Space style={{ marginLeft: 'auto' }}>
+            <div className="packagemanagement-actions-buttons">
 
-            <Button
-              className="packagemanagement-addpackage"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => navigate(`${basePath}/packages/add`)}
-              disabled={showArchived}
-            >
-              Add Package
-            </Button>
-            <Button
-              icon={showArchived ? <SolutionOutlined /> : <InboxOutlined />}
-              className="packagemanagement-archive"
-              type="primary"
-              onClick={() => {
-                const nextValue = !showArchived;
-                setShowArchived(nextValue);
-                setSearchText("");
-                setFilters({ packageType: null, availability: null });
-                if (nextValue) {
-                  getArchivedPackages();
-                } else {
-                  getPackages();
-                }
-              }}
-            >
-              {showArchived ? 'Back' : 'Archives'}
-            </Button>
-          </Space>
-        </div >
+              <Button
+                className="packagemanagement-addpackage"
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => navigate(`${basePath}/packages/add`)}
+                disabled={showArchived}
+              >
+                Add Package
+              </Button>
+              <Button
+                icon={showArchived ? <SolutionOutlined /> : <InboxOutlined />}
+                className="packagemanagement-archive"
+                type="primary"
+                onClick={() => {
+                  const nextValue = !showArchived;
+                  setShowArchived(nextValue);
+                  setSearchText("");
+                  setFilters({ packageType: null, availability: null });
+                  if (nextValue) {
+                    getArchivedPackages();
+                  } else {
+                    getPackages();
+                  }
+                }}
+              >
+                {showArchived ? 'Back' : 'Archives'}
+              </Button>
+            </div>
+          </div>
+        </Card >
 
 
 

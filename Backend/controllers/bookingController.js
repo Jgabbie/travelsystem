@@ -225,6 +225,7 @@ const getBookingByReference = async (req, res) => {
 
         const cleanedBooking = {
             bookingItem: _id,
+            packageItem: packageId?._id || "N/A",
             packageName: packageId?.packageName || "N/A",
             packageType: packageId?.packageType || "N/A",
             ...restOfBooking

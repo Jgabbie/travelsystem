@@ -333,7 +333,8 @@ export default function ApplyVisa() {
                                             <div>
                                                 <h4>{`Step ${index + 1}`}</h4>
                                                 <p>
-                                                    <strong>{step}</strong><br />
+                                                    <strong>{typeof step === 'string' ? step : step?.title}</strong><br />
+                                                    {typeof step === 'object' && step?.description ? step.description : null}
 
                                                 </p>
                                             </div>

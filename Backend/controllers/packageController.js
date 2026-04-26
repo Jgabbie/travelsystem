@@ -260,7 +260,7 @@ const getPackagesForUsers = async (req, res) => {
 };
 
 const removePackage = async (req, res) => {
-    const { packageItem } = req.params;
+    const packageItem = req.params.id || req.params.packageItem;
 
     if (!packageItem) {
         return res.status(400).json({ message: "Package identifier is required" });
@@ -318,7 +318,7 @@ const removePackage = async (req, res) => {
 
 //RESTORE PACKAGE (ADMIN)
 const restoreArchivedPackage = async (req, res) => {
-    const { packageItem } = req.params;
+    const packageItem = req.params.id;
 
     if (!packageItem) {
         return res.status(400).json({ message: "Archived package identifier is required" });
@@ -487,7 +487,7 @@ const updatePackage = async (req, res) => {
         if (previousSlots <= 0 && updatedSlots > 0) {
             await notifyWishlistUsers({
                 packageId: updatedPackage._id,
-                title: "Package now available",
+                title: "Package is Now Available",
                 message: `${updatedPackage.packageName} is now available for booking.`,
                 type: "wishlist",
                 link: '/package',
@@ -498,13 +498,13 @@ const updatePackage = async (req, res) => {
                         packageId: updatedPackage._id
                     }
                 },
-                emailSubject: `Now available: ${updatedPackage.packageName}`,
+                emailSubject: `Now Available: ${updatedPackage.packageName}`,
                 emailHtml: (user) => `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
                             <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
-                            <h2 style="color:#305797; margin-bottom:10px;">Package now available</h2>
+                            <h2 style="color:#305797; margin-bottom:10px;">Package is Now Available</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || "Customer"}</b>,</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">
                                 <b>${updatedPackage.packageName}</b> is now available for booking.
@@ -630,7 +630,7 @@ const updateSlots = async (req, res) => {
         if (previousSlots <= 0 && updatedSlots > 0) {
             await notifyWishlistUsers({
                 packageId: pkg._id,
-                title: "Package now available",
+                title: "Package is Now Available",
                 message: `${pkg.packageName} is now available for booking.`,
                 type: "wishlist",
                 link: '/package',
@@ -641,11 +641,11 @@ const updateSlots = async (req, res) => {
                         packageId: pkg._id
                     }
                 },
-                emailSubject: `Now available: ${pkg.packageName}`,
+                emailSubject: `Now Available: ${pkg.packageName}`,
                 emailHtml: (user) => `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                            <h2 style="color:#305797; margin-bottom:10px;">Package now available</h2>
+                            <h2 style="color:#305797; margin-bottom:10px;">Package is Now Available</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || "Customer"}</b>,</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">
                                 <b>${pkg.packageName}</b> is now available for booking.
@@ -703,7 +703,7 @@ const updateDiscount = async (req, res) => {
         if (previousDiscount === 0 && parsedDiscount > 0) {
             await notifyWishlistUsers({
                 packageId: pkg._id,
-                title: "Package discount available",
+                title: "Package Discount Available",
                 message: `${pkg.packageName} now has a ${parsedDiscount}% discount.`,
                 type: "wishlist",
                 link: '/package',
@@ -714,11 +714,11 @@ const updateDiscount = async (req, res) => {
                         packageId: pkg._id
                     }
                 },
-                emailSubject: `Discount alert: ${pkg.packageName}`,
+                emailSubject: `Discount Alert: ${pkg.packageName}`,
                 emailHtml: (user) => `
                     <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
                         <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                            <h2 style="color:#305797; margin-bottom:10px;">Package discount available</h2>
+                            <h2 style="color:#305797; margin-bottom:10px;">Package Discount Available</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || "Customer"}</b>,</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">
                                 <b>${pkg.packageName}</b> now has a <b>${parsedDiscount}%</b> discount.

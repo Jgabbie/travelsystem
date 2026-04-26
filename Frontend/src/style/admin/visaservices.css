@@ -54,6 +54,67 @@
     flex: 1;
 }
 
+.visaservices-actions {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.visaservices-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.visaservices-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.visaservices-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.visaservices-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.visaservices-actions-buttons {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.visaservices-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.package-container .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
+    color: #305797;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.package-container .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    color: #1f2a44;
+    font-size: 12px;
+}
+
 .package-actions {
     display: flex;
     gap: 12px;
@@ -63,6 +124,7 @@
 }
 
 .search-input,
+.visaservices-search-input,
 .package-date-filter,
 .ant-picker {
     height: 32px !important;
@@ -70,6 +132,10 @@
     padding: 0 8px !important;
     font-size: 14px !important;
     box-shadow: none !important;
+}
+
+.visaservices-search-input {
+    width: 100% !important;
 }
 
 .package-info {
@@ -183,6 +249,29 @@
 .visaservices-add-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
+}
+
+.visaservices-archive-button:hover {
+    background-color: #e9e9e9 !important;
+    color: #305797 !important;
+}
+
+@media (max-width: 768px) {
+
+    .visaservices-actions-row,
+    .visaservices-actions-filters,
+    .visaservices-actions-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .visaservices-actions-field,
+    .visaservices-actions-field--search,
+    .visaservices-actions-buttons .ant-btn,
+    .visaservices-search-input {
+        width: 100% !important;
+        flex: none !important;
+    }
 }
 
 .visaservices-restore-button {

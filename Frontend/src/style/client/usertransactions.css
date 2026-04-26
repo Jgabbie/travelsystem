@@ -64,6 +64,68 @@
     font-weight: 600;
 }
 
+.user-transactions-actions {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.user-transactions-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.user-transactions-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.user-transactions-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.user-transactions-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.user-transactions-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.user-transactions-search-input,
+.user-transactions-select .ant-select-selector,
+.user-transactions-date-filter {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.user-transactions-search-input {
+    width: 100% !important;
+    border-radius: 4px !important;
+}
+
+.user-transactions-select,
+.user-transactions-date-filter {
+    width: 100% !important;
+}
+
 
 .user-transactions-view-button {
     font-family: "Roboto", sans-serif;
@@ -111,15 +173,19 @@
         padding: 12px;
     }
 
-    .booking-actions {
+    .user-transactions-actions-row,
+    .user-transactions-actions-filters {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
     }
 
-    .booking-actions .search-input,
-    .booking-actions .booking-select,
-    .booking-actions .booking-date-filter {
+    .user-transactions-actions-field,
+    .user-transactions-actions-field--search,
+    .user-transactions-search-input,
+    .user-transactions-select,
+    .user-transactions-date-filter {
         width: 100% !important;
+        max-width: 100%;
     }
 }

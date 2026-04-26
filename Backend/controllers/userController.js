@@ -191,7 +191,6 @@ const getArchivedUsers = (req, res) => {
 
 const createUsers = async (req, res) => {
     const { username, firstname, lastname, password, email, phone, role } = req.body;
-
     const adminId = req.userId;
 
     if (!adminId) {
@@ -260,7 +259,7 @@ const createUsers = async (req, res) => {
                         ${randomPassword}
                     </div>
 
-                <a href="http://mrctravelntours.vercel.app/home"
+                <a href="http://mrctravelandtours.com/home"
                     style="
                         display:inline-block;
                         margin-top:25px;
@@ -346,7 +345,7 @@ const createUsers = async (req, res) => {
 
 
 
-        res.status(201).json({ message: "User created successfully", user: newUser });
+        res.status(201).json({ message: "User created successfully" });
 
     } catch (err) {
         console.error(err);

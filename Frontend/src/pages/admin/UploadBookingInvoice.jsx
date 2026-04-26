@@ -644,7 +644,7 @@ export default function UploadBookingInvoice() {
                     <Spin description={loading ? "Loading Booking Details..." : "Downloading Registration Form..."} size="large" />
                 </div>
             ) : (
-                <div className="user-invoice-container">
+                <div className="upload-invoice-container">
                     <div className="upload-invoice-page">
                         <Button type="primary" className="upload-invoice-back-button" onClick={handleBackNavigation}>
                             <ArrowLeftOutlined />

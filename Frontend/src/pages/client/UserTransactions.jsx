@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal, Image } from 'antd'
+import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal, Image, Card } from 'antd'
 import { SearchOutlined, EyeOutlined, FileOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf';
@@ -208,38 +208,50 @@ export default function UserTransactions() {
                         <p>Review your payment history and status updates.</p>
                     </div>
 
-                    <div className="booking-actions">
-                        <Input
-                            prefix={<SearchOutlined />}
-                            placeholder="Search reference, package or status..."
-                            className="search-input"
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            allowClear
-                        />
+                    <Card className="user-transactions-actions">
+                        <div className="user-transactions-actions-row">
+                            <div className="user-transactions-actions-filters">
+                                <div className="user-transactions-actions-field user-transactions-actions-field--search">
+                                    <label className="user-transactions-label">Search</label>
+                                    <Input
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search reference, package or status..."
+                                        className="user-transactions-search-input"
+                                        value={searchText}
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                        allowClear
+                                    />
+                                </div>
 
-                        <Select
-                            className="booking-select"
-                            placeholder="Status"
-                            style={{ width: 140 }}
-                            allowClear
-                            value={statusFilter || undefined}
-                            onChange={(v) => setStatusFilter(v || "")}
-                            options={[
-                                { value: "Successful", label: "Successful" },
-                                { value: "Pending", label: "Pending" },
-                                { value: "Cancelled", label: "Cancelled" }
-                            ]}
-                        />
+                                <div className="user-transactions-actions-field">
+                                    <label className="user-transactions-label">Status</label>
+                                    <Select
+                                        className="user-transactions-select"
+                                        placeholder="Status"
+                                        allowClear
+                                        value={statusFilter || undefined}
+                                        onChange={(v) => setStatusFilter(v || "")}
+                                        options={[
+                                            { value: "Successful", label: "Successful" },
+                                            { value: "Pending", label: "Pending" },
+                                            { value: "Cancelled", label: "Cancelled" }
+                                        ]}
+                                    />
+                                </div>
 
-                        <DatePicker
-                            className="booking-date-filter"
-                            placeholder="Booking Date"
-                            value={transactionDateFilter}
-                            onChange={(d) => setTransactionDateFilter(d)}
-                            allowClear
-                        />
-                    </div>
+                                <div className="user-transactions-actions-field">
+                                    <label className="user-transactions-label">Transaction Date</label>
+                                    <DatePicker
+                                        className="user-transactions-date-filter"
+                                        placeholder="Transaction Date"
+                                        value={transactionDateFilter}
+                                        onChange={(d) => setTransactionDateFilter(d)}
+                                        allowClear
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
 
 
                     <div className="user-transactions-table">

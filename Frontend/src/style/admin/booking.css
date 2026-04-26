@@ -3,32 +3,103 @@
   margin-bottom: 16px;
 }
 
-.booking-management-card {
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+.bookingmanagement-actions {
+  width: 100%;
+  margin-bottom: 20px;
 }
 
-.booking-actions {
+.bookingmanagement-actions-row {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  align-items: center;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.search-input {
-  width: 200px;
+.bookingmanagement-actions-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1 1 620px;
+  flex-wrap: wrap;
 }
 
-.search-input,
-.booking-select,
-.booking-date-filter,
-.ant-select-selector {
+.bookingmanagement-actions-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.bookingmanagement-actions-field--search {
+  min-width: 260px;
+  flex: 1 1 300px;
+  max-width: 420px;
+}
+
+.bookingmanagement-actions-buttons {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 1px;
+  flex-wrap: wrap;
+}
+
+.booking-date-filter {
+  width: 100% !important;
+}
+
+.bookingmanagement-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.booking-management-container .ant-table-thead>tr>th {
+  font-family: "Montserrat", sans-serif;
+  background-color: #f8fafc;
+  color: #305797;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.booking-management-container .ant-table-tbody>tr>td {
+  font-family: "Roboto", sans-serif;
+  color: #1f2a44;
+  font-size: 12px;
+}
+
+.bookingmanagement-search-input,
+.bookingmanagement-select .ant-select-selector {
   height: 32px !important;
   line-height: 32px !important;
   padding: 0 8px !important;
   font-size: 14px !important;
   box-shadow: none !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d9d9d9 !important;
+}
+
+.bookingmanagement-select {
+  width: 100% !important;
+}
+
+.bookingmanagement-search-input {
+  width: 100% !important;
+  flex: none !important;
+  border-radius: 4px !important;
+}
+
+.bookingmanagement-search-input::placeholder {
+  line-height: normal;
+  font-size: 14px;
+  color: #888;
+}
+
+.ant-select-selection-placeholder {
+  line-height: 32px !important;
+  font-size: 14px;
+  color: #888;
 }
 
 /* BUTTONS CSS */
@@ -130,13 +201,22 @@
 
 
 @media (max-width: 768px) {
-  .booking-actions {
+
+  .bookingmanagement-actions-row,
+  .bookingmanagement-actions-filters,
+  .bookingmanagement-actions-buttons {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .search-input {
-    width: 100%;
+  .bookingmanagement-actions-field,
+  .bookingmanagement-actions-field--search,
+  .bookingmanagement-actions-buttons .ant-btn,
+  .bookingmanagement-search-input,
+  .bookingmanagement-select,
+  .booking-date-filter {
+    width: 100% !important;
+    flex: none !important;
   }
 }
 

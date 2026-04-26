@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Input, Select, DatePicker, Button, Space, ConfigProvider, message } from 'antd';
+import { Table, Tag, Input, Select, DatePicker, Button, Space, ConfigProvider, message, Card } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import apiFetch from '../../config/fetchConfig';
@@ -141,44 +141,61 @@ export default function UserApplications() {
                         <h2>My Applications</h2>
                         <p>Track your latest visa and passport applications.</p>
                     </div>
-                    <div className="userapplications-actions">
-                        <Input
-                            prefix={<SearchOutlined />}
-                            placeholder="Search reference, type or status..."
-                            className="search-input"
-                            value={searchText}
-                            onChange={e => setSearchText(e.target.value)}
-                            allowClear
-                        />
-                        <Select
-                            className="userapplications-select"
-                            placeholder="Type"
-                            style={{ width: 120 }}
-                            allowClear
-                            value={typeFilter || undefined}
-                            onChange={v => setTypeFilter(v || "")}
-                            options={[
-                                { value: 'Passport', label: 'Passport' },
-                                { value: 'Visa', label: 'Visa' },
-                            ]}
-                        />
-                        <Select
-                            className="userapplications-select"
-                            placeholder="Status"
-                            style={{ width: 140 }}
-                            allowClear
-                            value={statusFilter || undefined}
-                            onChange={v => setStatusFilter(v || "")}
-                            options={Array.from(new Set(applications.map(a => a.status))).map(s => ({ value: s, label: s }))}
-                        />
-                        <DatePicker
-                            className="userapplications-date-filter"
-                            placeholder="Application Date"
-                            value={dateFilter}
-                            onChange={d => setDateFilter(d)}
-                            allowClear
-                        />
-                    </div>
+                    <Card className="userapplications-actions">
+                        <div className="userapplications-actions-row">
+                            <div className="userapplications-actions-filters">
+                                <div className="userapplications-actions-field userapplications-actions-field--search">
+                                    <label className="userapplications-label">Search</label>
+                                    <Input
+                                        prefix={<SearchOutlined />}
+                                        placeholder="Search reference, type or status..."
+                                        className="userapplications-search-input"
+                                        value={searchText}
+                                        onChange={e => setSearchText(e.target.value)}
+                                        allowClear
+                                    />
+                                </div>
+
+                                <div className="userapplications-actions-field">
+                                    <label className="userapplications-label">Type</label>
+                                    <Select
+                                        className="userapplications-select"
+                                        placeholder="Type"
+                                        allowClear
+                                        value={typeFilter || undefined}
+                                        onChange={v => setTypeFilter(v || "")}
+                                        options={[
+                                            { value: 'Passport', label: 'Passport' },
+                                            { value: 'Visa', label: 'Visa' },
+                                        ]}
+                                    />
+                                </div>
+
+                                <div className="userapplications-actions-field">
+                                    <label className="userapplications-label">Status</label>
+                                    <Select
+                                        className="userapplications-select"
+                                        placeholder="Status"
+                                        allowClear
+                                        value={statusFilter || undefined}
+                                        onChange={v => setStatusFilter(v || "")}
+                                        options={Array.from(new Set(applications.map(a => a.status))).map(s => ({ value: s, label: s }))}
+                                    />
+                                </div>
+
+                                <div className="userapplications-actions-field">
+                                    <label className="userapplications-label">Application Date</label>
+                                    <DatePicker
+                                        className="userapplications-date-filter"
+                                        placeholder="Application Date"
+                                        value={dateFilter}
+                                        onChange={d => setDateFilter(d)}
+                                        allowClear
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
                     <div className="userapplications-table">
                         <Table
                             columns={columns}

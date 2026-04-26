@@ -171,19 +171,19 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         setError({ ...error, [field]: validate(field, value, updatedValues) });
     };
 
-    //IF ROLE IS CHANGED TO ADMIN, IT REMOVES THE PASSWORD FIELDS AND THEIR ERRORS ----------------
+    //IF ROLE IS CHANGED TO ADMIN OR EMPLOYEE, IT REMOVES THE PASSWORD FIELDS AND THEIR ERRORS ----------------
     const handleRoleChange = (roleValue) => {
         const updatedValues = {
             ...values,
             role: roleValue,
-            ...(roleValue === 'Admin' ? { password: '', confirmPassword: '' } : {})
+            ...(roleValue === 'Admin' || roleValue === 'Employee' ? { password: '', confirmPassword: '' } : {})
         };
         setValues(updatedValues);
         setError({
             ...error,
             role: validate('role', roleValue, updatedValues),
-            password: roleValue === 'Admin' ? '' : error.password,
-            confirmPassword: roleValue === 'Admin' ? '' : error.confirmPassword
+            password: roleValue === 'Admin' || roleValue === 'Employee' ? '' : error.password,
+            confirmPassword: roleValue === 'Admin' || roleValue === 'Employee' ? '' : error.confirmPassword
         });
     };
 
@@ -193,7 +193,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
         setLoading(true);
         try {
             const payload = { ...values };
-            if (payload.role === 'Admin') {
+            if (payload.role === 'Admin' || payload.role === 'Employee') {
                 delete payload.password;
                 delete payload.confirmPassword;
             }
@@ -225,7 +225,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
     // validate the fields before submitting
     const validateAll = () => {
         const fields = ['role', 'username', 'firstname', 'lastname', 'email', 'phone'];
-        if (values.role !== 'Admin') {
+        if (values.role !== 'Admin' && values.role !== 'Employee') {
             fields.push('password', 'confirmPassword');
         }
         const nextErrors = { ...error };
@@ -256,7 +256,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                 open={isOpen}
                 onCancel={onClose}
                 footer={null}
-                style={{ top: 35 }}
+                centered={true}
             >
                 <div className="adduser-container">
                     <p className="adduser-subtitle">Fill out the details below to create a new {values.role?.toLowerCase()}.</p>

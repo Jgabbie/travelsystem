@@ -389,69 +389,81 @@ export default function VisaApplications() {
                     </Row>
                 )}
 
-                <div className="visaapplications-actions">
-                    <Input
-                        prefix={<SearchOutlined />}
-                        placeholder="Search reference, package, method or status..."
-                        className="search-input"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        allowClear
-                    />
+                <Card className="visaapplications-actions">
+                    <div className="visaapplications-actions-row">
+                        <div className="visaapplications-actions-filters">
+                            <div className="visaapplications-actions-field visaapplications-actions-field--search">
+                                <label className="visaapplications-label">Search</label>
+                                <Input
+                                    prefix={<SearchOutlined />}
+                                    placeholder="Search reference, package, method or status..."
+                                    className="visaapplications-search-input"
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    allowClear
+                                />
+                            </div>
 
-                    <Select
-                        className="transaction-select"
-                        placeholder="Status"
-                        style={{ width: 140 }}
-                        allowClear
-                        value={statusFilter || undefined}
-                        onChange={(v) => setStatusFilter(v || "")}
-                        options={[
-                            { value: "Successful", label: "Successful" },
-                            { value: "Pending", label: "Pending" },
-                            { value: "Failed", label: "Failed" }
-                        ]}
-                    />
+                            <div className="visaapplications-actions-field">
+                                <label className="visaapplications-label">Status</label>
+                                <Select
+                                    className="visaapplications-select"
+                                    placeholder="Status"
+                                    allowClear
+                                    value={statusFilter || undefined}
+                                    onChange={(v) => setStatusFilter(v || "")}
+                                    options={[
+                                        { value: "Successful", label: "Successful" },
+                                        { value: "Pending", label: "Pending" },
+                                        { value: "Failed", label: "Failed" }
+                                    ]}
+                                />
+                            </div>
 
-                    <DatePicker
-                        className="transaction-date-filter"
-                        placeholder="Preferred Date"
-                        value={submissionDateFilter}
-                        onChange={(d) => setSubmissionDateFilter(d)}
-                        allowClear
-                        showToday={false}
-                    />
+                            <div className="visaapplications-actions-field">
+                                <label className="visaapplications-label">Preferred Date</label>
+                                <DatePicker
+                                    className="visaapplications-date-filter"
+                                    placeholder="Preferred Date"
+                                    value={submissionDateFilter}
+                                    onChange={(d) => setSubmissionDateFilter(d)}
+                                    allowClear
+                                    showToday={false}
+                                />
+                            </div>
+                        </div>
 
-                    <Space style={{ marginLeft: "auto" }}>
-                        <Button
-                            className='visaapplications-export'
-                            type="primary"
-                            icon={<FilePdfOutlined />}
-                            onClick={generatePDF}
-                        >
-                            Export to PDF
-                        </Button>
-                        <Button
-                            icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
-                            className='visaapplications-archive'
-                            type="primary"
-                            onClick={() => {
-                                const nextValue = !showArchived
-                                setShowArchived(nextValue)
-                                setSearchText("")
-                                setStatusFilter("")
-                                setSubmissionDateFilter(null)
-                                if (nextValue) {
-                                    loadArchivedApplications()
-                                } else {
-                                    loadApplications()
-                                }
-                            }}
-                        >
-                            {showArchived ? 'Back' : 'Archives'}
-                        </Button>
-                    </Space>
-                </div>
+                        <div className="visaapplications-actions-buttons">
+                            <Button
+                                className='visaapplications-export'
+                                type="primary"
+                                icon={<FilePdfOutlined />}
+                                onClick={generatePDF}
+                            >
+                                Export to PDF
+                            </Button>
+                            <Button
+                                icon={showArchived ? <IdcardOutlined /> : <InboxOutlined />}
+                                className='visaapplications-archive'
+                                type="primary"
+                                onClick={() => {
+                                    const nextValue = !showArchived
+                                    setShowArchived(nextValue)
+                                    setSearchText("")
+                                    setStatusFilter("")
+                                    setSubmissionDateFilter(null)
+                                    if (nextValue) {
+                                        loadArchivedApplications()
+                                    } else {
+                                        loadApplications()
+                                    }
+                                }}
+                            >
+                                {showArchived ? 'Back' : 'Archives'}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
 
                 <Card>
                     <Table

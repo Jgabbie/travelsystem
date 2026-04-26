@@ -331,7 +331,7 @@ export default function QuotationFormDetails({
             ),
         },
         {
-            label: 'IF DEPOSIT',
+            label: 'DEPOSIT PER PAX',
             value: (
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Input

@@ -550,82 +550,96 @@ export default function TransactionManagement() {
             </Row>
           )}
 
-          <div className="transaction-actions">
-            <Input
-              prefix={<SearchOutlined />}
-              placeholder="Search reference, package, method or status..."
-              className="search-input"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
+          <Card className="transaction-actions">
+            <div className="transaction-actions-row">
+              <div className="transaction-actions-filters">
+                <div className="transaction-actions-field transaction-actions-field--search">
+                  <label className="transactionmanagement-label">Search</label>
+                  <Input
+                    prefix={<SearchOutlined />}
+                    placeholder="Search reference, package, method or status..."
+                    className="transaction-search-input"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    allowClear
+                  />
+                </div>
 
-            <Select
-              className="transaction-select"
-              placeholder="Method"
-              style={{ width: 160 }}
-              allowClear
-              value={methodFilter || undefined}
-              onChange={(v) => setMethodFilter(v || "")}
-              options={[
-                { value: "Manual", label: "Manual" },
-                { value: "Paymongo", label: "Paymongo" },
-              ]}
-            />
+                <div className="transaction-actions-field">
+                  <label className="transactionmanagement-label">Method</label>
+                  <Select
+                    className="transaction-select"
+                    placeholder="Method"
+                    allowClear
+                    value={methodFilter || undefined}
+                    onChange={(v) => setMethodFilter(v || "")}
+                    options={[
+                      { value: "Manual", label: "Manual" },
+                      { value: "Paymongo", label: "Paymongo" },
+                    ]}
+                  />
+                </div>
 
-            <Select
-              className="transaction-select"
-              placeholder="Status"
-              style={{ width: 140 }}
-              allowClear
-              value={statusFilter || undefined}
-              onChange={(v) => setStatusFilter(v || "")}
-              options={[
-                { value: "Successful", label: "Successful" },
-                { value: "Pending", label: "Pending" },
-                { value: "Failed", label: "Failed" }
-              ]}
-            />
+                <div className="transaction-actions-field">
+                  <label className="transactionmanagement-label">Status</label>
+                  <Select
+                    className="transaction-select"
+                    placeholder="Status"
+                    allowClear
+                    value={statusFilter || undefined}
+                    onChange={(v) => setStatusFilter(v || "")}
+                    options={[
+                      { value: "Successful", label: "Successful" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Failed", label: "Failed" }
+                    ]}
+                  />
+                </div>
 
-            <DatePicker
-              className="transaction-date-filter"
-              placeholder="Payment Date"
-              value={paymentDateFilter}
-              onChange={(d) => setPaymentDateFilter(d)}
-              allowClear
-            />
+                <div className="transaction-actions-field">
+                  <label className="transactionmanagement-label">Payment Date</label>
+                  <DatePicker
+                    className="transaction-date-filter"
+                    placeholder="Payment Date"
+                    value={paymentDateFilter}
+                    onChange={(d) => setPaymentDateFilter(d)}
+                    allowClear
+                  />
+                </div>
+              </div>
 
-            <Space style={{ marginLeft: 'auto' }}>
-              <Button
-                className='transactionmanagement-export-button'
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={generatePDF}
-              >
-                Export to PDF
-              </Button>
-              <Button
-                icon={showArchived ? <TransactionOutlined /> : <InboxOutlined />}
-                className='transactionmanagement-archive-button'
-                type="primary"
-                onClick={() => {
-                  const nextValue = !showArchived;
-                  setShowArchived(nextValue);
-                  setSearchText("");
-                  setMethodFilter("");
-                  setStatusFilter("");
-                  setPaymentDateFilter(null);
-                  if (nextValue) {
-                    fetchArchivedTransactions();
-                  } else {
-                    fetchTransactions();
-                  }
-                }}
-              >
-                {showArchived ? 'Back' : 'Archives'}
-              </Button>
-            </Space>
-          </div>
+              <div className="transaction-actions-buttons">
+                <Button
+                  className='transactionmanagement-export-button'
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={generatePDF}
+                >
+                  Export to PDF
+                </Button>
+                <Button
+                  icon={showArchived ? <TransactionOutlined /> : <InboxOutlined />}
+                  className='transactionmanagement-archive-button'
+                  type="primary"
+                  onClick={() => {
+                    const nextValue = !showArchived;
+                    setShowArchived(nextValue);
+                    setSearchText("");
+                    setMethodFilter("");
+                    setStatusFilter("");
+                    setPaymentDateFilter(null);
+                    if (nextValue) {
+                      fetchArchivedTransactions();
+                    } else {
+                      fetchTransactions();
+                    }
+                  }}
+                >
+                  {showArchived ? 'Back' : 'Archives'}
+                </Button>
+              </div>
+            </div>
+          </Card>
 
           <Card>
             <Form form={form} component={false}>

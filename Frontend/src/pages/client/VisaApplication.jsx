@@ -79,9 +79,9 @@ export default function VisaApplication() {
                         const serviceRes = await apiFetch.get(serviceResEndpoint);
                         setRequirements(serviceRes.visaRequirements || []);
                         setServicePrice(serviceRes.visaPrice || 0);
-                        setProcess(serviceRes.visaProcessSteps.map((step, idx) => ({
-                            title: step,
-                            description: step,
+                        setProcess((serviceRes.visaProcessSteps || []).map((step, idx) => ({
+                            title: typeof step === 'string' ? step : step?.title,
+                            description: typeof step === 'string' ? step : (step?.description || step?.title || ''),
                             status: idx < VISA_STEPS.length ? 'process' : 'pending',
                         })));
                     } catch (err) {

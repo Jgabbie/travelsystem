@@ -9,15 +9,80 @@
 }
 
 .quotation-management-actions {
-    display: flex;
-    gap: 12px;
+    width: 100%;
     margin-bottom: 20px;
-    align-items: center;
+}
+
+.quotation-management-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
-.search-input {
-    width: 240px;
+.quotation-management-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.quotation-management-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.quotation-management-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.quotation-management-actions-buttons {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.quotationmanagement-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.quotation-management-container .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
+    color: #305797;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.quotation-management-container .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    color: #1f2a44;
+    font-size: 12px;
+}
+
+.quotationmanagement-search-input,
+.quotation-select,
+.quotation-date-filter {
+    width: 100% !important;
+}
+
+.quotationmanagement-search-input,
+.quotation-select .ant-select-selector,
+.quotation-date-filter {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
 }
 
 .quotation-export {
@@ -103,12 +168,21 @@
 }
 
 @media (max-width: 768px) {
-    .quotation-management-actions {
+
+    .quotation-management-actions-row,
+    .quotation-management-actions-filters,
+    .quotation-management-actions-buttons {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .search-input {
-        width: 100%;
+    .quotation-management-actions-field,
+    .quotation-management-actions-field--search,
+    .quotation-management-actions-buttons .ant-btn,
+    .quotationmanagement-search-input,
+    .quotation-select,
+    .quotation-date-filter {
+        width: 100% !important;
+        flex: none !important;
     }
 }

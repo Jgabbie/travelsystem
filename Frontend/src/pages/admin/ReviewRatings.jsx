@@ -353,63 +353,76 @@ export default function ReviewRatings() {
                     </Row>
                 )}
 
-                <div className="reviewratings-actions">
-                    <Input
-                        className="search-input"
-                        placeholder="Search by user or package"
-                        prefix={<SearchOutlined />}
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        allowClear
-                    />
+                <Card className="reviewratings-actions">
+                    <div className="reviewratings-actions-row">
+                        <div className="reviewratings-actions-filters">
+                            <div className="reviewratings-actions-field reviewratings-actions-field--search">
+                                <label className="reviewratings-label">Search</label>
+                                <Input
+                                    className="reviewratings-search-input"
+                                    placeholder="Search by user or package"
+                                    prefix={<SearchOutlined />}
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    allowClear
+                                />
+                            </div>
 
-                    <Select
-                        className="reviewratings-select"
-                        placeholder="Rating"
-                        style={{ width: 160 }}
-                        allowClear
-                        value={ratingFilter}
-                        onChange={(value) => setRatingFilter(value)}
-                        options={[1, 2, 3, 4, 5].map((r) => ({ label: `${r} Stars`, value: r }))}
-                    />
+                            <div className="reviewratings-actions-field">
+                                <label className="reviewratings-label">Rating</label>
+                                <Select
+                                    className="reviewratings-select"
+                                    placeholder="Rating"
+                                    allowClear
+                                    value={ratingFilter}
+                                    onChange={(value) => setRatingFilter(value)}
+                                    options={[1, 2, 3, 4, 5].map((r) => ({ label: `${r} Stars`, value: r }))}
+                                />
+                            </div>
 
-                    <DatePicker
-                        placeholder="Review Date"
-                        value={dateFilter}
-                        onChange={(date) => setDateFilter(date)}
-                        allowClear
-                    />
+                            <div className="reviewratings-actions-field">
+                                <label className="reviewratings-label">Review Date</label>
+                                <DatePicker
+                                    className="reviewratings-date-filter"
+                                    placeholder="Review Date"
+                                    value={dateFilter}
+                                    onChange={(date) => setDateFilter(date)}
+                                    allowClear
+                                />
+                            </div>
+                        </div>
 
-                    <Space style={{ marginLeft: 'auto' }}>
-                        <Button
-                            className='reviewratings-export-button'
-                            type="primary"
-                            icon={<FilePdfOutlined />}
-                            onClick={generatePDF}
-                        >
-                            Export to PDF
-                        </Button>
-                        <Button
-                            icon={showArchived ? <FundOutlined /> : <InboxOutlined />}
-                            className='reviewratings-archive-button'
-                            type="primary"
-                            onClick={() => {
-                                const nextValue = !showArchived;
-                                setShowArchived(nextValue);
-                                setSearchText("");
-                                setRatingFilter(null);
-                                setDateFilter(null);
-                                if (nextValue) {
-                                    fetchArchivedRatings();
-                                } else {
-                                    fetchRatings();
-                                }
-                            }}
-                        >
-                            {showArchived ? 'Back' : 'Archives'}
-                        </Button>
-                    </Space>
-                </div>
+                        <div className="reviewratings-actions-buttons">
+                            <Button
+                                className='reviewratings-export-button'
+                                type="primary"
+                                icon={<FilePdfOutlined />}
+                                onClick={generatePDF}
+                            >
+                                Export to PDF
+                            </Button>
+                            <Button
+                                icon={showArchived ? <FundOutlined /> : <InboxOutlined />}
+                                className='reviewratings-archive-button'
+                                type="primary"
+                                onClick={() => {
+                                    const nextValue = !showArchived;
+                                    setShowArchived(nextValue);
+                                    setSearchText("");
+                                    setRatingFilter(null);
+                                    setDateFilter(null);
+                                    if (nextValue) {
+                                        fetchArchivedRatings();
+                                    } else {
+                                        fetchRatings();
+                                    }
+                                }}
+                            >
+                                {showArchived ? 'Back' : 'Archives'}
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
 
                 <Card>
                     <Table

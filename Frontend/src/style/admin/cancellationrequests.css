@@ -25,20 +25,80 @@
 }
 
 .cancel-actions {
-    display: flex;
-    gap: 12px;
+    width: 100%;
     margin-bottom: 20px;
-    align-items: center;
+}
+
+.cancel-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
-.search-input,
-.ant-picker {
+.cancel-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.cancel-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.cancel-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.cancel-actions-buttons {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.cancellationrequests-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.cancellations-container .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
+    color: #305797;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cancellations-container .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    color: #1f2a44;
+    font-size: 12px;
+}
+
+.cancellationrequests-search-input,
+.cancellationrequests-select .ant-select-selector,
+.cancellation-date-filter {
     height: 32px !important;
     line-height: 32px !important;
     padding: 0 8px !important;
     font-size: 14px !important;
     box-shadow: none !important;
+}
+
+.cancellationrequests-search-input,
+.cancellationrequests-select,
+.cancellation-date-filter {
+    width: 100% !important;
 }
 
 .ant-picker {
@@ -148,14 +208,22 @@
 
 
 @media (max-width: 768px) {
-    .user-actions {
+
+    .cancel-actions-row,
+    .cancel-actions-filters,
+    .cancel-actions-buttons {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .search-input,
-    .ant-picker {
-        width: 100%;
+    .cancel-actions-field,
+    .cancel-actions-field--search,
+    .cancel-actions-buttons .ant-btn,
+    .cancellationrequests-search-input,
+    .cancellationrequests-select,
+    .cancellation-date-filter {
+        width: 100% !important;
+        flex: none !important;
     }
 }
 
@@ -229,23 +297,26 @@
 }
 
 /* Table styling */
-.ant-table {
+.cancellations-container .ant-table {
     border-radius: 16px;
     overflow: hidden;
 }
 
-.ant-table-thead>tr>th {
-    background-color: #f0f4ff;
+.cancellations-container .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
     color: #305797;
+    font-size: 13px;
     font-weight: 600;
 }
 
-.ant-table-tbody>tr>td {
-    font-size: 14px;
-    color: #4b5563;
+.cancellations-container .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    color: #1f2a44;
 }
 
-.ant-table-tbody>tr:hover>td {
+.cancellations-container .ant-table-tbody>tr:hover>td {
     background-color: #f9faff;
 }
 
@@ -256,7 +327,7 @@
 }
 
 /* DatePicker */
-.ant-picker {
+.cancellations-container .ant-picker {
     border-radius: 8px;
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, ConfigProvider, Spin } from 'antd'
+import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, ConfigProvider, Spin, Card } from 'antd'
 import { UploadOutlined, SearchOutlined, EyeOutlined, CloseCircleOutlined, CheckCircleFilled } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig'
@@ -292,47 +292,62 @@ export default function UserBookings() {
                             <p>Track your latest reservations and payment status.</p>
                         </div>
 
-                        <div className="booking-actions">
-                            <Input
-                                prefix={<SearchOutlined />}
-                                placeholder="Search reference, package or status..."
-                                className="search-input"
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                allowClear
-                            />
+                        <Card className="user-bookings-actions">
+                            <div className="user-bookings-actions-row">
+                                <div className="user-bookings-actions-filters">
+                                    <div className="user-bookings-actions-field user-bookings-actions-field--search">
+                                        <label className="user-bookings-label">Search</label>
+                                        <Input
+                                            prefix={<SearchOutlined />}
+                                            placeholder="Search reference, package or status..."
+                                            className="user-bookings-search-input"
+                                            value={searchText}
+                                            onChange={(e) => setSearchText(e.target.value)}
+                                            allowClear
+                                        />
+                                    </div>
 
-                            <Select
-                                className="booking-select"
-                                placeholder="Status"
-                                style={{ width: 140 }}
-                                allowClear
-                                value={statusFilter || undefined}
-                                onChange={(v) => setStatusFilter(v || "")}
-                                options={[
-                                    { value: "Not Paid", label: "Not Paid" },
-                                    { value: "Pending", label: "Pending" },
-                                    { value: "Fully Paid", label: "Fully Paid" },
-                                    { value: "Cancelled", label: "Cancelled" }
-                                ]}
-                            />
+                                    <div className="user-bookings-actions-field">
+                                        <label className="user-bookings-label">Status</label>
+                                        <Select
+                                            className="user-bookings-select"
+                                            placeholder="Status"
+                                            allowClear
+                                            value={statusFilter || undefined}
+                                            onChange={(v) => setStatusFilter(v || "")}
+                                            options={[
+                                                { value: "Not Paid", label: "Not Paid" },
+                                                { value: "Pending", label: "Pending" },
+                                                { value: "Fully Paid", label: "Fully Paid" },
+                                                { value: "Cancelled", label: "Cancelled" }
+                                            ]}
+                                        />
+                                    </div>
 
-                            <DatePicker
-                                className="booking-date-filter"
-                                placeholder="Booking Date"
-                                value={bookingDateFilter}
-                                onChange={(d) => setBookingDateFilter(d)}
-                                allowClear
-                            />
+                                    <div className="user-bookings-actions-field">
+                                        <label className="user-bookings-label">Booking Date</label>
+                                        <DatePicker
+                                            className="user-bookings-date-filter"
+                                            placeholder="Booking Date"
+                                            value={bookingDateFilter}
+                                            onChange={(d) => setBookingDateFilter(d)}
+                                            allowClear
+                                        />
+                                    </div>
 
-                            <DatePicker
-                                className="booking-date-filter"
-                                placeholder="Travel Date"
-                                value={travelDateFilter}
-                                onChange={(d) => setTravelDateFilter(d)}
-                                allowClear
-                            />
-                        </div>
+                                    <div className="user-bookings-actions-field">
+                                        <label className="user-bookings-label">Travel Date</label>
+                                        <DatePicker
+                                            className="user-bookings-date-filter"
+                                            placeholder="Travel Date"
+                                            value={travelDateFilter}
+                                            onChange={(d) => setTravelDateFilter(d)}
+                                            allowClear
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
 
                         <div className="user-bookings-table">
                             <Table

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/components/topnav.css";
+import "../../style/components/modals/modaldesign.css";
 
 const { Header } = Layout;
 
@@ -130,19 +131,19 @@ export default function TopNav() {
       </Header>
 
       <Modal
-        className="logout-confirm-modal"
+        className="modal-main"
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={isModalOpen}
         footer={null}
         onCancel={handleCancel}
-        style={{ top: 250 }}
+        centered={true}
       >
-        <div className="logout-confirm-content">
-          <h2 className="logout-confirm-title">Confirm Logout</h2>
-          <p className="logout-confirm-text">Are you sure you want to logout?</p>
-          <div className="logout-confirm-actions">
-            <Button className="logout-cancel-btn" type="primary" onClick={handleCancel}>Cancel</Button>
-            <Button className="logout-confirm-btn" type="primary" onClick={handleOk}>Logout</Button>
+        <div className="modal-container">
+          <h2 className="modal-heading">Confirm Logout</h2>
+          <p className="modal-text">Are you sure you want to logout?</p>
+          <div className="modal-actions">
+            <Button className="modal-button-cancel" type="primary" onClick={handleCancel}>Cancel</Button>
+            <Button className="modal-button" type="primary" onClick={handleOk}>Logout</Button>
           </div>
         </div>
       </Modal>

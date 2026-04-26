@@ -14,7 +14,7 @@ export default function DestinationsPackages() {
     const location = useLocation()
     const [packages, setPackages] = useState([])
     const [search, setSearch] = useState('')
-    const [budgetRange, setBudgetRange] = useState([0, 100000])
+    const [budgetRange, setBudgetRange] = useState([0, 200000])
     const [selectedTags, setSelectedTags] = useState([])
     const [tourType, setTourType] = useState('All')
     const [daysValue, setDaysValue] = useState(6)
@@ -333,7 +333,7 @@ export default function DestinationsPackages() {
                                         <InputNumber
                                             className='destinations-inputs'
                                             min={0}
-                                            max={100000}
+                                            max={200000}
                                             maxLength={6}
                                             value={budgetRange[0]}
                                             onChange={(value) => setBudgetRange([value, budgetRange[1]])}
@@ -350,7 +350,7 @@ export default function DestinationsPackages() {
                                         <InputNumber
                                             className='destinations-inputs'
                                             min={0}
-                                            max={100000}
+                                            max={200000}
                                             maxLength={6}
                                             value={budgetRange[1]}
                                             onChange={(value) => setBudgetRange([budgetRange[0], value])}
@@ -366,7 +366,7 @@ export default function DestinationsPackages() {
                                     <Slider
                                         range
                                         min={0}
-                                        max={100000}
+                                        max={200000}
                                         value={budgetRange}
                                         onChange={(value) => setBudgetRange(value)}
                                         tooltip={{ formatter: (value) => `₱${value}` }}

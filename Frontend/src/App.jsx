@@ -120,7 +120,8 @@ function App() {
                 <Route path="visa-services/edit" element={<AddService />} />
                 <Route path="passport-applications" element={<PassportApplications />} />
                 <Route path="passport-applications/view" element={<ViewPassportApplication />} />
-                <Route path="visa-applications/view" element={<ViewVisaApplication />} />                <Route path="cancellation-requests" element={<CancellationRequests />} />
+                <Route path="visa-applications/view" element={<ViewVisaApplication />} />
+                <Route path="cancellation-requests" element={<CancellationRequests />} />
                 <Route path="adminprofile" element={<AdminProfile />} />
                 <Route path="package-quotation" element={<QuotationManagement />} />
                 <Route path="quotation" element={<QuotationRequest />} />

@@ -39,15 +39,65 @@
 }
 
 .user-quotation-actions {
-    display: flex;
-    gap: 12px;
+    width: 100%;
     margin-bottom: 20px;
-    align-items: center;
+}
+
+.user-quotation-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
-.search-input {
-    width: 240px;
+.user-quotation-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.user-quotation-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.user-quotation-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 420px;
+}
+
+.user-quotation-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.user-quotation-search-input,
+.user-quotation-select .ant-select-selector,
+.user-quotation-date-filter {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.user-quotation-search-input {
+    width: 100% !important;
+    border-radius: 4px !important;
+}
+
+.user-quotation-select,
+.user-quotation-date-filter {
+    width: 100% !important;
 }
 
 .user-quotation-table {
@@ -99,15 +149,19 @@
         padding: 110px 16px 32px;
     }
 
-    .booking-actions {
+    .user-quotation-actions-row,
+    .user-quotation-actions-filters {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
     }
 
-    .booking-actions .search-input,
-    .booking-actions .booking-select,
-    .booking-actions .booking-date-filter {
+    .user-quotation-actions-field,
+    .user-quotation-actions-field--search,
+    .user-quotation-search-input,
+    .user-quotation-select,
+    .user-quotation-date-filter {
         width: 100% !important;
+        max-width: 100%;
     }
 }

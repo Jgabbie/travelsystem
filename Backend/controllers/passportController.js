@@ -198,17 +198,17 @@ const suggestAppointmentSchedules = async (req, res) => {
 
             await NotificationModel.create({
                 userId: user._id,
-                title: "Passport appointment options",
+                title: "Passport Appointment Options",
                 message: `We suggested appointment options for your passport application. ${summary}`,
                 type: "passport",
-                link: "/passport",
+                link: "/user-applications",
                 metadata: { applicationId: application._id }
             });
 
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: "Passport appointment options available",
+                subject: "Passport Appointment Options Available",
                 html: `
                     <div style="font-family: Arial, sans-serif; background:#ffffff; padding:20px;">
                             
@@ -332,7 +332,7 @@ const requestPassportDocumentResubmission = async (req, res) => {
         if (user) {
             await NotificationModel.create({
                 userId: user._id,
-                title: "Passport documents resubmission requested",
+                title: "Passport Documents Resubmission Requested",
                 message: "Please resubmit your passport documents for your application.",
                 type: "passport",
                 link: "/user-applications",
@@ -342,10 +342,10 @@ const requestPassportDocumentResubmission = async (req, res) => {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: "Passport documents resubmission requested",
+                subject: "Passport Documents Resubmission Requested",
                 html: `
                     <div style="font-family: Arial, sans-serif; color: #333;">
-                        <h2 style="color: #305797;">Passport documents resubmission requested</h2>
+                        <h2 style="color: #305797;">Passport Documents Resubmission Requested</h2>
                         <p>Hello ${user.firstname || user.username},</p>
                         <p>Our team needs you to resubmit your passport documents for your application.</p>
                         <p>Please log in to your account to upload the updated documents.</p>
@@ -393,7 +393,7 @@ const updatePassportStatus = async (req, res) => {
             if (user) {
                 await NotificationModel.create({
                     userId: user._id,
-                    title: 'Passport application status updated',
+                    title: 'Passport Application Status Updated',
                     message: `Your passport application status is now ${status}.`,
                     type: 'passport',
                     link: '/user-applications',
@@ -403,18 +403,18 @@ const updatePassportStatus = async (req, res) => {
                 await transporter.sendMail({
                     from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                     to: user.email,
-                    subject: 'Passport application status update',
+                    subject: 'Passport Application Status Update',
                     html: `
                         <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:20px;">
                             <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:25px; text-align:center;">
                                 <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
                                 <h2 style="color:#305797;">M&RC Travel and Tours</h2>
-                                <p style="color:#555;">Your passport application status has been updated.</p>
+                                <p style="color:#555;">Your Passport Application Status has been updated.</p>
 
                                 <div style="text-align:center; color:#333; margin-top:15px;">
                                     <p style="font-size:16px; margin-bottom:10px;">Hello ${user.firstname || user.username},</p>
-                                    <p>Your passport application status is now <strong>${status}</strong>.</p>
+                                    <p>Your Passport Application Status is now <strong>${status}</strong>.</p>
                                 </div>
 
                                 <a href="https://mrctravelandtours.com/home"

@@ -1,43 +1,58 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 
-.add-service-form.ant-card {
-    height: 80vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.add-service-form .ant-card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
 .add-service-container {
     flex: 1;
     overflow-y: auto;
     padding-right: 10px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    border-radius: 16px;
 }
 
-.add-service-header-container {
+.add-service-header {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    flex-direction: column;
+    gap: 5px;
     margin-bottom: 16px;
 }
 
+.add-service-header h1 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.add-service-header p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+}
+
 .section-headers {
+    font-family: "Montserrat", sans-serif;
     font-size: 22px;
     font-weight: 600;
-    line-height: 1.2;
-    margin: 18px 0 16px;
     margin-bottom: 20px;
 }
+
+.add-service-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.add-service-section {
+    background: #fcfcff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 18px 20px;
+}
+
 
 .add-service-input-labels {
     color: #305797;
@@ -49,8 +64,17 @@
 .add-service-input-textarea,
 .add-service-select {
     width: 100% !important;
-    max-width: 720px;
+    max-width: 820px !important;
     font-size: 16px !important;
+}
+
+
+.add-service-bullet-row {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .add-service-inputs-error,
@@ -62,10 +86,6 @@
     border-color: #d9534f !important;
 }
 
-.add-service-input-textarea {
-    min-height: 90px !important;
-}
-
 .add-service-error-message {
     color: #d9534f;
     font-size: 12px;
@@ -74,79 +94,20 @@
     margin: 2px 0 8px;
 }
 
-.add-service-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    margin-top: 10px;
-}
-
-.add-service-bullet-row {
-    display: flex;
-    width: 100%;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
 .add-service-card-error {
     border: 1px solid #d9534f !important;
-}
-
-.delete-add-service-button {
-    background-color: #fff !important;
-    color: #d93025 !important;
-}
-
-.delete-add-service-button:hover {
-    background-color: #d93025 !important;
-    color: #fff !important;
-}
-
-.add-service-add-button:hover {
-    border-color: #305797 !important;
-    color: #305797 !important;
-}
-
-.back-add-service-button {
-    border-color: #305797 !important;
-    color: #305797 !important;
-}
-
-.back-add-service-button:hover {
-    background-color: #305797 !important;
-    color: #fff !important;
 }
 
 .footer-add-services {
     display: flex;
     justify-content: flex-end;
-    margin-top: auto;
+    margin-top: 20px;
 }
 
 .save-service-button {
     background-color: #305797 !important;
     color: #fff !important;
     width: 200px !important;
-}
-
-@media (max-width: 900px) {
-    .add-service-form.ant-card {
-        height: auto;
-    }
-
-    .add-service-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 600px) {
-    .add-service-header-container {
-        align-items: flex-start;
-    }
-
-    .save-service-button {
-        width: 100% !important;
-    }
 }
 
 .highlighted-button {
@@ -194,4 +155,102 @@
 .backsubmit-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
+}
+
+
+@media (max-width: 1300px) {
+    .add-service-form.ant-card {
+        height: auto;
+    }
+
+    .add-service-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 1024px) {
+    .add-service-form.ant-card {
+        height: auto;
+    }
+
+    .add-service-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .add-service-header-container {
+        align-items: flex-start;
+    }
+
+    .save-service-button {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .add-service-header {
+        align-items: flex-start;
+    }
+
+    .add-service-header h1 {
+        font-size: 24px;
+    }
+
+    .add-service-header p {
+        font-size: 12px;
+    }
+
+    .add-service-inputs,
+    .add-service-input-textarea,
+    .add-service-select {
+        font-size: 14px !important;
+    }
+
+    .add-service-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .add-service-bullet-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .add-service-header {
+        align-items: flex-start;
+    }
+
+    .add-service-header h1 {
+        font-size: 24px;
+    }
+
+    .add-service-header p {
+        font-size: 12px;
+    }
+
+    .add-service-inputs,
+    .add-service-input-textarea,
+    .add-service-select {
+        font-size: 14px !important;
+    }
+
+    .add-service-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .add-service-bullet-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .footer-add-services {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
 }

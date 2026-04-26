@@ -1,0 +1,108 @@
+.logging-actions,
+.auditing-actions {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.logging-actions-row,
+.auditing-actions-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.logging-actions-filters,
+.auditing-actions-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex: 1 1 620px;
+    flex-wrap: wrap;
+}
+
+.logging-actions-field,
+.auditing-actions-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.logging-actions-field--search,
+.auditing-actions-field--search {
+    min-width: 260px;
+    flex: 1 1 300px;
+    max-width: 520px;
+}
+
+.logging-label,
+.auditing-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.logging-search-input,
+.auditing-search-input,
+.logging-select .ant-select-selector,
+.auditing-select .ant-select-selector {
+    height: 32px !important;
+    line-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.logging-search-input,
+.auditing-search-input {
+    width: 100% !important;
+    border-radius: 4px !important;
+}
+
+.logging-select,
+.auditing-select {
+    width: 100% !important;
+}
+
+.logging-table .ant-table-thead>tr>th,
+.auditing-table .ant-table-thead>tr>th {
+    font-family: "Montserrat", sans-serif;
+    background-color: #f8fafc;
+    color: #305797;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.logging-table .ant-table-tbody>tr>td,
+.auditing-table .ant-table-tbody>tr>td {
+    font-family: "Roboto", sans-serif;
+    color: #1f2a44;
+    font-size: 12px;
+}
+
+@media (max-width: 640px) {
+
+    .logging-actions-row,
+    .auditing-actions-row,
+    .logging-actions-filters,
+    .auditing-actions-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .logging-actions-field,
+    .auditing-actions-field,
+    .logging-actions-field--search,
+    .auditing-actions-field--search,
+    .logging-search-input,
+    .auditing-search-input,
+    .logging-select,
+    .auditing-select {
+        width: 100% !important;
+        max-width: 100%;
+    }
+}

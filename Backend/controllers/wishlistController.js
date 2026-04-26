@@ -32,7 +32,10 @@ const getWishlist = async (req, res) => {
         const wishlist = await Wishlist.find({ userId })
             .populate('packageId')
             .sort({ createdAt: -1 })
-        return res.status(200).json({ wishlist })
+
+        const visibleWishlist = wishlist.filter((entry) => entry?.packageId)
+
+        return res.status(200).json({ wishlist: visibleWishlist })
     } catch (error) {
         console.error("Error fetching wishlist:", error)
         return res.status(500).json({ message: "Internal server error" })

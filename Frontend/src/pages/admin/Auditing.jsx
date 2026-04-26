@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Tag, Table, Input, ConfigProvider, Select, Card } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
+import '../../style/admin/logging-auditing.css';
 
 export default function Auditing() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
+    const [actionFilter, setActionFilter] = useState('');
 
     //get audit logs from backend and map to state
     useEffect(() => {
@@ -31,7 +33,14 @@ export default function Auditing() {
     //this just basically gets the unique actions for better filtering like "CREATE_USER", "DELETE_PACKAGE", etc.
     const actionFilters = useMemo(() => {
         const uniqueActions = Array.from(new Set(logs.map((log) => log.action))).filter(Boolean);
-        return uniqueActions.map((action) => ({ text: action, value: action }));
+        return uniqueActions.map((action) => ({ label: action, value: action }));
+    }, [logs]);
+
+    const roleOptions = useMemo(() => {
+        const uniqueRoles = Array.from(
+            new Set(logs.map((log) => log?.performedBy?.role).filter(Boolean))
+        );
+        return uniqueRoles.map((role) => ({ label: role, value: role }));
     }, [logs]);
 
     // Filter logic for Search Bar
@@ -42,8 +51,9 @@ export default function Auditing() {
             log.performedBy?.email?.toLowerCase().includes(searchLower);
 
         const matchesRole = roleFilter ? log.performedBy?.role === roleFilter : true;
+        const matchesAction = actionFilter ? log.action === actionFilter : true;
 
-        return matchesSearch && matchesRole;
+        return matchesSearch && matchesRole && matchesAction;
     });
 
     //columns for the audit logs table
@@ -124,19 +134,54 @@ export default function Auditing() {
                 }
             }}
         >
-            <div>
+            <div className="auditing-page">
                 <h1 className="page-header">Security Audit Trail</h1>
 
-                <Input
-                    placeholder="Search logs by action, username, or email..."
-                    prefix={<SearchOutlined />}
-                    className="logs-search-input"
-                    style={{ marginBottom: 20, width: 500 }}
-                    onChange={(e) => setSearchText(e.target.value)}
-                />
+                <Card className="auditing-actions">
+                    <div className="auditing-actions-row">
+                        <div className="auditing-actions-filters">
+                            <div className="auditing-actions-field auditing-actions-field--search">
+                                <label className="auditing-label">Search</label>
+                                <Input
+                                    placeholder="Search logs by action, username, or email..."
+                                    prefix={<SearchOutlined />}
+                                    className="auditing-search-input"
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="auditing-actions-field">
+                                <label className="auditing-label">Role</label>
+                                <Select
+                                    allowClear
+                                    placeholder="All roles"
+                                    className="auditing-select"
+                                    value={roleFilter || undefined}
+                                    onChange={(value) => setRoleFilter(value || '')}
+                                    options={roleOptions}
+                                />
+                            </div>
+
+                            <div className="auditing-actions-field">
+                                <label className="auditing-label">Action</label>
+                                <Select
+                                    allowClear
+                                    placeholder="All actions"
+                                    className="auditing-select"
+                                    value={actionFilter || undefined}
+                                    onChange={(value) => setActionFilter(value || '')}
+                                    options={actionFilters}
+                                    showSearch
+                                    optionFilterProp="label"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </Card>
 
                 <Card>
                     <Table
+                        className="auditing-table"
                         columns={columns}
                         dataSource={filteredLogs}
                         rowKey="_id"

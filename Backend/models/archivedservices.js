@@ -7,7 +7,7 @@ const ArchivedServiceSchema = new mongoose.Schema({
     visaDescription: { type: String, required: true },
     visaRequirements: { type: [Object], required: true },
     visaAdditionalRequirements: { type: [Object], default: [] },
-    visaProcessSteps: { type: [String], required: true },
+    visaProcessSteps: { type: [mongoose.Schema.Types.Mixed], required: true },
     visaReminders: { type: [String], required: true },
     createdAt: { type: Date },
     archivedAt: { type: Date, default: Date.now }
