@@ -415,6 +415,9 @@ export default function ViewPassportApplication() {
                         </div>
                     )}
 
+
+
+
                     <div className="app-detail-shell" style={{ marginTop: 24, border: '1px solid #dde4ef', borderRadius: 12, padding: 20, background: '#ffffff', boxShadow: '0 6px 20px rgba(18, 24, 38, 0.06)', display: "flex", flexDirection: "column", gap: 24 }}>
 
                         {/* APPLICATION DETAILS */}

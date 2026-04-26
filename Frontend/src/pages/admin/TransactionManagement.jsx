@@ -294,7 +294,8 @@ export default function TransactionManagement() {
       setIsProofDecision(null);
       setProofTransaction(null);
     } catch (error) {
-      message.error("Failed to update proof status.");
+      console.log(error)
+      message.error("Failed to update proof status.", error);
     } finally {
       setIsProofDecisionLoading(false);
     }

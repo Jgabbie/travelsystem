@@ -112,6 +112,11 @@ export default function VisaApplication() {
         )
         : 0;
 
+    const isDeliveryFeeStage =
+        String(statusValue || '').toLowerCase() === 'passport released' &&
+        String(application?.passportReleaseOption || '').toLowerCase() === 'delivery';
+    const deliveryFeeAmount = Number(application?.deliveryFee || 0);
+
     const beforeUpload = (file) => {
         const isLt5M = file.size / 1024 / 1024 < 5;
         if (!isLt5M) {
@@ -216,11 +221,17 @@ export default function VisaApplication() {
             return;
         }
 
+        if (isDeliveryFeeStage && deliveryFeeAmount <= 0) {
+            message.warning('Delivery fee is not available yet. Please wait for admin to send it.');
+            return;
+        }
+
         try {
             setPaymentLoading(true);
 
             if (method === 'manual') {
                 const file = fileList[0].originFileObj;
+                const amountToPay = isDeliveryFeeStage ? deliveryFeeAmount : servicePrice;
 
                 const formData = new FormData();
                 formData.append("file", file);
@@ -234,7 +245,7 @@ export default function VisaApplication() {
                 const paymentRes = await apiFetch.post('/payment/manual-visa', {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
-                    amount: 2000,
+                    amount: amountToPay,
                     proofImage: imageUrl,
                 });
 
@@ -252,7 +263,7 @@ export default function VisaApplication() {
                 const payload = {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
-                    totalPrice: servicePrice, // make sure this field exists in your application
+                    totalPrice: isDeliveryFeeStage ? deliveryFeeAmount : servicePrice,
                     successUrl: `${window.location.origin}/user-applications/success/visa/${application._id}`, // redirect here after success
                     cancelUrl: `${window.location.origin}/visa-application/${application._id}`, // stay on same page if cancelled
                     email: application.email,
@@ -424,7 +435,7 @@ export default function VisaApplication() {
 
     const handleReleaseOption = async () => {
         if (!releaseOption) {
-            message.warning('Please select a passport release option first.');
+            message.warning('Please select a release option first.');
             return
         }
 
@@ -443,7 +454,7 @@ export default function VisaApplication() {
             setIsPassportReleaseOptionSelectedModalOpen(true);
             window.location.reload();
         } catch (error) {
-            message.error('Failed to update passport release option.');
+            message.error('Failed to update release option.');
         }
     }
 
@@ -563,19 +574,24 @@ export default function VisaApplication() {
                                         <Tag color="green"><h2>APPLICATION APPROVED</h2></Tag>
                                         <p style={{ margin: 0, fontSize: 14 }}>
                                             Congratulations! Your application has been approved.
-                                            Your passport will be released and delivered to you once the process is complete.
+                                            Your visa documents will be released and delivered to you once the process is complete.
                                         </p>
                                     </div>
                                 )}
 
-                                {/* PASSPORT FOR RELEASE */}
+                                {/* DOCUMENTS FOR RELEASE */}
                                 {statusValue && statusValue.toLowerCase() === 'passport released' && (
                                     <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                        <Tag color="green"><h2>PASSPORT FOR RELEASE</h2></Tag>
+                                        <Tag color="green"><h2>DOCUMENTS FOR RELEASE</h2></Tag>
                                         <p style={{ margin: 0, fontSize: 14 }}>
-                                            Your passport is ready for release.
-                                            Please proceed to the office to collect it or wait for its delivery if you have chosen the delivery option.
+                                            Your visa documents are ready for release.
+                                            Please proceed to the office to collect them or wait for delivery if you chose the delivery option.
                                         </p>
+                                        {application?.passportReleaseOption === 'delivery' && (
+                                            <p style={{ marginTop: 10, marginBottom: 0, fontSize: 14, fontWeight: 600 }}>
+                                                Delivery details: PHP {Number(application?.deliveryFee || 0).toLocaleString()} on {application?.deliveryDate || 'To be announced'}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
 
@@ -592,10 +608,10 @@ export default function VisaApplication() {
                                                     <Descriptions.Item label="Application Type">{application.serviceName}</Descriptions.Item>
                                                 </Descriptions>
 
-                                                {/* PASSPORT RELEASE OPTION */}
+                                                {/* RELEASE OPTION */}
                                                 {statusValue && statusValue.toLowerCase() === 'embassy approved' && (
                                                     <div style={{ marginTop: 20 }}>
-                                                        <h3>Choose Your Passport Release Option</h3>
+                                                        <h3>Choose Your Release Option</h3>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
@@ -622,7 +638,7 @@ export default function VisaApplication() {
                                                             >
                                                                 <h3 style={{ marginBottom: 8 }}>PICK UP</h3>
                                                                 <p style={{ color: '#305797', fontWeight: 500 }}>
-                                                                    Get your passport at our office
+                                                                    Claim your visa documents at our office
                                                                 </p>
                                                             </div>
 
@@ -642,7 +658,7 @@ export default function VisaApplication() {
                                                             >
                                                                 <h3 style={{ marginBottom: 8 }}>DELIVERY</h3>
                                                                 <p style={{ color: '#305797', fontWeight: 500 }}>
-                                                                    Have your passport delivered to you
+                                                                    Have your visa documents delivered to you
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -651,7 +667,7 @@ export default function VisaApplication() {
                                                             <div style={{ marginTop: 20 }}>
                                                                 <p style={{ color: '#305797', fontWeight: 500 }}>
                                                                     Kindly enter your complete address as reference for delivery.
-                                                                    Our team will contact you for confirmation and further details regarding the delivery of your passport.
+                                                                    Our team will contact you for confirmation and further details regarding your delivery.
                                                                 </p>
 
                                                                 <Input.TextArea
@@ -889,8 +905,346 @@ export default function VisaApplication() {
                                                     </div>
                                                 )}
 
+
+
+
+                                                {isDeliveryFeeStage && (
+                                                    <div style={{ marginBottom: 32, marginTop: 32 }}>
+                                                        <h3 style={{ marginTop: 0 }}>Delivery Fee Payment</h3>
+                                                        <p style={{ marginTop: 0, color: '#305797', fontWeight: 600 }}>
+                                                            Amount due: PHP {deliveryFeeAmount.toLocaleString()} | Target delivery date: {application?.deliveryDate || 'To be announced'}
+                                                        </p>
+                                                        <div className="payment-methods-wrapper">
+
+                                                            <Radio.Group
+                                                                onChange={(e) => setMethod(e.target.value)}
+                                                                value={method}
+                                                                className="payment-methods-cards"
+                                                                style={{ width: '100%', display: 'flex', gap: '16px' }}
+                                                            >
+                                                                <Radio.Button
+                                                                    value="paymongo"
+                                                                    className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                >
+                                                                    <div className="card-content" >
+                                                                        <h3>Paymongo (Delivery Fee)</h3>
+                                                                        <p>Pay your delivery fee securely via Credit Card, GCash, or Maya.</p>
+                                                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
+                                                                    </div>
+                                                                </Radio.Button>
+
+                                                                <Radio.Button
+                                                                    value="manual"
+                                                                    className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                >
+                                                                    <div className="card-content">
+                                                                        <h3>Manual Payment (Delivery Fee)</h3>
+                                                                        <p>Direct deposit for your delivery fee. Upload proof of payment for manual verification by our team.</p>
+                                                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                                                    </div>
+                                                                </Radio.Button>
+                                                            </Radio.Group>
+                                                        </div>
+
+                                                        {method === 'manual' && (
+                                                            <div className="manual-transfer-details">
+                                                                <div className="bank-accounts-section">
+                                                                    <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                                                    <div className="bank-grid">
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">BDO Unibank</span>
+                                                                            <span className="account-number">0012-3456-7890</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">BPI</span>
+                                                                            <span className="account-number">9876-5432-10</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="bank-accounts-section">
+                                                                    <div className="bank-grid">
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">Metro Bank</span>
+                                                                            <span className="account-number">0012-3456-7890</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">Land Bank</span>
+                                                                            <span className="account-number">9876-5432-10</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="upload-section">
+                                                                    <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                                                    <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                                                    <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                                                    <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                                                    <Upload
+                                                                        listType="picture"
+                                                                        maxCount={1}
+                                                                        fileList={fileList}
+                                                                        onChange={handleUploadChange}
+                                                                        beforeUpload={() => false}
+                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                        action={undefined}
+                                                                        accept=".jpg,.jpeg,.png,.pdf"
+                                                                    >
+                                                                        <Button icon={<UploadOutlined />} className="visaapplication-uploadreceipt-button" type="primary">
+                                                                            Select Receipt Image
+                                                                        </Button>
+                                                                    </Upload>
+
+                                                                    {fileList.length > 0 && (
+                                                                        <div className="upload-preview-container">
+                                                                            <h4 className="section-subtitle">Preview</h4>
+
+                                                                            <div className="upload-preview-box">
+                                                                                <Image
+                                                                                    src={fileList[0].preview}
+                                                                                    alt="Receipt Preview"
+                                                                                    className="upload-preview-image"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <Button
+                                                            style={{ marginTop: 20 }}
+                                                            className='visaapplication-submit-button'
+                                                            type="primary"
+                                                            onClick={handleSubmitPayment}
+                                                            disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                        >
+                                                            {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                                        </Button>
+
+                                                    </div>
+                                                )}
+
                                                 {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
                                                 {statusValue && statusValue.toLowerCase() === 'payment complete' && (
+                                                    <div style={{ padding: 4, marginTop: 32, marginBottom: 32 }}>
+                                                        <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
+                                                        {requirements.length === 0 && (
+                                                            <div>No requirements found for this service.</div>
+                                                        )}
+                                                        <div className="visa-requirements-grid">
+                                                            {requirements.map((req, idx) => {
+                                                                const requirementKey = req.key || req.req || `${req.label}-${idx}`;
+                                                                const uploadedFile = requirementFiles[requirementKey]?.[0];
+                                                                const isPdf = uploadedFile?.type === 'application/pdf' ||
+                                                                    uploadedFile?.originFileObj?.type === 'application/pdf' ||
+                                                                    uploadedFile?.name?.toLowerCase().endsWith('.pdf');
+
+                                                                return (
+                                                                    <div className="visa-requirement-card" key={requirementKey}>
+                                                                        <b style={{ fontSize: 12, maxWidth: 220 }}>{req.req || req.label || `Requirement ${idx + 1}`}</b>
+                                                                        {uploadedFile ? (
+                                                                            isPdf ? (
+                                                                                <Button
+                                                                                    className="visa-requirement-file-preview-button"
+                                                                                    type="dashed"
+                                                                                    onClick={() => handlePreview(uploadedFile)}
+                                                                                >
+                                                                                    Open PDF
+                                                                                </Button>
+                                                                            ) : (
+                                                                                <div className="visa-requirement-placeholder">
+                                                                                    <Image
+                                                                                        src={uploadedFile.url || uploadedFile.preview}
+                                                                                        alt={req.req || req.label || `Requirement ${idx + 1}`}
+                                                                                        preview={false}
+                                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                                        onClick={() => handlePreview(uploadedFile)}
+                                                                                    />
+                                                                                </div>
+                                                                            )
+                                                                        ) : (
+                                                                            <div className="visa-requirement-placeholder">
+                                                                                <span className="visa-requirement-placeholder-text">No file</span>
+                                                                            </div>
+                                                                        )}
+                                                                        <div style={{ marginTop: 8 }}>
+                                                                            {!uploadedFile ? (
+                                                                                <Upload
+                                                                                    beforeUpload={beforeUpload}
+                                                                                    key={requirementKey}
+                                                                                    name={requirementKey}
+                                                                                    customRequest={handleUpload(requirementKey)}
+                                                                                    fileList={requirementFiles[requirementKey] || []}
+                                                                                    listType="text"
+                                                                                    accept="image/*,application/pdf"
+                                                                                    disabled={uploading}
+                                                                                    onPreview={handlePreview}
+                                                                                    maxCount={1}
+                                                                                    showUploadList={false}
+                                                                                >
+                                                                                    <Button icon={<UploadOutlined />} className='visaapplication-upload-button' type='primary'>
+                                                                                        Upload Requirement
+                                                                                    </Button>
+                                                                                </Upload>
+                                                                            ) : (
+                                                                                <Button
+                                                                                    className='visaapplication-removefile-button'
+                                                                                    icon={<DeleteOutlined />}
+                                                                                    type="primary"
+                                                                                    onClick={() => {
+                                                                                        const newFiles = { ...requirementFiles };
+                                                                                        newFiles[requirementKey] = [];
+                                                                                        setRequirementFiles(newFiles);
+                                                                                    }}
+                                                                                >
+                                                                                    Remove
+                                                                                </Button>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        <Button style={{ marginTop: 20 }} type="primary" className='visaapplication-submit-button' onClick={confirmSubmitDocuments}>
+                                                            Submit Documents
+                                                        </Button>
+                                                    </div>
+                                                )}
+
+
+                                                {false && statusValue && statusValue.toLowerCase() === 'passport released' && (
+                                                    <div style={{ marginBottom: 32, marginTop: 32 }}>
+                                                        <h3 style={{ marginTop: 0 }}>Payment</h3>
+                                                        <div className="payment-methods-wrapper">
+
+                                                            <Radio.Group
+                                                                onChange={(e) => setMethod(e.target.value)}
+                                                                value={method}
+                                                                className="payment-methods-cards"
+                                                                style={{ width: '100%', display: 'flex', gap: '16px' }}
+                                                            >
+                                                                <Radio.Button
+                                                                    value="paymongo"
+                                                                    className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                >
+                                                                    <div className="card-content" >
+                                                                        <h3>Paymongo</h3>
+                                                                        <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
+                                                                    </div>
+                                                                </Radio.Button>
+
+                                                                <Radio.Button
+                                                                    value="manual"
+                                                                    className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                >
+                                                                    <div className="card-content">
+                                                                        <h3>Manual Payment</h3>
+                                                                        <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                                                    </div>
+                                                                </Radio.Button>
+                                                            </Radio.Group>
+                                                        </div>
+
+                                                        {method === 'manual' && (
+                                                            <div className="manual-transfer-details">
+                                                                <div className="bank-accounts-section">
+                                                                    <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                                                    <div className="bank-grid">
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">BDO Unibank</span>
+                                                                            <span className="account-number">0012-3456-7890</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">BPI</span>
+                                                                            <span className="account-number">9876-5432-10</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="bank-accounts-section">
+                                                                    <div className="bank-grid">
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">Metro Bank</span>
+                                                                            <span className="account-number">0012-3456-7890</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">Land Bank</span>
+                                                                            <span className="account-number">9876-5432-10</span>
+                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="upload-section">
+                                                                    <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                                                    <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                                                    <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                                                    <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                                                    <Upload
+                                                                        listType="picture"
+                                                                        maxCount={1}
+                                                                        fileList={fileList}
+                                                                        onChange={handleUploadChange}
+                                                                        beforeUpload={() => false}
+                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                        action={undefined}
+                                                                        accept=".jpg,.jpeg,.png,.pdf"
+                                                                    >
+                                                                        <Button icon={<UploadOutlined />} className="visaapplication-uploadreceipt-button" type="primary">
+                                                                            Select Receipt Image
+                                                                        </Button>
+                                                                    </Upload>
+
+                                                                    {fileList.length > 0 && (
+                                                                        <div className="upload-preview-container">
+                                                                            <h4 className="section-subtitle">Preview</h4>
+
+                                                                            <div className="upload-preview-box">
+                                                                                <Image
+                                                                                    src={fileList[0].preview}
+                                                                                    alt="Receipt Preview"
+                                                                                    className="upload-preview-image"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <Button
+                                                            style={{ marginTop: 20 }}
+                                                            className='visaapplication-submit-button'
+                                                            type="primary"
+                                                            onClick={handleSubmitPayment}
+                                                            disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                        >
+                                                            {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                                        </Button>
+
+                                                    </div>
+                                                )}
+
+                                                {/* PAYMENT FOR DELIVERY FEE */}
+                                                {false && statusValue && statusValue.toLowerCase() === 'passport released' && (
                                                     <div style={{ padding: 4, marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
                                                         {requirements.length === 0 && (
@@ -1078,26 +1432,6 @@ export default function VisaApplication() {
                                                     </div>
 
                                                 )}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                                             </div>
 

@@ -6,15 +6,15 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
-.package-card {
+.visa-card {
     margin-bottom: 16px;
 }
 
-.package-card .ant-card-body {
+.visa-card .ant-card-body {
     padding: 12px 16px;
 }
 
-.package-container {
+.visa-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -22,12 +22,12 @@
     gap: 14px;
 }
 
-.package-media {
+.visa-media {
     width: 280px;
     min-width: 250px;
 }
 
-.package-image {
+.visa-image {
     width: 100%;
     height: 180px;
     border-radius: 10px;
@@ -35,7 +35,7 @@
     background: #f9fafb;
 }
 
-.package-image-placeholder {
+.visa-image-placeholder {
     width: 100%;
     height: 180px;
     border-radius: 10px;
@@ -50,7 +50,7 @@
     letter-spacing: 0.4px;
 }
 
-.package-details {
+.visa-details {
     flex: 1;
 }
 
@@ -101,7 +101,7 @@
     color: #1f2a44;
 }
 
-.package-container .ant-table-thead>tr>th {
+.visa-container .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
     background-color: #f8fafc;
     color: #305797;
@@ -109,23 +109,24 @@
     font-weight: 600;
 }
 
-.package-container .ant-table-tbody>tr>td {
+.visa-container .ant-table-tbody>tr>td {
     font-family: "Roboto", sans-serif;
     color: #1f2a44;
     font-size: 12px;
 }
 
-.package-actions {
+.visa-actions {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-    align-items: center;
+    justify-content: flex-end;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 10px;
     flex-wrap: wrap;
 }
 
 .search-input,
 .visaservices-search-input,
-.package-date-filter,
+.visa-date-filter,
 .ant-picker {
     height: 32px !important;
     line-height: 32px !important;
@@ -138,25 +139,25 @@
     width: 100% !important;
 }
 
-.package-info {
+.visa-info {
     display: flex;
     flex-direction: column;
 }
 
-.package-name,
-.package-code {
-    font-size: 18px;
-    font-weight: 600;
+.visa-name,
+.visa-code {
+    font-size: 22px;
     margin: 0;
 }
 
-.package-price {
-    font-size: 13px;
+.visa-price {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
     color: #6e6e6e;
     margin: 4px 0 12px 0;
 }
 
-.package-description {
+.visa-description {
     font-size: 12px;
     margin: 6px 0;
     text-align: justify;
@@ -167,7 +168,7 @@
     line-height: 1.5;
 }
 
-.package-available-slots {
+.visa-available-slots {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 4px;
@@ -296,7 +297,7 @@
 
 
 /* MODAL CSS */
-.package-details-modal .ant-modal-content {
+.visa-details-modal .ant-modal-content {
     border-radius: 16px;
     padding: 16px;
 }
@@ -317,7 +318,7 @@
     padding-bottom: 0;
 }
 
-.package-details-modal-header {
+.visa-details-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -332,7 +333,7 @@
     gap: 10px;
 }
 
-.package-details-code {
+.visa-details-code {
     margin: 0;
     font-size: 12px;
     color: #6b7280;
@@ -341,22 +342,12 @@
     font-family: "Roboto", sans-serif;
 }
 
-.package-details-title {
+.visa-details-title {
     margin: 6px 0 0;
     font-size: 26px;
     font-weight: 700;
     color: #1f2a44;
     font-family: "Montserrat", sans-serif;
-}
-
-.package-details-price {
-    background: #eef2ff;
-    color: #305797;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 999px;
-    font-size: 15px;
-    white-space: nowrap;
 }
 
 .visa-details-price {
@@ -369,21 +360,15 @@
     white-space: nowrap;
 }
 
-.package-details-body {
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 22px;
-}
-
 .visa-details-modal .package-details-body {
     grid-template-columns: 1fr;
 }
 
-.package-details-media {
+.visa-details-media {
     width: 100%;
 }
 
-.package-details-image {
+.visa-details-image {
     width: 100%;
     height: 180px;
     object-fit: cover;
@@ -392,7 +377,7 @@
     background: #f9fafb;
 }
 
-.package-details-image-placeholder {
+.visa-details-image-placeholder {
     width: 100%;
     height: 180px;
     border-radius: 12px;
@@ -407,26 +392,27 @@
     letter-spacing: 0.4px;
 }
 
-.package-details-description {
+.visa-details-description {
     margin: 0 0 16px;
     font-size: 15px;
     line-height: 1.7;
     color: #374151;
 }
 
-.package-details-stats {
+.visa-details-stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(2, minmax(2, 1fr));
+    gap: 10px;
 }
 
-.visa-details-modal .package-details-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.visa-details-modal .visa-details-stats {
+    grid-template-columns: repeat(2, minmax(2, 1fr));
 }
 
-.package-details-stat {
+.visa-details-stat {
     background: #f8fafc;
     border: 1px solid #e5e7eb;
+    min-width: 220px;
     border-radius: 12px;
     padding: 12px 14px;
     display: flex;
@@ -434,14 +420,14 @@
     gap: 4px;
 }
 
-.package-details-label {
+.visa-details-label {
     font-size: 12px;
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.6px;
 }
 
-.package-details-value {
+.visa-details-value {
     font-size: 15px;
     font-weight: 600;
     color: #1f2a44;

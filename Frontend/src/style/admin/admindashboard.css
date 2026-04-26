@@ -3,7 +3,6 @@
   min-height: 100%;
 }
 
-
 .admin-dashboard h1 {
   font-size: 30px;
   font-weight: 600;
@@ -13,10 +12,6 @@
 .dash-card h2 {
   font-size: 34px;
   color: #000000d2;
-}
-
-.dashboard-section {
-  margin-top: 30px;
 }
 
 .activity-card {

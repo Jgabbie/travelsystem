@@ -339,7 +339,7 @@ const passportReleaseOptionUpdate = async (req, res) => {
 
     try {
         if (!passportReleaseOption) {
-            return res.status(400).json({ message: "Passport release option is required" });
+            return res.status(400).json({ message: "Release option is required" });
         }
         const application = await VisaModel.findById(id);
         if (!application) {
@@ -348,14 +348,64 @@ const passportReleaseOptionUpdate = async (req, res) => {
 
         application.passportReleaseOption = passportReleaseOption;
         application.deliveryAddress = deliveryAddress || "";
+        if ((passportReleaseOption || "").toLowerCase() !== "delivery") {
+            application.deliveryFee = 0;
+            application.deliveryDate = "";
+        }
         application.status = "Passport Released";
         await application.save();
 
-        res.status(200).json({ message: "Passport release option updated", application });
+        res.status(200).json({ message: "Release option updated", application });
     }
     catch (error) {
-        console.error("Error updating passport release option:", error);
+        console.error("Error updating release option:", error);
         res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const updateVisaDeliveryDetails = async (req, res) => {
+    const { id } = req.params;
+    const { deliveryFee, deliveryDate } = req.body;
+
+    try {
+        const fee = Number(deliveryFee);
+        if (!Number.isFinite(fee) || fee <= 0) {
+            return res.status(400).json({ message: "Valid delivery fee is required" });
+        }
+
+        if (!deliveryDate) {
+            return res.status(400).json({ message: "Delivery date is required" });
+        }
+
+        const application = await VisaModel.findById(id);
+        if (!application) {
+            return res.status(404).json({ message: "Visa application not found" });
+        }
+
+        if ((application.passportReleaseOption || "").toLowerCase() !== "delivery") {
+            return res.status(400).json({ message: "Application is not marked for delivery" });
+        }
+
+        application.deliveryFee = fee;
+        application.deliveryDate = deliveryDate;
+        await application.save();
+
+        const user = await UserModel.findById(application.userId);
+        if (user) {
+            await NotificationModel.create({
+                userId: user._id,
+                title: "Visa Delivery Details Available",
+                message: `Your delivery fee is PHP ${fee.toLocaleString()} and target date is ${deliveryDate}.`,
+                type: "visa",
+                link: "/user-applications",
+                metadata: { applicationId: application._id, deliveryFee: fee, deliveryDate }
+            });
+        }
+
+        return res.status(200).json({ message: "Visa delivery details updated", application });
+    } catch (error) {
+        console.error("Error updating visa delivery details:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };
 
@@ -494,6 +544,8 @@ const archiveVisaApplication = async (req, res) => {
             submittedDocuments: application.submittedDocuments,
             passportReleaseOption: application.passportReleaseOption,
             deliveryAddress: application.deliveryAddress,
+            deliveryFee: application.deliveryFee,
+            deliveryDate: application.deliveryDate,
             status: application.status,
             currentStepIndex: application.currentStepIndex,
             createdAt: application.createdAt
@@ -549,6 +601,8 @@ const restoreArchivedVisaApplication = async (req, res) => {
             submittedDocuments: archivedApplication.submittedDocuments,
             passportReleaseOption: archivedApplication.passportReleaseOption,
             deliveryAddress: archivedApplication.deliveryAddress,
+            deliveryFee: archivedApplication.deliveryFee,
+            deliveryDate: archivedApplication.deliveryDate,
             status: archivedApplication.status,
             currentStepIndex: archivedApplication.currentStepIndex,
             createdAt: archivedApplication.createdAt,
@@ -575,6 +629,7 @@ module.exports = {
     suggestAppointmentSchedules,
     chosenSuggestedSchedule,
     passportReleaseOptionUpdate,
+    updateVisaDeliveryDetails,
     updateVisaApplicationStatus,
     verifyTokenCheckout,
     archiveVisaApplication,

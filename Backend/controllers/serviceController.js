@@ -3,7 +3,7 @@ const ArchivedServiceModel = require('../models/archivedservices');
 const logAction = require('../utils/logger')
 
 const createService = async (req, res) => {
-    const { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders } = req.body;
+    const { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders } = req.body;
     const userId = req.userId;
 
     try {
@@ -13,7 +13,6 @@ const createService = async (req, res) => {
             visaDescription,
             visaPrice,
             visaRequirements,
-            visaAdditionalRequirements: Array.isArray(visaAdditionalRequirements) ? visaAdditionalRequirements : [],
             visaProcessSteps,
             visaReminders
         });
@@ -40,7 +39,6 @@ const getAllServices = async (req, res) => {
             visaDescription: service.visaDescription,
             visaPrice: service.visaPrice,
             visaRequirements: service.visaRequirements,
-            visaAdditionalRequirements: service.visaAdditionalRequirements,
             visaProcessSteps: service.visaProcessSteps,
             visaReminders: service.visaReminders,
         }));
@@ -54,12 +52,12 @@ const getAllServices = async (req, res) => {
 const updateService = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
-    const { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders } = req.body;
+    const { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders } = req.body;
 
     try {
         const updatedService = await ServiceModel.findByIdAndUpdate(
             id,
-            { visaName, visaDescription, visaPrice, visaRequirements, visaAdditionalRequirements, visaProcessSteps, visaReminders },
+            { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders },
             { new: true }
         );
         if (!updatedService) {
@@ -85,12 +83,11 @@ const deleteService = async (req, res) => {
         }
 
         await ArchivedServiceModel.create({
-            originalServiceItem: service._id,
+            originalServiceItem: id,
             visaName: service.visaName,
             visaPrice: service.visaPrice,
             visaDescription: service.visaDescription,
             visaRequirements: service.visaRequirements,
-            visaAdditionalRequirements: service.visaAdditionalRequirements,
             visaProcessSteps: service.visaProcessSteps,
             visaReminders: service.visaReminders,
             createdAt: service.createdAt
@@ -109,7 +106,20 @@ const deleteService = async (req, res) => {
 const getArchivedServices = async (_req, res) => {
     try {
         const services = await ArchivedServiceModel.find({}).sort({ archivedAt: -1 });
-        res.status(200).json(services);
+        const servicesPayload = services.map(service => ({
+            visaItem: service._id,
+            originalServiceItem: service.originalServiceItem,
+            visaName: service.visaName,
+            visaPrice: service.visaPrice,
+            visaDescription: service.visaDescription,
+            visaRequirements: service.visaRequirements,
+            visaProcessSteps: service.visaProcessSteps,
+            visaReminders: service.visaReminders,
+            createdAt: service.createdAt,
+            archivedAt: service.archivedAt,
+        }));
+
+        res.status(200).json(servicesPayload);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving archived services', error: error.message });
     }
@@ -118,6 +128,8 @@ const getArchivedServices = async (_req, res) => {
 const restoreArchivedService = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
+
+    console.log("Attempting to restore archived service with ID:", id);
     try {
         const archivedService = await ArchivedServiceModel.findById(id);
         if (!archivedService) {
@@ -129,7 +141,6 @@ const restoreArchivedService = async (req, res) => {
             visaPrice: archivedService.visaPrice,
             visaDescription: archivedService.visaDescription,
             visaRequirements: archivedService.visaRequirements,
-            visaAdditionalRequirements: archivedService.visaAdditionalRequirements,
             visaProcessSteps: archivedService.visaProcessSteps,
             visaReminders: archivedService.visaReminders
         });
@@ -139,6 +150,7 @@ const restoreArchivedService = async (req, res) => {
         logAction('SERVICE_RESTORED', userId, { "Service Restored": `Service Restored: ${restoredService.visaName}` });
         res.status(200).json({ message: 'Service restored successfully' });
     } catch (error) {
+        logAction('SERVICE_RESTORED', userId, { "Service Restored Error": `Error restoring service: ${error.message}` });
         res.status(500).json({ message: 'Error restoring service', error: error.message });
     }
 };
@@ -155,7 +167,6 @@ const getService = async (req, res) => {
             visaDescription: service.visaDescription,
             visaPrice: service.visaPrice,
             visaRequirements: service.visaRequirements,
-            visaAdditionalRequirements: service.visaAdditionalRequirements,
             visaProcessSteps: service.visaProcessSteps,
             visaReminders: service.visaReminders,
         }

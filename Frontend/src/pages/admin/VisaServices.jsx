@@ -42,9 +42,11 @@ export default function VisaServices() {
                 if (a.createdAt && b.createdAt) {
                     return new Date(b.createdAt) - new Date(a.createdAt);
                 }
-                return (b._id > a._id ? 1 : -1);
+                return (b.visaItem > a.visaItem ? 1 : -1);
             });
             setServicesData(sorted);
+
+
         } catch (error) {
             console.error("Failed to fetch visa services:", error);
         } finally {
@@ -60,7 +62,7 @@ export default function VisaServices() {
                 if (a.archivedAt && b.archivedAt) {
                     return new Date(b.archivedAt) - new Date(a.archivedAt);
                 }
-                return (b._id > a._id ? 1 : -1);
+                return (b.visaItem > a.visaItem ? 1 : -1);
             });
             setArchivedServices(sorted);
         } catch (error) {
@@ -85,8 +87,9 @@ export default function VisaServices() {
 
     const handleArchive = async (key) => {
         try {
+
             await apiFetch.delete(`/services/delete-service/${key}`);
-            setServicesData(prevData => prevData.filter(service => service._id !== key));
+            setServicesData(prevData => prevData.filter(service => service.visaItem !== key));
             setIsServiceDeletedModalOpen(true);
             setServiceToDelete(null);
         } catch (error) {
@@ -97,8 +100,8 @@ export default function VisaServices() {
 
     const handleRestore = async (key) => {
         try {
-            await apiFetch.post(`/services/archived-services/${key}/restore`)
-            setArchivedServices(prevData => prevData.filter(service => service._id !== key))
+            await apiFetch.post(`/services/archived-services/${key}/restore`);
+            await Promise.all([getServices(), getArchivedServices()]);
             setIsServiceRestoredModalOpen(true);
         } catch (error) {
             console.error("Failed to restore visa service:", error)
@@ -211,18 +214,18 @@ export default function VisaServices() {
 
                 <Spin spinning={loading}>
                     {filteredServices.length > 0 ? filteredServices.map(service => (
-                        <Card key={service._id} className="package-card">
-                            <div className="package-container">
-                                <div className="package-details">
-                                    <div className="package-info">
-                                        <h3 className="package-name">{service.visaName}</h3>
-                                        <h6 className="package-price">₱{service.visaPrice?.toLocaleString() || '--'}</h6>
+                        <Card key={service.visaItem} className="visa-card">
+                            <div className="visa-container">
+                                <div className="visa-details">
+                                    <div className="visa-info">
+                                        <h5 className="visa-name">{service.visaName}</h5>
+                                        <h6 className="visa-price">₱{service.visaPrice?.toLocaleString() || '--'}</h6>
                                     </div>
-                                    <p className="package-description">{service.visaDescription}</p>
+                                    <p className="visa-description">{service.visaDescription}</p>
                                 </div>
                             </div>
 
-                            <div className="package-actions">
+                            <div className="visa-actions">
                                 <Button
                                     className="visaservices-view-button"
                                     type="primary"
@@ -237,7 +240,7 @@ export default function VisaServices() {
                                         className="visaservices-restore-button"
                                         type="primary"
                                         onClick={() => {
-                                            setServiceToDelete(service._id);
+                                            setServiceToDelete(service.visaItem);
                                             setIsRestoreModalOpen(true);
                                         }}
                                     >
@@ -249,7 +252,7 @@ export default function VisaServices() {
                                             className="visaservices-edit-button"
                                             type="primary"
                                             icon={<EditOutlined />}
-                                            onClick={() => navigate(`${basePath}/visa-services/edit`, { state: { serviceId: service._id } })}
+                                            onClick={() => navigate(`${basePath}/visa-services/edit`, { state: { serviceId: service.visaItem } })}
                                         >
                                             Edit
                                         </Button>
@@ -258,7 +261,7 @@ export default function VisaServices() {
                                             type="primary"
                                             icon={<DeleteOutlined />}
                                             onClick={() => {
-                                                setServiceToDelete(service._id);
+                                                setServiceToDelete(service.visaItem);
                                                 setIsDeleteModalOpen(true);
                                             }}
                                         >
@@ -280,37 +283,36 @@ export default function VisaServices() {
                     footer={null}
                     open={isModalOpen}
                     onCancel={() => { handleCancel() }}
-                    className="package-details-modal"
+                    className="visa-details-modal"
                     width={820}
-                    style={{ top: 40 }}
+                    centered={true}
                 >
                     {selectedService && (
                         <div>
-                            <div className="package-details-modal-header">
+                            <div className="visa-details-modal-header">
                                 <div>
-                                    <p className="package-details-code">{selectedService.visaType}</p>
-                                    <h2 className="package-details-title">{selectedService.visaName}</h2>
+                                    <p className="visa-details-code">{selectedService.visaType}</p>
+                                    <h2 className="visa-details-title">{selectedService.visaName}</h2>
                                 </div>
                                 <div className="visa-details-meta">
-                                    <div className="package-details-price">{selectedService.processing}</div>
-                                    <div className="visa-details-price">{selectedService.visaPrice || "--"}</div>
+                                    <div className="visa-details-price">₱{selectedService.visaPrice || "--"}</div>
                                 </div>
                             </div>
 
-                            <div className="package-details-body">
-                                <div className="package-details-content">
-                                    <p className="package-details-description">{selectedService.visaDescription}</p>
+                            <div className="visa-details-body">
+                                <div className="visa-details-content">
+                                    <p className="visa-details-description">{selectedService.visaDescription}</p>
 
-                                    <div className="package-details-stats">
-                                        <div className="package-details-stat">
-                                            <span className="package-details-label">Requirements</span>
-                                            <span className="package-details-value">
+                                    <div className="visa-details-stats">
+                                        <div className="visa-details-stat">
+                                            <span className="visa-details-label">Requirements</span>
+                                            <span className="visa-details-value">
                                                 {selectedService.visaRequirements?.length || 0}
                                             </span>
                                         </div>
-                                        <div className="package-details-stat">
-                                            <span className="package-details-label">Process Steps</span>
-                                            <span className="package-details-value">
+                                        <div className="visa-details-stat">
+                                            <span className="visa-details-label">Process Steps</span>
+                                            <span className="visa-details-value">
                                                 {selectedService.visaProcessSteps?.length || 0}
                                             </span>
                                         </div>
@@ -345,7 +347,7 @@ export default function VisaServices() {
                     open={isDeleteModalOpen}
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
-                    style={{ top: 220 }}
+                    centered={true}
                     onCancel={() => {
                         setIsDeleteModalOpen(false);
                     }}
@@ -384,7 +386,7 @@ export default function VisaServices() {
                     open={isServiceDeletedModalOpen}
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
-                    style={{ top: 220 }}
+                    centered={true}
                     onCancel={() => {
                         setIsServiceDeletedModalOpen(false);
                     }}
@@ -420,7 +422,7 @@ export default function VisaServices() {
                     open={isRestoreModalOpen}
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
-                    style={{ top: 220 }}
+                    centered={true}
                     onCancel={() => {
                         setIsRestoreModalOpen(false);
                     }}
@@ -460,7 +462,7 @@ export default function VisaServices() {
                     open={isServiceRestoredModalOpen}
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
-                    style={{ top: 220 }}
+                    centered={true}
                     onCancel={() => {
                         setIsServiceRestoredModalOpen(false);
                     }}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Modal, Checkbox, DatePicker, TimePicker } from "antd";
+import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Modal, Checkbox, DatePicker, TimePicker, Input } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
@@ -26,6 +26,9 @@ export default function ViewVisaApplication() {
     const [isSuggestedDatesSentModalOpen, setIsSuggestedDatesSentModalOpen] = useState(false);
     const [isResubmitDocumentsSentModalOpen, setIsResubmitDocumentsSentModalOpen] = useState(false);
     const [descriptionColumn, setDescriptionColumn] = useState(2);
+    const [deliveryFee, setDeliveryFee] = useState("");
+    const [deliveryDate, setDeliveryDate] = useState(null);
+    const [isSubmittingDeliveryDetails, setIsSubmittingDeliveryDetails] = useState(false);
 
     useEffect(() => {
         const updateDescriptionColumn = () => {
@@ -153,6 +156,12 @@ export default function ViewVisaApplication() {
 
         setCurrentStep(statusMap[statusText] ?? 0);
     }, [application?.visaProcessSteps, statusText]);
+
+    useEffect(() => {
+        if ((application?.passportReleaseOption || "").toLowerCase() !== "delivery") return;
+        setDeliveryFee(application?.deliveryFee ? String(application.deliveryFee) : "");
+        setDeliveryDate(application?.deliveryDate ? dayjs(application.deliveryDate) : null);
+    }, [application?.passportReleaseOption, application?.deliveryFee, application?.deliveryDate]);
 
     const requirements = application?.visaRequirements || [];
 
@@ -302,6 +311,34 @@ export default function ViewVisaApplication() {
         }
     };
 
+    const handleSubmitDeliveryDetails = async () => {
+        const parsedFee = Number(deliveryFee);
+        if (!Number.isFinite(parsedFee) || parsedFee <= 0) {
+            message.error("Please enter a valid delivery fee.");
+            return;
+        }
+
+        if (!deliveryDate) {
+            message.error("Please select a delivery date.");
+            return;
+        }
+
+        try {
+            setIsSubmittingDeliveryDetails(true);
+            const response = await apiFetch.put(`/visa/applications/${applicationItem}/delivery-details`, {
+                deliveryFee: parsedFee,
+                deliveryDate: dayjs(deliveryDate).format("YYYY-MM-DD")
+            });
+
+            setApplication((prev) => ({ ...prev, ...response.application }));
+            message.success("Delivery details sent to applicant.");
+        } catch (error) {
+            message.error(error?.message || "Failed to send delivery details.");
+        } finally {
+            setIsSubmittingDeliveryDetails(false);
+        }
+    };
+
     //EMBASSY REJECTED HANDLER ------------------------------------------------------
     const handleEmbassyRejected = async () => {
         try {
@@ -416,12 +453,12 @@ export default function ViewVisaApplication() {
                                 </div>
                             )}
 
-                        {/* PASSPORT RELEASE PASSPORT OPTION CHOSEN BY THE APPLICANT */}
+                        {/* RELEASE OPTION CHOSEN BY THE APPLICANT */}
                         {statusText && statusText.toLowerCase() === "passport released" && (
                             <div style={{ marginTop: 16, borderLeft: '4px solid #354ad8', backgroundColor: '#edf2ff', padding: 16, borderRadius: 8 }}>
-                                <Tag color="blue"><h2>APPLICANT'S RELEASE PASSPORT OPTION</h2></Tag>
+                                <Tag color="blue"><h2>APPLICANT'S RELEASE OPTION</h2></Tag>
                                 <p style={{ margin: 0, fontSize: 14 }}>
-                                    This is the chosen release passport option of the applicant.
+                                    This is the chosen release option of the applicant.
                                 </p>
                                 <strong>
                                     {application.passportReleaseOption === "pickup" ? "Pickup at MRC Travel and Tours office" : `Delivery to ${application.deliveryAddress || "N/A"}`}
@@ -615,7 +652,36 @@ export default function ViewVisaApplication() {
                                             </div>
                                         </div>
 
-
+                                        {statusText && String(statusText).toLowerCase() === "passport released" && application.passportReleaseOption === "delivery" && (
+                                            <div style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 16 }}>
+                                                <h3 style={{ marginTop: 0 }}>Delivery Details</h3>
+                                                <label>Delivery Fee</label>
+                                                <Input
+                                                    placeholder="Enter delivery fee"
+                                                    value={deliveryFee}
+                                                    onChange={(e) => setDeliveryFee(e.target.value)}
+                                                    style={{ marginBottom: 12 }}
+                                                />
+                                                <label>Delivery Date</label>
+                                                <DatePicker
+                                                    style={{ width: "100%", marginBottom: 12 }}
+                                                    value={deliveryDate}
+                                                    onChange={setDeliveryDate}
+                                                />
+                                                <Button
+                                                    type="primary"
+                                                    onClick={handleSubmitDeliveryDetails}
+                                                    loading={isSubmittingDeliveryDetails}
+                                                >
+                                                    Send Delivery Details
+                                                </Button>
+                                                {(application.deliveryFee > 0 || application.deliveryDate) && (
+                                                    <p style={{ marginTop: 12, marginBottom: 0, color: "#305797" }}>
+                                                        Current details: PHP {Number(application.deliveryFee || 0).toLocaleString()} on {application.deliveryDate || "N/A"}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
 
 
 

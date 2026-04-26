@@ -16,6 +16,7 @@ router.put('/applications/:id/documents', userAuth, visaController.updateVisaApp
 router.put('/applications/:id/suggest-appointments', userAuth, visaController.suggestAppointmentSchedules)
 router.put('/applications/:id/choose-appointment', userAuth, visaController.chosenSuggestedSchedule)
 router.put('/applications/:id/release-option', userAuth, visaController.passportReleaseOptionUpdate)
+router.put('/applications/:id/delivery-details', userAuth, visaController.updateVisaDeliveryDetails)
 router.put('/applications/:id/resubmit-documents', userAuth, visaController.requestVisaDocumentResubmission)
 router.post('/verify-payment', userAuth, visaController.verifyTokenCheckout);
 

@@ -581,7 +581,7 @@ export default function PassportApplication() {
                                 <Tag color="green"><h2>APPLICATION APPROVED</h2></Tag>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     Congratulations! Your application has been approved.
-                                    Your passport will be released and delivered to you once the process is complete.
+                                    Your passport has been released kindly pick it up in the DFA office.
                                 </p>
                             </div>
                         )}

@@ -28,6 +28,8 @@ const VisaApplicationSchema = new mongoose.Schema({
     submittedDocuments: { type: Object },
     passportReleaseOption: { type: String },
     deliveryAddress: { type: String },
+    deliveryFee: { type: Number, default: 0 },
+    deliveryDate: { type: String, default: "" },
     status: {
         type: [String],
         default: ['Application Submitted']

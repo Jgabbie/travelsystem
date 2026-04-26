@@ -16,6 +16,8 @@ export default function AddService() {
     const { serviceId } = location.state || {};
     const isEdit = Boolean(serviceId);
 
+    console.log("Service ID from location state:", serviceId);
+
     const [errors, setErrors] = useState({
         visaName: "",
         description: "",
@@ -29,7 +31,7 @@ export default function AddService() {
         description: "",
         visaPrice: "",
         requirements: [{ req: "", desc: "", isReq: "", applicationLink: "" }],
-        processSteps: [{ title: "", description: "" }],
+        processSteps: [""],
         reminders: [""],
     });
 
@@ -43,10 +45,11 @@ export default function AddService() {
             // Optionally, require description for each requirement
             // if (value.some((item) => !item.desc.trim())) return "All requirement descriptions must be filled.";
         }
-        if (field === "processSteps") {
-            if (!value.length) return "At least one process step is required.";
-            if (value.some((item) => !String(item?.title || "").trim())) return "All process steps must be filled.";
-        }
+
+        // if (field === "processSteps") {
+        //     if (!value.length) return "At least one process step is required.";
+        //     if (value.some((item) => !String(item?.title || "").trim())) return "All process steps must be filled.";
+        // }
         return "";
     };
 
@@ -70,8 +73,12 @@ export default function AddService() {
             const updated = [...values.requirements, { req: "", desc: "", isReq: "" }];
             valueHandler("requirements", updated);
         }
+        // if (type === "processSteps") {
+        //     const updated = [...values.processSteps, { title: "", description: "" }];
+        //     valueHandler("processSteps", updated);
+        // }
         if (type === "processSteps") {
-            const updated = [...values.processSteps, { title: "", description: "" }];
+            const updated = [...values.processSteps, ""];
             valueHandler("processSteps", updated);
         }
         if (type === "reminders") {
@@ -90,9 +97,14 @@ export default function AddService() {
             }
             valueHandler("requirements", updated);
         }
+        // if (type === "processSteps") {
+        //     const updated = [...values.processSteps];
+        //     updated[index] = { ...updated[index], [subfield || "title"]: value };
+        //     valueHandler("processSteps", updated);
+        // }
         if (type === "processSteps") {
             const updated = [...values.processSteps];
-            updated[index] = { ...updated[index], [subfield || "title"]: value };
+            updated[index] = value;
             valueHandler("processSteps", updated);
         }
         if (type === "reminders") {
@@ -139,10 +151,8 @@ export default function AddService() {
             visaPrice: Number(values.visaPrice),
             visaDescription: values.description.trim(),
             visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim(), isReq: item.isReq, applicationLink: item.applicationLink.trim() })),
-            visaProcessSteps: values.processSteps.map((item) => ({
-                title: String(item?.title || "").trim(),
-                description: String(item?.description || "").trim()
-            })),
+            // visaProcessSteps: values.processSteps.map([]),
+            visaProcessSteps: values.processSteps.map((step) => step.trim()),
             visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0),
         };
 
@@ -172,13 +182,20 @@ export default function AddService() {
                     requirements: existing.visaRequirements?.length
                         ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "", applicationLink: item.applicationLink || "" })
                         : [{ req: "", desc: "", isReq: "", applicationLink: "" }],
+                    // processSteps: existing.visaProcessSteps?.length
+                    //     ? existing.visaProcessSteps.map((step) =>
+                    //         typeof step === "string"
+                    //             ? { title: step, description: "" }
+                    //             : { title: step?.title || "", description: step?.description || "" }
+                    //     )
+                    //     : [{ title: "", description: "" }],
                     processSteps: existing.visaProcessSteps?.length
                         ? existing.visaProcessSteps.map((step) =>
                             typeof step === "string"
-                                ? { title: step, description: "" }
-                                : { title: step?.title || "", description: step?.description || "" }
+                                ? step
+                                : step?.title || ""
                         )
-                        : [{ title: "", description: "" }],
+                        : [""],
                     reminders: Array.isArray(existing.visaReminders)
                         ? (existing.visaReminders.length ? existing.visaReminders : [""])
                         : (existing.visaReminders ? [existing.visaReminders] : [""]),
@@ -269,7 +286,7 @@ export default function AddService() {
                             <label className="add-service-input-labels">Description</label>
                             <Input.TextArea
                                 value={values.description}
-                                maxLength={300}
+                                maxLength={500}
                                 className={`add-service-input-textarea${errors.description ? " add-service-input-textarea-error" : ""}`}
                                 autoSize={{ minRows: 4, maxRows: 7 }}
                                 onChange={(event) => valueHandler("description", event.target.value)}
@@ -334,7 +351,7 @@ export default function AddService() {
                                                 value={item.desc}
                                                 className="add-service-inputs"
                                                 autoSize={{ minRows: 3, maxRows: 5 }}
-                                                maxLength={300}
+                                                maxLength={500}
                                                 onChange={(event) => updateBullet("requirements", index, event.target.value, "desc")}
                                                 style={{ marginTop: 2 }}
                                             />
@@ -369,7 +386,7 @@ export default function AddService() {
                             className={errors.processSteps ? "add-service-card-error" : "add-service-section"}
                         >
                             <h2 className="section-headers" >Process Steps</h2>
-                            {values.processSteps.map((item, index) => (
+                            {/* {values.processSteps.map((item, index) => (
                                 <div key={`step-${index}`} className="add-service-bullet-row">
                                     <Space>
                                         <div>
@@ -398,6 +415,26 @@ export default function AddService() {
                                             autoSize={{ minRows: 2, maxRows: 4 }}
                                             maxLength={300}
                                             onChange={(event) => updateBullet("processSteps", index, event.target.value, "description")}
+                                        />
+                                    </div>
+                                </div>
+                            ))} */}
+                            {values.processSteps.map((item, index) => (
+                                <div key={`step-${index}`} className="add-service-bullet-row">
+                                    <label className="add-service-input-labels">Process Step</label>
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <Input
+                                            value={item}
+                                            className="add-service-inputs"
+                                            onChange={(event) =>
+                                                updateBullet("processSteps", index, event.target.value)
+                                            }
+                                        />
+                                        <Button
+                                            className="delete-add-service-button delete-button"
+                                            type="primary"
+                                            onClick={() => removeBullet("processSteps", index)}
+                                            icon={<DeleteOutlined />}
                                         />
                                     </div>
                                 </div>

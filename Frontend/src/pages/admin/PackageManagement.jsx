@@ -161,8 +161,6 @@ export default function PackageManagement() {
 
   //REMOVE PACKAGE ----------------------------------------------------------
   const handleArchive = async (key) => {
-    console.log("Archiving package with key:", key); // Debug log
-
     try {
       await apiFetch.delete(`/package/remove-package/${key}`);
       setIsPackageDeletedModalOpen(true);
@@ -503,7 +501,7 @@ export default function PackageManagement() {
           onCancel={() => { handleCancel() }}
           className="package-details-modal"
           width={820}
-          style={{ top: 200 }}
+          centered={true}
         >
           <div className="package-details-modal-header">
             <div>
@@ -552,7 +550,7 @@ export default function PackageManagement() {
           onCancel={handleSlotsCancel}
           width={760}
           className="packages-edit-slots-modal"
-          style={{ top: 80 }}
+          centered={true}
         >
           {slotsPackage ? (
             <div>
@@ -631,7 +629,7 @@ export default function PackageManagement() {
           onCancel={handleDiscountCancel}
           width={420}
           className="packages-add-discount-modal"
-          style={{ top: 250 }}
+          centered={true}
         >
           {discountPackage ? (
             <div>
@@ -667,7 +665,7 @@ export default function PackageManagement() {
           className='signup-success-modal'
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsDiscountAppliedModalOpen(false);
           }}
@@ -704,7 +702,7 @@ export default function PackageManagement() {
           className='signup-success-modal'
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsSlotsSavedModalOpen(false);
           }}
@@ -740,7 +738,7 @@ export default function PackageManagement() {
           open={isDeleteModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsDeleteModalOpen(false);
           }}
@@ -781,7 +779,7 @@ export default function PackageManagement() {
           open={isRestoreModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsRestoreModalOpen(false);
           }}
@@ -823,7 +821,7 @@ export default function PackageManagement() {
           open={isPackageDeletedModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsPackageDeletedModalOpen(false);
           }}
@@ -858,7 +856,7 @@ export default function PackageManagement() {
           open={isPackageRestoredModalOpen}
           closable={{ 'aria-label': 'Custom Close Button' }}
           footer={null}
-          style={{ top: 220 }}
+          centered={true}
           onCancel={() => {
             setIsPackageRestoredModalOpen(false);
           }}
