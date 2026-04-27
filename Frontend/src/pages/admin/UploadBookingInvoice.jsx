@@ -270,6 +270,7 @@ export default function UploadBookingInvoice() {
         booking?.packageId?.packageName ||
         booking?.pkg ||
         "Package";
+    const bookingType = bookingDetails?.bookingType
     const travelDateValue =
         bookingDetails.travelDate ||
         booking?.travelDate ||
@@ -397,7 +398,7 @@ export default function UploadBookingInvoice() {
         },
         items: [
             travelerCountAdult
-                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: adultRate }
+                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: bookingType === "Solo Booking" ? totalPrice : adultRate }
                 : null,
             travelerCountChild
                 ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
@@ -440,6 +441,7 @@ export default function UploadBookingInvoice() {
     invoice.invoice.dueDate = lastInstallmentDate
         ? dayjs(lastInstallmentDate).format("MMMM D, YYYY")
         : null;
+
 
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: "#333", fontFamily: "Helvetica" },

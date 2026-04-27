@@ -208,6 +208,7 @@ export default function UserBookingInvoice() {
         bookingDetails.packageName ||
         booking?.pkg ||
         "Package";
+    const bookingType = bookingDetails?.bookingType
     const travelDateValue =
         bookingDetails.travelDate ||
         booking?.travelDate ||
@@ -238,6 +239,8 @@ export default function UserBookingInvoice() {
     const paymentMode = bookingDetails?.paymentMode || (bookingDetails?.paymentDetails?.paymentType === 'deposit' ? 'Deposit' : 'Full Payment');
 
     const summaryInvoice = bookingDetails
+
+
 
     //DOCUMENTS
     const travelersWithDocs = bookingDetails?.travelers?.length
@@ -629,6 +632,8 @@ export default function UserBookingInvoice() {
     }
 
 
+
+
     //BOOKING INVOICE NUMBER LOGIC
     const buildInvoiceNumber = (allBookings, currentBooking) => {
         if (!currentBooking) return "";
@@ -702,7 +707,7 @@ export default function UserBookingInvoice() {
         },
         items: [
             travelerCountAdult
-                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: adultRate }
+                ? { date: issueDate, activity: 'Adult', description: packageName || 'Tour Package', qty: travelerCountAdult, rate: bookingType === "Solo Booking" ? totalPrice : adultRate }
                 : null,
             travelerCountChild
                 ? { date: issueDate, activity: 'Child', description: packageName || 'Tour Package', qty: travelerCountChild, rate: childRate }
@@ -792,7 +797,6 @@ export default function UserBookingInvoice() {
     };
 
     const totals = calculateTotals(invoice.items);
-
 
     //INVOICE DOCUMENT
     const MyDocument = () => (
