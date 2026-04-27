@@ -493,9 +493,6 @@ export default function PassportApplication() {
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
-
-
-
             {loading || uploading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                     <Spin size="large" description={uploading ? "Uploading Documents..." : "Loading..."} />
@@ -519,8 +516,8 @@ export default function PassportApplication() {
 
                         {/* SUGGESTED APPOINTMENT */}
                         {application?.status && application?.status?.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                <Tag color="green"><h2>SUGGESTED APPOINTMENT</h2></Tag>
+                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>SUGGESTED APPOINTMENT</h2>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     You have successfully chosen your appointment schedule.
                                     Kindly wait for its approval. We will notify you once the date is available.
@@ -530,8 +527,8 @@ export default function PassportApplication() {
 
                         {/*APPROVED APPOINTMENT DATE AND TIME */}
                         {application?.status && application?.status?.toLowerCase() === 'application approved' && (
-                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                <Tag color="green"><h2>YOUR APPOINTMENT DATE AND TIME</h2></Tag>
+                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>YOUR APPOINTMENT DATE AND TIME</h2>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     Your appointment has been scheduled for <strong>{dayjs(application.preferredDate).format('MMM D, YYYY') || dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY")}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
                                 </p>
@@ -540,8 +537,8 @@ export default function PassportApplication() {
 
                         {/* DOCUMENTS APPROVED */}
                         {application?.status && application?.status?.toLowerCase() === 'documents approved' && (
-                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                <Tag color="green"><h2>DOCUMENTS APPROVED</h2></Tag>
+                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>DOCUMENTS APPROVED</h2>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     Your uploaded documents have been approved by our team.
                                     You may now submit or deliver the physical copies of your documents to our office.
@@ -553,8 +550,8 @@ export default function PassportApplication() {
                         {application?.status && (application?.status?.toLowerCase() === 'documents received' ||
                             application?.status?.toLowerCase() === 'documents submitted' ||
                             application?.status?.toLowerCase() === 'processing by dfa') && (
-                                <div style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6', padding: 16, borderRadius: 8 }}>
-                                    <Tag color="gold"><h2>PROGRESS TRACKER</h2></Tag>
+                                <div style={{ marginBottom: 24, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                    <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#faad14' }}>PROGRESS TRACKER</h2>
                                     <p style={{ margin: 0, fontSize: 14 }}>
                                         Kindly refer to the progress tracker for the remaining steps of the process.
                                         You will be also receiving email notifications and updates regarding the status of your application, so please stay tuned to your inbox.
@@ -564,8 +561,8 @@ export default function PassportApplication() {
 
                         {/* APPLICATION DENIED */}
                         {application?.status && application?.status?.toLowerCase() === 'rejected' && (
-                            <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, borderRadius: 8 }}>
-                                <Tag color="red"><h2>APPLICATION DENIED</h2></Tag>
+                            <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f' }}>APPLICATION DENIED</h2>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     Unfortunately, your application has been denied.
                                     You may contact our support team for further assistance or clarification regarding your application.
@@ -577,8 +574,8 @@ export default function PassportApplication() {
 
                         {/* APPLICATION SUCCESS */}
                         {application?.status && application?.status?.toLowerCase() === 'dfa approved' && (
-                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                <Tag color="green"><h2>APPLICATION APPROVED</h2></Tag>
+                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>APPLICATION APPROVED</h2>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     Congratulations! Your application has been approved.
                                     Your passport has been released kindly pick it up in the DFA office.
@@ -588,8 +585,8 @@ export default function PassportApplication() {
 
                         {/* PASSPORT FOR RELEASE */}
                         {application?.status && application?.status?.toLowerCase() === 'passport released' && (
-                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                <Tag color="green"><h2>PASSPORT FOR RELEASE</h2></Tag>
+                            <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>PASSPORT FOR RELEASE</h2>
                                 <p style={{ margin: 0, fontSize: 14 }}>
                                     Your passport is ready for release.
                                     Please proceed to the office to collect it or wait for its delivery if you have chosen the delivery option.
