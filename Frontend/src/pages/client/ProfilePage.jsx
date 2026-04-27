@@ -672,10 +672,6 @@ export default function ProfilePage() {
                                             )}
                                         </div>
 
-                                        <div className="profile-section-item">
-                                            <span className="profile-section-label">User Role</span>
-                                            <p className="profile-section-value">{userData?.role || 'Not set'}</p>
-                                        </div>
                                     </div>
 
                                     {userData?.isAccountVerified && (

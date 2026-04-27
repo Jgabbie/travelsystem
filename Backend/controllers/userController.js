@@ -224,8 +224,8 @@ const createUsers = async (req, res) => {
                 to: email,
                 subject: `Your ${role} Account Has Been Created`,
                 html: `
-            <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                 <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
@@ -271,7 +271,7 @@ const createUsers = async (req, res) => {
                         font-weight:bold;
                         font-size:14px;
                     ">
-                    Log In to Your Account
+                    Login to Your Account
                 </a>
 
                 <p style="color:#777; font-size:13px; margin-top:30px;">
@@ -283,7 +283,7 @@ const createUsers = async (req, res) => {
                 <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                     <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                     <p>M&RC Travel and Tours</p>
-                    <p>support@mrctravelandtours.com</p>
+                    <p>info1@mrctravels.com</p>
                     <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                 </div>
             </div>`

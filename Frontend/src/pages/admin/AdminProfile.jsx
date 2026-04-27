@@ -356,12 +356,6 @@ export default function AdminProfile() {
                                         <span className="profile-section-label">Username</span>
                                         <p className="profile-section-value">{values.username || 'Not set'}</p>
                                     </div>
-
-                                    <div className="profile-section-item">
-                                        <span className="profile-section-label">Role</span>
-                                        <p className="profile-section-value">{userData?.role || 'Not set'}</p>
-                                    </div>
-
                                     <div className="profile-section-item">
                                         <span className="profile-section-label">First Name</span>
                                         {editing ? (

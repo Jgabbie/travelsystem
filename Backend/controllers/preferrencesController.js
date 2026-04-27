@@ -32,3 +32,4 @@ const getMyPreferrences = async (req, res) => {
 };
 
 module.exports = { savePreferrences, getMyPreferrences };
+

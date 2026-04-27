@@ -325,8 +325,8 @@ const requestDocumentResubmission = async (req, res) => {
                     to: user.email,
                     subject: `Document Resubmission Required - ${booking.reference}`,
                     html: `
-                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                        <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
                             <h2 style="color:#b91c1c; margin-bottom:10px;">Document Resubmission Required</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
@@ -347,7 +347,7 @@ const requestDocumentResubmission = async (req, res) => {
                             <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                                 <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                                 <p>M&RC Travel and Tours</p>
-                                <p>support@mrctravelandtours.com</p>
+                                <p>info1@mrctravels.com</p>
                                 <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                             </div>
                         </div>
@@ -473,6 +473,7 @@ const updateBooking = async (req, res) => {
 //ARCHIVE BOOKING (ADMIN) -----------------------------------------------------------------
 const deleteBooking = async (req, res) => {
     const { id } = req.params
+    console.log("Archiving booking with ID:", id)
 
     try {
         const booking = await BookingModel.findById(id)
@@ -506,6 +507,7 @@ const deleteBooking = async (req, res) => {
         logAction('BOOKING_ARCHIVED', req.userId, { "Booking Archived": `Booking Reference: ${booking.reference}` })
         res.status(200).json({ message: 'Booking archived' })
     } catch (error) {
+        console.log("Error archiving booking:", error)
         res.status(500).json({ message: 'Error archiving booking', error })
     }
 }
@@ -670,8 +672,8 @@ const approveCancellation = async (req, res) => {
                         to: user.email,
                         subject: `Cancellation Approved - ${booking.reference}`,
                         html: `
-                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                         <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
@@ -697,7 +699,7 @@ const approveCancellation = async (req, res) => {
                             <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                                 <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                                 <p>M&RC Travel and Tours</p>
-                                <p>support@mrctravelandtours.com</p>
+                                <p>info1@mrctravels.com</p>
                                 <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                             </div>
 
@@ -769,8 +771,8 @@ const disApproveCancellation = async (req, res) => {
                         to: user.email,
                         subject: `Cancellation Rejected - ${booking.reference}`,
                         html: `
-                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                         <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
@@ -796,7 +798,7 @@ const disApproveCancellation = async (req, res) => {
                             <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                                 <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                                 <p>M&RC Travel and Tours</p>
-                                <p>support@mrctravelandtours.com</p>
+                                <p>info1@mrctravels.com</p>
                                 <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                             </div>
 

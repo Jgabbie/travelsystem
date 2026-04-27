@@ -1,9 +1,9 @@
 const transporter = require('../config/nodemailer')
 
 const sendContactEmail = async (req, res) => {
-    const { name, email, message } = req.body;
+    const { name, email, subject, message } = req.body;
 
-    if (!name || !email || !message) {
+    if (!name || !email || !subject || !message) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -12,14 +12,17 @@ const sendContactEmail = async (req, res) => {
             from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
             to: process.env.COMPANY_EMAIL, //use actual company email here
             replyTo: process.env.COMPANY_EMAIL, //use actual company email here
-            subject: `Contact Form Submission from ${name}`,
+            subject,
             html: `
-                <div style="font-family: Arial, sans-serif; color: #333;">
-                    <h2 style="color: #305797;">New Inquiry Details</h2>
-                    <p><strong>Name:</strong> ${name}</p>
-                    <p><strong>Email:</strong> ${email}</p>
-                    <p><strong>Message:</strong></p>
-                    <div style="background: #f4f6f8; padding: 15px; border-left: 4px solid #305797; white-space: pre-wrap;">${message}</div>
+                <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                    <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left; color:#333;">
+                        <h2 style="color: #305797; margin-bottom:10px;">New Inquiry Details</h2>
+                        <p style="color:#555; font-size:15px;"><strong>Subject:</strong> ${subject}</p>
+                        <p style="color:#555; font-size:15px;"><strong>Name:</strong> ${name}</p>
+                        <p style="color:#555; font-size:15px;"><strong>Email:</strong> ${email}</p>
+                        <p style="color:#555; font-size:15px;"><strong>Message:</strong></p>
+                        <div style="background:#f2f5fa; padding:15px; border-left:4px solid #305797; white-space:pre-wrap; color:#333;">${message}</div>
+                    </div>
                 </div>`
         });
 
@@ -28,8 +31,8 @@ const sendContactEmail = async (req, res) => {
             to: email,
             subject: 'Email Received - M&RC Travel and Tours',
             html: `
-            <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-            <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                 <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
@@ -58,7 +61,7 @@ const sendContactEmail = async (req, res) => {
                 <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                     <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                     <p>M&RC Travel and Tours</p>
-                    <p>support@mrctravelandtours.com</p>
+                    <p>info1@mrctravels.com</p>
                     <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                 </div>
 

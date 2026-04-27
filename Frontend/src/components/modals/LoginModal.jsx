@@ -252,30 +252,35 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={clearForm}
-                    style={{ top: 60 }}
+                    centered={true}
+                    width={600}
                 >
 
                     {isOTPModalVisible ? (
-                        <div className='login-container-otp'>
-                            <h1 className='emailverify-heading-modal'>Verify OTP</h1>
-                            <p className='emailverify-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
+                        <div className='resetpassword-container-modal'>
+                            <h1 className='resetpassword-heading-modal'>Verify OTP</h1>
+                            <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
                             <form onSubmit={submitOTP}>
-                                <Input.OTP status={errorOTP ? "error" : ""} value={getOTP} maxLength={6} onChange={setOTP} onKeyDown={(e) => {
-                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                        e.preventDefault()
-                                    }
-                                }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
+                                <Input.OTP
+                                    status={errorOTP ? "error" : ""}
+                                    value={getOTP} maxLength={6}
+                                    onChange={setOTP}
+                                    onKeyDown={(e) => {
+                                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                            e.preventDefault()
+                                        }
+                                    }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
 
                                 <p id='error-message-modal'>{errorOTP}</p>
 
-                                <Button id='emailverify-submit-otp-button' htmlType="submit">Submit</Button>
+                                <Button id='submit-otp-button' htmlType="submit">Submit</Button>
                             </form>
 
                             {
-                                timer > 0 ? <p id='emailverify-footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
+                                timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                                     :
-                                    <p className='emailverify-label-links-modal'>Didn't get the code? <Button className='emailverify-button-links-modal' type='link' onClick={(e) => {
+                                    <p className='footer-text-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={(e) => {
                                         resendOTP(e);
                                         setTimer(60);
                                     }}>Click here</Button></p>

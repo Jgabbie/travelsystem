@@ -331,7 +331,8 @@ export default function ResetPassword() {
                         footer={null}
                         onOk={handleOk}
                         onCancel={handleCancel}
-                        style={{ top: 150 }}
+                        centered={true}
+                        width={600}
                     >
 
                         <div className='resetpassword-container-modal'>
@@ -373,7 +374,7 @@ export default function ResetPassword() {
                         footer={null}
                         onOk={handleSuccessOk}
                         onCancel={handleSuccessCancel}
-                        style={{ top: 230 }}
+                        centered={true}
                     >
                         <div className='resetpassword-success-container'>
                             <h1 className='resetpassword-success-heading'>Password Changed</h1>

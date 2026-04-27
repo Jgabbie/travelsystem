@@ -50,12 +50,14 @@ export default function LandingPage() {
     const [contactValues, setContactValues] = useState({
         name: '',
         email: '',
+        subject: '',
         message: '',
     })
 
     const [contactErrors, setContactErrors] = useState({
         name: '',
         email: '',
+        subject: '',
         message: '',
     })
 
@@ -63,6 +65,7 @@ export default function LandingPage() {
         let errors = {
             name: '',
             email: '',
+            subject: '',
             message: '',
         };
 
@@ -84,6 +87,12 @@ export default function LandingPage() {
             isValid = false;
         } else if (!emailRegex.test(contactValues.email)) {
             errors.email = 'Invalid email format';
+            isValid = false;
+        }
+
+        // SUBJECT
+        if (!contactValues.subject.trim()) {
+            errors.subject = 'Subject is required';
             isValid = false;
         }
 
@@ -169,11 +178,13 @@ export default function LandingPage() {
             setContactValues({
                 name: '',
                 email: '',
+                subject: '',
                 message: '',
             });
             setContactErrors({
                 name: '',
                 email: '',
+                subject: '',
                 message: '',
             });
         } catch (error) {
@@ -933,6 +944,27 @@ export default function LandingPage() {
                                             {contactErrors.email && <span className="error-text">{contactErrors.email}</span>}
                                         </div>
                                         <div className='contact-field'>
+                                            <span className='contact-field-label'>Subject</span>
+                                            <Select
+                                                placeholder="Select subject"
+                                                className='contact-input'
+                                                status={contactErrors.subject ? 'error' : ''}
+                                                value={contactValues.subject || undefined}
+                                                options={[
+                                                    { value: 'Passport Assistance Inquiry', label: 'Passport Assistance Inquiry' },
+                                                    { value: 'Visa Assistance Inquiry', label: 'Visa Assistance Inquiry' },
+                                                    { value: 'Booking Inquiry', label: 'Booking Inquiry' },
+                                                    { value: 'Quotation Inquiry', label: 'Quotation Inquiry' },
+                                                    { value: 'Travel Agency Inquiry', label: 'Travel Agency Inquiry' },
+                                                ]}
+                                                onChange={(value) => {
+                                                    setContactValues(prev => ({ ...prev, subject: value }))
+                                                    setContactErrors(prev => ({ ...prev, subject: '' }))
+                                                }}
+                                            />
+                                            {contactErrors.subject && <span className="error-text">{contactErrors.subject}</span>}
+                                        </div>
+                                        <div className='contact-field'>
                                             <span className='contact-field-label'>Message</span>
                                             <Input.TextArea
                                                 resize="none"
@@ -960,6 +992,7 @@ export default function LandingPage() {
                                             loading={isSending}
                                             className={`contact-submit-button${(!contactValues.name.trim() ||
                                                 !contactValues.email.trim() ||
+                                                !contactValues.subject.trim() ||
                                                 !contactValues.message.trim())
                                                 ? ' contact-submit-button-disabled'
                                                 : ''
@@ -968,6 +1001,7 @@ export default function LandingPage() {
                                                 isSending ||
                                                 !contactValues.name.trim() ||
                                                 !contactValues.email.trim() ||
+                                                !contactValues.subject.trim() ||
                                                 !contactValues.message.trim()
                                             }
                                             onClick={sendMessage}

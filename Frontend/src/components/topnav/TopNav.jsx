@@ -16,6 +16,9 @@ export default function TopNav() {
   const { auth, setAuth, checkAuth, authLoading } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const displayRole = auth?.role.toUpperCase() || "User";
+  const displayUsername = auth?.username?.toUpperCase() || "GUEST";
+
   useEffect(() => {
     if (!auth && !authLoading) {
       checkAuth();
@@ -110,7 +113,7 @@ export default function TopNav() {
             <Dropdown
               trigger={['hover']}
               align={{
-                offset: [0, -15],
+                offset: [0, -5],
               }}
               menu={{ items, onClick: handleMenuClick }}
               className='user-dropdown'>
@@ -122,7 +125,16 @@ export default function TopNav() {
                     <div className='admin-nav-user-avatar-placeholder'>{getInitials()}</div>
                   )}
                 </div>
-                <h3 className="user-welcome">Welcome, <span className="user-topnav">{auth?.username.toUpperCase()}</span> </h3>
+
+                <h3 className="user-welcome">
+                  <span className="user-info">
+                    <span className="role">{displayRole}</span>
+                    <span className="user-topnav">
+                      {displayUsername}
+                    </span>
+                  </span>
+                </h3>
+
                 <DownOutlined className='user-dropdown-icon' />
               </Space>
             </Dropdown>

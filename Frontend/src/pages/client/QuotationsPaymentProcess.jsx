@@ -40,6 +40,20 @@ export default function QuotationsPaymentProcess() {
     const passportFiles = quotationBookingData?.passportFiles || [];
     const photoFiles = quotationBookingData?.photoFiles || [];
 
+    //DISABLE DEPOSIT IF TRAVEL DATE IS LESS THAN 7 DAYS AWAY
+    const travelDateStart = quotationBookingData?.travelDate
+        ? dayjs(quotationBookingData.travelDate.split('-')[0].trim())
+        : null;
+    const disableDeposit = Boolean(
+        travelDateStart && travelDateStart.isBefore(dayjs().add(7, 'day'), 'day')
+    );
+
+    useEffect(() => {
+        if (disableDeposit && paymentType === 'deposit') {
+            setPaymentType('full');
+        }
+    }, [disableDeposit, paymentType]);
+
     //REDIRECT IF NO BOOKING DATA
     useEffect(() => {
         if (!quotationBookingData) {
@@ -381,8 +395,7 @@ export default function QuotationsPaymentProcess() {
 
     const today = dayjs();
 
-    const travelDateStart = startTravelDate;
-    const travelDateComputation = travelDateStart ? dayjs(travelDateStart, "MMM D, YYYY") : today;
+    const travelDateComputation = startTravelDate ? dayjs(startTravelDate, "MMM D, YYYY") : today;
 
     const maxAllowedDate = today.add(45, 'day');
 
@@ -693,10 +706,20 @@ export default function QuotationsPaymentProcess() {
                                         className="payment-methods-cards"
                                     >
                                         <div className='payment-cards-group'>
-                                            <Radio.Button value="deposit" className={`payment-card ${paymentType === "deposit" ? "selected" : ""}`}>
+                                            <Radio.Button
+                                                value="deposit"
+                                                disabled={disableDeposit}
+                                                className={`payment-card ${paymentType === "deposit" ? "selected" : ""} ${disableDeposit ? "payment-card-disabled" : ""}`}
+                                            >
                                                 <div style={{ width: '100%' }}>
                                                     <h3>Deposit</h3>
                                                     <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
+
+                                                    {disableDeposit && (
+                                                        <p style={{ marginTop: '8px', color: '#e72323', fontSize: '12px', fontWeight: 500 }}>
+                                                            Deposit is unavailable because your travel date is less than 7 days away.
+                                                        </p>
+                                                    )}
 
                                                     {paymentType === 'deposit' && (
                                                         <div style={{ marginTop: '12px' }} onClick={(e) => e.stopPropagation()}>

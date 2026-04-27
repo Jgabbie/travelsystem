@@ -8,9 +8,15 @@ const dayjs = require("dayjs");
 const transporter = require("../config/nodemailer");
 const mongoose = require("mongoose");
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_URL = "http://localhost:3000";
 
 const sumSlots = (ranges = []) => ranges.reduce((total, range) => total + Number(range?.slots || 0), 0);
+
+const buildPackageLink = (pkg) => {
+    const packageCode = encodeURIComponent(String(pkg?.packageCode || ""));
+
+    return `${FRONTEND_URL}/package#${packageCode}`;
+};
 
 const findPackageByCodeParam = async (packageCodeParam) => {
     const byCode = await PackageModel.findOne({ packageCode: packageCodeParam });
@@ -386,7 +392,7 @@ const restoreArchivedPackage = async (req, res) => {
 const getPackage = async (req, res) => {
     try {
         const { id } = req.params;
-        const pkg = await PackageModel.findById(id);
+        const pkg = await findPackageByCodeParam(id);
 
 
         if (!pkg) return res.status(404).json({ message: "Package not found" });
@@ -490,7 +496,7 @@ const updatePackage = async (req, res) => {
                 title: "Package is Now Available",
                 message: `${updatedPackage.packageName} is now available for booking.`,
                 type: "wishlist",
-                link: '/package',
+                link: buildPackageLink(updatedPackage),
                 metadata: {
                     availability: "available",
                     routeState: {
@@ -500,8 +506,8 @@ const updatePackage = async (req, res) => {
                 },
                 emailSubject: `Now Available: ${updatedPackage.packageName}`,
                 emailHtml: (user) => `
-                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                        <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
                             <h2 style="color:#305797; margin-bottom:10px;">Package is Now Available</h2>
@@ -509,7 +515,7 @@ const updatePackage = async (req, res) => {
                             <p style="color:#555; font-size:15px; line-height:1.6;">
                                 <b>${updatedPackage.packageName}</b> is now available for booking.
                             </p>
-                            <a href="${FRONTEND_URL}/package/${updatedPackage._id}" style="display:inline-block; margin-top:16px; padding:10px 18px; background:#305797; color:#fff; text-decoration:none; border-radius:6px;">
+                            <a href="${buildPackageLink(updatedPackage)}" style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
                                 View Package
                             </a>
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
@@ -517,7 +523,7 @@ const updatePackage = async (req, res) => {
                             <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                                 <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                                 <p>M&RC Travel and Tours</p>
-                                <p>support@mrctravelandtours.com</p>
+                                <p>info1@mrctravels.com</p>
                                 <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                             </div>
                         </div>
@@ -633,7 +639,7 @@ const updateSlots = async (req, res) => {
                 title: "Package is Now Available",
                 message: `${pkg.packageName} is now available for booking.`,
                 type: "wishlist",
-                link: '/package',
+                link: buildPackageLink(pkg),
                 metadata: {
                     availability: "available",
                     routeState: {
@@ -643,14 +649,14 @@ const updateSlots = async (req, res) => {
                 },
                 emailSubject: `Now Available: ${pkg.packageName}`,
                 emailHtml: (user) => `
-                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                        <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             <h2 style="color:#305797; margin-bottom:10px;">Package is Now Available</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || "Customer"}</b>,</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">
                                 <b>${pkg.packageName}</b> is now available for booking.
                             </p>
-                            <a href="${FRONTEND_URL}/package/${pkg._id}" style="display:inline-block; margin-top:16px; padding:10px 18px; background:#305797; color:#fff; text-decoration:none; border-radius:6px;">
+                            <a href="${buildPackageLink(pkg)}" style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
                                 View Package
                             </a>
                             <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
@@ -710,24 +716,38 @@ const updateDiscount = async (req, res) => {
                 metadata: {
                     discountPercent: parsedDiscount,
                     routeState: {
-                        packageCode: pkg.packageCode,
-                        packageId: pkg._id
+                        packageItem: pkg._id
                     }
                 },
                 emailSubject: `Discount Alert: ${pkg.packageName}`,
                 emailHtml: (user) => `
-                    <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                        <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-                            <h2 style="color:#305797; margin-bottom:10px;">Package Discount Available</h2>
-                            <p style="color:#555; font-size:16px;">Hello <b>${user.username || "Customer"}</b>,</p>
-                            <p style="color:#555; font-size:15px; line-height:1.6;">
-                                <b>${pkg.packageName}</b> now has a <b>${parsedDiscount}%</b> discount.
+                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; padding:0;">
+                            <div style="padding:0 0 30px 0;">
+                                <div style="width:78px; height:78px; background:#305797; color:#ffffff; font-size:34px; line-height:78px; text-align:center; font-weight:700; margin:0 0 24px 0;">M</div>
+
+                                <div style="padding:0 32px;">
+                                    <h2 style="margin:0 0 12px 0; color:#111111; font-size:42px; line-height:1.05; font-weight:700;">Great news.</h2>
+                                    <p style="margin:0 0 14px 0; color:#2f2f2f; font-size:15px; line-height:1.7;">
+                                        Hello <b>${user.username || "Customer"}</b>, we wanted to let you know that your saved package now has a special offer.
+                                    </p>
+                                    <p style="margin:0; color:#2f2f2f; font-size:15px; line-height:1.7;">
+                                        <b>${pkg.packageName}</b> now has a <b style="color:#305797;">${parsedDiscount}%</b> discount available.
+                                    </p>
+
+                                    <a href="${buildPackageLink(pkg)}" style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
+                                        View Package
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="max-width:560px; margin:0 auto; text-align:center; padding:30px 16px 6px; color:#b8bcc5;">
+                            <p style="margin:0 0 14px 0; font-size:14px; font-weight:600;">Want updates through more platforms?</p>
+                            <p style="margin:0; font-size:12px; line-height:1.8; color:#8d94a3;">
+                                © ${new Date().getFullYear()} M&RC Travel and Tours<br />
+                                info1@mrctravels.com | Contact us anytime
                             </p>
-                            <a href="${FRONTEND_URL}/package/${pkg._id}" style="display:inline-block; margin-top:16px; padding:10px 18px; background:#305797; color:#fff; text-decoration:none; border-radius:6px;">
-                                View Package
-                            </a>
-                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                            <p style="color:#aaa; font-size:12px;">© ${new Date().getFullYear()} M&RC Travel and Tours</p>
                         </div>
                     </div>
                 `

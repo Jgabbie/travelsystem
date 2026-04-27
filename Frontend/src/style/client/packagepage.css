@@ -233,6 +233,8 @@
 }
 
 .package-pricepax {
+    display: flex;
+    flex-direction: row;
     font-size: 36px;
     font-weight: 700;
     color: #305797;

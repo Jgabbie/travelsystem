@@ -36,8 +36,8 @@ const signupUser = async (req, res) => {
             to: user.email,
             subject: 'Welcome to M&RC Travel and Tours',
             html: `
-            <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-            <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                 <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
@@ -72,16 +72,17 @@ const signupUser = async (req, res) => {
                     Log In to Your Account
                 </a>
 
-                <p style="color:#777; font-size:13px; margin-top:30px;">
-                    If you did not create this account, please ignore this email.
-                </p>
+                
 
                 <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
 
                 <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                    <p style="color:#777; font-size:13px; margin-top:30px;">
+                    If you did not create this account, please ignore this email.
+                    </p>
                     <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                     <p>M&RC Travel and Tours</p>
-                    <p>support@mrctravelandtours.com</p>
+                    <p>info1@mrctravels.com</p>
                     <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                 </div>
             </div>
@@ -283,8 +284,8 @@ const sendVerifyOtp = async (req, res) => {
             to: user.email,
             subject: 'M&RC Travel and Tours - Account Verification OTP',
             html: `
-            <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                     
                     <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
@@ -467,8 +468,8 @@ const sendResetOtp = async (req, res) => {
             to: user.email,
             subject: 'M&RC Travel and Tours - Password Reset OTP',
             html: `
-            <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
-                <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:10px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                     
                     <h2 style="color:#305797; margin-bottom:10px;">
                         M&RC Travel and Tours
@@ -505,7 +506,7 @@ const sendResetOtp = async (req, res) => {
                         <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                             <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                             <p>M&RC Travel and Tours</p>
-                            <p>support@mrctravelandtours.com</p>
+                            <p>info1@mrctravels.com</p>
                             <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                         </div>
 

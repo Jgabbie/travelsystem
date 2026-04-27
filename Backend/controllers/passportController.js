@@ -210,9 +210,9 @@ const suggestAppointmentSchedules = async (req, res) => {
                 to: user.email,
                 subject: "Passport Appointment Options Available",
                 html: `
-                    <div style="font-family: Arial, sans-serif; background:#ffffff; padding:20px;">
+                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                             
-                                            <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:25px; text-align:center;">
+                                            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                                                 
                                                 <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
                     
@@ -239,15 +239,15 @@ const suggestAppointmentSchedules = async (req, res) => {
                                                 </div>
                     
                                                 <a href="https://mrctravelandtours.com/home"
-                                                style="display:inline-block; margin-top:20px; background:#305797; color:#fff; padding:10px 18px; border-radius:5px; text-decoration:none;">
-                                                View Appointment
+                                                style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
+                                                Login to Your Account
                                                 </a>
                                             </div>
                     
                                             <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                                                 <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                                                 <p>M&RC Travel and Tours</p>
-                                                <p>support@mrctravelandtours.com</p>
+                                                <p>info1@mrctravels.com</p>
                                                 <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                                             </div>
                     
@@ -344,11 +344,24 @@ const requestPassportDocumentResubmission = async (req, res) => {
                 to: user.email,
                 subject: "Passport Documents Resubmission Requested",
                 html: `
-                    <div style="font-family: Arial, sans-serif; color: #333;">
-                        <h2 style="color: #305797;">Passport Documents Resubmission Requested</h2>
-                        <p>Hello ${user.firstname || user.username},</p>
-                        <p>Our team needs you to resubmit your passport documents for your application.</p>
-                        <p>Please log in to your account to upload the updated documents.</p>
+                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+                            <h2 style="color:#305797; margin-bottom:10px;">Passport Documents Resubmission Requested</h2>
+                            <p style="color:#555; font-size:16px;">Hello <b>${user.firstname || user.username}</b>,</p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">Our team needs you to resubmit your passport documents for your application.</p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">Please log in to your account to upload the updated documents.</p>
+                            <a href="https://mrctravelandtours.com/home"
+                                style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
+                                Login to Your Account
+                            </a>
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>info1@mrctravels.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+                        </div>
                     </div>
                 `
             });
@@ -405,8 +418,8 @@ const updatePassportStatus = async (req, res) => {
                     to: user.email,
                     subject: 'Passport Application Status Update',
                     html: `
-                        <div style="font-family: Arial, sans-serif; background:#f4f6f8; padding:20px;">
-                            <div style="max-width:520px; margin:auto; background:#ffffff; border-radius:10px; padding:25px; text-align:center;">
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                                 <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
                                 <h2 style="color:#305797;">M&RC Travel and Tours</h2>
@@ -417,9 +430,13 @@ const updatePassportStatus = async (req, res) => {
                                     <p>Your Passport Application Status is now <strong>${status}</strong>.</p>
                                 </div>
 
+                                <p style="margin-top:15px;">
+                                    Log in to your account to view your application details.
+                                </p>
+
                                 <a href="https://mrctravelandtours.com/home"
-                                style="display:inline-block; margin-top:20px; background:#305797; color:#fff; padding:10px 18px; border-radius:5px; text-decoration:none;">
-                                View Account
+                                style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
+                                Login to Your Account
                                 </a>
 
                                 <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
@@ -577,3 +594,4 @@ module.exports = {
 };
 
 //REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------
+

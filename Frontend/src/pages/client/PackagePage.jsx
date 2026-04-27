@@ -17,7 +17,9 @@ import TopNavUser from '../../components/topnav/TopNavUser';
 
 export default function PackagePage() {
     const location = useLocation()
-    const { packageItem } = location.state || {}
+    const { packageItem: statePackageItem } = location.state || {}
+    const hashPackageItem = location.hash ? decodeURIComponent(location.hash.replace(/^#/, '')) : null
+    const packageItem = statePackageItem || hashPackageItem || null
     const { auth } = useAuth();
     const { setBookingData } = useBooking();
 
@@ -858,33 +860,35 @@ export default function PackagePage() {
                                         <div className="package-price-card">
                                             <div className="package-price-label">Price per pax</div>
                                             <div className="package-pricepax">
-                                                {packageDiscountPercent > 0 && (
-                                                    <span
-                                                        style={{
-                                                            textDecoration: 'line-through',
-                                                            color: '#9aa0a6',
-                                                            fontSize: '0.9rem',
-                                                            marginRight: 8,
-                                                            display: 'inline-block'
-                                                        }}
-                                                    >
-                                                        ₱{basePackagePricePerPax.toLocaleString()}
-                                                    </span>
-                                                )}
                                                 <span>
                                                     ₱{discountedPackagePricePerPax.toLocaleString() || '--'}
                                                 </span>
                                                 {packageDiscountPercent > 0 && (
-                                                    <span
-                                                        style={{
-                                                            marginLeft: 8,
-                                                            color: '#e72323',
-                                                            fontWeight: 600,
-                                                            fontSize: '0.85rem'
-                                                        }}
-                                                    >
-                                                        -{packageDiscountPercent}%
-                                                    </span>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8, }}>
+                                                        <span
+                                                            style={{
+                                                                textDecoration: 'line-through',
+                                                                color: '#9aa0a6',
+                                                                fontSize: '12px',
+                                                                marginRight: 8,
+                                                                marginLeft: 8,
+                                                                display: 'inline-block'
+                                                            }}
+                                                        >
+                                                            ₱{basePackagePricePerPax.toLocaleString()}
+                                                        </span>
+
+                                                        <span
+                                                            style={{
+                                                                marginLeft: 8,
+                                                                color: '#e72323',
+                                                                fontWeight: 600,
+                                                                fontSize: '12px'
+                                                            }}
+                                                        >
+                                                            -{packageDiscountPercent}%
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
                                             <div className="package-side-meta">
