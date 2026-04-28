@@ -168,6 +168,38 @@
     color: #305797 !important;
 }
 
+.passport-document-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 300px;
+}
+
+.passport-document-container-group {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.passport-document-uploaded-section {
+    margin-bottom: 32px;
+    border: 1px solid #dde4ef;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 32px;
+    background: #ffffff;
+}
+
+.passport-document-uploaded-container {
+    display: flex;
+    flex-direction: row;
+    gap: 60px;
+    flex-wrap: wrap;
+}
+
 .passport-requirement-placeholder {
     width: 220px;
     height: 220px;
@@ -264,6 +296,35 @@
 }
 
 @media (max-width: 480px) {
+
+    .passportapplication-container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .passport-document-uploaded-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: 30px;
+        margin: 5px;
+        padding: 5px;
+    }
+
+    .passport-document-uploaded-section {
+        margin: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .passport-document-container {
+        width: 100%;
+    }
 
     .passport-requirements-grid {
         padding: 16px;

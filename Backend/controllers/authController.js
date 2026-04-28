@@ -1,9 +1,11 @@
 const UserModel = require('../models/user');
 const bcrypt = require("bcryptjs")
+const crypto = require("crypto")
 const jwt = require("jsonwebtoken")
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger');
 const connectToDatabase = require('../utils/mongodb');
+
 const {
     clearAuthCookies,
     setAccessTokenCookie,
@@ -13,29 +15,30 @@ const {
 } = require('../utils/sessionAuth');
 
 
-//signup
-const signupUser = async (req, res) => {
-    const { username, firstname, lastname, password, email, phone } = req.body;
+// CREATE VERIFICATION LINK AND SEND EMAIL
+const createVerificationLink = async (email, token) => {
 
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10)
-        const user = await UserModel.create({ username, firstname, lastname, hashedPassword, email, phone })
+    const user = await UserModel.findOne({ email: email })
 
-        const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
-        const hashedOtp = await bcrypt.hash(otp, 10) //hash the otp
-        user.verifyOtp = hashedOtp; //set hashed otp to user.otp
-        user.verifyOtpExpireAt = Date.now() + 10 * 60 * 1000 //10 minutes timer
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = await bcrypt.hash(rawToken, 10);
 
-        user.role = "Customer" //set the role of the new registered user
-        await user.save() //save new user to database
+    user.emailVerifyOtp = hashedToken;
+    user.emailVerifyExpireAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const verifyLink = `${clientUrl}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
+
+    user.role = "Customer" //set the role of the new registered user
+    await user.save() //save new user to database
 
 
-        //in order to send email with Logo, use hosted url
-        const mailOptions = {
-            from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
-            to: user.email,
-            subject: 'Welcome to M&RC Travel and Tours',
-            html: `
+    //in order to send email with Logo, use hosted url
+    const mailOptions = {
+        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+        to: user.email,
+        subject: 'Welcome to M&RC Travel and Tours',
+        html: `
             <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
             <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
@@ -54,10 +57,10 @@ const signupUser = async (req, res) => {
                 </p>
 
                 <p style="color:#555; font-size:15px; line-height:1.6;">
-                    Kindly log in to verify your account and start browsing our travel packages, tours, and exclusive offers.
+                    Kindly click the button below to verify your email address and activate your account.
                 </p>
 
-                <a href="http://mrctravelandtours.com/home"
+                <a href="${verifyLink}"
                     style="
                         display:inline-block;
                         margin-top:25px;
@@ -69,7 +72,7 @@ const signupUser = async (req, res) => {
                         font-weight:bold;
                         font-size:14px;
                     ">
-                    Log In to Your Account
+                    Verify Account
                 </a>
 
                 <p style="color:#777; font-size:13px; margin-top:30px;">
@@ -88,9 +91,24 @@ const signupUser = async (req, res) => {
             </div>
         </div>
             `
-        }
+    }
 
-        await transporter.sendMail(mailOptions)
+    await transporter.sendMail(mailOptions)
+
+    return verifyLink;
+}
+
+
+//SIGNUP FUNCTION
+const signupUser = async (req, res) => {
+    const { username, firstname, lastname, password, email, phone } = req.body;
+
+    try {
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const user = await UserModel.create({ username, firstname, lastname, hashedPassword, email, phone })
+
+        await createVerificationLink(email, user.emailVerifyOtp)
 
         await logAction("CUSTOMER_CREATED_ACC", user._id, { //log action for account creation
             Username: user.username,
@@ -112,7 +130,8 @@ const signupUser = async (req, res) => {
     }
 };
 
-//login
+
+//LOGIN FUNCTION
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
     await connectToDatabase();
@@ -130,9 +149,54 @@ const loginUser = async (req, res) => {
         }
 
         if (!user.isAccountVerified) {
-            await logAction("LOGIN_FAILED", user._id, { Username: username });
-            return res.status(403).json({ message: "Account is not verified", email: user.email, })
+            await createVerificationLink(user.email, user.emailVerifyOtp)
+
+            await logAction("ACCOUNT_NOT_VERIFIED", user._id, { Username: username });
+            return res.status(403).json({ message: "Account is not verified, a verification email has been sent to your email address.", email: user.email, })
         }
+
+        const rawOtp = String(Math.floor(100000 + Math.random() * 900000));
+        const hashedOtp = await bcrypt.hash(rawOtp, 10);
+
+        user.verifyOtp = hashedOtp;
+        user.verifyOtpExpireAt = Date.now() + 90 * 1000;
+        user.otpAttempts = 0;
+        user.otpBlockedUntil = 0;
+        await user.save();
+
+        const mailOptions = {
+            from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+            to: user.email,
+            subject: 'M&RC Travel and Tours - Login OTP',
+            html: `
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+                    <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+                    <h2 style="color:#305797; margin-bottom:10px;">M&RC Travel and Tours</h2>
+                    <p style="color:#555; font-size:16px;">Use the OTP below to complete your login.</p>
+                    <div style="margin:25px 0; font-size:32px; font-weight:bold; letter-spacing:8px; color:#992A46; background:#f9fafb; padding:15px; border-radius:8px; border:1px dashed #ddd;">${rawOtp}</div>
+                    <p style="color:#777; font-size:14px;">This OTP will expire in <b>1 minute and 30 seconds</b>.</p>
+                    <p style="color:#aaa; font-size:12px; margin-top:30px;">If you did not try to log in, please ignore this email.</p>
+                    <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                        <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                        <p>M&RC Travel and Tours</p>
+                        <p>info1@mrctravels.com</p>
+                        <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+            `
+        }
+
+        await transporter.sendMail(mailOptions)
+
+        await logAction("LOGIN_OTP_SENT", user._id, { Username: user.username });
+
+        return res.status(200).json({
+            message: "OTP sent to your email address",
+            otpRequired: true,
+            email: user.email,
+        })
 
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '2h' })
         const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
@@ -164,6 +228,72 @@ const loginUser = async (req, res) => {
     }
 }
 
+
+//ALLOW LOGIN AFTER CHECKING OTP
+const allowLogin = async (req, res) => {
+    const { email, otp } = req.body
+
+    const user = await UserModel.findOne({ email })
+    if (!user) {
+        return res.status(409).json({ message: "User not found" })
+    }
+
+    if (user.verifyOtpExpireAt < Date.now()) {
+        return res.status(409).json({ message: "OTP Expired" })
+    }
+
+    if (user.otpBlockedUntil > Date.now()) {
+        return res.status(429).json({ message: "Too many attempts. Try again in 5 minutes." });
+    }
+
+    const matchOtp = await bcrypt.compare(otp, user.verifyOtp)
+
+    if (!matchOtp) {
+        user.otpAttempts += 1;
+
+        if (user.otpAttempts >= 5) {
+            user.otpBlockedUntil = Date.now() + 5 * 60 * 1000
+            user.otpAttempts = 0
+        }
+
+        await user.save();
+
+        return res.status(409).json({ message: "Invalid OTP" });
+    }
+
+    // reset on success
+    user.otpAttempts = 0;
+    user.otpBlockedUntil = 0;
+
+    user.verifyOtp = ''
+    user.verifyOtpExpireAt = 0
+
+    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '2h' })
+    const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
+
+    user.refreshToken = refreshToken
+    user.lastActivityAt = Date.now()
+    await user.save()
+
+    setAccessTokenCookie(res, accessToken)
+    setRefreshTokenCookie(res, refreshToken)
+
+    const actionName = user.role === 'Admin' ? "ADMIN_LOGIN" : user.role === 'Employee' ? "EMPLOYEE_LOGIN" : "CUSTOMER_LOGIN";
+    await logAction(actionName, user._id, { Username: user.username });
+
+    return res.status(200).json({
+        message: "Login Successful!",
+        user: {
+            username: user.username,
+            profileImage: user.profileImage,
+            role: user.role,
+            loginOnce: user.loginOnce
+        }
+    })
+}
+
+
+//REFRESH TOKEN FUNCTION
 const refreshToken = async (req, res) => {
     const { refreshToken } = req.cookies;
     if (!refreshToken) {
@@ -198,7 +328,8 @@ const refreshToken = async (req, res) => {
     }
 }
 
-//check username and email duplicates
+
+//CHECK DUPLICATE USERNAME OR EMAIL
 const checkDups = async (req, res) => {
     const { username, email } = req.body
     await connectToDatabase();
@@ -224,7 +355,8 @@ const checkDups = async (req, res) => {
     }
 }
 
-//logout
+
+//LOGOUT FUNCTION
 const logoutUser = async (req, res) => {
 
     try {
@@ -259,6 +391,8 @@ const logoutUser = async (req, res) => {
     }
 }
 
+
+//SEND OTP FOR EMAIL VERIFICATION
 const sendVerifyOtp = async (req, res) => {
     try {
         const { email } = req.body
@@ -275,7 +409,7 @@ const sendVerifyOtp = async (req, res) => {
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
         const hashedOtp = await bcrypt.hash(otp, 10)
         user.verifyOtp = hashedOtp;
-        user.verifyOtpExpireAt = Date.now() + 60 * 1000
+        user.verifyOtpExpireAt = Date.now() + 90 * 1000
 
         await user.save()
 
@@ -330,90 +464,57 @@ const sendVerifyOtp = async (req, res) => {
             </div>
             `
         }
-
         await transporter.sendMail(mailOptions)
 
         res.status(200).json({ message: "OTP has been sent successfully!" })
-
     } catch (e) {
         res.status(500).json({ message: "Send OTP function failed " + e.message })
     }
 }
 
+
+//VERIFY EMAIL FUNCTION
 const verifyEmail = async (req, res) => {
-    const { otp, email, username, password } = req.body
+    const { email, token } = req.body
 
     try {
         const user = await UserModel.findOne({ email })
-
         if (!user) {
             return res.status(409).json({ message: "User not found" })
         }
-
-        if (user.verifyOtpExpireAt < Date.now()) {
-            return res.status(409).json({ message: "OTP Expired" })
-        }
-
-        const matchOtp = await bcrypt.compare(otp, user.verifyOtp)
-        if (!matchOtp) {
-            return res.status(409).json({ message: "Invalid OTP" })
-        }
-
-        user.isAccountVerified = true
-        user.verifyOtp = ''
-        user.verifyOtpExpireAt = 0
-
-        await user.save()
-
-        //login function after successful verification
-        const userName = await UserModel.findOne({ username })
-        if (!userName) {
-            return res.status(401).json({ message: "Invalid Username or Password" })
-        }
-
-        const matchPass = await bcrypt.compare(password, userName.hashedPassword)
-        if (!matchPass) {
-            await logAction("LOGIN_FAILED", userName._id, { Username: username });
-            return res.status(401).json({ message: "Invalid Username or Password" })
-        }
-
-        if (!userName.isAccountVerified) {
-            await logAction("LOGIN_FAILED", userName._id, { Username: username });
-            return res.status(403).json({ message: "Account is not verified", email: userName.email, })
-        }
-
-        const accessToken = jwt.sign({ id: userName._id }, process.env.JWT_SECRET_ACCESS_KEY, { expiresIn: '2h' })
-        const refreshToken = jwt.sign({ id: userName._id }, process.env.JWT_SECRET_REFRESH_KEY, { expiresIn: '7d' })
-
-        userName.refreshToken = refreshToken
-        userName.lastActivityAt = Date.now()
-        await userName.save()
-
-        setAccessTokenCookie(res, accessToken)
-        setRefreshTokenCookie(res, refreshToken)
-
-
-        // Check role to determine action name
-        //LOG SUCCESSFUL LOGIN
-        const actionName = userName.role === 'Admin' ? "ADMIN_LOGIN" : userName.role === 'Employee' ? "EMPLOYEE_LOGIN" : "CUSTOMER_LOGIN";
-        await logAction(actionName, userName._id, { username: userName.username });
-
-        res.status(200).json({
-            message: "Login Successful!",
-            user: {
-                username: userName.username,
-                role: userName.role,
-                profileImage: userName.profileImage
+        if (token) {
+            if (user.emailVerifyExpireAt < Date.now()) {
+                return res.status(409).json({ message: "Verification link expired" })
             }
-        })
+            const matchToken = await bcrypt.compare(token, user.emailVerifyOtp)
+            if (!matchToken) {
+                return res.status(409).json({ message: "Invalid verification link" })
+            }
+        }
 
+
+
+        user.emailVerifyOtp = ''
+        user.emailVerifyExpireAt = 0
+        user.isAccountVerified = true
+        await user.save();
+
+        return res.status(200).json({
+            message: "Account verified",
+            user: {
+                username: user.username,
+                role: user.role,
+                profileImage: user.profileImage,
+                loginOnce: user.loginOnce
+            }
+        });
     } catch (e) {
         res.status(500).json({ message: "Verify Email Function failed " + e.message })
     }
 }
 
-// Checks if user is authenticated
-// Checks if user is logged in
+
+// CHECKS IF USER IS AUTHENTICATED
 const isAuthenticated = async (req, res) => {
     try {
         const userId = req.userId
@@ -440,7 +541,8 @@ const isAuthenticated = async (req, res) => {
     }
 }
 
-// Checks if user is verified
+
+// CHECKS IF USER IS VERIFIED (FOR FRONTEND TO KNOW WHETHER TO SHOW VERIFY ACCOUNT MODAL OR NOT)
 const isUserVerified = async (req, res) => {
     try {
         return res.status(200).json({ message: "User is Verified" })
@@ -450,6 +552,7 @@ const isUserVerified = async (req, res) => {
 }
 
 
+//SEND OTP FOR PASSWORD RESET
 const sendResetOtp = async (req, res) => {
     const { email } = req.body
 
@@ -530,6 +633,8 @@ const sendResetOtp = async (req, res) => {
     }
 }
 
+
+// CHECKS THE OTP FOR PASSWORD RESET
 const checkResetOtp = async (req, res) => {
     const { email, otp } = req.body
 
@@ -557,7 +662,8 @@ const checkResetOtp = async (req, res) => {
     return res.status(200).json({ message: "You can now reset your password", resetToken })
 }
 
-//Password reset
+
+//PASSWORD RESET FUNCTION
 const resetPassword = async (req, res) => {
     const { newPassword, token } = req.body
 
@@ -566,7 +672,6 @@ const resetPassword = async (req, res) => {
     }
 
     try {
-
         let payload
         try {
             payload = jwt.verify(token, process.env.JWT_SECRET_RESET_KEY)
@@ -598,4 +703,4 @@ const resetPassword = async (req, res) => {
 }
 
 
-module.exports = { loginUser, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified, refreshToken };
+module.exports = { loginUser, allowLogin, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified, refreshToken };

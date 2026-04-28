@@ -8,7 +8,6 @@ import apiFetch from '../../config/fetchConfig';
 
 
 export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, onOpenSignup }) {
-
     const navigate = useNavigate();
     const { setAuth } = useAuth();
 
@@ -21,6 +20,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isOTPModalVisible, setIsOTPModalVisible] = useState(false)
+    const [isVerifyEmailModalVisible, setIsVerifyEmailModalVisible] = useState(false)
     const [email, setEmail] = useState('');
 
     const [timer, setTimer] = useState(0)
@@ -28,14 +28,17 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const [getOTP, setOTP] = useState("")
     const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
 
-    //start timer when OTP modal opens
+    //--------------------------------------------------------------------------------------- FUNCTIONS ---------------------------------------------------------------------------------------
+
+    //START TIMER OF OTP MODAL WHEN IT OPENS, SET TO 60 SECONDS
     useEffect(() => {
         if (isOTPModalVisible) {
             setTimer(60);
         }
     }, [isOTPModalVisible]);
 
-    //decrease timer every second until it reaches 0
+
+    //DECREASE TIMER EVERY SECOND, CLEAR INTERVAL WHEN TIMER REACHES 0
     useEffect(() => {
         let interval = null;
         if (timer > 0) {
@@ -47,21 +50,20 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }, [timer]);
 
 
-
-    //clear form function
+    //CLEAR FORM FUNCTION
     const clearForm = () => {
         setValues({
             username: '',
             password: ''
         });
         setError('');
-        setIsOTPModalVisible(false);
         setOTP("");
         setErrorOTP("");
         isCloseLogin();
     }
 
-    //login function
+
+    //LOGIN FUNCTION
     const handleLogin = async (e) => {
         e.preventDefault();
 
@@ -72,33 +74,12 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 password: values.password,
             });
 
-            if (response) {
-                if (onLoginSuccess) {
-                    const userData = response.user;
-                    const userRole = userData?.role;
-                    setIsLoading(false);
-
-                    if (userData) {
-                        setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
-                    }
-
-                    message.success('Login successful');
-                    if (userRole === 'Admin') {
-                        navigate('/dashboard')
-                    } else if (userRole === 'Employee') {
-                        navigate('/employee/dashboard')
-                    } else if (userData && !userData.loginOnce) {
-                        navigate('/user-preferences')
-                    } else {
-                        navigate('/home')
-                    }
-
-                    isCloseLogin()
-                    onLoginSuccess()
-                    clearForm()
-                }
-
-                setIsLoading(false);
+            if (response?.otpRequired) {
+                setEmail(response.email || '');
+                setErrorOTP('');
+                setOTP('');
+                setIsOTPModalVisible(true);
+                clearForm();
             }
 
         } catch (err) {
@@ -109,17 +90,15 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             if (status === 403) {
                 try {
                     const email = data.email
-                    await apiFetch.post('/auth/send-verify-otp', { email: email })
                     setEmail(email)
-                    setIsLoading(false);
+                    clearForm();
                     isCloseLogin();
-                    setIsOTPModalVisible(true)
+                    setIsVerifyEmailModalVisible(true)
                     return
                 } catch (error) {
                     const errorMsg = error.data?.message || "Verification failed"
                     console.error("Error: ", errorMsg)
                     setError(errorMsg)
-                    setIsLoading(false);
                     return
                 }
             }
@@ -127,21 +106,21 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             console.error("Error: ", errorMsg)
             setError(errorMsg)
             message.error(errorMsg);
+        } finally {
             setIsLoading(false);
         }
     }
 
-    //submit OTP for verification
+
+    //SUBMIT OTP FUNCTION, VERIFY OTP, THEN AUTO LOGIN IF VERIFIED
     const submitOTP = async (e) => {
         e.preventDefault();
         setIsLoading(true);
 
         try {
-            const response = await apiFetch.post('/auth/verify-account', {
+            const response = await apiFetch.post('/auth/allow-login', {
                 otp: getOTP,
                 email: email,
-                username: values.username,
-                password: values.password,
             });
 
             if (response?.user || response?.accessToken || response?.message) {
@@ -149,37 +128,31 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                 setIsOTPModalVisible(false);
                 setIsVerifiedModalOpen(false);
 
-                try {
-                    const loginResponse = await apiFetch.post('/auth/loginUser', {
-                        username: values.username,
-                        password: values.password,
-                    });
+                const userData = response.user;
+                if (userData) {
+                    setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
 
-                    const userData = loginResponse.user;
-                    if (userData) {
-                        setAuth({ id: userData.id, username: userData.username, role: userData.role, loginOnce: userData.loginOnce });
-
-                        if (userData.role === 'Admin') {
-                            navigate('/dashboard');
-                        } else if (userData.role === 'Employee') {
-                            navigate('/employee/dashboard');
-                        } else if (!userData.loginOnce) {
-                            navigate('/user-preferences');
-                        } else {
-                            navigate('/home');
-                        }
-
-                        isCloseLogin();
-                        onLoginSuccess?.();
-                        clearForm();
+                    if (userData.role === 'Admin') {
+                        navigate('/dashboard');
+                    } else if (userData.role === 'Employee') {
+                        navigate('/employee/dashboard');
+                    } else if (!userData.loginOnce) {
+                        navigate('/user-preferences');
+                    } else {
+                        navigate('/home');
                     }
-                } catch (loginError) {
-                    const errorMsg = loginError.data?.message || loginError.message || "Auto login after verification failed";
-                    console.error("Auto login after verification failed:", errorMsg);
-                    setErrorOTP(errorMsg);
+
+                    isCloseLogin();
+                    onLoginSuccess?.();
+                    clearForm();
                 }
             }
         } catch (err) {
+            if (err.status === 429) {
+                message.error("Too many failed attempts. Please try again later.");
+                clearForm();
+                return;
+            }
             const errorMsg = err.data?.message || "Verification failed";
             console.error("Error: ", errorMsg);
             setErrorOTP(errorMsg);
@@ -188,7 +161,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         }
     }
 
-    //resend OTP and restart timer
+
+    //RESEND OTP FUNCTION, ONLY WORKS WHEN TIMER IS 0, SET TIMER BACK TO 60 SECONDS AFTER RESENDING
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
@@ -202,7 +176,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         }
     }
 
-    //go to signup page
+
+    //NAVIGATE TO SIGNUP PAGE, CLOSE LOGIN MODAL, CLEAR FORM
     const goToSignup = (e) => {
         e.preventDefault();
         if (onOpenSignup) {
@@ -213,14 +188,16 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         }
     }
 
-    //go to reset password page
+
+    //NAVIGATE TO RESET PASSWORD PAGE, CLOSE LOGIN MODAL, CLEAR FORM
     const resetPassword = (e) => {
         e.preventDefault();
         isCloseLogin();
         navigate('/reset-password');
     }
 
-    //block clipboard shortcuts, only few shortcuts
+
+    //BLOCK CLIPBOARD SHORTCUTS, ONLY FEW SHORTCUTS
     const blockClipboardKeys = (e) => {
         const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
@@ -232,7 +209,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         }
     };
 
-    //block shortcut keys, all shortcuts
+
+    //BLOCK COPY, PASTE, CUT SHORTCUTS
     const blockShortcuts = (e) => {
         e.preventDefault();
     };
@@ -246,108 +224,140 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             }}
         >
             <div>
-                <Spin spinning={isLoading} fullscreen size="large" className="app-loading-spin" style={{ zIndex: 2000 }} />
-                <Modal
-                    open={isOpenLogin}
-                    className='login-modal'
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    footer={null}
-                    onCancel={clearForm}
-                    centered={true}
-                    width={1000}
-                >
-                    <div className='login-container-modal'>
-
-                        <div className='login-container-left'>
-                            <img
-                                src='/images/Login_BackgroundImage.png'
-                                alt='Login Background'
-                                className='login-container-left-image'
-                            />
-                        </div>
-
-                        <div className='login-container-right'>
-                            <h1 id='login-heading-modal'>Welcome</h1>
-                            <p id='login-secondary-heading-modal'>Login Account</p>
-
-                            <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
-                                <div className='login-div-input-fields-modal'>
-                                    <label className='login-labels-modal' htmlFor="username">Username</label>
-                                    <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                        if (e.key === " " || e.key === "Backspace") {
-                                            return;
-                                        }
-
-                                        if (!/^[A-Za-z0-9]+$/.test(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
-                                </div>
-
-                                <div className='login-div-input-fields-modal'>
-                                    <label className='login-labels-modal' htmlFor="password">Password</label>
-                                    <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
-                                        if (e.key === " " && e.key !== "Backspace") {
-                                            e.preventDefault()
-                                        }
-                                    }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} key={isOpenLogin ? "" : false} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
-                                </div>
-
-                                <p id='login-error-message-modal'>{error}</p>
-
-                                <div id='login-links-container-modal'>
-                                    <Button className='login-button-links-modal' type="link" onClick={goToSignup}>Need an Account? Signup here</Button>
-                                    <Button className='login-button-links-modal' type="link" onClick={resetPassword} > Forgot your Password?</Button>
-                                </div>
-
-                                <Button id='login-button-modal' htmlType="submit">Log in</Button>
-                            </form>
-                        </div>
+                {isLoading ? (
+                    <div>
+                        <Spin spinning={isLoading} fullscreen size="large" className="app-loading-spin" />
                     </div>
+                ) : (
+                    <>
+                        <Modal
+                            open={isOpenLogin}
+                            className='login-modal'
+                            closable={{ 'aria-label': 'Custom Close Button' }}
+                            footer={null}
+                            onCancel={clearForm}
+                            centered={true}
+                            width={1000}
+                        >
+                            <div className='login-container-modal'>
 
-                </Modal>
+                                <div className='login-container-left'>
+                                    <img
+                                        src='/images/Login_BackgroundImage.png'
+                                        alt='Login Background'
+                                        className='login-container-left-image'
+                                    />
+                                </div>
 
-                <Modal
-                    open={isOTPModalVisible}
-                    className='resetpassword-modal'
-                    closable={{ 'aria-label': 'Custom Close Button' }}
-                    onCancel={() => {
-                        setIsOTPModalVisible(false)
-                    }}
-                    footer={null}
-                    centered={true}
-                    width={720}
-                >
-                    <div className='resetpassword-container-modal'>
-                        <h1 className='resetpassword-heading-modal'>Verify OTP</h1>
-                        <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
+                                <div className='login-container-right'>
+                                    <h1 id='login-heading-modal'>Welcome</h1>
+                                    <p id='login-secondary-heading-modal'>Login Account</p>
 
-                        <form onSubmit={submitOTP}>
-                            <Input.OTP
-                                status={errorOTP ? "error" : ""}
-                                value={getOTP} maxLength={6}
-                                onChange={setOTP}
-                                onKeyDown={(e) => {
-                                    if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                                        e.preventDefault()
-                                    }
-                                }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
+                                    <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
+                                        <div className='login-div-input-fields-modal'>
+                                            <label className='login-labels-modal' htmlFor="username">Username</label>
+                                            <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                                if (e.key === " " || e.key === "Backspace") {
+                                                    return;
+                                                }
 
-                            <p id='error-message-modal'>{errorOTP}</p>
+                                                if (!/^[A-Za-z0-9]+$/.test(e.key)) {
+                                                    e.preventDefault();
+                                                }
+                                            }} value={values.username} type="text" id="username" name="username" className='login-input-fields-modal' required />
+                                        </div>
 
-                            <Button id='submit-otp-button' htmlType="submit">Submit</Button>
-                        </form>
+                                        <div className='login-div-input-fields-modal'>
+                                            <label className='login-labels-modal' htmlFor="password">Password</label>
+                                            <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
+                                                if (e.key === " " && e.key !== "Backspace") {
+                                                    e.preventDefault()
+                                                }
+                                            }} visibilityToggle={{ visible: showPassword, onVisibleChange: setShowPassword }} key={isOpenLogin ? "" : false} value={values.password} type="password" id="password" name="password" className='login-input-fields-modal' required />
+                                        </div>
 
-                        {
-                            timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
-                                :
-                                <p className='footer-text-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={(e) => {
-                                    resendOTP(e);
-                                    setTimer(60);
-                                }}>Click here</Button></p>
-                        }
-                    </div>
-                </Modal>
+                                        <p id='login-error-message-modal'>{error}</p>
+
+                                        <div id='login-links-container-modal'>
+                                            <Button className='login-button-links-modal' type="link" onClick={goToSignup}>Need an Account? Signup here</Button>
+                                            <Button className='login-button-links-modal' type="link" onClick={resetPassword} > Forgot your Password?</Button>
+                                        </div>
+
+                                        <Button id='login-button-modal' htmlType="submit">Log in</Button>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </Modal>
+
+                        <Modal
+                            open={isOTPModalVisible}
+                            className='resetpassword-modal'
+                            closable={{ 'aria-label': 'Custom Close Button' }}
+                            onCancel={() => {
+                                setIsOTPModalVisible(false)
+                            }}
+                            footer={null}
+                            centered={true}
+                            width={720}
+                        >
+                            <div className='resetpassword-container-modal'>
+                                <h1 className='resetpassword-heading-modal'>Verify OTP</h1>
+                                <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
+
+                                <form onSubmit={submitOTP}>
+                                    <Input.OTP
+                                        status={errorOTP ? "error" : ""}
+                                        value={getOTP} maxLength={6}
+                                        onChange={setOTP}
+                                        onKeyDown={(e) => {
+                                            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                                e.preventDefault()
+                                            }
+                                        }} type="tel" id="enterOTP" name="enterOTP" className='emailverify-input-fields-modal' required />
+
+                                    <p id='error-message-modal'>{errorOTP}</p>
+
+                                    <Button id='submit-otp-button' htmlType="submit">Submit</Button>
+                                </form>
+
+                                {
+                                    timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
+                                        :
+                                        <p className='footer-text-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={(e) => {
+                                            resendOTP(e);
+                                            setTimer(60);
+                                        }}>Click here</Button></p>
+                                }
+                            </div>
+                        </Modal>
+
+                        <Modal
+                            open={isVerifyEmailModalVisible}
+                            className='signup-success-modal'
+                            closable={{ 'aria-label': 'Custom Close Button' }}
+                            footer={null}
+                            style={{ top: 245 }}
+                        >
+                            <div className='signup-success-container'>
+                                <h1 className='signup-success-heading'>Email Verification</h1>
+                                <p className='signup-success-text'>
+                                    A verification email has been sent to your email address.
+                                    Please check your inbox and click on the verification link to activate your account.
+                                </p>
+                                <Button
+                                    id='signup-success-button'
+                                    onClick={() => {
+                                        setIsVerifyEmailModalVisible(false)
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+                        </Modal>
+                    </>
+                )}
+
             </div >
         </ConfigProvider>
     )

@@ -597,615 +597,614 @@ export default function PassportApplication() {
 
                     {application && (
                         <>
-                            <div className="app-detail-shell" style={{ marginTop: 24, border: '1px solid #dde4ef', borderRadius: 12, padding: 20, background: '#ffffff', boxShadow: '0 6px 20px rgba(18, 24, 38, 0.06)' }}>
-                                <div style={{ marginBottom: 32 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'row', gap: 24, flexWrap: 'wrap' }}>
-                                        <div style={{ flex: '1 1 620px', minWidth: 320 }}>
-                                            <Descriptions title="Application Info" bordered column={1}>
-                                                <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
-                                                <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
-                                                <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
-                                                <Descriptions.Item label="DFA Location">{application.dfaLocation}</Descriptions.Item>
-                                                <Descriptions.Item label="Preferred Date">{dayjs(application.preferredDate).format('MMM D, YYYY')}</Descriptions.Item>
-                                                <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
-                                                <Descriptions.Item label="Application Type">{application.applicationType}</Descriptions.Item>
+                            <div className="app-detail-shell">
+                                <div style={{ display: 'flex', flexDirection: 'row', gap: 24, flexWrap: 'wrap' }}>
+                                    <div style={{ flex: '1 1 620px', minWidth: 320 }}>
+                                        <Descriptions title="Application Info" bordered column={1}>
+                                            <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
+                                            <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
+                                            <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
+                                            <Descriptions.Item label="DFA Location">{application.dfaLocation}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Date">{dayjs(application.preferredDate).format('MMM D, YYYY')}</Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
+                                            <Descriptions.Item label="Application Type">{application.applicationType}</Descriptions.Item>
 
-                                            </Descriptions>
-
-
-                                            {application?.status && application.status?.toLowerCase() === 'application submitted' && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "" && (
-                                                <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
-                                                    <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
-                                                    {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
-                                                        <>
-                                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-                                                                {application.suggestedAppointmentSchedules.map((slot, index) => {
-                                                                    const isSelected = selectedSuggestedIndex === index;
-
-                                                                    return (
-                                                                        <div
-                                                                            key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
-                                                                            onClick={() => setSelectedSuggestedIndex(index)}
-                                                                            style={{
-                                                                                border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
-                                                                                boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
-                                                                            }}
-                                                                        >
-                                                                            <Tag color="blue">Option {index + 1}</Tag>
-                                                                            <div style={{ marginTop: 8, fontWeight: 600 }}>
-                                                                                {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
-                                                                            </div>
-                                                                            <div style={{ color: '#6b7280' }}>{slot.time || 'Time TBD'}</div>
-                                                                        </div>
-                                                                    );
-                                                                })}
-
-                                                                {/* "Others" Option Card */}
-                                                                <div
-                                                                    onClick={() => setSelectedSuggestedIndex('others')}
-                                                                    style={{
-                                                                        border: selectedSuggestedIndex === 'others' ? '2px solid #305797' : '1px solid #f0f0f0',
-                                                                        boxShadow: selectedSuggestedIndex === 'others' ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
-                                                                    }}
-                                                                >
-                                                                    <Tag color="orange">Others</Tag>
-                                                                    <div style={{ marginTop: 12 }}>
-                                                                        <Space orientation="vertical" style={{ width: '100%' }}>
-                                                                            <DatePicker
-                                                                                disabledDate={disableDates}
-                                                                                placeholder="Select Date"
-                                                                                style={{ width: '100%' }}
-                                                                                onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
-                                                                                onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
-                                                                            />
-                                                                            <TimePicker
-                                                                                format="h:mm A"
-                                                                                use12Hours
-                                                                                showNow={false}
-                                                                                minuteStep={30}
-                                                                                disabledTime={() => ({
-                                                                                    disabledHours
-                                                                                })}
-                                                                                placeholder="Select Time"
-                                                                                style={{ width: '100%' }}
-                                                                                onChange={(time) => setCustomDateTime(prev => ({ ...prev, time }))}
-                                                                                onClick={(e) => e.stopPropagation()}
-                                                                            />
-                                                                        </Space>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-                                                                <Button
-                                                                    className='passport-submitdate'
-                                                                    type="primary"
-                                                                    onClick={() => {
-                                                                        setIsSelectDateModalOpen(true);
-                                                                    }}
-                                                                    loading={confirmingSuggested}
-                                                                    disabled={
-                                                                        selectedSuggestedIndex === null ||
-                                                                        (selectedSuggestedIndex === 'others' && (!customDateTime.date || !customDateTime.time))
-                                                                    }
-                                                                >
-                                                                    Confirm selected date
-                                                                </Button>
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <p style={{ margin: 0, color: '#6b7280' }}>No suggested dates yet. Please check back later.</p>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {application?.status && application?.status?.toLowerCase() === 'application approved' && !paymentCompleted && (
-                                                <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
-                                                    <h3 style={{ marginTop: 0 }}>Payment</h3>
-
-                                                    <div className="payment-methods-wrapper">
-                                                        <Radio.Group
-                                                            onChange={(e) => setMethod(e.target.value)}
-                                                            value={method}
-                                                            className="payment-methods-cards"
-                                                            style={{ width: '100%', display: 'flex', gap: '16px' }}
-                                                        >
-                                                            <Radio.Button
-                                                                value="paymongo"
-                                                                className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                                                style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
-                                                            >
-                                                                <div className="card-content">
-                                                                    <h3>Paymongo</h3>
-                                                                    <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
-                                                                </div>
-                                                            </Radio.Button>
-
-                                                            <Radio.Button
-                                                                value="manual"
-                                                                className={`payment-card ${method === "manual" ? "selected" : ""}`}
-                                                                style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
-                                                            >
-                                                                <div className="card-content">
-                                                                    <h3>Manual Payment</h3>
-                                                                    <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
-                                                                    <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
-                                                                </div>
-                                                            </Radio.Button>
-                                                        </Radio.Group>
-                                                    </div>
-
-                                                    {method === 'manual' && (
-
-                                                        <div className="manual-transfer-details">
-                                                            <div className="bank-accounts-section">
-                                                                <h4 className="section-subtitle">Available Bank Accounts</h4>
-                                                                <div className="bank-grid">
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">BDO Unibank</span>
-                                                                        <span className="account-number">0012-3456-7890</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">BPI</span>
-                                                                        <span className="account-number">9876-5432-10</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="bank-accounts-section">
-                                                                <div className="bank-grid">
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">Metro Bank</span>
-                                                                        <span className="account-number">0012-3456-7890</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                    <div className="bank-item">
-                                                                        <span className="bank-name">Land Bank</span>
-                                                                        <span className="account-number">9876-5432-10</span>
-                                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="upload-section">
-                                                                <h4 className="section-subtitle">Upload Proof of Payment</h4>
-                                                                <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
-                                                                <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
-
-                                                                <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
-
-                                                                <Upload
-                                                                    className='passportapplication-upload-button'
-                                                                    type='primary'
-                                                                    listType="picture"
-                                                                    maxCount={1}
-                                                                    fileList={fileList}
-                                                                    onChange={handleUploadChange}
-                                                                    accept=".jpg,.jpeg,.png,.pdf"
-                                                                    beforeUpload={() => false}
-                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    action={undefined}
-                                                                >
-                                                                    <Button icon={<UploadOutlined />} className='passportapplication-uploadreceipt-button' type='primary'>
-                                                                        Select Receipt Image
-                                                                    </Button>
-                                                                </Upload>
-
-                                                                {fileList.length > 0 && (
-                                                                    <div className="upload-preview-container">
-                                                                        <h4 className="section-subtitle">Preview</h4>
-
-                                                                        <div className="upload-preview-box">
-                                                                            <Image.PreviewGroup>
-                                                                                <Image
-                                                                                    src={fileList[0].preview}
-                                                                                    alt="Receipt Preview"
-                                                                                    className="upload-preview-image"
-                                                                                    style={{ borderRadius: '8px', border: '1px solid #d9d9d9' }}
-                                                                                />
-                                                                            </Image.PreviewGroup>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    <Button style={{ marginTop: 20 }}
-                                                        type="primary"
-                                                        className="passportapplication-submit-button"
-                                                        onClick={handleSubmitPayment}
-                                                        disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
-                                                    >
-                                                        {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
-                                                    </Button>
-
-                                                </div>
-                                            )}
-
-                                            {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                            {application?.status && application?.status?.toLowerCase() === 'payment complete' && (
-                                                <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
-                                                    <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
-
-                                                    <div className="passport-requirements-grid">
-                                                        <div className="passport-requirement-card">
-                                                            <b style={{ fontSize: 12 }}>PSA-issued Birth Certificate</b>
-                                                            {birthCertList[0] ? (
-                                                                (() => {
-                                                                    const file = birthCertList[0];
-                                                                    const isPdf = file.type === 'application/pdf' ||
-                                                                        file.originFileObj?.type === 'application/pdf' ||
-                                                                        file.name?.toLowerCase().endsWith('.pdf');
-                                                                    return isPdf ? (
-                                                                        <Button
-                                                                            className='passport-requirement-file-preview-button'
-                                                                            type="dashed"
-                                                                            onClick={() => handlePreview(file)}
-                                                                        >
-                                                                            Open PDF
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <div className="passport-requirement-placeholder">
-                                                                            <Image
-                                                                                src={file.preview || file.url}
-                                                                                alt="PSA-issued Birth Certificate"
-                                                                                preview={false}
-                                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                                onClick={() => handlePreview(file)}
-                                                                            />
-                                                                        </div>
-                                                                    );
-                                                                })()
-                                                            ) : (
-                                                                <div className="passport-requirement-placeholder">
-                                                                    <span className="passport-requirement-placeholder-text">No file</span>
-                                                                </div>
-                                                            )}
-                                                            <div style={{ marginTop: 8 }}>
-                                                                {birthCertList.length === 0 ? (
-                                                                    <Upload
-                                                                        name="birthCert"
-                                                                        fileList={birthCertList}
-                                                                        onPreview={handlePreview}
-                                                                        onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
-                                                                        showUploadList={false}
-                                                                        accept="image/*,application/pdf"
-                                                                        maxCount={1}
-                                                                        disabled={uploading}
-                                                                        beforeUpload={() => false}
-                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    >
-                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                            Upload Requirement
-                                                                        </Button>
-                                                                    </Upload>
-                                                                ) : (
-                                                                    <Button
-                                                                        className='passportapplication-removefile-button'
-                                                                        icon={<DeleteOutlined />}
-                                                                        type="primary"
-                                                                        onClick={() => setBirthCertList([])}
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="passport-requirement-card" >
-                                                            <b style={{ fontSize: 12 }}>Application Form</b>
-                                                            {applicationFormList[0] ? (
-                                                                (() => {
-                                                                    const file = applicationFormList[0];
-                                                                    const isPdf = file.type === 'application/pdf' ||
-                                                                        file.originFileObj?.type === 'application/pdf' ||
-                                                                        file.name?.toLowerCase().endsWith('.pdf');
-                                                                    return isPdf ? (
-                                                                        <Button
-                                                                            className='passport-requirement-file-preview-button'
-                                                                            type="dashed"
-                                                                            onClick={() => handlePreview(file)}
-                                                                        >
-                                                                            Open PDF
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <div className="passport-requirement-placeholder">
-                                                                            <Image
-                                                                                src={file.preview || file.url}
-                                                                                alt="Application Form"
-                                                                                preview={false}
-                                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                                onClick={() => handlePreview(file)}
-                                                                            />
-                                                                        </div>
-                                                                    );
-                                                                })()
-                                                            ) : (
-                                                                <div className="passport-requirement-placeholder">
-                                                                    <span className="passport-requirement-placeholder-text">No file</span>
-                                                                </div>
-                                                            )}
-                                                            <div style={{ marginTop: 8 }}>
-                                                                {applicationFormList.length === 0 ? (
-                                                                    <Upload
-                                                                        name="applicationForm"
-                                                                        fileList={applicationFormList}
-                                                                        onPreview={handlePreview}
-                                                                        onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
-                                                                        showUploadList={false}
-                                                                        accept="image/*,application/pdf"
-                                                                        maxCount={1}
-                                                                        disabled={uploading}
-                                                                        beforeUpload={() => false}
-                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    >
-                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                            Upload Requirement
-                                                                        </Button>
-                                                                    </Upload>
-                                                                ) : (
-                                                                    <Button
-                                                                        className='passportapplication-removefile-button'
-                                                                        icon={<DeleteOutlined />}
-                                                                        type="primary"
-                                                                        onClick={() => setApplicationFormList([])}
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="passport-requirement-card">
-                                                            <b style={{ fontSize: 12 }}>One Government-issued ID</b>
-                                                            {govIdList[0] ? (
-                                                                (() => {
-                                                                    const file = govIdList[0];
-                                                                    const isPdf = file.type === 'application/pdf' ||
-                                                                        file.originFileObj?.type === 'application/pdf' ||
-                                                                        file.name?.toLowerCase().endsWith('.pdf');
-                                                                    return isPdf ? (
-                                                                        <Button
-                                                                            className='passport-requirement-file-preview-button'
-                                                                            type="dashed"
-                                                                            onClick={() => handlePreview(file)}
-                                                                        >
-                                                                            Open PDF
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <div className="passport-requirement-placeholder">
-                                                                            <Image
-                                                                                src={file.preview || file.url}
-                                                                                alt="Government-issued ID"
-                                                                                preview={false}
-                                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                                onClick={() => handlePreview(file)}
-                                                                            />
-                                                                        </div>
-                                                                    );
-                                                                })()
-                                                            ) : (
-                                                                <div className="passport-requirement-placeholder">
-                                                                    <span className="passport-requirement-placeholder-text">No file</span>
-                                                                </div>
-                                                            )}
-                                                            <div style={{ marginTop: 8 }}>
-                                                                {govIdList.length === 0 ? (
-                                                                    <Upload
-                                                                        name="govId"
-                                                                        fileList={govIdList}
-                                                                        onPreview={handlePreview}
-                                                                        onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
-                                                                        showUploadList={false}
-                                                                        accept="image/*,application/pdf"
-                                                                        maxCount={1}
-                                                                        disabled={uploading}
-                                                                        beforeUpload={() => false}
-                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    >
-                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                            Upload Requirement
-                                                                        </Button>
-                                                                    </Upload>
-                                                                ) : (
-                                                                    <Button
-                                                                        className='passportapplication-removefile-button'
-                                                                        icon={<DeleteOutlined />}
-                                                                        type="primary"
-                                                                        onClick={() => setGovIdList([])}
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="passport-requirement-card">
-                                                            <b style={{ fontSize: 12 }}>Additional Documents (optional)</b>
-                                                            {additionalDocsList[0] ? (
-                                                                (() => {
-                                                                    const file = additionalDocsList[0];
-                                                                    const isPdf = file.type === 'application/pdf' ||
-                                                                        file.originFileObj?.type === 'application/pdf' ||
-                                                                        file.name?.toLowerCase().endsWith('.pdf');
-                                                                    return isPdf ? (
-                                                                        <Button
-                                                                            className='passport-requirement-file-preview-button'
-                                                                            type="dashed"
-                                                                            onClick={() => handlePreview(file)}
-                                                                        >
-                                                                            Open PDF
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <div className="passport-requirement-placeholder">
-                                                                            <Image
-                                                                                src={file.preview || file.url}
-                                                                                alt="Additional Documents"
-                                                                                preview={false}
-                                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                                onClick={() => handlePreview(file)}
-                                                                            />
-                                                                        </div>
-                                                                    );
-                                                                })()
-                                                            ) : (
-                                                                <div className="passport-requirement-placeholder">
-                                                                    <span className="passport-requirement-placeholder-text">No file</span>
-                                                                </div>
-                                                            )}
-                                                            <div style={{ marginTop: 8 }}>
-                                                                {additionalDocsList.length === 0 ? (
-                                                                    <Upload
-                                                                        name="additionalDocs"
-                                                                        fileList={additionalDocsList}
-                                                                        onPreview={handlePreview}
-                                                                        onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
-                                                                        showUploadList={false}
-                                                                        accept="image/*,application/pdf"
-                                                                        maxCount={1}
-                                                                        disabled={uploading}
-                                                                        beforeUpload={() => false}
-                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    >
-                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                            Upload Requirement
-                                                                        </Button>
-                                                                    </Upload>
-                                                                ) : (
-                                                                    <Button
-                                                                        className='passportapplication-removefile-button'
-                                                                        icon={<DeleteOutlined />}
-                                                                        type="primary"
-                                                                        onClick={() => setAdditionalDocsList([])}
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={
-                                                        () => setIsConfirmDocumentsOpen(true)
-                                                    }>
-                                                        Submit Documents
-                                                    </Button>
-                                                </div>
-                                            )}
+                                        </Descriptions>
 
 
-                                            {/* DOCUMENTS UPLOADED */}
-                                            {application?.status && application?.status?.toLowerCase() !== 'application submitted' &&
-                                                application?.status?.toLowerCase() !== 'application approved' &&
-                                                application?.status?.toLowerCase() !== 'payment complete' &&
-                                                application?.status?.toLowerCase() !== 'rejected' && (
-                                                    <div style={{ marginBottom: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, marginTop: 32, background: '#ffffff' }}>
-                                                        <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
-                                                        <div style={{ display: 'flex', flexDirection: 'row', gap: 60, flexWrap: 'wrap' }}>
-                                                            {(() => {
-                                                                const docs = application.submittedDocuments || {
-                                                                    birthCertificate: application.birthCertificate,
-                                                                    applicationForm: application.applicationForm,
-                                                                    govId: application.govId,
-                                                                    additionalDocs: application.additionalDocs
-                                                                };
+                                        {application?.status && application.status?.toLowerCase() === 'application submitted' && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "" && (
+                                            <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                                <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
+                                                {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
+                                                    <>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                                                            {application.suggestedAppointmentSchedules.map((slot, index) => {
+                                                                const isSelected = selectedSuggestedIndex === index;
 
                                                                 return (
-                                                                    <div style={{ display: 'flex', flexDirection: 'row', gap: 30, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
-                                                                        {docs.birthCertificate && (
-                                                                            <div style={{ width: '300px' }}>
-                                                                                <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>PSA Birth Certificate:</b>
-                                                                                {renderReadOnlyFile(docs.birthCertificate, "Birth Certificate")}
-                                                                            </div>
-                                                                        )}
-
-                                                                        {docs.applicationForm && (
-                                                                            <div style={{ width: '300px' }}>
-                                                                                <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Application Form:</b>
-                                                                                {renderReadOnlyFile(docs.applicationForm, "Application Form")}
-                                                                            </div>
-                                                                        )}
-
-                                                                        {docs.govId && (
-                                                                            <div style={{ width: '300px' }}>
-                                                                                <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Government-issued ID:</b>
-                                                                                {renderReadOnlyFile(docs.govId, "Government ID")}
-                                                                            </div>
-                                                                        )}
-
-                                                                        {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
-                                                                            <div style={{ width: '300px' }}>
-                                                                                <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Additional Documents:</b>
-                                                                                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                                                                                    <Image.PreviewGroup>
-                                                                                        {docs.additionalDocs.map((url, idx) => (
-                                                                                            <div key={`extra-${idx}`}>
-                                                                                                {renderReadOnlyFile(url, `Additional Doc ${idx + 1}`)}
-                                                                                            </div>
-                                                                                        ))}
-                                                                                    </Image.PreviewGroup>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
+                                                                    <div
+                                                                        key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
+                                                                        onClick={() => setSelectedSuggestedIndex(index)}
+                                                                        style={{
+                                                                            border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
+                                                                            boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
+                                                                        }}
+                                                                    >
+                                                                        <Tag color="blue">Option {index + 1}</Tag>
+                                                                        <div style={{ marginTop: 8, fontWeight: 600 }}>
+                                                                            {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
+                                                                        </div>
+                                                                        <div style={{ color: '#6b7280' }}>{slot.time || 'Time TBD'}</div>
                                                                     </div>
                                                                 );
-                                                            })()}
+                                                            })}
+
+                                                            {/* "Others" Option Card */}
+                                                            <div
+                                                                onClick={() => setSelectedSuggestedIndex('others')}
+                                                                style={{
+                                                                    border: selectedSuggestedIndex === 'others' ? '2px solid #305797' : '1px solid #f0f0f0',
+                                                                    boxShadow: selectedSuggestedIndex === 'others' ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
+                                                                }}
+                                                            >
+                                                                <Tag color="orange">Others</Tag>
+                                                                <div style={{ marginTop: 12 }}>
+                                                                    <Space orientation="vertical" style={{ width: '100%' }}>
+                                                                        <DatePicker
+                                                                            disabledDate={disableDates}
+                                                                            placeholder="Select Date"
+                                                                            style={{ width: '100%' }}
+                                                                            onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
+                                                                            onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
+                                                                        />
+                                                                        <TimePicker
+                                                                            format="h:mm A"
+                                                                            use12Hours
+                                                                            showNow={false}
+                                                                            minuteStep={30}
+                                                                            disabledTime={() => ({
+                                                                                disabledHours
+                                                                            })}
+                                                                            placeholder="Select Time"
+                                                                            style={{ width: '100%' }}
+                                                                            onChange={(time) => setCustomDateTime(prev => ({ ...prev, time }))}
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                        />
+                                                                    </Space>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+                                                            <Button
+                                                                className='passport-submitdate'
+                                                                type="primary"
+                                                                onClick={() => {
+                                                                    setIsSelectDateModalOpen(true);
+                                                                }}
+                                                                loading={confirmingSuggested}
+                                                                disabled={
+                                                                    selectedSuggestedIndex === null ||
+                                                                    (selectedSuggestedIndex === 'others' && (!customDateTime.date || !customDateTime.time))
+                                                                }
+                                                            >
+                                                                Confirm selected date
+                                                            </Button>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <p style={{ margin: 0, color: '#6b7280' }}>No suggested dates yet. Please check back later.</p>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {application?.status && application?.status?.toLowerCase() === 'application approved' && !paymentCompleted && (
+                                            <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                                <h3 style={{ marginTop: 0 }}>Payment</h3>
+
+                                                <div className="payment-methods-wrapper">
+                                                    <Radio.Group
+                                                        onChange={(e) => setMethod(e.target.value)}
+                                                        value={method}
+                                                        className="payment-methods-cards"
+                                                        style={{ width: '100%', display: 'flex', gap: '16px' }}
+                                                    >
+                                                        <Radio.Button
+                                                            value="paymongo"
+                                                            className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                                            style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                        >
+                                                            <div className="card-content">
+                                                                <h3>Paymongo</h3>
+                                                                <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                                                <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
+                                                            </div>
+                                                        </Radio.Button>
+
+                                                        <Radio.Button
+                                                            value="manual"
+                                                            className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                                            style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                        >
+                                                            <div className="card-content">
+                                                                <h3>Manual Payment</h3>
+                                                                <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                                                <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                                            </div>
+                                                        </Radio.Button>
+                                                    </Radio.Group>
+                                                </div>
+
+                                                {method === 'manual' && (
+
+                                                    <div className="manual-transfer-details">
+                                                        <div className="bank-accounts-section">
+                                                            <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                                            <div className="bank-grid">
+                                                                <div className="bank-item">
+                                                                    <span className="bank-name">BDO Unibank</span>
+                                                                    <span className="account-number">0012-3456-7890</span>
+                                                                    <span className="account-holder">M&RC Travel and Tours</span>
+                                                                </div>
+                                                                <div className="bank-item">
+                                                                    <span className="bank-name">BPI</span>
+                                                                    <span className="account-number">9876-5432-10</span>
+                                                                    <span className="account-holder">M&RC Travel and Tours</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="bank-accounts-section">
+                                                            <div className="bank-grid">
+                                                                <div className="bank-item">
+                                                                    <span className="bank-name">Metro Bank</span>
+                                                                    <span className="account-number">0012-3456-7890</span>
+                                                                    <span className="account-holder">M&RC Travel and Tours</span>
+                                                                </div>
+                                                                <div className="bank-item">
+                                                                    <span className="bank-name">Land Bank</span>
+                                                                    <span className="account-number">9876-5432-10</span>
+                                                                    <span className="account-holder">M&RC Travel and Tours</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="upload-section">
+                                                            <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                                            <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                                            <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                                            <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                                            <Upload
+                                                                className='passportapplication-upload-button'
+                                                                type='primary'
+                                                                listType="picture"
+                                                                maxCount={1}
+                                                                fileList={fileList}
+                                                                onChange={handleUploadChange}
+                                                                accept=".jpg,.jpeg,.png,.pdf"
+                                                                beforeUpload={() => false}
+                                                                customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                action={undefined}
+                                                            >
+                                                                <Button icon={<UploadOutlined />} className='passportapplication-uploadreceipt-button' type='primary'>
+                                                                    Select Receipt Image
+                                                                </Button>
+                                                            </Upload>
+
+                                                            {fileList.length > 0 && (
+                                                                <div className="upload-preview-container">
+                                                                    <h4 className="section-subtitle">Preview</h4>
+
+                                                                    <div className="upload-preview-box">
+                                                                        <Image.PreviewGroup>
+                                                                            <Image
+                                                                                src={fileList[0].preview}
+                                                                                alt="Receipt Preview"
+                                                                                className="upload-preview-image"
+                                                                                style={{ borderRadius: '8px', border: '1px solid #d9d9d9' }}
+                                                                            />
+                                                                        </Image.PreviewGroup>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
-                                        </div>
 
-                                        <div style={{ flex: '1 1 300px', minWidth: 280 }}>
-                                            <div style={{ marginBottom: 16, border: '1px solid #dde4ef', borderRadius: 10, padding: 12, background: '#f9fbff' }}>
-                                                <p className="app-detail-kicker" style={{ marginBottom: 6 }}>Overview</p>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                    <span>Status</span>
-                                                    <Tag color={getStatusColor(application.status)}>{application.status}</Tag>
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                    <span>Type</span>
-                                                    <strong>{application.applicationType || 'N/A'}</strong>
-                                                </div>
+                                                <Button style={{ marginTop: 20 }}
+                                                    type="primary"
+                                                    className="passportapplication-submit-button"
+                                                    onClick={handleSubmitPayment}
+                                                    disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                >
+                                                    {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                                </Button>
+
                                             </div>
+                                        )}
 
-                                            {application?.status && application?.status?.toLowerCase() !== 'rejected' && (
-                                                <div style={{ border: '1px solid #dde4ef', borderRadius: 10, padding: 12, background: '#ffffff', minHeight: 180 }}>
-                                                    <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
-                                                    <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
-                                                        <Steps
-                                                            orientation="vertical"
-                                                            size="default"
-                                                            current={currentStep}
-                                                            style={{ minWidth: 290, width: 'max-content' }}
-                                                            items={PASSPORT_STEPS.map((step, idx) => ({
-                                                                title: (
-                                                                    <span
-                                                                        style={{
-                                                                            fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                            color: currentStep === idx ? '#305797' : 'inherit',
-                                                                            fontSize: 16,
-                                                                            textAlign: 'center',
-                                                                            whiteSpace: 'nowrap',
-                                                                        }}
+                                        {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
+                                        {application?.status && application?.status?.toLowerCase() === 'payment complete' && (
+                                            <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
+                                                <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
+
+                                                <div className="passport-requirements-grid">
+                                                    <div className="passport-requirement-card">
+                                                        <b style={{ fontSize: 12 }}>PSA-issued Birth Certificate</b>
+                                                        {birthCertList[0] ? (
+                                                            (() => {
+                                                                const file = birthCertList[0];
+                                                                const isPdf = file.type === 'application/pdf' ||
+                                                                    file.originFileObj?.type === 'application/pdf' ||
+                                                                    file.name?.toLowerCase().endsWith('.pdf');
+                                                                return isPdf ? (
+                                                                    <Button
+                                                                        className='passport-requirement-file-preview-button'
+                                                                        type="dashed"
+                                                                        onClick={() => handlePreview(file)}
                                                                     >
-                                                                        {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
-                                                                    </span>
-                                                                ),
-                                                                description: (
-                                                                    <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
-                                                                ),
-                                                            }))}
-                                                        />
+                                                                        Open PDF
+                                                                    </Button>
+                                                                ) : (
+                                                                    <div className="passport-requirement-placeholder">
+                                                                        <Image
+                                                                            src={file.preview || file.url}
+                                                                            alt="PSA-issued Birth Certificate"
+                                                                            preview={false}
+                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                            onClick={() => handlePreview(file)}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })()
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <span className="passport-requirement-placeholder-text">No file</span>
+                                                            </div>
+                                                        )}
+                                                        <div style={{ marginTop: 8 }}>
+                                                            {birthCertList.length === 0 ? (
+                                                                <Upload
+                                                                    name="birthCert"
+                                                                    fileList={birthCertList}
+                                                                    onPreview={handlePreview}
+                                                                    onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
+                                                                    showUploadList={false}
+                                                                    accept="image/*,application/pdf"
+                                                                    maxCount={1}
+                                                                    disabled={uploading}
+                                                                    beforeUpload={() => false}
+                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                >
+                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                        Upload Requirement
+                                                                    </Button>
+                                                                </Upload>
+                                                            ) : (
+                                                                <Button
+                                                                    className='passportapplication-removefile-button'
+                                                                    icon={<DeleteOutlined />}
+                                                                    type="primary"
+                                                                    onClick={() => setBirthCertList([])}
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="passport-requirement-card" >
+                                                        <b style={{ fontSize: 12 }}>Application Form</b>
+                                                        {applicationFormList[0] ? (
+                                                            (() => {
+                                                                const file = applicationFormList[0];
+                                                                const isPdf = file.type === 'application/pdf' ||
+                                                                    file.originFileObj?.type === 'application/pdf' ||
+                                                                    file.name?.toLowerCase().endsWith('.pdf');
+                                                                return isPdf ? (
+                                                                    <Button
+                                                                        className='passport-requirement-file-preview-button'
+                                                                        type="dashed"
+                                                                        onClick={() => handlePreview(file)}
+                                                                    >
+                                                                        Open PDF
+                                                                    </Button>
+                                                                ) : (
+                                                                    <div className="passport-requirement-placeholder">
+                                                                        <Image
+                                                                            src={file.preview || file.url}
+                                                                            alt="Application Form"
+                                                                            preview={false}
+                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                            onClick={() => handlePreview(file)}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })()
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <span className="passport-requirement-placeholder-text">No file</span>
+                                                            </div>
+                                                        )}
+                                                        <div style={{ marginTop: 8 }}>
+                                                            {applicationFormList.length === 0 ? (
+                                                                <Upload
+                                                                    name="applicationForm"
+                                                                    fileList={applicationFormList}
+                                                                    onPreview={handlePreview}
+                                                                    onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
+                                                                    showUploadList={false}
+                                                                    accept="image/*,application/pdf"
+                                                                    maxCount={1}
+                                                                    disabled={uploading}
+                                                                    beforeUpload={() => false}
+                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                >
+                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                        Upload Requirement
+                                                                    </Button>
+                                                                </Upload>
+                                                            ) : (
+                                                                <Button
+                                                                    className='passportapplication-removefile-button'
+                                                                    icon={<DeleteOutlined />}
+                                                                    type="primary"
+                                                                    onClick={() => setApplicationFormList([])}
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="passport-requirement-card">
+                                                        <b style={{ fontSize: 12 }}>One Government-issued ID</b>
+                                                        {govIdList[0] ? (
+                                                            (() => {
+                                                                const file = govIdList[0];
+                                                                const isPdf = file.type === 'application/pdf' ||
+                                                                    file.originFileObj?.type === 'application/pdf' ||
+                                                                    file.name?.toLowerCase().endsWith('.pdf');
+                                                                return isPdf ? (
+                                                                    <Button
+                                                                        className='passport-requirement-file-preview-button'
+                                                                        type="dashed"
+                                                                        onClick={() => handlePreview(file)}
+                                                                    >
+                                                                        Open PDF
+                                                                    </Button>
+                                                                ) : (
+                                                                    <div className="passport-requirement-placeholder">
+                                                                        <Image
+                                                                            src={file.preview || file.url}
+                                                                            alt="Government-issued ID"
+                                                                            preview={false}
+                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                            onClick={() => handlePreview(file)}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })()
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <span className="passport-requirement-placeholder-text">No file</span>
+                                                            </div>
+                                                        )}
+                                                        <div style={{ marginTop: 8 }}>
+                                                            {govIdList.length === 0 ? (
+                                                                <Upload
+                                                                    name="govId"
+                                                                    fileList={govIdList}
+                                                                    onPreview={handlePreview}
+                                                                    onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
+                                                                    showUploadList={false}
+                                                                    accept="image/*,application/pdf"
+                                                                    maxCount={1}
+                                                                    disabled={uploading}
+                                                                    beforeUpload={() => false}
+                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                >
+                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                        Upload Requirement
+                                                                    </Button>
+                                                                </Upload>
+                                                            ) : (
+                                                                <Button
+                                                                    className='passportapplication-removefile-button'
+                                                                    icon={<DeleteOutlined />}
+                                                                    type="primary"
+                                                                    onClick={() => setGovIdList([])}
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="passport-requirement-card">
+                                                        <b style={{ fontSize: 12 }}>Additional Documents (optional)</b>
+                                                        {additionalDocsList[0] ? (
+                                                            (() => {
+                                                                const file = additionalDocsList[0];
+                                                                const isPdf = file.type === 'application/pdf' ||
+                                                                    file.originFileObj?.type === 'application/pdf' ||
+                                                                    file.name?.toLowerCase().endsWith('.pdf');
+                                                                return isPdf ? (
+                                                                    <Button
+                                                                        className='passport-requirement-file-preview-button'
+                                                                        type="dashed"
+                                                                        onClick={() => handlePreview(file)}
+                                                                    >
+                                                                        Open PDF
+                                                                    </Button>
+                                                                ) : (
+                                                                    <div className="passport-requirement-placeholder">
+                                                                        <Image
+                                                                            src={file.preview || file.url}
+                                                                            alt="Additional Documents"
+                                                                            preview={false}
+                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                            onClick={() => handlePreview(file)}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })()
+                                                        ) : (
+                                                            <div className="passport-requirement-placeholder">
+                                                                <span className="passport-requirement-placeholder-text">No file</span>
+                                                            </div>
+                                                        )}
+                                                        <div style={{ marginTop: 8 }}>
+                                                            {additionalDocsList.length === 0 ? (
+                                                                <Upload
+                                                                    name="additionalDocs"
+                                                                    fileList={additionalDocsList}
+                                                                    onPreview={handlePreview}
+                                                                    onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
+                                                                    showUploadList={false}
+                                                                    accept="image/*,application/pdf"
+                                                                    maxCount={1}
+                                                                    disabled={uploading}
+                                                                    beforeUpload={() => false}
+                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                >
+                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                        Upload Requirement
+                                                                    </Button>
+                                                                </Upload>
+                                                            ) : (
+                                                                <Button
+                                                                    className='passportapplication-removefile-button'
+                                                                    icon={<DeleteOutlined />}
+                                                                    type="primary"
+                                                                    onClick={() => setAdditionalDocsList([])}
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={
+                                                    () => setIsConfirmDocumentsOpen(true)
+                                                }>
+                                                    Submit Documents
+                                                </Button>
+                                            </div>
+                                        )}
+
+
+                                        {/* DOCUMENTS UPLOADED */}
+                                        {application?.status && application?.status?.toLowerCase() !== 'application submitted' &&
+                                            application?.status?.toLowerCase() !== 'application approved' &&
+                                            application?.status?.toLowerCase() !== 'payment complete' &&
+                                            application?.status?.toLowerCase() !== 'rejected' && (
+                                                <div className='passport-document-uploaded-section'>
+                                                    <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
+                                                    <div className='passport-uploaded-documents-container'>
+                                                        {(() => {
+                                                            const docs = application.submittedDocuments || {
+                                                                birthCertificate: application.birthCertificate,
+                                                                applicationForm: application.applicationForm,
+                                                                govId: application.govId,
+                                                                additionalDocs: application.additionalDocs
+                                                            };
+
+                                                            return (
+                                                                <div className='passport-document-container-group'>
+                                                                    {docs.birthCertificate && (
+                                                                        <div className="passport-document-container">
+                                                                            <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>PSA Birth Certificate:</b>
+                                                                            {renderReadOnlyFile(docs.birthCertificate, "Birth Certificate")}
+                                                                        </div>
+                                                                    )}
+
+                                                                    {docs.applicationForm && (
+                                                                        <div className="passport-document-container">
+                                                                            <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Application Form:</b>
+                                                                            {renderReadOnlyFile(docs.applicationForm, "Application Form")}
+                                                                        </div>
+                                                                    )}
+
+                                                                    {docs.govId && (
+                                                                        <div className="passport-document-container">
+                                                                            <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Government-issued ID:</b>
+                                                                            {renderReadOnlyFile(docs.govId, "Government ID")}
+                                                                        </div>
+                                                                    )}
+
+                                                                    {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
+                                                                        <div className="passport-document-container">
+                                                                            <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Additional Documents:</b>
+                                                                            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                                                                                <Image.PreviewGroup>
+                                                                                    {docs.additionalDocs.map((url, idx) => (
+                                                                                        <div key={`extra-${idx}`}>
+                                                                                            {renderReadOnlyFile(url, `Additional Doc ${idx + 1}`)}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </Image.PreviewGroup>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 </div>
                                             )}
+                                    </div>
+
+                                    <div style={{ flex: '1 1 300px', minWidth: 280 }}>
+                                        <div style={{ marginBottom: 16, border: '1px solid #dde4ef', borderRadius: 10, padding: 12, background: '#f9fbff' }}>
+                                            <p className="app-detail-kicker" style={{ marginBottom: 6 }}>Overview</p>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                <span>Status</span>
+                                                <Tag color={getStatusColor(application.status)}>{application.status}</Tag>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>Type</span>
+                                                <strong>{application.applicationType || 'N/A'}</strong>
+                                            </div>
                                         </div>
+
+                                        {application?.status && application?.status?.toLowerCase() !== 'rejected' && (
+                                            <div style={{ border: '1px solid #dde4ef', borderRadius: 10, padding: 12, background: '#ffffff', minHeight: 180 }}>
+                                                <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
+                                                <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
+                                                    <Steps
+                                                        orientation="vertical"
+                                                        size="default"
+                                                        current={currentStep}
+                                                        style={{ minWidth: 290, width: 'max-content' }}
+                                                        items={PASSPORT_STEPS.map((step, idx) => ({
+                                                            title: (
+                                                                <span
+                                                                    style={{
+                                                                        fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                                        color: currentStep === idx ? '#305797' : 'inherit',
+                                                                        fontSize: 16,
+                                                                        textAlign: 'center',
+                                                                        whiteSpace: 'nowrap',
+                                                                    }}
+                                                                >
+                                                                    {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
+                                                                </span>
+                                                            ),
+                                                            description: (
+                                                                <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
+                                                            ),
+                                                        }))}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
+
 
 
                             </div>

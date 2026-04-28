@@ -31,7 +31,6 @@
 .user-logo-img {
     height: 60px;
     width: 85px;
-    margin-right: 25px;
     margin-bottom: 5px;
 }
 
@@ -468,7 +467,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-left: 155px;
+        justify-self: center;
+        align-self: center;
+        text-align: center;
+        width: 100%;
     }
 
     .logo-section span {
@@ -492,5 +494,41 @@
     .landing-button-links {
         font-size: 14px;
         padding-right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+
+
+    .nav-buttonlinks.ant-btn-link {
+        font-size: 11px;
+    }
+
+    .landing-button-links {
+        font-size: 12px;
+        padding-right: 8px;
+    }
+
+    .nav-links {
+        gap: 12px;
+    }
+
+    .nav-buttonlinks-group {
+        gap: 12px;
+        margin-right: 0;
+    }
+
+    .regsignin {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .nav-buttonlinks.ant-btn-link {
+        font-size: 11px;
+    }
+
+    .landing-button-links {
+        font-size: 12px;
+        padding-right: 8px;
     }
 }
