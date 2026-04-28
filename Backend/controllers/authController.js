@@ -26,7 +26,7 @@ const createVerificationLink = async (email, token) => {
     user.emailVerifyOtp = hashedToken;
     user.emailVerifyExpireAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    const clientUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const verifyLink = `${clientUrl}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
 
     user.role = "Customer" //set the role of the new registered user

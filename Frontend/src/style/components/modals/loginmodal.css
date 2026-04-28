@@ -32,7 +32,6 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    top: 115px;
     padding: none;
     margin: none;
 }
@@ -187,8 +186,6 @@ body {
     border: "none" !important;
 }
 
-
-
 .login-button-links-modal.ant-btn {
     border: none !important;
 }
@@ -254,10 +251,109 @@ body {
     color: #305797;
 }
 
+
+/* OTP MODAL */
+.resetpassword-heading-modal {
+    font-family: "Montserrat", sans-serif;
+    font-size: 45px;
+    font-weight: 600;
+    color: #305797;
+    line-height: 10px;
+    width: 550px;
+    margin-bottom: 40px;
+    margin-top: 20px;
+}
+
+.resetpassword-secondary-heading-modal {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #305797;
+    margin-top: 3px;
+    margin-bottom: 40px;
+    line-height: 5px;
+    width: 550px;
+}
+
+.ant-otp input {
+    width: 60px;
+    height: 70px;
+    font-size: 34px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.ant-otp input:hover {
+    border-color: #305797 !important;
+    border-width: 2px !important;
+}
+
+.ant-otp input:focus {
+    border-color: #305797 !important;
+    border-width: 2px !important;
+}
+
+
+#submit-otp-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 220px;
+    height: 40px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+    margin-bottom: 20px;
+}
+
+#submit-otp-button:hover {
+    background-color: #e9e9e9;
+    color: #305797;
+}
+
+#footer-text-modal {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #305797;
+    width: 100%;
+    max-width: 550px;
+}
+
+#submit-otp-button,
+#footer-text-modal,
+.resetpassword-heading-modal,
+.resetpassword-secondary-heading-modal,
+.label-links-modal,
+#error-message-modal {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.ant-otp {
+    display: flex;
+    justify-content: center;
+    margin: 20px auto;
+}
+
+#error-message-modal {
+    color: #ff0000;
+    width: 100%;
+    max-width: 500px;
+    height: 15px;
+}
+
+
+
+
+
+
+
+
 @media (max-width: 1024px) {
-    .ant-modal-container {
-        top: 90px !important;
-    }
 
     .login-container-modal {
         flex-direction: column;
@@ -300,10 +396,6 @@ body {
 
 @media (max-width: 768px) {
 
-    .ant-modal-container {
-        top: 90px !important;
-    }
-
     .login-container-modal {
         flex-direction: column;
         min-width: 420px;
@@ -344,10 +436,6 @@ body {
 }
 
 @media (max-width: 480px) {
-
-    .ant-modal-container {
-        top: 120px !important;
-    }
 
     .ant-modal-body,
     .ant-modal-container {
