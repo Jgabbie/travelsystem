@@ -230,6 +230,20 @@
     }
 }
 
+@media (max-width: 980px) {
+    .app-detail-header {
+        flex-direction: column;
+    }
+
+    .app-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .app-detail-barcode-card {
+        width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .passport-requirements-grid {
         justify-content: center;
@@ -250,6 +264,7 @@
 }
 
 @media (max-width: 480px) {
+
     .passport-requirements-grid {
         padding: 16px;
         gap: 26px;
@@ -264,21 +279,5 @@
     .passportapplication-upload-button,
     .passportapplication-removefile-button {
         width: 320px;
-    }
-}
-
-
-
-@media (max-width: 980px) {
-    .app-detail-header {
-        flex-direction: column;
-    }
-
-    .app-detail-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .app-detail-barcode-card {
-        width: 100%;
     }
 }

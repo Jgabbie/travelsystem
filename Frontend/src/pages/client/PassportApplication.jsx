@@ -1105,7 +1105,7 @@ export default function PassportApplication() {
                                                     application?.status?.toLowerCase() !== 'rejected' && (
                                                         <div style={{ marginBottom: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, marginTop: 32, background: '#ffffff' }}>
                                                             <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
-                                                            <div style={{ display: 'flex', flexDirection: 'row', gap: 160, flexWrap: 'wrap' }}>
+                                                            <div style={{ display: 'flex', flexDirection: 'row', gap: 60, flexWrap: 'wrap' }}>
                                                                 {(() => {
                                                                     const docs = application.submittedDocuments || {
                                                                         birthCertificate: application.birthCertificate,
@@ -1115,30 +1115,30 @@ export default function PassportApplication() {
                                                                     };
 
                                                                     return (
-                                                                        <>
+                                                                        <div style={{ display: 'flex', flexDirection: 'row', gap: 30, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
                                                                             {docs.birthCertificate && (
-                                                                                <div>
+                                                                                <div style={{ width: '300px' }}>
                                                                                     <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>PSA Birth Certificate:</b>
                                                                                     {renderReadOnlyFile(docs.birthCertificate, "Birth Certificate")}
                                                                                 </div>
                                                                             )}
 
                                                                             {docs.applicationForm && (
-                                                                                <div>
+                                                                                <div style={{ width: '300px' }}>
                                                                                     <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Application Form:</b>
                                                                                     {renderReadOnlyFile(docs.applicationForm, "Application Form")}
                                                                                 </div>
                                                                             )}
 
                                                                             {docs.govId && (
-                                                                                <div>
+                                                                                <div style={{ width: '300px' }}>
                                                                                     <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Government-issued ID:</b>
                                                                                     {renderReadOnlyFile(docs.govId, "Government ID")}
                                                                                 </div>
                                                                             )}
 
                                                                             {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
-                                                                                <div>
+                                                                                <div style={{ width: '300px' }}>
                                                                                     <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Additional Documents:</b>
                                                                                     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                                                                                         <Image.PreviewGroup>
@@ -1151,7 +1151,7 @@ export default function PassportApplication() {
                                                                                     </div>
                                                                                 </div>
                                                                             )}
-                                                                        </>
+                                                                        </div>
                                                                     );
                                                                 })()}
                                                             </div>
