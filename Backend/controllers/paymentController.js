@@ -1015,7 +1015,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //CHECKOUT FOR NORMAL FIXED BOOKINGS
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     const paymentType = "qr_ph"
 
@@ -1119,7 +1119,7 @@ const createCheckoutSession = async (req, res) => {
 //CHECKOUT FOR QUOTATION BOOKINGS
 const createCheckoutSessionQuotation = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+    const FRONTEND_URL = "http://localhost:3000";
 
     const paymentType = "qr_ph"
 
@@ -1130,8 +1130,8 @@ const createCheckoutSessionQuotation = async (req, res) => {
 
         const { quotationId, paymentToken } = req.body;
 
-        const successUrl = `${FRONTEND_URL}/booking-payment/success?token=${paymentToken}`;
-        const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
+        const successUrl = `${FRONTEND_URL}/quotation-payment-process/success?token=${paymentToken}`;
+        const cancelUrl = `${FRONTEND_URL}/quotation-payment-process?status=cancel`;
 
         if (!paymentToken) {
             return res.status(400).json({ error: "Missing payment token" });

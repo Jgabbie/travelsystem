@@ -38,7 +38,7 @@ const createBooking = async (req, res) => {
     const amount = bookingPayload.amount || 0
     const passportFiles = bookingPayload.passportFiles || []
     const photoFiles = bookingPayload.photoFiles || []
-    const expiresAt = dayjs().add(5, 'minutes').toDate() // 5 minutes from now
+    const expiresAt = dayjs().add(2, 'minutes').toDate() // 5 minutes from now
 
     //find package by name to get its id, then create booking with that package id
     try {
@@ -68,7 +68,7 @@ const createBooking = async (req, res) => {
             userId,
             bookingId: newBooking._id,
             amount: bookingPayload.amount,
-            expiresAt: dayjs().add(5, 'minutes').toDate()
+            expiresAt,
         });
 
         const packageName = await PackageModel.findById(packageId).select('packageName').lean()

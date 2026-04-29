@@ -56,16 +56,17 @@ export default function VisaApplication() {
 
     const fetchVisaApplication = `/visa/applications/${id}`;
 
-    //IF NO ID IN URL, GO BACK TO USER APPLICATIONS
-    useEffect(() => {
-        if (!id) {
-            navigate('/user-applications');
-        }
-    }, [id, navigate]);
+
 
 
     //FETCH APPLICATION DETAILS
     useEffect(() => {
+        if (!id) {
+            return;
+        }
+
+
+
         const fetchApplication = async () => {
             setLoading(true);
             try {
@@ -480,6 +481,13 @@ export default function VisaApplication() {
         }
         return hours;
     }
+
+    //IF NO ID IN URL, GO BACK TO USER APPLICATIONS
+    useEffect(() => {
+        if (!applicationId) {
+            navigate('/home');
+        }
+    }, [applicationId, navigate]);
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>

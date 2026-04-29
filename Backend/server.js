@@ -28,6 +28,7 @@ const preferencesRoutes = require("./routes/preferencesRoutes")
 const uploadRoutes = require("./routes/uploadRoutes")
 const chatbotRoutes = require("./routes/chatbotRoutes")
 const { startBillingDeadlineScheduler } = require('./utils/billingDeadlineScheduler');
+const { startCleanupScheduler } = require('./utils/cleanupBookings');
 
 const rateLimit = require('express-rate-limit');
 
@@ -140,7 +141,7 @@ if (!isServerless) {
 
     // Use the PORT variable provided by the host, default to 8080
     //const LOCAL_PORT = 8000
-    const PORT = 8080; //change to 8000 for local testing, 8080 for cloud deployment
+    const PORT = 8000; //change to 8000 for local testing, 8080 for cloud deployment
 
     // Remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {
@@ -150,9 +151,12 @@ if (!isServerless) {
             .then(() => {
                 startBillingDeadlineScheduler();
                 console.log('Billing deadline scheduler started.');
+
+                startCleanupScheduler();
+                console.log('Cleanup scheduler started.');
             })
             .catch((error) => {
-                console.error('Failed to start billing deadline scheduler:', error);
+                console.error('Failed to start schedulers:', error);
             });
     });
 }

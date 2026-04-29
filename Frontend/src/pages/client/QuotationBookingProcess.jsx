@@ -112,6 +112,14 @@ export default function QuotationBookingProcess() {
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
     const [isGoBackModalOpen, setIsGoBackModalOpen] = useState(false);
 
+    const hasQuotationBookingData = Boolean(
+        quotationBookingData &&
+        typeof quotationBookingData === 'object' &&
+        quotationBookingData.quotationId &&
+        quotationBookingData.packageName &&
+        quotationBookingData.travelDate
+    )
+
     //CLOSE MODAL
     const onCancelModal = () => {
         setIsProceedModalOpen(false);
@@ -731,12 +739,12 @@ export default function QuotationBookingProcess() {
 
     //REDIRECT TO HOME IF NO QUOTATION DATA
     useEffect(() => {
-        if (!quotationBookingData) {
+        if (!hasQuotationBookingData) {
             navigate('/home', { replace: true });
         }
-    }, [quotationBookingData, navigate]);
+    }, [hasQuotationBookingData, navigate]);
 
-    if (!quotationBookingData) return null;
+    if (!hasQuotationBookingData) return null;
 
     return (
         <ConfigProvider

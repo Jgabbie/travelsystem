@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message, Spin } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
@@ -9,6 +9,8 @@ import '../../style/components/modals/displayinvoicemodal.css';
 import '../../style/client/paymentprocees.css';
 import apiFetch from '../../config/fetchConfig';
 
+const PAYMENT_STATE_KEY = 'quotation_payment_state';
+
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -18,24 +20,114 @@ const getBase64 = (file) =>
     });
 
 export default function QuotationsPaymentProcess() {
-    const { quotationBookingData } = useQuotationBooking();
+    const { quotationBookingData, clearBookingData } = useQuotationBooking();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const cancelRequestedRef = React.useRef(false);
 
-    const [paymentType, setPaymentType] = useState(null); // 'deposit' or 'full'
-    const [frequency, setFrequency] = useState('Every 2 weeks');
-    const [method, setMethod] = useState(null);
+
+    const [paymentType, setPaymentType] = useState(() => {
+        try {
+            const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
+            return savedState ? JSON.parse(savedState).paymentType ?? null : null;
+        } catch {
+            return null;
+        }
+    }); // 'deposit' or 'full'
+    const [frequency, setFrequency] = useState(() => {
+        try {
+            const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
+            return savedState ? JSON.parse(savedState).frequency ?? 'Every 2 weeks' : 'Every 2 weeks';
+        } catch {
+            return 'Every 2 weeks';
+        }
+    });
+    const [method, setMethod] = useState(() => {
+        try {
+            const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
+            return savedState ? JSON.parse(savedState).method ?? null : null;
+        } catch {
+            return null;
+        }
+    });
     const [loading, setLoading] = useState(false);
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
+    const [isCancelProcessModalOpen, setIsCancelProcessModalOpen] = useState(false);
 
     const onCancelModal = () => {
         setIsProceedModalOpen(false);
     };
 
+    const hasQuotationBookingData = Boolean(
+        quotationBookingData &&
+        typeof quotationBookingData === 'object' &&
+        quotationBookingData.quotationId &&
+        quotationBookingData.packageName &&
+        quotationBookingData.travelDate
+    )
+
     const [monthBookingsCount, setMonthBookingsCount] = useState(0);
 
     const [fileList, setFileList] = useState([]);
+    const [pendingBooking, setPendingBooking] = useState(() => {
+        try {
+            const savedState = sessionStorage.getItem(PAYMENT_STATE_KEY);
+            return savedState ? JSON.parse(savedState).pendingBooking ?? null : null;
+        } catch {
+            return null;
+        }
+    });
+
+
+    //BROWSER BACK BUTTON INTERCEPTION TO PREVENT ACCIDENTAL NAV AWAY AND SHOW CANCEL MODAL INSTEAD
+    useEffect(() => {
+        // Push ONE history entry when component mounts
+        window.history.pushState({ page: "payment" }, "", window.location.pathname);
+
+        const handlePopState = () => {
+            // Show modal immediately
+            setIsCancelProcessModalOpen(true);
+
+            // Push again so user stays on page
+            window.history.pushState({ page: "payment" }, "", window.location.pathname);
+        };
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, []);
+
+
+    //THIS GETS THE PAYMENT TYPE, FREQUENCY, AND METHOD AND PERSISTS IT IN THE SESSION STORAGE SO THAT IT DOES NOT GET LOST ON PAGE RELOAD
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(PAYMENT_STATE_KEY, JSON.stringify({
+                paymentType,
+                frequency,
+                method,
+                pendingBooking,
+            }));
+        } catch (error) {
+            console.error('Failed to persist quotation payment state:', error);
+        }
+    }, [paymentType, frequency, method, pendingBooking]);
+
+
+    //ON UNMOUNT, CHECK IF CANCEL WAS REQUESTED AND CLEAR BOOKING DATA IF TRUE TO PREVENT STALE DATA ON NEXT VISIT
+    useEffect(() => {
+        return () => {
+            if (cancelRequestedRef.current) {
+                clearBookingData();
+                sessionStorage.removeItem(PAYMENT_STATE_KEY);
+                cancelRequestedRef.current = false;
+            }
+        };
+    }, [clearBookingData]);
+
+
 
     const passportFiles = quotationBookingData?.passportFiles || [];
     const photoFiles = quotationBookingData?.photoFiles || [];
@@ -54,16 +146,17 @@ export default function QuotationsPaymentProcess() {
         }
     }, [disableDeposit, paymentType]);
 
+
     //REDIRECT IF NO BOOKING DATA
     useEffect(() => {
-        if (!quotationBookingData) {
+        if (!hasQuotationBookingData) {
             navigate('/home', { replace: true });
         }
         const methodParam = searchParams.get('method');
         if (methodParam === 'manual' || methodParam === 'paymongo') {
             setMethod(methodParam);
         }
-    }, [quotationBookingData, navigate, searchParams]);
+    }, [hasQuotationBookingData, navigate, searchParams]);
 
 
     //CONVERT THE BASE64 BACK TO FILE OBJECT
@@ -159,6 +252,13 @@ export default function QuotationsPaymentProcess() {
         };
         fetchMonthBookings();
     }, []);
+
+    //REDIRECT IF NO BOOKING DATA - CHECK EARLY BEFORE ACCESSING ANY PROPERTIES
+    if (!hasQuotationBookingData) {
+        navigate('/home');
+        return null; // Prevent rendering if no booking data
+    }
+
 
     const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
@@ -268,48 +368,69 @@ export default function QuotationsPaymentProcess() {
                 ? depositAmount
                 : totalAmount;
 
-            const allUrls = await uploadAllFiles(passportFiles, photoFiles);
+            const canReusePendingBooking = Boolean(
+                pendingBooking?.bookingId &&
+                pendingBooking?.paymentToken &&
+                pendingBooking?.expiresAt &&
+                dayjs(pendingBooking.expiresAt).isAfter(dayjs()) &&
+                pendingBooking.packageId === packageId &&
+                pendingBooking.paymentType === paymentType &&
+                Number(pendingBooking.amount) === Number(amountToCharge)
+            );
 
-            const passportUrls = allUrls.slice(0, passportFiles.length);
-            const photoUrls = allUrls.slice(passportFiles.length);
+            let activeBooking = canReusePendingBooking ? pendingBooking : null;
 
-            const travelersWithUrls = (quotationBookingData?.travelers || []).map((traveler, index) => ({
-                ...traveler,
-                passportFile: passportUrls[index] || traveler?.passportFile || null,
-                photoFile: photoUrls[index] || traveler?.photoFile || null
-            }))
+            if (!activeBooking) {
+                const allUrls = await uploadAllFiles(passportFiles, photoFiles);
 
-            const bookingDetailsWithUrls = {
-                ...bookingDetails,
-                travelers: travelersWithUrls
-            }
+                const passportUrls = allUrls.slice(0, passportFiles.length);
+                const photoUrls = allUrls.slice(passportFiles.length);
 
-            const startDate = quotationBookingData?.travelDate.split(" - ")?.[0] || dayjs().format("MMM D, YYYY");
-            const endDate = quotationBookingData?.travelDate.split(" - ")?.[1] || dayjs().format("MMM D, YYYY");
+                const travelersWithUrls = (quotationBookingData?.travelers || []).map((traveler, index) => ({
+                    ...traveler,
+                    passportFile: passportUrls[index] || traveler?.passportFile || null,
+                    photoFile: photoUrls[index] || traveler?.photoFile || null
+                }))
 
-            const paymentMode = paymentType === 'deposit' ? 'Deposit' : 'Full Payment';
-
-            const bookingRes = await apiFetch.post('/booking/create-booking', {
-                bookingPayload: {
-                    packageId,
-                    travelDate,
-                    travelers: { adult: quotationBookingData?.travelersCount.adult, child: quotationBookingData?.travelersCount.child, infant: quotationBookingData?.travelersCount.infant } || { adult: 0, child: 0, infant: 0 },
-                    bookingDetails: bookingDetailsWithUrls,
-                    paymentType,
-                    paymentMode,
-                    passportFiles: passportUrls,
-                    photoFiles: photoUrls,
-                    amount: amountToCharge //for checkoutToken
+                const bookingDetailsWithUrls = {
+                    ...bookingDetails,
+                    travelers: travelersWithUrls
                 }
-            });
 
-            const { paymentToken, expiresAt } = bookingRes;
+                const paymentMode = paymentType === 'deposit' ? 'Deposit' : 'Full Payment';
 
-            // Expiry check (extra safety)
-            if (dayjs().isAfter(dayjs(expiresAt))) {
-                setLoading(false);
-                message.error("Booking session expired. Please try again.");
-                return;
+                const bookingRes = await apiFetch.post('/booking/create-booking', {
+                    bookingPayload: {
+                        packageId,
+                        travelDate,
+                        travelers: { adult: quotationBookingData?.travelersCount.adult, child: quotationBookingData?.travelersCount.child, infant: quotationBookingData?.travelersCount.infant } || { adult: 0, child: 0, infant: 0 },
+                        bookingDetails: bookingDetailsWithUrls,
+                        paymentType,
+                        paymentMode,
+                        passportFiles: passportUrls,
+                        photoFiles: photoUrls,
+                        amount: amountToCharge //for checkoutToken
+                    }
+                });
+
+                const { paymentToken, expiresAt } = bookingRes;
+
+                // Expiry check (extra safety)
+                if (dayjs().isAfter(dayjs(expiresAt))) {
+                    setLoading(false);
+                    message.error("Booking session expired. Please try again.");
+                    return;
+                }
+
+                activeBooking = {
+                    bookingId: bookingRes?.booking?._id,
+                    paymentToken,
+                    expiresAt,
+                    packageId,
+                    paymentType,
+                    amount: Number(amountToCharge)
+                };
+                setPendingBooking(activeBooking);
             }
 
             if (method === 'manual') {
@@ -337,7 +458,7 @@ export default function QuotationsPaymentProcess() {
                 const imageUrl = uploadRes?.url;
 
                 const manualDepositRes = await apiFetch.post('/payment/manual-quotation', {
-                    bookingId: bookingRes.booking._id,
+                    bookingId: activeBooking.bookingId,
                     quotationId: quotationBookingData.quotationId,
                     packageId,
                     amount: amountToCharge,
@@ -347,6 +468,7 @@ export default function QuotationsPaymentProcess() {
                 });
                 setLoading(false);
                 if (manualDepositRes?.redirectUrl) {
+                    setPendingBooking(null);
                     navigate(manualDepositRes.redirectUrl);
                     return;
                 }
@@ -355,7 +477,7 @@ export default function QuotationsPaymentProcess() {
 
             const paymongoPayload = {
                 quotationId: quotationBookingData.quotationId,
-                paymentToken: paymentToken
+                paymentToken: activeBooking.paymentToken
             }
 
             const paymongoResponse = await apiFetch.post(
@@ -374,6 +496,7 @@ export default function QuotationsPaymentProcess() {
             }
 
         } catch (error) {
+            setLoading(false);
             console.error('Booking failed:', error);
             Modal.error({
                 title: 'Booking Failed',
@@ -659,6 +782,7 @@ export default function QuotationsPaymentProcess() {
     });
 
 
+
     return (
         <div>
             <ConfigProvider
@@ -679,11 +803,13 @@ export default function QuotationsPaymentProcess() {
                         <Button
                             type='primary'
                             className='payment-process-back-button'
-                            onClick={() => navigate(-1)}
+                            onClick={() => {
+                                setIsCancelProcessModalOpen(true)
+                            }}
                             style={{ display: 'flex', alignItems: 'center' }}
                         >
                             <ArrowLeftOutlined />
-                            Back
+                            Cancel
                         </Button>
                     </Space>
 
@@ -961,6 +1087,41 @@ export default function QuotationsPaymentProcess() {
                             type='primary'
                             id='signup-success-button-cancel'
                             onClick={() => setIsProceedModalOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </Modal>
+
+
+                {/* CANCEL PROCESS MODAL */}
+                <Modal
+                    open={isCancelProcessModalOpen}
+                    closable={{ 'aria-label': 'Custom Close Button' }}
+                    footer={null}
+                    onCancel={() => { setIsCancelProcessModalOpen(false) }}
+                    centered={true}
+                    width={600}
+                >
+                    <div className='modal-container' style={{ width: '100%' }}>
+                        <h1 className='modal-heading'>Cancel Process?</h1>
+                        <p className='modal-text'>
+                            Are you sure you want to cancel? If you go cancel, all the information you have entered in the booking form will reset and you will have to start the booking process from the beginning.
+                        </p>
+
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 20 }}>
+                        <Button
+                            type='primary'
+                            className='modal-button-cancel'
+                            onClick={() => {
+                                setIsCancelProcessModalOpen(false)
+                                cancelRequestedRef.current = true
+                                sessionStorage.removeItem(PAYMENT_STATE_KEY)
+                                navigate('/home', { replace: true })
+
+                            }}
                         >
                             Cancel
                         </Button>

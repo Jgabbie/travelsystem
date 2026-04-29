@@ -292,7 +292,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
                         <Modal
                             open={isOTPModalVisible}
-                            className='resetpassword-modal'
+                            className='login-otp-modal'
                             closable={{ 'aria-label': 'Custom Close Button' }}
                             onCancel={() => {
                                 setIsOTPModalVisible(false)
@@ -301,9 +301,9 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             centered={true}
                             width={720}
                         >
-                            <div className='resetpassword-container-modal'>
-                                <h1 className='resetpassword-heading-modal'>Verify OTP</h1>
-                                <p className='resetpassword-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
+                            <div className='login-otp-container-modal'>
+                                <h1 className='login-otp-heading-modal'>Verify OTP</h1>
+                                <p className='login-otp-secondary-heading-modal'>We've sent a verification code to your <span style={{ color: "#992A46" }}>Email</span></p>
 
                                 <form onSubmit={submitOTP}>
                                     <Input.OTP
@@ -324,7 +324,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                 {
                                     timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                                         :
-                                        <p className='footer-text-modal'>Didn't get the code? <Button className='resetpassword-button-links-modal' type='link' onClick={(e) => {
+                                        <p id='footer-text-modal'>Didn't get the code? <Button className='login-otp-button-links-modal' type='link' onClick={(e) => {
                                             resendOTP(e);
                                             setTimer(60);
                                         }}>Click here</Button></p>
@@ -337,7 +337,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             className='signup-success-modal'
                             closable={{ 'aria-label': 'Custom Close Button' }}
                             footer={null}
-                            style={{ top: 245 }}
+                            centered={true}
                         >
                             <div className='signup-success-container'>
                                 <h1 className='signup-success-heading'>Email Verification</h1>

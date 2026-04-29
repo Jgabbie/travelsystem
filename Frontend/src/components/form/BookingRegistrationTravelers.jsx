@@ -3,14 +3,26 @@ import { Form, Input, Row, Col, ConfigProvider } from 'antd';
 import dayjs from 'dayjs';
 import '../../style/components/mrcregistration.css'
 import apiFetch from '../../config/fetchConfig';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function BookingRegistrationTravelers({ form, onValuesChange, summary, totalCount }) {
+    const navigate = useNavigate();
+
 
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const [userProfile, setUserProfile] = useState({})
     const hasLeadAddress = Boolean(String(userProfile.homeAddress || '').trim())
 
     const normalizeRoomType = (value) => String(value || '').trim().replace(/\s+\d+$/, '')
+
+    useEffect(() => {
+        if (!summary.packageName) {
+            navigate('/home');
+            return
+        }
+    }, [summary, navigate])
+
 
     const getRoomOccupancy = (roomType) => {
         const normalized = normalizeRoomType(roomType)
@@ -158,7 +170,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
                     ? summary.airlineOptions[0].name
                     : 'N/A'
                 : 'N/A',
-            packageTravelDate: `${dayjs(summary.travelDate.startDate).format('MMMM DD, YYYY')} - ${dayjs(summary.travelDate.endDate).format('MMMM DD, YYYY')}`,
+            packageTravelDate: `${dayjs(summary.travelDate?.startDate).format('MMMM DD, YYYY')} - ${dayjs(summary.travelDate?.endDate).format('MMMM DD, YYYY')}`,
             travelersDate: dayjs().format('MMMM DD, YYYY'),
         });
 
@@ -174,6 +186,7 @@ export default function BookingRegistrationTravelers({ form, onValuesChange, sum
         }
 
     }, [totalCount, userProfile, form, bookingType]);
+
 
     return (
         <ConfigProvider

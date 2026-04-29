@@ -30,12 +30,14 @@ const getDisplayDate = (value) => {
     return String(value)
 }
 
+
 //INITIAL COUNT FOR GROUP BOOKING
 const INITIAL_COUNTS = {
     adult: 2,
     child: 0,
     infant: 0,
 }
+
 
 //CONVERT FILE TO BASE64 STRING
 const toBase64 = (file) =>
@@ -45,6 +47,7 @@ const toBase64 = (file) =>
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+
 
 //FOR COMPUTING AGE OF TRAVELERS BASED ON BIRTHDATE
 const computeAge = (birthDate) => {
@@ -58,6 +61,8 @@ const computeAge = (birthDate) => {
     return age < 0 ? '' : age
 }
 
+
+//GET AGE CATEGORY (ADULT, CHILD, INFANT) BASED ON AGE
 const getAgeCategoryFromAge = (age) => {
     const numericAge = Number(age)
     if (!Number.isFinite(numericAge) || numericAge < 0) return ''
@@ -66,13 +71,19 @@ const getAgeCategoryFromAge = (age) => {
     return 'ADULT'
 }
 
+
+//CHECK IF TRAVELER TYPE IS MINOR (CHILD OR INFANT)
 const isMinorTravelerType = (travelerType) => {
     const normalized = String(travelerType || '').toLowerCase()
     return normalized === 'child' || normalized === 'infant'
 }
 
+
+//GET TRAVELER CATEGORY IN LOWERCASE FOR COMPARISONS
 const getTravelerCategory = (travelerType) => String(travelerType || '').toLowerCase()
 
+
+//GET BIRTHDAY BOUNDS (MIN AND MAX DATES) BASED ON TRAVELER TYPE FOR VALIDATION
 const getBirthdayBounds = (travelerType) => {
     const today = dayjs().startOf('day')
     const category = getTravelerCategory(travelerType)
@@ -103,6 +114,8 @@ const getBirthdayBounds = (travelerType) => {
     }
 }
 
+
+//VALIDATE IF SELECTED BIRTHDATE IS ALLOWED FOR THE GIVEN TRAVELER TYPE
 const isDateAllowedForTraveler = (date, travelerType) => {
     if (!date || !dayjs(date).isValid()) return false
 
@@ -116,6 +129,8 @@ const isDateAllowedForTraveler = (date, travelerType) => {
     return true
 }
 
+
+//GET FUNCTION TO DISABLE DATES IN DATE PICKER BASED ON TRAVELER TYPE
 const getBirthdayDisabledDate = (travelerType) => {
     const { minDate, maxDate } = getBirthdayBounds(travelerType)
 
@@ -134,8 +149,24 @@ export default function BookingProcess() {
     const pdfStepRef = useRef(null);
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
-    const [selectedSoloGrouped, setSelectedSoloGrouped] = useState("solo")
+    const [selectedSoloGrouped, setSelectedSoloGrouped] = useState('solo')
     const [counts, setCounts] = useState(INITIAL_COUNTS)
+
+    const hasBookingData = Boolean(
+        bookingData &&
+        typeof bookingData === 'object' &&
+        bookingData.packageId &&
+        bookingData.packageName &&
+        bookingData.travelDate
+    )
+
+    //REDIRECT TO HOME IF NO BOOKING DATA---------------------------------
+    useEffect(() => {
+        if (!hasBookingData) {
+            navigate('/home');
+        }
+    }, [hasBookingData, navigate]);
+
 
     //CLOSE MODAL
     const onCancelModal = () => {
@@ -143,8 +174,8 @@ export default function BookingProcess() {
     }
 
     //GET SUMMARY DATA
-    const summary = bookingData || {}
-    const data = summary
+    const summary = hasBookingData ? bookingData : null
+    const data = summary || {}
     const travelers = data.travelers?.length ? data.travelers : ['None selected']
     const hotelOptions = data.hotelOptions?.length ? data.hotelOptions : []
     const airlineOptions = data.airlineOptions?.length ? data.airlineOptions : []
@@ -194,7 +225,7 @@ export default function BookingProcess() {
     const isGroupDisabled = availableSlots === 1
     const isTravelerLimitReached = availableSlots > 0 && travelersTotal >= availableSlots
 
-    const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
+    const bookingType = selectedSoloGrouped === 'solo' ? 'Solo Booking' : selectedSoloGrouped === 'group' ? 'Group Booking' : null
     const packageName = data.packageName || 'Tour Package'
     const packageDescription =
         data.packageDescription ||
@@ -208,6 +239,9 @@ export default function BookingProcess() {
     const requiresVisa = Boolean(
         data.visaRequired
     )
+
+    const startDate = data?.travelDate?.startDate ? dayjs(data.travelDate.startDate).format('MMMM D, YYYY') : 'N/A'
+    const endDate = data?.travelDate?.endDate ? dayjs(data.travelDate.endDate).format('MMMM D, YYYY') : 'N/A'
 
     //INCLUSIONS, EXCLUSIONS AND ITINERARY
     const inclusions = data.inclusions || []
@@ -264,6 +298,8 @@ export default function BookingProcess() {
         { value: 'TRIPLE', label: 'TRIPLE' }
     ]
 
+
+    //ROOM OPTIONS
     const roomOptions = bookingType === 'Solo Booking'
         ? [{ value: 'SINGLE', label: 'SINGLE' }]
         : bookingType === 'Group Booking'
@@ -288,32 +324,32 @@ export default function BookingProcess() {
         return labels
     })()
 
+
     //STATE FOR UPLOADED FILES AND PREVIEWS
     const [fileLists, setFileLists] = useState(
         Array.from({ length: travelers.length || 1 }, () => [])
     );
-
     const [previews, setPreviews] = useState(
         Array.from({ length: travelers.length || 1 }, () => null)
     );
-
     const [photoFileLists, setPhotoFileLists] = useState(
         Array.from({ length: travelers.length || 1 }, () => [])
     );
-
     const [photoPreviews, setPhotoPreviews] = useState(
         Array.from({ length: travelers.length || 1 }, () => null)
     );
+
 
     //STATE FOR CURRENT STEP AND PDF GENERATION--------------------------------------
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+
     //UPDATE BOOKING TYPE IN CONTEXT WHEN SOLO/GROUP SELECTION CHANGES---------------
     useEffect(() => {
         setBookingData(prev => ({
             ...prev,
-            bookingType: selectedSoloGrouped === 'solo' ? 'Solo Booking' : 'Group Booking'
+            bookingType: selectedSoloGrouped === 'solo' ? 'Solo Booking' : selectedSoloGrouped === 'group' ? 'Group Booking' : null
         }));
     }, [selectedSoloGrouped]);
 
@@ -365,6 +401,7 @@ export default function BookingProcess() {
         form.setFieldsValue({ travelers: nextTravelers })
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [bookingType, form, setBookingData])
+
 
     //IF CHILD/INFANT TRAVELER, FORCE ROOM TYPE TO N/A--------------------------------
     useEffect(() => {
@@ -535,6 +572,7 @@ export default function BookingProcess() {
         return false;
     };
 
+
     //FINAL SUBMISSION OF REGISTRATION--------------------------------
     const handleFinalSubmit = async () => {
         setIsProceedModalOpen(false);
@@ -588,6 +626,7 @@ export default function BookingProcess() {
         }
     };
 
+
     //HANDLE FILE UPLOAD CHANGES--------------------------------
     const handleChange = (info, index) => {
         const newFileLists = [...fileLists];
@@ -607,6 +646,7 @@ export default function BookingProcess() {
         }
         setPreviews(newPreviews);
     };
+
 
     //HANDLE 2BY2 PHOTO UPLOAD CHANGES--------------------------------
     const handlePhotoChange = (info, index) => {
@@ -628,6 +668,7 @@ export default function BookingProcess() {
         setPhotoPreviews(newPreviews);
     };
 
+
     //HANDLE RESET OF UPLOADED FILES--------------------------------
     const handleResetUploads = (index) => {
         const newFileLists = [...fileLists];
@@ -647,6 +688,7 @@ export default function BookingProcess() {
         setPhotoPreviews(newPhotoPreviews);
     };
 
+
     //UPDATE TRAVELER FIELD IN FORM AND CONTEXT--------------------------------
     const updateTravelerField = (index, field, value, extras = {}) => {
         const travelers = form.getFieldValue('travelers') || []
@@ -658,6 +700,7 @@ export default function BookingProcess() {
         form.setFieldsValue({ travelers: nextTravelers })
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }
+
 
     //CLEAN UP OBJECT URLS TO PREVENT MEMORY LEAKS--------------------------------
     useEffect(() => {
@@ -677,14 +720,9 @@ export default function BookingProcess() {
     const increaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.min(prev.infant + 1, maxInfants) }));
     const decreaseInfant = () => setCounts(prev => ({ ...prev, infant: Math.max(0, prev.infant - 1) }));
 
-    //REDIRECT TO HOME IF NO BOOKING DATA---------------------------------
-    useEffect(() => {
-        if (!bookingData) {
-            navigate('/home', { replace: true });
-        }
-    }, [bookingData, navigate]);
-
-    if (!bookingData) return null;
+    if (!hasBookingData) {
+        return null;
+    }
 
     return (
         <ConfigProvider
@@ -767,7 +805,7 @@ export default function BookingProcess() {
                                     <div className="booking-summary-row">
                                         <span className="booking-summary-label">Travel Date</span>
                                         <span className="booking-summary-value">
-                                            {`${dayjs(bookingData.travelDate.startDate).format('MMMM D, YYYY')} - ${dayjs(bookingData.travelDate.endDate).format('MMMM D, YYYY')}` || 'Not set'}
+                                            {`${startDate} - ${endDate}` || 'Not set'}
                                         </span>
                                     </div>
 

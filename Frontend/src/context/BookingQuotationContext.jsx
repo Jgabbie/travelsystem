@@ -2,11 +2,12 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const BookingQuotationContext = createContext();
 const STORAGE_KEY = "quotation_booking_session";
+const storage = typeof window !== "undefined" ? window.sessionStorage : null;
 
 export const QuotationBookingProvider = ({ children }) => {
     const [quotationBookingData, setQuotationBookingData] = useState(() => {
         try {
-            const savedData = sessionStorage.getItem(STORAGE_KEY);
+            const savedData = storage?.getItem(STORAGE_KEY);
             return savedData ? JSON.parse(savedData) : null;
         } catch (error) {
             console.error("Failed to read quotation booking data from storage:", error);
@@ -17,9 +18,9 @@ export const QuotationBookingProvider = ({ children }) => {
     useEffect(() => {
         try {
             if (quotationBookingData) {
-                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(quotationBookingData));
+                storage?.setItem(STORAGE_KEY, JSON.stringify(quotationBookingData));
             } else {
-                sessionStorage.removeItem(STORAGE_KEY);
+                storage?.removeItem(STORAGE_KEY);
             }
         } catch (error) {
             console.error("Failed to write quotation booking data to storage:", error);
@@ -28,11 +29,13 @@ export const QuotationBookingProvider = ({ children }) => {
 
     const clearQuotationBookingData = () => {
         setQuotationBookingData(null);
-        sessionStorage.removeItem(STORAGE_KEY);
+        storage?.removeItem(STORAGE_KEY);
     };
 
+    const clearBookingData = clearQuotationBookingData;
+
     return (
-        <BookingQuotationContext.Provider value={{ quotationBookingData, setQuotationBookingData, clearQuotationBookingData }}>
+        <BookingQuotationContext.Provider value={{ quotationBookingData, setQuotationBookingData, clearQuotationBookingData, clearBookingData }}>
             {children}
         </BookingQuotationContext.Provider>
     );

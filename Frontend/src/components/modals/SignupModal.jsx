@@ -15,6 +15,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSignupSuccessVisible, setIsSignupSuccessVisible] = useState(false);
 
+
     const [error, setError] = useState({
         username: '', firstname: '', lastname: '', password: [],
         confirmPassword: [], email: '', phone: ''
@@ -25,7 +26,10 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         confirmPassword: '', email: '', phone: ''
     });
 
-    //prevent clipboard and shortcut keys
+    // ------------------------------------------------------------------------------------------------ FUNTIONS ------------------------------------------------------------------------------------------------
+
+
+    //PREVENT CLIPBOARD ACTIONS
     const blockClipboardKeys = (e) => {
         const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
@@ -37,12 +41,14 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         }
     };
 
-    //prevent clipboard actions
+
+    //PREVENT SHORTCUTS
     const blockShortcuts = (e) => {
         e.preventDefault();
     };
 
-    //proper case function
+
+    //FORCE FIRST NAME AND LAST NAME TO PROPER CASE
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -58,7 +64,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             )
             .join(" ");
 
-    //input validations
+
+    //INPUT VALIDATION
     const validate = (field, value, allValues) => {
         if (field === "username") {
             if (value === "") return "Username is required.";
@@ -102,9 +109,13 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         return "";
     };
 
+
+    //CHECK IF FIELD HAS ERROR
     const hasFieldError = (fieldError) =>
         Array.isArray(fieldError) ? fieldError.length > 0 : Boolean(fieldError);
 
+
+    //RENDER ERROR MESSAGES
     const renderErrorMessages = (fieldError, fieldKey) => {
         if (Array.isArray(fieldError)) {
             return (
@@ -129,6 +140,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         );
     };
 
+
+    //HANDLE INPUT CHANGES AND VALIDATION
     const valueHandler = (field, value) => {
         const nextValues = { ...values, [field]: value };
 
@@ -156,7 +169,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     };
 
 
-    //check for duplicate username
+    //CHECK FOR DUPLICATE USERNAME
     useEffect(() => {
         const frontEndError = validate("username", values.username) //reduces api requests, it skips api requests when it triggers a frontend validation
         if (frontEndError) return;
@@ -179,7 +192,9 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             });
     }, [values.username])
 
-    //check for duplicate email
+
+
+    //CHECK FOR DUPLICATE EMAIL
     useEffect(() => {
         const frontEndError = validate("email", values.email);
         if (frontEndError) return;
@@ -202,7 +217,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             });
     }, [values.email]);
 
-    //signup function
+
+    //HANDLE SIGNUP
     const handleSignup = async (e) => {
         e.preventDefault();
 
@@ -259,7 +275,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         }
     };
 
-    //clear form and errors
+
+    //CLEAR FORMS
     const clearForms = () => {
         setError({
             username: '', firstname: '', lastname: '', password: [],
@@ -278,7 +295,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
         isCloseSignup()
     }
 
-    //go to login page
+
+    //GO TO LOGIN
     const goToLogin = (e) => {
         e.preventDefault();
         if (onOpenLogin) {
@@ -461,8 +479,11 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     open={isSignupSuccessVisible}
                     className='signup-success-modal'
                     closable={{ 'aria-label': 'Custom Close Button' }}
+                    onCancel={() => {
+                        setIsSignupSuccessVisible(false)
+                    }}
                     footer={null}
-                    style={{ top: 245 }}
+                    centered={true}
                 >
                     <div className='signup-success-container'>
                         <h1 className='signup-success-heading'>Account created</h1>

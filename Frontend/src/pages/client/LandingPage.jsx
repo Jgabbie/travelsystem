@@ -7,10 +7,13 @@ import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
 import Chatbot from '../../components/chatbot/Chatbot';
 import { useAuth } from '../../hooks/useAuth';
+//import { useBooking } from '../../context/BookingContext';
 
 export default function LandingPage() {
     const navigate = useNavigate()
+    //const location = useLocation()
     const { auth, authLoading } = useAuth()
+    //const { clearBookingData } = useBooking()
 
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
@@ -39,6 +42,7 @@ export default function LandingPage() {
     const [exploreSlideIndex, setExploreSlideIndex] = useState(0)
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
     const [popularCardsPerView, setPopularCardsPerView] = useState(3)
+
     const handleActivityChange = (values) => {
         if (values.length > 3) {
             message.warning('Select up to 3 tags only.');

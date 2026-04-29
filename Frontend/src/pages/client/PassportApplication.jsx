@@ -85,13 +85,13 @@ export default function PassportApplication() {
 
     const fetchPassportApplication = `/passport/applications/${id}`;
 
-    useEffect(() => {
-        if (!id) {
-            navigate('/user-applications');
-        }
-    }, [id, navigate]);
+
 
     useEffect(() => {
+        if (!id) {
+            return
+        }
+
         const fetchApplication = async () => {
             setLoading(true);
             try {
@@ -489,6 +489,14 @@ export default function PassportApplication() {
         }
         return hours;
     }
+
+
+    //IF NO ID IN URL, GO BACK TO USER APPLICATIONS
+    useEffect(() => {
+        if (!id) {
+            navigate('/home');
+        }
+    }, [id, navigate]);
 
 
     return (

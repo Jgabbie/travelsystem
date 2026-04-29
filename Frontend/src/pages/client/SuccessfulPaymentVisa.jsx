@@ -12,7 +12,6 @@ export default function SuccessfulPaymentVisa() {
     const [countdown, setCountdown] = useState(10);
 
     useEffect(() => {
-
         const token = searchParams.get('token');
         if (!token) {
             navigate('/home', { replace: true });
@@ -47,6 +46,9 @@ export default function SuccessfulPaymentVisa() {
 
         return () => clearInterval(timer);
     }, [navigate, searchParams]);
+
+    const token = searchParams.get('token');
+    if (!token) return null;
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>

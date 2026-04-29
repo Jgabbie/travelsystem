@@ -11,13 +11,12 @@ import '../../style/client/successfulpaymentpage.css';
 export default function SuccessfulBooking() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { setBookingData } = useBooking();
+    const { clearBookingData } = useBooking();
     const { clearQuotationBookingData } = useQuotationBooking();
 
     const [countdown, setCountdown] = useState(10);
 
     useEffect(() => {
-
         const token = searchParams.get('token');
         if (!token) {
             navigate('/home', { replace: true });
@@ -28,14 +27,16 @@ export default function SuccessfulBooking() {
         apiFetch.post(`/booking/verify-payment`, { token })
             .then(res => {
                 clearQuotationBookingData();
+                clearBookingData();
             })
             .catch(err => {
                 console.error(err);
                 message.error('Unable to verify booking.');
             });
 
+        // Ensure local state is cleared regardless
         clearQuotationBookingData();
-        setBookingData(null);
+        clearBookingData();
 
         const timer = setInterval(() => {
             setCountdown((prev) => {
@@ -49,7 +50,10 @@ export default function SuccessfulBooking() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [navigate, searchParams, setBookingData]);
+    }, [navigate, searchParams, clearBookingData, clearQuotationBookingData]);
+
+    const token = searchParams.get('token');
+    if (!token) return null;
 
     return (
         <ConfigProvider
