@@ -99,6 +99,35 @@
     margin-top: 20px;
 }
 
+.user-invoice-traveler-section {
+    padding: 16px;
+    border-radius: 16px;
+    background: #fcfcff;
+    border: 1px solid #e0e0e0;
+}
+
+.user-invoice-travler-header {
+    font-family: "Montserrat", sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.user-invoice-section-header {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.user-invoice-traveler-info {
+    display: flex;
+    gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    font-size: 13px;
+}
+
 .user-invoice-preview {
     width: 100%;
     height: 620px;
@@ -144,22 +173,6 @@
     height: 100%;
     border: none;
 }
-
-/* .invoice-loader-container .ant-spin-nested-loading>div>.ant-spin {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 100vh !important;
-    width: 100vw !important;
-    max-height: none !important;
-    background: rgba(255, 255, 255, 0.7);
-    z-index: 9999 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-} */
 
 .invoice-loader-container .ant-spin-text {
     position: relative;

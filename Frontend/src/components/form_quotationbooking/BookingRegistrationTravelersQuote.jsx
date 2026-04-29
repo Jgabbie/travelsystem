@@ -254,6 +254,9 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                         name="leadFullName"
                                         label={<span style={{ fontSize: '10px', fontWeight: 'bold' }}>FULL NAME:</span>}
                                         style={{ marginBottom: '4px' }}
+                                        rules={[
+                                            { required: true },
+                                        ]}
                                     >
                                         <Input
                                             size="small"
@@ -271,6 +274,9 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                         name="leadEmail"
                                         label={<span style={{ fontSize: '10px', fontWeight: 'bold' }}>EMAIL ADD:</span>}
                                         style={{ marginBottom: '4px' }}
+                                        rules={[
+                                            { required: true },
+                                        ]}
                                     >
                                         <Input
                                             size="small"
@@ -284,6 +290,9 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                         name="leadContact"
                                         label={<span style={{ fontSize: '10px', fontWeight: 'bold' }}>CONTACT DETAILS:</span>}
                                         style={{ marginBottom: '4px' }}
+                                        rules={[
+                                            { required: true },
+                                        ]}
                                     >
                                         <Input
                                             size="small"
@@ -301,6 +310,14 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                         name="leadAddress"
                                         label={<span style={{ fontSize: '10px', fontWeight: 'bold' }}>ADDRESS:</span>}
                                         style={{ marginBottom: '10px' }}
+                                        className="mrc-home-address-field"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                whitespace: true,
+                                                message: 'Home address is required to continue'
+                                            }
+                                        ]}
                                     >
                                         <Input
                                             size="small"
@@ -611,12 +628,9 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
 
                                     if (hasIncomplete) {
                                         return (
-                                            <div style={{
-                                                color: '#ff4d4f',
-                                                fontSize: '11px',
-                                                fontWeight: 'bold',
-                                                marginTop: '8px'
-                                            }}>
+                                            <div
+                                                className='mrc-passengerlist-field'
+                                            >
                                                 Please complete all traveler details before proceeding.
                                             </div>
                                         )

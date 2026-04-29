@@ -783,7 +783,16 @@ export default function UploadBookingInvoice() {
                                                             <div><strong>Method:</strong> {txn.method || "N/A"}</div>
                                                         </Col>
                                                         <Col style={{ textAlign: "right" }}>
-                                                            <div><strong>₱{txn.amount}</strong></div>
+                                                            <div>
+                                                                <strong>
+                                                                    {txn.amount.toLocaleString('en-PH', {
+                                                                        style: 'currency',
+                                                                        currency: 'PHP',
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                </strong>
+                                                            </div>
                                                             <Tag color={txn.status === "Successful" || txn.status === "Fully Paid" ? "green" : "orange"}>
                                                                 {txn.status}
                                                             </Tag>
@@ -833,7 +842,7 @@ export default function UploadBookingInvoice() {
                                                     <div><strong>Age:</strong> {traveler?.age ?? "N/A"}</div>
                                                     <div><strong>Passenger Type:</strong> {traveler?.ageCategory ?? "N/A"}</div>
                                                     <div><strong>Passport #:</strong> {traveler?.passportNo || "N/A"}</div>
-                                                    <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format("MMM D, YYYY") : "N/A"}</div>
+                                                    <div><strong>Expiry:</strong> {traveler?.passportExpiry === 'N/A' ? 'N/A' : dayjs(traveler.passportExpiry).format("MMM D, YYYY")}</div>
                                                 </div>
 
                                                 <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>

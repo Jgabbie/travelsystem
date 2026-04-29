@@ -1335,17 +1335,53 @@ export default function UserBookingInvoice() {
 
                                                 return (
                                                     <>
-                                                        <h4 style={{ marginBottom: 8 }}>
+                                                        <h2 className="user-invoice-travler-header">
                                                             Traveler {index + 1}: {traveler?.firstName} {traveler?.lastName}
-                                                        </h4>
-                                                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13 }}>
-                                                            <div><strong>Title:</strong> {traveler?.title || 'N/A'}</div>
-                                                            <div><strong>Room:</strong> {traveler?.roomType || 'N/A'}</div>
-                                                            <div><strong>Birthday:</strong> {traveler?.birthday ? dayjs(traveler.birthday).format('MMM D, YYYY') : 'N/A'}</div>
-                                                            <div><strong>Age:</strong> {traveler?.age ?? 'N/A'}</div>
-                                                            <div><strong>Passenger Type:</strong> {traveler?.ageCategory ?? 'N/A'}</div>
-                                                            <div><strong>Passport #:</strong> {traveler?.passportNo || 'N/A'}</div>
-                                                            <div><strong>Expiry:</strong> {traveler?.passportExpiry ? dayjs(traveler.passportExpiry).format('MMM D, YYYY') : 'N/A'}</div>
+                                                        </h2>
+
+                                                        <div style={{ marginBottom: 8 }}>
+                                                            <AntText type="secondary">Please confirm the traveler's details below. Update any incorrect information before finalizing.</AntText>
+                                                        </div>
+
+                                                        <div className="user-invoice-traveler-section">
+                                                            <h1 className="user-invoice-section-header">Traveler Information</h1>
+                                                            <div className="user-invoice-traveler-info">
+                                                                <div style={{ minWidth: 120 }}>
+                                                                    <AntText type="secondary">Title</AntText>
+                                                                    <div style={{ fontWeight: 600 }}>{traveler?.title || 'N/A'}</div>
+                                                                </div>
+
+                                                                <div style={{ minWidth: 120 }}>
+                                                                    <AntText type="secondary">Room</AntText>
+                                                                    <div>{traveler?.roomType || 'N/A'}</div>
+                                                                </div>
+
+                                                                <div style={{ minWidth: 120 }}>
+                                                                    <AntText type="secondary">Birthday</AntText>
+                                                                    <div>{traveler?.birthday ? dayjs(traveler.birthday).format('MMM D, YYYY') : 'N/A'}</div>
+                                                                </div>
+
+                                                                <div style={{ minWidth: 120 }}>
+                                                                    <AntText type="secondary">Age</AntText>
+                                                                    <div>{traveler?.age ?? 'N/A'}</div>
+                                                                </div>
+
+                                                                <div style={{ minWidth: 120 }}>
+                                                                    <AntText type="secondary">Passenger Type</AntText>
+                                                                    <div>{traveler?.ageCategory ?? 'N/A'}</div>
+                                                                </div>
+
+                                                                <div style={{ minWidth: 120 }}>
+                                                                    <AntText type="secondary">Passport #</AntText>
+                                                                    <div>{traveler?.passportNo || 'N/A'}</div>
+                                                                </div>
+
+                                                                <div style={{ minWidth: 120 }}>
+                                                                    <AntText type="secondary">Expiry</AntText>
+                                                                    <div>{traveler?.passportExpiry === 'N/A' ? 'N/A' : dayjs(traveler.passportExpiry).format('MMM D, YYYY')}</div>
+                                                                </div>
+                                                            </div>
+
                                                         </div>
 
                                                         <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
@@ -1353,7 +1389,7 @@ export default function UserBookingInvoice() {
                                                                 ? passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl
                                                                 : traveler?.passportFile) && (
                                                                     <div style={{ marginBottom: 16 }}>
-                                                                        <AntText strong>Passport / Valid ID:</AntText>
+                                                                        <AntText strong>PASSPORT / VALID ID</AntText>
                                                                         <div style={{ marginTop: 8 }}>
                                                                             <img
                                                                                 src={needsResubmission
@@ -1361,8 +1397,8 @@ export default function UserBookingInvoice() {
                                                                                     : traveler.passportFile}
                                                                                 alt={`Traveler ${index + 1} Passport`}
                                                                                 style={{
-                                                                                    width: 380,
-                                                                                    height: 450,
+                                                                                    width: 280,
+                                                                                    height: 350,
                                                                                     objectFit: 'cover',
                                                                                     borderRadius: 8,
                                                                                     border: '1px solid #ccc'
@@ -1376,7 +1412,7 @@ export default function UserBookingInvoice() {
                                                                 ? photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl
                                                                 : traveler?.photoFile) && (
                                                                     <div style={{ marginBottom: 16 }}>
-                                                                        <AntText strong>2x2 Photo:</AntText>
+                                                                        <AntText strong>2 X 2 PHOTO:</AntText>
                                                                         <div style={{ marginTop: 8 }}>
                                                                             <img
                                                                                 src={needsResubmission
@@ -1384,8 +1420,8 @@ export default function UserBookingInvoice() {
                                                                                     : traveler.photoFile}
                                                                                 alt={`Traveler ${index + 1}`}
                                                                                 style={{
-                                                                                    width: 200,
-                                                                                    height: 200,
+                                                                                    width: 180,
+                                                                                    height: 180,
                                                                                     objectFit: 'cover',
                                                                                     borderRadius: 8,
                                                                                     border: '1px solid #ccc'

@@ -408,6 +408,13 @@
     border: 1px solid #f5d37a;
 }
 
+.upload-passport-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
+    text-align: left;
+}
+
 .upload-passport-button {
     font-family: "Roboto", sans-serif;
     font-size: 12px;
@@ -639,9 +646,28 @@
     gap: 8px;
 }
 
+.quotation-itinerary-items,
+.quotation-inclusions-list,
+.quotation-exclusions-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
 .itinerary-items li,
 .inclusions-list li,
 .exclusions-list li {
+    position: relative;
+    padding-left: 22px;
+    font-size: 14px;
+    color: #3c465a;
+}
+
+.quotation-itinerary-items li,
+.quotation-inclusions-list li,
+.quotation-exclusions-list li {
     position: relative;
     padding-left: 22px;
     font-size: 14px;
@@ -662,7 +688,26 @@
     box-shadow: 0 0 0 3px rgba(48, 87, 151, 0.15);
 }
 
+.quotation-itinerary-items li::before,
+.quotation-inclusions-list li::before,
+.quotation-exclusions-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #305797;
+    box-shadow: 0 0 0 3px rgba(48, 87, 151, 0.15);
+}
+
 .exclusions-list li::before {
+    background: #b54747;
+    box-shadow: 0 0 0 3px rgba(181, 71, 71, 0.14);
+}
+
+.quotation-exclusions-list li::before {
     background: #b54747;
     box-shadow: 0 0 0 3px rgba(181, 71, 71, 0.14);
 }
@@ -893,9 +938,7 @@
 
 .booking-section .passport-preview {
     width: 320px;
-    height: auto;
-    max-height: 600px;
-    min-height: 360px;
+    height: 400px;
 }
 
 .booking-section .passport-preview-image {

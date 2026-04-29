@@ -10,6 +10,7 @@ import '../../style/components/modals/uploadpassportmodal.css'
 import '../../style/components/modals/travelersmodal.css'
 import '../../style/components/modals/soloorgroupedmodal.css'
 import '../../style/client/bookingprocess.css'
+import '../../style/components/modals/modaldesign.css'
 import BookingRegistrationDietQuote from '../../components/form_quotationbooking/BookingRegistrationDietQuote';
 import BookingRegistrationTermsQuotePart1 from '../../components/form_quotationbooking/BookingRegistrationTermsQuotePart1';
 import BookingRegistrationTermsQuotePart2 from '../../components/form_quotationbooking/BookingRegistrationTermsQuotePart2';
@@ -103,11 +104,13 @@ const getBirthdayDisabledDate = (travelerType) => {
     }
 }
 
+
 export default function QuotationBookingProcess() {
     const [form] = Form.useForm();
     const { quotationBookingData, setQuotationBookingData, clearQuotationBookingData } = useQuotationBooking();
     const navigate = useNavigate();
     const pdfStepRef = useRef(null);
+    const allowHistoryExitRef = useRef(false);
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
     const [isGoBackModalOpen, setIsGoBackModalOpen] = useState(false);
@@ -744,6 +747,39 @@ export default function QuotationBookingProcess() {
         }
     }, [hasQuotationBookingData, navigate]);
 
+
+    //OPEN GO BACK MODAL WHEN THE BROWSER BACK BUTTON IS USED--------------------------------
+    useEffect(() => {
+        const historyState = window.history.state || {}
+
+        if (!historyState.quotationBookingBackGuard) {
+            window.history.pushState(
+                { ...historyState, quotationBookingBackGuard: true },
+                '',
+                window.location.href
+            )
+        }
+
+        const handlePopState = () => {
+            if (allowHistoryExitRef.current) {
+                return
+            }
+
+            setIsGoBackModalOpen(true)
+            window.history.pushState(
+                { quotationBookingBackGuard: true },
+                '',
+                window.location.href
+            )
+        }
+
+        window.addEventListener('popstate', handlePopState)
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState)
+        }
+    }, [])
+
     if (!hasQuotationBookingData) return null;
 
     return (
@@ -928,7 +964,7 @@ export default function QuotationBookingProcess() {
                                         <details key={day.key} className='itinerary-day'>
                                             <summary className='itinerary-day-label'>{day.label}</summary>
                                             {day.items.length ? (
-                                                <ul className='itinerary-items'>
+                                                <ul className='quotation-itinerary-items'>
                                                     {day.items.map((item, index) => (
                                                         <li key={`${day.key}-${index}`}>{item}</li>
                                                     ))}
@@ -955,7 +991,7 @@ export default function QuotationBookingProcess() {
                                 <div className='inclusions-card'>
                                     <h4>Inclusions</h4>
                                     {inclusions.length ? (
-                                        <ul className='inclusions-list'>
+                                        <ul className='quotation-inclusions-list'>
                                             {inclusions.map((item, index) => (
                                                 <li key={`inc-${index}`}>{item}</li>
                                             ))}
@@ -968,7 +1004,7 @@ export default function QuotationBookingProcess() {
                                 <div className='exclusions-card'>
                                     <h4>Exclusions</h4>
                                     {exclusions.length ? (
-                                        <ul className='exclusions-list'>
+                                        <ul className='quotation-exclusions-list'>
                                             {exclusions.map((item, index) => (
                                                 <li key={`exc-${index}`}>{item}</li>
                                             ))}
@@ -1005,109 +1041,30 @@ export default function QuotationBookingProcess() {
                                     </p>
                                     <div className="upload-passport-traveler-fields">
                                         <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
-                                            <Select
-                                                size="small"
-                                                placeholder="Title"
-                                                value={form.getFieldValue(['travelers', index, 'title'])}
-                                                onChange={(value) => updateTravelerField(index, 'title', value)}
-                                                options={[
-                                                    { value: 'MR', label: 'MR' },
-                                                    { value: 'MS', label: 'MS' },
-                                                ]}
-                                            />
-                                            <Input
-                                                maxLength={50}
-                                                size="small"
-                                                placeholder="First name"
-                                                value={form.getFieldValue(['travelers', index, 'firstName'])}
-                                                onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
-                                                onKeyDown={(e) => {
-                                                    const regex = /^[A-Za-z\s'-]$/;
-
-                                                    if (
-                                                        e.key.length === 1 &&
-                                                        !regex.test(e.key)
-                                                    ) {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                            />
-                                            <Input
-                                                maxLength={50}
-                                                size="small"
-                                                placeholder="Last name"
-                                                value={form.getFieldValue(['travelers', index, 'lastName'])}
-                                                onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
-                                                onKeyDown={(e) => {
-                                                    const regex = /^[A-Za-z\s'-]$/;
-
-                                                    if (
-                                                        e.key.length === 1 &&
-                                                        !regex.test(e.key)
-                                                    ) {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
-                                            <Select
-                                                size="small"
-                                                placeholder="Room type"
-                                                value={isMinorTravelerType(travelerTypeLabels[index]) ? 'N/A' : form.getFieldValue(['travelers', index, 'roomType'])}
-                                                onChange={(value) => updateTravelerField(index, 'roomType', value)}
-                                                options={isMinorTravelerType(travelerTypeLabels[index]) ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
-                                                disabled={bookingType === 'Solo Booking' || isMinorTravelerType(travelerTypeLabels[index])}
-                                            />
-                                            <DatePicker
-                                                showToday={false}
-                                                size="small"
-                                                placeholder="Birthdate"
-                                                defaultPickerValue={
-                                                    travelerTypeLabels[index] === 'Child'
-                                                        ? dayjs().subtract(5, 'year')
-                                                        : travelerTypeLabels[index] === 'Infant'
-                                                            ? dayjs().subtract(1, 'year')
-                                                            : dayjs().subtract(25, 'year')
-                                                }
-                                                format="MMMM D, YYYY"
-                                                value={form.getFieldValue(['travelers', index, 'birthday'])}
-                                                onChange={(date) => {
-                                                    const travelerType = travelerTypeLabels[index] || 'Adult'
-                                                    if (date && !isDateAllowedForTraveler(date, travelerType)) {
-                                                        const ageBounds = getBirthdayBounds(travelerType)
-                                                        const ageLabel = ageBounds.minAge === 0 && ageBounds.maxAge === 2
-                                                            ? '0-2'
-                                                            : ageBounds.minAge === 3 && ageBounds.maxAge === 11
-                                                                ? '3-11'
-                                                                : '12+'
-                                                        message.error(`Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`)
-                                                        return
-                                                    }
-
-                                                    const age = date ? computeAge(date) : ''
-                                                    const ageCategory = date ? getAgeCategoryFromAge(age) : ''
-                                                    const isMinorTraveler = isMinorTravelerType(travelerType)
-                                                    const roomType = isMinorTraveler
-                                                        ? 'N/A'
-                                                        : bookingType === 'Solo Booking'
-                                                            ? 'SINGLE'
-                                                            : form.getFieldValue(['travelers', index, 'roomType'])
-                                                    updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
-                                                }}
-                                                disabledDate={getBirthdayDisabledDate(travelerTypeLabels[index] || 'Adult')}
-                                            />
-                                        </div>
-                                        {!isDomesticPackage && (
-                                            <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
-                                                <Input
-                                                    maxLength={7}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label className='upload-passport-label'>TITLE</label>
+                                                <Select
+                                                    style={{ height: 40 }}
                                                     size="small"
-                                                    placeholder="Passport number"
-                                                    value={form.getFieldValue(['travelers', index, 'passportNo'])}
-                                                    onChange={(event) => updateTravelerField(index, 'passportNo', event.target.value)}
+                                                    placeholder="Title"
+                                                    value={form.getFieldValue(['travelers', index, 'title'])}
+                                                    onChange={(value) => updateTravelerField(index, 'title', value)}
+                                                    options={[
+                                                        { value: 'MR', label: 'MR' },
+                                                        { value: 'MS', label: 'MS' },
+                                                    ]}
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label className='upload-passport-label'>FIRST NAME</label>
+                                                <Input
+                                                    maxLength={50}
+                                                    size="small"
+                                                    placeholder="First name"
+                                                    value={form.getFieldValue(['travelers', index, 'firstName'])}
+                                                    onChange={(event) => updateTravelerField(index, 'firstName', event.target.value)}
                                                     onKeyDown={(e) => {
-                                                        const regex = /^[0-9]$/;
+                                                        const regex = /^[A-Za-z\s'-]$/;
 
                                                         if (
                                                             e.key.length === 1 &&
@@ -1117,19 +1074,136 @@ export default function QuotationBookingProcess() {
                                                         }
                                                     }}
                                                 />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label className='upload-passport-label'>LAST NAME</label>
+                                                <Input
+                                                    maxLength={50}
+                                                    size="small"
+                                                    placeholder="Last name"
+                                                    value={form.getFieldValue(['travelers', index, 'lastName'])}
+                                                    onChange={(event) => updateTravelerField(index, 'lastName', event.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        const regex = /^[A-Za-z\s'-]$/;
+
+                                                        if (
+                                                            e.key.length === 1 &&
+                                                            !regex.test(e.key)
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label className='upload-passport-label'>ROOM TYPE</label>
+                                                <Select
+                                                    style={{ height: 40 }}
+                                                    size="small"
+                                                    placeholder="Room type"
+                                                    value={isMinorTravelerType(travelerTypeLabels[index]) ? 'N/A' : form.getFieldValue(['travelers', index, 'roomType'])}
+                                                    onChange={(value) => updateTravelerField(index, 'roomType', value)}
+                                                    options={isMinorTravelerType(travelerTypeLabels[index]) ? [{ value: 'N/A', label: 'N/A' }] : roomOptions}
+                                                    disabled={bookingType === 'Solo Booking' || isMinorTravelerType(travelerTypeLabels[index])}
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                <label className='upload-passport-label'>BIRTHDATE</label>
                                                 <DatePicker
                                                     showToday={false}
                                                     size="small"
-                                                    placeholder="Passport expiry"
+                                                    placeholder="Birthdate"
+                                                    defaultPickerValue={
+                                                        travelerTypeLabels[index] === 'Child'
+                                                            ? dayjs().subtract(5, 'year')
+                                                            : travelerTypeLabels[index] === 'Infant'
+                                                                ? dayjs().subtract(1, 'year')
+                                                                : dayjs().subtract(25, 'year')
+                                                    }
                                                     format="MMMM D, YYYY"
-                                                    value={form.getFieldValue(['travelers', index, 'passportExpiry'])}
-                                                    onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
-                                                    disabledDate={(current) => {
-                                                        if (!current) return false
-                                                        return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                    value={form.getFieldValue(['travelers', index, 'birthday'])}
+                                                    onChange={(date) => {
+                                                        const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                        if (date && !isDateAllowedForTraveler(date, travelerType)) {
+                                                            const ageBounds = getBirthdayBounds(travelerType)
+                                                            const ageLabel = ageBounds.minAge === 0 && ageBounds.maxAge === 2
+                                                                ? '0-2'
+                                                                : ageBounds.minAge === 3 && ageBounds.maxAge === 11
+                                                                    ? '3-11'
+                                                                    : '12+'
+                                                            message.error(`Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`)
+                                                            return
+                                                        }
+
+                                                        const age = date ? computeAge(date) : ''
+                                                        const ageCategory = date ? getAgeCategoryFromAge(age) : ''
+                                                        const isMinorTraveler = isMinorTravelerType(travelerType)
+                                                        const roomType = isMinorTraveler
+                                                            ? 'N/A'
+                                                            : bookingType === 'Solo Booking'
+                                                                ? 'SINGLE'
+                                                                : form.getFieldValue(['travelers', index, 'roomType'])
+                                                        updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
                                                     }}
-                                                    defaultPickerValue={dayjs().add(1, 'year')}
+                                                    disabledDate={(current) => {
+                                                        const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                        const baseDisabled = getBirthdayDisabledDate(travelerType)(current)
+
+                                                        // For Adults, disable dates after 2014 (to ensure 12+ years old)
+                                                        if (travelerType === 'Adult' && current && current.year() > 2014) {
+                                                            return true
+                                                        }
+
+                                                        // For Adults, disable dates before 1935 (to prevent ages over 90)
+                                                        if (travelerType === 'Adult' && current && current.year() < 1935) {
+                                                            return true
+                                                        }
+
+                                                        return baseDisabled
+                                                    }}
                                                 />
+                                            </div>
+                                        </div>
+                                        {!isDomesticPackage && (
+                                            <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                    <label className='upload-passport-label'>PASSPORT NUMBER</label>
+                                                    <Input
+                                                        maxLength={7}
+                                                        size="small"
+                                                        placeholder="Passport number"
+                                                        value={form.getFieldValue(['travelers', index, 'passportNo'])}
+                                                        onChange={(event) => updateTravelerField(index, 'passportNo', event.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            const regex = /^[0-9]$/;
+
+                                                            if (
+                                                                e.key.length === 1 &&
+                                                                !regex.test(e.key)
+                                                            ) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                    <label className='upload-passport-label'>PASSPORT EXPIRY</label>
+                                                    <DatePicker
+                                                        showToday={false}
+                                                        size="small"
+                                                        placeholder="Passport expiry"
+                                                        format="MMMM D, YYYY"
+                                                        value={form.getFieldValue(['travelers', index, 'passportExpiry'])}
+                                                        onChange={(date) => updateTravelerField(index, 'passportExpiry', date)}
+                                                        disabledDate={(current) => {
+                                                            if (!current) return false
+                                                            return current.isBefore(dayjs().endOf('year').add(1, 'day'), 'day')
+                                                        }}
+                                                        defaultPickerValue={dayjs().add(1, 'year')}
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -1245,7 +1319,7 @@ export default function QuotationBookingProcess() {
 
 
                     {/* BOOKING REGISTRATION */}
-                    <div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
+                    < div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
                         <div className="booking-section-header" style={{ marginBottom: 30 }}>
                             <h2 className="upload-passport-title booking-section-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                             <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>
@@ -1339,58 +1413,40 @@ export default function QuotationBookingProcess() {
                                 </Button>
                             </div>
                         )}
-
-
-
                     </div>
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
             </div >
 
 
             {/* PROCEED MODAL */}
             <Modal
                 open={isProceedModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 onCancel={() => { setIsProceedModalOpen(false) }}
-                style={{ top: 70 }}
+                centered={true}
                 width={800}
             >
-                <div className='signup-success-container' style={{ width: '100%' }}>
-                    <h1 className='signup-success-heading'>Proceed to Booking</h1>
-                    <p className='signup-success-text'>
+                <div className='modal-container' style={{ width: '100%' }}>
+                    <h1 className='modal-heading'>Proceed to Booking</h1>
+                    <p className='modal-text'>
                         Make sure that you have read the terms and conditions before proceeding. The travel agency will not be tolerating any type of tampering and modifications in the booking details.
                         Once, you have proceed with the booking, you will not be able to change or modify any of the booking details. If you have any concerns or questions regarding your booking, please contact our customer support for assistance.
                     </p>
 
 
-                    <p className='signup-success-text'>By clicking the "Proceed" button, you acknowledge that you have read and understood the terms and conditions of your booking, and you agree to proceed with the booking process. Please ensure that all the information you provided is accurate and complete before confirming your booking.</p>
-                    <p className='signup-success-text'>Thank you for choosing our travel services. We look forward to providing you with an unforgettable travel experience!</p>
+                    <p className='modal-text'>By clicking the "Proceed" button, you acknowledge that you have read and understood the terms and conditions of your booking, and you agree to proceed with the booking process. Please ensure that all the information you provided is accurate and complete before confirming your booking.</p>
+                    <p className='modal-text'>Thank you for choosing our travel services. We look forward to providing you with an unforgettable travel experience!</p>
 
-                    <p className='signup-success-text' style={{ color: "#992A46", fontWeight: "500" }}>Note: Once you click the "Proceed" button, your booking will be submitted and cannot be modified. Please review all details carefully before proceeding.</p>
-                    <p className='signup-success-text' style={{ color: "#992A46", fontWeight: "500" }}>If you have any questions or need further assistance, please contact our customer support team before proceeding.</p>
+                    <p className='modal-text' style={{ color: "#992A46", fontWeight: "500" }}>Note: Once you click the "Proceed" button, your booking will be submitted and cannot be modified. Please review all details carefully before proceeding.</p>
+                    <p className='modal-text' style={{ color: "#992A46", fontWeight: "500" }}>If you have any questions or need further assistance, please contact our customer support team before proceeding.</p>
 
                 </div>
 
-                <div className='signup-actions'>
+                <div className='modal-actions'>
                     <Button
                         type='primary'
-                        id='signup-success-button'
+                        className='modal-button'
                         onClick={handleFinalSubmit}
                     >
                         Proceed
@@ -1398,7 +1454,7 @@ export default function QuotationBookingProcess() {
 
                     <Button
                         type='primary'
-                        id='signup-success-button-cancel'
+                        className='modal-button-cancel'
                         onClick={onCancelModal}
                     >
                         Cancel
@@ -1407,34 +1463,32 @@ export default function QuotationBookingProcess() {
             </Modal>
 
 
-
-
             {/* GO BACK MODAL */}
             <Modal
                 open={isGoBackModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 onCancel={() => { setIsGoBackModalOpen(false) }}
-                style={{ top: 210 }}
+                centered={true}
                 width={600}
             >
-                <div className='signup-success-container' style={{ width: '100%' }}>
-                    <h1 className='signup-success-heading'>Go Back?</h1>
-                    <p className='signup-success-text'>
+                <div className='modal-container' style={{ width: '100%' }}>
+                    <h1 className='modal-heading'>Go Back?</h1>
+                    <p className='modal-text'>
                         Are you sure you want to go back? If you go back, all the information you have entered in the booking form will reset and you will have to start the booking process from the beginning.
                     </p>
 
                 </div>
 
-                <div className='signup-actions'>
+                <div className='modal-actions'>
                     <Button
                         type='primary'
-                        id='signup-success-button'
+                        className='modal-button'
                         onClick={() => {
+                            allowHistoryExitRef.current = true
                             setIsGoBackModalOpen(false)
-                            setQuotationBookingData(null)
-                            navigate(-1)
+                            clearQuotationBookingData()
+                            window.history.go(-2)
                         }}
                     >
                         Go Back

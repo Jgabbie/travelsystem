@@ -1015,7 +1015,7 @@ const createCheckoutSessionDeposit = async (req, res) => {
 //CHECKOUT FOR NORMAL FIXED BOOKINGS
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     const paymentType = "qr_ph"
 
@@ -1119,7 +1119,7 @@ const createCheckoutSession = async (req, res) => {
 //CHECKOUT FOR QUOTATION BOOKINGS
 const createCheckoutSessionQuotation = async (req, res) => {
     const userId = req.userId;
-    const FRONTEND_URL = "http://localhost:3000";
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
     const paymentType = "qr_ph"
 

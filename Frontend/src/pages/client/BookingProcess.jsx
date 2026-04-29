@@ -142,13 +142,17 @@ const getBirthdayDisabledDate = (travelerType) => {
     }
 }
 
+
 export default function BookingProcess() {
     const [form] = Form.useForm();
-    const { bookingData, setBookingData } = useBooking();
+    const { bookingData, setBookingData, clearBookingData } = useBooking();
     const navigate = useNavigate();
     const pdfStepRef = useRef(null);
+    const allowHistoryExitRef = useRef(false);
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
+    const [isGoBackModalOpen, setIsGoBackModalOpen] = useState(false);
+
     const [selectedSoloGrouped, setSelectedSoloGrouped] = useState('solo')
     const [counts, setCounts] = useState(INITIAL_COUNTS)
 
@@ -166,6 +170,39 @@ export default function BookingProcess() {
             navigate('/home');
         }
     }, [hasBookingData, navigate]);
+
+
+    //OPEN GO BACK MODAL WHEN THE BROWSER BACK BUTTON IS USED--------------------------------
+    useEffect(() => {
+        const historyState = window.history.state || {}
+
+        if (!historyState.bookingProcessBackGuard) {
+            window.history.pushState(
+                { ...historyState, bookingProcessBackGuard: true },
+                '',
+                window.location.href
+            )
+        }
+
+        const handlePopState = () => {
+            if (allowHistoryExitRef.current) {
+                return
+            }
+
+            setIsGoBackModalOpen(true)
+            window.history.pushState(
+                { bookingProcessBackGuard: true },
+                '',
+                window.location.href
+            )
+        }
+
+        window.addEventListener('popstate', handlePopState)
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState)
+        }
+    }, [])
 
 
     //CLOSE MODAL
@@ -740,7 +777,9 @@ export default function BookingProcess() {
                 <Button
                     className='booking-back-button'
                     type='primary'
-                    onClick={() => navigate(-1)}
+                    onClick={() => {
+                        setIsGoBackModalOpen(true);
+                    }}
                     style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
                 >
                     <ArrowLeftOutlined />
@@ -1191,7 +1230,7 @@ export default function BookingProcess() {
                                     <div className="upload-passport-traveler-fields">
                                         <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '90px 1fr 1fr' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label style={{ fontSize: 12, textAlign: 'left' }}>TITLE</label>
+                                                <label className='upload-passport-label'>TITLE</label>
                                                 <Select
                                                     style={{ height: 40 }}
                                                     size="small"
@@ -1206,7 +1245,7 @@ export default function BookingProcess() {
                                             </div>
 
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label style={{ fontSize: 12, textAlign: 'left' }}>FIRST NAME</label>
+                                                <label className='upload-passport-label'>FIRST NAME</label>
                                                 <Input
                                                     style={{ height: 40 }}
                                                     maxLength={50}
@@ -1227,7 +1266,7 @@ export default function BookingProcess() {
                                                 />
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label style={{ fontSize: 12, textAlign: 'left' }}>LAST NAME</label>
+                                                <label className='upload-passport-label'>LAST NAME</label>
                                                 <Input
                                                     style={{ height: 40 }}
                                                     maxLength={50}
@@ -1250,7 +1289,7 @@ export default function BookingProcess() {
                                         </div>
                                         <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label style={{ fontSize: 12, textAlign: 'left' }}>ROOM TYPE</label>
+                                                <label className='upload-passport-label'>ROOM TYPE</label>
                                                 {(() => {
                                                     const travelerType = travelerTypeLabels[index] || 'Adult'
                                                     const isMinorTraveler = isMinorTravelerType(travelerType)
@@ -1268,7 +1307,7 @@ export default function BookingProcess() {
                                                 })()}
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                <label style={{ fontSize: 12, textAlign: 'left' }}>BIRTHDATE</label>
+                                                <label className='upload-passport-label'>BIRTHDATE</label>
                                                 <DatePicker
                                                     showToday={false}
                                                     style={{ height: 40 }}
@@ -1306,14 +1345,29 @@ export default function BookingProcess() {
                                                                 : form.getFieldValue(['travelers', index, 'roomType'])
                                                         updateTravelerField(index, 'birthday', date, { age, ageCategory, roomType })
                                                     }}
-                                                    disabledDate={getBirthdayDisabledDate(travelerTypeLabels[index] || 'Adult')}
+                                                    disabledDate={(current) => {
+                                                        const travelerType = travelerTypeLabels[index] || 'Adult'
+                                                        const baseDisabled = getBirthdayDisabledDate(travelerType)(current)
+
+                                                        // For Adults, disable dates after 2014 (to ensure 12+ years old)
+                                                        if (travelerType === 'Adult' && current && current.year() > 2014) {
+                                                            return true
+                                                        }
+
+                                                        // For Adults, disable dates before 1935 (to prevent ages over 90)
+                                                        if (travelerType === 'Adult' && current && current.year() < 1935) {
+                                                            return true
+                                                        }
+
+                                                        return baseDisabled
+                                                    }}
                                                 />
                                             </div>
                                         </div>
                                         {!isDomesticPackage && (
                                             <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                    <label style={{ fontSize: 12, textAlign: 'left' }}>PASSPORT NUMBER</label>
+                                                    <label className='upload-passport-label'>PASSPORT NUMBER</label>
                                                     <Input
                                                         style={{ height: 40 }}
                                                         maxLength={7}
@@ -1334,7 +1388,7 @@ export default function BookingProcess() {
                                                     />
                                                 </div>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                    <label style={{ fontSize: 12, textAlign: 'left' }}>PASSPORT EXPIRY</label>
+                                                    <label className='upload-passport-label'>PASSPORT EXPIRY</label>
                                                     <DatePicker
                                                         showToday={false}
                                                         style={{ height: 40 }}
@@ -1432,6 +1486,18 @@ export default function BookingProcess() {
                         ))}
                     </div>
                     <div className='upload-passport-notes'>
+
+                        <div style={{ marginTop: 10 }}>
+                            <strong >Note for Room Type:</strong>
+                            <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
+                                <li>TWIN and DOUBLE rooms require two travelers to be listed</li>
+                                <li>TRIPLE rooms require three travelers to be listed</li>
+                                <li>If the rooms are not properly set, the employee will be the one assigning the rooms</li>
+                                <li>In the Passenger List below, those travelers who are assign in "TWIN 1", "TWIN 2" and so on are considered "Roommates"</li>
+                                <li>Child and Infant do not have a assigned room type or bed, if you want your child to have a bed, please add number for "Adult" rather than "Child"</li>
+                            </ul>
+                        </div>
+
                         <div>
                             <strong>Note:</strong>
                             <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
@@ -1569,35 +1635,31 @@ export default function BookingProcess() {
 
             <Modal
                 open={isProceedModalOpen}
-                className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
                 onCancel={() => { setIsProceedModalOpen(false) }}
-                style={{ top: 70 }}
+                centered={true}
                 width={800}
             >
-                <div className='signup-success-container' style={{ width: '100%' }}>
-                    <h1 className='signup-success-heading'>Proceed to Booking</h1>
-                    <p className='signup-success-text'>
+                <div className='modal-container' style={{ width: '100%' }}>
+                    <h1 className='modal-heading'>Proceed to Booking</h1>
+                    <p className='modal-text'>
                         Make sure that you have read the terms and conditions before proceeding. The travel agency will not be tolerating any type of tampering and modifications in the booking details.
                         Once, you have proceed with the booking, you will not be able to change or modify any of the booking details. If you have any concerns or questions regarding your booking, please contact our customer support for assistance.
                     </p>
 
 
-                    <p className='signup-success-text'>By clicking the "Proceed" button, you acknowledge that you have read and understood the terms and conditions of your booking, and you agree to proceed with the booking process. Please ensure that all the information you provided is accurate and complete before confirming your booking.</p>
-                    <p className='signup-success-text'>Thank you for choosing our travel services. We look forward to providing you with an unforgettable travel experience!</p>
+                    <p className='modal-text'>By clicking the "Proceed" button, you acknowledge that you have read and understood the terms and conditions of your booking, and you agree to proceed with the booking process. Please ensure that all the information you provided is accurate and complete before confirming your booking.</p>
+                    <p className='modal-text'>Thank you for choosing our travel services. We look forward to providing you with an unforgettable travel experience!</p>
 
-                    <p className='signup-success-text' style={{ color: "#992A46", fontWeight: "500" }}>Note: Once you click the "Proceed" button, your booking will be submitted and cannot be modified. Please review all details carefully before proceeding.</p>
-                    <p className='signup-success-text' style={{ color: "#992A46", fontWeight: "500" }}>If you have any questions or need further assistance, please contact our customer support team before proceeding.</p>
-
-
-
+                    <p className='modal-text' style={{ color: "#992A46", fontWeight: "500" }}>Note: Once you click the "Proceed" button, your booking will be submitted and cannot be modified. Please review all details carefully before proceeding.</p>
+                    <p className='modal-text' style={{ color: "#992A46", fontWeight: "500" }}>If you have any questions or need further assistance, please contact our customer support team before proceeding.</p>
                 </div>
 
-                <div className='signup-actions'>
+                <div className='modal-actions'>
                     <Button
                         type='primary'
-                        id='signup-success-button'
+                        className='modal-button'
                         onClick={handleFinalSubmit}
                     >
                         Proceed
@@ -1605,13 +1667,50 @@ export default function BookingProcess() {
 
                     <Button
                         type='primary'
-                        id='signup-success-button-cancel'
+                        className='modal-button-cancel'
                         onClick={onCancelModal}
                     >
                         Cancel
                     </Button>
                 </div>
             </Modal>
+
+
+            {/* GO BACK MODAL */}
+            <Modal
+                open={isGoBackModalOpen}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                onCancel={() => { setIsGoBackModalOpen(false) }}
+                centered={true}
+                width={600}
+            >
+                <div className='modal-container' style={{ width: '100%' }}>
+                    <h1 className='modal-heading'>Go Back?</h1>
+                    <p className='modal-text'>
+                        Are you sure you want to go back? If you go back, all the information you have entered in the booking form will reset and you will have to start the booking process from the beginning.
+                    </p>
+
+                </div>
+
+                <div className='modal-actions'>
+                    <Button
+                        type='primary'
+                        className='modal-button'
+                        onClick={() => {
+                            allowHistoryExitRef.current = true
+                            setIsGoBackModalOpen(false)
+                            clearBookingData()
+                            window.history.go(-2)
+                        }}
+                    >
+                        Go Back
+                    </Button>
+                </div>
+            </Modal>
+
+
+
         </ConfigProvider>
     )
 }

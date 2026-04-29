@@ -13,6 +13,9 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
     const boxStyle = { borderRadius: 0, border: '1px solid #000' };
     const labelStyle = { fontSize: '11px', fontWeight: 'bold', color: '#000' };
 
+    const dietaryRequest = Form.useWatch('dietaryRequest', form);
+    const medicalRequest = Form.useWatch('medicalRequest', form);
+
     const handleRequestChange = (requestField, detailsField, value) => {
         form.setFieldsValue({
             [requestField]: value,
@@ -112,9 +115,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                             name="dietaryDetails"
                             labelCol={{ span: 6 }}
                             wrapperCol={{ span: 18 }}
-                            dependencies={['dietaryRequest']}
-                            disabled={form.getFieldValue('dietaryRequest') !== 'Y'}
-                            initialValue={form.getFieldValue('dietaryRequest') === 'N' ? 'N/A' : ''}
+                            className='mrc-dietary-restrictions-field'
                             rules={[
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
@@ -126,7 +127,12 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                 })
                             ]}
                         >
-                            <TextArea maxLength={200} rows={2} style={boxStyle} />
+                            <TextArea
+                                maxLength={200}
+                                rows={2}
+                                style={boxStyle}
+                                disabled={dietaryRequest !== 'Y'}
+                            />
                         </Form.Item>
                     </div>
 
@@ -157,12 +163,11 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                         <div style={{ fontSize: '9px', fontStyle: 'italic', marginBottom: '5px' }}>(Applicable for tour package with meal inclusions; if not included, please select N/A)</div>
                         <Form.Item
                             label={<span style={{ fontSize: '10px' }}>If yes, please indicate details:</span>}
-                            name="medicalDetails" labelCol={{ span: 6 }}
+                            name="medicalDetails"
+                            labelCol={{ span: 6 }}
                             wrapperCol={{ span: 18 }}
                             style={{ marginTop: '5px' }}
-                            dependencies={['medicalRequest']}
-                            disabled={form.getFieldValue('medicalRequest') !== 'Y'}
-                            initialValue={form.getFieldValue('medicalRequest') === 'N' ? 'N/A' : ''}
+                            className='mrc-medical-details-field'
                             rules={[
                                 ({ getFieldValue }) => ({
                                     validator(_, value) {
@@ -174,9 +179,13 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                 })
                             ]}
                         >
-                            <TextArea maxLength={200} rows={2} style={boxStyle} />
+                            <TextArea
+                                maxLength={200}
+                                rows={2}
+                                style={boxStyle}
+                                disabled={medicalRequest !== 'Y'}
+                            />
                         </Form.Item>
-
                     </div>
 
                     {/* INSURANCE SECTION */}
@@ -446,6 +455,65 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                 </tr>
                             </tbody>
                         </table>
+
+                        <Form.Item
+                            name="emergencyContactValidation"
+                            hidden
+                            dependencies={[
+                                'emergencyTitle',
+                                'emergencyName',
+                                'emergencyEmail',
+                                'emergencyContact',
+                                'emergencyRelation'
+                            ]}
+                            rules={[
+                                {
+                                    validator: () => {
+                                        const emergencyTitle = form.getFieldValue('emergencyTitle')
+                                        const emergencyName = String(form.getFieldValue('emergencyName') || '').trim()
+                                        const emergencyEmail = String(form.getFieldValue('emergencyEmail') || '').trim()
+                                        const emergencyContact = String(form.getFieldValue('emergencyContact') || '').trim()
+                                        const emergencyRelation = String(form.getFieldValue('emergencyRelation') || '').trim()
+
+                                        const hasAllEmergencyDetails =
+                                            emergencyTitle &&
+                                            emergencyName &&
+                                            emergencyEmail &&
+                                            emergencyContact &&
+                                            emergencyRelation
+
+                                        return hasAllEmergencyDetails
+                                            ? Promise.resolve()
+                                            : Promise.reject(new Error('Please complete all emergency contact details before proceeding.'))
+                                    }
+                                }
+                            ]}
+                        >
+                            <Input />
+                        </Form.Item>
+
+                        <Form.Item shouldUpdate>
+                            {() => {
+                                const emergencyTitle = form.getFieldValue('emergencyTitle')
+                                const emergencyName = String(form.getFieldValue('emergencyName') || '').trim()
+                                const emergencyEmail = String(form.getFieldValue('emergencyEmail') || '').trim()
+                                const emergencyContact = String(form.getFieldValue('emergencyContact') || '').trim()
+                                const emergencyRelation = String(form.getFieldValue('emergencyRelation') || '').trim()
+
+                                const hasAllEmergencyDetails =
+                                    emergencyTitle &&
+                                    emergencyName &&
+                                    emergencyEmail &&
+                                    emergencyContact &&
+                                    emergencyRelation
+
+                                return hasAllEmergencyDetails ? null : (
+                                    <div className='mrc-contact-form-field'>
+                                        Please complete all emergency contact details before proceeding.
+                                    </div>
+                                )
+                            }}
+                        </Form.Item>
                     </div>
 
                     {/* SIGNATURE AREA */}

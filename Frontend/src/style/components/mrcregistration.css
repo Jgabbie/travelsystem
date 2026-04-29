@@ -243,6 +243,25 @@
     font-size: 11px;
 }
 
+.mrc-home-address-field .ant-form-item-explain-error,
+.mrc-dietary-restrictions-field .ant-form-item-explain-error,
+.mrc-medical-details-field .ant-form-item-explain-error,
+.mrc-passengerlist-field,
+.mrc-contact-form-field {
+    margin-top: 6px;
+    margin-bottom: 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255, 77, 79, 0.12), rgba(255, 77, 79, 0.06));
+    border: 1px solid rgba(255, 77, 79, 0.22);
+    color: #c81e1e;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.08);
+}
+
 
 
 /* DATE PICKER CSS */
