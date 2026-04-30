@@ -288,7 +288,7 @@ export default function ViewVisaApplication() {
 
             setApplication((prev) => ({
                 ...prev,
-                status: "Payment complete"
+                status: "Payment Complete"
             }));
 
             const statusMap = (application?.visaProcessSteps || []).reduce((acc, step, idx) => {
@@ -299,8 +299,8 @@ export default function ViewVisaApplication() {
                 return acc;
             }, {});
 
-            if (statusMap["Payment complete"] !== undefined) {
-                setCurrentStep(statusMap["Payment complete"]);
+            if (statusMap["Payment Complete"] !== undefined) {
+                setCurrentStep(statusMap["Payment Complete"]);
             }
 
             setIsResubmitDocumentsSentModalOpen(true);

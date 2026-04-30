@@ -8,13 +8,13 @@ import dayjs from 'dayjs';
 
 //PLACE HOLDER FOR VISA PROCESS STEPS - these should ideally come from the backend based on the service
 const VISA_STEPS = [
-    { title: 'Application submitted', description: 'Application submitted', },
-    { title: 'Application approved', description: 'Application approved', },
-    { title: 'Payment complete', description: 'Payment complete', },
-    { title: 'Documents uploaded', description: 'Documents uploaded', },
-    { title: 'Documents approved', description: 'Documents approved', },
-    { title: 'Documents received', description: 'Documents received', },
-    { title: 'Documents submitted', description: 'Documents submitted', },
+    { title: 'Application Submitted', description: 'Application submitted', },
+    { title: 'Application Approved', description: 'Application approved', },
+    { title: 'Payment Complete', description: 'Payment complete', },
+    { title: 'Documents Uploaded', description: 'Documents uploaded', },
+    { title: 'Documents Approved', description: 'Documents approved', },
+    { title: 'Documents Received', description: 'Documents received', },
+    { title: 'Documents Submitted', description: 'Documents submitted', },
     { title: 'Processing DFA', description: 'Processing | DFA', },
 ];
 

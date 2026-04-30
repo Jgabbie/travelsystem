@@ -96,7 +96,7 @@
 .package-actions-left {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
 }
 
 .package-action-secondary,

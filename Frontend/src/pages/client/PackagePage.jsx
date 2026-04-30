@@ -561,6 +561,13 @@ export default function PackagePage() {
                                         )}
                                     </div>
 
+                                    <div className="package-meta-row">
+                                        <span className="package-rating-chip">
+                                            <StarFilled />
+                                            {averageRating ? averageRating.toFixed(1) : '0.0'} ({reviews.length} reviews)
+                                        </span>
+                                    </div>
+
                                     <div className="package-actions-left">
                                         <Button
                                             type='primary'
@@ -581,12 +588,7 @@ export default function PackagePage() {
                                     </div>
                                 </div>
 
-                                <div className="package-meta-row">
-                                    <span className="package-rating-chip">
-                                        <StarFilled />
-                                        {averageRating ? averageRating.toFixed(1) : '0.0'} ({reviews.length} reviews)
-                                    </span>
-                                </div>
+
 
                                 <div className="package-gallery">
                                     <div className="package-gallery-main">

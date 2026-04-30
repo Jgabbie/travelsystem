@@ -157,30 +157,18 @@ export default function ViewPassportApplication() {
                     <Button
                         className="application-doc-preview-media"
                         type="dashed"
-                        icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
-                        onClick={() => window.open(url, '_blank')}
-                        style={{
-                            width: '100%',
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center',
-                            borderRadius: 8,
-                            backgroundColor: '#fafafa'
-                        }}
+                        icon={<FilePdfOutlined style={{ fontSize: 24, color: '#ff4d4f' }} />}
+                        style={{ width: 250, height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                        <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
+                        <span style={{ fontSize: 12, color: '#305797' }}>View PDF</span>
                     </Button>
                 ) : (
                     <Image
                         className="application-doc-preview-media"
                         src={url}
                         alt={label}
-                        width="100%"
-                        style={{
-                            borderRadius: 8,
-                            objectFit: 'cover',
-                            border: '1px solid #f0f0f0'
-                        }}
-                        placeholder={<div style={{ width: 150, height: 150, background: '#eee' }} />}
+                        style={{ width: 250, height: 250, objectFit: 'cover' }}
+                        placeholder={<div style={{ width: 250, height: 250, background: '#eee' }} />}
                     />
                 )}
 
@@ -520,28 +508,28 @@ export default function ViewPassportApplication() {
                                                     return (
                                                         <>
                                                             {docs.birthCertificate && (
-                                                                <div style={{ minWidth: 0 }}>
+                                                                <div style={{ width: "320px", height: "320px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>PSA Birth Certificate:</b>
                                                                     {renderReadOnlyFile(docs.birthCertificate, "Birth Certificate")}
                                                                 </div>
                                                             )}
 
                                                             {docs.applicationForm && (
-                                                                <div style={{ minWidth: 0 }}>
+                                                                <div style={{ width: "320px", height: "320px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Application Form:</b>
                                                                     {renderReadOnlyFile(docs.applicationForm, "Application Form")}
                                                                 </div>
                                                             )}
 
                                                             {docs.govId && (
-                                                                <div style={{ minWidth: 0 }}>
+                                                                <div style={{ width: "320px", height: "320px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Government-issued ID:</b>
                                                                     {renderReadOnlyFile(docs.govId, "Government ID")}
                                                                 </div>
                                                             )}
 
                                                             {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
-                                                                <div style={{ minWidth: 0 }}>
+                                                                <div style={{ width: "250px", height: "250px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Additional Documents:</b>
                                                                     <div style={{ gap: 16 }}>
                                                                         <Image.PreviewGroup>

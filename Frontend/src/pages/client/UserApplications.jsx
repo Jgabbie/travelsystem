@@ -83,11 +83,11 @@ export default function UserApplications() {
         Pending: 'orange',
         Approved: 'green',
         Disapproved: 'red',
-        'Payment complete': 'blue',
-        'Documents uploaded': 'gold',
-        'Documents approved': 'green',
-        'Documents received': 'cyan',
-        'Documents submitted': 'purple',
+        'Payment Complete': 'blue',
+        'Documents Uploaded': 'gold',
+        'Documents Approved': 'green',
+        'Documents Received': 'cyan',
+        'Documents Submitted': 'purple',
         'Processing DFA': 'geekblue'
     };
 

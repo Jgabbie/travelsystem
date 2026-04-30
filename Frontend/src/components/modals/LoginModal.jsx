@@ -167,7 +167,6 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         e.preventDefault()
         try {
             await apiFetch.post('/auth/send-verify-otp', { email: email })
-            alert("OTP sent!")
             setTimer(60)
         } catch (err) {
             const errorMsg = err.data?.message || "Verification failed"

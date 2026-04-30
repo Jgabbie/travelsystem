@@ -228,7 +228,7 @@ const updateTransaction = async (req, res) => {
             if (updatedTransaction.applicationType === 'Passport Application' && updatedTransaction.applicationId) {
                 await PassportModel.findByIdAndUpdate(
                     updatedTransaction.applicationId,
-                    { status: 'Payment complete' },
+                    { status: 'Payment Complete' },
                     { new: true }
                 )
             }

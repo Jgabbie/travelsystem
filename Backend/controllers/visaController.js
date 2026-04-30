@@ -118,7 +118,7 @@ const requestVisaDocumentResubmission = async (req, res) => {
         }
 
         application.submittedDocuments = {};
-        application.status = "Payment complete";
+        application.status = "Payment Complete";
         await application.save();
 
         const user = await UserModel.findById(application.userId);
@@ -436,9 +436,12 @@ const updateVisaApplicationStatus = async (req, res) => {
 
         const serviceId = visaDoc.serviceId._id || visaDoc.serviceId;
 
-        // Get the valid steps from the service
+        // Get the valid steps from the service and normalize to titles
         const serviceDoc = await ServiceModel.findById(serviceId).select('visaProcessSteps');
-        const validStatuses = [...(serviceDoc?.visaProcessSteps), "Rejected"];
+        const validStatuses = [
+            ...(serviceDoc?.visaProcessSteps || []).map((step) => (typeof step === 'string' ? step : (step?.title || ''))),
+            "Rejected"
+        ];
 
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ message: 'Invalid status value' });

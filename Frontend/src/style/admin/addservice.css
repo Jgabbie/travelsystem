@@ -96,6 +96,8 @@
 
 .add-service-card-error {
     border: 1px solid #d9534f !important;
+    border-radius: 16px !important;
+    padding: 16px;
 }
 
 .footer-add-services {

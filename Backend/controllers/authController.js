@@ -26,7 +26,7 @@ const createVerificationLink = async (email, token) => {
     user.emailVerifyOtp = hashedToken;
     user.emailVerifyExpireAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    const clientUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const clientUrl = 'http://localhost:3000';
     const verifyLink = `${clientUrl}/verify-email?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
 
     user.role = "Customer" //set the role of the new registered user
@@ -159,7 +159,7 @@ const loginUser = async (req, res) => {
         const hashedOtp = await bcrypt.hash(rawOtp, 10);
 
         user.verifyOtp = hashedOtp;
-        user.verifyOtpExpireAt = Date.now() + 90 * 1000;
+        user.verifyOtpExpireAt = Date.now() + 70 * 1000;
         user.otpAttempts = 0;
         user.otpBlockedUntil = 0;
         await user.save();
@@ -175,7 +175,7 @@ const loginUser = async (req, res) => {
                     <h2 style="color:#305797; margin-bottom:10px;">M&RC Travel and Tours</h2>
                     <p style="color:#555; font-size:16px;">Use the OTP below to complete your login.</p>
                     <div style="margin:25px 0; font-size:32px; font-weight:bold; letter-spacing:8px; color:#992A46; background:#f9fafb; padding:15px; border-radius:8px; border:1px dashed #ddd;">${rawOtp}</div>
-                    <p style="color:#777; font-size:14px;">This OTP will expire in <b>1 minute and 30 seconds</b>.</p>
+                    <p style="color:#777; font-size:14px;">This OTP will expire in <b>1 minute</b>.</p>
                     <p style="color:#aaa; font-size:12px; margin-top:30px;">If you did not try to log in, please ignore this email.</p>
                     <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                         <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
@@ -402,14 +402,10 @@ const sendVerifyOtp = async (req, res) => {
             return res.status(405).json({ message: "User not found" })
         }
 
-        if (user.isAccountVerified) {
-            return res.status(409).json({ message: "Account already verified" })
-        }
-
         const otp = String(Math.floor(100000 + Math.random() * 900000)) //generate six digit random number
         const hashedOtp = await bcrypt.hash(otp, 10)
         user.verifyOtp = hashedOtp;
-        user.verifyOtpExpireAt = Date.now() + 90 * 1000
+        user.verifyOtpExpireAt = Date.now() + 70 * 1000
 
         await user.save()
 
@@ -491,8 +487,6 @@ const verifyEmail = async (req, res) => {
                 return res.status(409).json({ message: "Invalid verification link" })
             }
         }
-
-
 
         user.emailVerifyOtp = ''
         user.emailVerifyExpireAt = 0

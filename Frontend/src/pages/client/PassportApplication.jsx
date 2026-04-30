@@ -91,7 +91,6 @@ export default function PassportApplication() {
         if (!id) {
             return
         }
-
         const fetchApplication = async () => {
             setLoading(true);
             try {
@@ -114,7 +113,6 @@ export default function PassportApplication() {
                 message.error('Failed to load user data');
             } finally {
                 setLoading(false);
-
             }
         }
         getUserEmail();
@@ -597,7 +595,7 @@ export default function PassportApplication() {
                             <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>PASSPORT FOR RELEASE</h2>
                             <p style={{ margin: 0, fontSize: 14 }}>
                                 Your passport is ready for release.
-                                Please proceed to the office to collect it or wait for its delivery if you have chosen the delivery option.
+                                Please proceed to the DFA office to collect it.
                             </p>
                         </div>
                     )}
@@ -625,7 +623,7 @@ export default function PassportApplication() {
                                                 <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
                                                 {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
                                                     <>
-                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                                                        <div className='passportapplication-suggestedoptions'>
                                                             {application.suggestedAppointmentSchedules.map((slot, index) => {
                                                                 const isSelected = selectedSuggestedIndex === index;
 
@@ -633,16 +631,19 @@ export default function PassportApplication() {
                                                                     <div
                                                                         key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
                                                                         onClick={() => setSelectedSuggestedIndex(index)}
+                                                                        className='passportapplication-suggestedoption-card'
                                                                         style={{
                                                                             border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
                                                                             boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
                                                                         }}
                                                                     >
                                                                         <Tag color="blue">Option {index + 1}</Tag>
-                                                                        <div style={{ marginTop: 8, fontWeight: 600 }}>
+                                                                        <div className='passportapplication-suggestedoptions-date' style={{ marginTop: 8, fontWeight: 600 }}>
                                                                             {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
                                                                         </div>
-                                                                        <div style={{ color: '#6b7280' }}>{slot.time || 'Time TBD'}</div>
+                                                                        <div className='passportapplication-suggestedoptions-time' style={{ color: '#6b7280' }}>
+                                                                            {slot.time || 'Time TBD'}
+                                                                        </div>
                                                                     </div>
                                                                 );
                                                             })}
@@ -656,16 +657,17 @@ export default function PassportApplication() {
                                                                 }}
                                                             >
                                                                 <Tag color="orange">Others</Tag>
-                                                                <div style={{ marginTop: 12 }}>
-                                                                    <Space orientation="vertical" style={{ width: '100%' }}>
+                                                                <div className='passportapplication-suggestedoptions-group'>
+                                                                    <Space style={{ marginTop: 10 }} orientation="vertical">
                                                                         <DatePicker
+                                                                            className='passportapplication-suggestedoptions-datepicker'
                                                                             disabledDate={disableDates}
                                                                             placeholder="Select Date"
-                                                                            style={{ width: '100%' }}
                                                                             onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
                                                                             onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
                                                                         />
                                                                         <TimePicker
+                                                                            className='passportapplication-suggestedoptions-timepicker'
                                                                             format="h:mm A"
                                                                             use12Hours
                                                                             showNow={false}
@@ -674,7 +676,6 @@ export default function PassportApplication() {
                                                                                 disabledHours
                                                                             })}
                                                                             placeholder="Select Time"
-                                                                            style={{ width: '100%' }}
                                                                             onChange={(time) => setCustomDateTime(prev => ({ ...prev, time }))}
                                                                             onClick={(e) => e.stopPropagation()}
                                                                         />

@@ -144,7 +144,7 @@ export default function ApplyVisa() {
                 preferredTime,
                 purposeOfTravel: purpose,
                 applicationType: 'Visa',
-                status: steps[0]
+                status: typeof steps[0] === 'string' ? steps[0] : (steps[0]?.title || '')
             })
             setSentModalVisible(true)
             console.log('Submitting visa application request')
@@ -261,32 +261,6 @@ export default function ApplyVisa() {
                                     </ul>
                                 ) : (
                                     <p>No required items.</p>
-                                )}
-
-                                <h4 style={{ marginTop: 12 }}>Optional</h4>
-                                {optionalRequirements.length ? (
-                                    <ul className="passport-list">
-                                        {optionalRequirements.map((item, index) => (
-                                            <li key={`req-optional-${index}`}>
-                                                <strong>{item.req}</strong>
-                                                <br />
-                                                <span>{item.desc}</span>
-                                                {item.applicationLink && (
-                                                    <div style={{ marginTop: 8 }}>
-                                                        <Button
-                                                            size="small"
-                                                            type="primary"
-                                                            onClick={() => handleOpenLink(item.applicationLink)}
-                                                        >
-                                                            Open Application Link
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p>No optional items.</p>
                                 )}
                             </div>
 

@@ -31,7 +31,7 @@ export default function AddService() {
         description: "",
         visaPrice: "",
         requirements: [{ req: "", desc: "", isReq: "", applicationLink: "" }],
-        processSteps: [""],
+        processSteps: [{ title: "", description: "" }],
         reminders: [""],
     });
 
@@ -73,12 +73,8 @@ export default function AddService() {
             const updated = [...values.requirements, { req: "", desc: "", isReq: "" }];
             valueHandler("requirements", updated);
         }
-        // if (type === "processSteps") {
-        //     const updated = [...values.processSteps, { title: "", description: "" }];
-        //     valueHandler("processSteps", updated);
-        // }
         if (type === "processSteps") {
-            const updated = [...values.processSteps, ""];
+            const updated = [...values.processSteps, { title: "", description: "" }];
             valueHandler("processSteps", updated);
         }
         if (type === "reminders") {
@@ -97,14 +93,13 @@ export default function AddService() {
             }
             valueHandler("requirements", updated);
         }
-        // if (type === "processSteps") {
-        //     const updated = [...values.processSteps];
-        //     updated[index] = { ...updated[index], [subfield || "title"]: value };
-        //     valueHandler("processSteps", updated);
-        // }
         if (type === "processSteps") {
             const updated = [...values.processSteps];
-            updated[index] = value;
+            if (subfield) {
+                updated[index] = { ...updated[index], [subfield]: value };
+            } else {
+                updated[index] = value;
+            }
             valueHandler("processSteps", updated);
         }
         if (type === "reminders") {
@@ -150,9 +145,16 @@ export default function AddService() {
             visaName: values.visaName.trim(),
             visaPrice: Number(values.visaPrice),
             visaDescription: values.description.trim(),
-            visaRequirements: values.requirements.map((item) => ({ req: item.req.trim(), desc: item.desc.trim(), isReq: item.isReq, applicationLink: item.applicationLink.trim() })),
-            // visaProcessSteps: values.processSteps.map([]),
-            visaProcessSteps: values.processSteps.map((step) => step.trim()),
+            visaRequirements: values.requirements.map((item) => ({
+                req: item.req.trim(),
+                desc: item.desc.trim(),
+                isReq: item.isReq,
+                applicationLink: item.applicationLink != null ? String(item.applicationLink).trim() : ""
+            })),
+            visaProcessSteps: values.processSteps.map((step) => ({
+                title: (step.title || "").trim(),
+                description: (step.description || "").trim()
+            })),
             visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0),
         };
 
@@ -182,20 +184,13 @@ export default function AddService() {
                     requirements: existing.visaRequirements?.length
                         ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "", applicationLink: item.applicationLink || "" })
                         : [{ req: "", desc: "", isReq: "", applicationLink: "" }],
-                    // processSteps: existing.visaProcessSteps?.length
-                    //     ? existing.visaProcessSteps.map((step) =>
-                    //         typeof step === "string"
-                    //             ? { title: step, description: "" }
-                    //             : { title: step?.title || "", description: step?.description || "" }
-                    //     )
-                    //     : [{ title: "", description: "" }],
                     processSteps: existing.visaProcessSteps?.length
                         ? existing.visaProcessSteps.map((step) =>
                             typeof step === "string"
-                                ? step
-                                : step?.title || ""
+                                ? { title: step, description: "" }
+                                : { title: step?.title || "", description: step?.description || "" }
                         )
-                        : [""],
+                        : [{ title: "", description: "" }],
                     reminders: Array.isArray(existing.visaReminders)
                         ? (existing.visaReminders.length ? existing.visaReminders : [""])
                         : (existing.visaReminders ? [existing.visaReminders] : [""]),
@@ -386,10 +381,10 @@ export default function AddService() {
                             className={errors.processSteps ? "add-service-card-error" : "add-service-section"}
                         >
                             <h2 className="section-headers" >Process Steps</h2>
-                            {/* {values.processSteps.map((item, index) => (
+                            {values.processSteps.map((item, index) => (
                                 <div key={`step-${index}`} className="add-service-bullet-row">
                                     <Space>
-                                        <div>
+                                        <div style={{ width: '100%' }}>
                                             <label className="add-service-input-labels">Process Step</label>
                                             <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
                                                 <Input
@@ -397,6 +392,7 @@ export default function AddService() {
                                                     className="add-service-inputs"
                                                     onChange={(event) => updateBullet("processSteps", index, event.target.value, "title")}
                                                 />
+
                                                 <Button
                                                     className="delete-add-service-button delete-button"
                                                     type="primary"
@@ -415,26 +411,7 @@ export default function AddService() {
                                             autoSize={{ minRows: 2, maxRows: 4 }}
                                             maxLength={300}
                                             onChange={(event) => updateBullet("processSteps", index, event.target.value, "description")}
-                                        />
-                                    </div>
-                                </div>
-                            ))} */}
-                            {values.processSteps.map((item, index) => (
-                                <div key={`step-${index}`} className="add-service-bullet-row">
-                                    <label className="add-service-input-labels">Process Step</label>
-                                    <div style={{ display: 'flex', gap: 8 }}>
-                                        <Input
-                                            value={item}
-                                            className="add-service-inputs"
-                                            onChange={(event) =>
-                                                updateBullet("processSteps", index, event.target.value)
-                                            }
-                                        />
-                                        <Button
-                                            className="delete-add-service-button delete-button"
-                                            type="primary"
-                                            onClick={() => removeBullet("processSteps", index)}
-                                            icon={<DeleteOutlined />}
+                                            style={{ marginTop: 2 }}
                                         />
                                     </div>
                                 </div>
