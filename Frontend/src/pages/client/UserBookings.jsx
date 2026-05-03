@@ -49,6 +49,8 @@ export default function UserBookings() {
                     status: b.status || 'N/A'
                 }))
 
+                console.log("Processed Bookings Data:", bookings)
+
                 setBookings(bookings)
             } catch (error) {
                 message.error('Unable to load bookings')

@@ -131,27 +131,31 @@ export default function UserBookingInvoice() {
                 const fetchedBooking = bookingRes?.booking || null;
                 const fetchedTransactions = bookingRes?.transactions || [];
 
+                console.log("Fetched Booking:", bookingRes.booking);
+
                 setBooking(fetchedBooking);
                 setTransactions(fetchedTransactions);
 
 
                 if (fetchedBooking) {
                     try {
-                        const response = await apiFetch.get("/booking/all-bookings");
-                        const allBookings = response?.bookings || response || [];
-                        const number = buildInvoiceNumber(allBookings, fetchedBooking);
-
+                        const invoiceRes = await apiFetch.get('/booking/bookings-total-month', { params: { reference } });
+                        const number = invoiceRes?.data?.invoiceNumber || invoiceRes?.invoiceNumber;
                         if (number) {
                             setInvoiceNumber(number);
                         } else {
-                            const createdAtValue = fetchedBooking.bookingDate || fetchedBooking.createdAt;
+                            const total = Number(invoiceRes?.data?.totalBookings ?? invoiceRes?.totalBookings ?? 0);
+                            const createdAtValue = fetchedBooking.bookingDate || fetchedBooking.createdAt || new Date();
                             const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
-                            if (createdAt?.isValid()) {
-                                setInvoiceNumber(`${createdAt.format("MM")}01`);
-                            }
+                            const monthKey = createdAt && createdAt.isValid() ? createdAt.format('MM') : dayjs().format('MM');
+                            const sequence = total + 1;
+                            setInvoiceNumber(`${monthKey}${String(sequence).padStart(2, '0')}`);
                         }
                     } catch (err) {
-                        console.error("Error fetching invoice number list:", err);
+                        console.error("Error fetching monthly bookings total for invoice number:", err);
+                        const createdAtValue = fetchedBooking.bookingDate || fetchedBooking.createdAt || new Date();
+                        const createdAt = dayjs(createdAtValue);
+                        if (createdAt?.isValid()) setInvoiceNumber(`${createdAt.format('MM')}01`);
                     }
                 }
 

@@ -11,6 +11,7 @@ const transporter = require('../config/nodemailer')
 const crypto = require('crypto');
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs');
+const mongoose = require('mongoose');
 const { processBillingForBookingId } = require('../utils/billingDeadlineScheduler')
 
 
@@ -93,12 +94,13 @@ const createBooking = async (req, res) => {
 //GET USER BOOKINGS -----------------------------------------------------------------
 const getUserBookings = async (req, res) => {
     const userId = req.userId;
+    const successfulTransactionStatuses = ['successful', 'paid', 'fully paid', 'fully_paid'];
 
     try {
         const bookings = await BookingModel.find({ userId })
             .sort({ createdAt: -1 })
             .populate('packageId', 'packageName packageType')
-            .select('-__v -paidAmount -documentsResubmissionTravelerIndexes -slotDecremented -documentsResubmissionRequestedAt -documentsResubmissionRequired -passportFiles -photoFiles -bookingDetails -userId -expiresAt -createdAt -updatedAt -statusHistory')
+            .select('-__v -paidAmount -documentsResubmissionTravelerIndexes -slotDecremented -documentsResubmissionRequestedAt -documentsResubmissionRequired -passportFiles -photoFiles -userId -expiresAt -createdAt -updatedAt -statusHistory')
             .lean();
 
         if (!bookings.length) {
@@ -107,7 +109,17 @@ const getUserBookings = async (req, res) => {
 
         const bookingIds = bookings.map((b) => b._id);
         const paidAgg = await TransactionModel.aggregate([
-            { $match: { bookingId: { $in: bookingIds }, status: 'Successful' } },
+            {
+                $match: {
+                    bookingId: { $in: bookingIds },
+                    $expr: {
+                        $in: [
+                            { $toLower: '$status' },
+                            successfulTransactionStatuses,
+                        ],
+                    },
+                },
+            },
             { $group: { _id: '$bookingId', totalPaid: { $sum: '$amount' } } }
         ]);
 
@@ -116,15 +128,33 @@ const getUserBookings = async (req, res) => {
             return acc;
         }, {});
 
+
+
         const enriched = bookings.map((booking) => {
-            const { _id, packageId, status: rawStatus, ...rest } = booking;
+            const { _id, packageId, status: rawStatus, bookingDetails, ...rest } = booking;
 
             const totalPaid = paidMap[_id.toString()] || 0;
+            const totalPrice = Number(bookingDetails?.totalPrice || 0);
+
+            console.log("total paid: ", totalPaid);
+            console.log("total price: ", totalPrice);
 
             // derive status from transactions: if any successful payment recorded, treat as Fully Paid
-            const computedStatus = totalPaid > 0
-                ? 'Fully Paid'
-                : (rawStatus ? (rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1)) : 'Pending');
+
+            if (rawStatus === 'Cancelled' || rawStatus === 'Cancellation Requested') {
+                return {
+                    bookingItem: _id,
+                    packageItem: packageId?._id || "N/A",
+                    packageName: packageId?.packageName || "N/A",
+                    packageType: packageId?.packageType || "N/A",
+                    status: rawStatus,
+                    ...rest,
+                };
+            }
+
+            const computedStatus = totalPaid >= totalPrice ? 'Fully Paid' : totalPaid === 0 ? 'Not Paid' : 'Pending';
+
+            console.log("computed status: ", computedStatus);
 
             return {
                 bookingItem: _id,
@@ -147,6 +177,47 @@ const getUserBookings = async (req, res) => {
 const getBookingsTotalBaseOnMonth = async (req, res) => {
 
     try {
+        const { reference } = req.query || {};
+
+        // If a reference (or id) is provided, compute the invoice number for that booking
+        if (reference) {
+            // try to find booking by reference or by id (only include _id match when reference is a valid ObjectId)
+            const orClause = [{ reference }];
+            if (mongoose.Types.ObjectId.isValid(reference)) {
+                orClause.push({ _id: reference });
+            }
+
+            const booking = await BookingModel.findOne({ $or: orClause }).lean();
+
+            if (!booking) {
+                return res.status(404).json({ message: 'Booking not found for provided reference' });
+            }
+
+            const createdAtValue = booking.bookingDate || booking.createdAt || new Date();
+            const createdAt = dayjs(createdAtValue);
+            const startOfMonth = createdAt.startOf('month').toDate();
+            const endOfMonth = createdAt.endOf('month').toDate();
+
+            // fetch bookings in the same month, ordered by creation time and id to reproduce client-side ordering
+            const monthBookings = await BookingModel.find({
+                createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+            })
+                .select('reference createdAt')
+                .sort({ createdAt: 1, _id: 1 })
+                .lean();
+
+            const identity = String(booking._id || booking.reference || booking.ref || '');
+
+            let index = monthBookings.findIndex((b) => String(b._id) === String(booking._id) || String(b.reference) === String(booking.reference));
+
+            const sequence = index >= 0 ? index + 1 : monthBookings.length + 1;
+            const monthKey = createdAt.format('MM');
+            const invoiceNumber = `${monthKey}${String(sequence).padStart(2, '0')}`;
+
+            return res.status(200).json({ invoiceNumber, sequence, month: monthKey });
+        }
+
+        // No reference provided: return total bookings for current month (legacy behavior)
         const startOfMonth = dayjs().startOf('month').toDate();
         const endOfMonth = dayjs().endOf('month').toDate();
 
@@ -743,7 +814,7 @@ const disApproveCancellation = async (req, res) => {
             if (Array.isArray(booking.statusHistory) && booking.statusHistory.length) {
                 for (let i = booking.statusHistory.length - 1; i >= 0; i -= 1) {
                     const candidate = booking.statusHistory[i]?.status
-                    if (candidate && candidate !== 'Cancellation Requested') {
+                    if (candidate && candidate !== 'Cancellation Requested' && candidate !== 'Cancelled') {
                         previousStatus = candidate
                         break
                     }
@@ -751,7 +822,7 @@ const disApproveCancellation = async (req, res) => {
             }
 
             if (!previousStatus) {
-                previousStatus = booking.status === 'Cancellation Requested' ? 'Pending' : booking.status
+                previousStatus = booking.status === 'Cancellation Requested' || 'Cancelled' ? 'Pending' : booking.status
             }
 
             booking.status = previousStatus
@@ -759,6 +830,7 @@ const disApproveCancellation = async (req, res) => {
                 booking.statusHistory = []
             }
             booking.statusHistory.push({ status: previousStatus, changedAt: new Date() })
+
             await booking.save()
 
             await NotificationModel.create({
