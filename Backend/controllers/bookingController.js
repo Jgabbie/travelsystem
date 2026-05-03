@@ -15,11 +15,11 @@ const { processBillingForBookingId } = require('../utils/billingDeadlineSchedule
 
 
 const generateBookingReference = () => {
-    return `BK-${Math.floor(100000000 + Math.random() * 900000000)}`
+    return `BK-${Math.floor(10000000 + Math.random() * 900000000)}`
 }
 
 const generateCancellationReference = () => {
-    return `CN-${Math.floor(100000000 + Math.random() * 900000000)}`
+    return `CN-${Math.floor(10000000 + Math.random() * 900000000)}`
 }
 
 
@@ -117,12 +117,21 @@ const getUserBookings = async (req, res) => {
         }, {});
 
         const enriched = bookings.map((booking) => {
-            const { _id, packageId, ...rest } = booking;
+            const { _id, packageId, status: rawStatus, ...rest } = booking;
+
+            const totalPaid = paidMap[_id.toString()] || 0;
+
+            // derive status from transactions: if any successful payment recorded, treat as Fully Paid
+            const computedStatus = totalPaid > 0
+                ? 'Fully Paid'
+                : (rawStatus ? (rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1)) : 'Pending');
 
             return {
                 bookingItem: _id,
+                packageItem: packageId?._id || "N/A",
                 packageName: packageId?.packageName || "N/A",
                 packageType: packageId?.packageType || "N/A",
+                status: computedStatus,
                 ...rest,
             };
         });
@@ -136,14 +145,12 @@ const getUserBookings = async (req, res) => {
 
 //GET BOOKINGS TOTAL BASED ON MONTH -----------------------------------------------------------------
 const getBookingsTotalBaseOnMonth = async (req, res) => {
-    const userId = req.userId;
 
     try {
         const startOfMonth = dayjs().startOf('month').toDate();
         const endOfMonth = dayjs().endOf('month').toDate();
 
         const totalBookings = await BookingModel.countDocuments({
-            userId,
             createdAt: { $gte: startOfMonth, $lte: endOfMonth }
         });
 
@@ -447,14 +454,13 @@ const resubmitBookingDocuments = async (req, res) => {
 //UPDATE BOOKING (ADMIN) -----------------------------------------------------------------
 const updateBooking = async (req, res) => {
     const { id } = req.params
-    const { status, bookingDetails } = req.body
+    const { status } = req.body
 
     try {
         const updatedBooking = await BookingModel.findByIdAndUpdate(
             id,
             {
                 ...(status ? { status } : {}),
-                ...(bookingDetails ? { bookingDetails } : {})
             },
             { new: true }
         )

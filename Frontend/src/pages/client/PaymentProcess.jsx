@@ -242,7 +242,7 @@ export default function PaymentProcess() {
         const fetchMonthBookings = async () => {
             try {
                 const response = await apiFetch.get('/booking/bookings-total-month');
-                setMonthBookingsCount(response.totalBookings || 0);
+                setMonthBookingsCount(response.totalBookings);
             } catch (error) {
                 console.error('Failed to fetch month bookings count', error);
             }

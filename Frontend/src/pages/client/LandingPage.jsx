@@ -724,7 +724,7 @@ export default function LandingPage() {
                         <div className="hero-content-aboutus">
                             <h1>M&RC Travel and Tours</h1>
                             <p>
-                                Ready for your next adventure?  Book your international tour with M&RC Travel today and explore the world with ease and comfort. From stunning destinations to well-planned itineraries, we handle all the details so you can focus on making unforgettable memories. Don’t wait—your dream journey starts now!
+                                M&RC Travel and tours is a travel agency that provides a wide range of travel services, including tour packages, flight bookings, hotel reservations, and travel insurance. With a commitment to customer satisfaction and a passion for travel, M&RC Travel and Tours aims to create unforgettable travel experiences for its clients.
                             </p>
                         </div>
                     </div>

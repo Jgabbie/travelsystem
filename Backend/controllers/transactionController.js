@@ -192,13 +192,10 @@ const getArchivedTransactions = async (_req, res) => {
 //UPDATE TRANSACTIONS --------------------------------------------------------------------------
 const updateTransaction = async (req, res) => {
     const { id } = req.params
-    const { status, method, amount, packageName } = req.body
+    const { status } = req.body
     try {
         const updateFields = {
             ...(status ? { status } : {}),
-            ...(method ? { method } : {}),
-            ...(typeof amount === 'number' ? { amount } : {}),
-            ...(packageName ? { packageName } : {})
         }
         const updatedTransaction = await TransactionModel.findByIdAndUpdate(
             id,

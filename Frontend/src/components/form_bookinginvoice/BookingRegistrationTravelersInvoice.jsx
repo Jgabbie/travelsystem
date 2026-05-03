@@ -68,6 +68,8 @@ export default function BookingRegistrationTravelersInvoice({ form, onValuesChan
         const isSolo = bookingType === 'Solo Booking';
         const isGroup = bookingType === 'Group Booking';
 
+        console.log('Summary Invoice:', summaryInvoice.travelers);
+
         let travelersData = (summaryInvoice.travelers || []).map((t) => ({
             ...t,
             birthday: dayjs(t.birthday).format('MMM D, YYYY') || '',

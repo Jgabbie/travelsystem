@@ -1787,7 +1787,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
         //QUOTATION PAYMENT -----------------------------------------------------------------------------
         if (metadata.bookingId && metadata.transactionType === "Quotation Payment") {
-            console.log('🛫 Quotation Booking payment detected');
+            console.log('Quotation Booking payment detected');
             console.log('PackageId in metadata:', metadata.packageId);
             let booking = await BookingModel.findById(metadata.bookingId);
 

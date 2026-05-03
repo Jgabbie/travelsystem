@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin } from 'antd';
+import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin, Alert } from 'antd';
 import { CheckCircleFilled, HeartFilled, HeartOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
@@ -58,6 +58,8 @@ export default function PackagePage() {
         rating: 0,
         comment: ''
     });
+    const [hasValidBooking, setHasValidBooking] = useState(false);
+    const [bookingCheckLoading, setBookingCheckLoading] = useState(false);
 
     //STATES FOR PACKAGE DATA --------------------------------------------------
     const [packageData, setPackageData] = useState(null)
@@ -157,6 +159,43 @@ export default function PackagePage() {
     useEffect(() => {
         fetchRatings()
     }, [fetchRatings])
+
+    //CHECK IF USER HAS A VALID BOOKING FOR THIS PACKAGE WITH FULLY PAID STATUS ------------------------------------------------
+    useEffect(() => {
+        const checkUserBooking = async () => {
+            if (!auth || !packageItem) {
+                setHasValidBooking(false)
+                return
+            }
+
+            try {
+                setBookingCheckLoading(true)
+                const response = await apiFetch.get('/booking/my-bookings')
+                const bookings = Array.isArray(response)
+                    ? response
+                    : response?.bookings || response?.data?.bookings || response?.data || []
+
+                //CHECK IF USER HAS A BOOKING FOR THIS PACKAGE WITH FULLY PAID STATUS
+                const validBooking = bookings.find((booking) => {
+                    const bookingPackageId = String(booking?.packageItem || '').trim()
+                    const bookingStatus = String(booking?.status || '').trim().toLowerCase()
+                    const packageIdMatch = bookingPackageId === String(packageItem)
+                    const statusMatch = bookingStatus === 'fully paid'
+
+                    return packageIdMatch && statusMatch
+                })
+
+                setHasValidBooking(Boolean(validBooking))
+            } catch (error) {
+                console.error('Failed to check user bookings:', error)
+                setHasValidBooking(false)
+            } finally {
+                setBookingCheckLoading(false)
+            }
+        }
+
+        checkUserBooking()
+    }, [auth, packageItem])
 
     const averageRating = useMemo(() => {
         if (!reviews.length) return 0
@@ -384,6 +423,11 @@ export default function PackagePage() {
     const handleSubmitReview = async () => {
         if (!auth) {
             setIsLoginVisible(true)
+            return
+        }
+
+        if (!hasValidBooking && !isEditingReview) {
+            message.error("You can only rate packages you have booked and fully paid for.")
             return
         }
 
@@ -808,9 +852,19 @@ export default function PackagePage() {
                                             <div className="package-review-form">
                                                 <h3>Leave a review</h3>
 
+                                                {!isEditingReview && !hasValidBooking && (
+                                                    <Alert
+                                                        message="Book This Package First"
+                                                        description="You must avail the package first before being able to submit a review"
+                                                        type="info"
+                                                        showIcon
+                                                        style={{ marginBottom: 16, fontFamily: 'Montserrat', borderRadius: 6 }}
+                                                    />
+                                                )}
+
                                                 <Rate
                                                     value={reviewForm.rating}
-                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
+                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview) || (!isEditingReview && !hasValidBooking)} // disable if already reviewed or no valid booking
                                                     onChange={(value) =>
                                                         setReviewForm(prev => ({
                                                             ...prev,
@@ -821,7 +875,7 @@ export default function PackagePage() {
 
                                                 <Input.TextArea
                                                     rows={4}
-                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
+                                                    disabled={isSubmittingReview || (!isEditingReview && !!userReview) || (!isEditingReview && !hasValidBooking)} // disable if already reviewed or no valid booking
                                                     placeholder="Share your experience..."
                                                     value={reviewForm.comment}
                                                     onChange={(e) =>
@@ -835,14 +889,15 @@ export default function PackagePage() {
                                                 <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
                                                     <Button
                                                         type='primary'
-                                                        disabled={isSubmittingReview || (!isEditingReview && !!userReview)} // disable if already reviewed
+                                                        disabled={isSubmittingReview || (!isEditingReview && !!userReview) || (!isEditingReview && !hasValidBooking)} // disable if already reviewed or no valid booking
                                                         className="package-action-secondary"
                                                         onClick={handleSubmitReview}
                                                         style={{ marginTop: 10 }}
+                                                        title={(!isEditingReview && !hasValidBooking) ? "You must book and fully pay for this package to leave a review" : ""}
                                                     >
                                                         {isEditingReview ? "Update Review" : "Submit Review"}
                                                     </Button>
-                                                    {userReview && (
+                                                    {userReview && hasValidBooking && (
                                                         <Button
                                                             type='primary'
                                                             disabled={isSubmittingReview}
@@ -1037,7 +1092,6 @@ export default function PackagePage() {
 
                         </div>
                     </Modal>
-
 
 
 

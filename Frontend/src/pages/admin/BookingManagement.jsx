@@ -222,11 +222,8 @@ export default function BookingManagement() {
 
   const edit = (record) => {
     setEditingBooking(record);
+    const bookingDetails = record.bookingDetails || {};
     editForm.setFieldsValue({
-      pkg: record.pkg,
-      travelDate: record.travelDateRaw ? dayjs(record.travelDateRaw) : null,
-      bookingDate: record.bookingDateRaw ? dayjs(record.bookingDateRaw) : null,
-      qty: record.qty,
       status: record.status
     });
     setIsEditModalOpen(true);
@@ -272,23 +269,36 @@ export default function BookingManagement() {
       }
 
       const values = await editForm.validateFields();
-      const travelDate = dayjs.isDayjs(values.travelDate)
-        ? values.travelDate.format("YYYY-MM-DD")
-        : values.travelDate;
-      const bookingDate = dayjs.isDayjs(values.bookingDate)
-        ? values.bookingDate.format("YYYY-MM-DD")
-        : values.bookingDate;
-      const qtyValue = Number(values.qty) || 0;
+
+      // bookingDate & pkg inputs removed — use existing booking values
+      const bookingDate = editingBooking?.bookingDateRaw || editingBooking?.bookingDetails?.bookingDate || null;
+
+      const travelDate = values.travelDate
+        ? (dayjs.isDayjs(values.travelDate) ? values.travelDate.format("YYYY-MM-DD") : values.travelDate)
+        : (editingBooking?.travelDateRaw || editingBooking?.bookingDetails?.travelDate || null);
+
+      // derive travelers from existing booking if form inputs are not present
+      const existingTravelersObj = (Array.isArray(editingBooking?.travelers) && editingBooking.travelers[0])
+        || (Array.isArray(editingBooking?.bookingDetails?.travelers) && editingBooking.bookingDetails.travelers[0])
+        || (editingBooking?.bookingDetails?.travelers && typeof editingBooking.bookingDetails.travelers === 'object' && editingBooking.bookingDetails.travelers)
+        || {};
+
+      const adult = Number(values.adult ?? existingTravelersObj.adult ?? existingTravelersObj.total ?? 0);
+      const child = Number(values.child ?? existingTravelersObj.child ?? 0);
+      const infant = Number(values.infant ?? existingTravelersObj.infant ?? 0);
+      const qtyValue = adult + child + infant;
       const statusValue = values.status || undefined;
+
+      const travelersPayload = Array.isArray(editingBooking?.travelers) && editingBooking.travelers.length
+        ? editingBooking.travelers
+        : (Array.isArray(editingBooking?.bookingDetails?.travelers) && editingBooking.bookingDetails.travelers.length
+          ? editingBooking.bookingDetails.travelers
+          : [{ adult, child, infant }]);
+
+      const packageName = editingBooking?.pkg || editingBooking?.bookingDetails?.packageName || null;
 
       const payload = {
         status: statusValue,
-        bookingDetails: {
-          packageName: values.pkg,
-          travelDate,
-          bookingDate,
-          travelers: { total: qtyValue }
-        }
       };
 
       const saved = await apiFetch.put(`/booking/${editingBooking.key}`, payload);
@@ -301,10 +311,6 @@ export default function BookingManagement() {
           item.key === editingBooking.key
             ? {
               ...item,
-              pkg: savedDetails.packageName || values.pkg,
-              travelDate: savedDetails.travelDate || travelDate,
-              bookingDate: savedDetails.bookingDate || bookingDate,
-              qty: qtyValue,
               status: statusFormatted
             }
             : item
@@ -579,48 +585,10 @@ export default function BookingManagement() {
           className="booking-edit-modal"
         >
           <Form form={editForm} layout="vertical" className="booking-edit-form">
-            <Form.Item
-              name="pkg"
-              label="Package"
-              rules={[{ required: true, message: "Package is required" }]}
-            >
-              <Input />
-            </Form.Item>
+            {/* Package and Booking Date inputs removed per request */}
 
             <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item
-                  name="travelDate"
-                  label="Travel Date"
-                  rules={[{ required: true, message: "Travel date is required" }]}
-                >
-                  <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
-                </Form.Item>
-              </Col>
-
-              <Col span={12}>
-                <Form.Item
-                  name="bookingDate"
-                  label="Booking Date"
-                  rules={[{ required: true, message: "Booking date is required" }]}
-                >
-                  <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={12}>
-              <Col span={12}>
-                <Form.Item
-                  name="qty"
-                  label="Travelers"
-                  rules={[{ required: true, message: "Travelers is required" }]}
-                >
-                  <Input type="number" min={1} />
-                </Form.Item>
-              </Col>
-
-              <Col span={12}>
+              <Col span={24}>
                 <Form.Item
                   name="status"
                   label="Status"

@@ -253,10 +253,6 @@ export default function TransactionManagement() {
   const edit = (record) => {
     setEditingTransaction(record);
     editForm.setFieldsValue({
-      package: record.package,
-      date: record.date ? dayjs(record.date) : null,
-      price: Number.isFinite(record.amountRaw) ? record.amountRaw : record.price,
-      method: record.method,
       status: record.status
     });
     setIsEditModalOpen(true);
@@ -331,18 +327,12 @@ export default function TransactionManagement() {
       }
 
       const values = await editForm.validateFields();
-      const dateValue = dayjs.isDayjs(values.date)
-        ? values.date.format("YYYY-MM-DD HH:mm")
-        : values.date;
-      const parsedAmount = Number(String(values.price || "").replace(/[^0-9.-]/g, ""));
-      const amount = Number.isFinite(parsedAmount) ? parsedAmount : 0;
-      const priceFormatted = `₱${amount.toLocaleString()}`;
+
+      // package, date, price and method removed from modal — preserve existing values
+      const existingMethodRaw = editingTransaction?.methodRaw || editingTransaction?.method || undefined;
 
       const payload = {
-        packageName: values.package,
-        method: values.method,
         status: values.status,
-        amount
       };
 
       await apiFetch.put(`/transaction/${editingTransaction.key}`, payload);
@@ -352,12 +342,7 @@ export default function TransactionManagement() {
           item.key === editingTransaction.key
             ? {
               ...item,
-              package: values.package,
-              date: dateValue,
-              method: values.method,
               status: values.status,
-              amountRaw: amount,
-              price: priceFormatted
             }
             : item
         )
@@ -661,58 +646,15 @@ export default function TransactionManagement() {
               setEditingTransaction(null);
             }}
             footer={null}
-            style={{ top: 155 }}
+            centered={true}
             className="transaction-edit-modal"
 
           >
             <Form form={editForm} layout="vertical" className="transaction-edit-form">
-              <Form.Item
-                name="package"
-                label="Package"
-                rules={[{ required: true, message: "Package is required" }]}
-              >
-                <Input />
-              </Form.Item>
+              {/* Package, Payment Date and Amount removed - only Method and Status remain */}
 
               <Row gutter={12}>
-                <Col span={12}>
-                  <Form.Item
-                    name="date"
-                    label="Payment Date"
-                    rules={[{ required: true, message: "Payment date is required" }]}
-                  >
-                    <DatePicker showTime format="YYYY-MM-DD HH:mm" style={{ width: "100%" }} />
-                  </Form.Item>
-                </Col>
-
-                <Col span={12}>
-                  <Form.Item
-                    name="price"
-                    label="Amount"
-                    rules={[{ required: true, message: "Amount is required" }]}
-                  >
-                    <Input type="number" min={0} />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={12}>
-                <Col span={12}>
-                  <Form.Item
-                    name="method"
-                    label="Method"
-                    rules={[{ required: true, message: "Method is required" }]}
-                  >
-                    <Select
-                      options={[
-                        { value: "Manual", label: "Manual" },
-                        { value: "Paymongo", label: "Paymongo" },
-                      ]}
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col span={12}>
+                <Col span={24}>
                   <Form.Item
                     name="status"
                     label="Status"
@@ -755,7 +697,7 @@ export default function TransactionManagement() {
             footer={null}
             className="transaction-view-modal"
             width={720}
-            style={{ top: 40 }}
+            centered={true}
           >
             {selectedTransaction && (
               <div className="receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
@@ -860,7 +802,7 @@ export default function TransactionManagement() {
             onCancel={() => setIsProofModalOpen(false)}
             className="transaction-view-modal"
             width={720}
-            style={{ top: 150 }}
+            centered={true}
             footer={null}
             title={`Proof of Payment - ${proofTransaction?.ref || ""}`}
           >
@@ -937,7 +879,7 @@ export default function TransactionManagement() {
             open={isDeleteModalOpen}
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
-            style={{ top: 220 }}
+            centered={true}
             onCancel={() => {
               setIsDeleteModalOpen(false);
             }}
@@ -978,7 +920,7 @@ export default function TransactionManagement() {
             open={isRestoreModalOpen}
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
-            style={{ top: 220 }}
+            centered={true}
             onCancel={() => {
               setIsRestoreModalOpen(false);
             }}
@@ -1020,7 +962,7 @@ export default function TransactionManagement() {
             open={isTransactionEditedModalOpen}
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
-            style={{ top: 220 }}
+            centered={true}
             onCancel={() => {
               setIsTransactionEditedModalOpen(false);
             }}
@@ -1056,7 +998,7 @@ export default function TransactionManagement() {
             open={isTransactionDeletedModalOpen}
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
-            style={{ top: 220 }}
+            centered={true}
             onCancel={() => {
               setIsTransactionDeletedModalOpen(false);
             }}
@@ -1091,7 +1033,7 @@ export default function TransactionManagement() {
             open={isTransactionRestoredModalOpen}
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
-            style={{ top: 220 }}
+            centered={true}
             onCancel={() => {
               setIsTransactionRestoredModalOpen(false);
             }}
@@ -1127,7 +1069,7 @@ export default function TransactionManagement() {
             open={isProofApprovedModalOpen}
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
-            style={{ top: 220 }}
+            centered={true}
             onCancel={() => {
               setIsProofApprovedModalOpen(false);
             }}
@@ -1162,7 +1104,7 @@ export default function TransactionManagement() {
             open={isProofRejectedModalOpen}
             closable={{ 'aria-label': 'Custom Close Button' }}
             footer={null}
-            style={{ top: 220 }}
+            centered={true}
             onCancel={() => {
               setIsProofRejectedModalOpen(false);
             }}
