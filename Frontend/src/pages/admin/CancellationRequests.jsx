@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, message, Select, Image } from 'antd'
+import { Card, Table, Button, Space, Row, Col, Statistic, Input, DatePicker, ConfigProvider, Modal, Tag, notification, Select, Image } from 'antd'
 import { CheckCircleOutlined, DeleteOutlined, SafetyCertificateOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, SearchOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf'
@@ -220,7 +220,7 @@ export default function CancellationRequests() {
         });
 
         doc.save(`Cancellation_Report_${new Date().toLocaleDateString()}.pdf`);
-        message.success("Report exported to PDF successfully.");
+        notification.success({ message: 'Report exported to PDF successfully.', placement: 'topRight' });
     };
 
     const handleAction = async (key, status) => {
@@ -231,10 +231,10 @@ export default function CancellationRequests() {
             setRequests((prev) =>
                 prev.map((item) => (item.key === key ? { ...item, status } : item))
             )
-            message.success(`Cancellation ${status.toLowerCase()}.`)
+            notification.success({ message: `Cancellation ${status.toLowerCase()}.`, placement: 'topRight' })
         } catch (err) {
             console.error('Failed to update cancellation status:', err)
-            message.error('Failed to update cancellation status. Please try again.')
+            notification.error({ message: 'Failed to update cancellation status. Please try again.', placement: 'topRight' })
         } finally {
             setLoading(false)
         }
@@ -253,7 +253,7 @@ export default function CancellationRequests() {
             setRequests((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving cancellation request:", error)
-            message.error("Cancellation request archived unsuccessfully")
+            notification.error({ message: 'Cancellation request archived unsuccessfully', placement: 'topRight' })
         }
 
     }
@@ -266,7 +266,7 @@ export default function CancellationRequests() {
             setArchivedRequests((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring cancellation request:", error)
-            message.error(error?.response?.data?.message || "Cancellation restore failed")
+            notification.error({ message: error?.response?.data?.message || 'Cancellation restore failed', placement: 'topRight' })
         }
     }
 

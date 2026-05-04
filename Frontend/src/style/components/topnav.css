@@ -49,10 +49,8 @@
 }
 
 .logo-img {
-  height: 50px;
-  width: 75px;
-  margin-right: 25px;
-  margin-bottom: 10px;
+  height: 90px;
+  width: 90px;
   flex-shrink: 0;
 }
 

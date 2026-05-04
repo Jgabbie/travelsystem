@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, Image, Spin } from "antd";
+import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, Image, Spin, notification } from "antd";
 import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -81,7 +81,7 @@ export default function TransactionManagement() {
       setData(transactions);
     } catch (error) {
       console.error("Error fetching transactions:", error);
-      message.error("Unable to load transactions.");
+      notification.error({ message: "Unable to load transactions.", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ export default function TransactionManagement() {
       setArchivedData(transactions);
     } catch (error) {
       console.error("Error fetching archived transactions:", error);
-      message.error("Unable to load archived transactions.");
+      notification.error({ message: "Unable to load archived transactions.", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -143,12 +143,12 @@ export default function TransactionManagement() {
   const handleDownloadPDF = async () => {
     const element = receiptRef.current;
     if (!element) {
-      message.error("Receipt content not found!");
+      notification.error({ message: "Receipt content not found!", placement: "topRight" });
       return;
     }
 
     try {
-      message.loading({ content: "Generating PDF...", key: "pdf" });
+      notification.open({ message: "Generating PDF...", key: "pdf", placement: "topRight", duration: 0 });
 
       const canvas = await html2canvas(element, {
         scale: 3, // Higher scale for crisp text
@@ -179,10 +179,10 @@ export default function TransactionManagement() {
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
 
-      message.success({ content: "Downloaded successfully!", key: "pdf" });
+      notification.success({ message: "Downloaded successfully!", key: "pdf", placement: "topRight" });
     } catch (error) {
       console.error("PDF Generation Error:", error);
-      message.error({ content: "Failed to generate PDF.", key: "pdf" });
+      notification.error({ message: "Failed to generate PDF.", key: "pdf", placement: "topRight" });
     }
   };
 
@@ -247,7 +247,7 @@ export default function TransactionManagement() {
     });
 
     doc.save(`Transaction_Report_${new Date().toLocaleDateString()}.pdf`);
-    message.success("Report exported to PDF successfully.");
+    notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
   };
 
   const edit = (record) => {
@@ -291,7 +291,7 @@ export default function TransactionManagement() {
       setProofTransaction(null);
     } catch (error) {
       console.log(error)
-      message.error("Failed to update proof status.", error);
+      notification.error({ message: "Failed to update proof status.", description: error?.message || "Please try again.", placement: "topRight" });
     } finally {
       setIsProofDecisionLoading(false);
     }
@@ -305,7 +305,7 @@ export default function TransactionManagement() {
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsTransactionDeletedModalOpen(true);
     } catch (error) {
-      message.error("Failed to archive transaction");
+      notification.error({ message: "Failed to archive transaction", placement: "topRight" });
     }
   };
 
@@ -315,7 +315,7 @@ export default function TransactionManagement() {
       setIsTransactionRestoredModalOpen(true);
       setArchivedData((prev) => prev.filter((item) => item.key !== key));
     } catch (error) {
-      message.error(error?.response?.data?.message || "Failed to restore transaction");
+      notification.error({ message: error?.response?.data?.message || "Failed to restore transaction", placement: "topRight" });
     }
 
   };
@@ -353,7 +353,7 @@ export default function TransactionManagement() {
       setEditingTransaction(null);
       editForm.resetFields();
     } catch {
-      message.error("Please fix validation errors");
+      notification.error({ message: "Please fix validation errors", placement: "topRight" });
     }
   };
 

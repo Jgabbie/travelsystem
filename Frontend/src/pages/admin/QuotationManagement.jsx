@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider, DatePicker, Tabs } from "antd";
+import { Input, Select, Button, Table, Tag, Space, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, DatePicker, Tabs, notification } from "antd";
 import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf';
@@ -206,7 +206,7 @@ export default function QuotationManagement() {
         });
 
         doc.save(`Quotation_Report_${new Date().toLocaleDateString()}.pdf`);
-        message.success("Report exported to PDF successfully.");
+        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
     const handleView = (key) => {
@@ -218,7 +218,7 @@ export default function QuotationManagement() {
 
     const handleArchive = async (key) => {
         if (!key) {
-            message.error("Quotation not found")
+            notification.error({ message: "Quotation not found", placement: "topRight" });
             return
         }
         try {
@@ -227,13 +227,13 @@ export default function QuotationManagement() {
             setData((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving quotation:", error)
-            message.error("Quotation archived unsuccessfully")
+            notification.error({ message: "Quotation archived unsuccessfully", placement: "topRight" });
         }
     }
 
     const handleRestore = async (key) => {
         if (!key) {
-            message.error("Quotation not found")
+            notification.error({ message: "Quotation not found", placement: "topRight" });
             return
         }
         try {
@@ -242,7 +242,7 @@ export default function QuotationManagement() {
             setArchivedData((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring quotation:", error)
-            message.error(error?.response?.data?.message || "Quotation restore failed")
+            notification.error({ message: error?.response?.data?.message || "Quotation restore failed", placement: "topRight" });
         }
 
     }

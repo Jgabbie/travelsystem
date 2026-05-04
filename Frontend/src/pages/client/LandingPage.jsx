@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber, message } from 'antd';
+import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber, notification } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
@@ -45,7 +45,7 @@ export default function LandingPage() {
 
     const handleActivityChange = (values) => {
         if (values.length > 3) {
-            message.warning('Select up to 3 tags only.');
+            notification.warning({ message: 'Select up to 3 tags only.', placement: 'topRight' });
             return;
         }
         setActivity(values);
@@ -1045,13 +1045,13 @@ export default function LandingPage() {
                                 <div className='footer-section-socials'>
                                     <h2 className='footer-header'>Our Socials</h2>
                                     <div className='footer-section-socials-icons'>
-                                        <FacebookFilled className='socials-icon' onClick={() => window.open('https://www.facebook.com/mrctravelandtour', '_blank')} />
-                                        <p className='footer-text'>M&RC Travel and Tours</p>
+                                        <FacebookFilled className='socials-icon' />
+                                        <p className='footer-text-link' onClick={() => window.open('https://www.facebook.com/mrctravelandtour', '_blank')}>M&RC Travel and Tours</p>
                                     </div>
 
                                     <div className='footer-section-socials-icons'>
-                                        <InstagramFilled className='socials-icon' onClick={() => window.open('https://www.instagram.com/mrc_travelandtours?fbclid=IwY2xjawQVIU5leHRuA2FlbQIxMABicmlkETE1M0YwaFZ6SW1EQ0xTZnNrc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHgrnAZz5frwKYlnHCi-Txow7AV3kwbYXwWp0W7XV-_BZcoANgGr7hUQA3Eq6_aem_VyUBdOcsD0LsgGhYaEtNog', '_blank')} />
-                                        <p className='footer-text'>@mrc_travel_tours</p>
+                                        <InstagramFilled className='socials-icon' />
+                                        <p className='footer-text-link' onClick={() => window.open('https://www.instagram.com/mrc_travelandtours?fbclid=IwY2xjawQVIU5leHRuA2FlbQIxMABicmlkETE1M0YwaFZ6SW1EQ0xTZnNrc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHgrnAZz5frwKYlnHCi-Txow7AV3kwbYXwWp0W7XV-_BZcoANgGr7hUQA3Eq6_aem_VyUBdOcsD0LsgGhYaEtNog', '_blank')} >@mrc_travel_tours</p>
                                     </div>
 
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, message, Button, Input, Card, ConfigProvider, Spin, Tag, Typography } from "antd"
+import { Modal, notification, Button, Input, Card, ConfigProvider, Spin, Tag, Typography } from "antd"
 import { ArrowLeftOutlined, CheckCircleFilled } from "@ant-design/icons"
 import { useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
@@ -98,13 +98,13 @@ export default function UserQuotationRequest() {
             }));
             navigate("/quotation-booking-process");
         } catch (error) {
-            message.error("Unable to accept quotation");
+            notification.error({ message: "Unable to accept quotation", placement: 'topRight' });
         }
     };
 
     const handleRevise = () => {
         if (notes === "" || notes.trim() === "" || notes.length > 50) {
-            message.error("Please provide notes for revision.");
+            notification.error({ message: "Please provide notes for revision.", placement: 'topRight' });
             return;
         }
         console.log("Revision requested with notes:", notes);
@@ -113,11 +113,11 @@ export default function UserQuotationRequest() {
             notes
         }).then(res => {
             setIsRevisionModalOpen(true);
-            message.success("Revision requested successfully.");
+            notification.success({ message: "Revision requested successfully.", placement: 'topRight' });
             setNotes("");
         }).catch(err => {
             console.log(err.data.error || err.message);
-            message.error("Failed to request revision.");
+            notification.error({ message: "Failed to request revision.", placement: 'topRight' });
         }).finally(() => {
             setActionLoading(false);
         });

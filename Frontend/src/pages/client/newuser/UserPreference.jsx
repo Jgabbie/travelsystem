@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { message, Spin, ConfigProvider } from 'antd';
+import { notification, Spin, ConfigProvider } from 'antd';
 import apiFetch from '../../../config/fetchConfig';
 import '../../../style/client/userpreference.css';
 
@@ -64,13 +64,13 @@ export default function UserPreference() {
         try {
             await apiFetch.post('/preferences/save', selections, { withCredentials: true });
             await apiFetch.post('/user/login-once', {}, { withCredentials: true });
-            message.success('Preferences saved');
+            notification.success({ message: 'Preferences saved', placement: 'topRight' });
             console.log('Preferences saved:', selections);
             window.location.assign('/home');
             setIsLoading(false);
         } catch (error) {
             const errorMsg = error?.data?.message || 'Unable to save preferences.';
-            message.error(errorMsg);
+            notification.error({ message: errorMsg, placement: 'topRight' });
         } finally {
             setIsLoading(false);
         }

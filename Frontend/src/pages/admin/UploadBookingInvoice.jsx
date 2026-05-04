@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Form, Tag, Typography, message, Steps } from "antd";
+import { Button, Card, Col, ConfigProvider, Divider, Row, Space, Spin, Form, Tag, Typography, Steps, notification } from "antd";
 import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { Document, Image, Page, PDFViewer, StyleSheet, Text, View } from "@react-pdf/renderer";
 import dayjs from "dayjs";
@@ -129,7 +129,7 @@ export default function UploadBookingInvoice() {
                 }
                 setTransactions(fetchedTransactions);
             } catch (error) {
-                message.error("Unable to load booking details");
+                notification.error({ message: "Unable to load booking details", placement: "topRight" });
             } finally {
                 setLoading(false);
             }
@@ -153,7 +153,7 @@ export default function UploadBookingInvoice() {
 
             setCurrentStep(prev => prev + 1);
         } catch (error) {
-            message.error("Please complete required fields.");
+            notification.error({ message: "Please complete required fields.", placement: "topRight" });
         }
     };
 
@@ -205,14 +205,14 @@ export default function UploadBookingInvoice() {
             }
 
             pdf.save(`Booking_${reference}.pdf`);
-            message.success("Booking Registration PDF downloaded successfully.");
+            notification.success({ message: "Booking Registration PDF downloaded successfully.", placement: "topRight" });
 
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
 
         } catch (err) {
-            message.error("Submission failed.");
+            notification.error({ message: "Submission failed.", placement: "topRight" });
             console.error("Error during PDF generation:", err);
         } finally {
             setDownloading(false);
@@ -222,7 +222,7 @@ export default function UploadBookingInvoice() {
 
     const handleRequestDocumentsResubmission = async (travelerIndex = null) => {
         if (!booking?._id) {
-            message.error("Booking ID not found.");
+            notification.error({ message: "Booking ID not found.", placement: "topRight" });
             return;
         }
 
@@ -233,9 +233,9 @@ export default function UploadBookingInvoice() {
             );
             const updatedBooking = response?.booking || booking;
             setBooking(updatedBooking);
-            message.success("Document resubmission request sent to customer.");
+            notification.success({ message: "Document resubmission request sent to customer.", placement: "topRight" });
         } catch (error) {
-            message.error(error?.data?.message || "Unable to request resubmission.");
+            notification.error({ message: error?.data?.message || "Unable to request resubmission.", placement: "topRight" });
         } finally {
             setIsRequestingResubmission(false);
         }

@@ -1,4 +1,4 @@
-import { Card, Row, Col, message } from "antd";
+import { Card, Row, Col, notification } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { DollarCircleOutlined, ShoppingCartOutlined, UserOutlined, AppstoreOutlined } from "@ant-design/icons";
 import { BarChart } from '@mui/x-charts/BarChart';
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
         setStats(response);
       } catch (error) {
         console.error("Failed to load dashboard stats:", error);
-        message.error("Unable to load dashboard stats.");
+        notification.error({ message: 'Unable to load dashboard stats.', placement: 'topRight' });
       } finally {
         setLoading(false);
       }
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
 
       } catch (error) {
         console.error("Failed to load transactions:", error);
-        message.error("Unable to load transactions.");
+        notification.error({ message: 'Unable to load transactions.', placement: 'topRight' });
       }
     };
 
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
 
       } catch (error) {
         console.error("Failed to load bookings:", error);
-        message.error("Unable to load bookings.");
+        notification.error({ message: 'Unable to load bookings.', placement: 'topRight' });
       }
     }
 

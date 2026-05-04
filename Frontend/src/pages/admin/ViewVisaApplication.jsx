@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Modal, Checkbox, DatePicker, TimePicker, Input } from "antd";
+import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Modal, Checkbox, DatePicker, TimePicker, Input, notification } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
@@ -95,7 +95,7 @@ export default function ViewVisaApplication() {
                     setApplication(appData); // fallback if no serviceId
                 }
             } catch (err) {
-                message.error("Failed to load application details.");
+                notification.error({ message: "Failed to load application details.", placement: "topRight" });
                 navigate(-1);
             } finally {
                 setLoading(false);
@@ -118,7 +118,7 @@ export default function ViewVisaApplication() {
 
             if (slots.length === 0) {
                 setIsSubmittingSlots(false);
-                message.error("Please select date and time for at least one option.");
+                notification.error({ message: "Please select date and time for at least one option.", placement: "topRight" });
                 return;
             }
 
@@ -134,7 +134,7 @@ export default function ViewVisaApplication() {
             setIsSuggestedDatesSentModalOpen(true);
         } catch (error) {
             setIsSubmittingSlots(false);
-            message.error("Failed to submit appointment options.");
+            notification.error({ message: "Failed to submit appointment options.", placement: "topRight" });
         }
     };
 
@@ -271,9 +271,9 @@ export default function ViewVisaApplication() {
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
             setCurrentStep(stepIdx);
-            message.success(`Status updated to ${newStatus}`);
+            notification.success({ message: `Status updated to ${newStatus}`, placement: "topRight" });
         } catch (err) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -305,7 +305,7 @@ export default function ViewVisaApplication() {
 
             setIsResubmitDocumentsSentModalOpen(true);
         } catch (error) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -314,12 +314,12 @@ export default function ViewVisaApplication() {
     const handleSubmitDeliveryDetails = async () => {
         const parsedFee = Number(deliveryFee);
         if (!Number.isFinite(parsedFee) || parsedFee <= 0) {
-            message.error("Please enter a valid delivery fee.");
+            notification.error({ message: "Please enter a valid delivery fee.", placement: "topRight" });
             return;
         }
 
         if (!deliveryDate) {
-            message.error("Please select a delivery date.");
+            notification.error({ message: "Please select a delivery date.", placement: "topRight" });
             return;
         }
 
@@ -331,9 +331,9 @@ export default function ViewVisaApplication() {
             });
 
             setApplication((prev) => ({ ...prev, ...response.application }));
-            message.success("Delivery details sent to applicant.");
+            notification.success({ message: "Delivery details sent to applicant.", placement: "topRight" });
         } catch (error) {
-            message.error(error?.message || "Failed to send delivery details.");
+            notification.error({ message: error?.message || "Failed to send delivery details.", placement: "topRight" });
         } finally {
             setIsSubmittingDeliveryDetails(false);
         }
@@ -345,9 +345,9 @@ export default function ViewVisaApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Rejected" });
             setApplication((prev) => ({ ...prev, status: "Rejected" }));
-            message.success("Application marked as Embassy Rejected");
+            notification.success({ message: "Application marked as Embassy Rejected", placement: "topRight" });
         } catch (err) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -358,9 +358,9 @@ export default function ViewVisaApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Embassy Approved" });
             setApplication((prev) => ({ ...prev, status: "Embassy Approved" }));
-            message.success("Application marked as Embassy Approved");
+            notification.success({ message: "Application marked as Embassy Approved", placement: "topRight" });
         } catch (err) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }

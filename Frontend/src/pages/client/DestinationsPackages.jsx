@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, Button, Image, Modal, message } from 'antd'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, Button, Image, Modal, notification } from 'antd'
 import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined, SlidersOutlined, SearchOutlined, StarFilled } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
@@ -139,7 +139,7 @@ export default function DestinationsPackages() {
         event?.stopPropagation()
 
         if (!auth) {
-            message.info('Please log in to manage your wishlist.')
+            notification.info({ message: 'Please log in to manage your wishlist.', placement: 'topRight' })
             return
         }
 
@@ -149,7 +149,7 @@ export default function DestinationsPackages() {
         if (isWishlisted) {
             const wishlistId = await resolveWishlistEntryId(packageKey)
             if (!wishlistId) {
-                message.error('Unable to remove wishlist item.')
+                notification.error({ message: 'Unable to remove wishlist item.', placement: 'topRight' })
                 return
             }
 
@@ -165,11 +165,11 @@ export default function DestinationsPackages() {
                     next.delete(packageKey)
                     return next
                 })
-                message.success('Removed from wishlist')
+                notification.success({ message: 'Removed from wishlist', placement: 'topRight' })
             } catch (error) {
                 const errorMessage =
                     error?.data?.message || 'Unable to remove wishlist item.'
-                message.error(errorMessage)
+                notification.error({ message: errorMessage, placement: 'topRight' })
             }
 
             return
@@ -177,12 +177,12 @@ export default function DestinationsPackages() {
 
         try {
             await apiFetch.post('/wishlist/add', { packageId: packageKey })
-            message.success('Added to wishlist')
+            notification.success({ message: 'Added to wishlist', placement: 'topRight' })
             await fetchWishlist()
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to add to wishlist. Please try again.'
-            message.error(errorMessage)
+            notification.error({ message: errorMessage, placement: 'topRight' })
         }
     }, [auth, fetchWishlist, resolveWishlistEntryId, wishlistedIds])
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, message, ConfigProvider, Space, Select, Input, DatePicker, Modal } from "antd";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, ConfigProvider, Space, Select, Input, DatePicker, Modal, notification } from "antd";
 import { FileTextOutlined, ClockCircleOutlined, IdcardOutlined, InboxOutlined, CheckCircleFilled, CheckCircleOutlined, CloseCircleOutlined, CheckOutlined, CloseOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -68,7 +68,7 @@ export default function VisaApplications() {
             setApplications(applications)
         } catch (error) {
             const errorMessage = error?.data?.message || 'Unable to load visa applications.'
-            message.error(errorMessage)
+            notification.error({ message: errorMessage, placement: 'topRight' })
             setApplications([])
         } finally {
             setIsFetchingApplications(false)
@@ -93,7 +93,7 @@ export default function VisaApplications() {
             setArchivedApplications(applications)
         } catch (error) {
             const errorMessage = error?.data?.message || 'Unable to load archived visa applications.'
-            message.error(errorMessage)
+            notification.error({ message: errorMessage, placement: 'topRight' })
             setArchivedApplications([])
         } finally {
             setIsFetchingApplications(false)
@@ -181,7 +181,7 @@ export default function VisaApplications() {
         });
 
         doc.save(`Visa_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
-        message.success("Report exported to PDF successfully.");
+        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
     const handleArchive = async (key) => {
@@ -191,7 +191,7 @@ export default function VisaApplications() {
             setApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving visa application:", error)
-            message.error("Visa application archived unsuccessfully")
+            notification.error({ message: "Visa application archived unsuccessfully", placement: "topRight" })
         }
     }
 
@@ -202,7 +202,7 @@ export default function VisaApplications() {
             setArchivedApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring visa application:", error)
-            message.error("Visa application restore unsuccessfully")
+            notification.error({ message: "Visa application restore unsuccessfully", placement: "topRight" })
         }
 
     }

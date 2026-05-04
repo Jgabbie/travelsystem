@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, message, Modal, ConfigProvider } from "antd";
+import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, notification, Modal, ConfigProvider } from "antd";
 import { SearchOutlined, InboxOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, CheckCircleFilled, BookOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -96,7 +96,7 @@ export default function BookingManagement() {
       const response = await apiFetch.get("/booking/all-bookings");
       setData(mapBookings(response));
     } catch (error) {
-      message.error("Unable to load bookings");
+      notification.error({ message: 'Unable to load bookings', placement: 'topRight' });
       setData([]);
     } finally {
       setLoading(false);
@@ -111,7 +111,7 @@ export default function BookingManagement() {
       const response = await apiFetch.get("/booking/archived-bookings");
       setArchivedData(mapBookings(response));
     } catch (error) {
-      message.error("Unable to load archived bookings");
+      notification.error({ message: 'Unable to load archived bookings', placement: 'topRight' });
       setArchivedData([]);
     } finally {
       setLoading(false);
@@ -217,7 +217,7 @@ export default function BookingManagement() {
     });
 
     doc.save(`Booking_Report_${new Date().toLocaleDateString()}.pdf`);
-    message.success("Report exported to PDF successfully.");
+    notification.success({ message: 'Report exported to PDF successfully.', placement: 'topRight' });
   };
 
   const edit = (record) => {
@@ -237,7 +237,7 @@ export default function BookingManagement() {
       setData((prev) => prev.filter((item) => item.key !== key));
       setIsBookingDeletedModalOpen(true);
     } catch (error) {
-      message.error("Unable to archive booking");
+      notification.error({ message: 'Unable to archive booking', placement: 'topRight' });
     }
 
   };
@@ -249,7 +249,7 @@ export default function BookingManagement() {
       setIsBookingRestoredModalOpen(true);
       setArchivedData((prev) => prev.filter((item) => item.key !== key));
     } catch (error) {
-      message.error(error?.response?.data?.message || "Unable to restore booking");
+      notification.error({ message: error?.response?.data?.message || 'Unable to restore booking', placement: 'topRight' });
     }
 
   };
@@ -317,13 +317,13 @@ export default function BookingManagement() {
         )
       );
 
-      message.success("Booking updated");
+      notification.success({ message: 'Booking updated', placement: 'topRight' });
       setIsEditModalOpen(false);
       setIsBookingEditedModalOpen(true);
       setEditingBooking(null);
       editForm.resetFields();
     } catch {
-      message.error("Please fix validation errors");
+      notification.error({ message: 'Please fix validation errors', placement: 'topRight' });
     }
   };
 

@@ -1,4 +1,4 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, ConfigProvider, Space, Spin } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, ConfigProvider, Space, Spin, notification } from "antd";
 import { PlusOutlined, IdcardOutlined, SearchOutlined, AppstoreOutlined, EditOutlined, CheckCircleOutlined, DeleteOutlined, EyeOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -94,7 +94,10 @@ export default function VisaServices() {
             setServiceToDelete(null);
         } catch (error) {
             console.error("Failed to delete visa service:", error);
-            message.error("Failed to archive visa service");
+            notification.error({
+                message: "Failed to archive visa service",
+                placement: "topRight",
+            });
         }
     };
 
@@ -105,7 +108,10 @@ export default function VisaServices() {
             setIsServiceRestoredModalOpen(true);
         } catch (error) {
             console.error("Failed to restore visa service:", error)
-            message.error("Failed to restore visa service")
+            notification.error({
+                message: "Failed to restore visa service",
+                placement: "topRight",
+            });
         }
     };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Table, Tag, Button, Space, message, Modal, Select, Input, DatePicker, ConfigProvider, Spin, Card } from 'antd'
+import { Table, Tag, Button, Space, notification, Modal, Select, Input, DatePicker, ConfigProvider, Spin, Card } from 'antd'
 import { UploadOutlined, SearchOutlined, EyeOutlined, CloseCircleOutlined, CheckCircleFilled } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig'
@@ -53,7 +53,7 @@ export default function UserBookings() {
 
                 setBookings(bookings)
             } catch (error) {
-                message.error('Unable to load bookings')
+                notification.error({ message: 'Unable to load bookings', placement: 'topRight' })
                 setBookings([])
             } finally {
                 setLoading(false)
@@ -125,11 +125,11 @@ export default function UserBookings() {
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
-            message.error("Please select a valid image file.");
+            notification.error({ message: "Please select a valid image file.", placement: 'topRight' });
             return;
         }
         if (file.size > 2 * 1024 * 1024) {
-            message.error("Image must be 2MB or less.");
+            notification.error({ message: "Image must be 2MB or less.", placement: 'topRight' });
             return;
         }
 
@@ -143,17 +143,17 @@ export default function UserBookings() {
         setLoadingCancel(true)
 
         if (!cancelReason) {
-            message.warning('Please select a cancellation reason');
+            notification.warning({ message: 'Please select a cancellation reason', placement: 'topRight' });
             return;
         }
 
         if (cancelReason === 'Other' && !cancelOtherReason.trim()) {
-            message.warning('Please provide a cancellation reason');
+            notification.warning({ message: 'Please provide a cancellation reason', placement: 'topRight' });
             return;
         }
 
         if (!cancelImages.length) {
-            message.warning('Please upload a supporting file');
+            notification.warning({ message: 'Please upload a supporting file', placement: 'topRight' });
             return;
         }
 
@@ -196,7 +196,7 @@ export default function UserBookings() {
             setCancellationRequestedModalOpen(true)
         } catch (error) {
             console.error(error);
-            message.error('Unable to cancel booking');
+            notification.error({ message: 'Unable to cancel booking', placement: 'topRight' });
         } finally {
             setLoadingCancel(false)
         }

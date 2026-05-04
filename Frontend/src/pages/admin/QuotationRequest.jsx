@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card, Spin, Descriptions, Upload, Button, message, ConfigProvider, Tag, Input, Modal } from "antd";
+import { Card, Spin, Descriptions, Upload, Button, ConfigProvider, Tag, Input, Modal, notification } from "antd";
 import { UploadOutlined, SendOutlined, ArrowLeftOutlined, ArrowRightOutlined, CheckCircleFilled } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -452,7 +452,7 @@ export default function QuotationRequest() {
     // When a file is selected
     const handleFileSelect = (file) => {
         if (file.type !== "application/pdf") {
-            message.error("Only PDF files are allowed.");
+            notification.error({ message: "Only PDF files are allowed.", placement: "topRight" });
             return Upload.LIST_IGNORE;
         }
 
@@ -466,12 +466,12 @@ export default function QuotationRequest() {
     const handleSend = async () => {
         const isValid = validateForm();
         if (!isValid) {
-            message.error("Please complete required fields.");
+            notification.error({ message: "Please complete required fields.", placement: "topRight" });
             return;
         }
 
         if (!selectedFile) {
-            message.warning("Please select a PDF first.");
+            notification.warning({ message: "Please select a PDF first.", placement: "topRight" });
             return;
         }
 
@@ -515,7 +515,7 @@ export default function QuotationRequest() {
 
             await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
 
-            message.success(`${selectedFile.name} uploaded successfully!`);
+            notification.success({ message: `${selectedFile.name} uploaded successfully!`, placement: "topRight" });
 
             setFormData({
                 roomType: '',
@@ -540,7 +540,7 @@ export default function QuotationRequest() {
             setPreviewURL(null);
         } catch (error) {
             console.error("Upload error:", error);
-            message.error("Failed to upload PDF.");
+            notification.error({ message: "Failed to upload PDF.", placement: "topRight" });
         } finally {
             setUploading(false);
         }
@@ -624,10 +624,10 @@ export default function QuotationRequest() {
             await apiFetch.put(`/quotation/${id}/upload-travel-details`, { travelDetails });
 
             setIsQuotationSentModalOpen(true);
-            message.success("Quotation has been sent successfully!");
+            notification.success({ message: "Quotation has been sent successfully!", placement: "topRight" });
         } catch (err) {
             console.error(err);
-            message.error("Quotation did not send");
+            notification.error({ message: "Quotation did not send", placement: "topRight" });
         } finally {
             setUploading(false);
         }
@@ -638,7 +638,7 @@ export default function QuotationRequest() {
             const isValid = validateForm();
 
             if (!isValid) {
-                message.error("Please complete required fields.");
+                notification.error({ message: "Please complete required fields.", placement: "topRight" });
                 return;
             }
         }

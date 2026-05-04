@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, message, Spin, Card, Space, ConfigProvider } from 'antd';
+import { Input, Button, notification, Spin, Card, Space, ConfigProvider } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
 import apiFetch from '../../config/fetchConfig';
@@ -114,11 +114,11 @@ export default function AdminProfile() {
                     phone: data.userData.phone
                 })
             } else {
-                message.error('Failed to fetch user data')
+                notification.error({ message: 'Failed to fetch user data', placement: 'topRight' })
             }
         } catch (error) {
             console.error('Error fetching user data:', error)
-            message.error('Error loading profile')
+            notification.error({ message: 'Error loading profile', placement: 'topRight' })
         } finally {
             setLoading(false)
         }
@@ -214,11 +214,11 @@ export default function AdminProfile() {
         const file = event.target.files?.[0]
         if (!file) return
         if (!file.type.startsWith('image/')) {
-            message.error('Please select a valid image file.')
+            notification.error({ message: 'Please select a valid image file.', placement: 'topRight' })
             return
         }
         if (file.size > 2 * 1024 * 1024) {
-            message.error('Image must be 2MB or less.')
+            notification.error({ message: 'Image must be 2MB or less.', placement: 'topRight' })
             return
         }
 
@@ -239,7 +239,7 @@ export default function AdminProfile() {
         setError(nextErrors)
         const hasErrors = Object.values(nextErrors).some(Boolean)
         if (hasErrors) {
-            message.error('Please fix the highlighted fields before saving.')
+            notification.error({ message: 'Please fix the highlighted fields before saving.', placement: 'topRight' })
             return
         }
         try {
@@ -267,11 +267,11 @@ export default function AdminProfile() {
                 ''
             )
             setEditing(false)
-            message.success('Profile updated successfully!')
+            notification.success({ message: 'Profile updated successfully!', placement: 'topRight' })
         } catch (error) {
             console.error('Error updating profile:', error)
             const apiMessage = error?.data?.message
-            message.error(apiMessage || 'Error updating profile')
+            notification.error({ message: apiMessage || 'Error updating profile', placement: 'topRight' })
         } finally {
             setSaving(false)
         }

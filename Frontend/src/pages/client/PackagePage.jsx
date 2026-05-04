@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Tabs, Modal, Rate, Input, message, Card, ConfigProvider, Spin, Alert } from 'antd';
+import { Button, Tabs, Modal, Rate, Input, notification, Card, ConfigProvider, Spin, Alert } from 'antd';
 import { CheckCircleFilled, HeartFilled, HeartOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
@@ -343,12 +343,12 @@ export default function PackagePage() {
 
         const targetPackage = packageItem
         if (!targetPackage) {
-            message.error('Unable to add wishlist item. Package is missing.')
+            notification.error({ message: 'Unable to add wishlist item. Package is missing.', placement: 'topRight' })
             return
         }
 
         if (wishlistedIds.has(String(targetPackage))) {
-            message.info('This package is already in your wishlist.')
+            notification.info({ message: 'This package is already in your wishlist.', placement: 'topRight' })
             return
         }
 
@@ -364,7 +364,7 @@ export default function PackagePage() {
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to add to wishlist. Please try again.'
-            message.error(errorMessage)
+            notification.error({ message: errorMessage, placement: 'topRight' })
         }
     }
 
@@ -427,12 +427,12 @@ export default function PackagePage() {
         }
 
         if (!hasValidBooking && !isEditingReview) {
-            message.error("You can only rate packages you have booked and fully paid for.")
+            notification.error({ message: 'You can only rate packages you have booked and fully paid for.', placement: 'topRight' })
             return
         }
 
         if (!reviewForm.rating || !reviewForm.comment.trim()) {
-            message.warning("Please provide a rating and comment.");
+            notification.warning({ message: 'Please provide a rating and comment.', placement: 'topRight' });
             return;
         }
 
@@ -465,7 +465,7 @@ export default function PackagePage() {
             });
             setIsEditingReview(false);
         } catch (error) {
-            message.error("Unable to submit review");
+            notification.error({ message: 'Unable to submit review', placement: 'topRight' });
         } finally {
             setIsSubmittingReview(false);
         }
@@ -479,7 +479,7 @@ export default function PackagePage() {
         }
 
         if (!userReview?.id) {
-            message.error('No review to delete.')
+            notification.error({ message: 'No review to delete.', placement: 'topRight' })
             return
         }
         setIsSubmittingReview(true)
@@ -497,7 +497,7 @@ export default function PackagePage() {
             setIsDeleteModalOpen(false)
             setIsRatingDeletedModalOpen(true)
         } catch (error) {
-            message.error('Unable to delete review')
+            notification.error({ message: 'Unable to delete review', placement: 'topRight' })
         } finally {
             setIsSubmittingReview(false)
         }
@@ -511,7 +511,7 @@ export default function PackagePage() {
         }
 
         if (!userReview?.id) {
-            message.error('No review to delete.')
+            notification.error({ message: 'No review to delete.', placement: 'topRight' })
             return
         }
 

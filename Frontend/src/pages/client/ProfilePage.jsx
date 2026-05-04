@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, message, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin, Typography } from 'antd';
+import { Input, Button, notification, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin, Typography } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig';
@@ -71,12 +71,12 @@ export default function ProfilePage() {
 
     const savePreferences = async () => {
         if ((preferences.moods || []).length <= 0 && (preferences.moods || []).length > 3) {
-            message.error('Please select up to 3 mood preferences.');
+            notification.error({ message: 'Please select up to 3 mood preferences.', placement: 'topRight' });
             return;
         }
 
         if ((preferences.tours || []).length < 1) {
-            message.error('Please select at least 1 tour type preference.');
+            notification.error({ message: 'Please select at least 1 tour type preference.', placement: 'topRight' });
             return;
         }
 
@@ -89,11 +89,11 @@ export default function ProfilePage() {
 
             setEditingPreferences(false);
             setIsUserPreferencesEdited(true);
-            message.success('Preferences saved successfully!');
+            notification.success({ message: 'Preferences saved successfully!', placement: 'topRight' });
         } catch (error) {
             console.error('Error saving preferences:', error);
             const errorMsg = error?.data?.message || 'Failed to save preferences';
-            message.error(errorMsg);
+            notification.error({ message: errorMsg, placement: 'topRight' });
         }
     };
 
@@ -219,13 +219,13 @@ export default function ProfilePage() {
                     nationality: data.userData.nationality || ''
                 })
             } else if (response?.status === 401) {
-                message.error('Please login to view your profile')
+                notification.error({ message: 'Please login to view your profile', placement: 'topRight' })
             } else {
-                message.error('Failed to fetch user data')
+                notification.error({ message: 'Failed to fetch user data', placement: 'topRight' })
             }
         } catch (error) {
             console.error('Error fetching user data:', error)
-            message.error('Error fetching profile')
+            notification.error({ message: 'Error fetching profile', placement: 'topRight' })
         }
     }
 
@@ -338,12 +338,12 @@ export default function ProfilePage() {
         if (!file) return
 
         if (!file.type.startsWith('image/')) {
-            message.error('Please select a valid image file.')
+            notification.error({ message: 'Please select a valid image file.', placement: 'topRight' })
             return
         }
 
         if (file.size > 2 * 1024 * 1024) {
-            message.error('Image must be 2MB or less.')
+            notification.error({ message: 'Image must be 2MB or less.', placement: 'topRight' })
             return
         }
 
@@ -365,11 +365,11 @@ export default function ProfilePage() {
             // save Cloudinary URL
             setProfileImage(imageUrl)
 
-            message.success("Image uploaded successfully!")
+            notification.success({ message: "Image uploaded successfully!", placement: 'topRight' })
 
         } catch (error) {
             console.error(error)
-            message.error("Upload failed")
+            notification.error({ message: "Upload failed", placement: 'topRight' })
         }
     }
 
@@ -384,7 +384,7 @@ export default function ProfilePage() {
         setError(nextErrors)
         const hasErrors = Object.values(nextErrors).some(Boolean)
         if (hasErrors) {
-            message.error('Please fix the highlighted fields before saving.')
+            notification.error({ message: 'Please fix the highlighted fields before saving.', placement: 'topRight' })
             return
         }
         try {
@@ -427,7 +427,7 @@ export default function ProfilePage() {
         } catch (error) {
             console.error('Error updating profile:', error)
             const apiMessage = error?.data?.message
-            message.error(apiMessage || 'Error updating profile')
+            notification.error({ message: apiMessage || 'Error updating profile', placement: 'topRight' })
         } finally {
             setSaving(false)
         }

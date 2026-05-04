@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Modal, Input, Slider, Button, message, Select, ConfigProvider, Spin, DatePicker, TimePicker } from 'antd'
+import { Modal, Input, Slider, Button, notification, Select, ConfigProvider, Spin, DatePicker, TimePicker } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -32,7 +32,7 @@ export default function PackageInternationalQuotation() {
 
     useEffect(() => {
         if (!packageItem) {
-            message.error('No package selected for quotation.')
+            notification.error({ message: 'No package selected for quotation.', placement: 'topRight' })
             return
         }
 
@@ -44,12 +44,12 @@ export default function PackageInternationalQuotation() {
                 })
                 .catch((error) => {
                     console.error('Failed to fetch package data:', error)
-                    message.error('Failed to load package details. Please try again later.')
+                    notification.error({ message: 'Failed to load package details. Please try again later.', placement: 'topRight' })
                 })
         }
         catch (error) {
             console.error('An unexpected error occurred while fetching package data:', error)
-            message.error('An unexpected error occurred. Please try again later.')
+            notification.error({ message: 'An unexpected error occurred. Please try again later.', placement: 'topRight' })
         } finally {
             setLoading(false)
         }
@@ -234,10 +234,10 @@ export default function PackageInternationalQuotation() {
         if (selectedDateSlots && totalTravelers > selectedDateSlots) {
             newErrors.travelers = `The selected date only has ${selectedDateSlots} slot${selectedDateSlots === 1 ? '' : 's'} left.`
         }
-        if (packageCategory !== 'Land Arrangement') {
-            if (!preferredAirlines.trim()) newErrors.preferredAirlines = 'Please provide your preferred airlines';
+        if (packageCategory === 'Land Arrangement') {
+            if (!preferredAirlines || preferredAirlines === 'Other' || !preferredAirlines.trim()) newErrors.preferredAirlines = 'Please provide your preferred airlines';
         }
-        if (!preferredHotels.trim()) {
+        if (!preferredHotels || preferredHotels === 'Other' || !preferredHotels.trim()) {
             newErrors.preferredHotels = 'Please provide your preferred hotels'
         }
         if (!preferredDates) {
@@ -294,6 +294,7 @@ export default function PackageInternationalQuotation() {
             setTravelers(1)
             setPreferredAirlines('')
             setPreferredHotels('')
+
             setPreferredDates(null)
             setBudgetRange([minBudget, maxBudget])
             setItineraryNotes(itineraryLabels.map(() => ''))
@@ -305,7 +306,7 @@ export default function PackageInternationalQuotation() {
 
         } catch (error) {
             console.error('An unexpected error occurred while submitting the quotation request:', error)
-            message.error('An unexpected error occurred. Please try again later.')
+            notification.error({ message: 'An unexpected error occurred. Please try again later.', placement: 'topRight' })
             return
         }
     }
@@ -481,11 +482,21 @@ export default function PackageInternationalQuotation() {
                                                         value={preferredAirlines || undefined}
                                                         onChange={(value) => setPreferredAirlines(value)}
                                                         className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
-                                                        options={airlines?.map((airline) => ({
+                                                        options={[...(airlines?.map((airline) => ({
                                                             label: airline.name,
                                                             value: airline.name
-                                                        }))}
+                                                        })) || []), { label: 'Other', value: 'Other' }]}
                                                     />
+                                                    {(preferredAirlines === 'Other' || (preferredAirlines && !airlines?.some(a => a.name === preferredAirlines))) && (
+                                                        <div style={{ marginTop: 8 }}>
+                                                            <Input
+                                                                placeholder="Enter preferred airline"
+                                                                value={preferredAirlines === 'Other' ? '' : preferredAirlines}
+                                                                onChange={(e) => setPreferredAirlines(e.target.value)}
+                                                                className={`quotation-input ${error.preferredAirlines ? 'input-error' : ''}`}
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <p className='package-quotation-error'>{error.preferredAirlines}</p>
                                                     <p className='quotation-airline-note'>Note: Airfare may increase from the usual inclusion in the package, if you choose an airline other than the fixed one.</p>
                                                 </div>
@@ -513,8 +524,18 @@ export default function PackageInternationalQuotation() {
                                                             label: '3 Star Hotels',
                                                             options: hotels.filter(h => h.stars === 3).map(h => ({ label: h.name, value: h.name }))
                                                         }
-                                                    ].filter(group => group.options.length > 0)}
+                                                    ].filter(group => group.options.length > 0).concat([{ label: 'Other', options: [{ label: 'Other', value: 'Other' }] }])}
                                                 />
+                                                {(preferredHotels === 'Other' || (preferredHotels && !hotels?.some(h => h.name === preferredHotels))) && (
+                                                    <div style={{ marginTop: 8 }}>
+                                                        <Input
+                                                            placeholder="Enter preferred hotel"
+                                                            value={preferredHotels === 'Other' ? '' : preferredHotels}
+                                                            onChange={(e) => setPreferredHotels(e.target.value)}
+                                                            className={`quotation-input ${error.preferredHotels ? 'input-error' : ''}`}
+                                                        />
+                                                    </div>
+                                                )}
                                                 <p className='package-quotation-error'>{error.preferredHotels}</p>
                                                 <p className='quotation-hotel-note'>Note: Hotel rates may increase from the usual inclusion in the package, if you choose a hotel other than the fixed one. Rates may also increase or decrease depending on the stars of the chosen hotel.</p>
                                             </div>

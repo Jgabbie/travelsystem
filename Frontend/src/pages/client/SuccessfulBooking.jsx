@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, ConfigProvider, message } from 'antd';
+import { Button, ConfigProvider, notification } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
@@ -31,7 +31,7 @@ export default function SuccessfulBooking() {
             })
             .catch(err => {
                 console.error(err);
-                message.error('Unable to verify booking.');
+                notification.error({ message: 'Unable to verify booking.', placement: 'topRight' });
             });
 
         // Ensure local state is cleared regardless

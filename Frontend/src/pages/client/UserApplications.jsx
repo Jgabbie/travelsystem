@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Tag, Input, Select, DatePicker, Button, Space, ConfigProvider, message, Card } from 'antd';
+import { Table, Tag, Input, Select, DatePicker, Button, Space, ConfigProvider, notification, Card } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import apiFetch from '../../config/fetchConfig';
@@ -49,7 +49,7 @@ export default function UserApplications() {
                 });
                 setApplications(combined);
             } catch (err) {
-                message.error('Unable to load applications');
+                notification.error({ message: 'Unable to load applications', placement: 'topRight' });
                 setApplications([]);
             } finally {
                 setLoading(false);

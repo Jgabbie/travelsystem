@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, message, Switch, Checkbox, DatePicker, TimePicker, Modal } from "antd";
+import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Checkbox, DatePicker, TimePicker, Modal, notification } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
@@ -68,7 +68,7 @@ export default function ViewPassportApplication() {
 
             if (slots.length === 0) {
                 setIsSubmittingSlots(false);
-                message.error("Please select date and time for at least one option.");
+                notification.error({ message: "Please select date and time for at least one option.", placement: "topRight" });
                 return;
             }
 
@@ -84,7 +84,7 @@ export default function ViewPassportApplication() {
             setIsSuggestedDatesSentModalOpen(true);
         } catch (error) {
             setIsSubmittingSlots(false);
-            message.error("Failed to submit appointment options.");
+            notification.error({ message: "Failed to submit appointment options.", placement: "topRight" });
         }
     };
 
@@ -106,7 +106,7 @@ export default function ViewPassportApplication() {
 
             setIsResubmitDocumentsSentModalOpen(true);
         } catch (error) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -125,7 +125,7 @@ export default function ViewPassportApplication() {
                 }, {});
                 setCurrentStep(statusMap[response.status] ?? 0);
             } catch (error) {
-                message.error("Failed to load application details.");
+                notification.error({ message: "Failed to load application details.", placement: "topRight" });
                 navigate(-1);
             } finally {
                 setLoading(false);
@@ -264,9 +264,9 @@ export default function ViewPassportApplication() {
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: newStatus });
             setApplication((prev) => ({ ...prev, status: newStatus }));
             setCurrentStep(stepIdx);
-            message.success(`Status updated to ${newStatus}`);
+            notification.success({ message: `Status updated to ${newStatus}`, placement: "topRight" });
         } catch (err) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -278,9 +278,9 @@ export default function ViewPassportApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "Rejected" });
             setApplication((prev) => ({ ...prev, status: "Rejected" }));
-            message.success("Application marked as DFA Rejected");
+            notification.success({ message: "Application marked as DFA Rejected", placement: "topRight" });
         } catch (err) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -291,9 +291,9 @@ export default function ViewPassportApplication() {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "DFA Approved" });
             setApplication((prev) => ({ ...prev, status: "DFA Approved" }));
-            message.success("Application marked as DFA Approved");
+            notification.success({ message: "Application marked as DFA Approved", placement: "topRight" });
         } catch (err) {
-            message.error("Failed to update status");
+            notification.error({ message: "Failed to update status", placement: "topRight" });
         } finally {
             setIsUpdatingStatus(false);
         }

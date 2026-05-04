@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Spin, message, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker } from 'antd';
+import { Steps, Spin, notification, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, DeleteOutlined, CheckCircleFilled } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
@@ -93,7 +93,7 @@ export default function VisaApplication() {
                     setRequirements([]);
                 }
             } catch (err) {
-                message.error('Failed to load visa application details');
+                notification.error({ message: 'Failed to load visa application details', placement: 'topRight' });
             } finally {
                 setLoading(false);
             }
@@ -121,7 +121,7 @@ export default function VisaApplication() {
     const beforeUpload = (file) => {
         const isLt5M = file.size / 1024 / 1024 < 5;
         if (!isLt5M) {
-            message.error('Image/PDF must be smaller than 5MB!');
+            notification.error({ message: 'Image/PDF must be smaller than 5MB!', placement: 'topRight' });
         }
         return isLt5M || Upload.LIST_IGNORE;
     };
@@ -129,7 +129,7 @@ export default function VisaApplication() {
     //SUBMIT DOCUMENTS
     const handleSubmitDocuments = async () => {
         if (uploading) {
-            message.warning("Please wait until uploads finish");
+            notification.warning({ message: "Please wait until uploads finish", placement: 'topRight' });
             return;
         }
 
@@ -153,7 +153,7 @@ export default function VisaApplication() {
             });
 
             if (missingRequirements.length > 0) {
-                message.warning("Please upload all required documents before submitting.");
+                notification.warning({ message: "Please upload all required documents before submitting.", placement: 'topRight' });
                 return;
             }
 
@@ -193,7 +193,7 @@ export default function VisaApplication() {
             setIsDocumentsUploadedModalOpen(true);
         } catch (err) {
             console.error(err);
-            message.error("Failed to submit documents");
+            notification.error({ message: "Failed to submit documents", placement: 'topRight' });
         } finally {
             setUploading(false);
         }
@@ -218,12 +218,12 @@ export default function VisaApplication() {
     // HANDLE PAYMENT SUBMISSION
     const handleSubmitPayment = async () => {
         if (method === 'manual' && fileList.length === 0) {
-            message.warning('Please upload a receipt first.');
+            notification.warning({ message: 'Please upload a receipt first.', placement: 'topRight' });
             return;
         }
 
         if (isDeliveryFeeStage && deliveryFeeAmount <= 0) {
-            message.warning('Delivery fee is not available yet. Please wait for admin to send it.');
+            notification.warning({ message: 'Delivery fee is not available yet. Please wait for admin to send it.', placement: 'topRight' });
             return;
         }
 
@@ -251,13 +251,13 @@ export default function VisaApplication() {
                 });
 
                 navigate(paymentRes.redirectUrl);
-                message.success("Manual payment submitted successfully. Awaiting verification.");
+                notification.success({ message: "Manual payment submitted successfully. Awaiting verification.", placement: 'topRight' });
                 setPaymentCompleted(true);
 
             } else if (method === 'paymongo') {
                 // Make sure application exists
                 if (!application) {
-                    message.error("Application not found.");
+                    notification.error({ message: "Application not found.", placement: 'topRight' });
                     return;
                 }
 
@@ -285,7 +285,7 @@ export default function VisaApplication() {
 
         } catch (err) {
             console.error(err);
-            message.error("Payment failed");
+            notification.error({ message: "Payment failed", placement: 'topRight' });
         } finally {
             setPaymentLoading(false);
         }
@@ -343,11 +343,11 @@ export default function VisaApplication() {
                 }],
             }));
 
-            message.success('File ready for submission');
+            notification.success({ message: 'File ready for submission', placement: 'topRight' });
             onSuccess('ok');
         } catch (err) {
             console.error(err);
-            message.error('Failed to process file');
+            notification.error({ message: 'Failed to process file', placement: 'topRight' });
             onError(err);
         } finally {
             setUploading(false);
@@ -384,7 +384,7 @@ export default function VisaApplication() {
     //HANDLE CONFIRMATION OF SUGGESTED APPOINTMENT
     const handleConfirmSuggested = async () => {
         if (!application?.suggestedAppointmentSchedules || selectedSuggestedIndex === null) {
-            message.warning('Please select an appointment option first.');
+            notification.warning({ message: 'Please select an appointment option first.', placement: 'topRight' });
             return;
         }
 
@@ -393,7 +393,7 @@ export default function VisaApplication() {
 
         if (selectedSuggestedIndex === 'others') {
             if (!customDateTime.date || !customDateTime.time) {
-                message.warning('Please fill in all custom date and time fields.');
+                notification.warning({ message: 'Please fill in all custom date and time fields.', placement: 'topRight' });
                 return;
             }
 
@@ -404,7 +404,7 @@ export default function VisaApplication() {
             const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
 
             if (!selected?.date || !selected?.time) {
-                message.error('Selected option is missing date or time.');
+                notification.error({ message: 'Selected option is missing date or time.', placement: 'topRight' });
                 return;
             }
 
@@ -428,7 +428,7 @@ export default function VisaApplication() {
             setApplication(refreshed);
             setIsDateSelectedModalOpen(true);
         } catch (error) {
-            message.error('Failed to confirm appointment schedule.');
+            notification.error({ message: 'Failed to confirm appointment schedule.', placement: 'topRight' });
         } finally {
             setConfirmingSuggested(false);
         }
@@ -436,12 +436,12 @@ export default function VisaApplication() {
 
     const handleReleaseOption = async () => {
         if (!releaseOption) {
-            message.warning('Please select a release option first.');
+            notification.warning({ message: 'Please select a release option first.', placement: 'topRight' });
             return
         }
 
         if (releaseOption === 'delivery' && deliveryAddress.trim() === "") {
-            message.warning('Please provide a delivery address in your profile settings before choosing delivery option.');
+            notification.warning({ message: 'Please provide a delivery address in your profile settings before choosing delivery option.', placement: 'topRight' });
             return;
         }
 
@@ -455,7 +455,7 @@ export default function VisaApplication() {
             setIsPassportReleaseOptionSelectedModalOpen(true);
             window.location.reload();
         } catch (error) {
-            message.error('Failed to update release option.');
+            notification.error({ message: 'Failed to update release option.', placement: 'topRight' });
         }
     }
 

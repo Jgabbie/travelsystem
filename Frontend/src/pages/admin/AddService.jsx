@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Input, Button, Card, Space, message, ConfigProvider, Select } from "antd";
+import { Input, Button, Card, Space, notification, ConfigProvider, Select } from "antd";
 import { PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
@@ -137,7 +137,7 @@ export default function AddService() {
         setErrors(newErrors);
 
         if (hasError) {
-            message.error("Please fill all required fields correctly.");
+            notification.error({ message: 'Please fill all required fields correctly.', placement: 'topRight' });
             return;
         }
 
@@ -197,7 +197,7 @@ export default function AddService() {
                 });
 
             } catch (error) {
-                message.error("Failed to load service details.");
+                notification.error({ message: 'Failed to load service details.', placement: 'topRight' });
                 navigate(`${basePath}/visa-services`);
             }
         }

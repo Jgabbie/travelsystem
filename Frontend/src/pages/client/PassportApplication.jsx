@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Spin, message, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal } from 'antd';
+import { Steps, Spin, notification, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined, CheckCircleFilled } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
@@ -97,7 +97,7 @@ export default function PassportApplication() {
                 const res = await apiFetch.get(fetchPassportApplication);
                 setApplication(res);
             } catch (err) {
-                message.error('Failed to load passport application details');
+                notification.error({ message: 'Failed to load passport application details', placement: 'topRight' });
             } finally {
                 setLoading(false);
             }
@@ -110,7 +110,7 @@ export default function PassportApplication() {
                 console.log("User email:", res.userData.email);
                 setApplication(prev => ({ ...prev, email: res.userData.email }));
             } catch (err) {
-                message.error('Failed to load user data');
+                notification.error({ message: 'Failed to load user data', placement: 'topRight' });
             } finally {
                 setLoading(false);
             }
@@ -147,7 +147,7 @@ export default function PassportApplication() {
 
     const handleSubmitPayment = async () => {
         if (method === 'manual' && fileList.length === 0) {
-            message.warning('Please upload a receipt first.');
+            notification.warning({ message: 'Please upload a receipt first.', placement: 'topRight' });
             return;
         }
 
@@ -182,7 +182,7 @@ export default function PassportApplication() {
                 console.log("Manual payment response:", paymentRes);
 
                 navigate(paymentRes.redirectUrl);
-                message.success("Manual payment submitted successfully. Awaiting verification.");
+                notification.success({ message: "Manual payment submitted successfully. Awaiting verification.", placement: 'topRight' });
                 setPaymentCompleted(true);
 
             } else if (method === 'paymongo') {
@@ -190,7 +190,7 @@ export default function PassportApplication() {
 
 
                 if (!application) {
-                    message.error("Application not found.");
+                    notification.error({ message: "Application not found.", placement: 'topRight' });
                     return;
                 }
 
@@ -218,7 +218,7 @@ export default function PassportApplication() {
 
         } catch (err) {
             console.error(err);
-            message.error("Payment failed");
+            notification.error({ message: "Payment failed", placement: 'topRight' });
         } finally {
             setPaymentLoading(false);
         }
@@ -342,12 +342,12 @@ export default function PassportApplication() {
     //HANDLE SUBMISSION OF UPLOADED DOCUMENTS
     const handleSubmit = async () => {
         if (uploading) {
-            message.warning("Please wait until uploads finish");
+            notification.warning({ message: "Please wait until uploads finish", placement: 'topRight' });
             return;
         }
 
         if (!birthCertList[0] || !applicationFormList[0] || !govIdList[0]) {
-            message.warning("Please upload the required documents before submitting.");
+            notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
             return;
         }
 
@@ -373,7 +373,7 @@ export default function PassportApplication() {
             });
 
             if (!formData.has("files")) {
-                message.warning("Please upload the required documents before submitting.");
+                notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
                 return;
             }
 
@@ -407,7 +407,7 @@ export default function PassportApplication() {
             setIsDocumentsUploadedModalOpen(true);
         } catch (err) {
             console.error(err);
-            message.error("Failed to submit documents");
+            notification.error({ message: "Failed to submit documents", placement: 'topRight' });
         } finally {
             setUploading(false);
         }
@@ -416,7 +416,7 @@ export default function PassportApplication() {
     //HANDLE CONFIRMATION OF SUGGESTED APPOINTMENT
     const handleConfirmSuggested = async () => {
         if (!application?.suggestedAppointmentSchedules || selectedSuggestedIndex === null) {
-            message.warning('Please select an appointment option first.');
+            notification.warning({ message: 'Please select an appointment option first.', placement: 'topRight' });
             return;
         }
 
@@ -425,7 +425,7 @@ export default function PassportApplication() {
 
         if (selectedSuggestedIndex === 'others') {
             if (!customDateTime.date || !customDateTime.time) {
-                message.warning('Please fill in all custom date and time fields.');
+                notification.warning({ message: 'Please fill in all custom date and time fields.', placement: 'topRight' });
                 return;
             }
 
@@ -436,7 +436,7 @@ export default function PassportApplication() {
             const selected = application.suggestedAppointmentSchedules[selectedSuggestedIndex];
 
             if (!selected?.date || !selected?.time) {
-                message.error('Selected option is missing date or time.');
+                notification.error({ message: 'Selected option is missing date or time.', placement: 'topRight' });
                 return;
             }
 
@@ -460,7 +460,7 @@ export default function PassportApplication() {
             setApplication(refreshed);
             setIsDateSelectedModalOpen(true);
         } catch (error) {
-            message.error('Failed to confirm appointment schedule.');
+            notification.error({ message: 'Failed to confirm appointment schedule.', placement: 'topRight' });
         } finally {
             setConfirmingSuggested(false);
         }

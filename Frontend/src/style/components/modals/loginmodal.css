@@ -170,7 +170,17 @@ body {
     color: #305797;
 }
 
-.login-button-links-modal,
+.login-button-links-modal {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 4px;
+    margin-left: 0px;
+    padding-left: 4px;
+    margin-right: 5px;
+    color: #305797;
+    border: none !important;
+}
+
 .login-otp-button-links-modal {
     font-size: 13px;
     font-weight: 600;

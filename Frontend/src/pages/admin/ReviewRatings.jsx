@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, message, Modal, ConfigProvider, Space } from "antd";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Input, Select, DatePicker, Modal, ConfigProvider, Space, notification } from "antd";
 import { StarOutlined, MessageOutlined, FundOutlined, ClockCircleOutlined, CheckCircleOutlined, DeleteOutlined, SearchOutlined, FilePdfOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
@@ -65,7 +65,7 @@ export default function ReviewRatings() {
             setRatings(mapped);
         } catch (error) {
             setRatings([]);
-            message.error("Failed to fetch reviews");
+            notification.error({ message: "Failed to fetch reviews", placement: "topRight" });
         } finally {
             setLoading(false);
         }
@@ -93,7 +93,7 @@ export default function ReviewRatings() {
             setArchivedRatings(mapped);
         } catch (error) {
             setArchivedRatings([]);
-            message.error("Failed to fetch archived reviews");
+            notification.error({ message: "Failed to fetch archived reviews", placement: "topRight" });
         } finally {
             setLoading(false);
         }
@@ -200,14 +200,14 @@ export default function ReviewRatings() {
         });
 
         doc.save(`Reviews_Report_${new Date().toLocaleDateString()}.pdf`);
-        message.success("Report exported to PDF successfully.");
+        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
 
     // DELETE RATING ----------------------------------------------------------------------------
     const handleArchive = async (key) => {
         if (!key) {
-            message.error("Rating not found")
+            notification.error({ message: "Rating not found", placement: "topRight" });
             return
         }
         try {
@@ -215,14 +215,14 @@ export default function ReviewRatings() {
             setRatings((prev) => prev.filter((r) => r.id !== key));
             setIsRatingDeletedModalOpen(true);
         } catch {
-            message.error("Failed to archive review");
+            notification.error({ message: "Failed to archive review", placement: "topRight" });
         }
 
     };
 
     const handleRestore = async (key) => {
         if (!key) {
-            message.error("Rating not found")
+            notification.error({ message: "Rating not found", placement: "topRight" });
             return
         }
         try {
@@ -231,7 +231,7 @@ export default function ReviewRatings() {
             setArchivedRatings((prev) => prev.filter((item) => item.id !== key))
         } catch (error) {
             console.error("Error restoring rating:", error)
-            message.error("Rating restore unsuccessfully")
+            notification.error({ message: "Rating restore unsuccessfully", placement: "topRight" });
         }
     };
 

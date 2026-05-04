@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Button, message, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker, Space } from 'antd'
+import { Button, notification, Upload, Form, Steps, ConfigProvider, Modal, Input, Select, DatePicker, Space } from 'antd'
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useQuotationBooking } from '../../context/BookingQuotationContext';
@@ -501,12 +501,12 @@ export default function QuotationBookingProcess() {
                 const missingPhotos = photoFileLists.some(list => !list || list.length === 0);
 
                 if (missingPhotos) {
-                    message.error("Please upload 2x2 photo for all travelers.");
+                    notification.error({ message: "Please upload 2x2 photo for all travelers.", placement: 'topRight' });
                     return;
                 }
 
                 if (missingUploads) {
-                    message.error(`Please upload ${travelDocumentShortLabel} for all travelers.`);
+                    notification.error({ message: `Please upload ${travelDocumentShortLabel} for all travelers.`, placement: 'topRight' });
                     return;
                 }
             }
@@ -597,10 +597,10 @@ export default function QuotationBookingProcess() {
                 const errorMessage = firstError.errors?.[0]
                     ? firstError.errors[0]
                     : 'Please complete all required fields before proceeding.'
-                message.error(errorMessage);
+                notification.error({ message: errorMessage, placement: 'topRight' });
                 return;
             }
-            message.error("Please complete all required fields before proceeding. Check the console for details.");
+            notification.error({ message: "Please complete all required fields before proceeding. Check the console for details.", placement: 'topRight' });
         }
     };
 
@@ -615,13 +615,13 @@ export default function QuotationBookingProcess() {
             file.type === 'image/png'
 
         if (!isValidType) {
-            message.error('Only JPG or PNG');
+            notification.error({ message: 'Only JPG or PNG', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isValidSize = file.size / 1024 / 1024 < 5;
         if (!isValidSize) {
-            message.error('File must be smaller than 5MB');
+            notification.error({ message: 'File must be smaller than 5MB', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
@@ -647,12 +647,12 @@ export default function QuotationBookingProcess() {
             setCurrentStep(previousStep);
             setIsGeneratingPdf(false);
 
-            message.success("Registration details saved. Proceeding to payment...");
+            notification.success({ message: "Registration details saved. Proceeding to payment...", placement: 'topRight' });
             navigate('/quotation-payment-process');
 
         } catch (error) {
             setIsGeneratingPdf(false);
-            message.error("Please review the terms and conditions.");
+            notification.error({ message: "Please review the terms and conditions.", placement: 'topRight' });
         }
     };
 
@@ -1133,7 +1133,7 @@ export default function QuotationBookingProcess() {
                                                                 : ageBounds.minAge === 3 && ageBounds.maxAge === 11
                                                                     ? '3-11'
                                                                     : '12+'
-                                                            message.error(`Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`)
+                                                            notification.error({ message: `Please select a ${ageLabel} year old birthdate for ${travelerType.toLowerCase()}.`, placement: 'topRight' })
                                                             return
                                                         }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Table, Tag, Button, Space, message, Input, Select, DatePicker, ConfigProvider, Modal, Image, Card } from 'antd'
+import { Table, Tag, Button, Space, notification, Input, Select, DatePicker, ConfigProvider, Modal, Image, Card } from 'antd'
 import { SearchOutlined, EyeOutlined, FileOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
 import jsPDF from 'jspdf';
@@ -41,7 +41,7 @@ export default function UserTransactions() {
                 }));
                 setTransactions(transactions)
             } catch (error) {
-                message.error('Unable to load transactions')
+                notification.error({ message: 'Unable to load transactions', placement: 'topRight' })
                 setTransactions([])
             } finally {
                 setLoading(false)
@@ -131,7 +131,7 @@ export default function UserTransactions() {
                             icon={<FileOutlined />}
                             onClick={() => {
                                 if (!record.proofImage) {
-                                    message.warning('No proof image available for this transaction.');
+                                    notification.warning({ message: 'No proof image available for this transaction.', placement: 'topRight' });
                                     return;
                                 }
                                 setSelectedTransaction(record);
@@ -150,12 +150,12 @@ export default function UserTransactions() {
     const handleDownloadPDF = async () => {
         const element = receiptRef.current;
         if (!element) {
-            message.error("Receipt content not found!");
+            notification.error({ message: "Receipt content not found!", placement: 'topRight' });
             return;
         }
 
         try {
-            message.loading({ content: "Generating PDF...", key: "pdf" });
+            notification.loading({ message: "Generating PDF...", key: "pdf", placement: 'topRight' });
 
             const canvas = await html2canvas(element, {
                 scale: 3, // Higher scale for crisp text
@@ -186,10 +186,10 @@ export default function UserTransactions() {
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
 
-            message.success({ content: "Downloaded successfully!", key: "pdf" });
+            notification.success({ message: "Downloaded successfully!", key: "pdf", placement: 'topRight' });
         } catch (error) {
             console.error("PDF Generation Error:", error);
-            message.error({ content: "Failed to generate PDF.", key: "pdf" });
+            notification.error({ message: "Failed to generate PDF.", key: "pdf", placement: 'topRight' });
         }
     };
 

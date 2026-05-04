@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, message, Steps, Form, Upload, Spin, Modal } from "antd";
+import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, notification, Steps, Form, Upload, Spin, Modal } from "antd";
 import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined } from "@ant-design/icons";
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
@@ -160,7 +160,7 @@ export default function UserBookingInvoice() {
                 }
 
             } catch (err) {
-                message.error("Failed to load booking details.");
+                notification.error({ message: "Failed to load booking details.", placement: 'topRight' });
                 console.error("Primary fetch error:", err);
             } finally {
 
@@ -330,13 +330,13 @@ export default function UserBookingInvoice() {
     const beforeDocumentUpload = (file) => {
         const isImage = file.type === "image/jpeg" || file.type === "image/png";
         if (!isImage) {
-            message.error("Only JPG/PNG files are allowed");
+            notification.error({ message: "Only JPG/PNG files are allowed", placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error("Image must be smaller than 2MB");
+            notification.error({ message: "Image must be smaller than 2MB", placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -362,7 +362,7 @@ export default function UserBookingInvoice() {
 
     const handleSubmitTravelerResubmission = async (index) => {
         if (!booking?._id) {
-            message.error("Booking ID not found.");
+            notification.error({ message: "Booking ID not found.", placement: 'topRight' });
             return;
         }
 
@@ -370,7 +370,7 @@ export default function UserBookingInvoice() {
         const photoList = photoUploadLists[index] || [];
 
         if (passportList.length === 0 && photoList.length === 0) {
-            message.warning("Please upload passport/ID or 2x2 photo.");
+            notification.warning({ message: "Please upload passport/ID or 2x2 photo.", placement: 'topRight' });
             return;
         }
 
@@ -419,9 +419,9 @@ export default function UserBookingInvoice() {
                 next[index] = [];
                 return next;
             });
-            message.success("Documents submitted successfully.");
+            notification.success({ message: "Documents submitted successfully.", placement: 'topRight' });
         } catch (error) {
-            message.error(error?.data?.message || "Unable to submit documents.");
+            notification.error({ message: error?.data?.message || "Unable to submit documents.", placement: 'topRight' });
         } finally {
             setSubmittingTravelerIndex(null);
         }
@@ -434,7 +434,7 @@ export default function UserBookingInvoice() {
 
             setCurrentStep(prev => prev + 1);
         } catch (error) {
-            message.error("Please complete required fields.");
+            notification.error({ message: "Please complete required fields.", placement: 'topRight' });
         }
     };
 
@@ -488,10 +488,10 @@ export default function UserBookingInvoice() {
             }
 
             pdf.save(`Booking_${reference}.pdf`);
-            message.success("Booking Registration PDF downloaded successfully.");
+            notification.success({ message: "Booking Registration PDF downloaded successfully.", placement: 'topRight' });
 
         } catch (err) {
-            message.error("Submission failed.");
+            notification.error({ message: "Submission failed.", placement: 'topRight' });
             console.error("Error during PDF generation:", err);
         } finally {
             setDownloading(false);
@@ -524,13 +524,13 @@ export default function UserBookingInvoice() {
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
-            message.error('Only JPG/PNG files are allowed');
+            notification.error({ message: 'Only JPG/PNG files are allowed', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error('Image must be smaller than 2MB');
+            notification.error({ message: 'Image must be smaller than 2MB', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -540,12 +540,12 @@ export default function UserBookingInvoice() {
     const proceedBooking = async () => {
 
         if (!method) {
-            message.warning("Please select a payment method.");
+            notification.warning({ message: "Please select a payment method.", placement: 'topRight' });
             return;
         }
 
         if (method === 'manual' && fileList.length === 0) {
-            message.warning("Please upload proof of payment.");
+            notification.warning({ message: "Please upload proof of payment.", placement: 'topRight' });
             return;
         }
 
@@ -556,7 +556,7 @@ export default function UserBookingInvoice() {
                 const file = fileList?.[0]?.originFileObj;
 
                 if (!file) {
-                    message.error("Invalid file.");
+                    notification.error({ message: "Invalid file.", placement: 'topRight' });
                     setLoading(false);
                     return;
                 }
@@ -577,7 +577,7 @@ export default function UserBookingInvoice() {
                 const imageUrl = uploadRes?.url;
 
                 if (!imageUrl) {
-                    message.error("Image upload failed.");
+                    notification.error({ message: "Image upload failed.", placement: 'topRight' });
                     setLoading(false);
                     return;
                 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Button, Form, Modal, Tag, Space, message, Row, Col, Statistic, Card, ConfigProvider, Avatar } from "antd";
+import { Table, Input, Select, Button, Form, Modal, Tag, Space, Row, Col, Statistic, Card, ConfigProvider, Avatar, notification } from "antd";
 import {
   SearchOutlined,
   EditOutlined,
@@ -85,7 +85,7 @@ export default function UserManagement() {
       }));
       setUsers(formattedData);
     } catch {
-      message.error("Failed to load users");
+      notification.error({ message: "Failed to load users", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ export default function UserManagement() {
       }));
       setArchivedUsers(formattedData);
     } catch {
-      message.error("Failed to load archived users");
+      notification.error({ message: "Failed to load archived users", placement: "topRight" });
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,7 @@ export default function UserManagement() {
     });
 
     doc.save(`User_Report_${new Date().toLocaleDateString()}.pdf`);
-    message.success("Report exported to PDF successfully.");
+    notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
   };
 
   const handleArchive = async (key) => {
@@ -188,18 +188,18 @@ export default function UserManagement() {
       setIsDeleteModalOpen(false);
       setIsUserDeletedModalOpen(true);
       getUsers();
-    } catch { message.error("Archive failed"); }
+    } catch { notification.error({ message: "Archive failed", placement: "topRight" }); }
   };
 
   const handleRestore = async (key) => {
     try {
       await apiFetch.post(`/user/archived-users/${key}/restore`, {}, { withCredentials: true });
       setIsUserRestoredModalOpen(true);
-      message.success("User restored successfully");
+      notification.success({ message: "User restored successfully", placement: "topRight" });
       setArchivedUsers((prev) => prev.filter((item) => item.key !== key));
 
     } catch (error) {
-      message.error(error?.response?.data?.message || "User restore failed");
+      notification.error({ message: error?.response?.data?.message || "User restore failed", placement: "topRight" });
     }
   };
 
@@ -228,14 +228,14 @@ export default function UserManagement() {
         { withCredentials: true }
       );
 
-      message.success("User updated");
+      notification.success({ message: "User updated", placement: "topRight" });
       setIsEditModalOpen(false);
       setIsUserEditedModalOpen(true);
       setEditingUser(null);
       editForm.resetFields();
       getUsers();
     } catch {
-      message.error("Update failed");
+      notification.error({ message: "Update failed", placement: "topRight" });
     }
   };
 

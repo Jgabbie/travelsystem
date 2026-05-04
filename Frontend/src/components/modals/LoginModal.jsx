@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, Spin, ConfigProvider, message } from 'antd';
+import { Button, Modal, Input, Spin, ConfigProvider, Alert, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
@@ -105,7 +105,11 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
             const errorMsg = err.data?.message || 'Login failed';
             console.error("Error: ", errorMsg)
             setError(errorMsg)
-            message.error(errorMsg);
+            notification.error({
+                message: 'Login Failed',
+                description: errorMsg,
+                placement: 'topRight',
+            });
         } finally {
             setIsLoading(false);
         }
@@ -145,11 +149,20 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                     isCloseLogin();
                     onLoginSuccess?.();
                     clearForm();
+                    notification.success({
+                        message: 'Login Successful',
+                        description: 'You have successfully logged in.',
+                        placement: 'topRight',
+                    });
                 }
             }
         } catch (err) {
             if (err.status === 429) {
-                message.error("Too many failed attempts. Please try again later.");
+                notification.error({
+                    message: 'Too many failed attempts',
+                    description: 'Please try again later.',
+                    placement: 'topRight',
+                });
                 clearForm();
                 return;
             }

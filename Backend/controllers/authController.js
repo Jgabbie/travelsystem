@@ -412,50 +412,22 @@ const sendVerifyOtp = async (req, res) => {
         const mailOptions = {
             from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
             to: user.email,
-            subject: 'M&RC Travel and Tours - Account Verification OTP',
+            subject: 'M&RC Travel and Tours - Login OTP',
             html: `
             <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                    
                     <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                    <h2 style="color:#305797; margin-bottom:10px;">
-                        M&RC Travel and Tours
-                    </h2>
-
-                    <p style="color:#555; font-size:16px;">
-                        Verify your account using the OTP below
-                    </p>
-
-                    <div style="
-                        margin:25px 0;
-                        font-size:32px;
-                        font-weight:bold;
-                        letter-spacing:8px;
-                        color:#992A46;
-                        background:#f9fafb;
-                        padding:15px;
-                        border-radius:8px;
-                        border:1px dashed #ddd;
-                    ">
-                        ${otp}
-                    </div>
-
-                    <p style="color:#777; font-size:14px;">
-                        This OTP will expire in <b>1 minute</b>.
-                    </p>
-
-                    <p style="color:#aaa; font-size:12px; margin-top:30px;">
-                        If you did not request this verification, please ignore this email.
-                    </p>
-
+                    <h2 style="color:#305797; margin-bottom:10px;">M&RC Travel and Tours</h2>
+                    <p style="color:#555; font-size:16px;">Use the OTP below to complete your login.</p>
+                    <div style="margin:25px 0; font-size:32px; font-weight:bold; letter-spacing:8px; color:#992A46; background:#f9fafb; padding:15px; border-radius:8px; border:1px dashed #ddd;">${otp}</div>
+                    <p style="color:#777; font-size:14px;">This OTP will expire in <b>1 minute</b>.</p>
+                    <p style="color:#aaa; font-size:12px; margin-top:30px;">If you did not try to log in, please ignore this email.</p>
                     <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                         <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
                         <p>M&RC Travel and Tours</p>
                         <p>info1@mrctravels.com</p>
                         <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
                     </div>
-
                 </div>
             </div>
             `

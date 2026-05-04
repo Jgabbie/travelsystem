@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Input, Button, Card, DatePicker, Select, Space, message, ConfigProvider, Spin } from "antd";
+import { Input, Button, Card, DatePicker, Select, Space, notification, ConfigProvider, Spin } from "antd";
 import { UploadOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import apiFetch from "../../config/fetchConfig";
 import '../../style/admin/addpackage.css';
@@ -110,7 +110,7 @@ export default function AddPackageDomestic() {
       } else {
         errorMsg = JSON.stringify(backEndErrors);
       }
-      message.error(errorMsg);
+      notification.error({ message: errorMsg, placement: 'topRight' });
     }
   }, [backEndErrors]);
 
@@ -441,7 +441,7 @@ export default function AddPackageDomestic() {
     setErrors(newErrors);
 
     if (hasError) {
-      message.error("Please fill all required fields correctly.");
+      notification.error({ message: 'Please fill all required fields correctly.', placement: 'topRight' });
       return; // stop submission
     }
 
@@ -577,16 +577,16 @@ export default function AddPackageDomestic() {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      message.error("Please select a valid image file.");
+      notification.error({ message: 'Please select a valid image file.', placement: 'topRight' });
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      message.error("Image must be 2MB or less.");
+      notification.error({ message: 'Image must be 2MB or less.', placement: 'topRight' });
       return;
     }
 
     if (values.images.length >= 3) {
-      message.error("You can upload up to 3 images only.");
+      notification.error({ message: 'You can upload up to 3 images only.', placement: 'topRight' });
       return;
     }
 

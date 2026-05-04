@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, message, ConfigProvider, Modal, Spin, Slider } from 'antd'
+import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, notification, ConfigProvider, Modal, Spin, Slider } from 'antd'
 import { DeleteOutlined, EyeOutlined, CheckCircleFilled, SearchOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
@@ -31,7 +31,7 @@ export default function Wishlist() {
             } catch (error) {
                 const errorMessage =
                     error?.data?.message || 'Unable to load wishlist.'
-                message.error(errorMessage)
+                notification.error({ message: errorMessage, placement: 'topRight' })
                 setWishlistItems([])
             } finally {
                 setIsLoading(false)
@@ -110,11 +110,11 @@ export default function Wishlist() {
             setWishlistItems((prev) =>
                 prev.filter((entry) => entry?._id !== wishlistId)
             )
-            message.success('Removed from wishlist')
+            notification.success({ message: 'Removed from wishlist', placement: 'topRight' })
         } catch (error) {
             const errorMessage =
                 error?.data?.message || 'Unable to remove wishlist item.'
-            message.error(errorMessage)
+            notification.error({ message: errorMessage, placement: 'topRight' })
         }
     }
 

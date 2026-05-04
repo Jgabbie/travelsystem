@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, message, Input, Select, DatePicker, Modal } from "antd";
+import { Card, Table, Button, Row, Col, Statistic, Tag, Empty, Space, ConfigProvider, Input, Select, DatePicker, Modal, notification } from "antd";
 import { FileTextOutlined, TeamOutlined, InboxOutlined, DeleteOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -175,12 +175,12 @@ export default function PassportApplications() {
         });
 
         doc.save(`Passport_Applications_Report_${new Date().toLocaleDateString()}.pdf`);
-        message.success("Report exported to PDF successfully.");
+        notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
     const handleArchive = async (key) => {
         if (!key) {
-            message.error("Passport application not found")
+            notification.error({ message: "Passport application not found", placement: "topRight" });
             return
         }
         try {
@@ -189,13 +189,13 @@ export default function PassportApplications() {
             setPassportApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error archiving passport application:", error)
-            message.error("Passport application archived unsuccessfully")
+            notification.error({ message: "Passport application archived unsuccessfully", placement: "topRight" });
         }
     }
 
     const handleRestore = async (key) => {
         if (!key) {
-            message.error("Passport application not found")
+            notification.error({ message: "Passport application not found", placement: "topRight" });
             return
         }
         try {
@@ -204,7 +204,7 @@ export default function PassportApplications() {
             setArchivedApplications((prev) => prev.filter((item) => item.key !== key))
         } catch (error) {
             console.error("Error restoring passport application:", error)
-            message.error("Passport application restore unsuccessfully")
+            notification.error({ message: "Passport application restore unsuccessfully", placement: "topRight" });
         }
     }
 

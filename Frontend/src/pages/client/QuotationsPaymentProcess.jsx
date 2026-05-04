@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, message, Spin } from 'antd';
+import { Modal, Button, ConfigProvider, Radio, Select, Upload, Space, notification, Spin } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from '@react-pdf/renderer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -189,13 +189,13 @@ export default function QuotationsPaymentProcess() {
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
-            message.error('Only JPG/PNG files are allowed');
+            notification.error({ message: 'Only JPG/PNG files are allowed', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
-            message.error('Image must be smaller than 2MB');
+            notification.error({ message: 'Image must be smaller than 2MB', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -347,17 +347,17 @@ export default function QuotationsPaymentProcess() {
 
         setIsProceedModalOpen(false);
         if (!paymentType) {
-            message.warning("Please select a payment type.");
+            notification.warning({ message: "Please select a payment type.", placement: 'topRight' });
             return;
         }
 
         if (!method) {
-            message.warning("Please select a payment method.");
+            notification.warning({ message: "Please select a payment method.", placement: 'topRight' });
             return;
         }
 
         if (method === 'manual' && fileList.length === 0) {
-            message.warning("Please upload proof of payment.");
+            notification.warning({ message: "Please upload proof of payment.", placement: 'topRight' });
             return;
         }
 
@@ -418,7 +418,7 @@ export default function QuotationsPaymentProcess() {
                 // Expiry check (extra safety)
                 if (dayjs().isAfter(dayjs(expiresAt))) {
                     setLoading(false);
-                    message.error("Booking session expired. Please try again.");
+                    notification.error({ message: "Booking session expired. Please try again.", placement: 'topRight' });
                     return;
                 }
 
@@ -437,7 +437,7 @@ export default function QuotationsPaymentProcess() {
                 const file = fileList?.[0]?.originFileObj;
 
                 if (!file) {
-                    message.error("Invalid file.");
+                    notification.error({ message: "Invalid file.", placement: 'topRight' });
                     setLoading(false);
                     return;
                 }

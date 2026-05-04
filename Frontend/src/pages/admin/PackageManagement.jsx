@@ -1,4 +1,4 @@
-import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, message, Select, ConfigProvider, Dropdown, Space, Spin, InputNumber, Tag } from "antd";
+import { Input, Button, Card, Row, Col, Statistic, Empty, Modal, notification, Select, ConfigProvider, Dropdown, Space, Spin, InputNumber, Tag } from "antd";
 import { PlusOutlined, SearchOutlined, SolutionOutlined, AppstoreOutlined, CheckCircleOutlined, StopOutlined, EditOutlined, DeleteOutlined, EyeOutlined, CalendarOutlined, PercentageOutlined, CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -107,7 +107,7 @@ export default function PackageManagement() {
 
     } catch (error) {
       console.error("Error updating slots:", error);
-      message.error("Failed to update slots.");
+      notification.error({ message: 'Failed to update slots.', placement: 'topRight' });
       return;
     }
 
@@ -120,7 +120,7 @@ export default function PackageManagement() {
       )
     );
 
-    message.success("Slots updated successfully.");
+    notification.success({ message: 'Slots updated successfully.', placement: 'topRight' });
     handleSlotsCancel();
   };
 
@@ -136,7 +136,7 @@ export default function PackageManagement() {
       setIsDiscountAppliedModalOpen(true);
     } catch (error) {
       console.error("Error updating discount:", error);
-      message.error("Failed to update discount.");
+      notification.error({ message: 'Failed to update discount.', placement: 'topRight' });
       return;
     }
 
@@ -148,7 +148,7 @@ export default function PackageManagement() {
       )
     );
 
-    message.success("Discount updated successfully.");
+    notification.success({ message: 'Discount updated successfully.', placement: 'topRight' });
     handleDiscountCancel();
   };
 
@@ -167,7 +167,7 @@ export default function PackageManagement() {
       getPackages();
     } catch (error) {
       console.error("Error removing package:", error);
-      message.error("Package archived unsuccessfully");
+      notification.error({ message: 'Package archived unsuccessfully', placement: 'topRight' });
     }
 
   }
@@ -180,7 +180,7 @@ export default function PackageManagement() {
       setArchivedPackagesData((prev) => prev.filter((item) => item.packageItem !== key));
     } catch (error) {
       console.error("Error restoring package:", error);
-      message.error(error?.response?.data?.message || "Package restore failed");
+      notification.error({ message: error?.response?.data?.message || 'Package restore failed', placement: 'topRight' });
     }
   }
 
