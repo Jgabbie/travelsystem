@@ -6,6 +6,35 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+/* Statistic / management card styling */
+.visaservice-management-card,
+.visaservice-management-card .ant-card {
+    background-color: #305797 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.visaservice-management-card .ant-card-body {
+    background: transparent !important;
+    color: #ffffff !important;
+    padding: 18px !important;
+}
+
+.visaservice-management-card .ant-statistic-title {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-family: "Montserrat", sans-serif;
+}
+
+.visaservice-management-card .ant-statistic-content,
+.visaservice-management-card .ant-statistic-content-value {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.visaservice-management-card .anticon {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .visa-card {
     margin-bottom: 16px;
 }
@@ -57,6 +86,13 @@
 .visaservices-actions {
     width: 100%;
     margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
+    border-radius: 16px;
+}
+
+.visaservices-table-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .visaservices-actions-row {
@@ -103,10 +139,16 @@
 
 .visa-container .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
-    background-color: #f8fafc;
-    color: #305797;
+    background-color: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+.visa-container .ant-table-thead>tr>th .ant-table-column-title,
+.visa-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.visa-container .ant-table-thead>tr>th .anticon {
+    color: #ffffff !important;
 }
 
 .visa-container .ant-table-tbody>tr>td {

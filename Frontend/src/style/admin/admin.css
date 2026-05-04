@@ -48,3 +48,22 @@
     max-width: 100%;
   }
 }
+
+/* Shared admin stat-card normalization
+   Matches any element whose class contains 'management-card' to
+   ensure uniform height, centered content and consistent body layout. */
+[class*="management-card"],
+[class*="management-card"] .ant-card {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[class*="management-card"] .ant-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 18px !important;
+}

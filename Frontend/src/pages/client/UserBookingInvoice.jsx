@@ -1386,91 +1386,87 @@ export default function UserBookingInvoice() {
                                                                 </div>
                                                             </div>
 
-                                                        </div>
-
-                                                        <div style={{ display: "flex", flexDirection: "row", gap: 40, flexWrap: "wrap", marginTop: 12 }}>
-                                                            {(needsResubmission
-                                                                ? passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl
-                                                                : traveler?.passportFile) && (
-                                                                    <div style={{ marginBottom: 16 }}>
-                                                                        <AntText strong>PASSPORT / VALID ID</AntText>
-                                                                        <div style={{ marginTop: 8 }}>
-                                                                            <img
-                                                                                src={needsResubmission
-                                                                                    ? (passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl)
-                                                                                    : traveler.passportFile}
-                                                                                alt={`Traveler ${index + 1} Passport`}
-                                                                                style={{
-                                                                                    width: 280,
-                                                                                    height: 350,
-                                                                                    objectFit: 'cover',
-                                                                                    borderRadius: 8,
-                                                                                    border: '1px solid #ccc'
-                                                                                }}
-                                                                            />
+                                                            <div style={{ display: "flex", flexDirection: "row", gap: 50, flexWrap: "wrap", marginTop: 24 }}>
+                                                                {(needsResubmission
+                                                                    ? passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl
+                                                                    : traveler?.passportFile) && (
+                                                                        <div style={{ marginBottom: 16 }}>
+                                                                            <h1 className="user-invoice-section-header">Passport / Valid ID</h1>
+                                                                            <div>
+                                                                                <a
+                                                                                    href={needsResubmission
+                                                                                        ? (passportUploadLists[index]?.[0]?.preview || passportUploadLists[index]?.[0]?.thumbUrl)
+                                                                                        : traveler.passportFile}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                                >
+                                                                                    View Passport
+                                                                                </a>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                )}
+                                                                    )}
 
-                                                            {(needsResubmission
-                                                                ? photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl
-                                                                : traveler?.photoFile) && (
-                                                                    <div style={{ marginBottom: 16 }}>
-                                                                        <AntText strong>2 X 2 PHOTO:</AntText>
-                                                                        <div style={{ marginTop: 8 }}>
-                                                                            <img
-                                                                                src={needsResubmission
-                                                                                    ? (photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl)
-                                                                                    : traveler.photoFile}
-                                                                                alt={`Traveler ${index + 1}`}
-                                                                                style={{
-                                                                                    width: 180,
-                                                                                    height: 180,
-                                                                                    objectFit: 'cover',
-                                                                                    borderRadius: 8,
-                                                                                    border: '1px solid #ccc'
-                                                                                }}
-                                                                            />
+                                                                {(needsResubmission
+                                                                    ? photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl
+                                                                    : traveler?.photoFile) && (
+                                                                        <div style={{ marginBottom: 16 }}>
+                                                                            <h1 className="user-invoice-section-header">2 X 2 PHOTO:</h1>
+                                                                            <div>
+                                                                                <a
+                                                                                    href={needsResubmission
+                                                                                        ? (photoUploadLists[index]?.[0]?.preview || photoUploadLists[index]?.[0]?.thumbUrl)
+                                                                                        : traveler.photoFile}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                                >
+                                                                                    View Photo
+                                                                                </a>
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                )}
-                                                        </div>
-                                                        {needsResubmission && (
-                                                            <div className="user-invoice-doc-actions">
-                                                                <Upload
-                                                                    listType="picture"
-                                                                    fileList={passportUploadLists[index] || []}
-                                                                    beforeUpload={beforeDocumentUpload}
-                                                                    onChange={(info) => handlePassportUploadChange(index, info)}
-                                                                    accept="image/jpeg,image/png"
-                                                                    maxCount={1}
-                                                                >
-                                                                    <Button type="primary" className="user-invoice-form-button">
-                                                                        Upload Passport/ID
-                                                                    </Button>
-                                                                </Upload>
-                                                                <Upload
-                                                                    listType="picture"
-                                                                    fileList={photoUploadLists[index] || []}
-                                                                    beforeUpload={beforeDocumentUpload}
-                                                                    onChange={(info) => handlePhotoUploadChange(index, info)}
-                                                                    accept="image/jpeg,image/png"
-                                                                    maxCount={1}
-                                                                >
-                                                                    <Button type="primary" className="user-invoice-form-button">
-                                                                        Upload 2x2 Photo
-                                                                    </Button>
-                                                                </Upload>
-                                                                <Button
-                                                                    type="primary"
-                                                                    className="user-invoice-form-button"
-                                                                    onClick={() => handleSubmitTravelerResubmission(index)}
-                                                                    loading={submittingTravelerIndex === index}
-                                                                >
-                                                                    Submit Traveler {index + 1}
-                                                                </Button>
+                                                                    )}
                                                             </div>
-                                                        )}
+                                                            {needsResubmission && (
+                                                                <div className="user-invoice-doc-actions">
+                                                                    <Upload
+                                                                        listType="picture"
+                                                                        fileList={passportUploadLists[index] || []}
+                                                                        beforeUpload={beforeDocumentUpload}
+                                                                        onChange={(info) => handlePassportUploadChange(index, info)}
+                                                                        accept="image/jpeg,image/png"
+                                                                        maxCount={1}
+                                                                    >
+                                                                        <Button type="primary" className="user-invoice-form-button">
+                                                                            Upload Passport/ID
+                                                                        </Button>
+                                                                    </Upload>
+                                                                    <Upload
+                                                                        listType="picture"
+                                                                        fileList={photoUploadLists[index] || []}
+                                                                        beforeUpload={beforeDocumentUpload}
+                                                                        onChange={(info) => handlePhotoUploadChange(index, info)}
+                                                                        accept="image/jpeg,image/png"
+                                                                        maxCount={1}
+                                                                    >
+                                                                        <Button type="primary" className="user-invoice-form-button">
+                                                                            Upload 2x2 Photo
+                                                                        </Button>
+                                                                    </Upload>
+                                                                    <Button
+                                                                        type="primary"
+                                                                        className="user-invoice-form-button"
+                                                                        onClick={() => handleSubmitTravelerResubmission(index)}
+                                                                        loading={submittingTravelerIndex === index}
+                                                                    >
+                                                                        Submit Traveler {index + 1}
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+
+                                                        </div>
+
+
                                                     </>
                                                 );
                                             })()}
@@ -1489,18 +1485,16 @@ export default function UserBookingInvoice() {
                                                         : passportFiles)
                                                         .filter(Boolean)
                                                         .map((url, index) => (
-                                                            <img
-                                                                key={index}
-                                                                src={url}
-                                                                alt={`Traveler Passport ${index + 1}`}
-                                                                style={{
-                                                                    width: 350,
-                                                                    height: 340,
-                                                                    objectFit: 'cover',
-                                                                    borderRadius: 8,
-                                                                    border: '1px solid #ccc'
-                                                                }}
-                                                            />
+                                                            <div key={index} style={{ marginBottom: 8 }}>
+                                                                <a
+                                                                    href={url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                >
+                                                                    View Passport {index + 1}
+                                                                </a>
+                                                            </div>
                                                         ))}
                                                 </div>
                                             </div>
@@ -1515,18 +1509,16 @@ export default function UserBookingInvoice() {
                                                         : photoFiles)
                                                         .filter(Boolean)
                                                         .map((url, index) => (
-                                                            <img
-                                                                key={index}
-                                                                src={url}
-                                                                alt={`Traveler ${index + 1}`}
-                                                                style={{
-                                                                    width: 200,
-                                                                    height: 200,
-                                                                    objectFit: 'cover',
-                                                                    borderRadius: 8,
-                                                                    border: '1px solid #ccc'
-                                                                }}
-                                                            />
+                                                            <div key={index} style={{ marginBottom: 8 }}>
+                                                                <a
+                                                                    href={url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                >
+                                                                    View Photo {index + 1}
+                                                                </a>
+                                                            </div>
                                                         ))}
                                                 </div>
                                             </div>

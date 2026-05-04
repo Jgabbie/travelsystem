@@ -445,7 +445,7 @@ export default function PassportApplications() {
                     </div>
                 </Card>
 
-                <Card>
+                <Card className="passportapplications-table-card">
                     <Table
                         columns={columns}
                         dataSource={filteredData}

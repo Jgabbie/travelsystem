@@ -22,6 +22,7 @@ export default function AdminDashboard() {
 
   const [transactions, setTransactions] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [popularPackages, setPopularPackages] = useState([]);
 
 
   //top 3 packages
@@ -43,6 +44,14 @@ export default function AdminDashboard() {
   const packageCountArray = Object.values(packageCountMap);
   packageCountArray.sort((a, b) => b.count - a.count);
   const top3Packages = packageCountArray.slice(0, 3);
+
+  const displayTopPackages = (Array.isArray(popularPackages) && popularPackages.length)
+    ? popularPackages.map(p => ({
+      packageName: p.packageName,
+      count: p.bookingCount || p.bookingCount || p.count || 0,
+      packageImages: p.packageImages || p.packageImages || []
+    }))
+    : top3Packages;
 
 
   //booking trends
@@ -83,6 +92,30 @@ export default function AdminDashboard() {
       label: `${duration} Days`,
       count
     }));
+
+  // build a map from duration -> image (take first package image found for that duration)
+  const durationImageMap = {};
+  // prefer popularPackages (API) first
+  if (Array.isArray(popularPackages) && popularPackages.length) {
+    popularPackages.forEach((p) => {
+      const dur = Number(p.packageDuration || p.packageDuration || (p.packageDuration === 0 ? 0 : undefined));
+      if (dur == null) return;
+      const imgs = p.packageImages || p.images || [];
+      const first = Array.isArray(imgs) ? imgs[0] : imgs;
+      const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
+      if (imageUrl && !durationImageMap[dur]) durationImageMap[dur] = imageUrl;
+    });
+  }
+  // fallback: scan bookings' package info
+  bookings.forEach((b) => {
+    const dur = Number(b.packageId?.packageDuration);
+    if (Number.isNaN(dur)) return;
+    if (durationImageMap[dur]) return;
+    const imgs = b.packageId?.packageImages || b.packageId?.images || [];
+    const first = Array.isArray(imgs) ? imgs[0] : imgs;
+    const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
+    if (imageUrl) durationImageMap[dur] = imageUrl;
+  });
 
 
   // package type amount
@@ -163,9 +196,18 @@ export default function AdminDashboard() {
         notification.error({ message: 'Unable to load bookings.', placement: 'topRight' });
       }
     }
+    const fetchPopularPackages = async () => {
+      try {
+        const resp = await apiFetch.get('/package/popular-packages?limit=3');
+        setPopularPackages(resp || []);
+      } catch (err) {
+        console.error('Failed to load popular packages', err);
+      }
+    };
 
     fetchTransactions();
     fetchBookings();
+    fetchPopularPackages();
   }, []);
 
   useEffect(() => {
@@ -192,7 +234,6 @@ export default function AdminDashboard() {
     const observer = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
         const rawWidth = entry.contentRect?.width;
-
         const width = Number.isFinite(rawWidth)
           ? Math.max(Math.floor(rawWidth), 280)
           : 280;
@@ -220,7 +261,7 @@ export default function AdminDashboard() {
                 <p>Total Transactions</p>
                 <div className="dash-text">
                   <DollarCircleOutlined className="dash-icon" />
-                  <h2>{loading ? "..." : stats.totalTransactions}</h2>
+                  <h2 className="dash-card-head">{loading ? "..." : stats.totalTransactions}</h2>
                 </div>
               </div>
             </Card>
@@ -232,7 +273,7 @@ export default function AdminDashboard() {
                 <p>Total Bookings</p>
                 <div className="dash-text">
                   <ShoppingCartOutlined className="dash-icon" />
-                  <h2>{loading ? "..." : stats.totalBookings}</h2>
+                  <h2 className="dash-card-head">{loading ? "..." : stats.totalBookings}</h2>
                 </div>
               </div>
             </Card>
@@ -244,7 +285,7 @@ export default function AdminDashboard() {
                 <p>Total Users</p>
                 <div className="dash-text">
                   <UserOutlined className="dash-icon" />
-                  <h2>{loading ? "..." : stats.totalUsers}</h2>
+                  <h2 className="dash-card-head">{loading ? "..." : stats.totalUsers}</h2>
                 </div>
               </div>
             </Card>
@@ -256,7 +297,7 @@ export default function AdminDashboard() {
                 <p>Total Packages</p>
                 <div className="dash-text">
                   <AppstoreOutlined className="dash-icon" />
-                  <h2>{loading ? "..." : stats.totalPackages}</h2>
+                  <h2 className="dash-card-head">{loading ? "..." : stats.totalPackages}</h2>
                 </div>
               </div>
             </Card>
@@ -355,48 +396,71 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="dashboard-section">
+      <div className="dashboard-section-packages-cards">
         <h2>Top 3 Most Booked Packages</h2>
 
         <Row gutter={[16, 16]}>
-          {top3Packages.map((pkg, idx) => (
-            <Col xs={24} sm={24} md={8} key={pkg.packageName}>
-              <Card
-                className="top-package-card"
-              >
-                <div className="top-package-content">
-                  <h3 className="top-package-card-name">
-                    {idx + 1}. {pkg.packageName}
-                  </h3>
-                  <p className="top-package-card-bookings" >
-                    {pkg.count} bookings
-                  </p>
-                  <div
-                    className="top-package-card-number"
-                  >
-                    #{idx + 1}
+          {displayTopPackages.map((pkg, idx) => {
+            const imgs = pkg.packageImages || pkg.images || [];
+            const first = Array.isArray(imgs) ? imgs[0] : imgs;
+            const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
+
+            return (
+              <Col xs={24} sm={24} md={8} key={pkg.packageName + idx}>
+                <Card
+                  className={`top-package-card ${imageUrl ? 'has-image' : ''}`}
+                  style={{
+                    height: 300,
+                    backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.58)), url(${imageUrl})` : undefined,
+                    backgroundSize: imageUrl ? 'cover' : undefined,
+                    backgroundPosition: imageUrl ? 'center' : undefined,
+                    color: imageUrl ? '#ffffff' : undefined
+                  }}
+                >
+                  <div className="top-package-content">
+                    <h3 className="top-package-card-name">
+                      {idx + 1}. {pkg.packageName}
+                    </h3>
+                    <p className="top-package-card-bookings" >
+                      {pkg.count} bookings
+                    </p>
+                    <div className="top-package-card-number">#{idx + 1}</div>
                   </div>
-                </div>
-              </Card>
-            </Col>
-          ))}
+                </Card>
+              </Col>
+            )
+          })}
         </Row>
 
         <div style={{ marginTop: 24 }}>
           <h2>Most Booked Durations</h2>
           {topDurationEntries.length ? (
             <Row gutter={[16, 16]}>
-              {topDurationEntries.map((entry, idx) => (
-                <Col xs={24} sm={12} md={8} key={entry.label}>
-                  <Card className="top-duration-card">
-                    <div className="top-duration-content">
-                      <h3 className="top-duration-name">{entry.label}</h3>
-                      <p className="top-duration-count">{entry.count} bookings</p>
-                      <div className="top-duration-rank">#{idx + 1}</div>
-                    </div>
-                  </Card>
-                </Col>
-              ))}
+              {topDurationEntries.map((entry, idx) => {
+                // attempt to find an image for this duration
+                const durationNumber = Number(entry.label.split(' ')[0]);
+                const imageUrl = durationImageMap[durationNumber] || null;
+                return (
+                  <Col xs={24} sm={12} md={8} key={entry.label}>
+                    <Card
+                      className={`top-duration-card ${imageUrl ? 'has-image' : ''}`}
+                      style={{
+                        height: 300,
+                        backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.58)), url(${imageUrl})` : undefined,
+                        backgroundSize: imageUrl ? 'cover' : undefined,
+                        backgroundPosition: imageUrl ? 'center' : undefined,
+                        color: imageUrl ? '#ffffff' : undefined
+                      }}
+                    >
+                      <div className="top-duration-content">
+                        <h3 className="top-duration-name">{entry.label}</h3>
+                        <p className="top-duration-count">{entry.count} bookings</p>
+                        <div className="top-duration-rank">#{idx + 1}</div>
+                      </div>
+                    </Card>
+                  </Col>
+                );
+              })}
             </Row>
           ) : (
             <div style={{ marginTop: 8, fontWeight: 600 }}>N/A</div>

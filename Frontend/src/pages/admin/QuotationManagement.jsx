@@ -507,7 +507,7 @@ export default function QuotationManagement() {
                     </div>
                 </Card>
 
-                <Card>
+                <Card className="quotation-management-table-card">
                     <Form form={form} component={false}>
                         <Table
                             components={{

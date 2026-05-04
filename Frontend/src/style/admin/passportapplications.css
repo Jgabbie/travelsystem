@@ -3,9 +3,45 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+/* Statistic / management card styling */
+.passportapps-management-card,
+.passportapps-management-card .ant-card {
+    background-color: #305797 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.passportapps-management-card .ant-card-body {
+    background: transparent !important;
+    color: #ffffff !important;
+    padding: 18px !important;
+}
+
+.passportapps-management-card .ant-statistic-title {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-family: "Montserrat", sans-serif;
+}
+
+.passportapps-management-card .ant-statistic-content,
+.passportapps-management-card .ant-statistic-content-value {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.passportapps-management-card .anticon {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .passportapplications-actions {
     width: 100%;
     margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
+    border-radius: 16px;
+}
+
+.passportapplications-table-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .passportapplications-actions-row {
@@ -52,10 +88,16 @@
 
 .passport-applications-container .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
-    background-color: #f8fafc;
-    color: #305797;
+    background-color: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+.passport-applications-container .ant-table-thead>tr>th .ant-table-column-title,
+.passport-applications-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.passport-applications-container .ant-table-thead>tr>th .anticon {
+    color: #ffffff !important;
 }
 
 .passport-applications-container .ant-table-tbody>tr>td {

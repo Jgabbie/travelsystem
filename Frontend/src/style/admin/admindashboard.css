@@ -1,17 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&display=swap');
+
 .admin-dashboard {
   background: #e9f0f7;
   min-height: 100%;
+}
+
+/* Use Montserrat across the dashboard */
+.admin-dashboard,
+.dashboard-section,
+.dashboard-chart-card,
+.top-package-card,
+.top-duration-card,
+.dash-card {
+  font-family: "Montserrat", sans-serif;
 }
 
 .admin-dashboard h1 {
   font-size: 30px;
   font-weight: 600;
   margin-bottom: 24px;
-}
-
-.dash-card h2 {
-  font-size: 34px;
-  color: #000000d2;
 }
 
 .activity-card {
@@ -69,12 +76,26 @@
   text-align: left;
   padding: 16px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  background-color: #305797;
+  color: #ffffff;
 }
 
 .dash-card p {
   margin: 0 0 8px 0;
   font-size: 14px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dash-card-head {
+  margin: 0;
+  font-size: 28px;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+/* ensure stat headings inside dash-card are white */
+.dash-card .dash-card-head {
+  color: #ffffff !important;
 }
 
 .dash-card-content-vertical {
@@ -86,7 +107,7 @@
 
 .dash-icon {
   font-size: 32px;
-  color: #000000d2;
+  color: #ffffff;
   margin-bottom: 15px;
 }
 
@@ -99,15 +120,45 @@
 .dash-text-vertical h2 {
   margin: 0;
   font-size: 28px;
-  color: #305797;
+  color: #ffffff;
   line-height: 1.1;
 }
 
 /* top 3 packages css */
 
+.dashboard-section-packages-cards {
+  margin-top: 32px;
+}
+
+.dashboard-section-packages-cards h2 {
+  font-size: 22px;
+  color: #1f2a44;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
 .top-package-card {
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  min-height: 300px;
+  height: 300px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  padding: 18px;
+  background-color: #f8fafc;
+  /* fallback */
+}
+
+.top-package-card .top-package-content {
+  position: relative;
+  z-index: 2;
+}
+
+.top-package-card .top-package-card-name,
+.top-package-card .top-package-card-bookings,
+.top-package-card .top-package-card-number {
+  color: inherit;
 }
 
 .top-package-card-number {
@@ -123,32 +174,53 @@
 .top-package-card-name {
   font-size: 1.1rem;
   color: #305797;
-  font-weight: 500;
+  font-weight: 700;
   margin: 0;
 }
 
 .top-package-card-bookings {
   font-size: 0.95rem;
   margin-top: 8px;
-  color: #555;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .top-duration-card {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  min-height: 300px;
+  height: 300px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  background-color: #f8fafc;
+  /* fallback */
+}
+
+.top-duration-card .top-duration-content {
+  position: relative;
+  z-index: 2;
+}
+
+.top-duration-card .top-duration-name,
+.top-duration-card .top-duration-count,
+.top-duration-card .top-duration-rank {
+  color: inherit;
 }
 
 .top-duration-name {
   font-size: 1.05rem;
   color: #305797;
-  font-weight: 500;
+  font-weight: 700;
   margin: 0;
 }
 
 .top-duration-count {
   font-size: 0.95rem;
   margin-top: 8px;
-  color: #555;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .top-duration-rank {
@@ -159,6 +231,16 @@
   border-radius: 6px;
   display: inline-block;
   font-size: 0.85rem;
+}
+
+/* when card has background image, prefer white text for contrast */
+.top-package-card.has-image .top-package-card-name,
+.top-package-card.has-image .top-package-card-bookings,
+.top-package-card.has-image .top-package-card-number,
+.top-duration-card.has-image .top-duration-name,
+.top-duration-card.has-image .top-duration-count,
+.top-duration-card.has-image .top-duration-rank {
+  color: #ffffff;
 }
 
 

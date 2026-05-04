@@ -397,92 +397,106 @@ export default function PackageManagement() {
                     ) : (
                       <div className="package-image-placeholder">No Image</div>
                     )}
+
+                    {Number(pkg.packageDiscountPercent) > 0 && (
+                      <div className="package-discount-badge">-{Number(pkg.packageDiscountPercent)}%</div>
+                    )}
                   </div>
 
-                  <div className="package-details">
-                    <div className="package-info">
-                      <h3 className="package-name">{pkg.packageName}</h3>
-                      <h3 className="package-code">{pkg.packageCode}</h3>
-                      {Number(pkg.packageDiscountPercent) > 0 ? (
-                        <Tag color="green">{Number(pkg.packageDiscountPercent)}% OFF</Tag>
-                      ) : null}
-                      <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+                  <div className="package-details-actions">
+                    <div className="package-details">
+                      <div className="package-info">
+                        <h3 className="package-name">{pkg.packageName}</h3>
+                        <h3 className="package-code">{pkg.packageCode}</h3>
+                        {Number(pkg.packageDiscountPercent) > 0 ? (
+                          <Tag color="green">{Number(pkg.packageDiscountPercent)}% OFF</Tag>
+                        ) : null}
+                        <h4 className="package-price">₱{pkg.packagePricePerPax} per Pax</h4>
+                      </div>
+
+                      <p className="package-description">{pkg.packageDescription}</p>
+                      <h1 className="package-available-slots">Available Slots: {availableSlots(pkg)}</h1>
                     </div>
 
-                    <p className="package-description">{pkg.packageDescription}</p>
-                    <h1 className="package-available-slots">Available Slots: {availableSlots(pkg)}</h1>
+                    <div className="package-actions-column">
+                      <Space direction="horizontal" size={8}>
+                        <Button
+                          className="packagemanagement-view-button"
+                          type="primary"
+                          icon={<EyeOutlined />}
+                          onClick={() => showModal(pkg)}
+                        >
+                          View
+                        </Button>
+
+                        <Button
+                          className="packagemanagement-edit-button"
+                          type="primary"
+                          icon={<EditOutlined />}
+                          onClick={() =>
+                            navigate(`${basePath}/packages/edit`, { state: { packageItem: pkg.packageItem } })
+                          }
+                          disabled={showArchived}
+                        >
+                          Edit
+                        </Button>
+
+                        <Button
+                          className="packagemanagement-slotsdiscount-button"
+                          type="primary"
+                          icon={<CalendarOutlined />}
+                          onClick={() => showSlotsModal(pkg)}
+                          disabled={showArchived}
+                        >
+                          Edit Slots
+                        </Button>
+
+                        <Button
+                          className="packagemanagement-slotsdiscount-button"
+                          type="primary"
+                          icon={<PercentageOutlined />}
+                          onClick={() => showDiscountModal(pkg)}
+                          disabled={showArchived}
+                        >
+                          Add Discount
+                        </Button>
+
+                        <Button
+                          className="packagemanagement-remove-button"
+                          type="primary"
+                          icon={<DeleteOutlined />}
+                          onClick={() => {
+                            setEditingPackage({ key: pkg.packageItem });
+                            setIsDeleteModalOpen(true);
+                          }}
+                          disabled={showArchived}
+                        >
+                          Archive
+                        </Button>
+
+                        {showArchived && (
+                          <Button
+                            className="packagemanagement-restore-button"
+                            type="primary"
+                            icon={<CheckCircleOutlined />}
+                            onClick={() => {
+                              setEditingPackage({ key: pkg.packageItem });
+                              setIsRestoreModalOpen(true);
+                            }}
+                          >
+                            Restore
+                          </Button>
+                        )}
+                      </Space>
+                    </div>
                   </div>
+
+
+
+
                 </div>
 
-                <div className="package-actions">
-                  <Button
-                    className="packagemanagement-view-button"
-                    type="primary"
-                    icon={<EyeOutlined />}
-                    onClick={() => showModal(pkg)}
-                  >
-                    View
-                  </Button>
 
-                  <Button
-                    className="packagemanagement-edit-button"
-                    type="primary"
-                    icon={<EditOutlined />}
-                    onClick={() =>
-                      navigate(`${basePath}/packages/edit`, { state: { packageItem: pkg.packageItem } })
-                    }
-                    disabled={showArchived}
-                  >
-                    Edit
-                  </Button>
-
-                  <Button
-                    className="packagemanagement-slotsdiscount-button"
-                    type="primary"
-                    icon={<CalendarOutlined />}
-                    onClick={() => showSlotsModal(pkg)}
-                    disabled={showArchived}
-                  >
-                    Edit Slots
-                  </Button>
-
-                  <Button
-                    className="packagemanagement-slotsdiscount-button"
-                    type="primary"
-                    icon={<PercentageOutlined />}
-                    onClick={() => showDiscountModal(pkg)}
-                    disabled={showArchived}
-                  >
-                    Add Discount
-                  </Button>
-
-                  <Button
-                    className="packagemanagement-remove-button"
-                    type="primary"
-                    icon={<DeleteOutlined />}
-                    onClick={() => {
-                      setEditingPackage({ key: pkg.packageItem });
-                      setIsDeleteModalOpen(true);
-                    }}
-                    disabled={showArchived}
-                  >
-                    Archive
-                  </Button>
-
-                  {showArchived && (
-                    <Button
-                      className="packagemanagement-restore-button"
-                      type="primary"
-                      icon={<CheckCircleOutlined />}
-                      onClick={() => {
-                        setEditingPackage({ key: pkg.packageItem });
-                        setIsRestoreModalOpen(true);
-                      }}
-                    >
-                      Restore
-                    </Button>
-                  )}
-                </div>
               </Card>
             ))
           ) : (

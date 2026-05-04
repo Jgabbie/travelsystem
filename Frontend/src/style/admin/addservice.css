@@ -55,9 +55,9 @@
 
 
 .add-service-input-labels {
-    color: #305797;
     font-size: 13px;
-    margin-bottom: 2px;
+    font-weight: 600;
+    color: #1f2a44;
 }
 
 .add-service-inputs,

@@ -495,7 +495,7 @@ export default function CancellationRequests() {
                     </div>
                 </Card>
 
-                <Card style={{ marginTop: 20 }}>
+                <Card className='cancel-table-card' style={{ marginTop: 20 }}>
                     <Table
                         columns={showArchived ? archivedColumns : columns}
                         loading={loading || isFetchingRequests}

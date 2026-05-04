@@ -424,7 +424,7 @@ export default function ReviewRatings() {
                     </div>
                 </Card>
 
-                <Card>
+                <Card className="reviewratings-table-card">
                     <Table
                         columns={showArchived ? archivedColumns : columns}
                         dataSource={filteredRatings}

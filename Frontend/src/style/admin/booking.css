@@ -5,9 +5,58 @@
   margin-bottom: 24px;
 }
 
+.booking-management-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
+}
+
+/* Make statistic/cards use primary blue and ensure readable contrast */
+.booking-management-card,
+.booking-management-card .ant-card {
+  background-color: #305797 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.booking-management-card .ant-card-body {
+  background: transparent !important;
+  color: #ffffff !important;
+  padding: 18px !important;
+}
+
+.booking-management-card .ant-statistic-title {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-family: "Montserrat", sans-serif;
+}
+
+.booking-management-card .ant-statistic-content {
+  color: #ffffff !important;
+}
+
+.booking-management-card .ant-statistic-content-value {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.booking-management-card .anticon {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-size: 20px;
+}
+
+.booking-management-card:hover {
+  box-shadow: 0 10px 30px rgba(48, 87, 151, 0.18);
+}
+
 .bookingmanagement-actions {
   width: 100%;
   margin-bottom: 20px;
+  box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
+  border-radius: 16px;
+}
+
+.bookingmanagement-table-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .bookingmanagement-actions-row {
@@ -59,10 +108,21 @@
 
 .booking-management-container .ant-table-thead>tr>th {
   font-family: "Montserrat", sans-serif;
-  background-color: #f8fafc;
-  color: #305797;
+  background-color: #305797 !important;
+  color: #ffffff !important;
   font-size: 13px;
   font-weight: 600;
+}
+
+/* Ensure header icons / sorter arrows remain visible on dark background */
+.booking-management-container .ant-table-thead>tr>th .ant-table-column-title,
+.booking-management-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.booking-management-container .ant-table-thead>tr>th .anticon {
+  color: #ffffff !important;
+}
+
+.booking-management-container .ant-table-thead>tr>th .ant-table-column-sorters .anticon {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .booking-management-container .ant-table-tbody>tr>td {

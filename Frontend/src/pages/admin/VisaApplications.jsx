@@ -465,7 +465,7 @@ export default function VisaApplications() {
                     </div>
                 </Card>
 
-                <Card>
+                <Card className="visaapps-table-card">
                     <Table
                         columns={showArchived ? archivedColumns : columns}
                         dataSource={filteredData}

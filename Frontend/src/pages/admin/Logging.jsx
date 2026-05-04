@@ -179,7 +179,7 @@ export default function Logging() {
                     </div>
                 </Card>
 
-                <Card>
+                <Card className='logging-table-card'>
                     <Table
                         className="logging-table"
                         columns={columns}

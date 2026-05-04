@@ -55,16 +55,60 @@
 
 .usermanagement-table .ant-table-thead>tr>th {
   font-family: "Montserrat", sans-serif;
-  background-color: #f8fafc;
-  color: #305797;
+  background-color: #305797 !important;
+  color: #ffffff !important;
   font-size: 13px;
   font-weight: 600;
+}
+
+.usermanagement-table .ant-table-thead>tr>th .ant-table-column-title,
+.usermanagement-table .ant-table-thead>tr>th .ant-table-column-sorters,
+.usermanagement-table .ant-table-thead>tr>th .anticon {
+  color: #ffffff !important;
 }
 
 .usermanagement-table .ant-table-tbody>tr>td {
   font-family: "Roboto", sans-serif;
   color: #1f2a44;
   font-size: 12px;
+}
+
+/* Stats cards in user management should match primary theme */
+.usermanagement-statistics .ant-card,
+.usermanagement-statistics .ant-card .ant-card-body {
+  background-color: #305797 !important;
+  color: #ffffff !important;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.12);
+}
+
+/* make all statistic cards uniform height and center content */
+.usermanagement-statistics .ant-card {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.usermanagement-statistics .ant-card .ant-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.usermanagement-statistics .ant-card .ant-statistic-title {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.usermanagement-statistics .ant-card .ant-statistic-content,
+.usermanagement-statistics .ant-card .ant-statistic-content-value {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.usermanagement-statistics .ant-card .anticon {
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 

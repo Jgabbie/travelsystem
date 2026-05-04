@@ -460,22 +460,22 @@ export default function BookingManagement() {
         {!showArchived && (
           <Row gutter={16} style={{ marginBottom: 20 }}>
             <Col xs={24} sm={6}>
-              <Card >
+              <Card className="booking-management-card">
                 <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />
               </Card>
             </Col>
             <Col xs={24} sm={6}>
-              <Card >
+              <Card className="booking-management-card">
                 <Statistic title="Pending" value={totalPending} prefix={<ClockCircleOutlined />} />
               </Card>
             </Col>
             <Col xs={24} sm={6}>
-              <Card >
+              <Card className="booking-management-card">
                 <Statistic title="Fully Paid" value={totalFullyPaid} prefix={<CheckCircleOutlined />} />
               </Card>
             </Col>
             <Col xs={24} sm={6}>
-              <Card >
+              <Card className="booking-management-card">
                 <Statistic title="Cancelled" value={totalCancelled} prefix={<CloseCircleOutlined />} />
               </Card>
             </Col>
@@ -562,7 +562,7 @@ export default function BookingManagement() {
           </div>
         </Card>
 
-        <Card>
+        <Card className="bookingmanagement-table-card">
           <Table
             columns={showArchived ? archivedColumns : columns}
             dataSource={filteredData}

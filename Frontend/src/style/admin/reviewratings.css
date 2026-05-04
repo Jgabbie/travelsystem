@@ -7,6 +7,35 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+/* Statistic / management card styling */
+.rating-management-card,
+.rating-management-card .ant-card {
+    background-color: #305797 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.rating-management-card .ant-card-body {
+    background: transparent !important;
+    color: #ffffff !important;
+    padding: 18px !important;
+}
+
+.rating-management-card .ant-statistic-title {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-family: "Montserrat", sans-serif;
+}
+
+.rating-management-card .ant-statistic-content,
+.rating-management-card .ant-statistic-content-value {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.rating-management-card .anticon {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .page-header {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
@@ -27,6 +56,13 @@
 .reviewratings-actions {
     width: 100%;
     margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
+    border-radius: 16px;
+}
+
+.reviewratings-table-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .reviewratings-actions-row {
@@ -73,10 +109,16 @@
 
 .reviewratings-container .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
-    background-color: #f8fafc;
-    color: #305797;
+    background-color: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+.reviewratings-container .ant-table-thead>tr>th .ant-table-column-title,
+.reviewratings-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.reviewratings-container .ant-table-thead>tr>th .anticon {
+    color: #ffffff !important;
 }
 
 .reviewratings-container .ant-table-tbody>tr>td {
@@ -200,10 +242,16 @@
 
 .reviewratings-container .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
-    background-color: #f8fafc;
-    color: #305797;
+    background-color: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+.reviewratings-container .ant-table-thead>tr>th .ant-table-column-title,
+.reviewratings-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.reviewratings-container .ant-table-thead>tr>th .anticon {
+    color: #ffffff !important;
 }
 
 .reviewratings-container .ant-table-tbody>tr>td {

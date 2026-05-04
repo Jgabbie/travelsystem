@@ -179,7 +179,7 @@ export default function Auditing() {
                     </div>
                 </Card>
 
-                <Card>
+                <Card className='auditing-table-card'>
                     <Table
                         className="auditing-table"
                         columns={columns}

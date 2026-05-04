@@ -93,9 +93,9 @@
   }
 
   .add-package-input-labels {
-    color: #305797;
     font-size: 13px;
-    margin-bottom: 0px;
+    font-weight: 600;
+    color: #1f2a44;
   }
 
   .add-package-duration-select {

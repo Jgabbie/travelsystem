@@ -1,7 +1,17 @@
 .logging-actions,
 .auditing-actions {
+
     width: 100%;
     margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
+    border-radius: 16px;
+
+}
+
+.logging-table-card,
+.auditing-table-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .logging-actions-row,
@@ -71,10 +81,19 @@
 .logging-table .ant-table-thead>tr>th,
 .auditing-table .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
-    background-color: #f8fafc;
-    color: #305797;
+    background-color: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+.logging-table .ant-table-thead>tr>th .ant-table-column-title,
+.auditing-table .ant-table-thead>tr>th .ant-table-column-title,
+.logging-table .ant-table-thead>tr>th .ant-table-column-sorters,
+.auditing-table .ant-table-thead>tr>th .ant-table-column-sorters,
+.logging-table .ant-table-thead>tr>th .anticon,
+.auditing-table .ant-table-thead>tr>th .anticon {
+    color: #ffffff !important;
 }
 
 .logging-table .ant-table-tbody>tr>td,

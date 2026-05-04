@@ -10,9 +10,45 @@
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+/* Statistic card styling to match primary theme */
+.transaction-management-card,
+.transaction-management-card .ant-card {
+  background-color: #305797 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.transaction-management-card .ant-card-body {
+  background: transparent !important;
+  color: #ffffff !important;
+  padding: 18px !important;
+}
+
+.transaction-management-card .ant-statistic-title {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-family: "Montserrat", sans-serif;
+}
+
+.transaction-management-card .ant-statistic-content,
+.transaction-management-card .ant-statistic-content-value {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.transaction-management-card .anticon {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .transaction-actions {
   width: 100%;
   margin-bottom: 20px;
+  box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
+  border-radius: 16px;
+}
+
+.transaction-table-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .transaction-actions-row {
@@ -59,10 +95,16 @@
 
 .transaction-management-container .ant-table-thead>tr>th {
   font-family: "Montserrat", sans-serif;
-  background-color: #f8fafc;
-  color: #305797;
+  background-color: #305797 !important;
+  color: #ffffff !important;
   font-size: 13px;
   font-weight: 600;
+}
+
+.transaction-management-container .ant-table-thead>tr>th .ant-table-column-title,
+.transaction-management-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.transaction-management-container .ant-table-thead>tr>th .anticon {
+  color: #ffffff !important;
 }
 
 .transaction-management-container .ant-table-tbody>tr>td {

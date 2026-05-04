@@ -627,7 +627,7 @@ export default function TransactionManagement() {
             </div>
           </Card>
 
-          <Card>
+          <Card className="transaction-table-card">
             <Form form={form} component={false}>
               <Table
                 columns={showArchived ? archivedColumns : columns}
@@ -827,7 +827,7 @@ export default function TransactionManagement() {
 
             <Space style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
               <Button
-                className='user-transactions-viewproof-button'
+                className='user-transactions-download-button'
                 type="primary"
                 onClick={async () => {
                   try {

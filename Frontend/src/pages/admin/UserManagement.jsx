@@ -199,7 +199,7 @@ export default function UserManagement() {
       setArchivedUsers((prev) => prev.filter((item) => item.key !== key));
 
     } catch (error) {
-      notification.error({ message: error?.response?.data?.message || "User restore failed", placement: "topRight" });
+      notification.error({ message: error?.response?.data?.message || "Email of the user is already in use", placement: "topRight" });
     }
   };
 

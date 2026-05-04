@@ -7,6 +7,50 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+/* Statistic card styling to match primary theme */
+.cancellation-management-card,
+.cancellation-management-card .ant-card {
+    background-color: #305797 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.cancellation-management-card .ant-card-body {
+    background: transparent !important;
+    color: #ffffff !important;
+    padding: 18px !important;
+}
+
+/* ensure all cancellation statistic cards share same height and centered layout */
+.cancellation-management-card {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancellation-management-card .ant-card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.cancellation-management-card .ant-statistic-title {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-family: "Montserrat", sans-serif;
+}
+
+.cancellation-management-card .ant-statistic-content,
+.cancellation-management-card .ant-statistic-content-value {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.cancellation-management-card .anticon {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .page-header {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
@@ -27,6 +71,13 @@
 .cancel-actions {
     width: 100%;
     margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(48, 87, 151, 0.1);
+    border-radius: 16px;
+}
+
+.cancel-table-card {
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
 .cancel-actions-row {
@@ -73,10 +124,16 @@
 
 .cancellations-container .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
-    background-color: #f8fafc;
-    color: #305797;
+    background-color: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+.cancellations-container .ant-table-thead>tr>th .ant-table-column-title,
+.cancellations-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.cancellations-container .ant-table-thead>tr>th .anticon {
+    color: #ffffff !important;
 }
 
 .cancellations-container .ant-table-tbody>tr>td {
@@ -304,10 +361,16 @@
 
 .cancellations-container .ant-table-thead>tr>th {
     font-family: "Montserrat", sans-serif;
-    background-color: #f8fafc;
-    color: #305797;
+    background-color: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-weight: 600;
+}
+
+.cancellations-container .ant-table-thead>tr>th .ant-table-column-title,
+.cancellations-container .ant-table-thead>tr>th .ant-table-column-sorters,
+.cancellations-container .ant-table-thead>tr>th .anticon {
+    color: #ffffff !important;
 }
 
 .cancellations-container .ant-table-tbody>tr>td {
