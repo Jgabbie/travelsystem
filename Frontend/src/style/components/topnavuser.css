@@ -332,12 +332,12 @@
 
 .logout-cancel-btn {
     font-family: "Roboto", sans-serif;
-    font-size: 11px;
+    font-size: 15px;
     font-weight: 600;
     background-color: #992A46 !important;
     color: #fff !important;
     border-radius: 10px;
-    min-width: 180px;
+    min-width: 220px;
     height: 40px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
