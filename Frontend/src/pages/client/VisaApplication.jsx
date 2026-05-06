@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 const VISA_STEPS = [
     { title: 'Application Submitted', description: 'Application submitted', },
     { title: 'Application Approved', description: 'Application approved', },
-    { title: 'Payment Complete', description: 'Payment complete', },
+    { title: 'Payment Completed', description: 'Payment completed', },
     { title: 'Documents Uploaded', description: 'Documents uploaded', },
     { title: 'Documents Approved', description: 'Documents approved', },
     { title: 'Documents Received', description: 'Documents received', },
@@ -1042,7 +1042,7 @@ export default function VisaApplication() {
                                                 )}
 
                                                 {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                                {statusValue && statusValue.toLowerCase() === 'payment complete' && (
+                                                {statusValue && statusValue.toLowerCase() === 'payment completed' && (
                                                     <div style={{ padding: 4, marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
                                                         {requirements.length === 0 && (

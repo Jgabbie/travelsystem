@@ -244,6 +244,23 @@ export default function DestinationsPackages() {
         return Array.from(unique)
     }, [packages])
 
+    // compute available durations (days) from packages so filters adapt dynamically
+    const durationOptions = useMemo(() => {
+        const set = new Set()
+        packages.forEach((pkg) => {
+            const d = Number(pkg.days ?? pkg.packageDuration ?? pkg.daysValue)
+            if (Number.isFinite(d) && d > 0) set.add(d)
+        })
+        return Array.from(set).sort((a, b) => a - b)
+    }, [packages])
+
+    const maxDuration = durationOptions.length > 0 ? Math.max(...durationOptions) : 10
+
+    // ensure current daysValue doesn't exceed available max
+    useEffect(() => {
+        if (daysValue > maxDuration) setDaysValue(maxDuration)
+    }, [maxDuration])
+
 
     const filteredPackages = packages.filter((item) => {
         const matchesSearch =
@@ -271,7 +288,15 @@ export default function DestinationsPackages() {
         const matchesTravelers =
             !Number.isFinite(travelersValue) || travelersValue <= 0 || item.availableSlots >= travelersValue
 
-        return matchesSearch && matchesBudget && matchesTags && matchesType && matchesDays && matchesTravelers
+        const otherFiltersPass = matchesBudget && matchesTags && matchesType && matchesDays && matchesTravelers
+
+        // Prioritize search: if user entered a search term and this package matches it,
+        // include it regardless of the other filter settings. Otherwise fall back to filters.
+        if (search && search.trim().length > 0) {
+            return matchesSearch || otherFiltersPass
+        }
+
+        return otherFiltersPass
     })
 
 
@@ -441,8 +466,8 @@ export default function DestinationsPackages() {
                                         <InputNumber
                                             className='destinations-inputs'
                                             min={1}
-                                            max={10}
-                                            maxLength={2}
+                                            max={maxDuration}
+                                            maxLength={3}
                                             value={daysValue}
                                             onChange={setDaysValue}
                                             onKeyDown={(e) => {
@@ -455,10 +480,10 @@ export default function DestinationsPackages() {
                                     </div>
                                     <Slider
                                         min={1}
-                                        max={10}
+                                        max={maxDuration}
                                         value={daysValue}
                                         onChange={setDaysValue}
-                                        tooltip={{ formatter: (value) => `${value} day${value > 1 ? 's' : ''}` }} //if one day then show "day", if more that one day then show "days"
+                                        tooltip={{ formatter: (value) => `${value} day${value > 1 ? 's' : ''}` }}
                                     />
                                     <Text className="filter-hint">
                                         Up to {daysValue} days

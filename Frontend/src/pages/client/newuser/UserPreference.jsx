@@ -53,10 +53,7 @@ export default function UserPreference() {
         });
     };
 
-    const totalSelections =
-        selections.moods.length + selections.tours.length + selections.pace.length;
-
-    const canContinue = totalSelections >= 3;
+    const canContinue = selections.moods.length === 3 && selections.tours.length >= 1 && selections.tours.length <= 2;
 
     const handleContinue = async () => {
         if (!canContinue) return;
@@ -97,9 +94,9 @@ export default function UserPreference() {
                             Pick a few vibes and tour styles so we can personalize your feed.
                         </p>
                         <div className="preference-progress">
-                            <span>{totalSelections} selected</span>
+                            <span>Moods: {selections.moods.length}/3 | Tours: {selections.tours.length}/2</span>
                             <span className="preference-progress-divider" />
-                            <span>Choose at least 3</span>
+                            <span>{canContinue ? '✓ Ready' : 'Complete selections'}</span>
                         </div>
                     </div>
                     <div className="preference-hero-art">
@@ -118,7 +115,7 @@ export default function UserPreference() {
                 <div className="preference-card">
                     <div className="preference-question">
                         <h2>What are you in the mood for?</h2>
-                        <p>Choose up to 3.</p>
+                        <p>Choose exactly 3.</p>
                     </div>
                     <div className="preference-chip-grid">
                         {moodOptions.map((option) => (
@@ -141,7 +138,7 @@ export default function UserPreference() {
                 <div className="preference-card">
                     <div className="preference-question">
                         <h2>What type of tour do you like?</h2>
-                        <p>Pick as many as you want.</p>
+                        <p>Choose 1 or 2.</p>
                     </div>
                     <div className="preference-chip-grid">
                         {tourOptions.map((option) => (
@@ -153,7 +150,7 @@ export default function UserPreference() {
                                         ? 'preference-chip is-selected'
                                         : 'preference-chip'
                                 }
-                                onClick={() => toggleSelection('tours', option)}
+                                onClick={() => toggleSelection('tours', option, 2)}
                             >
                                 {option}
                             </button>

@@ -1100,6 +1100,17 @@ export default function UserBookingInvoice() {
                                 </Col>
                             </Row>
 
+                            {remainingBalance <= 0 && (
+                                <div style={{ marginTop: 20, padding: 16, borderRadius: 10, background: '#f6ffed', border: '1px solid #b7eb8f' }}>
+                                    <Tag color="green" style={{ marginBottom: 12, fontWeight: 700 }}>
+                                        You may now submit a rating and review for the package {packageName}
+                                    </Tag>
+                                    <div style={{ fontSize: 14, color: '#389e0d', fontWeight: 600 }}>
+                                        M&amp;RC travel and tours will contact you 1-2 weeks before your travel date for reminders.
+                                    </div>
+                                </div>
+                            )}
+
 
                             <div className="user-invoice-columns">
                                 <div className="user-invoice-column">

@@ -28,7 +28,7 @@ const PassportSchema = new mongoose.Schema({
         enum: [
             'Application Submitted',
             'Application Approved',
-            'Payment Complete',
+            'Payment Completed',
             'Documents Uploaded',
             'Documents Approved',
             'Documents Received',
@@ -40,6 +40,13 @@ const PassportSchema = new mongoose.Schema({
         ],
         default: 'Application Submitted'
     },
+    // History of status changes with who performed the change
+    statusHistory: [{
+        status: { type: String },
+        changedAt: { type: Date },
+        changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+        changedByName: { type: String }
+    }],
     createdAt: { type: Date, default: Date.now }
 });
 

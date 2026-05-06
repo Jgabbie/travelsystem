@@ -575,7 +575,7 @@ export default function QuotationRequest() {
                 pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeight);
             }
 
-            // Save or upload
+            // SAVE AND UPLOAD PDF
             const pdfBlob = pdf.output("blob");
             const pdfFormData = new FormData();
             pdfFormData.append("pdf", pdfBlob, `quotation-${quotationReference}.pdf`);

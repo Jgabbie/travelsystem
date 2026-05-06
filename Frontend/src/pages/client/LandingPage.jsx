@@ -23,6 +23,9 @@ export default function LandingPage() {
     const [activity, setActivity] = useState([]);
     const [type, setType] = useState('Tour Type');
     const [duration, setDuration] = useState('Length of Stay');
+    const [durationOptions, setDurationOptions] = useState([
+        { value: 'Length of Stay', label: 'Length of Stay' },
+    ]);
     const [pax, setPax] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoginVisible, setIsLoginVisible] = useState(false)
@@ -217,7 +220,9 @@ export default function LandingPage() {
                         : Array.isArray(pkg.packageImages)
                             ? pkg.packageImages
                             : [],
-                    bookingCount: pkg.bookingCount || 0
+                    bookingCount: pkg.bookingCount || 0,
+                    packageType: pkg.packageType || pkg.tourType || '',
+                    discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent)) ? Number(pkg.packageDiscountPercent) : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : (Number.isFinite(Number(pkg.discountPercentOff)) ? Number(pkg.discountPercentOff) : 0))
                 }))
 
                 const trimmed = packages.slice(0, 3)
@@ -237,6 +242,9 @@ export default function LandingPage() {
                                 : Array.isArray(pkg.packageImages)
                                     ? pkg.packageImages
                                     : []
+                            ,
+                            packageType: pkg.packageType || pkg.tourType || '',
+                            discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent)) ? Number(pkg.packageDiscountPercent) : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : 0)
                         }))
 
                     setFallbackPopularPackages(fallbackPackages)
@@ -259,7 +267,9 @@ export default function LandingPage() {
                                 ? pkg.images
                                 : Array.isArray(pkg.packageImages)
                                     ? pkg.packageImages
-                                    : []
+                                    : [],
+                            packageType: pkg.packageType || pkg.tourType || '',
+                            discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent)) ? Number(pkg.packageDiscountPercent) : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : 0)
                         }))
 
                     setFallbackPopularPackages(fallbackPackages)
@@ -319,6 +329,25 @@ export default function LandingPage() {
                     })
 
                 setActivityTags(Array.from(unique))
+
+                // Build duration options based on available package durations
+                try {
+                    const durationsSet = new Set()
+                        ; (response || []).forEach((pkg) => {
+                            const d = Number(pkg.packageDuration)
+                            if (Number.isFinite(d) && d > 0) durationsSet.add(d)
+                        })
+
+                    const durationsArr = Array.from(durationsSet).sort((a, b) => a - b)
+                    const options = [{ value: 'Length of Stay', label: 'Length of Stay' }, ...durationsArr.map((d) => ({
+                        value: `${d} Days`,
+                        label: d === 1 ? `${d} Day` : `${d} Days`,
+                    }))]
+
+                    setDurationOptions(options)
+                } catch (errDur) {
+                    console.error('Failed to compute durations:', errDur)
+                }
             } catch (error) {
                 console.error('Failed to load activity tags:', error)
                 setActivityTags([])
@@ -404,7 +433,7 @@ export default function LandingPage() {
                         <div className="search-row">
                             <input
                                 type="text"
-                                placeholder="Search here..."
+                                placeholder="Search your destination..."
                                 className="search-input-land"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -420,102 +449,6 @@ export default function LandingPage() {
                             </Button>
                         </div>
 
-
-                        <div className="filter-row">
-
-
-                            <div className="filter-group">
-                                <label>TAGS</label>
-                                <Select
-                                    className="landing-select"
-                                    mode="multiple"
-                                    allowClear
-                                    placeholder="Select tags"
-                                    value={activity}
-                                    onChange={handleActivityChange}
-                                    options={activityTags.map((tag) => ({
-                                        value: tag,
-                                        label: tag
-                                    }))}
-                                />
-                            </div>
-
-
-                            <div className="filter-group">
-                                <label>DURATION</label>
-                                <Select
-                                    className="landing-select"
-                                    value={duration}
-                                    onChange={setDuration}
-                                    options={[
-                                        { value: 'Length of Stay', label: 'Length of Stay' },
-                                        { value: '2 Days', label: '2 Days' },
-                                        { value: '3 Days', label: '3 Days' },
-                                        { value: '4 Days', label: '4 Days' },
-                                        { value: '5 Days', label: '5 Days' },
-                                        { value: '6 Days', label: '6 Days' },
-                                        { value: '7 Days', label: '7 Days' },
-                                    ]}
-                                />
-                            </div>
-
-                            <div className="filter-group">
-                                <label>TOUR TYPE</label>
-                                <Select
-                                    className="landing-select"
-                                    value={type}
-                                    onChange={setType}
-                                    options={[
-                                        { value: 'Tour Type', label: 'Tour Type' },
-                                        { value: 'Domestic', label: 'Domestic' },
-                                        { value: 'International', label: 'International' },
-                                    ]}
-                                />
-                            </div>
-
-                            <div className="filter-group">
-                                <label>TRAVELERS</label>
-                                <InputNumber
-                                    className="landing-filter-input"
-                                    maxLength={2}
-                                    value={pax}
-                                    placeholder="Travelers"
-                                    min={1}
-                                    max={50}
-                                    onChange={(val) => {
-                                        setPax(val);
-                                    }}
-                                    onKeyDown={(e) => {
-                                        const allowedKeys = [
-                                            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
-                                            'Tab', 'Enter', 'Escape'
-                                        ];
-
-                                        if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                />
-                            </div>
-
-                            <div className="filter-group" style={{ minWidth: '200px' }}>
-                                <label>BUDGET</label>
-                                <div className="budget-labels">
-                                    <span>₱{budgetRange[0].toLocaleString()}</span>
-                                    <span>₱{budgetRange[1].toLocaleString()}</span>
-                                </div>
-                                <Slider
-                                    range
-                                    min={0}
-                                    max={100000}
-                                    step={1000}
-                                    value={budgetRange}
-                                    onChange={setBudgetRange}
-                                    className="budget-slider"
-                                    tooltip={{ formatter: (value) => `₱${value}` }}
-                                />
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -601,8 +534,14 @@ export default function LandingPage() {
                                                                 )
                                                             }
                                                         >
+                                                            {pkg.discountPercent > 0 && (
+                                                                <span className="popular-discount-badge">-{pkg.discountPercent}% OFF</span>
+                                                            )}
+
                                                             <h2>{pkg.packageName}</h2>
-                                                            <p>{formatDescription(pkg.packageDescription)}</p>
+                                                            <div className="popular-card-meta">
+                                                                <span className="popular-package-type">{(pkg.packageType && String(pkg.packageType).length) ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1) : 'Package'}</span>
+                                                            </div>
                                                         </Card>
                                                     ))}
                                                 </div>

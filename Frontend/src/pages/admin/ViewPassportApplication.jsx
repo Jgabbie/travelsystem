@@ -12,7 +12,7 @@ const { Title } = Typography;
 const statusSteps = [
     { title: "Application Submitted", summary: "Application Submitted" },
     { title: "Application Approved", summary: "Application Approved" },
-    { title: "Payment Complete", summary: "Payment Complete" },
+    { title: "Payment Completed", summary: "Payment Completed" },
     { title: "Documents Uploaded", summary: "Documents Uploaded" },
     { title: "Documents Approved", summary: "Documents Approved" },
     { title: "Documents Received", summary: "Documents Received" },
@@ -40,6 +40,7 @@ export default function ViewPassportApplication() {
     const [isSuggestedDatesSentModalOpen, setIsSuggestedDatesSentModalOpen] = useState(false);
     const [isResubmitDocumentsSentModalOpen, setIsResubmitDocumentsSentModalOpen] = useState(false);
     const [descriptionColumn, setDescriptionColumn] = useState(2);
+    const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
 
     useEffect(() => {
         const updateDescriptionColumn = () => {
@@ -94,14 +95,14 @@ export default function ViewPassportApplication() {
         try {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`);
-            setApplication((prev) => ({ ...prev, status: "Payment Complete" }));
+            setApplication((prev) => ({ ...prev, status: "Payment Completed" }));
 
             const statusMap = statusSteps.reduce((acc, step, idx) => {
                 acc[step.title] = idx;
                 return acc;
             }, {});
-            if (statusMap["Payment Complete"] !== undefined) {
-                setCurrentStep(statusMap["Payment Complete"]);
+            if (statusMap["Payment Completed"] !== undefined) {
+                setCurrentStep(statusMap["Payment Completed"]);
             }
 
             setIsResubmitDocumentsSentModalOpen(true);
@@ -134,9 +135,144 @@ export default function ViewPassportApplication() {
         fetchApplication();
     }, [applicationId, navigate]);
 
-    if (!application) {
+
+
+    // Compute when the current status was set and a deadline (days) for action
+    const statusDeadlineDaysMap = {
+        'Application Submitted': 7,
+        'Application Approved': 4,
+        'Payment Completed': 2,
+        'Documents Uploaded': 5,
+        'Documents Approved': 3,
+        'Documents Received': 3,
+        'Documents Submitted': 4,
+        'Processing by DFA': 14,
+        'DFA Approved': 0,
+        'Passport Released': 0,
+    };
+
+    const getStatusSetDate = (app) => {
+        if (!app) return null;
+        // prefer explicit status history entry
+        const history = app.statusHistory;
+        if (Array.isArray(history) && history.length > 0) {
+            // find last entry matching current status
+            for (let i = history.length - 1; i >= 0; i--) {
+                const h = history[i];
+                if (String(h.status).toLowerCase() === String(app.status).toLowerCase()) {
+                    return dayjs(h.changedAt);
+                }
+            }
+        }
+        // fallback to explicit timestamp fields
+        if (app.statusUpdatedAt) return dayjs(app.statusUpdatedAt);
+        if (app.updatedAt) return dayjs(app.updatedAt);
+        if (app.createdAt) return dayjs(app.createdAt);
         return null;
-    }
+    };
+
+    const currentStatusSetDate = getStatusSetDate(application);
+    const deadlineDays = statusDeadlineDaysMap[application?.status] ?? null;
+    const statusDeadlineDate = currentStatusSetDate && deadlineDays ? currentStatusSetDate.add(deadlineDays, 'day') : null;
+    // Live countdown for admin current status
+    const [adminCountdown, setAdminCountdown] = useState(null);
+
+    // Modern countdown style for admin (brand color)
+    const adminCountdownStyle = {
+        fontSize: 13,
+        color: '#305797',
+        fontWeight: 700,
+        background: 'rgba(48,87,151,0.06)',
+        padding: '4px 8px',
+        borderRadius: 14,
+        border: '1px solid rgba(48,87,151,0.12)',
+        boxShadow: '0 6px 18px rgba(48,87,151,0.06)',
+        minWidth: 80,
+        textAlign: 'center',
+        fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+        lineHeight: 1,
+    };
+
+    useEffect(() => {
+        let deadline = statusDeadlineDate;
+        if (!deadline) {
+            setAdminCountdown(null);
+            return;
+        }
+
+        const update = () => {
+            const diffMs = deadline.diff(dayjs());
+            if (diffMs <= 0) {
+                setAdminCountdown('Deadline passed');
+                return;
+            }
+            let total = Math.floor(diffMs / 1000);
+            const days = Math.floor(total / 86400);
+            total = total % 86400;
+            const hours = Math.floor(total / 3600);
+            total = total % 3600;
+            const minutes = Math.floor(total / 60);
+            const seconds = total % 60;
+            setAdminCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+        };
+
+        update();
+        const id = setInterval(update, 1000);
+        return () => clearInterval(id);
+    }, [statusDeadlineDate]);
+
+    // Auto-reject application if deadline is passed
+    useEffect(() => {
+        if (!application || !statusDeadlineDate || hasProcessedRejection) return;
+
+        const terminalStatuses = ['Rejected', 'Passport Released'];
+        if (terminalStatuses.includes(application.status)) return;
+
+        const isDeadlinePassed = statusDeadlineDate.isBefore(dayjs(), 'day');
+        if (isDeadlinePassed) {
+            setHasProcessedRejection(true);
+            const updateStatus = async () => {
+                try {
+                    await apiFetch.put(
+                        `/passport/applications/${applicationId}/status`,
+                        { status: 'Rejected' },
+                        { withCredentials: true }
+                    );
+                    notification.warning({
+                        message: 'Application Rejected',
+                        description: 'Application has been auto-rejected due to missed deadline.',
+                        placement: 'topRight'
+                    });
+                    setApplication(prev => ({ ...prev, status: 'Rejected' }));
+                } catch (err) {
+                    console.error('Failed to auto-reject application:', err);
+                }
+            };
+            updateStatus();
+        }
+    }, [statusDeadlineDate, application, hasProcessedRejection, applicationId]);
+
+    // Appointment date (used to cap deadlines so they don't exceed appointment)
+    const appointmentDate = application?.preferredDate
+        ? dayjs(application.preferredDate)
+        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
+            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
+            : null;
+
+    // Helper: get when a particular step/status was set from statusHistory (fallback none)
+    const getStepSetDateForTitle = (app, title) => {
+        if (!app || !title) return null;
+        const history = app.statusHistory;
+        if (Array.isArray(history) && history.length > 0) {
+            for (let i = history.length - 1; i >= 0; i--) {
+                const h = history[i];
+                if (String(h.status).toLowerCase() === String(title).toLowerCase()) {
+                    return dayjs(h.changedAt);
+                }
+            }
+        }
+        return null;
+    };
 
     //RENDER UPLOAD DOCUMENTS
     const renderReadOnlyFile = (url, label) => {
@@ -556,7 +692,7 @@ export default function ViewPassportApplication() {
                                                 className="viewvisaapplication-submitdocu-button"
                                                 type="primary"
                                                 onClick={handleResubmitDocuments}
-                                                disabled={application?.status?.toLowerCase() === "payment complete" || application?.status?.toLowerCase() === "application approved" || application?.status?.toLowerCase() === "application submitted" || isUpdatingStatus}
+                                                disabled={application?.status?.toLowerCase() === "payment completed" || application?.status?.toLowerCase() === "application approved" || application?.status?.toLowerCase() === "application submitted" || isUpdatingStatus}
                                             >
                                                 Resubmit Documents
                                             </Button>
@@ -580,38 +716,96 @@ export default function ViewPassportApplication() {
 
                                     <div style={{ border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#ffffff", minWidth: 280 }}>
                                         <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
+                                        {currentStatusSetDate && deadlineDays !== null && (
+                                            <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
+                                                        {statusDeadlineDate && (() => {
+                                                            const daysLeftCount = statusDeadlineDate.diff(dayjs(), 'day');
+                                                            return (
+                                                                <div style={{ fontSize: 12, color: '#333' }}>
+                                                                    <strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({daysLeftCount} day{daysLeftCount === 1 ? '' : 's'} left)
+                                                                </div>
+                                                            );
+                                                        })()}
+
+                                                        {adminCountdown && (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                                                                <div style={{ fontSize: 12, color: '#305797', fontWeight: 700 }}>Time left:</div>
+                                                                <div style={adminCountdownStyle}>{adminCountdown}</div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        {statusDeadlineDate && statusDeadlineDate.isBefore(dayjs(), 'day') ? (
+                                                            <Tag color="red">Deadline passed</Tag>
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                         <Steps
+                                            className="passport-progress-steps"
                                             orientation="vertical"
                                             current={currentStep}
                                             // This single handler manages everything
                                             onChange={progressEditable && !isUpdatingStatus ? handleStepChange : undefined}
-                                            items={statusSteps.map((step, idx) => ({
-                                                title: (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '0 8px' }}>
-                                                        <span style={{
-                                                            fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                            fontSize: 16,
-                                                            color: "#305797",
-                                                            textAlign: 'center',
-                                                            whiteSpace: 'nowrap',
-                                                        }}>
-                                                            {step.title}
-                                                        </span>
+                                            items={statusSteps.map((step, idx) => {
+                                                const stepSetDate = getStepSetDateForTitle(application, step.title);
+                                                const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
+                                                const stepDeadlineDays = statusDeadlineDaysMap[step.title] ?? null;
+                                                let stepDeadlineDate = stepSetDate && stepDeadlineDays ? stepSetDate.add(stepDeadlineDays, 'day') : null;
 
-                                                        <p style={{ fontSize: 10, color: '#555' }}>Description for {step.title}</p>
+                                                // Cap deadline to appointment date if appointment exists
+                                                if (stepDeadlineDate && appointmentDate && stepDeadlineDate.isAfter(appointmentDate, 'day')) {
+                                                    stepDeadlineDate = appointmentDate;
+                                                }
 
-                                                        <Checkbox
-                                                            checked={idx <= currentStep}
-                                                            disabled={!progressEditable}
-                                                            style={{ fontSize: 14, pointerEvents: 'none' }}
-                                                        // REMOVE the internal onChange logic
-                                                        // pointerEvents: 'none' ensures the click goes to the Step item
-                                                        >
-                                                            Done
-                                                        </Checkbox>
-                                                    </div>
-                                                )
-                                            }))}
+                                                const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
+
+                                                return {
+                                                    title: (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '0 8px' }}>
+                                                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                                <span style={{
+                                                                    fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                                    fontSize: 16,
+                                                                    color: "#305797",
+                                                                    textAlign: 'center',
+                                                                    whiteSpace: 'nowrap',
+                                                                }}>
+                                                                    {step.title}
+                                                                </span>
+                                                                {currentStep === idx && adminCountdown && (
+                                                                    <span style={adminCountdownStyle}>{adminCountdown}</span>
+                                                                )}
+                                                            </div>
+
+                                                            <p style={{ fontSize: 10, color: '#555', margin: 0 }}>{step.summary || `Status: ${step.title}`}</p>
+
+                                                            {stepSetDate && (
+                                                                <div style={{ fontSize: 11, color: '#444' }}>
+                                                                    <div>Set on: {stepSetDate.format('MMM D, YYYY')}{daysAgo !== null ? ` • ${daysAgo} days ago` : ''}</div>
+                                                                    {stepDeadlineDate && (
+                                                                        <div style={{ color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
+                                                                            Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({daysLeft} days left)
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            <Checkbox
+                                                                checked={idx <= currentStep}
+                                                                disabled={!progressEditable}
+                                                                style={{ fontSize: 14, pointerEvents: 'none' }}
+                                                            >
+                                                                Done
+                                                            </Checkbox>
+                                                        </div>
+                                                    )
+                                                };
+                                            })}
                                         />
                                     </div>
                                 </div>

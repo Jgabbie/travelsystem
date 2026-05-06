@@ -118,7 +118,7 @@ const requestVisaDocumentResubmission = async (req, res) => {
         }
 
         application.submittedDocuments = {};
-        application.status = "Payment Complete";
+        application.status = "Payment Completed";
         await application.save();
 
         const user = await UserModel.findById(application.userId);

@@ -417,7 +417,7 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                             noStyle
                                                             rules={[
                                                                 { required: true, message: 'Please enter first name' },
-                                                                { pattern: /^[A-Za-z\s-]+$/, message: 'First name must contain letters only' }
+                                                                { pattern: /^[A-Za-z\s-]{2,}$/, message: 'First name must be at least 2 characters and contain letters only' }
                                                             ]}
                                                         >
                                                             <Input
@@ -433,7 +433,7 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                             noStyle
                                                             rules={[
                                                                 { required: true, message: 'Please enter last name' },
-                                                                { pattern: /^[A-Za-z\s-]+$/, message: 'Last name must contain letters only' }
+                                                                { pattern: /^[A-Za-z\s-]{2,}$/, message: 'Last name must be at least 2 characters and contain letters only' }
                                                             ]}
                                                         >
                                                             <Input
@@ -528,13 +528,13 @@ export default function BookingRegistrationTravelersQuote({ form, onValuesChange
                                                                     : [
                                                                         { required: true, message: 'Please enter passport number' },
                                                                         {
-                                                                            pattern: /^[a-zA-Z0-9]{5,20}$/,
-                                                                            message: 'Passport number must be 5–20 alphanumeric characters',
+                                                                            pattern: /^P\d{7}[A-Za-z]$/,
+                                                                            message: 'Passport number must start with P, followed by 7 digits and end with a letter (e.g. P8263213C)',
                                                                         },
                                                                     ]
                                                             }
                                                         >
-                                                            <Input style={inputStyle} maxLength={7} readOnly />
+                                                            <Input style={inputStyle} maxLength={9} readOnly />
                                                         </Form.Item>
                                                     </Col>
 

@@ -370,7 +370,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
 
                                     <td style={{ border: '1px solid #000' }}>
 
-                                        <div style={{ display: 'flex', width: '100%' }}>
+                                        <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
 
                                             <div style={{ flex: 1 }}>
                                                 <Form.Item
@@ -379,8 +379,8 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                                     rules={[
                                                         { required: true, message: 'Contact number is required' },
                                                         {
-                                                            pattern: /^[0-9]{10,13}$/,
-                                                            message: 'Enter valid contact number'
+                                                            pattern: /^[0-9]{7,8}$/,
+                                                            message: 'Enter valid contact number (7-8 digits)'
                                                         }
                                                     ]}
                                                 >
@@ -390,19 +390,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                                         size="small"
                                                         style={{ fontSize: '10px', padding: '4px' }}
                                                         onChange={(e) => {
-                                                            let value = e.target.value.replace(/\D/g, '');
-
-                                                            // auto prepend 09
-                                                            if (value.length > 0 && !value.startsWith('09')) {
-                                                                if (value.startsWith('9')) {
-                                                                    value = '0' + value;
-                                                                } else {
-                                                                    value = '09' + value;
-                                                                }
-                                                            }
-
-                                                            value = value.slice(0, 11);
-
+                                                            let value = e.target.value.replace(/\D/g, '').slice(0, 8);
                                                             form.setFieldsValue({
                                                                 emergencyContact: value
                                                             });
@@ -423,29 +411,26 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
 
                                             <div style={{ borderLeft: '1px solid #000', padding: '4px', width: '80px', fontWeight: 'bold' }}>Relation:</div>
 
-                                            <div style={{ flex: 1, borderLeft: '1px solid #000' }}>
+                                            <div style={{ flex: 1 }}>
                                                 <Form.Item
                                                     name="emergencyRelation"
                                                     noStyle
                                                     rules={[
-                                                        { required: true, message: 'Relation is required' },
-                                                        { pattern: /^[A-Za-z\s-]+$/, message: 'Relation must contain letters only' }
+                                                        { required: true, message: 'Relation is required' }
                                                     ]}
                                                 >
-                                                    <Input
-                                                        variant="borderless"
+                                                    <Select
                                                         size="small"
-                                                        style={{ fontSize: '10px', padding: '4px' }}
-                                                        onKeyDown={(e) => {
-                                                            const regex = /^[A-Za-z\s-]+$/;
-
-                                                            if (
-                                                                e.key.length === 1 &&
-                                                                !regex.test(e.key)
-                                                            ) {
-                                                                e.preventDefault();
-                                                            }
-                                                        }}
+                                                        variant="borderless"
+                                                        style={{ width: '100%', padding: 0, fontSize: '10px' }}
+                                                        placeholder="Select relation"
+                                                        options={[
+                                                            { value: 'BROTHER', label: 'BROTHER' },
+                                                            { value: 'SISTER', label: 'SISTER' },
+                                                            { value: 'MOTHER', label: 'MOTHER' },
+                                                            { value: 'FATHER', label: 'FATHER' },
+                                                            { value: 'RELATIVE', label: 'RELATIVE' }
+                                                        ]}
                                                     />
                                                 </Form.Item>
                                             </div>

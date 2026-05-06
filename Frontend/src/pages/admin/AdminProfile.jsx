@@ -453,7 +453,6 @@ export default function AdminProfile() {
                                                 maxLength={13}
                                                 placeholder="Enter your phone number"
                                                 allowClear
-                                                addonBefore="+63"
                                                 status={error.phone ? "error" : ""}
                                                 value={values.phone}
                                                 onChange={(e) => {

@@ -1359,7 +1359,7 @@ const handlePayMongoWebhook = async (req, res) => {
             const updatedVisa = await VisaModel.findOneAndUpdate(
                 { _id: metadata.applicationId }, // filter object
                 {
-                    $set: { status: ["Payment Complete"], currentStepIndex: 1 } // replace array & update progress
+                    $set: { status: ["Payment Completed"], currentStepIndex: 1 } // replace array & update progress
                 },
                 { new: true } // return the updated document
             );
@@ -1460,7 +1460,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
             const updatedApp = await PassportModel.findOneAndUpdate(
                 { _id: metadata.applicationId },
-                { status: "Payment Complete" },
+                { status: "Payment Completed" },
                 { new: true }
             );
 

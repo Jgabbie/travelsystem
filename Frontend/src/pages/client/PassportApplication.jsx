@@ -14,7 +14,7 @@ const getStatusColor = (status) => {
             return 'blue';
         case 'application approved':
             return 'purple';
-        case 'payment complete':
+        case 'payment completed':
             return 'cyan';
         case 'documents uploaded':
             return 'orange';
@@ -38,7 +38,7 @@ const getStatusColor = (status) => {
 const PASSPORT_STEPS = [
     { title: 'Application Submitted', description: 'Application Submitted' },
     { title: 'Application Approved', description: 'Application Approved' },
-    { title: 'Payment Complete', description: 'Payment Complete' },
+    { title: 'Payment Completed', description: 'Payment Completed' },
     { title: 'Documents Uploaded', description: 'Documents Uploaded' },
     { title: 'Documents Approved', description: 'Documents Approved' },
     { title: 'Documents Received', description: 'Documents Received' },
@@ -128,6 +128,168 @@ export default function PassportApplication() {
             )
         )
         : 0;
+
+    // Compute status set date and deadline for client view
+    const statusDeadlineDaysMap = {
+        'Application Submitted': 7,
+        'Application Approved': 4,
+        'Payment Completed': 2,
+        'Documents Uploaded': 5,
+        'Documents Approved': 3,
+        'Documents Received': 3,
+        'Documents Submitted': 4,
+        'Processing by DFA': 14,
+        'DFA Approved': 0,
+        'Passport Released': 0,
+    };
+
+    // Modern countdown style for client (brand color)
+    const countdownStyle = {
+        fontSize: 15,
+        color: '#305797',
+        fontWeight: 700,
+        background: 'rgba(48,87,151,0.06)',
+        padding: '6px 10px',
+        borderRadius: 14,
+        border: '1px solid rgba(48,87,151,0.12)',
+        boxShadow: '0 6px 18px rgba(48,87,151,0.06)',
+        minWidth: 96,
+        textAlign: 'center',
+        fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+        lineHeight: 1,
+    };
+
+    const getStatusSetDate = (app) => {
+        if (!app) return null;
+        const history = app.statusHistory;
+        if (Array.isArray(history) && history.length > 0) {
+            for (let i = history.length - 1; i >= 0; i--) {
+                const h = history[i];
+                if (String(h.status).toLowerCase() === String(app.status).toLowerCase()) {
+                    return dayjs(h.changedAt);
+                }
+            }
+        }
+        if (app.statusUpdatedAt) return dayjs(app.statusUpdatedAt);
+        if (app.updatedAt) return dayjs(app.updatedAt);
+        if (app.createdAt) return dayjs(app.createdAt);
+        return null;
+    };
+
+    const getStepSetDateForTitle = (app, title) => {
+        if (!app || !title) return null;
+        const history = app.statusHistory;
+        if (Array.isArray(history) && history.length > 0) {
+            for (let i = history.length - 1; i >= 0; i--) {
+                const h = history[i];
+                if (String(h.status).toLowerCase() === String(title).toLowerCase()) {
+                    return dayjs(h.changedAt);
+                }
+            }
+        }
+        return null;
+    };
+
+    // Get the most recent staff/admin who changed the status (if available)
+    const getManagerName = (app) => {
+        try {
+            if (!app) return null;
+            const history = app.statusHistory;
+            if (Array.isArray(history) && history.length > 0) {
+                const last = history[history.length - 1];
+                // If backend populated changedBy, it may be an object with firstname/lastname
+                if (last.changedBy && typeof last.changedBy === 'object') {
+                    const first = last.changedBy.firstname || last.changedBy.username || '';
+                    const lastn = last.changedBy.lastname || '';
+                    const full = [first, lastn].map(s => (s || '').trim()).filter(Boolean).join(' ');
+                    if (full) return full;
+                }
+                // Fallback to recorded changedByName or plain changedBy (string)
+                if (last.changedByName) return last.changedByName;
+                if (last.changedBy && typeof last.changedBy === 'string') return last.changedBy;
+                return null;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const currentStatusSetDate = getStatusSetDate(application);
+    const deadlineDays = statusDeadlineDaysMap[application?.status] ?? null;
+    // Determine status deadline and cap to appointment date (if any)
+    const appointmentDate = application?.preferredDate
+        ? dayjs(application.preferredDate)
+        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
+            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
+            : null;
+
+    let statusDeadlineDate = currentStatusSetDate && deadlineDays ? currentStatusSetDate.add(deadlineDays, 'day') : null;
+    if (statusDeadlineDate && appointmentDate && statusDeadlineDate.isAfter(appointmentDate, 'day')) {
+        statusDeadlineDate = appointmentDate;
+    }
+
+    // Live countdown state for current active step
+    const [countdown, setCountdown] = useState(null);
+    const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
+
+    useEffect(() => {
+        if (!statusDeadlineDate) {
+            setCountdown(null);
+            return;
+        }
+
+        const update = () => {
+            const diffMs = statusDeadlineDate.diff(dayjs());
+            if (diffMs <= 0) {
+                setCountdown('Deadline passed');
+                return;
+            }
+            let total = Math.floor(diffMs / 1000);
+            const days = Math.floor(total / 86400);
+            total = total % 86400;
+            const hours = Math.floor(total / 3600);
+            total = total % 3600;
+            const minutes = Math.floor(total / 60);
+            const seconds = total % 60;
+            setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+        };
+
+        update();
+        const id = setInterval(update, 1000);
+        return () => clearInterval(id);
+    }, [statusDeadlineDate]);
+
+    // Auto-reject application if deadline is passed
+    useEffect(() => {
+        if (!application || !statusDeadlineDate || hasProcessedRejection) return;
+
+        const terminalStatuses = ['Rejected', 'Passport Released'];
+        if (terminalStatuses.includes(application.status)) return;
+
+        const isDeadlinePassed = statusDeadlineDate.isBefore(dayjs(), 'day');
+        if (isDeadlinePassed) {
+            setHasProcessedRejection(true);
+            const updateStatus = async () => {
+                try {
+                    await apiFetch.put(
+                        `/passport/applications/${id}/status`,
+                        { status: 'Rejected' },
+                        { withCredentials: true }
+                    );
+                    notification.warning({
+                        message: 'Application Rejected',
+                        description: 'Your application has been rejected due to missed deadline.',
+                        placement: 'topRight'
+                    });
+                    setApplication(prev => ({ ...prev, status: 'Rejected' }));
+                } catch (err) {
+                    console.error('Failed to auto-reject application:', err);
+                }
+            };
+            updateStatus();
+        }
+    }, [statusDeadlineDate, application, hasProcessedRejection, id]);
 
     //for payment
     const handleUploadChange = ({ fileList: newFileList }) => {
@@ -520,6 +682,33 @@ export default function PassportApplication() {
                         <p >Monitor progress, payment, and document actions with a cleaner workflow view.</p>
                     </div>
 
+                    {/* Status timeline/deadline banner */}
+                    {currentStatusSetDate && deadlineDays !== null && (
+                        <div style={{ marginBottom: 16, borderLeft: '4px solid #305797', backgroundColor: 'rgba(48,87,151,0.06)', padding: 12, borderRadius: 8 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <div style={{ fontSize: 13 }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
+                                    {statusDeadlineDate && (
+                                        <div style={{ fontSize: 13 }}><strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({statusDeadlineDate.diff(dayjs(), 'day')} days left)</div>
+                                    )}
+                                    {countdown && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: 6 }}>
+                                            <div style={{ fontSize: 12, color: '#305797', fontWeight: 700, marginBottom: 6 }}>Time left</div>
+                                            <div style={countdownStyle}>{countdown}</div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    {statusDeadlineDate && statusDeadlineDate.isBefore(dayjs(), 'day') ? (
+                                        <Tag color="red">Deadline passed</Tag>
+                                    ) : (
+                                        <Tag color="gold">Time-limited action</Tag>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* SUGGESTED APPOINTMENT */}
                     {application?.status && application?.status?.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
                         <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
@@ -608,6 +797,16 @@ export default function PassportApplication() {
                                     <div style={{ flex: '1 1 620px', minWidth: 320 }}>
                                         <Descriptions title="Application Info" bordered column={1}>
                                             <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
+                                            <Descriptions.Item label="Managed By">
+                                                {(() => {
+                                                    const mgr = getManagerName(application);
+                                                    return mgr ? (
+                                                        <Tag color="blue" style={{ fontWeight: 700, fontSize: 13 }}>{mgr}</Tag>
+                                                    ) : (
+                                                        'N/A'
+                                                    );
+                                                })()}
+                                            </Descriptions.Item>
                                             <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
                                             <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
                                             <Descriptions.Item label="DFA Location">{application.dfaLocation}</Descriptions.Item>
@@ -835,7 +1034,7 @@ export default function PassportApplication() {
                                         )}
 
                                         {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                        {application?.status && application?.status?.toLowerCase() === 'payment complete' && (
+                                        {application?.status && application?.status?.toLowerCase() === 'payment completed' && (
                                             <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                 <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
 
@@ -1109,7 +1308,7 @@ export default function PassportApplication() {
                                         {/* DOCUMENTS UPLOADED */}
                                         {application?.status && application?.status?.toLowerCase() !== 'application submitted' &&
                                             application?.status?.toLowerCase() !== 'application approved' &&
-                                            application?.status?.toLowerCase() !== 'payment complete' &&
+                                            application?.status?.toLowerCase() !== 'payment completed' &&
                                             application?.status?.toLowerCase() !== 'rejected' && (
                                                 <div className='passport-document-uploaded-section'>
                                                     <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
@@ -1189,24 +1388,48 @@ export default function PassportApplication() {
                                                         size="default"
                                                         current={currentStep}
                                                         style={{ minWidth: 290, width: 'max-content' }}
-                                                        items={PASSPORT_STEPS.map((step, idx) => ({
-                                                            title: (
-                                                                <span
-                                                                    style={{
-                                                                        fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                        color: currentStep === idx ? '#305797' : 'inherit',
-                                                                        fontSize: 16,
-                                                                        textAlign: 'center',
-                                                                        whiteSpace: 'nowrap',
-                                                                    }}
-                                                                >
-                                                                    {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
-                                                                </span>
-                                                            ),
-                                                            description: (
-                                                                <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
-                                                            ),
-                                                        }))}
+                                                        items={PASSPORT_STEPS.map((step, idx) => {
+                                                            const stepSetDate = getStepSetDateForTitle(application, step.title);
+                                                            const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
+                                                            const stepDeadlineDays = statusDeadlineDaysMap[step.title] ?? null;
+                                                            const stepDeadlineDate = stepSetDate && stepDeadlineDays ? stepSetDate.add(stepDeadlineDays, 'day') : null;
+
+                                                            return {
+                                                                title: (
+                                                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                                        <span
+                                                                            style={{
+                                                                                fontWeight: currentStep === idx ? 'bold' : 'normal',
+                                                                                color: currentStep === idx ? '#305797' : 'inherit',
+                                                                                fontSize: 16,
+                                                                                textAlign: 'center',
+                                                                                whiteSpace: 'nowrap',
+                                                                            }}
+                                                                        >
+                                                                            {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
+                                                                        </span>
+                                                                        {currentStep === idx && countdown && (
+                                                                            <span style={countdownStyle}>{countdown}</span>
+                                                                        )}
+                                                                    </div>
+                                                                ),
+                                                                description: (
+                                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                                        <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
+                                                                        {stepSetDate && (
+                                                                            <span style={{ fontSize: 12, color: '#555' }}>
+                                                                                Set on: {stepSetDate.format('MMM D, YYYY')} {daysAgo !== null ? `• ${daysAgo} days ago` : ''}
+                                                                            </span>
+                                                                        )}
+                                                                        {stepDeadlineDate && (
+                                                                            <span style={{ fontSize: 12, color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
+                                                                                Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({stepDeadlineDate.diff(dayjs(), 'day')} days left)
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                ),
+                                                            };
+                                                        })}
                                                     />
                                                 </div>
                                             </div>

@@ -39,6 +39,8 @@ export default function PackagePage() {
     const [isRatingSubmittedModalOpen, setIsRatingSubmittedModalOpen] = useState(false)
     const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false)
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
+    const [isVisaConfirmModalOpen, setIsVisaConfirmModalOpen] = useState(false)
+    const [isVisaRecommendModalOpen, setIsVisaRecommendModalOpen] = useState(false)
 
     //STATES FOR BOOKING FLOW --------------------------------------------------
     const [selectedDate, setSelectedDate] = useState(null)
@@ -532,6 +534,15 @@ export default function PackagePage() {
             setIsLoginVisible(true);
             return;
         }
+
+        // If package is international and requires visa, ask user first
+        const pkgType = (packageData?.packageType || packageData?.packageCategory || '').toString().toLowerCase();
+        const requiresVisa = pkgType === 'international' && Boolean(packageData?.visaRequired);
+        if (requiresVisa) {
+            setIsVisaConfirmModalOpen(true);
+            return;
+        }
+
         setIsArrangementModalOpen(true)
     };
 
@@ -988,15 +999,6 @@ export default function PackagePage() {
                                                     unless otherwise stated and is due to natural calamities and force majeur that is beyond our control otherwise NON-REFUNDABLE.
                                                 </p>
                                             </div>
-
-
-
-
-
-
-
-
-
                                         </div>
                                     </>
                                 )}
@@ -1028,6 +1030,83 @@ export default function PackagePage() {
                         }}
                     />
 
+                    {/* VISA CONFIRMATION MODAL: Ask if user already has a visa for this trip */}
+                    <Modal
+                        open={isVisaConfirmModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Close' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => setIsVisaConfirmModalOpen(false)}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Visa Required</h1>
+                            <p className='signup-success-text'>This international package requires a visa. Do you already have a valid visa for this trip?</p>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        setIsVisaConfirmModalOpen(false);
+                                        setIsArrangementModalOpen(true);
+                                    }}
+                                >
+                                    Yes — I have a visa
+                                </Button>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        setIsVisaConfirmModalOpen(false);
+                                        setIsVisaRecommendModalOpen(true);
+                                    }}
+                                >
+                                    No — I need a visa
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
+
+                    {/* VISA RECOMMENDATION MODAL: Recommend getting a visa before booking or proceed to visa services */}
+                    <Modal
+                        open={isVisaRecommendModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Close' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => setIsVisaRecommendModalOpen(false)}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>We Recommend a Visa</h1>
+                            <p className='signup-success-text'>We highly recommend that you obtain a visa before booking this tour package to avoid issues during travel.</p>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        setIsVisaRecommendModalOpen(false);
+                                        setIsArrangementModalOpen(true);
+                                    }}
+                                >
+                                    Continue to Booking
+                                </Button>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        setIsVisaRecommendModalOpen(false);
+                                        // navigate to Pass and Visa Services page and pass package info
+                                        navigate('/passandvisa-service', { state: { visaItem: packageItem, visaName: packageData?.packageName } });
+                                    }}
+                                >
+                                    Proceed to Visa Services
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
+
                     {/* login modal */}
                     <LoginModal
                         isOpenLogin={isLoginVisible}
@@ -1057,7 +1136,7 @@ export default function PackagePage() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsDeleteModalOpen(false);
                         }}
@@ -1101,7 +1180,7 @@ export default function PackagePage() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsPackageWishlistedModalOpen(false);
                         }}
@@ -1138,7 +1217,7 @@ export default function PackagePage() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsRatingSubmittedModalOpen(false);
                         }}
@@ -1176,7 +1255,7 @@ export default function PackagePage() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsRatingEditedModalOpen(false);
                         }}
@@ -1213,7 +1292,7 @@ export default function PackagePage() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsRatingDeletedModalOpen(false);
                         }}

@@ -87,6 +87,19 @@ const updatePassportApplicationWithDocs = async (req, res) => {
             application.submittedDocuments.additionalDocs = additionalDocs; // now array is valid
         }
         application.status = "Documents Uploaded";
+        // record status change in history
+        try {
+            const userWho = await UserModel.findById(userId).select('username firstname lastname');
+            application.statusHistory = application.statusHistory || [];
+            application.statusHistory.push({
+                status: application.status,
+                changedAt: new Date(),
+                changedBy: userId,
+                changedByName: userWho ? (userWho.firstname || userWho.username) : ''
+            });
+        } catch (e) {
+            console.error('Failed to record status history:', e);
+        }
 
         await application.save();
 
@@ -149,7 +162,8 @@ const getUserPassportApplications = async (req, res) => {
 const getPassportApplicationById = async (req, res) => {
     try {
         const { id } = req.params;
-        const application = await PassportModel.findById(id);
+        const application = await PassportModel.findById(id)
+            .populate('statusHistory.changedBy', 'username firstname lastname');
         if (!application) {
             return res.status(404).json({ message: "Passport application not found" });
         }
@@ -305,6 +319,18 @@ const passportReleaseOptionUpdate = async (req, res) => {
         application.passportReleaseOption = passportReleaseOption;
         application.deliveryAddress = deliveryAddress || "";
         application.status = "Passport Released";
+        try {
+            application.statusHistory = application.statusHistory || [];
+            const userWho = await UserModel.findById(req.userId).select('username firstname lastname');
+            application.statusHistory.push({
+                status: application.status,
+                changedAt: new Date(),
+                changedBy: req.userId,
+                changedByName: userWho ? (userWho.firstname || userWho.username) : ''
+            });
+        } catch (e) {
+            console.error('Failed to record status history for release option:', e);
+        }
         await application.save();
 
         res.status(200).json({ message: "Passport release option updated", application });
@@ -325,7 +351,19 @@ const requestPassportDocumentResubmission = async (req, res) => {
         }
 
         application.submittedDocuments = {};
-        application.status = "Payment Complete";
+        application.status = "Payment Completed";
+        try {
+            application.statusHistory = application.statusHistory || [];
+            const userWho = await UserModel.findById(req.userId).select('username firstname lastname');
+            application.statusHistory.push({
+                status: application.status,
+                changedAt: new Date(),
+                changedBy: req.userId,
+                changedByName: userWho ? (userWho.firstname || userWho.username) : ''
+            });
+        } catch (e) {
+            console.error('Failed to record status history for resubmission request:', e);
+        }
         await application.save();
 
         const user = await UserModel.findById(application.userId);
@@ -383,7 +421,7 @@ const updatePassportStatus = async (req, res) => {
         const validStatuses = [
             'Application Submitted',
             'Application Approved',
-            'Payment Complete',
+            'Payment Completed',
             'Documents Uploaded',
             'Documents Approved',
             'Documents Received',
@@ -396,10 +434,27 @@ const updatePassportStatus = async (req, res) => {
         if (!status || !validStatuses.includes(status)) {
             return res.status(400).json({ message: "Invalid or missing status" });
         }
-        const updated = await PassportModel.findByIdAndUpdate(id, { status }, { new: true });
-        if (!updated) {
+        // find and update so we can record who changed the status
+        const app = await PassportModel.findById(id);
+        if (!app) {
             return res.status(404).json({ message: "Passport application not found" });
         }
+
+        app.status = status;
+        try {
+            app.statusHistory = app.statusHistory || [];
+            const userWho = await UserModel.findById(req.userId).select('username firstname lastname');
+            app.statusHistory.push({
+                status,
+                changedAt: new Date(),
+                changedBy: req.userId,
+                changedByName: userWho ? (userWho.firstname || userWho.username) : ''
+            });
+        } catch (e) {
+            console.error('Failed to record status history during status update:', e);
+        }
+
+        const updated = await app.save();
 
         try {
             const user = await UserModel.findById(updated.userId);

@@ -631,10 +631,9 @@ export default function ProfilePage() {
                                             <span className="profile-section-label">Phone Number</span>
                                             {editing ? (
                                                 <Input
-                                                    maxLength={13}
+                                                    maxLength={8}
                                                     placeholder="Enter your phone number"
                                                     allowClear
-                                                    addonBefore="+63"
                                                     status={error.phone ? "error" : ""}
                                                     value={values.phone}
                                                     onChange={(e) => {
@@ -777,7 +776,7 @@ export default function ProfilePage() {
                                         {/* MOODS */}
                                         <div className="preference-block">
                                             <h3>What are you in the mood for?</h3>
-                                            <p>Choose up to 3</p>
+                                            <p>Choose exactly 3</p>
 
                                             <div className="preference-chip-grid">
                                                 {moodOptions.map((option) => (
@@ -790,7 +789,7 @@ export default function ProfilePage() {
                                                                 ? 'preference-chip is-selected'
                                                                 : 'preference-chip'
                                                         }
-                                                        onClick={() => togglePreference('moods', option, 4)}
+                                                        onClick={() => togglePreference('moods', option, 3)}
                                                     >
                                                         {option}
                                                     </button>
@@ -801,6 +800,7 @@ export default function ProfilePage() {
                                         {/* TOURS */}
                                         <div className="preference-block" style={{ marginTop: '20px' }}>
                                             <h3>What type of tour do you like?</h3>
+                                            <p>Choose 1 or 2</p>
 
                                             <div className="preference-chip-grid">
                                                 {tourOptions.map((option) => (
@@ -813,7 +813,7 @@ export default function ProfilePage() {
                                                                 ? 'preference-chip is-selected'
                                                                 : 'preference-chip'
                                                         }
-                                                        onClick={() => togglePreference('tours', option)}
+                                                        onClick={() => togglePreference('tours', option, 2)}
                                                     >
                                                         {option}
                                                     </button>

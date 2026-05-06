@@ -244,7 +244,7 @@ export default function VisaApplications() {
                     Pending: 'orange',
                     Approved: 'green',
                     Rejected: 'red',
-                    'Payment Complete': 'blue',
+                    'Payment Completed': 'blue',
                     'Documents Uploaded': 'gold',
                     'Documents Approved': 'green',
                     'Documents Received': 'cyan',

@@ -217,7 +217,7 @@ const updateTransaction = async (req, res) => {
             if (updatedTransaction.applicationType === 'Visa Application' && updatedTransaction.applicationId) {
                 await VisaModel.findByIdAndUpdate(
                     updatedTransaction.applicationId,
-                    { status: ["Payment Complete"], currentStepIndex: 1 },
+                    { status: ["Payment Completed"], currentStepIndex: 1 },
                     { new: true }
                 )
             }
@@ -225,7 +225,7 @@ const updateTransaction = async (req, res) => {
             if (updatedTransaction.applicationType === 'Passport Application' && updatedTransaction.applicationId) {
                 await PassportModel.findByIdAndUpdate(
                     updatedTransaction.applicationId,
-                    { status: 'Payment Complete' },
+                    { status: 'Payment Completed' },
                     { new: true }
                 )
             }

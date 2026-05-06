@@ -114,6 +114,7 @@ export default function QuotationBookingProcess() {
 
     const [isProceedModalOpen, setIsProceedModalOpen] = useState(false);
     const [isGoBackModalOpen, setIsGoBackModalOpen] = useState(false);
+    const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
 
     const hasQuotationBookingData = Boolean(
         quotationBookingData &&
@@ -405,6 +406,9 @@ export default function QuotationBookingProcess() {
         Array.from({ length: totalTravelersCount || 1 }, () => null)
     );
 
+    const passportFileInputs = useRef([]);
+    const photoFileInputs = useRef([]);
+
     //STATE FOR CURRENT STEP AND PDF GENERATION
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -491,8 +495,8 @@ export default function QuotationBookingProcess() {
         setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [form, travelerTypeLabels, bookingType, setQuotationBookingData])
 
-    //GO TO THE NEXT PAGE OF REGISTRATION
-    const next = async () => {
+    //GO TO THE NEXT PAGE OF REGISTRATION - show verification modal first
+    const nextConfirmed = async () => {
         try {
             await form.validateFields();
 
@@ -603,6 +607,15 @@ export default function QuotationBookingProcess() {
             notification.error({ message: "Please complete all required fields before proceeding. Check the console for details.", placement: 'topRight' });
         }
     };
+
+    const next = async () => {
+        if (currentStep === 0) {
+            setIsVerifyModalOpen(true);
+            return;
+        }
+
+        await nextConfirmed();
+    }
 
 
     //GO TO THE PREVIOUS PAGE OF REGISTRATION
@@ -720,6 +733,28 @@ export default function QuotationBookingProcess() {
         setPhotoPreviews(newPhotoPreviews);
     };
 
+    // Reset only passport upload for a traveler
+    const handleResetPassport = (index) => {
+        const newFileLists = [...fileLists];
+        newFileLists[index] = [];
+        setFileLists(newFileLists);
+
+        const newPreviews = [...previews];
+        newPreviews[index] = null;
+        setPreviews(newPreviews);
+    };
+
+    // Reset only 2x2 photo upload for a traveler
+    const handleResetPhoto = (index) => {
+        const newPhotoFileLists = [...photoFileLists];
+        newPhotoFileLists[index] = [];
+        setPhotoFileLists(newPhotoFileLists);
+
+        const newPhotoPreviews = [...photoPreviews];
+        newPhotoPreviews[index] = null;
+        setPhotoPreviews(newPhotoPreviews);
+    };
+
     const updateTravelerField = (index, field, value, extras = {}) => {
         const travelers = form.getFieldValue('travelers') || []
         const nextTravelers = travelers.map((traveler, travelerIndex) =>
@@ -815,6 +850,40 @@ export default function QuotationBookingProcess() {
                     <div className="booking-summary-wrapper">
                         <div className="booking-summary-hero">
                             <div className="booking-summary-hero-image-wrap">
+                                <Modal
+                                    open={isVerifyModalOpen}
+                                    closable
+                                    footer={null}
+                                    onCancel={() => setIsVerifyModalOpen(false)}
+                                    centered={true}
+                                    width={600}
+                                >
+                                    <div className='modal-container' style={{ width: '100%' }}>
+                                        <h2 className='modal-heading'>Please Verify Details</h2>
+                                        <p className='modal-text'>Kindly make sure to verify and check the information of your details — ensure passport and photo are clear and correct.</p>
+                                    </div>
+                                    <div className='modal-actions'>
+                                        <Button
+                                            type='primary'
+                                            className='modal-button'
+                                            onClick={async () => {
+                                                setIsVerifyModalOpen(false);
+                                                await nextConfirmed();
+                                            }}
+                                        >
+                                            Confirm & Continue
+                                        </Button>
+
+                                        <Button
+                                            type='primary'
+                                            className='modal-button-cancel'
+                                            onClick={() => setIsVerifyModalOpen(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </Modal>
+
                                 {images[0] ? (
                                     <img className="booking-summary-hero-image" src={images[0]} alt={packageName} />
                                 ) : (
@@ -1073,6 +1142,12 @@ export default function QuotationBookingProcess() {
                                                             e.preventDefault();
                                                         }
                                                     }}
+                                                    onBlur={() => {
+                                                        const v = String(form.getFieldValue(['travelers', index, 'firstName']) || '').trim();
+                                                        if (v.length < 2) {
+                                                            notification.error({ message: 'First name must be at least 2 characters', placement: 'topRight' });
+                                                        }
+                                                    }}
                                                 />
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -1091,6 +1166,12 @@ export default function QuotationBookingProcess() {
                                                             !regex.test(e.key)
                                                         ) {
                                                             e.preventDefault();
+                                                        }
+                                                    }}
+                                                    onBlur={() => {
+                                                        const v = String(form.getFieldValue(['travelers', index, 'lastName']) || '').trim();
+                                                        if (v.length < 2) {
+                                                            notification.error({ message: 'Last name must be at least 2 characters', placement: 'topRight' });
                                                         }
                                                     }}
                                                 />
@@ -1171,20 +1252,25 @@ export default function QuotationBookingProcess() {
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                                     <label className='upload-passport-label'>PASSPORT NUMBER</label>
                                                     <Input
-                                                        maxLength={7}
+                                                        style={{ height: 40, textAlign: 'center', fontSize: 16, letterSpacing: '2px' }}
+                                                        maxLength={8}
                                                         size="small"
-                                                        placeholder="Passport number"
-                                                        value={form.getFieldValue(['travelers', index, 'passportNo'])}
-                                                        onChange={(event) => updateTravelerField(index, 'passportNo', event.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            const regex = /^[0-9]$/;
-
-                                                            if (
-                                                                e.key.length === 1 &&
-                                                                !regex.test(e.key)
-                                                            ) {
-                                                                e.preventDefault();
+                                                        placeholder="1234567A"
+                                                        value={(() => {
+                                                            const val = String(form.getFieldValue(['travelers', index, 'passportNo']) || '');
+                                                            if (val.startsWith('P') && val.length >= 2) {
+                                                                const content = val.slice(1);
+                                                                return content.slice(0, 7) + (content.length > 7 ? content[7] : '');
                                                             }
+                                                            return '';
+                                                        })()}
+                                                        onChange={(event) => {
+                                                            const raw = String(event.target.value || '');
+                                                            const digits = (raw.match(/\d/g) || []).join('').slice(0, 7);
+                                                            const lastChar = raw.replace(/\d/g, '').slice(-1);
+                                                            const letter = /^[a-zA-Z]$/.test(lastChar) ? lastChar.toUpperCase() : '';
+                                                            const passport = 'P' + digits + letter;
+                                                            updateTravelerField(index, 'passportNo', passport);
                                                         }}
                                                     />
                                                 </div>
@@ -1237,16 +1323,55 @@ export default function QuotationBookingProcess() {
                                             </Upload>
                                         )}
 
-                                        {(fileLists[index]?.length > 0 || photoFileLists[index]?.length > 0) && (
+                                        {fileLists[index]?.length > 0 && (
                                             <Button
                                                 type='primary'
                                                 className='upload-passport-remove-button'
                                                 size="small"
-                                                onClick={() => handleResetUploads(index)}
+                                                onClick={() => passportFileInputs.current[index]?.click()}
                                             >
-                                                Remove/Change Photos
+                                                Change Passport
                                             </Button>
                                         )}
+
+                                        {photoFileLists[index]?.length > 0 && (
+                                            <Button
+                                                type='primary'
+                                                className='upload-passport-remove-button'
+                                                size="small"
+                                                onClick={() => photoFileInputs.current[index]?.click()}
+                                                style={{ marginLeft: fileLists[index]?.length > 0 ? 8 : 0 }}
+                                            >
+                                                Change 2x2 Photo
+                                            </Button>
+                                        )}
+
+                                        {/* Hidden native inputs to trigger file pickers */}
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png"
+                                            style={{ display: 'none' }}
+                                            ref={(el) => (passportFileInputs.current[index] = el)}
+                                            onChange={(e) => {
+                                                const f = e.target.files && e.target.files[0];
+                                                if (!f) return;
+                                                handleChange({ file: f, fileList: [f] }, index);
+                                                e.target.value = '';
+                                            }}
+                                        />
+
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png"
+                                            style={{ display: 'none' }}
+                                            ref={(el) => (photoFileInputs.current[index] = el)}
+                                            onChange={(e) => {
+                                                const f = e.target.files && e.target.files[0];
+                                                if (!f) return;
+                                                handlePhotoChange({ file: f, fileList: [f] }, index);
+                                                e.target.value = '';
+                                            }}
+                                        />
                                     </div>
                                 </div>
 
@@ -1319,7 +1444,7 @@ export default function QuotationBookingProcess() {
 
 
                     {/* BOOKING REGISTRATION */}
-                    < div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
+                    <div className="booking-form-stepper-container" style={{ marginTop: 40 }}>
                         <div className="booking-section-header" style={{ marginBottom: 30 }}>
                             <h2 className="upload-passport-title booking-section-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                             <p className="upload-passport-text booking-section-subtitle" style={{ textAlign: "left" }}>

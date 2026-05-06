@@ -384,7 +384,6 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                             <Input
                                 id="phone"
                                 className="adduser-input"
-                                addonBefore="+63"
                                 value={values.phone}
                                 status={error.phone ? 'error' : ''}
                                 maxLength={13}

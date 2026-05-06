@@ -837,7 +837,7 @@ export default function AddPackage() {
                 <label className="add-package-input-labels">Package Name</label>
                 <Input
                   status={errors.name ? "error" : ""}
-                  maxLength={30}
+                  maxLength={50}
                   value={values.name}
                   className={`add-package-inputs${errors.name ? " add-package-inputs-error" : "add-package-inputs"
                     }`}
@@ -1148,6 +1148,14 @@ export default function AddPackage() {
                             "Tab",
                             "-",
                             " ",
+                            "'",
+                            ".",
+                            ",",
+                            "&",
+                            "(",
+                            ")",
+                            "/",
+                            "#",
                           ];
                           if (!allowedKeys.includes(e.key) && !/^[A-Za-z0-9]$/.test(e.key)) {
                             e.preventDefault();

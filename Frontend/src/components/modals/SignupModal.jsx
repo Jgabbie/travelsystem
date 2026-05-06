@@ -325,7 +325,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={clearForms}
-                    style={{ top: 60 }}
+                    centered={true}
                 >
 
                     <div className='signup-container-modal'>

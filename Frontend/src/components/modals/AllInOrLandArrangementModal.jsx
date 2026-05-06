@@ -43,7 +43,7 @@ export default function AllInOrLandArrangementModal({
             footer={null}
             className="arrangement-modal"
             width={900}
-            style={{ top: 55 }}
+            centered={true}
         >
             <div className="arrangement-content">
                 <h1 className='arrangement-heading'>Select Your Package Arrangement</h1>

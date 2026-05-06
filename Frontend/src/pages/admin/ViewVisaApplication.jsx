@@ -288,7 +288,7 @@ export default function ViewVisaApplication() {
 
             setApplication((prev) => ({
                 ...prev,
-                status: "Payment Complete"
+                status: "Payment Completed"
             }));
 
             const statusMap = (application?.visaProcessSteps || []).reduce((acc, step, idx) => {
@@ -299,8 +299,8 @@ export default function ViewVisaApplication() {
                 return acc;
             }, {});
 
-            if (statusMap["Payment Complete"] !== undefined) {
-                setCurrentStep(statusMap["Payment Complete"]);
+            if (statusMap["Payment Completed"] !== undefined) {
+                setCurrentStep(statusMap["Payment Completed"]);
             }
 
             setIsResubmitDocumentsSentModalOpen(true);
@@ -645,7 +645,7 @@ export default function ViewVisaApplication() {
                                                     className="viewvisaapplication-submitdocu-button"
                                                     type="primary"
                                                     onClick={handleResubmitDocuments}
-                                                    disabled={statusText?.toLowerCase() === "payment complete" || statusText?.toLowerCase() === "application approved" || statusText?.toLowerCase() === "application submitted" || isUpdatingStatus}
+                                                    disabled={statusText?.toLowerCase() === "payment completed" || statusText?.toLowerCase() === "application approved" || statusText?.toLowerCase() === "application submitted" || isUpdatingStatus}
                                                 >
                                                     Resubmit Documents
                                                 </Button>
