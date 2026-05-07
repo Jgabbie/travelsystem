@@ -158,6 +158,12 @@ export default function ViewPassportApplication() {
         'Passport Released': 0,
     };
 
+    const appointmentDate = application?.preferredDate
+        ? dayjs(application.preferredDate)
+        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
+            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
+            : null;
+
     const getStatusSetDate = (app) => {
         if (!app) return null;
         // prefer explicit status history entry
@@ -179,8 +185,12 @@ export default function ViewPassportApplication() {
     };
 
     const currentStatusSetDate = getStatusSetDate(application);
-    const deadlineDays = statusDeadlineDaysMap[application?.status] ?? null;
-    const statusDeadlineDate = currentStatusSetDate && deadlineDays ? currentStatusSetDate.add(deadlineDays, 'day') : null;
+    const deadlineDays = application?.statusDeadlineDays ?? statusDeadlineDaysMap[application?.status] ?? null;
+    const statusDeadlineDate = application?.statusDeadlineDate
+        ? dayjs(application.statusDeadlineDate)
+        : appointmentDate && Number.isFinite(deadlineDays)
+            ? appointmentDate.subtract(deadlineDays, 'day').startOf('day')
+            : null;
     // Live countdown for admin current status
     const [adminCountdown, setAdminCountdown] = useState(null);
 
@@ -258,13 +268,6 @@ export default function ViewPassportApplication() {
             updateStatus();
         }
     }, [statusDeadlineDate, application, hasProcessedRejection, applicationId]);
-
-    // Appointment date (used to cap deadlines so they don't exceed appointment)
-    const appointmentDate = application?.preferredDate
-        ? dayjs(application.preferredDate)
-        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
-            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
-            : null;
 
     // Helper: get when a particular step/status was set from statusHistory (fallback none)
     const getStepSetDateForTitle = (app, title) => {
@@ -751,11 +754,13 @@ export default function ViewPassportApplication() {
 
                                     <div style={{ border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#ffffff", minWidth: 280 }}>
                                         <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
-                                        {currentStatusSetDate && deadlineDays !== null && (
+                                        {statusDeadlineDate && (
                                             <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                                                     <div style={{ flex: 1 }}>
-                                                        <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
+                                                        {currentStatusSetDate && (
+                                                            <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
+                                                        )}
                                                         {statusDeadlineDate && (() => {
                                                             const daysLeftCount = statusDeadlineDate.diff(dayjs(), 'day');
                                                             return (
@@ -790,11 +795,21 @@ export default function ViewPassportApplication() {
                                                 const stepSetDate = getStepSetDateForTitle(application, step.title);
                                                 const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
                                                 const stepDeadlineDays = statusDeadlineDaysMap[step.title] ?? null;
-                                                let stepDeadlineDate = stepSetDate && stepDeadlineDays ? stepSetDate.add(stepDeadlineDays, 'day') : null;
 
-                                                // Cap deadline to appointment date if appointment exists
-                                                if (stepDeadlineDate && appointmentDate && stepDeadlineDate.isAfter(appointmentDate, 'day')) {
-                                                    stepDeadlineDate = appointmentDate;
+                                                // Prefer backend-provided deadline for the active status
+                                                let stepDeadlineDate = null;
+                                                if (application?.statusDeadlineDate && String(application.status) === String(step.title)) {
+                                                    stepDeadlineDate = dayjs(application.statusDeadlineDate);
+                                                } else if (stepSetDate && Number.isFinite(stepDeadlineDays)) {
+                                                    // If the step was already set, anchor to that set date + deadlineDays
+                                                    stepDeadlineDate = stepSetDate.add(stepDeadlineDays, 'day').startOf('day');
+                                                } else if (appointmentDate && Number.isFinite(stepDeadlineDays)) {
+                                                    // Fallback: use appointment-based anchor (Processing by DFA uses appointment date)
+                                                    if (step.title === 'Processing by DFA' || stepDeadlineDays === 0) {
+                                                        stepDeadlineDate = appointmentDate.startOf('day');
+                                                    } else {
+                                                        stepDeadlineDate = appointmentDate.subtract(stepDeadlineDays, 'day').startOf('day');
+                                                    }
                                                 }
 
                                                 const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;

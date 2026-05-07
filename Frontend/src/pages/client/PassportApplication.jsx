@@ -199,6 +199,12 @@ export default function PassportApplication() {
         'Passport Released': 0,
     };
 
+    const appointmentDate = application?.preferredDate
+        ? dayjs(application.preferredDate)
+        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
+            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
+            : null;
+
     // Modern countdown style for client (brand color)
     const countdownStyle = {
         fontSize: 15,
@@ -272,18 +278,12 @@ export default function PassportApplication() {
     };
 
     const currentStatusSetDate = getStatusSetDate(application);
-    const deadlineDays = statusDeadlineDaysMap[application?.status] ?? null;
-    // Determine status deadline and cap to appointment date (if any)
-    const appointmentDate = application?.preferredDate
-        ? dayjs(application.preferredDate)
-        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
-            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
+    const deadlineDays = application?.statusDeadlineDays ?? statusDeadlineDaysMap[application?.status] ?? null;
+    const statusDeadlineDate = application?.statusDeadlineDate
+        ? dayjs(application.statusDeadlineDate)
+        : appointmentDate && Number.isFinite(deadlineDays)
+            ? appointmentDate.subtract(deadlineDays, 'day').startOf('day')
             : null;
-
-    let statusDeadlineDate = currentStatusSetDate && deadlineDays ? currentStatusSetDate.add(deadlineDays, 'day') : null;
-    if (statusDeadlineDate && appointmentDate && statusDeadlineDate.isAfter(appointmentDate, 'day')) {
-        statusDeadlineDate = appointmentDate;
-    }
 
     // Live countdown state for current active step
     const [countdown, setCountdown] = useState(null);
@@ -766,11 +766,13 @@ export default function PassportApplication() {
                     </div>
 
                     {/* Status timeline/deadline banner */}
-                    {currentStatusSetDate && deadlineDays !== null && (
+                    {statusDeadlineDate && (
                         <div style={{ marginBottom: 16, borderLeft: '4px solid #305797', backgroundColor: 'rgba(48,87,151,0.06)', padding: 12, borderRadius: 8 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <div style={{ fontSize: 13 }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
+                                    {currentStatusSetDate && (
+                                        <div style={{ fontSize: 13 }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
+                                    )}
                                     {statusDeadlineDate && (
                                         <div style={{ fontSize: 13 }}><strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({statusDeadlineDate.diff(dayjs(), 'day')} days left)</div>
                                     )}
@@ -1463,7 +1465,22 @@ export default function PassportApplication() {
                                                             const stepSetDate = getStepSetDateForTitle(application, step.title);
                                                             const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
                                                             const stepDeadlineDays = statusDeadlineDaysMap[step.title] ?? null;
-                                                            const stepDeadlineDate = stepSetDate && stepDeadlineDays ? stepSetDate.add(stepDeadlineDays, 'day') : null;
+
+                                                            // Prefer backend-provided deadline for the active status
+                                                            let stepDeadlineDate = null;
+                                                            if (application?.statusDeadlineDate && String(application.status) === String(step.title)) {
+                                                                stepDeadlineDate = dayjs(application.statusDeadlineDate);
+                                                            } else if (stepSetDate && Number.isFinite(stepDeadlineDays)) {
+                                                                // If the step was already set, anchor to that set date + deadlineDays
+                                                                stepDeadlineDate = stepSetDate.add(stepDeadlineDays, 'day').startOf('day');
+                                                            } else if (appointmentDate && Number.isFinite(stepDeadlineDays)) {
+                                                                // Fallback: use appointment-based anchor (Processing by DFA uses appointment date)
+                                                                if (step.title === 'Processing by DFA' || stepDeadlineDays === 0) {
+                                                                    stepDeadlineDate = appointmentDate.startOf('day');
+                                                                } else {
+                                                                    stepDeadlineDate = appointmentDate.subtract(stepDeadlineDays, 'day').startOf('day');
+                                                                }
+                                                            }
 
                                                             return {
                                                                 title: (

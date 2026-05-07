@@ -28,11 +28,14 @@ export const AuthProvider = ({ children }) => {
         const { user } = res;
         setAuth({
             username: user.username,
+            firstname: user.firstName,
+            lastname: user.lastName,
             role: user.role,
             profileImage: user.profileImage,
             loginOnce: user.loginOnce
         });
     }, []);
+
 
     const touchSession = useCallback(async () => {
         if (touchInFlightRef.current) {

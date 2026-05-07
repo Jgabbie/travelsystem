@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useContext } from 'react'
 import { Table, Tag, Button, Space, notification, Input, Select, DatePicker, ConfigProvider, Modal, Image, Card } from 'antd'
 import { SearchOutlined, EyeOutlined, FileOutlined } from '@ant-design/icons/lib/icons'
 import dayjs from 'dayjs'
@@ -7,11 +7,13 @@ import html2canvas from 'html2canvas';
 import '../../style/client/usertransactions.css'
 import '../../style/admin/transaction.css'
 import apiFetch from '../../config/fetchConfig'
+import AuthContext from '../../context/AuthContext'
 
 export default function UserTransactions() {
     const receiptRef = useRef();
     const [transactions, setTransactions] = useState([])
     const [loading, setLoading] = useState(false)
+    const { auth } = useContext(AuthContext)
 
     const [searchText, setSearchText] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -118,6 +120,14 @@ export default function UserTransactions() {
                         type='primary'
                         icon={<EyeOutlined />}
                         onClick={() => {
+                            if (record.status !== "Successful") {
+                                notification.warning({
+                                    message: "Receipt Not Available",
+                                    description: `Receipts are only available for successful transactions. Current status: ${record.status}`,
+                                    placement: "topRight"
+                                });
+                                return;
+                            }
                             setSelectedTransaction(record);
                             setIsViewModalOpen(true);
                         }}
@@ -298,7 +308,7 @@ export default function UserTransactions() {
                         <div className="receipt-meta">
                             <div className="billed-to">
                                 <span className="label-blue">Billed To</span>
-                                <h3 className="customer-name" style={{ margin: 0 }}>You</h3>
+                                <h3 className="customer-name" style={{ margin: 0 }}>{auth?.firstname + " " + auth?.lastname || 'Guest'}</h3>
                             </div>
                             <div className="receipt-details">
                                 <div className="detail-item">

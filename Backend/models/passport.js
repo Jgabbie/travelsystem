@@ -49,6 +49,11 @@ const PassportSchema = new mongoose.Schema({
         changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
         changedByName: { type: String }
     }],
+    deadlineWarnings: [{
+        status: { type: String },
+        deadlineDate: { type: String },
+        warnedAt: { type: Date }
+    }],
     createdAt: { type: Date, default: Date.now }
 });
 

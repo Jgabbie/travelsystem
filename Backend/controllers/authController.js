@@ -217,6 +217,8 @@ const loginUser = async (req, res) => {
             message: "Login Successful!",
             user: {
                 username: user.username,
+                firstName: user.firstname,
+                lastName: user.lastname,
                 profileImage: user.profileImage,
                 role: user.role,
                 loginOnce: user.loginOnce
@@ -285,6 +287,8 @@ const allowLogin = async (req, res) => {
         message: "Login Successful!",
         user: {
             username: user.username,
+            firstName: user.firstname,
+            lastName: user.lastname,
             profileImage: user.profileImage,
             role: user.role,
             loginOnce: user.loginOnce
@@ -469,6 +473,8 @@ const verifyEmail = async (req, res) => {
             message: "Account verified",
             user: {
                 username: user.username,
+                firstName: user.firstname,
+                lastName: user.lastname,
                 role: user.role,
                 profileImage: user.profileImage,
                 loginOnce: user.loginOnce
@@ -497,6 +503,8 @@ const isAuthenticated = async (req, res) => {
             message: "User is Authenticated",
             user: {
                 username: currentUser.username,
+                firstName: currentUser.firstname,
+                lastName: currentUser.lastname,
                 profileImage: currentUser.profileImage,
                 role: currentUser.role,
                 loginOnce: currentUser.loginOnce

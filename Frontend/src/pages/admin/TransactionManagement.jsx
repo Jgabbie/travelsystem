@@ -60,6 +60,8 @@ export default function TransactionManagement() {
     key: t._id,
     ref: t.reference,
     username: t.userId?.username || "Unknown User",
+    firstname: t.userId?.firstname || "Unknown User",
+    lastname: t.userId?.lastname || "",
     package: t.packageId?.packageName || t.applicationType,
     date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
     price: `₱${Number(t.amount || 0).toLocaleString()}`,
@@ -259,6 +261,14 @@ export default function TransactionManagement() {
   };
 
   const openViewModal = (record) => {
+    if (record.status !== "Successful") {
+      notification.warning({
+        message: "Receipt Not Available",
+        description: `Receipts are only available for successful transactions. Current status: ${record.status}`,
+        placement: "topRight"
+      });
+      return;
+    }
     setSelectedTransaction(record);
     setIsViewModalOpen(true);
   };
@@ -729,7 +739,7 @@ export default function TransactionManagement() {
                 <div className="receipt-meta">
                   <div className="billed-to">
                     <span className="label-blue">Billed To</span>
-                    <h3 className="customer-name" style={{ margin: 0 }}>{selectedTransaction.username || "Customer Name"}</h3>
+                    <h3 className="customer-name" style={{ margin: 0 }}>{selectedTransaction.firstname + " " + selectedTransaction.lastname || "Customer Name"}</h3>
                   </div>
                   <div className="receipt-details">
                     <div className="detail-item">
