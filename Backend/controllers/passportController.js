@@ -343,6 +343,14 @@ const passportReleaseOptionUpdate = async (req, res) => {
 
 const requestPassportDocumentResubmission = async (req, res) => {
     const { id } = req.params;
+    const { documentKey, documentKeys } = req.body;
+
+    const documentLabels = {
+        birthCertificate: 'PSA Birth Certificate',
+        applicationForm: 'Application Form',
+        govId: 'Government-issued ID',
+        additionalDocs: 'Additional Documents'
+    };
 
     try {
         const application = await PassportModel.findById(id);
@@ -350,7 +358,31 @@ const requestPassportDocumentResubmission = async (req, res) => {
             return res.status(404).json({ message: "Passport application not found" });
         }
 
-        application.submittedDocuments = {};
+        const requestedKeys = Array.isArray(documentKeys) && documentKeys.length > 0
+            ? documentKeys
+            : documentKey
+                ? [documentKey]
+                : [];
+
+        const uniqueKeys = [...new Set(requestedKeys.filter((key) => documentLabels[key]))];
+
+        if (uniqueKeys.length === 0) {
+            return res.status(400).json({ message: "Please select a valid document to resubmit." });
+        }
+
+        application.resubmissionTarget = uniqueKeys[uniqueKeys.length - 1];
+        application.resubmissionTargets = [...new Set([...(application.resubmissionTargets || []), ...uniqueKeys])];
+        application.submittedDocuments = application.submittedDocuments || {};
+
+        for (const key of uniqueKeys) {
+            if (key === 'additionalDocs') {
+                application.submittedDocuments.additionalDocs = [];
+            } else {
+                application.set(`submittedDocuments.${key}`, null);
+            }
+        }
+
+        application.markModified('submittedDocuments');
         application.status = "Payment Completed";
         try {
             application.statusHistory = application.statusHistory || [];
@@ -368,10 +400,12 @@ const requestPassportDocumentResubmission = async (req, res) => {
 
         const user = await UserModel.findById(application.userId);
         if (user) {
+            const requestedSummary = uniqueKeys.map((key) => documentLabels[key]).join(', ');
+
             await NotificationModel.create({
                 userId: user._id,
-                title: "Passport Documents Resubmission Requested",
-                message: "Please resubmit your passport documents for your application.",
+                title: "Passport Document Resubmission Requested",
+                message: `Please resubmit your ${requestedSummary.toLowerCase()} for your application.`,
                 type: "passport",
                 link: "/user-applications",
                 metadata: { applicationId: application._id }
@@ -380,13 +414,13 @@ const requestPassportDocumentResubmission = async (req, res) => {
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: user.email,
-                subject: "Passport Documents Resubmission Requested",
+                subject: "Passport Document Resubmission Requested",
                 html: `
                     <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                            <h2 style="color:#305797; margin-bottom:10px;">Passport Documents Resubmission Requested</h2>
+                            <h2 style="color:#305797; margin-bottom:10px;">Passport Document Resubmission Requested</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.firstname || user.username}</b>,</p>
-                            <p style="color:#555; font-size:15px; line-height:1.6;">Our team needs you to resubmit your passport documents for your application.</p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">Our team needs you to resubmit your ${requestedSummary.toLowerCase()} for your application.</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">Please log in to your account to upload the updated documents.</p>
                             <a href="https://mrctravelandtours.com/home"
                                 style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
@@ -562,6 +596,8 @@ const archivePassportApplication = async (req, res) => {
             suggestedAppointmentSchedules: application.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: application.suggestedAppointmentScheduleChosen,
             submittedDocuments: application.submittedDocuments,
+            resubmissionTarget: application.resubmissionTarget,
+            resubmissionTargets: application.resubmissionTargets,
             passportReleaseOption: application.passportReleaseOption,
             deliveryAddress: application.deliveryAddress,
             status: application.status,
@@ -614,6 +650,8 @@ const restoreArchivedPassportApplication = async (req, res) => {
             suggestedAppointmentSchedules: archivedApplication.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: archivedApplication.suggestedAppointmentScheduleChosen,
             submittedDocuments: archivedApplication.submittedDocuments,
+            resubmissionTarget: archivedApplication.resubmissionTarget,
+            resubmissionTargets: archivedApplication.resubmissionTargets,
             passportReleaseOption: archivedApplication.passportReleaseOption,
             deliveryAddress: archivedApplication.deliveryAddress,
             status: archivedApplication.status,

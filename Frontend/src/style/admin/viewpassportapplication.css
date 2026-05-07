@@ -83,14 +83,40 @@
 
 .application-doc-item {
     width: 100%;
-    max-width: 250px;
+    max-width: 350px;
 }
 
 .application-doc-preview-media {
     width: 100%;
-    max-width: 250px;
+    max-width: 350px;
     height: 250px;
     object-fit: cover;
+}
+
+/* Preview button style matching client preview button */
+.viewpassport-preview-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
+    color: #305797;
+    border-radius: 8px;
+    width: 94%;
+    max-width: 330px;
+    height: 36px;
+    margin: 0 auto;
+    border: 1px solid #d1dbe8;
+}
+
+.application-doc-item .viewpassport-preview-button,
+.application-doc-item .viewpassportapplication-download-button {
+    width: 94%;
+    max-width: 330px;
+    margin: 0 auto;
+}
+
+.application-doc-item {
+    gap: 6px;
 }
 
 .application-doc-download {
@@ -131,11 +157,13 @@
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 250px;
-    height: 30px;
+    width: 92%;
+    max-width: 300px;
+    height: 36px;
+    margin: 0 auto;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
-    margin-top: 7px;
+    margin-top: 6px;
 }
 
 .viewpassportapplication-submitdocu-button {

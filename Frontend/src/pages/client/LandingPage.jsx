@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber, notification } from 'antd';
-import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined, CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
 import apiFetch from '../../config/fetchConfig';
@@ -35,6 +35,7 @@ export default function LandingPage() {
     const [openModalSuccess, setOpenModalSuccess] = useState(false)
     const [openModalError, setOpenModalError] = useState(false)
     const [fallbackPopularPackages, setFallbackPopularPackages] = useState([])
+    const [showNextStepsModal, setShowNextStepsModal] = useState(false)
 
     const [popularPackages, setPopularPackages] = useState([])
     const [domesticPackages, setDomesticPackages] = useState([])
@@ -201,6 +202,11 @@ export default function LandingPage() {
         }
     };
 
+    const handleNextStepsModalOption = (path) => {
+        setShowNextStepsModal(false);
+        navigate(path);
+    };
+
     //FETCH PACKAGES
     useEffect(() => {
         const fetchPopularPackages = async () => {
@@ -290,6 +296,16 @@ export default function LandingPage() {
             setIsChatbotOpen(false)
         }
     }, [auth, authLoading])
+
+    // Check for next steps modal flag from preferences
+    useEffect(() => {
+        const shouldShowModal = localStorage.getItem('showNextStepsModal');
+        if (shouldShowModal === 'true') {
+            setShowNextStepsModal(true);
+            // Remove the flag so it doesn't show on subsequent visits
+            localStorage.removeItem('showNextStepsModal');
+        }
+    }, []);
 
     //FETCH DOMESTIC PACKAGES -----------------------------------------------
     useEffect(() => {
@@ -1068,6 +1084,62 @@ export default function LandingPage() {
                     >
                         Continue
                     </Button>
+                </div>
+            </Modal>
+
+            {/* Next Steps Modal - Shown after User Preferences */}
+            <Modal
+                title={null}
+                centered
+                open={showNextStepsModal}
+                onCancel={() => setShowNextStepsModal(false)}
+                footer={null}
+                width={900}
+                className="next-steps-modal"
+                closeButtonClassName="next-steps-modal-close"
+            >
+                <div className="next-steps-container">
+                    <div className="next-steps-header">
+                        <h2>You're all set! What would you like to do next?</h2>
+                        <p>Explore our features and personalize your experience</p>
+                    </div>
+                    <div className="next-steps-cards">
+                        <div
+                            className="next-steps-card"
+                            onClick={() => handleNextStepsModalOption('/destinations-packages')}
+                        >
+                            <div className="card-icon-wrapper">
+                                <CompassOutlined className="card-icon" />
+                            </div>
+                            <h3>Browse Packages</h3>
+                            <p>Discover amazing travel packages tailored to your preferences</p>
+                            <div className="card-cta">Explore Now →</div>
+                        </div>
+
+                        <div
+                            className="next-steps-card"
+                            onClick={() => handleNextStepsModalOption('/services')}
+                        >
+                            <div className="card-icon-wrapper">
+                                <ShoppingCartOutlined className="card-icon" />
+                            </div>
+                            <h3>Avail Services</h3>
+                            <p>Check out our additional travel services and add-ons</p>
+                            <div className="card-cta">View Services →</div>
+                        </div>
+
+                        <div
+                            className="next-steps-card"
+                            onClick={() => handleNextStepsModalOption('/profile')}
+                        >
+                            <div className="card-icon-wrapper">
+                                <UserOutlined className="card-icon" />
+                            </div>
+                            <h3>View Profile</h3>
+                            <p>Complete your profile and manage your account settings</p>
+                            <div className="card-cta">View Profile →</div>
+                        </div>
+                    </div>
                 </div>
             </Modal>
 

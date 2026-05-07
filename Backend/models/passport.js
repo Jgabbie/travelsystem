@@ -21,6 +21,8 @@ const PassportSchema = new mongoose.Schema({
         govId: { type: String },
         additionalDocs: [{ type: String }]
     },
+    resubmissionTarget: { type: String, default: null },
+    resubmissionTargets: [{ type: String }],
     passportReleaseOption: { type: String },
     deliveryAddress: { type: String },
     status: {

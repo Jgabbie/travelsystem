@@ -172,6 +172,15 @@
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     height: 100%;
     overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.destinations-card:not(.destinations-card-disabled):hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 28px 48px rgba(48, 87, 151, 0.18), 0 8px 20px rgba(48, 87, 151, 0.12);
+    border-color: rgba(48, 87, 151, 0.3);
+    animation: cardHoverGlow 2s ease-in-out infinite;
 }
 
 .destinations-card .ant-card-body {
@@ -197,6 +206,11 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.destinations-card:not(.destinations-card-disabled):hover .destinations-card-image img {
+    transform: scale(1.12);
 }
 
 .destinations-card-image-placeholder {
@@ -224,6 +238,11 @@
     flex: 1;
     min-width: 0;
     padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.destinations-card:not(.destinations-card-disabled):hover .destinations-card-content {
+    background: linear-gradient(135deg, rgba(48, 87, 151, 0.02) 0%, rgba(48, 87, 151, 0.01) 100%);
 }
 
 .destinations-card-badges {
@@ -239,6 +258,11 @@
     font-size: 16px !important;
     font-family: "Montserrat", sans-serif;
     color: #305797 !important;
+    transition: all 0.3s ease;
+}
+
+.destinations-card:not(.destinations-card-disabled):hover .destinations-card-title {
+    color: #1e3a5f !important;
 }
 
 .destinations-rating {
@@ -254,6 +278,13 @@
     justify-content: center;
     align-items: center;
     gap: 4px;
+    transition: all 0.3s ease;
+}
+
+.destinations-card:not(.destinations-card-disabled):hover .destinations-rating {
+    background: #305797;
+    color: #ffffff;
+    transform: scale(1.08);
 }
 
 .destinations-card-meta {
@@ -275,6 +306,13 @@
     border: none;
     color: #ffffff;
     font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.destinations-card:not(.destinations-card-disabled):hover .destinations-discount-tag {
+    background: #1e3a5f;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(48, 87, 151, 0.3);
 }
 
 .destinations-status-tag {
@@ -353,6 +391,11 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.destinations-wishlist-btn:hover {
+    transform: scale(1.2);
 }
 
 .destinations-wishlist-btn:focus-visible {
@@ -417,6 +460,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+@keyframes cardHoverGlow {
+    0% {
+        box-shadow: 0 28px 48px rgba(48, 87, 151, 0.18), 0 8px 20px rgba(48, 87, 151, 0.12);
+    }
+
+    50% {
+        box-shadow: 0 28px 56px rgba(48, 87, 151, 0.24), 0 8px 24px rgba(48, 87, 151, 0.16);
+    }
+
+    100% {
+        box-shadow: 0 28px 48px rgba(48, 87, 151, 0.18), 0 8px 20px rgba(48, 87, 151, 0.12);
+    }
 }
 
 @media (max-width: 1024px) {

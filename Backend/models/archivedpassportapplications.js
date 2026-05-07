@@ -20,6 +20,8 @@ const ArchivedPassportApplicationSchema = new mongoose.Schema({
         govId: { type: String },
         additionalDocs: [{ type: String }]
     },
+    resubmissionTarget: { type: String, default: null },
+    resubmissionTargets: [{ type: String }],
     passportReleaseOption: { type: String, default: '' },
     deliveryAddress: { type: String, default: '' },
     status: { type: String, default: 'Application Submitted' },

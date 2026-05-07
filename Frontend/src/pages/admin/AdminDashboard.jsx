@@ -411,7 +411,7 @@ export default function AdminDashboard() {
                   className={`top-package-card ${imageUrl ? 'has-image' : ''}`}
                   style={{
                     height: 300,
-                    backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.58)), url(${imageUrl})` : undefined,
+                    backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
                     backgroundSize: imageUrl ? 'cover' : undefined,
                     backgroundPosition: imageUrl ? 'center' : undefined,
                     color: imageUrl ? '#ffffff' : undefined
@@ -446,7 +446,7 @@ export default function AdminDashboard() {
                       className={`top-duration-card ${imageUrl ? 'has-image' : ''}`}
                       style={{
                         height: 300,
-                        backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.58)), url(${imageUrl})` : undefined,
+                        backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
                         backgroundSize: imageUrl ? 'cover' : undefined,
                         backgroundPosition: imageUrl ? 'center' : undefined,
                         color: imageUrl ? '#ffffff' : undefined

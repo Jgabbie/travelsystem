@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Select, Button, Form, Modal, Tag, Space, Row, Col, Statistic, Card, ConfigProvider, Avatar, notification } from "antd";
+import { Table, Input, Select, Button, Form, Modal, Tag, Space, Row, Col, Statistic, Card, ConfigProvider, Avatar, notification, Tabs } from "antd";
 import {
   SearchOutlined,
   EditOutlined,
@@ -62,6 +62,7 @@ export default function UserManagement() {
   const [isUserDeletedModalOpen, setIsUserDeletedModalOpen] = useState(false);
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [isUserRestoredModalOpen, setIsUserRestoredModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("customers");
 
   const getUsers = async () => {
     setLoading(true);
@@ -251,6 +252,9 @@ export default function UserManagement() {
     const matchesStatus = statusFilter === "" || user.status === statusFilter;
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const customers = filteredUsers.filter(u => u.role === "Customer");
+  const staff = filteredUsers.filter(u => u.role !== "Customer");
 
   const columns = [
     { title: "Name", dataIndex: "name", editable: true },
@@ -449,13 +453,27 @@ export default function UserManagement() {
 
         <Card style={{ marginTop: 20 }}>
           <Form form={form} component={false}>
-            <Table
-              className='usermanagement-table'
-              loading={loading}
-              columns={showArchived ? archivedColumns : columns}
-              dataSource={filteredUsers}
-              pagination={{ pageSize: 10, showSizeChanger: false }}
-            />
+            <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
+              <Tabs.TabPane tab="Customers" key="customers">
+                <Table
+                  className='usermanagement-table'
+                  loading={loading}
+                  columns={showArchived ? archivedColumns : columns}
+                  dataSource={customers}
+                  pagination={{ pageSize: 10, showSizeChanger: false }}
+                />
+              </Tabs.TabPane>
+
+              <Tabs.TabPane tab="Staff (Admin & Employee)" key="staff">
+                <Table
+                  className='usermanagement-table'
+                  loading={loading}
+                  columns={showArchived ? archivedColumns : columns}
+                  dataSource={staff}
+                  pagination={{ pageSize: 10, showSizeChanger: false }}
+                />
+              </Tabs.TabPane>
+            </Tabs>
           </Form>
         </Card>
 

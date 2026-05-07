@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Spin, notification, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined, CheckCircleFilled } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
@@ -118,6 +118,62 @@ export default function PassportApplication() {
         getUserEmail();
         fetchApplication();
     }, [id]);
+
+    const normalizeResubmissionTarget = (target) => {
+        switch (target) {
+            case 'birthCertificate':
+                return 'birthCert';
+            case 'applicationForm':
+            case 'govId':
+            case 'additionalDocs':
+                return target;
+            default:
+                return null;
+        }
+    };
+
+    const requestedResubmissionTargets = (() => {
+        const targets = [];
+
+        if (Array.isArray(application?.resubmissionTargets)) {
+            application.resubmissionTargets.forEach((target) => {
+                const normalized = normalizeResubmissionTarget(target);
+                if (normalized) {
+                    targets.push(normalized);
+                }
+            });
+        }
+
+        const legacyTarget = normalizeResubmissionTarget(application?.resubmissionTarget);
+        if (legacyTarget) {
+            targets.push(legacyTarget);
+        }
+
+        return [...new Set(targets)];
+    })();
+
+    const resubmissionRequested = Boolean(
+        application &&
+        (application.status || '').toLowerCase() === 'payment completed' &&
+        requestedResubmissionTargets.length > 0
+    );
+
+    const isRequestedResubmissionTarget = (target) => !resubmissionRequested || requestedResubmissionTargets.includes(target);
+
+    const hasSelectedFileForTarget = (target) => {
+        switch (target) {
+            case 'birthCert':
+                return Boolean(birthCertList[0]);
+            case 'applicationForm':
+                return Boolean(applicationFormList[0]);
+            case 'govId':
+                return Boolean(govIdList[0]);
+            case 'additionalDocs':
+                return additionalDocsList.length > 0;
+            default:
+                return false;
+        }
+    };
 
     // Find the current step index based on status
     const currentStep = application
@@ -439,37 +495,20 @@ export default function PassportApplication() {
             window.location.href = downloadUrl;
         };
 
+        if (!url) {
+            return <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>;
+        }
+
         return (
-            <div style={{ width: 150 }}>
-                {isPdf ? (
-                    <Button
-                        type="dashed"
-                        icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
-                        onClick={() => window.open(url, '_blank')}
-                        style={{
-                            height: 250, width: 250,
-                            display: 'flex', flexDirection: 'column',
-                            alignItems: 'center', justifyContent: 'center',
-                            borderRadius: 8,
-                            backgroundColor: '#fafafa'
-                        }}
-                    >
-                        <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
-                    </Button>
-                ) : (
-                    <Image
-                        src={url}
-                        alt={label}
-                        width={250}
-                        height={250}
-                        style={{
-                            borderRadius: 8,
-                            objectFit: 'cover',
-                            border: '1px solid #f0f0f0'
-                        }}
-                        placeholder={<div style={{ width: 150, height: 150, background: '#eee' }} />}
-                    />
-                )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 320 }}>
+                <Button
+                    className='passportapplication-preview-button'
+                    size="small"
+                    type="default"
+                    onClick={() => handlePreview(url)}
+                >
+                    Preview File
+                </Button>
 
                 <Button
                     className='passportapplication-download-button'
@@ -478,18 +517,39 @@ export default function PassportApplication() {
                     size="small"
                     onClick={handleDownload}
                 >
-                    Download {isPdf ? 'PDF' : 'Image'}
+                    Download {isPdf ? 'PDF' : 'File'}
                 </Button>
             </div>
         );
     };
 
+    const getRequirementPreviewFile = (key) => {
+        const submittedDocuments = application?.submittedDocuments || application?.documents || {};
+
+        switch (key) {
+            case 'birthCert':
+                return birthCertList[0] || submittedDocuments.birthCertificate || application?.birthCertificate || null;
+            case 'applicationForm':
+                return applicationFormList[0] || submittedDocuments.applicationForm || application?.applicationForm || null;
+            case 'govId':
+                return govIdList[0] || submittedDocuments.govId || application?.govId || null;
+            case 'additionalDocs':
+                return additionalDocsList[0] || (Array.isArray(submittedDocuments.additionalDocs) && submittedDocuments.additionalDocs[0]) || (Array.isArray(application?.additionalDocs) && application.additionalDocs[0]) || null;
+            default:
+                return null;
+        }
+    };
+
     //HANDLE PREVIEW FOR UPLOADED FILES
     const handlePreview = (file) => {
-        const src = file.url;
+        const src = typeof file === 'string'
+            ? file
+            : file.preview || file.url || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : null);
         if (src) {
-            window.open(src);
+            window.open(src, '_blank', 'noopener,noreferrer');
+            return;
         }
+        notification.error({ message: 'Preview unavailable', placement: 'topRight' });
     };
 
     //ADD PREVIEW URL TO FILES FOR UPLOADED DOCUMENTS
@@ -508,31 +568,48 @@ export default function PassportApplication() {
             return;
         }
 
-        if (!birthCertList[0] || !applicationFormList[0] || !govIdList[0]) {
-            notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
-            return;
+        if (!resubmissionRequested) {
+            if (!birthCertList[0] || !applicationFormList[0] || !govIdList[0]) {
+                notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
+                return;
+            }
+        } else {
+            if (requestedResubmissionTargets.length === 0) {
+                notification.warning({ message: "No document is currently marked for resubmission.", placement: 'topRight' });
+                return;
+            }
+            if (!requestedResubmissionTargets.some(hasSelectedFileForTarget)) {
+                notification.warning({ message: "Please upload the requested document before submitting.", placement: 'topRight' });
+                return;
+            }
         }
-
         try {
             setUploading(true);
 
             const formData = new FormData();
 
-            if (birthCertList[0]) {
+            const appendedOrder = [];
+            if (birthCertList[0] && isRequestedResubmissionTarget('birthCert')) {
                 formData.append("files", birthCertList[0].originFileObj);
+                appendedOrder.push('birthCertificate');
             }
 
-            if (applicationFormList[0]) {
+            if (applicationFormList[0] && isRequestedResubmissionTarget('applicationForm')) {
                 formData.append("files", applicationFormList[0].originFileObj);
+                appendedOrder.push('applicationForm');
             }
 
-            if (govIdList[0]) {
+            if (govIdList[0] && isRequestedResubmissionTarget('govId')) {
                 formData.append("files", govIdList[0].originFileObj);
+                appendedOrder.push('govId');
             }
 
-            additionalDocsList.forEach(file => {
-                formData.append("files", file.originFileObj);
-            });
+            if (isRequestedResubmissionTarget('additionalDocs')) {
+                additionalDocsList.forEach(file => {
+                    formData.append("files", file.originFileObj);
+                    appendedOrder.push('additionalDocs');
+                });
+            }
 
             if (!formData.has("files")) {
                 notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
@@ -546,16 +623,22 @@ export default function PassportApplication() {
             );
 
             const uploaded = res.urls;
-
-            console.log("Uploaded document URLs:", uploaded);
-
-            // Save URLs to your application
-            await apiFetch.put(`/passport/applications/${id}/documents`, {
-                birthCertificate: uploaded[0],
-                applicationForm: uploaded[1],
-                govId: uploaded[2],
-                additionalDocs: uploaded.slice(3),
+            // Map uploaded urls back to the fields we appended in order
+            const payload = {};
+            let urlIndex = 0;
+            appendedOrder.forEach((key) => {
+                const url = uploaded[urlIndex];
+                if (!url) return;
+                if (key === 'additionalDocs') {
+                    if (!payload.additionalDocs) payload.additionalDocs = [];
+                    payload.additionalDocs.push(url);
+                } else {
+                    payload[key] = url;
+                }
+                urlIndex += 1;
             });
+
+            await apiFetch.put(`/passport/applications/${id}/documents`, payload);
 
             // reset
             setBirthCertList([]);
@@ -1041,30 +1124,18 @@ export default function PassportApplication() {
                                                 <div className="passport-requirements-grid">
                                                     <div className="passport-requirement-card">
                                                         <b style={{ fontSize: 12 }}>PSA-issued Birth Certificate</b>
-                                                        {birthCertList[0] ? (
+                                                        {getRequirementPreviewFile('birthCert') ? (
                                                             (() => {
-                                                                const file = birthCertList[0];
-                                                                const isPdf = file.type === 'application/pdf' ||
-                                                                    file.originFileObj?.type === 'application/pdf' ||
-                                                                    file.name?.toLowerCase().endsWith('.pdf');
-                                                                return isPdf ? (
+                                                                const file = getRequirementPreviewFile('birthCert');
+                                                                return (
                                                                     <Button
                                                                         className='passport-requirement-file-preview-button'
-                                                                        type="dashed"
+                                                                        icon={<EyeOutlined />}
                                                                         onClick={() => handlePreview(file)}
+                                                                        type="default"
                                                                     >
-                                                                        Open PDF
+                                                                        Preview File
                                                                     </Button>
-                                                                ) : (
-                                                                    <div className="passport-requirement-placeholder">
-                                                                        <Image
-                                                                            src={file.preview || file.url}
-                                                                            alt="PSA-issued Birth Certificate"
-                                                                            preview={false}
-                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                            onClick={() => handlePreview(file)}
-                                                                        />
-                                                                    </div>
                                                                 );
                                                             })()
                                                         ) : (
@@ -1073,62 +1144,59 @@ export default function PassportApplication() {
                                                             </div>
                                                         )}
                                                         <div style={{ marginTop: 8 }}>
-                                                            {birthCertList.length === 0 ? (
-                                                                <Upload
-                                                                    name="birthCert"
-                                                                    fileList={birthCertList}
-                                                                    onPreview={handlePreview}
-                                                                    onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
-                                                                    showUploadList={false}
-                                                                    accept="image/*,application/pdf"
-                                                                    maxCount={1}
-                                                                    disabled={uploading}
-                                                                    beforeUpload={() => false}
-                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                >
-                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                        Upload Requirement
-                                                                    </Button>
-                                                                </Upload>
+                                                            {isRequestedResubmissionTarget('birthCert') ? (
+                                                                birthCertList.length === 0 ? (
+                                                                    <Upload
+                                                                        name="birthCert"
+                                                                        fileList={birthCertList}
+                                                                        onPreview={handlePreview}
+                                                                        onChange={({ fileList: newList }) => setBirthCertList(withPreview(newList))}
+                                                                        showUploadList={false}
+                                                                        accept="image/*,application/pdf"
+                                                                        maxCount={1}
+                                                                        disabled={uploading}
+                                                                        beforeUpload={() => false}
+                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                    >
+                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                            Upload Requirement
+                                                                        </Button>
+                                                                    </Upload>
+                                                                ) : (
+                                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                                        <Button
+                                                                            className='passportapplication-removefile-button'
+                                                                            icon={<DeleteOutlined />}
+                                                                            type="primary"
+                                                                            onClick={() => setBirthCertList([])}
+                                                                        >
+                                                                            Remove
+                                                                        </Button>
+                                                                    </div>
+                                                                )
                                                             ) : (
-                                                                <Button
-                                                                    className='passportapplication-removefile-button'
-                                                                    icon={<DeleteOutlined />}
-                                                                    type="primary"
-                                                                    onClick={() => setBirthCertList([])}
-                                                                >
-                                                                    Remove
-                                                                </Button>
+                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
+                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                    Valid Requirement
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
 
                                                     <div className="passport-requirement-card" >
                                                         <b style={{ fontSize: 12 }}>Application Form</b>
-                                                        {applicationFormList[0] ? (
+                                                        {getRequirementPreviewFile('applicationForm') ? (
                                                             (() => {
-                                                                const file = applicationFormList[0];
-                                                                const isPdf = file.type === 'application/pdf' ||
-                                                                    file.originFileObj?.type === 'application/pdf' ||
-                                                                    file.name?.toLowerCase().endsWith('.pdf');
-                                                                return isPdf ? (
+                                                                const file = getRequirementPreviewFile('applicationForm');
+                                                                return (
                                                                     <Button
                                                                         className='passport-requirement-file-preview-button'
-                                                                        type="dashed"
+                                                                        icon={<EyeOutlined />}
+                                                                        type="default"
                                                                         onClick={() => handlePreview(file)}
                                                                     >
-                                                                        Open PDF
+                                                                        Preview
                                                                     </Button>
-                                                                ) : (
-                                                                    <div className="passport-requirement-placeholder">
-                                                                        <Image
-                                                                            src={file.preview || file.url}
-                                                                            alt="Application Form"
-                                                                            preview={false}
-                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                            onClick={() => handlePreview(file)}
-                                                                        />
-                                                                    </div>
                                                                 );
                                                             })()
                                                         ) : (
@@ -1137,62 +1205,59 @@ export default function PassportApplication() {
                                                             </div>
                                                         )}
                                                         <div style={{ marginTop: 8 }}>
-                                                            {applicationFormList.length === 0 ? (
-                                                                <Upload
-                                                                    name="applicationForm"
-                                                                    fileList={applicationFormList}
-                                                                    onPreview={handlePreview}
-                                                                    onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
-                                                                    showUploadList={false}
-                                                                    accept="image/*,application/pdf"
-                                                                    maxCount={1}
-                                                                    disabled={uploading}
-                                                                    beforeUpload={() => false}
-                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                >
-                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                        Upload Requirement
-                                                                    </Button>
-                                                                </Upload>
+                                                            {isRequestedResubmissionTarget('applicationForm') ? (
+                                                                applicationFormList.length === 0 ? (
+                                                                    <Upload
+                                                                        name="applicationForm"
+                                                                        fileList={applicationFormList}
+                                                                        onPreview={handlePreview}
+                                                                        onChange={({ fileList: newList }) => setApplicationFormList(withPreview(newList))}
+                                                                        showUploadList={false}
+                                                                        accept="image/*,application/pdf"
+                                                                        maxCount={1}
+                                                                        disabled={uploading}
+                                                                        beforeUpload={() => false}
+                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                    >
+                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                            Upload Requirement
+                                                                        </Button>
+                                                                    </Upload>
+                                                                ) : (
+                                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                                        <Button
+                                                                            className='passportapplication-removefile-button'
+                                                                            icon={<DeleteOutlined />}
+                                                                            type="primary"
+                                                                            onClick={() => setApplicationFormList([])}
+                                                                        >
+                                                                            Remove
+                                                                        </Button>
+                                                                    </div>
+                                                                )
                                                             ) : (
-                                                                <Button
-                                                                    className='passportapplication-removefile-button'
-                                                                    icon={<DeleteOutlined />}
-                                                                    type="primary"
-                                                                    onClick={() => setApplicationFormList([])}
-                                                                >
-                                                                    Remove
-                                                                </Button>
+                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
+                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                    Valid Requirement
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
 
                                                     <div className="passport-requirement-card">
                                                         <b style={{ fontSize: 12 }}>One Government-issued ID</b>
-                                                        {govIdList[0] ? (
+                                                        {getRequirementPreviewFile('govId') ? (
                                                             (() => {
-                                                                const file = govIdList[0];
-                                                                const isPdf = file.type === 'application/pdf' ||
-                                                                    file.originFileObj?.type === 'application/pdf' ||
-                                                                    file.name?.toLowerCase().endsWith('.pdf');
-                                                                return isPdf ? (
+                                                                const file = getRequirementPreviewFile('govId');
+                                                                return (
                                                                     <Button
                                                                         className='passport-requirement-file-preview-button'
-                                                                        type="dashed"
+                                                                        icon={<EyeOutlined />}
                                                                         onClick={() => handlePreview(file)}
+                                                                        type="default"
                                                                     >
-                                                                        Open PDF
+                                                                        Preview
                                                                     </Button>
-                                                                ) : (
-                                                                    <div className="passport-requirement-placeholder">
-                                                                        <Image
-                                                                            src={file.preview || file.url}
-                                                                            alt="Government-issued ID"
-                                                                            preview={false}
-                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                            onClick={() => handlePreview(file)}
-                                                                        />
-                                                                    </div>
                                                                 );
                                                             })()
                                                         ) : (
@@ -1201,62 +1266,59 @@ export default function PassportApplication() {
                                                             </div>
                                                         )}
                                                         <div style={{ marginTop: 8 }}>
-                                                            {govIdList.length === 0 ? (
-                                                                <Upload
-                                                                    name="govId"
-                                                                    fileList={govIdList}
-                                                                    onPreview={handlePreview}
-                                                                    onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
-                                                                    showUploadList={false}
-                                                                    accept="image/*,application/pdf"
-                                                                    maxCount={1}
-                                                                    disabled={uploading}
-                                                                    beforeUpload={() => false}
-                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                >
-                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                        Upload Requirement
-                                                                    </Button>
-                                                                </Upload>
+                                                            {isRequestedResubmissionTarget('govId') ? (
+                                                                govIdList.length === 0 ? (
+                                                                    <Upload
+                                                                        name="govId"
+                                                                        fileList={govIdList}
+                                                                        onPreview={handlePreview}
+                                                                        onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
+                                                                        showUploadList={false}
+                                                                        accept="image/*,application/pdf"
+                                                                        maxCount={1}
+                                                                        disabled={uploading}
+                                                                        beforeUpload={() => false}
+                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                    >
+                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                            Upload Requirement
+                                                                        </Button>
+                                                                    </Upload>
+                                                                ) : (
+                                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                                        <Button
+                                                                            className='passportapplication-removefile-button'
+                                                                            icon={<DeleteOutlined />}
+                                                                            type="primary"
+                                                                            onClick={() => setGovIdList([])}
+                                                                        >
+                                                                            Remove
+                                                                        </Button>
+                                                                    </div>
+                                                                )
                                                             ) : (
-                                                                <Button
-                                                                    className='passportapplication-removefile-button'
-                                                                    icon={<DeleteOutlined />}
-                                                                    type="primary"
-                                                                    onClick={() => setGovIdList([])}
-                                                                >
-                                                                    Remove
-                                                                </Button>
+                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
+                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                    Valid Requirement
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
 
                                                     <div className="passport-requirement-card">
                                                         <b style={{ fontSize: 12 }}>Additional Documents (optional)</b>
-                                                        {additionalDocsList[0] ? (
+                                                        {getRequirementPreviewFile('additionalDocs') ? (
                                                             (() => {
-                                                                const file = additionalDocsList[0];
-                                                                const isPdf = file.type === 'application/pdf' ||
-                                                                    file.originFileObj?.type === 'application/pdf' ||
-                                                                    file.name?.toLowerCase().endsWith('.pdf');
-                                                                return isPdf ? (
+                                                                const file = getRequirementPreviewFile('additionalDocs');
+                                                                return (
                                                                     <Button
                                                                         className='passport-requirement-file-preview-button'
-                                                                        type="dashed"
+                                                                        icon={<EyeOutlined />}
+                                                                        type="default"
                                                                         onClick={() => handlePreview(file)}
                                                                     >
-                                                                        Open PDF
+                                                                        Preview
                                                                     </Button>
-                                                                ) : (
-                                                                    <div className="passport-requirement-placeholder">
-                                                                        <Image
-                                                                            src={file.preview || file.url}
-                                                                            alt="Additional Documents"
-                                                                            preview={false}
-                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                            onClick={() => handlePreview(file)}
-                                                                        />
-                                                                    </div>
                                                                 );
                                                             })()
                                                         ) : (
@@ -1265,32 +1327,41 @@ export default function PassportApplication() {
                                                             </div>
                                                         )}
                                                         <div style={{ marginTop: 8 }}>
-                                                            {additionalDocsList.length === 0 ? (
-                                                                <Upload
-                                                                    name="additionalDocs"
-                                                                    fileList={additionalDocsList}
-                                                                    onPreview={handlePreview}
-                                                                    onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
-                                                                    showUploadList={false}
-                                                                    accept="image/*,application/pdf"
-                                                                    maxCount={1}
-                                                                    disabled={uploading}
-                                                                    beforeUpload={() => false}
-                                                                    customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                >
-                                                                    <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                        Upload Requirement
-                                                                    </Button>
-                                                                </Upload>
+                                                            {isRequestedResubmissionTarget('additionalDocs') ? (
+                                                                additionalDocsList.length === 0 ? (
+                                                                    <Upload
+                                                                        name="additionalDocs"
+                                                                        fileList={additionalDocsList}
+                                                                        onPreview={handlePreview}
+                                                                        onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
+                                                                        showUploadList={false}
+                                                                        accept="image/*,application/pdf"
+                                                                        maxCount={1}
+                                                                        disabled={uploading}
+                                                                        beforeUpload={() => false}
+                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                    >
+                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                            Upload Requirement
+                                                                        </Button>
+                                                                    </Upload>
+                                                                ) : (
+                                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                                        <Button
+                                                                            className='passportapplication-removefile-button'
+                                                                            icon={<DeleteOutlined />}
+                                                                            type="primary"
+                                                                            onClick={() => setAdditionalDocsList([])}
+                                                                        >
+                                                                            Remove
+                                                                        </Button>
+                                                                    </div>
+                                                                )
                                                             ) : (
-                                                                <Button
-                                                                    className='passportapplication-removefile-button'
-                                                                    icon={<DeleteOutlined />}
-                                                                    type="primary"
-                                                                    onClick={() => setAdditionalDocsList([])}
-                                                                >
-                                                                    Remove
-                                                                </Button>
+                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
+                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                    Valid Requirement
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -1350,7 +1421,7 @@ export default function PassportApplication() {
                                                                             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                                                                                 <Image.PreviewGroup>
                                                                                     {docs.additionalDocs.map((url, idx) => (
-                                                                                        <div key={`extra-${idx}`}>
+                                                                                        <div key={`extra-${idx}`} className="passport-additional-doc-item">
                                                                                             {renderReadOnlyFile(url, `Additional Doc ${idx + 1}`)}
                                                                                         </div>
                                                                                     ))}

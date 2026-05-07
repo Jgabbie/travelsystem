@@ -177,9 +177,11 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
-    width: 220px;
-    height: 30px;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 36px;
+    margin: 0 auto;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
@@ -190,12 +192,46 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
-    width: 250px;
-    height: 30px;
+    border-radius: 8px;
+    width: 92%;
+    max-width: 300px;
+    height: 36px;
+    margin: 0 auto;
     border: none !important;
-    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
-    margin-top: 7px;
+    box-shadow: 0 6px 14px rgba(153, 42, 70, 0.18);
+    margin-top: 6px;
+}
+
+.passportapplication-preview-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
+    color: #305797;
+    border-radius: 8px;
+    width: 170px;
+    max-width: 170px;
+    height: 38px;
+    margin: 0 auto;
+    border: 1px solid #d1dbe8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+}
+
+.passport-additional-doc-item {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.passport-additional-doc-item .passportapplication-preview-button,
+.passport-additional-doc-item .passportapplication-download-button {
+    width: 92%;
+    max-width: 300px;
+    margin: 0 auto;
 }
 
 .passportapplication-removefile-button {
@@ -228,46 +264,51 @@
 .passport-document-container {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    width: 300px;
+    gap: 6px;
+    width: 320px;
 }
 
 .passport-document-container-group {
     display: flex;
     flex-direction: row;
-    gap: 30px;
+    gap: 24px;
     flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 
 .passport-document-uploaded-section {
-    margin-bottom: 32px;
+    margin-bottom: 20px;
     border: 1px solid #dde4ef;
     border-radius: 12px;
-    padding: 16px;
-    margin-top: 32px;
+    padding: 12px;
+    margin-top: 20px;
     background: #ffffff;
 }
 
 .passport-document-uploaded-container {
     display: flex;
     flex-direction: row;
-    gap: 60px;
+    gap: 20px;
     flex-wrap: wrap;
 }
 
 .passport-requirement-placeholder {
-    width: 220px;
-    height: 220px;
-    border: 1px dashed #cbd5e1;
-    border-radius: 12px;
-    background: #f8fafc;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
+    color: #305797;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 38px;
+    margin: 0 auto;
+    border: 1px solid #d1dbe8;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    margin-top: 8px;
+    padding: 0 12px;
 }
 
 .passport-requirement-placeholder-text {
@@ -276,16 +317,16 @@
 }
 
 .passport-requirement-file-preview-button {
-    width: 250px;
-    height: 250px;
-    border: 1px dashed #94a3b8 !important;
-    border-radius: 12px;
-    background: transparent;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
     color: #305797;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 8px;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 38px;
+    margin: 0 auto;
 }
 
 .passport-requirements-grid {
@@ -302,7 +343,8 @@
 .passport-requirement-card {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    align-items: flex-start;
 }
 
 @media (max-width: 1024px) {
@@ -312,13 +354,16 @@
 
     .passport-requirement-placeholder,
     .passport-requirement-file-preview-button {
-        width: 260px;
-        height: 260px;
+        width: 160px;
+        max-width: 160px;
+        height: 38px;
     }
 
     .passportapplication-upload-button,
     .passportapplication-removefile-button {
-        width: 260px;
+        width: 92%;
+        max-width: 280px;
+        margin: 0 auto;
     }
 }
 
@@ -345,13 +390,16 @@
 
     .passport-requirement-placeholder,
     .passport-requirement-file-preview-button {
-        width: 300px;
-        height: 300px;
+        width: 150px;
+        max-width: 150px;
+        height: 38px;
     }
 
     .passportapplication-upload-button,
     .passportapplication-removefile-button {
-        width: 300px;
+        width: 92%;
+        max-width: 300px;
+        margin: 0 auto;
     }
 }
 
@@ -393,12 +441,15 @@
 
     .passport-requirement-placeholder,
     .passport-requirement-file-preview-button {
-        width: 320px;
-        height: 320px;
+        width: 150px;
+        max-width: 150px;
+        height: 38px;
     }
 
     .passportapplication-upload-button,
     .passportapplication-removefile-button {
-        width: 320px;
+        width: 92%;
+        max-width: 320px;
+        margin: 0 auto;
     }
 }

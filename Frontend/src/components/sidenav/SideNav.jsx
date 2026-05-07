@@ -3,11 +3,13 @@ import {
   AppstoreOutlined,
   AuditOutlined,
   BellOutlined,
+  DownOutlined,
   FileTextOutlined,
   FundOutlined,
   IdcardOutlined,
   BookOutlined,
   SafetyCertificateOutlined,
+  RightOutlined,
   SolutionOutlined,
   TeamOutlined,
   TransactionOutlined,
@@ -25,6 +27,12 @@ const { Sider } = Layout;
 export default function SideNav() {
   const [isMobile, setIsMobile] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    operations: true,
+    inventory: true,
+    applications: true,
+    system: true,
+  });
   const [bookingCount, setBookingCount] = useState(0);
   const [latestBookingValue, setLatestBookingValue] = useState(null);
   const [cancellationCount, setCancellationCount] = useState(0);
@@ -86,7 +94,6 @@ export default function SideNav() {
 
   useEffect(() => {
     const handleToggle = () => {
-      if (!isMobile) return;
       setIsCollapsed((prev) => !prev);
     };
 
@@ -446,95 +453,110 @@ export default function SideNav() {
     setAuditingCount(0);
   };
 
+  const toggleSection = (sectionKey) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }));
+  };
+
+  const renderNavItem = ({ to, label, icon, count = 0, onClick, exact = false }) => (
+    <NavLink
+      to={to}
+      end={exact}
+      className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
+      onClick={onClick}
+    >
+      <span className="nav-item-content">
+        <span className="nav-link-main">
+          <span className="nav-link-icon">{icon}</span>
+          <span className="nav-label">{label}</span>
+        </span>
+        {count > 0 && <span className="nav-badge">{count}</span>}
+      </span>
+    </NavLink>
+  );
+
+  const renderSection = ({ sectionKey, title, items }) => {
+    const isExpanded = isCollapsed || expandedSections[sectionKey];
+    const sectionCount = items.reduce((total, item) => total + (item.count || 0), 0);
+
+    return (
+      <section className={`nav-section${isExpanded ? " is-expanded" : " is-collapsed"}`} aria-label={title}>
+        <button
+          type="button"
+          className="nav-section-header"
+          aria-expanded={isExpanded}
+          onClick={() => toggleSection(sectionKey)}
+        >
+          <span className="nav-section-title">{title}</span>
+          <span className="nav-section-header-meta">
+            {!isExpanded && sectionCount > 0 && <span className="nav-section-badge">{sectionCount}</span>}
+            <span className="nav-section-chevron">
+              {isExpanded ? <DownOutlined /> : <RightOutlined />}
+            </span>
+          </span>
+        </button>
+        {isExpanded && <div className="nav-section-items">{items.map((item) => renderNavItem(item))}</div>}
+      </section>
+    );
+  };
+
 
   return (
     <>
       <Sider
         className={isMobile ? "sidenav is-mobile" : "sidenav"}
         width={220}
-        collapsedWidth={0}
+        collapsedWidth={isMobile ? 0 : 80}
         collapsed={isCollapsed}
         trigger={null}
       >
 
         <div className="nav-top">
-          <NavLink to="/dashboard" className="nav-item">
-            <span className="nav-item-content">
-              <span><AppstoreOutlined /> Dashboard</span>
-            </span>
-          </NavLink>
-          <NavLink to="/users" className="nav-item" onClick={handleUsersClick}>
-            <span className="nav-item-content">
-              <span><UserOutlined /> Users</span>
-              {userCount > 0 && <span className="nav-badge">{userCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/bookings" className="nav-item" onClick={handleBookingsClick}>
-            <span className="nav-item-content">
-              <span><BookOutlined /> Bookings</span>
-              {bookingCount > 0 && <span className="nav-badge">{bookingCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/transactions" className="nav-item" onClick={handleTransactionsClick}>
-            <span className="nav-item-content">
-              <span><TransactionOutlined /> Transactions</span>
-              {transactionCount > 0 && <span className="nav-badge">{transactionCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/package-quotation" className="nav-item" onClick={handleQuotationsClick}>
-            <span className="nav-item-content">
-              <span><FileTextOutlined /> Quotation Requests</span>
-              {quotationCount > 0 && <span className="nav-badge">{quotationCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/cancellation-requests" className="nav-item" onClick={handleCancellationsClick}>
-            <span className="nav-item-content">
-              <span><SafetyCertificateOutlined /> Cancellation Requests</span>
-              {cancellationCount > 0 && <span className="nav-badge">{cancellationCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/packages" className="nav-item">
-            <span className="nav-item-content">
-              <span><SolutionOutlined /> Packages</span>
-            </span>
-          </NavLink>
-          <NavLink to="/ratings" className="nav-item" onClick={handleRatingsClick}>
-            <span className="nav-item-content">
-              <span><FundOutlined /> Review Ratings</span>
-              {ratingCount > 0 && <span className="nav-badge">{ratingCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/visa-services" className="nav-item">
-            <span className="nav-item-content">
-              <span><IdcardOutlined /> Visa Services</span>
-            </span>
-          </NavLink>
-          <NavLink to="/passport-applications" className="nav-item" onClick={handlePassportClick}>
-            <span className="nav-item-content">
-              <span><TeamOutlined /> Passport Applications</span>
-              {passportCount > 0 && <span className="nav-badge">{passportCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/visa-applications" className="nav-item" onClick={handleVisaClick}>
-            <span className="nav-item-content">
-              <span><IdcardOutlined /> VISA Applications</span>
-              {visaCount > 0 && <span className="nav-badge">{visaCount}</span>}
-            </span>
-          </NavLink>
+          {renderNavItem({ to: "/dashboard", label: "Dashboard", icon: <AppstoreOutlined />, exact: true })}
 
-          <div style={{ margin: "10px 0", borderTop: "1px solid rgba(255,255,255,0.2)" }}></div>
-          <NavLink to="/logging" className="nav-item" onClick={handleLoggingClick}>
-            <span className="nav-item-content">
-              <span><BellOutlined /> Logging</span>
-              {loggingCount > 0 && <span className="nav-badge">{loggingCount}</span>}
-            </span>
-          </NavLink>
-          <NavLink to="/auditing" className="nav-item" onClick={handleAuditingClick}>
-            <span className="nav-item-content">
-              <span><AuditOutlined /> Auditing</span>
-              {auditingCount > 0 && <span className="nav-badge">{auditingCount}</span>}
-            </span>
-          </NavLink>
+          <div className="nav-divider" />
+
+          {renderSection({
+            sectionKey: "operations",
+            title: "Operations",
+            items: [
+              { to: "/bookings", label: "Bookings", icon: <BookOutlined />, count: bookingCount, onClick: handleBookingsClick },
+              { to: "/transactions", label: "Transactions", icon: <TransactionOutlined />, count: transactionCount, onClick: handleTransactionsClick },
+              { to: "/package-quotation", label: "Quotation Requests", icon: <FileTextOutlined />, count: quotationCount, onClick: handleQuotationsClick },
+              { to: "/cancellation-requests", label: "Cancellation Management", icon: <SafetyCertificateOutlined />, count: cancellationCount, onClick: handleCancellationsClick },
+              { to: "/ratings", label: "Review Ratings", icon: <FundOutlined />, count: ratingCount, onClick: handleRatingsClick },
+            ],
+          })}
+
+          {renderSection({
+            sectionKey: "inventory",
+            title: "Inventory",
+            items: [
+              { to: "/packages", label: "Package Management", icon: <SolutionOutlined /> },
+              { to: "/visa-services", label: "Visa Services Management", icon: <IdcardOutlined /> },
+            ],
+          })}
+
+          {renderSection({
+            sectionKey: "applications",
+            title: "Applications",
+            items: [
+              { to: "/passport-applications", label: "Passport Management", icon: <TeamOutlined />, count: passportCount, onClick: handlePassportClick },
+              { to: "/visa-applications", label: "Visa Management", icon: <IdcardOutlined />, count: visaCount, onClick: handleVisaClick },
+            ],
+          })}
+
+          {renderSection({
+            sectionKey: "system",
+            title: "System",
+            items: [
+              { to: "/users", label: "Users", icon: <UserOutlined />, count: userCount, onClick: handleUsersClick },
+              { to: "/logging", label: "Logging", icon: <BellOutlined />, count: loggingCount, onClick: handleLoggingClick },
+              { to: "/auditing", label: "Auditing", icon: <AuditOutlined />, count: auditingCount, onClick: handleAuditingClick },
+            ],
+          })}
         </div>
 
       </Sider>

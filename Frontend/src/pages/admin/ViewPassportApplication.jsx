@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Checkbox, DatePicker, TimePicker, Modal, notification } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled, EyeOutlined } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/viewpassportapplication.css";
@@ -89,13 +89,20 @@ export default function ViewPassportApplication() {
         }
     };
 
-    const handleResubmitDocuments = async () => {
+    const handleResubmitDocuments = async (documentKey) => {
         if (isUpdatingStatus) return;
+
+        if (!documentKey) {
+            notification.warning({ message: "Please select a document to resubmit.", placement: "topRight" });
+            return;
+        }
 
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`);
-            setApplication((prev) => ({ ...prev, status: "Payment Completed" }));
+            const response = await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`, {
+                documentKey
+            });
+            setApplication(response.application);
 
             const statusMap = statusSteps.reduce((acc, step, idx) => {
                 acc[step.title] = idx;
@@ -287,35 +294,34 @@ export default function ViewPassportApplication() {
             window.location.href = downloadUrl;
         };
 
+        if (!url) return <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>;
+
         return (
-            <div className="application-doc-item">
-                {isPdf ? (
-                    <Button
-                        className="application-doc-preview-media"
-                        type="dashed"
-                        icon={<FilePdfOutlined style={{ fontSize: 24, color: '#ff4d4f' }} />}
-                        style={{ width: 250, height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                        <span style={{ fontSize: 12, color: '#305797' }}>View PDF</span>
-                    </Button>
-                ) : (
-                    <Image
-                        className="application-doc-preview-media"
-                        src={url}
-                        alt={label}
-                        style={{ width: 250, height: 250, objectFit: 'cover' }}
-                        placeholder={<div style={{ width: 250, height: 250, background: '#eee' }} />}
-                    />
-                )}
+            <div className="application-doc-item" style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
+                <Button
+                    className="viewpassport-preview-button"
+                    size="small"
+                    type="default"
+                    icon={<EyeOutlined />}
+                    onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                >
+                    {isPdf ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                            <FilePdfOutlined style={{ color: '#ff4d4f' }} /> Preview File
+                        </span>
+                    ) : (
+                        'Preview File'
+                    )}
+                </Button>
 
                 <Button
-                    className='passportapplication-download-button application-doc-download'
+                    className='viewpassportapplication-download-button application-doc-download'
                     type="primary"
                     icon={<DownloadOutlined />}
                     size="small"
                     onClick={handleDownload}
                 >
-                    Download {isPdf ? 'PDF' : 'Image'}
+                    Download {isPdf ? 'PDF' : 'File'}
                 </Button>
             </div>
         );
@@ -644,28 +650,55 @@ export default function ViewPassportApplication() {
                                                     return (
                                                         <>
                                                             {docs.birthCertificate && (
-                                                                <div style={{ width: "320px", height: "320px" }}>
+                                                                <div style={{ width: "320px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>PSA Birth Certificate:</b>
                                                                     {renderReadOnlyFile(docs.birthCertificate, "Birth Certificate")}
+                                                                    <div style={{ marginTop: 8 }}>
+                                                                        <Button
+                                                                            type="default"
+                                                                            onClick={() => handleResubmitDocuments('birthCertificate')}
+                                                                            disabled={isUpdatingStatus}
+                                                                        >
+                                                                            Resubmit
+                                                                        </Button>
+                                                                    </div>
                                                                 </div>
                                                             )}
 
                                                             {docs.applicationForm && (
-                                                                <div style={{ width: "320px", height: "320px" }}>
+                                                                <div style={{ width: "320px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Application Form:</b>
                                                                     {renderReadOnlyFile(docs.applicationForm, "Application Form")}
+                                                                    <div style={{ marginTop: 8 }}>
+                                                                        <Button
+                                                                            type="default"
+                                                                            onClick={() => handleResubmitDocuments('applicationForm')}
+                                                                            disabled={isUpdatingStatus}
+                                                                        >
+                                                                            Resubmit
+                                                                        </Button>
+                                                                    </div>
                                                                 </div>
                                                             )}
 
                                                             {docs.govId && (
-                                                                <div style={{ width: "320px", height: "320px" }}>
+                                                                <div style={{ width: "320px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Government-issued ID:</b>
                                                                     {renderReadOnlyFile(docs.govId, "Government ID")}
+                                                                    <div style={{ marginTop: 8 }}>
+                                                                        <Button
+                                                                            type="default"
+                                                                            onClick={() => handleResubmitDocuments('govId')}
+                                                                            disabled={isUpdatingStatus}
+                                                                        >
+                                                                            Resubmit
+                                                                        </Button>
+                                                                    </div>
                                                                 </div>
                                                             )}
 
                                                             {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
-                                                                <div style={{ width: "250px", height: "250px" }}>
+                                                                <div style={{ width: "250px" }}>
                                                                     <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Additional Documents:</b>
                                                                     <div style={{ gap: 16 }}>
                                                                         <Image.PreviewGroup>
@@ -675,6 +708,15 @@ export default function ViewPassportApplication() {
                                                                                 </div>
                                                                             ))}
                                                                         </Image.PreviewGroup>
+                                                                    </div>
+                                                                    <div style={{ marginTop: 8 }}>
+                                                                        <Button
+                                                                            type="default"
+                                                                            onClick={() => handleResubmitDocuments('additionalDocs')}
+                                                                            disabled={isUpdatingStatus}
+                                                                        >
+                                                                            Resubmit
+                                                                        </Button>
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -688,14 +730,7 @@ export default function ViewPassportApplication() {
                                             </div>
                                         )}
                                         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
-                                            <Button
-                                                className="viewvisaapplication-submitdocu-button"
-                                                type="primary"
-                                                onClick={handleResubmitDocuments}
-                                                disabled={application?.status?.toLowerCase() === "payment completed" || application?.status?.toLowerCase() === "application approved" || application?.status?.toLowerCase() === "application submitted" || isUpdatingStatus}
-                                            >
-                                                Resubmit Documents
-                                            </Button>
+                                            <div style={{ fontSize: 13, color: '#6b7280' }}>Use the Resubmit button on the specific document that needs to be reuploaded.</div>
                                         </div>
                                     </div>
 

@@ -1,6 +1,6 @@
 import { Layout } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { AppstoreOutlined, BookOutlined, FileTextOutlined, FundOutlined, IdcardOutlined, SafetyCertificateOutlined, SolutionOutlined, TeamOutlined, TransactionOutlined } from "@ant-design/icons";
+import { AppstoreOutlined, BookOutlined, DownOutlined, FileTextOutlined, FundOutlined, IdcardOutlined, RightOutlined, SafetyCertificateOutlined, SolutionOutlined, TeamOutlined, TransactionOutlined } from "@ant-design/icons";
 import { NavLink } from "react-router-dom";
 import "../../style/components/sidenav.css";
 import apiFetch from "../../config/fetchConfig";
@@ -11,6 +11,11 @@ const { Sider } = Layout;
 export default function SideNavEmployee() {
     const [isMobile, setIsMobile] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [expandedSections, setExpandedSections] = useState({
+        operations: true,
+        inventory: true,
+        applications: true,
+    });
     const [bookingCount, setBookingCount] = useState(0);
     const [latestBookingValue, setLatestBookingValue] = useState(null);
     const [cancellationCount, setCancellationCount] = useState(0);
@@ -63,7 +68,6 @@ export default function SideNavEmployee() {
 
     useEffect(() => {
         const handleToggle = () => {
-            if (!isMobile) return;
             setIsCollapsed((prev) => !prev);
         };
 
@@ -348,62 +352,99 @@ export default function SideNavEmployee() {
         setVisaCount(0);
     };
 
+    const toggleSection = (sectionKey) => {
+        setExpandedSections((prev) => ({
+            ...prev,
+            [sectionKey]: !prev[sectionKey],
+        }));
+    };
+
+    const renderNavItem = ({ to, label, icon, count = 0, onClick, exact = false }) => (
+        <NavLink
+            to={to}
+            end={exact}
+            className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
+            onClick={onClick}
+        >
+            <span className="nav-item-content">
+                <span className="nav-link-main">
+                    <span className="nav-link-icon">{icon}</span>
+                    <span className="nav-label">{label}</span>
+                </span>
+                {count > 0 && <span className="nav-badge">{count}</span>}
+            </span>
+        </NavLink>
+    );
+
+    const renderSection = ({ sectionKey, title, items }) => {
+        const isExpanded = isCollapsed || expandedSections[sectionKey];
+        const sectionCount = items.reduce((total, item) => total + (item.count || 0), 0);
+
+        return (
+            <section className={`nav-section${isExpanded ? " is-expanded" : " is-collapsed"}`} aria-label={title}>
+                <button
+                    type="button"
+                    className="nav-section-header"
+                    aria-expanded={isExpanded}
+                    onClick={() => toggleSection(sectionKey)}
+                >
+                    <span className="nav-section-title">{title}</span>
+                    <span className="nav-section-header-meta">
+                        {!isExpanded && sectionCount > 0 && <span className="nav-section-badge">{sectionCount}</span>}
+                        <span className="nav-section-chevron">
+                            {isExpanded ? <DownOutlined /> : <RightOutlined />}
+                        </span>
+                    </span>
+                </button>
+                {isExpanded && <div className="nav-section-items">{items.map((item) => renderNavItem(item))}</div>}
+            </section>
+        );
+    };
+
     return (
         <>
             <Sider
                 className={isMobile ? "sidenav is-mobile" : "sidenav"}
                 width={220}
-                collapsedWidth={0}
+                collapsedWidth={isMobile ? 0 : 80}
                 collapsed={isCollapsed}
                 trigger={null}
             >
 
                 <div className="nav-top">
-                    <NavLink to="/employee/dashboard" className="nav-item"><span><AppstoreOutlined /> Dashboard</span></NavLink>
-                    <NavLink to="/employee/bookings" className="nav-item" onClick={handleBookingsClick}>
-                        <span className="nav-item-content">
-                            <span><BookOutlined /> Bookings</span>
-                            {bookingCount > 0 && <span className="nav-badge">{bookingCount}</span>}
-                        </span>
-                    </NavLink>
-                    <NavLink to="/employee/transactions" className="nav-item" onClick={handleTransactionsClick}>
-                        <span className="nav-item-content">
-                            <span><TransactionOutlined /> Transactions</span>
-                            {transactionCount > 0 && <span className="nav-badge">{transactionCount}</span>}
-                        </span>
-                    </NavLink>
-                    <NavLink to="/employee/package-quotation" className="nav-item" onClick={handleQuotationsClick}>
-                        <span className="nav-item-content">
-                            <span><FileTextOutlined /> Quotation Requests</span>
-                            {quotationCount > 0 && <span className="nav-badge">{quotationCount}</span>}
-                        </span>
-                    </NavLink>
-                    <NavLink to="/employee/cancellation-requests" className="nav-item" onClick={handleCancellationsClick}>
-                        <span className="nav-item-content">
-                            <span><SafetyCertificateOutlined /> Cancellation Requests</span>
-                            {cancellationCount > 0 && <span className="nav-badge">{cancellationCount}</span>}
-                        </span>
-                    </NavLink>
-                    <NavLink to="/employee/packages" className="nav-item"><span><SolutionOutlined /> Packages</span></NavLink>
-                    <NavLink to="/employee/ratings" className="nav-item" onClick={handleRatingsClick}>
-                        <span className="nav-item-content">
-                            <span><FundOutlined /> Review Ratings</span>
-                            {ratingCount > 0 && <span className="nav-badge">{ratingCount}</span>}
-                        </span>
-                    </NavLink>
-                    <NavLink to="/employee/visa-services" className="nav-item"><span><IdcardOutlined /> Visa Services</span></NavLink>
-                    <NavLink to="/employee/passport-applications" className="nav-item" onClick={handlePassportClick}>
-                        <span className="nav-item-content">
-                            <span><TeamOutlined /> Passport Applications</span>
-                            {passportCount > 0 && <span className="nav-badge">{passportCount}</span>}
-                        </span>
-                    </NavLink>
-                    <NavLink to="/employee/visa-applications" className="nav-item" onClick={handleVisaClick}>
-                        <span className="nav-item-content">
-                            <span><IdcardOutlined /> VISA Applications</span>
-                            {visaCount > 0 && <span className="nav-badge">{visaCount}</span>}
-                        </span>
-                    </NavLink>
+                    {renderNavItem({ to: "/employee/dashboard", label: "Dashboard", icon: <AppstoreOutlined />, exact: true })}
+
+                    <div className="nav-divider" />
+
+                    {renderSection({
+                        sectionKey: "operations",
+                        title: "Operations",
+                        items: [
+                            { to: "/employee/bookings", label: "Bookings", icon: <BookOutlined />, count: bookingCount, onClick: handleBookingsClick },
+                            { to: "/employee/transactions", label: "Transactions", icon: <TransactionOutlined />, count: transactionCount, onClick: handleTransactionsClick },
+                            { to: "/employee/package-quotation", label: "Quotation Requests", icon: <FileTextOutlined />, count: quotationCount, onClick: handleQuotationsClick },
+                            { to: "/employee/cancellation-requests", label: "Cancellation Management", icon: <SafetyCertificateOutlined />, count: cancellationCount, onClick: handleCancellationsClick },
+                            { to: "/employee/ratings", label: "Review Ratings", icon: <FundOutlined />, count: ratingCount, onClick: handleRatingsClick },
+                        ],
+                    })}
+
+                    {renderSection({
+                        sectionKey: "inventory",
+                        title: "Inventory",
+                        items: [
+                            { to: "/employee/packages", label: "Package Management", icon: <SolutionOutlined /> },
+                            { to: "/employee/visa-services", label: "Visa Services Management", icon: <IdcardOutlined /> },
+                        ],
+                    })}
+
+                    {renderSection({
+                        sectionKey: "applications",
+                        title: "Applications",
+                        items: [
+                            { to: "/employee/passport-applications", label: "Passport Management", icon: <TeamOutlined />, count: passportCount, onClick: handlePassportClick },
+                            { to: "/employee/visa-applications", label: "Visa Management", icon: <IdcardOutlined />, count: visaCount, onClick: handleVisaClick },
+                        ],
+                    })}
                 </div>
 
             </Sider>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { notification, Spin, ConfigProvider } from 'antd';
+import { notification, Spin, ConfigProvider, Modal } from 'antd';
+import { CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import apiFetch from '../../../config/fetchConfig';
 import '../../../style/client/userpreference.css';
 
@@ -39,6 +40,8 @@ export default function UserPreference() {
         pace: []
     });
 
+    const [showNextStepsModal, setShowNextStepsModal] = useState(false);
+
     const toggleSelection = (key, value, limit) => {
         setSelections((prev) => {
             const current = prev[key];
@@ -63,15 +66,22 @@ export default function UserPreference() {
             await apiFetch.post('/user/login-once', {}, { withCredentials: true });
             notification.success({ message: 'Preferences saved', placement: 'topRight' });
             console.log('Preferences saved:', selections);
-            window.location.assign('/home');
+            // Set flag in localStorage to show modal on homepage
+            localStorage.setItem('showNextStepsModal', 'true');
             setIsLoading(false);
+            // Redirect to home page
+            navigate('/home');
         } catch (error) {
             const errorMsg = error?.data?.message || 'Unable to save preferences.';
             notification.error({ message: errorMsg, placement: 'topRight' });
         } finally {
             setIsLoading(false);
         }
+    };
 
+    const handleModalOption = (path) => {
+        setShowNextStepsModal(false);
+        navigate(path);
     };
 
     return (

@@ -239,3 +239,184 @@
         align-items: flex-start;
     }
 }
+
+/* Next Steps Modal Styles */
+.next-steps-modal .ant-modal-content {
+    border-radius: 24px;
+    padding: 0 !important;
+    background: linear-gradient(135deg, #f7faff 0%, var(--pref-mist) 55%, var(--pref-cream) 100%);
+}
+
+.next-steps-modal .ant-modal-header {
+    border: none;
+    padding: 0 !important;
+}
+
+.next-steps-modal .ant-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(48, 87, 151, 0.1);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.next-steps-modal .ant-modal-close:hover {
+    background: rgba(48, 87, 151, 0.2);
+}
+
+.next-steps-container {
+    padding: 48px 40px;
+}
+
+.next-steps-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.next-steps-header h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 32px;
+    margin: 0 0 12px;
+    color: var(--pref-ink);
+    font-weight: 600;
+}
+
+.next-steps-header p {
+    font-size: 16px;
+    color: var(--pref-muted);
+    margin: 0;
+}
+
+.next-steps-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.next-steps-card {
+    background: var(--pref-card);
+    border-radius: 20px;
+    border: 2px solid var(--pref-border);
+    padding: 32px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.next-steps-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(48, 87, 151, 0.05) 0%, rgba(48, 87, 151, 0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.next-steps-card:hover {
+    border-color: var(--pref-blue);
+    box-shadow: 0 20px 50px rgba(48, 87, 151, 0.2);
+    transform: translateY(-8px);
+}
+
+.next-steps-card:hover::before {
+    opacity: 1;
+}
+
+.next-steps-card:hover .card-icon-wrapper {
+    transform: scale(1.1) rotate(-5deg);
+    background: linear-gradient(135deg, rgba(48, 87, 151, 0.15) 0%, rgba(48, 87, 151, 0.05) 100%);
+}
+
+.card-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(48, 87, 151, 0.08) 0%, rgba(48, 87, 151, 0.02) 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    color: var(--pref-blue);
+}
+
+.card-icon {
+    font-size: 40px;
+}
+
+.next-steps-card h3 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    margin: 0 0 10px;
+    color: var(--pref-ink);
+    position: relative;
+    z-index: 1;
+    font-weight: 600;
+}
+
+.next-steps-card p {
+    font-size: 13px;
+    color: var(--pref-muted);
+    margin: 0 0 20px;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+.card-cta {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--pref-blue);
+    position: relative;
+    z-index: 1;
+    transition: all 0.2s ease;
+}
+
+.next-steps-card:hover .card-cta {
+    color: #305797;
+    transform: translateX(4px);
+}
+
+/* Responsive adjustments for next steps modal */
+@media (max-width: 1024px) {
+    .next-steps-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .next-steps-container {
+        padding: 40px 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .next-steps-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .next-steps-header h2 {
+        font-size: 24px;
+    }
+
+    .next-steps-container {
+        padding: 32px 24px;
+    }
+
+    .next-steps-card {
+        padding: 28px 20px;
+    }
+}
