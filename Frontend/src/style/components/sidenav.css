@@ -3,7 +3,7 @@
   min-height: 100vh;
   display: flex !important;
   flex-direction: column !important;
-  padding: 16px;
+  padding: 12px;
   position: sticky;
   top: 0;
   align-self: flex-start;
@@ -15,20 +15,20 @@
 .nav-top {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .nav-divider {
   height: 1px;
-  margin: 10px 0 14px;
+  margin: 8px 0 10px;
   background: rgba(255, 255, 255, 0.18);
 }
 
 .nav-section {
   display: flex;
   flex-direction: column;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .nav-section-header {
@@ -36,8 +36,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 0 14px;
-  margin-bottom: 8px;
+  padding: 0 10px;
+  margin-bottom: 4px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -48,7 +48,7 @@
 .nav-section-header-meta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .nav-section-title {
@@ -85,7 +85,17 @@
 .nav-section-items {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
+}
+
+/* Divider shown when a section is expanded */
+.nav-section.is-expanded .nav-section-items::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 6px 10px;
+  border-radius: 1px;
 }
 
 .nav-bottom {
@@ -98,7 +108,7 @@
 .nav-item {
   color: white;
   text-decoration: none;
-  padding: 12px 14px;
+  padding: 8px 10px;
   border-radius: 2px;
   font-size: 12px;
   transition: 0.2s;
@@ -108,7 +118,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
   width: 100%;
   position: relative;
 }
@@ -116,7 +126,7 @@
 .nav-link-main {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 

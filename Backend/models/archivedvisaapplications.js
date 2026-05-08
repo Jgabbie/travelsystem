@@ -21,6 +21,17 @@ const ArchivedVisaApplicationSchema = new mongoose.Schema({
     deliveryFee: { type: Number, default: 0 },
     deliveryDate: { type: String, default: '' },
     status: { type: Array, default: [] },
+    statusHistory: [{
+        status: { type: String },
+        changedAt: { type: Date },
+        changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+        changedByName: { type: String }
+    }],
+    deadlineWarnings: [{
+        status: { type: String },
+        deadlineDate: { type: String },
+        warnedAt: { type: Date }
+    }],
     currentStepIndex: { type: Number, default: 0 },
     createdAt: { type: Date },
     archivedAt: { type: Date, default: Date.now }

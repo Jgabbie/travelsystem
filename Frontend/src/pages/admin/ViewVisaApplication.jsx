@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Modal, Checkbox, DatePicker, TimePicker, Input, notification } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import apiFetch from "../../config/fetchConfig";
 import dayjs from "dayjs";
+import { buildVisaStatusTotalDaysMapFromSteps } from "../../utils/visaDeadlineUtils";
 
 const { Title } = Typography;
 
@@ -45,65 +46,67 @@ export default function ViewVisaApplication() {
 
     const isBusy = loading || isSubmittingSlots || isUpdatingStatus;
 
-    useEffect(() => {
-        const fetchApplicationAndService = async () => {
-            try {
-                setLoading(true);
-                // 1. Fetch the application first
-                const appData = await apiFetch.get(`/visa/applications/${applicationItem}`);
+    const fetchApplicationAndService = useCallback(async () => {
+        try {
+            setLoading(true);
+            // 1. Fetch the application first
+            const appData = await apiFetch.get(`/visa/applications/${applicationItem}`);
 
-                console.log("Fetched application data:", appData); // Debug log
+            console.log("Fetched application data:", appData); // Debug log
 
-                // 2. Determine current step
-                const visaProcessSteps = appData.visaProcessSteps || []; // might be undefined if service not fetched yet
+            // 2. Determine current step
+            const visaProcessSteps = appData.visaProcessSteps || []; // might be undefined if service not fetched yet
 
-                // if visaProcessSteps already exist in appData
-                const statusMap = visaProcessSteps.reduce((acc, step, idx) => {
-                    const key = typeof step === "string" ? step : step?.title;
-                    if (key) {
-                        acc[key] = idx;
-                    }
-                    return acc;
-                }, {});
+            // if visaProcessSteps already exist in appData
+            const statusMap = visaProcessSteps.reduce((acc, step, idx) => {
+                const key = typeof step === "string" ? step : step?.title;
+                if (key) {
+                    acc[key] = idx;
+                }
+                return acc;
+            }, {});
 
-                const normalizedStatus = Array.isArray(appData.status)
-                    ? appData.status[appData.status.length - 1]
-                    : appData.status;
+            const normalizedStatus = Array.isArray(appData.status)
+                ? appData.status[appData.status.length - 1]
+                : appData.status;
 
-                setCurrentStep(statusMap[normalizedStatus] ?? 0);
+            setCurrentStep(statusMap[normalizedStatus] ?? 0);
 
-                // 3. Fetch the service using serviceId from application
-                if (appData.serviceId) {
-                    try {
-                        const serviceId = typeof appData.serviceId === "object" ? appData.serviceId._id : appData.serviceId;
-                        const serviceData = await apiFetch.get(`/services/get-service/${serviceId}`);
+            // 3. Fetch the service using serviceId from application
+            if (appData.serviceId) {
+                try {
+                    const serviceId = typeof appData.serviceId === "object" ? appData.serviceId._id : appData.serviceId;
+                    const serviceData = await apiFetch.get(`/services/get-service/${serviceId}`);
 
-                        // Merge service info into application
-                        setApplication({
-                            ...appData,
-                            visaName: serviceData.visaName,
-                            visaPrice: serviceData.visaPrice,
-                            visaProcessSteps: serviceData.visaProcessSteps,
-                            visaRequirements: serviceData.visaRequirements,
-                            serviceName: serviceData.visaName // for your Tag
-                        });
-                    } catch (err) {
-                        console.error("Failed to fetch visa service:", err);
-                        setApplication(appData); // fallback
-                    }
-                } else {
+                    // Merge service info into application
+                    setApplication({
+                        ...appData,
+                        visaName: serviceData.visaName,
+                        visaPrice: serviceData.visaPrice,
+                        visaProcessSteps: serviceData.visaProcessSteps,
+                        visaRequirements: serviceData.visaRequirements,
+                        visaStatusTotalDaysMap: appData.visaStatusTotalDaysMap || serviceData.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(serviceData.visaProcessSteps || appData.visaProcessSteps || []),
+                        serviceName: serviceData.visaName // for your Tag
+                    });
+                } catch (err) {
+                    console.error("Failed to fetch visa service:", err);
                     setApplication(appData); // fallback if no serviceId
                 }
-            } catch (err) {
-                notification.error({ message: "Failed to load application details.", placement: "topRight" });
-                navigate(-1);
-            } finally {
-                setLoading(false);
+            } else {
+                setApplication(appData); // fallback if no serviceId
             }
-        };
-
-        fetchApplicationAndService();
+        } catch (err) {
+            notification.error({ message: "Failed to load application details.", placement: "topRight" });
+            navigate(-1);
+        } finally {
+            setLoading(false);
+        }
     }, [applicationItem, navigate]);
+
+    useEffect(() => {
+        fetchApplicationAndService();
+    }, [fetchApplicationAndService]);
+
 
     //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
     const handleSubmitAlternateSlots = async () => {
@@ -142,6 +145,109 @@ export default function ViewVisaApplication() {
     const statusText = Array.isArray(application?.status)
         ? application.status[application.status.length - 1]
         : application?.status;
+
+    const terminalStatuses = new Set(['processing by embassy', 'embassy approved', 'passport released']);
+
+    const createdAt = application?.createdAt
+        ? dayjs(application.createdAt).startOf('day')
+        : null;
+
+    const normalizedVisaSteps = useMemo(() => {
+        return (application?.visaProcessSteps || []).map((step, idx) => {
+            if (typeof step === "string") {
+                return {
+                    title: step,
+                    description: `Description for ${step}`,
+                    daysToBeCompleted: 0,
+                    _idx: idx,
+                };
+            }
+
+            const title = String(step?.title || '').trim() || `Step ${idx + 1}`;
+            return {
+                title,
+                description: step?.description || `Description for ${title}`,
+                daysToBeCompleted: Number(step?.daysToBeCompleted ?? step?.days ?? 0) || 0,
+                _idx: idx,
+            };
+        });
+    }, [application?.visaProcessSteps]);
+
+    const deadlineDays =
+        application?.statusDeadlineDays ?? null;
+
+    const statusDeadlineDate =
+        application?.statusDeadlineDate
+            ? dayjs(application.statusDeadlineDate)
+            : createdAt && Number.isFinite(deadlineDays)
+                ? createdAt.add(deadlineDays, 'day')
+                : null;
+
+    const cumulativeStepDaysMap = application?.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(normalizedVisaSteps);
+
+    const [adminCountdown, setAdminCountdown] = useState(null);
+
+    const adminCountdownStyle = {
+        fontSize: 13,
+        color: '#305797',
+        fontWeight: 700,
+        background: 'rgba(48,87,151,0.06)',
+        padding: '4px 8px',
+        borderRadius: 14,
+        border: '1px solid rgba(48,87,151,0.12)',
+        boxShadow: '0 6px 18px rgba(48,87,151,0.06)',
+        minWidth: 80,
+        textAlign: 'center',
+        fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+        lineHeight: 1,
+    };
+
+    const statusSetDate = application?.statusUpdatedAt
+        ? dayjs(application.statusUpdatedAt)
+        : application?.updatedAt
+            ? dayjs(application.updatedAt)
+            : null;
+
+    const getStepSetDateForTitle = (app, title) => {
+        if (!app || !title) return null;
+        const history = app.statusHistory;
+        if (Array.isArray(history) && history.length > 0) {
+            for (let i = history.length - 1; i >= 0; i--) {
+                const h = history[i];
+                if (String(h.status).toLowerCase() === String(title).toLowerCase()) {
+                    return dayjs(h.changedAt);
+                }
+            }
+        }
+        return null;
+    };
+
+    useEffect(() => {
+        if (!statusDeadlineDate) {
+            setAdminCountdown(null);
+            return;
+        }
+
+        const update = () => {
+            const diffMs = statusDeadlineDate.diff(dayjs());
+            if (diffMs <= 0) {
+                setAdminCountdown('Deadline passed');
+                return;
+            }
+            let total = Math.floor(diffMs / 1000);
+            const days = Math.floor(total / 86400);
+            total = total % 86400;
+            const hours = Math.floor(total / 3600);
+            total = total % 3600;
+            const minutes = Math.floor(total / 60);
+            const seconds = total % 60;
+            setAdminCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+        };
+
+        update();
+        const timerId = setInterval(update, 1000);
+        return () => clearInterval(timerId);
+    }, [statusDeadlineDate]);
 
     useEffect(() => {
         if (!application?.visaProcessSteps || !statusText) return;
@@ -269,8 +375,7 @@ export default function ViewVisaApplication() {
             setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: newStatus });
-            setApplication((prev) => ({ ...prev, status: newStatus }));
-            setCurrentStep(stepIdx);
+            await fetchApplicationAndService();
             notification.success({ message: `Status updated to ${newStatus}`, placement: "topRight" });
         } catch (err) {
             notification.error({ message: "Failed to update status", placement: "topRight" });
@@ -285,23 +390,7 @@ export default function ViewVisaApplication() {
         try {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/visa/applications/${applicationItem}/resubmit-documents`);
-
-            setApplication((prev) => ({
-                ...prev,
-                status: "Payment Completed"
-            }));
-
-            const statusMap = (application?.visaProcessSteps || []).reduce((acc, step, idx) => {
-                const key = typeof step === "string" ? step : step?.title;
-                if (key) {
-                    acc[key] = idx;
-                }
-                return acc;
-            }, {});
-
-            if (statusMap["Payment Completed"] !== undefined) {
-                setCurrentStep(statusMap["Payment Completed"]);
-            }
+            await fetchApplicationAndService();
 
             setIsResubmitDocumentsSentModalOpen(true);
         } catch (error) {
@@ -344,7 +433,7 @@ export default function ViewVisaApplication() {
         try {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Rejected" });
-            setApplication((prev) => ({ ...prev, status: "Rejected" }));
+            await fetchApplicationAndService();
             notification.success({ message: "Application marked as Embassy Rejected", placement: "topRight" });
         } catch (err) {
             notification.error({ message: "Failed to update status", placement: "topRight" });
@@ -357,7 +446,7 @@ export default function ViewVisaApplication() {
         try {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/visa/applications/${applicationItem}/status`, { status: "Embassy Approved" });
-            setApplication((prev) => ({ ...prev, status: "Embassy Approved" }));
+            await fetchApplicationAndService();
             notification.success({ message: "Application marked as Embassy Approved", placement: "topRight" });
         } catch (err) {
             notification.error({ message: "Failed to update status", placement: "topRight" });
@@ -700,41 +789,147 @@ export default function ViewVisaApplication() {
                                             </div>
                                         </div>
 
+
                                         <div style={{ border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#ffffff", minWidth: 280 }}>
                                             <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
+                                            {statusDeadlineDate && (
+                                                <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                                                        <div style={{ flex: 1 }}>
+                                                            {statusSetDate && (
+                                                                <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {statusSetDate.format('MMM D, YYYY')}</div>
+                                                            )}
+                                                            <div style={{ fontSize: 12, color: '#333' }}>
+                                                                <strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({statusDeadlineDate.diff(dayjs(), 'day')} days left)
+                                                            </div>
+                                                            {adminCountdown && (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                                                                    <div style={{ fontSize: 12, color: '#305797', fontWeight: 700 }}>Time left:</div>
+                                                                    <div style={adminCountdownStyle}>{adminCountdown}</div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            {statusDeadlineDate.isBefore(dayjs(), 'day') ? (
+                                                                <Tag color="red">Deadline passed</Tag>
+                                                            ) : (
+                                                                <Tag color="gold">Time-limited action</Tag>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div className="steps-vertical-line">
                                                 <Steps
                                                     orientation="vertical"
                                                     current={currentStep}
                                                     // This is the only place that should handle the click
                                                     onChange={undefined}
-                                                    items={application.visaProcessSteps.map((step, idx) => ({
-                                                        title: (
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                                <span style={{
-                                                                    fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                    color: "#305797",
-                                                                }}>
-                                                                    {typeof step === "string" ? step : step?.title}
-                                                                </span>
-                                                                <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
-                                                                    {typeof step === 'object' && step?.description
-                                                                        ? step.description
-                                                                        : `Description for ${typeof step === 'string' ? step : step?.title || ''}`}
-                                                                </p>
-                                                                <Checkbox
-                                                                    checked={idx <= currentStep}
-                                                                    disabled={!progressEditable}
-                                                                    onChange={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleStepChange(idx);
-                                                                    }}
-                                                                >
-                                                                    Done
-                                                                </Checkbox>
-                                                            </div>
-                                                        )
-                                                    }))}
+                                                    items={normalizedVisaSteps.map((step, idx) => {
+                                                        const stepTitle = step.title;
+                                                        const stepDescription = step.description;
+
+                                                        const stepIsCurrent = currentStep === idx;
+
+                                                        const stepDeadlineDays =
+                                                            cumulativeStepDaysMap[stepTitle] ?? null;
+
+                                                        const isTerminalStep = terminalStatuses.has(
+                                                            String(stepTitle || '').toLowerCase()
+                                                        );
+
+                                                        const stepSetDate = getStepSetDateForTitle(application, stepTitle);
+
+                                                        const daysAgo = stepSetDate
+                                                            ? dayjs().diff(stepSetDate, 'day')
+                                                            : null;
+
+                                                        let stepDeadlineDate = null;
+
+                                                        if (!isTerminalStep && Number.isFinite(stepDeadlineDays)) {
+                                                            const baseDate = application?.createdAt
+                                                                ? dayjs(application.createdAt).startOf('day')
+                                                                : createdAt;
+
+                                                            if (baseDate) {
+                                                                stepDeadlineDate = baseDate.add(stepDeadlineDays, 'day').startOf('day');
+                                                            }
+                                                        }
+
+                                                        if (
+                                                            !isTerminalStep &&
+                                                            application?.statusDeadlineDate &&
+                                                            String(statusText || '') === String(stepTitle)
+                                                        ) {
+                                                            stepDeadlineDate = dayjs(application.statusDeadlineDate);
+                                                        }
+
+                                                        const daysLeft = stepDeadlineDate
+                                                            ? stepDeadlineDate.diff(dayjs(), 'day')
+                                                            : null;
+
+                                                        return {
+                                                            title: (
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                                        <span
+                                                                            style={{
+                                                                                fontWeight: stepIsCurrent ? 'bold' : 'normal',
+                                                                                color: "#305797",
+                                                                            }}
+                                                                        >
+                                                                            {stepTitle}
+                                                                        </span>
+
+                                                                        {stepIsCurrent && adminCountdown && (
+                                                                            <span style={adminCountdownStyle}>
+                                                                                {adminCountdown}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
+                                                                        {stepDescription}
+                                                                    </p>
+
+                                                                    {stepSetDate && (
+                                                                        <div style={{ fontSize: 11, color: '#444' }}>
+                                                                            <div>
+                                                                                Set on: {stepSetDate.format('MMM D, YYYY')}
+                                                                                {daysAgo !== null
+                                                                                    ? ` • ${daysAgo} days ago`
+                                                                                    : ''}
+                                                                            </div>
+
+                                                                            {stepIsCurrent && stepDeadlineDate && (
+                                                                                <div
+                                                                                    style={{
+                                                                                        color: stepDeadlineDate.isBefore(dayjs(), 'day')
+                                                                                            ? '#ff4d4f'
+                                                                                            : '#333'
+                                                                                    }}
+                                                                                >
+                                                                                    Deadline: {stepDeadlineDate.format('MMM D, YYYY')}
+                                                                                    ({daysLeft} days left)
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+
+                                                                    <Checkbox
+                                                                        checked={idx <= currentStep}
+                                                                        disabled={!progressEditable}
+                                                                        onChange={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleStepChange(idx);
+                                                                        }}
+                                                                    >
+                                                                        Done
+                                                                    </Checkbox>
+                                                                </div>
+                                                            )
+                                                        };
+                                                    })}
                                                     className="no-line"
                                                 />
                                             </div>

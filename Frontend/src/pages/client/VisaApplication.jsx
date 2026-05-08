@@ -5,17 +5,18 @@ import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, D
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
+import { buildVisaStatusTotalDaysMapFromSteps } from '../../utils/visaDeadlineUtils';
 
 //PLACE HOLDER FOR VISA PROCESS STEPS - these should ideally come from the backend based on the service
 const VISA_STEPS = [
-    { title: 'Application Submitted', description: 'Application submitted', },
-    { title: 'Application Approved', description: 'Application approved', },
-    { title: 'Payment Completed', description: 'Payment completed', },
-    { title: 'Documents Uploaded', description: 'Documents uploaded', },
-    { title: 'Documents Approved', description: 'Documents approved', },
-    { title: 'Documents Received', description: 'Documents received', },
-    { title: 'Documents Submitted', description: 'Documents submitted', },
-    { title: 'Processing DFA', description: 'Processing | DFA', },
+    { title: 'Application Submitted', description: 'Application submitted', daysToBeCompleted: 0 },
+    { title: 'Application Approved', description: 'Application approved', daysToBeCompleted: 0 },
+    { title: 'Payment Completed', description: 'Payment completed', daysToBeCompleted: 0 },
+    { title: 'Documents Uploaded', description: 'Documents uploaded', daysToBeCompleted: 0 },
+    { title: 'Documents Approved', description: 'Documents approved', daysToBeCompleted: 0 },
+    { title: 'Documents Received', description: 'Documents received', daysToBeCompleted: 0 },
+    { title: 'Documents Submitted', description: 'Documents submitted', daysToBeCompleted: 0 },
+    { title: 'Processing DFA', description: 'Processing | DFA', daysToBeCompleted: 0 },
 ];
 
 export default function VisaApplication() {
@@ -53,9 +54,95 @@ export default function VisaApplication() {
     const [isDateSelectedModalOpen, setIsDateSelectedModalOpen] = useState(false);
     const [isDocumentsUploadedModalOpen, setIsDocumentsUploadedModalOpen] = useState(false);
     const [isPassportReleaseOptionSelectedModalOpen, setIsPassportReleaseOptionSelectedModalOpen] = useState(false);
+    const [countdown, setCountdown] = useState(null);
 
     const fetchVisaApplication = `/visa/applications/${id}`;
 
+    const normalizeVisaSteps = (steps = []) => {
+        return steps
+            .filter(Boolean)
+            .map((step, idx) => ({
+                title: String(step?.title || '').trim() || `Step ${idx + 1}`,
+                description: step?.description || '',
+                daysToBeCompleted: Number(step?.daysToBeCompleted ?? step?.days ?? 0) || 0
+            }));
+    };
+
+    const statusText = Array.isArray(application?.status)
+        ? application.status[application.status.length - 1]
+        : application?.status;
+
+    const terminalStatuses = new Set(['processing by embassy', 'embassy approved', 'passport released']);
+
+    const appointmentDate = application?.preferredDate
+        ? dayjs(application.preferredDate)
+        : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
+            ? dayjs(application.suggestedAppointmentScheduleChosen.date)
+            : null;
+
+    const countdownStyle = {
+        fontSize: 15,
+        color: '#305797',
+        fontWeight: 700,
+        background: 'rgba(48,87,151,0.06)',
+        padding: '6px 10px',
+        borderRadius: 14,
+        border: '1px solid rgba(48,87,151,0.12)',
+        boxShadow: '0 6px 18px rgba(48,87,151,0.06)',
+        minWidth: 96,
+        textAlign: 'center',
+        fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+        lineHeight: 1,
+    };
+
+    const getStatusSetDate = (app) => {
+        if (!app) return null;
+        const history = app.statusHistory;
+        if (Array.isArray(history) && history.length > 0) {
+            for (let i = history.length - 1; i >= 0; i--) {
+                const h = history[i];
+                if (String(h.status).toLowerCase() === String(statusText || '').toLowerCase()) {
+                    return dayjs(h.changedAt);
+                }
+            }
+        }
+        if (app.statusUpdatedAt) return dayjs(app.statusUpdatedAt);
+        if (app.updatedAt) return dayjs(app.updatedAt);
+        if (app.createdAt) return dayjs(app.createdAt);
+        return null;
+    };
+
+    const getStepSetDateForTitle = (app, title) => {
+        if (!app || !title) return null;
+        const history = app.statusHistory;
+        if (Array.isArray(history) && history.length > 0) {
+            for (let i = history.length - 1; i >= 0; i--) {
+                const h = history[i];
+                if (String(h.status).toLowerCase() === String(title).toLowerCase()) {
+                    return dayjs(h.changedAt);
+                }
+            }
+        }
+        return null;
+    };
+
+    const statusSetDate = getStatusSetDate(application);
+    const deadlineDays = application?.statusDeadlineDays ?? null;
+    const createdAt = application?.createdAt
+        ? dayjs(application.createdAt).startOf('day')
+        : null;
+    const cumulativeStepDaysMap = React.useMemo(() => {
+        return application?.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(process);
+    }, [application?.visaStatusTotalDaysMap, process]);
+    const statusDeadlineDate = !terminalStatuses.has(String(statusText || '').toLowerCase())
+        ? (application?.statusDeadlineDate
+            ? dayjs(application.statusDeadlineDate)
+            : statusSetDate && Number.isFinite(deadlineDays)
+                ? statusSetDate.add(deadlineDays, 'day').startOf('day')
+                : appointmentDate && Number.isFinite(deadlineDays)
+                    ? appointmentDate.add(deadlineDays, 'day').startOf('day')
+                    : null)
+        : null;
 
 
 
@@ -80,11 +167,20 @@ export default function VisaApplication() {
                         const serviceRes = await apiFetch.get(serviceResEndpoint);
                         setRequirements(serviceRes.visaRequirements || []);
                         setServicePrice(serviceRes.visaPrice || 0);
-                        setProcess((serviceRes.visaProcessSteps || []).map((step, idx) => ({
+                        const stepsSource = serviceRes.visaProcessSteps || [];
+                        const normalizedSteps = stepsSource.map((step, idx) => ({
                             title: typeof step === 'string' ? step : step?.title,
                             description: typeof step === 'string' ? step : (step?.description || step?.title || ''),
+                            daysToBeCompleted: typeof step === 'object' && step !== null
+                                ? (step.daysToBeCompleted ?? step.days ?? 0)
+                                : 0,
                             status: idx < VISA_STEPS.length ? 'process' : 'pending',
-                        })));
+                        }));
+                        setProcess(normalizedSteps);
+                        setApplication((prev) => ({
+                            ...prev,
+                            visaStatusTotalDaysMap: prev?.visaStatusTotalDaysMap || serviceRes.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(serviceRes.visaProcessSteps || prev?.visaProcessSteps || [])
+                        }));
                     } catch (err) {
                         setRequirements([]);
                         setProcess(VISA_STEPS.map(s => ({ ...s, status: 'pending' })));
@@ -102,7 +198,7 @@ export default function VisaApplication() {
     }, [id]);
 
     // FIND CURRENT STEP INDEX BASED ON APPLICATION STATUS
-    const statusValue = Array.isArray(application?.status) ? application.status[0] : application?.status;
+    const statusValue = statusText;
 
     const currentStep = statusValue
         ? Math.max(
@@ -117,6 +213,33 @@ export default function VisaApplication() {
         String(statusValue || '').toLowerCase() === 'passport released' &&
         String(application?.passportReleaseOption || '').toLowerCase() === 'delivery';
     const deliveryFeeAmount = Number(application?.deliveryFee || 0);
+
+    useEffect(() => {
+        if (!statusDeadlineDate) {
+            setCountdown(null);
+            return;
+        }
+
+        const update = () => {
+            const diffMs = statusDeadlineDate.diff(dayjs());
+            if (diffMs <= 0) {
+                setCountdown('Deadline passed');
+                return;
+            }
+            let total = Math.floor(diffMs / 1000);
+            const days = Math.floor(total / 86400);
+            total = total % 86400;
+            const hours = Math.floor(total / 3600);
+            total = total % 3600;
+            const minutes = Math.floor(total / 60);
+            const seconds = total % 60;
+            setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+        };
+
+        update();
+        const timerId = setInterval(update, 1000);
+        return () => clearInterval(timerId);
+    }, [statusDeadlineDate]);
 
     const beforeUpload = (file) => {
         const isLt5M = file.size / 1024 / 1024 < 5;
@@ -1458,28 +1581,95 @@ export default function VisaApplication() {
 
                                                 <div style={{ padding: 12, minHeight: 180 }}>
                                                     <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
-                                                    <div style={{ overflowX: 'auto', paddingBottom: 24 }}>
+                                                    {statusDeadlineDate && (
+                                                        <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                                                                <div style={{ flex: 1 }}>
+                                                                    {statusSetDate && (
+                                                                        <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {statusSetDate.format('MMM D, YYYY')}</div>
+                                                                    )}
+                                                                    <div style={{ fontSize: 12, color: '#333' }}>
+                                                                        <strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({statusDeadlineDate.diff(dayjs(), 'day')} days left)
+                                                                    </div>
+                                                                    {countdown && (
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                                                                            <div style={{ fontSize: 12, color: '#305797', fontWeight: 700 }}>Time left:</div>
+                                                                            <div style={countdownStyle}>{countdown}</div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    {statusDeadlineDate.isBefore(dayjs(), 'day') ? (
+                                                                        <Tag color="red">Deadline passed</Tag>
+                                                                    ) : (
+                                                                        <Tag color="gold">Time-limited action</Tag>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    <div style={{ overflowX: 'auto', paddingTop: 8, paddingBottom: 32 }}>
                                                         <Steps
                                                             orientation="vertical"
                                                             size="default"
                                                             current={currentStep}
-                                                            style={{ minWidth: 290, width: 'max-content' }}
-                                                            items={process.map((step, idx) => ({
-                                                                title: (
-                                                                    <span style={{
-                                                                        fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                        fontSize: 16,
-                                                                        color: "#305797",
-                                                                        textAlign: 'center',
-                                                                        whiteSpace: 'nowrap',
-                                                                    }}>
-                                                                        {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
-                                                                    </span>
-                                                                ),
-                                                                description: (
-                                                                    <span style={{ fontSize: 13, color: '#888', whiteSpace: 'nowrap' }}>{step.description}</span>
-                                                                ),
-                                                            }))}
+                                                            style={{ width: '100%', paddingTop: 4, paddingBottom: 8 }}
+                                                            items={process.map((step, idx) => {
+                                                                const stepSetDate = getStepSetDateForTitle(application, step.title);
+                                                                const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
+                                                                const stepDeadlineDays = cumulativeStepDaysMap[step.title] ?? null;
+                                                                const stepIsCurrent = currentStep === idx;
+
+                                                                let stepDeadlineDate = null;
+                                                                const isTerminalStep = terminalStatuses.has(String(step.title || '').toLowerCase());
+
+                                                                if (!isTerminalStep && Number.isFinite(stepDeadlineDays) && createdAt) {
+                                                                    stepDeadlineDate = createdAt.add(stepDeadlineDays, 'day').startOf('day');
+                                                                }
+
+                                                                if (!isTerminalStep && application?.statusDeadlineDate && String(statusText || '') === String(step.title)) {
+                                                                    stepDeadlineDate = dayjs(application.statusDeadlineDate);
+                                                                }
+
+                                                                const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
+
+                                                                return {
+                                                                    title: (
+                                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, padding: '6px 8px 10px 0', width: '100%', maxWidth: '100%' }}>
+                                                                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, width: '100%' }}>
+                                                                                <span style={{
+                                                                                    fontWeight: stepIsCurrent ? 'bold' : 'normal',
+                                                                                    fontSize: 15,
+                                                                                    color: "#305797",
+                                                                                    textAlign: 'left',
+                                                                                    whiteSpace: 'normal',
+                                                                                    lineHeight: 1.25,
+                                                                                    wordBreak: 'break-word',
+                                                                                    maxWidth: '100%',
+                                                                                }}>
+                                                                                    {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
+                                                                                </span>
+                                                                                {stepIsCurrent && countdown && (
+                                                                                    <span style={{ ...countdownStyle, marginTop: 0 }}>{countdown}</span>
+                                                                                )}
+                                                                            </div>
+
+                                                                            <p style={{ fontSize: 11, color: '#555', margin: 0, textAlign: 'left', whiteSpace: 'normal', lineHeight: 1.4, maxWidth: '100%' }}>{step.description}</p>
+
+                                                                            {stepSetDate && (
+                                                                                <div style={{ fontSize: 11, color: '#444', textAlign: 'left', lineHeight: 1.45, maxWidth: '100%' }}>
+                                                                                    <div>Set on: {stepSetDate.format('MMM D, YYYY')}{daysAgo !== null ? ` • ${daysAgo} days ago` : ''}</div>
+                                                                                    {stepIsCurrent && stepDeadlineDate && (
+                                                                                        <div style={{ color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
+                                                                                            Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({daysLeft} days left)
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )
+                                                                };
+                                                            })}
                                                         />
                                                     </div>
                                                 </div>

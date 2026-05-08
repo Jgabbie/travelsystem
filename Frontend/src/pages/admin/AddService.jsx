@@ -31,9 +31,40 @@ export default function AddService() {
         description: "",
         visaPrice: "",
         requirements: [{ req: "", desc: "", isReq: "", applicationLink: "" }],
-        processSteps: [{ title: "", description: "" }],
+        standardProcessSteps: [],
+        // `processSteps` now holds only custom steps that will be inserted between
+        // the permanent standard steps 'Documents Submitted' and 'Processing By Embassy'.
+        processSteps: [],
         reminders: [""],
     });
+
+    const STANDARD_PROCESS_STEPS = [
+        { title: 'Application Submitted', description: 'The user has submitted the visa application.', daysToBeCompleted: 2 },
+        { title: 'Application Approved', description: 'The visa application has been approved.', daysToBeCompleted: 2 },
+        { title: 'Payment Completed', description: 'The payment for the visa application has been completed.', daysToBeCompleted: 3 },
+        { title: 'Documents Uploaded', description: 'The required documents for the visa application have been uploaded.', daysToBeCompleted: 5 },
+        { title: 'Documents Received', description: 'The documents for the visa application have been received.', daysToBeCompleted: 2 },
+        { title: 'Documents Submitted', description: 'The documents for the visa application have been submitted.', daysToBeCompleted: 2 },
+        { title: 'Processing By Embassy', description: 'The visa application is being processed by the embassy.', daysToBeCompleted: 0 },
+        { title: 'Embassy Approved', description: 'The visa application has been approved by the embassy.', daysToBeCompleted: 0 },
+        { title: 'Passport Released', description: 'The passport has been released to the applicant.', daysToBeCompleted: 0 },
+    ];
+
+    const INSERT_AFTER_TITLE = 'Documents Submitted';
+    const insertIndex = STANDARD_PROCESS_STEPS.findIndex(s => s.title === INSERT_AFTER_TITLE);
+    const customCount = values.processSteps.length;
+
+    useEffect(() => {
+        setValues(prev => {
+            if (Array.isArray(prev.standardProcessSteps) && prev.standardProcessSteps.length > 0) {
+                return prev;
+            }
+            return {
+                ...prev,
+                standardProcessSteps: STANDARD_PROCESS_STEPS.map((step) => ({ ...step }))
+            };
+        });
+    }, []);
 
     const validate = (field, value) => {
         if (field === "visaName" && !value.trim()) return "Visa name is required.";
@@ -46,10 +77,11 @@ export default function AddService() {
             // if (value.some((item) => !item.desc.trim())) return "All requirement descriptions must be filled.";
         }
 
-        // if (field === "processSteps") {
-        //     if (!value.length) return "At least one process step is required.";
-        //     if (value.some((item) => !String(item?.title || "").trim())) return "All process steps must be filled.";
-        // }
+        if (field === "processSteps") {
+            if (value.some((item) => !String(item?.title || "").trim() || item?.daysToBeCompleted === "" || item?.daysToBeCompleted === null || item?.daysToBeCompleted === undefined || Number.isNaN(Number(item?.daysToBeCompleted)))) {
+                return "Each process step needs a title and days to be completed.";
+            }
+        }
         return "";
     };
 
@@ -74,7 +106,7 @@ export default function AddService() {
             valueHandler("requirements", updated);
         }
         if (type === "processSteps") {
-            const updated = [...values.processSteps, { title: "", description: "" }];
+            const updated = [...values.processSteps, { title: "", description: "", daysToBeCompleted: "" }];
             valueHandler("processSteps", updated);
         }
         if (type === "reminders") {
@@ -124,6 +156,12 @@ export default function AddService() {
         }
     };
 
+    const updateStandardStep = (index, field, value) => {
+        const updated = [...values.standardProcessSteps];
+        updated[index] = { ...updated[index], [field]: value };
+        valueHandler("standardProcessSteps", updated);
+    };
+
     const saveService = async () => {
         const newErrors = {
             visaName: validate("visaName", values.visaName),
@@ -151,17 +189,40 @@ export default function AddService() {
                 isReq: item.isReq,
                 applicationLink: item.applicationLink != null ? String(item.applicationLink).trim() : ""
             })),
-            visaProcessSteps: values.processSteps.map((step) => ({
-                title: (step.title || "").trim(),
-                description: (step.description || "").trim()
-            })),
+            // Merge standard steps with custom steps inserted after 'Documents Submitted'
+            visaProcessSteps: (() => {
+                const sourceStandard = values.standardProcessSteps?.length
+                    ? values.standardProcessSteps
+                    : STANDARD_PROCESS_STEPS;
+                const idx = sourceStandard.findIndex(s => s.title === 'Documents Submitted');
+                const before = sourceStandard.slice(0, idx + 1);
+                const after = sourceStandard.slice(idx + 1);
+                const merged = [...before, ...values.processSteps, ...after];
+                return merged.map((step) => ({
+                    title: (step.title || "").trim(),
+                    description: (step.description || "").trim(),
+                    daysToBeCompleted: step.daysToBeCompleted === "" || step.daysToBeCompleted === null || step.daysToBeCompleted === undefined
+                        ? null
+                        : Number(step.daysToBeCompleted)
+                }));
+            })(),
             visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0),
         };
 
         if (isEdit) {
             await apiFetch.put(`/services/update-service/${serviceId}`, payload);
+            notification.success({
+                message: 'Visa service updated successfully.',
+                description: 'Changes to the visa service have been saved.',
+                placement: 'topRight'
+            });
         } else {
             await apiFetch.post("/services/create-service", payload);
+            notification.success({
+                message: 'Visa service created successfully.',
+                description: 'The new visa service has been created.',
+                placement: 'topRight'
+            });
         }
         navigate(`${basePath}/visa-services`);
     };
@@ -177,6 +238,30 @@ export default function AddService() {
             try {
                 const existing = await apiFetch.get(`/services/get-service/${serviceId}`);
 
+                // Normalize existing process steps and extract any custom steps
+                const existingProcessSteps = existing.visaProcessSteps?.length
+                    ? existing.visaProcessSteps.map((step) =>
+                        typeof step === "string"
+                            ? { title: step, description: "", daysToBeCompleted: "" }
+                            : { title: step?.title || "", description: step?.description || "", daysToBeCompleted: step?.daysToBeCompleted ?? step?.days ?? "" }
+                    )
+                    : [];
+
+                const customSteps = existingProcessSteps.filter((s) => !STANDARD_PROCESS_STEPS.some((std) => std.title === s.title));
+                const standardStepMap = new Map(
+                    existingProcessSteps
+                        .filter((s) => STANDARD_PROCESS_STEPS.some((std) => std.title === s.title))
+                        .map((s) => [s.title, s])
+                );
+                const editableStandardSteps = STANDARD_PROCESS_STEPS.map((step) => {
+                    const existingStep = standardStepMap.get(step.title);
+                    return {
+                        title: step.title,
+                        description: existingStep?.description ?? step.description ?? "",
+                        daysToBeCompleted: existingStep?.daysToBeCompleted ?? step.daysToBeCompleted ?? ""
+                    };
+                });
+
                 setValues({
                     visaName: existing.visaName || "",
                     visaPrice: existing.visaPrice || "",
@@ -184,13 +269,9 @@ export default function AddService() {
                     requirements: existing.visaRequirements?.length
                         ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "", applicationLink: item.applicationLink || "" })
                         : [{ req: "", desc: "", isReq: "", applicationLink: "" }],
-                    processSteps: existing.visaProcessSteps?.length
-                        ? existing.visaProcessSteps.map((step) =>
-                            typeof step === "string"
-                                ? { title: step, description: "" }
-                                : { title: step?.title || "", description: step?.description || "" }
-                        )
-                        : [{ title: "", description: "" }],
+                    standardProcessSteps: editableStandardSteps,
+                    // store only custom steps in the editable area
+                    processSteps: customSteps.length ? customSteps : [],
                     reminders: Array.isArray(existing.visaReminders)
                         ? (existing.visaReminders.length ? existing.visaReminders : [""])
                         : (existing.visaReminders ? [existing.visaReminders] : [""]),
@@ -377,45 +458,88 @@ export default function AddService() {
                             </div>
                         </div>
 
-                        <div
-                            className={errors.processSteps ? "add-service-card-error" : "add-service-section"}
-                        >
-                            <h2 className="section-headers" >Process Steps</h2>
-                            {values.processSteps.map((item, index) => (
-                                <div key={`step-${index}`} className="add-service-bullet-row">
-                                    <Space>
-                                        <div style={{ width: '100%' }}>
-                                            <label className="add-service-input-labels">Process Step</label>
-                                            <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
-                                                <Input
-                                                    value={item.title}
-                                                    className="add-service-inputs"
-                                                    onChange={(event) => updateBullet("processSteps", index, event.target.value, "title")}
-                                                />
+                        <div className={errors.processSteps ? "add-service-card-error" : "add-service-section"}>
+                            <h2 className="section-headers">Process Steps (Standard)</h2>
+                            {/* Render merged preview: standard before insert point, then custom steps, then remaining standard steps */}
+                            {(() => {
+                                const sourceStandard = values.standardProcessSteps?.length
+                                    ? values.standardProcessSteps
+                                    : STANDARD_PROCESS_STEPS;
+                                const before = sourceStandard.slice(0, insertIndex + 1).map((step, idx) => ({
+                                    ...step,
+                                    itemType: "standard",
+                                    standardIndex: idx
+                                }));
+                                const custom = values.processSteps.map((step, idx) => ({
+                                    ...step,
+                                    itemType: "custom",
+                                    customIndex: idx
+                                }));
+                                const after = sourceStandard.slice(insertIndex + 1).map((step, idx) => ({
+                                    ...step,
+                                    itemType: "standard",
+                                    standardIndex: insertIndex + 1 + idx
+                                }));
+                                const merged = [...before, ...custom, ...after];
+                                return merged.map((step, i) => {
+                                    const isStandard = step.itemType === "standard";
+                                    return (
+                                        <div key={`merged-step-${i}`} className="add-service-bullet-row">
+                                            <Space>
+                                                <div style={{ width: '100%' }}>
+                                                    <label className="add-service-input-labels">Process Step {i + 1}</label>
+                                                    <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
+                                                        <Input
+                                                            value={step.title}
+                                                            className="add-service-inputs"
+                                                            disabled={isStandard}
+                                                            onChange={isStandard ? undefined : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "title")}
+                                                        />
+                                                        {!isStandard && (
+                                                            <Button
+                                                                className="delete-add-service-button delete-button"
+                                                                type="primary"
+                                                                onClick={() => removeBullet("processSteps", step.customIndex)}
+                                                                icon={<DeleteOutlined />}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </Space>
 
-                                                <Button
-                                                    className="delete-add-service-button delete-button"
-                                                    type="primary"
-                                                    onClick={() => removeBullet("processSteps", index)}
-                                                    icon={<DeleteOutlined />}
+                                            <div>
+                                                <label className="add-service-input-labels">Process Step Description</label>
+                                                <Input.TextArea
+                                                    value={step.description}
+                                                    className="add-service-inputs"
+                                                    autoSize={{ minRows: 2, maxRows: 4 }}
+                                                    maxLength={300}
+                                                    onChange={isStandard
+                                                        ? (event) => updateStandardStep(step.standardIndex, "description", event.target.value)
+                                                        : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "description")}
+                                                    style={{ marginTop: 2 }}
                                                 />
                                             </div>
+                                            <div>
+                                                <label className="add-service-input-labels">Days to be completed</label>
+                                                <Input
+                                                    type="number"
+                                                    min={0}
+                                                    value={step.daysToBeCompleted}
+                                                    className="add-service-inputs"
+                                                    onChange={isStandard
+                                                        ? (event) => updateStandardStep(step.standardIndex, "daysToBeCompleted", event.target.value)
+                                                        : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "daysToBeCompleted")}
+                                                    placeholder="Enter days"
+                                                    style={{ marginTop: 2 }}
+                                                />
+                                            </div>
+                                            <div style={{ height: 1, background: '#e8e8e8', margin: '12px 0' }} />
                                         </div>
-                                    </Space>
+                                    );
+                                });
+                            })()}
 
-                                    <div>
-                                        <label className="add-service-input-labels">Process Step Description</label>
-                                        <Input.TextArea
-                                            value={item.description}
-                                            className="add-service-inputs"
-                                            autoSize={{ minRows: 2, maxRows: 4 }}
-                                            maxLength={300}
-                                            onChange={(event) => updateBullet("processSteps", index, event.target.value, "description")}
-                                            style={{ marginTop: 2 }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
                             <Button
                                 className="add-service-add-button highlighted-button"
                                 type="primary"
@@ -423,7 +547,7 @@ export default function AddService() {
                                 block
                                 onClick={() => addBullet("processSteps")}
                             >
-                                Add Process Step
+                                Add Custom Step
                             </Button>
                             <p className="add-service-error-message">{errors.processSteps}</p>
                         </div>

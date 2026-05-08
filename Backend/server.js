@@ -30,6 +30,7 @@ const chatbotRoutes = require("./routes/chatbotRoutes")
 const { startBillingDeadlineScheduler } = require('./utils/billingDeadlineScheduler');
 const { startCleanupScheduler } = require('./utils/cleanupBookings');
 const { startPassportDeadlineScheduler } = require('./utils/passportDeadlineScheduler');
+const { startVisaDeadlineScheduler } = require('./utils/visaDeadlineScheduler');
 
 const rateLimit = require('express-rate-limit');
 
@@ -160,6 +161,9 @@ if (!isServerless) {
 
                 startPassportDeadlineScheduler();
                 console.log('Passport deadline scheduler started.');
+
+                startVisaDeadlineScheduler();
+                console.log('Visa deadline scheduler started.');
             })
             .catch((error) => {
                 console.error('Failed to start schedulers:', error);

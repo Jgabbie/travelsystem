@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Checkbox, DatePicker, TimePicker, Modal, notification } from "antd";
 import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled, EyeOutlined } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -41,6 +41,25 @@ export default function ViewPassportApplication() {
     const [isResubmitDocumentsSentModalOpen, setIsResubmitDocumentsSentModalOpen] = useState(false);
     const [descriptionColumn, setDescriptionColumn] = useState(2);
     const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
+
+    const fetchApplication = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await apiFetch.get(`/passport/applications/${applicationId}`);
+            setApplication(response);
+            // Determine step based on status
+            const statusMap = statusSteps.reduce((acc, step, idx) => {
+                acc[step.title] = idx;
+                return acc;
+            }, {});
+            setCurrentStep(statusMap[response.status] ?? 0);
+        } catch (error) {
+            notification.error({ message: "Failed to load application details.", placement: "topRight" });
+            navigate(-1);
+        } finally {
+            setLoading(false);
+        }
+    }, [applicationId, navigate]);
 
     useEffect(() => {
         const updateDescriptionColumn = () => {
@@ -102,15 +121,7 @@ export default function ViewPassportApplication() {
             const response = await apiFetch.put(`/passport/applications/${applicationId}/resubmit-documents`, {
                 documentKey
             });
-            setApplication(response.application);
-
-            const statusMap = statusSteps.reduce((acc, step, idx) => {
-                acc[step.title] = idx;
-                return acc;
-            }, {});
-            if (statusMap["Payment Completed"] !== undefined) {
-                setCurrentStep(statusMap["Payment Completed"]);
-            }
+            await fetchApplication();
 
             setIsResubmitDocumentsSentModalOpen(true);
         } catch (error) {
@@ -122,25 +133,8 @@ export default function ViewPassportApplication() {
 
     //GET PASSPORT APPLICATION DETAILS ON COMPONENT MOUNT ------------------------------------------------------
     useEffect(() => {
-        const fetchApplication = async () => {
-            try {
-                const response = await apiFetch.get(`/passport/applications/${applicationId}`);
-                setApplication(response);
-                // Determine step based on status
-                const statusMap = statusSteps.reduce((acc, step, idx) => {
-                    acc[step.title] = idx;
-                    return acc;
-                }, {});
-                setCurrentStep(statusMap[response.status] ?? 0);
-            } catch (error) {
-                notification.error({ message: "Failed to load application details.", placement: "topRight" });
-                navigate(-1);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchApplication();
-    }, [applicationId, navigate]);
+    }, [fetchApplication]);
 
 
 
@@ -407,8 +401,7 @@ export default function ViewPassportApplication() {
             setIsUpdatingStatus(true);
             // You should update this endpoint to PATCH/PUT to your backend for real update
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: newStatus });
-            setApplication((prev) => ({ ...prev, status: newStatus }));
-            setCurrentStep(stepIdx);
+            await fetchApplication();
             notification.success({ message: `Status updated to ${newStatus}`, placement: "topRight" });
         } catch (err) {
             notification.error({ message: "Failed to update status", placement: "topRight" });
@@ -422,7 +415,7 @@ export default function ViewPassportApplication() {
         try {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "Rejected" });
-            setApplication((prev) => ({ ...prev, status: "Rejected" }));
+            await fetchApplication();
             notification.success({ message: "Application marked as DFA Rejected", placement: "topRight" });
         } catch (err) {
             notification.error({ message: "Failed to update status", placement: "topRight" });
@@ -435,7 +428,7 @@ export default function ViewPassportApplication() {
         try {
             setIsUpdatingStatus(true);
             await apiFetch.put(`/passport/applications/${applicationId}/status`, { status: "DFA Approved" });
-            setApplication((prev) => ({ ...prev, status: "DFA Approved" }));
+            await fetchApplication();
             notification.success({ message: "Application marked as DFA Approved", placement: "topRight" });
         } catch (err) {
             notification.error({ message: "Failed to update status", placement: "topRight" });
@@ -816,28 +809,31 @@ export default function ViewPassportApplication() {
 
                                                 return {
                                                     title: (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '0 8px' }}>
-                                                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, padding: '6px 8px 10px 0', width: '100%', maxWidth: '100%' }}>
+                                                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, width: '100%' }}>
                                                                 <span style={{
                                                                     fontWeight: currentStep === idx ? 'bold' : 'normal',
-                                                                    fontSize: 16,
+                                                                    fontSize: 15,
                                                                     color: "#305797",
-                                                                    textAlign: 'center',
-                                                                    whiteSpace: 'nowrap',
+                                                                    textAlign: 'left',
+                                                                    whiteSpace: 'normal',
+                                                                    lineHeight: 1.25,
+                                                                    wordBreak: 'break-word',
+                                                                    maxWidth: '100%',
                                                                 }}>
                                                                     {step.title}
                                                                 </span>
                                                                 {currentStep === idx && adminCountdown && (
-                                                                    <span style={adminCountdownStyle}>{adminCountdown}</span>
+                                                                    <span style={{ ...adminCountdownStyle, marginTop: 0 }}>{adminCountdown}</span>
                                                                 )}
                                                             </div>
 
-                                                            <p style={{ fontSize: 10, color: '#555', margin: 0 }}>{step.summary || `Status: ${step.title}`}</p>
+                                                            <p style={{ fontSize: 11, color: '#555', margin: 0, textAlign: 'left', whiteSpace: 'normal', lineHeight: 1.4, maxWidth: '100%' }}>{step.summary || `Status: ${step.title}`}</p>
 
                                                             {stepSetDate && (
-                                                                <div style={{ fontSize: 11, color: '#444' }}>
+                                                                <div style={{ fontSize: 11, color: '#444', textAlign: 'left', lineHeight: 1.45, maxWidth: '100%' }}>
                                                                     <div>Set on: {stepSetDate.format('MMM D, YYYY')}{daysAgo !== null ? ` • ${daysAgo} days ago` : ''}</div>
-                                                                    {stepDeadlineDate && (
+                                                                    {currentStep === idx && stepDeadlineDate && (
                                                                         <div style={{ color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
                                                                             Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({daysLeft} days left)
                                                                         </div>

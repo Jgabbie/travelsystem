@@ -34,6 +34,17 @@ const VisaApplicationSchema = new mongoose.Schema({
         type: [String],
         default: ['Application Submitted']
     },
+    statusHistory: [{
+        status: { type: String },
+        changedAt: { type: Date },
+        changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+        changedByName: { type: String }
+    }],
+    deadlineWarnings: [{
+        status: { type: String },
+        deadlineDate: { type: String },
+        warnedAt: { type: Date }
+    }],
     currentStepIndex: { type: Number, default: 0 }
 }, { timestamps: true })
 
