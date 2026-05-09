@@ -12,6 +12,7 @@ const userAuth = async (req, res, next) => {
     const { accessToken, refreshToken } = req.cookies
 
     if (!accessToken && !refreshToken) {
+        console.warn('[Auth] /api/recommendations denied: no accessToken or refreshToken present')
         return res.status(401).json({ message: "Not Authorized. Login Again" })
     }
 
@@ -23,6 +24,7 @@ const userAuth = async (req, res, next) => {
             })
         }
 
+        console.warn('[Auth] Session rejected and cookies cleared')
         clearAuthCookies(res)
         return res.status(401).json({ message: IDLE_LOGOUT_MESSAGE, idleLogout: true })
     }
@@ -69,10 +71,12 @@ const userAuth = async (req, res, next) => {
                 const user = await User.findById(tokenDecode.id)
 
                 if (!user) {
+                    console.warn('[Auth] accessToken user not found')
                     return await rejectSession()
                 }
 
                 if (isSessionIdleExpired(user.lastActivityAt)) {
+                    console.warn(`[Auth] Session idle expired for user ${user._id}`)
                     return await rejectSession(user._id)
                 }
 
@@ -100,6 +104,7 @@ const userAuth = async (req, res, next) => {
         return res.status(401).json({ message: "Not Authorized. Login Again" })
 
     } catch (e) {
+        console.error('[Auth] Unexpected auth error:', e.message)
         return res.status(401).json({ message: "Not Authorized. Login Again" })
     }
 }

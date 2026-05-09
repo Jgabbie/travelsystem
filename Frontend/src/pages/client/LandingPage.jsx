@@ -38,10 +38,14 @@ export default function LandingPage() {
     const [showNextStepsModal, setShowNextStepsModal] = useState(false)
 
     const [popularPackages, setPopularPackages] = useState([])
+    const [forYouPackages, setForYouPackages] = useState([])
     const [domesticPackages, setDomesticPackages] = useState([])
     const [activityTags, setActivityTags] = useState([])
     const [isSending, setIsSending] = useState(false);
     const [isPopularLoading, setIsPopularLoading] = useState(false)
+    const [isForYouLoading, setIsForYouLoading] = useState(false)
+    const [forYouError, setForYouError] = useState('')
+    const [recommendationMethod, setRecommendationMethod] = useState('')
     const [isDomesticLoading, setIsDomesticLoading] = useState(false)
     const [exploreSlideIndex, setExploreSlideIndex] = useState(0)
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
@@ -294,6 +298,71 @@ export default function LandingPage() {
     useEffect(() => {
         if (!auth && !authLoading) {
             setIsChatbotOpen(false)
+        }
+    }, [auth, authLoading])
+
+    useEffect(() => {
+        if (authLoading) return
+
+        if (!auth) {
+            setForYouPackages([])
+            setForYouError('')
+            setRecommendationMethod('')
+            return
+        }
+
+        let isMounted = true
+
+        const fetchForYouPackages = async () => {
+            setIsForYouLoading(true)
+            setForYouError('')
+
+            try {
+                const response = await apiFetch.get('/recommendations')
+                const packages = (response?.packages || response?.tours || []).map((pkg) => ({
+                    id: pkg?._id || pkg?.packageId || pkg?.id || '',
+                    packageCode: pkg?.packageCode || pkg?._id || pkg?.packageId || pkg?.id || '',
+                    packageName: pkg?.packageName || 'Recommended package',
+                    packageDescription: pkg?.packageDescription || '',
+                    packageImages: Array.isArray(pkg.images)
+                        ? pkg.images
+                        : Array.isArray(pkg.packageImages)
+                            ? pkg.packageImages
+                            : [],
+                    packageType: pkg?.packageType || pkg?.tourType || '',
+                    discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent))
+                        ? Number(pkg.packageDiscountPercent)
+                        : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : 0)
+                }))
+
+                if (!isMounted) return
+
+                setForYouPackages(packages.slice(0, 3))
+                setRecommendationMethod(response?.method || '')
+            } catch (error) {
+                if (!isMounted) return
+                console.error('Failed to load recommendations:', error)
+                setForYouPackages([])
+                setRecommendationMethod('')
+
+                if (error?.status === 401) {
+                    setForYouError('Log in to get personalized recommendations.')
+                } else if (error?.status === 503) {
+                    setForYouError('Recommendations are temporarily unavailable. Please try again in a moment.')
+                } else {
+                    setForYouError('Could not load recommendations right now.')
+                }
+            } finally {
+                if (isMounted) {
+                    setIsForYouLoading(false)
+                }
+            }
+        }
+
+        fetchForYouPackages()
+
+        return () => {
+            isMounted = false
         }
     }, [auth, authLoading])
 
@@ -592,6 +661,71 @@ export default function LandingPage() {
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    <div className='for-you-section'>
+                        <h1 className='for-you-text'>FOR YOU</h1>
+
+                        {recommendationMethod ? (
+                            <p className='for-you-method'>Powered by {recommendationMethod} recommendations</p>
+                        ) : null}
+
+                        {!auth && !authLoading ? (
+                            <div className='for-you-empty-state'>
+                                <p>Log in to get personalized package recommendations.</p>
+                                <Button type='primary' onClick={() => setIsLoginVisible(true)}>Log In</Button>
+                            </div>
+                        ) : isForYouLoading ? (
+                            <p className='for-you-status-text'>Loading recommendations...</p>
+                        ) : forYouError ? (
+                            <p className='for-you-status-text'>{forYouError}</p>
+                        ) : forYouPackages.length === 0 ? (
+                            <p className='for-you-status-text'>No recommendations yet. Rate more packages to improve suggestions.</p>
+                        ) : (
+                            <div className='for-you-grid'>
+                                {forYouPackages.map((pkg) => (
+                                    <Card
+                                        className='package-card for-you-card'
+                                        key={pkg.packageCode || pkg.id}
+                                        hoverable
+                                        onClick={() => navigate('/package', { state: { packageCode: pkg.packageCode } })}
+                                        cover={
+                                            pkg.packageImages && pkg.packageImages.length > 0 ? (
+                                                <img
+                                                    style={{ height: 250 }}
+                                                    draggable={false}
+                                                    alt={pkg.packageName}
+                                                    src={pkg.packageImages[0]}
+                                                />
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        height: 250,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        background: '#f5f5f5',
+                                                        color: '#777'
+                                                    }}
+                                                >
+                                                    No Image
+                                                </div>
+                                            )
+                                        }
+                                    >
+                                        {pkg.discountPercent > 0 && (
+                                            <span className="popular-discount-badge">-{pkg.discountPercent}% OFF</span>
+                                        )}
+
+                                        <h2>{pkg.packageName}</h2>
+                                        <p>{formatDescription(pkg.packageDescription, 120)}</p>
+                                        <div className="popular-card-meta">
+                                            <span className="popular-package-type">{(pkg.packageType && String(pkg.packageType).length) ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1) : 'Package'}</span>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 

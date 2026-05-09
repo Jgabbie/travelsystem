@@ -27,6 +27,7 @@ const sendEmailRoutes = require("./routes/sendEmailRoutes")
 const preferencesRoutes = require("./routes/preferencesRoutes")
 const uploadRoutes = require("./routes/uploadRoutes")
 const chatbotRoutes = require("./routes/chatbotRoutes")
+const recommendationsRoutes = require("./routes/recommendations")
 const { startBillingDeadlineScheduler } = require('./utils/billingDeadlineScheduler');
 const { startCleanupScheduler } = require('./utils/cleanupBookings');
 const { startPassportDeadlineScheduler } = require('./utils/passportDeadlineScheduler');
@@ -115,6 +116,7 @@ app.use("/api/email", sendEmailRoutes);
 app.use("/api/preferences", preferencesRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
 
 //might remove later
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

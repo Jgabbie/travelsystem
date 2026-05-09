@@ -1,0 +1,110 @@
+// Backend/routes/recommendations.js
+// Example routes to add to your Express app
+
+const express = require('express');
+const router = express.Router();
+const recommendController = require('../controllers/recommendController');
+const requireAuth = require('../middleware/userAuth'); // Your auth middleware
+const requireAdmin = require('../middleware/requireAdmin'); // Your admin middleware (if exists)
+
+/**
+ * @route   GET /api/recommendations
+ * @desc    Get personalized tour recommendations for the authenticated user
+ * @access  Private (Requires authentication)
+ * @returns {Array} Array of tour objects with recommendation method
+ * @example GET /api/recommendations
+ */
+router.get('/', requireAuth, recommendController.getRecommendations);
+
+/**
+ * @route   POST /api/recommendations/train
+ * @desc    Manually trigger model training/retraining
+ * @access  Private/Admin (Optional: restrict to admins)
+ * @returns {Object} Training status and model readiness
+ * @note    Can be called periodically (e.g., after data updates)
+ * @example POST /api/recommendations/train
+ */
+router.post('/train', recommendController.trainModels);
+// Optionally restrict to admin:
+// router.post('/train', requireAdmin, recommendController.trainModels);
+
+/**
+ * @route   GET /api/recommendations/health
+ * @desc    Check if AI service is healthy and models are ready
+ * @access  Public
+ * @returns {Object} Service status and model readiness
+ * @example GET /api/recommendations/health
+ */
+router.get('/health', recommendController.checkHealth);
+
+module.exports = router;
+
+/*
+  USAGE IN YOUR SERVER FILE:
+  
+  // In your main server.js or app.js
+  const recommendationsRouter = require('./routes/recommendations');
+  
+  // Mount the routes
+  app.use('/api/recommendations', recommendationsRouter);
+  
+  // Now you can use:
+  // GET  http://localhost:5000/api/recommendations
+  // POST http://localhost:5000/api/recommendations/train
+  // GET  http://localhost:5000/api/recommendations/health
+*/
+
+/*
+  EXAMPLE RESPONSE FORMATS:
+  
+  1. GET /api/recommendations (Success)
+  ✅ 200 OK
+  {
+    "tours": [
+      {
+        "_id": "...",
+        "name": "Paris City Tour",
+        "tags": "europe culture museums",
+        ...other tour fields
+      },
+      ...
+    ],
+    "method": "collaborative",
+    "count": 3
+  }
+  
+  2. GET /api/recommendations (No recommendations)
+  ✅ 200 OK
+  {
+    "tours": [],
+    "method": "none"
+  }
+  
+  3. POST /api/recommendations/train
+  ✅ 200 OK
+  {
+    "status": "success",
+    "message": "Models trained successfully",
+    "models_ready": true
+  }
+  
+  4. GET /api/recommendations/health
+  ✅ 200 OK
+  {
+    "status": "healthy",
+    "models_ready": true
+  }
+  
+  5. Error: AI Service Offline
+  ❌ 503 Service Unavailable
+  {
+    "message": "AI Service is offline",
+    "error": "Cannot connect to recommendation service"
+  }
+  
+  6. Error: Not Authenticated
+  ❌ 401 Unauthorized
+  {
+    "message": "User not authenticated"
+  }
+*/

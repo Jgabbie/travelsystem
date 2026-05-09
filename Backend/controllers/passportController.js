@@ -229,6 +229,10 @@ const sendPassportDeadlineWarning = async (application) => {
     return { sent: true, application };
 };
 
+
+
+
+
 //GENERATE RANDOM APPLICATION NUMBER -----------------------------------------------------
 const randomApplicationNumber = () => {
     return 'APP-PASS-' + Math.floor(100000000 + Math.random() * 900000000);

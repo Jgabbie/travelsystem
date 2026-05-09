@@ -1,4 +1,5 @@
 const PreferrencesModel = require('../models/preferrences');
+const { scheduleRetrain } = require('../utils/recommendationRetrainQueue');
 
 const savePreferrences = async (req, res) => {
     try {
@@ -14,6 +15,9 @@ const savePreferrences = async (req, res) => {
             { moods, tours, pace },
             { new: true, upsert: true }
         );
+
+        // Keep recommendations fresh after preference updates.
+        scheduleRetrain('preferences-updated');
 
         res.status(200).json({ success: true, preferrences: updated });
     } catch (e) {

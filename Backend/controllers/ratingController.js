@@ -3,6 +3,7 @@ const ArchivedRatingModel = require('../models/archivedratings')
 const PackageModel = require('../models/package')
 const mongoose = require('mongoose')
 const logAction = require('../utils/logger')
+const { scheduleRetrain } = require('../utils/recommendationRetrainQueue')
 
 const submitRating = async (req, res) => {
     const { packageId, rating, review } = req.body;
@@ -49,6 +50,7 @@ const submitRating = async (req, res) => {
         const userName = ratingDoc?.userId?.username || 'Unknown'
 
         logAction('RATING_SUBMITTED', userId, { "Rating Submitted": `Customer Name: ${userName} | Package Name: ${packageName} | Rating: ${rating} | Review: ${review}` })
+        scheduleRetrain('rating-submitted')
 
         return res.status(201).json({
             message: "Rating submitted successfully",
@@ -112,6 +114,7 @@ const deleteRating = async (req, res) => {
         await rating.deleteOne()
 
         logAction('RATING_DELETED', userId, { "Rating Deleted": `Customer Name: ${userName} | Package Name: ${packageName}` })
+        scheduleRetrain('rating-deleted')
 
         res.status(200).json({ message: "Rating deleted" })
     } catch (error) {
@@ -149,6 +152,7 @@ const adminDeleteRating = async (req, res) => {
         await rating.deleteOne()
 
         logAction('RATING_ARCHIVED_BY_ADMIN', req.userId, { "Rating Archived by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
+        scheduleRetrain('rating-archived-admin')
 
         res.status(200).json({ message: "Rating archived" })
     } catch (error) {
@@ -182,6 +186,7 @@ const updateRating = async (req, res) => {
         const userName = ratingDoc?.userId?.username || 'Unknown'
 
         logAction('RATING_UPDATED', userId, { "Rating Updated": `Customer Name: ${userName} | Package Name: ${packageName} | New Rating: ${rating} | New Review: ${review}` })
+        scheduleRetrain('rating-updated')
 
         res.status(200).json({ message: "Rating updated successfully", rating: existingRating })
     } catch (error) {
@@ -321,6 +326,7 @@ const restoreArchivedRating = async (req, res) => {
         await archivedRating.deleteOne()
 
         logAction('RATING_RESTORED_BY_ADMIN', req.userId, { "Rating Restored by Admin": `Customer Name: ${userName} | Package Name: ${packageName}` })
+        scheduleRetrain('rating-restored-admin')
 
         res.status(200).json({ message: "Rating restored" })
     } catch (error) {
