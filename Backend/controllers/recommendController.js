@@ -3,7 +3,7 @@ const axios = require('axios');
 const PackageModel = require('../models/package');
 const mongoose = require('mongoose');
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://127.0.0.1:5000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'https://recommendationtravex.onrender.com';
 const AI_SERVICE_TIMEOUT = 10000; // 10 seconds
 
 // Create axios instance for AI service

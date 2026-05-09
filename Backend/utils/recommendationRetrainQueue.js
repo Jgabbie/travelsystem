@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://127.0.0.1:5000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'https://recommendationtravex.onrender.com';
 const RETRAIN_DEBOUNCE_MS = Number(process.env.RECOMMEND_RETRAIN_DEBOUNCE_MS || 15000);
 const RETRAIN_TIMEOUT_MS = Number(process.env.RECOMMEND_RETRAIN_TIMEOUT_MS || 20000);
 
