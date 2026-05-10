@@ -54,6 +54,10 @@ const PassportSchema = new mongoose.Schema({
         deadlineDate: { type: String },
         warnedAt: { type: Date }
     }],
+    // Process steps and computed dates for each passport workflow step.
+    // Stored as an object keyed by status name, e.g.
+    // { "Application Submitted": { setDate: '2026-05-10', deadlineDate: '2026-05-12' }, ... }
+    processSteps: { type: mongoose.Schema.Types.Mixed, default: {} },
     createdAt: { type: Date, default: Date.now }
 });
 

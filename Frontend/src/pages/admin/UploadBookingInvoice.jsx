@@ -608,7 +608,7 @@ export default function UploadBookingInvoice() {
                         <Text style={[styles.label, { marginTop: 10 }]}>PESO ACCOUNT:</Text>
                         <Text style={styles.muted}>BANK: BDO UNIBANK - TRIDENT TOWER BRANCH</Text>
                         <Text style={styles.muted}>ACCOUNT NAME: {invoice.company.name.toUpperCase()}</Text>
-                        <Text style={styles.muted}>ACCOUNT NUMBER: 006830132692</Text>
+                        <Text style={styles.muted}>ACCOUNT NUMBER: 006838032692</Text>
                     </View>
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>

@@ -148,10 +148,6 @@ export default function ViewVisaApplication() {
 
     const terminalStatuses = new Set(['processing by embassy', 'embassy approved', 'passport released']);
 
-    const createdAt = application?.createdAt
-        ? dayjs(application.createdAt).startOf('day')
-        : null;
-
     const normalizedVisaSteps = useMemo(() => {
         return (application?.visaProcessSteps || []).map((step, idx) => {
             if (typeof step === "string") {
@@ -173,34 +169,7 @@ export default function ViewVisaApplication() {
         });
     }, [application?.visaProcessSteps]);
 
-    const deadlineDays =
-        application?.statusDeadlineDays ?? null;
-
-    const statusDeadlineDate =
-        application?.statusDeadlineDate
-            ? dayjs(application.statusDeadlineDate)
-            : createdAt && Number.isFinite(deadlineDays)
-                ? createdAt.add(deadlineDays, 'day')
-                : null;
-
     const cumulativeStepDaysMap = application?.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(normalizedVisaSteps);
-
-    const [adminCountdown, setAdminCountdown] = useState(null);
-
-    const adminCountdownStyle = {
-        fontSize: 13,
-        color: '#305797',
-        fontWeight: 700,
-        background: 'rgba(48,87,151,0.06)',
-        padding: '4px 8px',
-        borderRadius: 14,
-        border: '1px solid rgba(48,87,151,0.12)',
-        boxShadow: '0 6px 18px rgba(48,87,151,0.06)',
-        minWidth: 80,
-        textAlign: 'center',
-        fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
-        lineHeight: 1,
-    };
 
     const statusSetDate = application?.statusUpdatedAt
         ? dayjs(application.statusUpdatedAt)
@@ -264,33 +233,6 @@ export default function ViewVisaApplication() {
     };
 
     const managerName = getManagerName(application);
-
-    useEffect(() => {
-        if (!statusDeadlineDate) {
-            setAdminCountdown(null);
-            return;
-        }
-
-        const update = () => {
-            const diffMs = statusDeadlineDate.diff(dayjs());
-            if (diffMs <= 0) {
-                setAdminCountdown('Deadline passed');
-                return;
-            }
-            let total = Math.floor(diffMs / 1000);
-            const days = Math.floor(total / 86400);
-            total = total % 86400;
-            const hours = Math.floor(total / 3600);
-            total = total % 3600;
-            const minutes = Math.floor(total / 60);
-            const seconds = total % 60;
-            setAdminCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-        };
-
-        update();
-        const timerId = setInterval(update, 1000);
-        return () => clearInterval(timerId);
-    }, [statusDeadlineDate]);
 
     useEffect(() => {
         if (!application?.visaProcessSteps || !statusText) return;
@@ -899,30 +841,10 @@ export default function ViewVisaApplication() {
 
                                         <div style={{ border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#ffffff", minWidth: 280 }}>
                                             <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
-                                            {statusDeadlineDate && (
+                                            {statusSetDate && (
                                                 <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                                                        <div style={{ flex: 1 }}>
-                                                            {statusSetDate && (
-                                                                <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {statusSetDate.format('MMM D, YYYY')}</div>
-                                                            )}
-                                                            <div style={{ fontSize: 12, color: '#333' }}>
-                                                                <strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({statusDeadlineDate.diff(dayjs(), 'day')} days left)
-                                                            </div>
-                                                            {adminCountdown && (
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                                                                    <div style={{ fontSize: 12, color: '#305797', fontWeight: 700 }}>Time left:</div>
-                                                                    <div style={adminCountdownStyle}>{adminCountdown}</div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            {statusDeadlineDate.isBefore(dayjs(), 'day') ? (
-                                                                <Tag color="red">Deadline passed</Tag>
-                                                            ) : (
-                                                                <Tag color="gold">Time-limited action</Tag>
-                                                            )}
-                                                        </div>
+                                                    <div style={{ fontSize: 12, color: '#333' }}>
+                                                        <strong>Current status set on:</strong> {statusSetDate.format('MMM D, YYYY')}
                                                     </div>
                                                 </div>
                                             )}
@@ -956,7 +878,7 @@ export default function ViewVisaApplication() {
                                                         if (!isTerminalStep && Number.isFinite(stepDeadlineDays)) {
                                                             const baseDate = application?.createdAt
                                                                 ? dayjs(application.createdAt).startOf('day')
-                                                                : createdAt;
+                                                                : null;
 
                                                             if (baseDate) {
                                                                 stepDeadlineDate = baseDate.add(stepDeadlineDays, 'day').startOf('day');
@@ -987,41 +909,35 @@ export default function ViewVisaApplication() {
                                                                         >
                                                                             {stepTitle}
                                                                         </span>
-
-                                                                        {stepIsCurrent && adminCountdown && (
-                                                                            <span style={adminCountdownStyle}>
-                                                                                {adminCountdown}
-                                                                            </span>
-                                                                        )}
                                                                     </div>
 
                                                                     <p style={{ fontSize: 10, color: '#555', margin: 0 }}>
                                                                         {stepDescription}
                                                                     </p>
 
-                                                                    {stepSetDate && (
-                                                                        <div style={{ fontSize: 11, color: '#444' }}>
+                                                                    <div style={{ fontSize: 11, color: '#444' }}>
+                                                                        {stepIsCurrent && stepSetDate && (
                                                                             <div>
                                                                                 Set on: {stepSetDate.format('MMM D, YYYY')}
                                                                                 {daysAgo !== null
                                                                                     ? ` • ${daysAgo} days ago`
                                                                                     : ''}
                                                                             </div>
+                                                                        )}
 
-                                                                            {stepIsCurrent && stepDeadlineDate && (
-                                                                                <div
-                                                                                    style={{
-                                                                                        color: stepDeadlineDate.isBefore(dayjs(), 'day')
-                                                                                            ? '#ff4d4f'
-                                                                                            : '#333'
-                                                                                    }}
-                                                                                >
-                                                                                    Deadline: {stepDeadlineDate.format('MMM D, YYYY')}
-                                                                                    ({daysLeft} days left)
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
+                                                                        {stepDeadlineDate && (
+                                                                            <div
+                                                                                style={{
+                                                                                    color: stepDeadlineDate.isBefore(dayjs(), 'day')
+                                                                                        ? '#ff4d4f'
+                                                                                        : '#333'
+                                                                                }}
+                                                                            >
+                                                                                Deadline: {stepDeadlineDate.format('MMM D, YYYY')}
+                                                                                ({daysLeft} days left)
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
 
                                                                     <Checkbox
                                                                         checked={idx <= currentStep}

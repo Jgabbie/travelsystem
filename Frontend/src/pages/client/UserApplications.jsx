@@ -82,8 +82,8 @@ export default function UserApplications() {
     const statusColorMap = {
         Pending: 'orange',
         Approved: 'green',
-        Disapproved: 'red',
-        'Payment Completed': 'blue',
+        Rejected: 'red',
+        'Payment Completed': 'green',
         'Documents Uploaded': 'gold',
         'Documents Approved': 'green',
         'Documents Received': 'cyan',

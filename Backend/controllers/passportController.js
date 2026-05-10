@@ -18,7 +18,7 @@ const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
     'Documents Approved': 2,
     // documents received/submitted should be done in 2 days (relative to appointment)
     'Documents Received': 2,
-    'Documents Submitted': 2,
+    'Documents Submitted': 0,
     // processing by DFA happens on the appointment date itself
     'Processing by DFA': 0,
     'DFA Approved': 0,
@@ -264,6 +264,19 @@ const applyPassport = async (req, res) => {
 
         logAction('APPLY_PASSPORT', userId, { "Passport Application": ` DFA Location: ${dfaLocation} | Preferred Date: ${preferredDate} | Preferred Time: ${preferredTime} | Application Type: ${applicationType}` });
 
+        try {
+            const built = buildProcessSteps(application);
+            application.processSteps = built;
+            await application.save();
+        } catch (e) {
+            // non-fatal — continue returning application but log
+            console.error('Failed to build/persist processSteps:', e);
+        }
+
+
+
+
+
         const io = req.app.get('io')
         if (io) {
             io.emit('passport:created', {
@@ -353,26 +366,6 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
-//GET PASSPORT APPLICATIONS ----------------------------------------------------------------
-const getPassportApplications = async (req, res) => {
-    try {
-
-        const applications = await PassportModel.find({})
-            .populate('userId', 'username email')
-            .sort({ createdAt: -1 })
-
-        await Promise.all(applications.map((application) => sendPassportDeadlineWarning(application).catch((error) => {
-            console.error('Failed to process passport deadline warning:', error);
-        })));
-
-        res.status(200).json(applications.map(decoratePassportApplication));
-    } catch (error) {
-        console.error("Error fetching passport applications:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
-};
-
 
 //GET USER'S PASSPORT APPLICATIONS ------------------------------------------------------
 const getUserPassportApplications = async (req, res) => {
@@ -912,6 +905,92 @@ const restoreArchivedPassportApplication = async (req, res) => {
         res.status(500).json({ message: "Error restoring passport application", error: error.message });
     }
 };
+
+
+// Ordered steps used to build the processSteps object stored on the application.
+const STEPS_ORDER = [
+    'Application Submitted',
+    'Application Approved',
+    'Payment Completed',
+    'Documents Uploaded',
+    'Documents Approved',
+    'Documents Received',
+    'Documents Submitted',
+    'Processing by DFA',
+    'DFA Approved',
+    'Passport Released'
+];
+
+// Build a processSteps object keyed by step name with setDate and deadlineDate (YYYY-MM-DD or null).
+// Deadline chaining rule: the first step's deadline = setDate + mapped days; subsequent deadlines
+// are computed by adding the mapped days to the previous step's computed deadline (if available).
+const buildProcessSteps = (application) => {
+    const out = {};
+    if (!application) return out;
+
+    const preferredDate = normalizePassportDate(application.preferredDate);
+    const createdAt = normalizePassportDate(application.createdAt) || dayjs().startOf('day');
+
+    let prevDeadline = null;
+
+    for (const step of STEPS_ORDER) {
+        const setDate = getStatusSetDateFromApplication(application, step) || (step === 'Application Submitted' ? createdAt : null);
+        const deadlineDays = PASSPORT_STATUS_DEADLINE_DAYS_MAP[step];
+
+        let deadline = null;
+
+        if (Number.isFinite(deadlineDays) && deadlineDays > 0) {
+            if (step === 'Application Submitted') {
+                if (setDate) deadline = setDate.add(deadlineDays, 'day').startOf('day');
+            } else if (prevDeadline) {
+                deadline = prevDeadline.add(deadlineDays, 'day').startOf('day');
+            } else if (setDate) {
+                deadline = setDate.add(deadlineDays, 'day').startOf('day');
+            } else if (preferredDate) {
+                // fallback: if nothing else, anchor to preferredDate
+                deadline = preferredDate.add(-0, 'day').startOf('day').add(deadlineDays, 'day');
+            }
+        } else {
+            // mapping days === 0 or undefined => no deadline stored
+            deadline = null;
+        }
+
+        if (deadline) prevDeadline = deadline;
+
+        out[step] = {
+            setDate: setDate ? setDate.format('YYYY-MM-DD') : null,
+            deadlineDate: deadline ? deadline.format('YYYY-MM-DD') : null,
+        };
+    }
+
+    return out;
+};
+
+
+//GET PASSPORT APPLICATIONS ----------------------------------------------------------------
+const getPassportApplications = async (req, res) => {
+    try {
+
+        const applications = await PassportModel.find({})
+            .populate('userId', 'username email')
+            .sort({ createdAt: -1 })
+
+        await Promise.all(applications.map((application) => sendPassportDeadlineWarning(application).catch((error) => {
+            console.error('Failed to process passport deadline warning:', error);
+        })));
+
+        res.status(200).json(applications.map(decoratePassportApplication));
+    } catch (error) {
+        console.error("Error fetching passport applications:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+
+
+
+
 
 module.exports = {
     applyPassport,

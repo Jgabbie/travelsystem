@@ -934,7 +934,7 @@ export default function UserBookingInvoice() {
                         <Text style={[styles.label, { marginTop: 10 }]}>PESO ACCOUNT:</Text>
                         <Text style={styles.muted}>BANK: BDO UNIBANK - TRIDENT TOWER BRANCH</Text>
                         <Text style={styles.muted}>ACCOUNT NAME: {invoice.company.name.toUpperCase()}</Text>
-                        <Text style={styles.muted}>ACCOUNT NUMBER: 006830132692</Text>
+                        <Text style={styles.muted}>ACCOUNT NUMBER: 006838032692</Text>
                     </View>
                     <View style={styles.totalDueContainer}>
                         <View style={styles.totalDueRow}>
@@ -1272,29 +1272,29 @@ export default function UserBookingInvoice() {
                                                 <h4 className="section-subtitle">Available Bank Accounts</h4>
                                                 <div className="bank-grid">
                                                     <div className="bank-item">
-                                                        <span className="bank-name">BDO Unibank</span>
-                                                        <span className="account-number">0012-3456-7890</span>
-                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                        <span className="bank-name">BDO</span>
+                                                        <span className="account-number">006838032692</span>
+                                                        <span className="account-holder">M&RC TRAVEL AND TOURS</span>
                                                     </div>
                                                     <div className="bank-item">
-                                                        <span className="bank-name">BPI</span>
-                                                        <span className="account-number">9876-5432-10</span>
-                                                        <span className="account-holder">M&RC Travel and Tours</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="bank-accounts-section">
-                                                <div className="bank-grid">
-                                                    <div className="bank-item">
-                                                        <span className="bank-name">Metro Bank</span>
-                                                        <span className="account-number">0012-3456-7890</span>
-                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                        <span className="bank-name">GCASH</span>
+                                                        <span className="account-number">09690554806</span>
+                                                        <span className="account-holder">MA****R C.</span>
+                                                        <img
+                                                            src="/images/QRCode_GCash_Maricar.jpg"
+                                                            alt="GCash QR Maricar"
+                                                            style={{ width: 300, height: 300, marginTop: 8 }}
+                                                        />
                                                     </div>
                                                     <div className="bank-item">
-                                                        <span className="bank-name">Land Bank</span>
-                                                        <span className="account-number">9876-5432-10</span>
-                                                        <span className="account-holder">M&RC Travel and Tours</span>
+                                                        <span className="bank-name">GCASH</span>
+                                                        <span className="account-number">09688880405</span>
+                                                        <span className="account-holder">RH*N C.</span>
+                                                        <img
+                                                            src="/images/QRCode_GCash_Rhon.jpg"
+                                                            alt="GCash QR Rhon"
+                                                            style={{ width: 300, height: 300, marginTop: 8 }}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>

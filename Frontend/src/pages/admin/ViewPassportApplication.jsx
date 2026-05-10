@@ -163,6 +163,17 @@ export default function ViewPassportApplication() {
             ? dayjs(application.suggestedAppointmentScheduleChosen.date)
             : null;
 
+    // Use backend-provided processSteps if available
+    const getProcessStepInfo = (stepTitle) => {
+        if (!application?.processSteps || !application.processSteps[stepTitle]) {
+            return { setDate: null, deadlineDate: null };
+        }
+        const step = application.processSteps[stepTitle];
+        return {
+            setDate: step.setDate ? dayjs(step.setDate) : null,
+            deadlineDate: step.deadlineDate ? dayjs(step.deadlineDate) : null,
+        };
+    };
     const getStatusSetDate = (app) => {
         if (!app) return null;
         // prefer explicit status history entry
@@ -190,53 +201,6 @@ export default function ViewPassportApplication() {
         : appointmentDate && Number.isFinite(deadlineDays)
             ? appointmentDate.subtract(deadlineDays, 'day').startOf('day')
             : null;
-    // Live countdown for admin current status
-    const [adminCountdown, setAdminCountdown] = useState(null);
-
-    // Modern countdown style for admin (brand color)
-    const adminCountdownStyle = {
-        fontSize: 13,
-        color: '#305797',
-        fontWeight: 700,
-        background: 'rgba(48,87,151,0.06)',
-        padding: '4px 8px',
-        borderRadius: 14,
-        border: '1px solid rgba(48,87,151,0.12)',
-        boxShadow: '0 6px 18px rgba(48,87,151,0.06)',
-        minWidth: 80,
-        textAlign: 'center',
-        fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
-        lineHeight: 1,
-    };
-
-    useEffect(() => {
-        let deadline = statusDeadlineDate;
-        if (!deadline) {
-            setAdminCountdown(null);
-            return;
-        }
-
-        const update = () => {
-            const diffMs = deadline.diff(dayjs());
-            if (diffMs <= 0) {
-                setAdminCountdown('Deadline passed');
-                return;
-            }
-            let total = Math.floor(diffMs / 1000);
-            const days = Math.floor(total / 86400);
-            total = total % 86400;
-            const hours = Math.floor(total / 3600);
-            total = total % 3600;
-            const minutes = Math.floor(total / 60);
-            const seconds = total % 60;
-            setAdminCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-        };
-
-        update();
-        const id = setInterval(update, 1000);
-        return () => clearInterval(id);
-    }, [statusDeadlineDate]);
-
     // Auto-reject application if deadline is passed
     useEffect(() => {
         if (!application || !statusDeadlineDate || hasProcessedRejection) return;
@@ -773,35 +737,9 @@ export default function ViewPassportApplication() {
 
                                     <div style={{ border: "1px solid #dde4ef", borderRadius: 10, padding: 12, background: "#ffffff", minWidth: 280 }}>
                                         <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
-                                        {statusDeadlineDate && (
+                                        {currentStatusSetDate && (
                                             <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                                                    <div style={{ flex: 1 }}>
-                                                        {currentStatusSetDate && (
-                                                            <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
-                                                        )}
-                                                        {statusDeadlineDate && (() => {
-                                                            const daysLeftCount = statusDeadlineDate.diff(dayjs(), 'day');
-                                                            return (
-                                                                <div style={{ fontSize: 12, color: '#333' }}>
-                                                                    <strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({daysLeftCount} day{daysLeftCount === 1 ? '' : 's'} left)
-                                                                </div>
-                                                            );
-                                                        })()}
-
-                                                        {adminCountdown && (
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                                                                <div style={{ fontSize: 12, color: '#305797', fontWeight: 700 }}>Time left:</div>
-                                                                <div style={adminCountdownStyle}>{adminCountdown}</div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        {statusDeadlineDate && statusDeadlineDate.isBefore(dayjs(), 'day') ? (
-                                                            <Tag color="red">Deadline passed</Tag>
-                                                        ) : null}
-                                                    </div>
-                                                </div>
+                                                <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {currentStatusSetDate.format('MMM D, YYYY')}</div>
                                             </div>
                                         )}
                                         <Steps
@@ -811,23 +749,26 @@ export default function ViewPassportApplication() {
                                             // This single handler manages everything
                                             onChange={progressEditable && !isUpdatingStatus ? handleStepChange : undefined}
                                             items={statusSteps.map((step, idx) => {
-                                                const stepSetDate = getStepSetDateForTitle(application, step.title);
+                                                // Prefer processSteps data from backend
+                                                const processStepInfo = getProcessStepInfo(step.title);
+                                                const stepSetDate = processStepInfo.setDate || getStepSetDateForTitle(application, step.title);
                                                 const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
                                                 const stepDeadlineDays = statusDeadlineDaysMap[step.title] ?? null;
 
-                                                // Prefer backend-provided deadline for the active status
-                                                let stepDeadlineDate = null;
-                                                if (application?.statusDeadlineDate && String(application.status) === String(step.title)) {
-                                                    stepDeadlineDate = dayjs(application.statusDeadlineDate);
-                                                } else if (stepSetDate && Number.isFinite(stepDeadlineDays)) {
-                                                    // If the step was already set, anchor to that set date + deadlineDays
-                                                    stepDeadlineDate = stepSetDate.add(stepDeadlineDays, 'day').startOf('day');
-                                                } else if (appointmentDate && Number.isFinite(stepDeadlineDays)) {
-                                                    // Fallback: use appointment-based anchor (Processing by DFA uses appointment date)
-                                                    if (step.title === 'Processing by DFA' || stepDeadlineDays === 0) {
-                                                        stepDeadlineDate = appointmentDate.startOf('day');
-                                                    } else {
-                                                        stepDeadlineDate = appointmentDate.subtract(stepDeadlineDays, 'day').startOf('day');
+                                                let stepDeadlineDate = processStepInfo.deadlineDate || null;
+
+                                                // If backend didn't provide deadline, fall back to previous client logic
+                                                if (!stepDeadlineDate) {
+                                                    if (application?.statusDeadlineDate && String(application.status) === String(step.title)) {
+                                                        stepDeadlineDate = dayjs(application.statusDeadlineDate);
+                                                    } else if (stepSetDate && Number.isFinite(stepDeadlineDays)) {
+                                                        stepDeadlineDate = stepSetDate.add(stepDeadlineDays, 'day').startOf('day');
+                                                    } else if (appointmentDate && Number.isFinite(stepDeadlineDays)) {
+                                                        if (step.title === 'Processing by DFA' || stepDeadlineDays === 0) {
+                                                            stepDeadlineDate = appointmentDate.startOf('day');
+                                                        } else {
+                                                            stepDeadlineDate = appointmentDate.subtract(stepDeadlineDays, 'day').startOf('day');
+                                                        }
                                                     }
                                                 }
 
@@ -849,23 +790,21 @@ export default function ViewPassportApplication() {
                                                                 }}>
                                                                     {step.title}
                                                                 </span>
-                                                                {currentStep === idx && adminCountdown && (
-                                                                    <span style={{ ...adminCountdownStyle, marginTop: 0 }}>{adminCountdown}</span>
-                                                                )}
                                                             </div>
 
                                                             <p style={{ fontSize: 11, color: '#555', margin: 0, textAlign: 'left', whiteSpace: 'normal', lineHeight: 1.4, maxWidth: '100%' }}>{step.summary || `Status: ${step.title}`}</p>
 
-                                                            {stepSetDate && (
-                                                                <div style={{ fontSize: 11, color: '#444', textAlign: 'left', lineHeight: 1.45, maxWidth: '100%' }}>
+                                                            <div style={{ fontSize: 11, color: '#444', textAlign: 'left', lineHeight: 1.45, maxWidth: '100%' }}>
+                                                                {currentStep === idx && stepSetDate && (
                                                                     <div>Set on: {stepSetDate.format('MMM D, YYYY')}{daysAgo !== null ? ` • ${daysAgo} days ago` : ''}</div>
-                                                                    {currentStep === idx && stepDeadlineDate && (
-                                                                        <div style={{ color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
-                                                                            Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({daysLeft} days left)
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                                )}
+
+                                                                {stepDeadlineDate && (
+                                                                    <div style={{ color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
+                                                                        Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({daysLeft} days left)
+                                                                    </div>
+                                                                )}
+                                                            </div>
 
                                                             <Checkbox
                                                                 checked={idx <= currentStep}

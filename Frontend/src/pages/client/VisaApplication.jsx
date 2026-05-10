@@ -54,7 +54,6 @@ export default function VisaApplication() {
     const [isDateSelectedModalOpen, setIsDateSelectedModalOpen] = useState(false);
     const [isDocumentsUploadedModalOpen, setIsDocumentsUploadedModalOpen] = useState(false);
     const [isPassportReleaseOptionSelectedModalOpen, setIsPassportReleaseOptionSelectedModalOpen] = useState(false);
-    const [countdown, setCountdown] = useState(null);
 
     const fetchVisaApplication = `/visa/applications/${id}`;
 
@@ -103,21 +102,6 @@ export default function VisaApplication() {
         : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
             ? dayjs(application.suggestedAppointmentScheduleChosen.date)
             : null;
-
-    const countdownStyle = {
-        fontSize: 15,
-        color: '#305797',
-        fontWeight: 700,
-        background: 'rgba(48,87,151,0.06)',
-        padding: '6px 10px',
-        borderRadius: 14,
-        border: '1px solid rgba(48,87,151,0.12)',
-        boxShadow: '0 6px 18px rgba(48,87,151,0.06)',
-        minWidth: 96,
-        textAlign: 'center',
-        fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
-        lineHeight: 1,
-    };
 
     const getStatusSetDate = (app) => {
         if (!app) return null;
@@ -279,33 +263,6 @@ export default function VisaApplication() {
         String(statusValue || '').toLowerCase() === 'passport released' &&
         String(application?.passportReleaseOption || '').toLowerCase() === 'delivery';
     const deliveryFeeAmount = Number(application?.deliveryFee || 0);
-
-    useEffect(() => {
-        if (!statusDeadlineDate) {
-            setCountdown(null);
-            return;
-        }
-
-        const update = () => {
-            const diffMs = statusDeadlineDate.diff(dayjs());
-            if (diffMs <= 0) {
-                setCountdown('Deadline passed');
-                return;
-            }
-            let total = Math.floor(diffMs / 1000);
-            const days = Math.floor(total / 86400);
-            total = total % 86400;
-            const hours = Math.floor(total / 3600);
-            total = total % 3600;
-            const minutes = Math.floor(total / 60);
-            const seconds = total % 60;
-            setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-        };
-
-        update();
-        const timerId = setInterval(update, 1000);
-        return () => clearInterval(timerId);
-    }, [statusDeadlineDate]);
 
     const beforeUpload = (file) => {
         const isLt5M = file.size / 1024 / 1024 < 5;
@@ -1041,29 +998,29 @@ export default function VisaApplication() {
                                                                     <h4 className="section-subtitle">Available Bank Accounts</h4>
                                                                     <div className="bank-grid">
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">BDO Unibank</span>
-                                                                            <span className="account-number">0012-3456-7890</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">BDO</span>
+                                                                            <span className="account-number">006838032692</span>
+                                                                            <span className="account-holder">M&RC TRAVEL AND TOURS</span>
                                                                         </div>
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">BPI</span>
-                                                                            <span className="account-number">9876-5432-10</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="bank-accounts-section">
-                                                                    <div className="bank-grid">
-                                                                        <div className="bank-item">
-                                                                            <span className="bank-name">Metro Bank</span>
-                                                                            <span className="account-number">0012-3456-7890</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09690554806</span>
+                                                                            <span className="account-holder">MA****R C.</span>
+                                                                            <img
+                                                                                src="/images/QRCode_GCash_Maricar.jpg"
+                                                                                alt="GCash QR Maricar"
+                                                                                style={{ width: 300, height: 'auto', marginTop: 8 }}
+                                                                            />
                                                                         </div>
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">Land Bank</span>
-                                                                            <span className="account-number">9876-5432-10</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09688880405</span>
+                                                                            <span className="account-holder">RH*N C.</span>
+                                                                            <img
+                                                                                src="/images/QRCode_GCash_Rhon.jpg"
+                                                                                alt="GCash QR Rhon"
+                                                                                style={{ width: 300, height: 'auto', marginTop: 8 }}
+                                                                            />
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1169,29 +1126,19 @@ export default function VisaApplication() {
                                                                     <h4 className="section-subtitle">Available Bank Accounts</h4>
                                                                     <div className="bank-grid">
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">BDO Unibank</span>
-                                                                            <span className="account-number">0012-3456-7890</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">BDO</span>
+                                                                            <span className="account-number">006838032692</span>
+                                                                            <span className="account-holder">M&RC TRAVEL AND TOURS</span>
                                                                         </div>
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">BPI</span>
-                                                                            <span className="account-number">9876-5432-10</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="bank-accounts-section">
-                                                                    <div className="bank-grid">
-                                                                        <div className="bank-item">
-                                                                            <span className="bank-name">Metro Bank</span>
-                                                                            <span className="account-number">0012-3456-7890</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09690554806</span>
+                                                                            <span className="account-holder">MA****R C.</span>
                                                                         </div>
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">Land Bank</span>
-                                                                            <span className="account-number">9876-5432-10</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09688880405</span>
+                                                                            <span className="account-holder">RH*N C.</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1389,29 +1336,19 @@ export default function VisaApplication() {
                                                                     <h4 className="section-subtitle">Available Bank Accounts</h4>
                                                                     <div className="bank-grid">
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">BDO Unibank</span>
-                                                                            <span className="account-number">0012-3456-7890</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">BDO</span>
+                                                                            <span className="account-number">006838032692</span>
+                                                                            <span className="account-holder">M&RC TRAVEL AND TOURS</span>
                                                                         </div>
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">BPI</span>
-                                                                            <span className="account-number">9876-5432-10</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="bank-accounts-section">
-                                                                    <div className="bank-grid">
-                                                                        <div className="bank-item">
-                                                                            <span className="bank-name">Metro Bank</span>
-                                                                            <span className="account-number">0012-3456-7890</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09690554806</span>
+                                                                            <span className="account-holder">MA****R C.</span>
                                                                         </div>
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">Land Bank</span>
-                                                                            <span className="account-number">9876-5432-10</span>
-                                                                            <span className="account-holder">M&RC Travel and Tours</span>
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09688880405</span>
+                                                                            <span className="account-holder">RH*N C.</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1654,31 +1591,9 @@ export default function VisaApplication() {
 
                                                 <div style={{ padding: 12, minHeight: 180 }}>
                                                     <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Progress Tracker</h3>
-                                                    {statusDeadlineDate && (
+                                                    {statusSetDate && (
                                                         <div style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(48,87,151,0.06)', borderLeft: '4px solid #305797' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                                                                <div style={{ flex: 1 }}>
-                                                                    {statusSetDate && (
-                                                                        <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {statusSetDate.format('MMM D, YYYY')}</div>
-                                                                    )}
-                                                                    <div style={{ fontSize: 12, color: '#333' }}>
-                                                                        <strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({statusDeadlineDate.diff(dayjs(), 'day')} days left)
-                                                                    </div>
-                                                                    {countdown && (
-                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                                                                            <div style={{ fontSize: 12, color: '#305797', fontWeight: 700 }}>Time left:</div>
-                                                                            <div style={countdownStyle}>{countdown}</div>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <div>
-                                                                    {statusDeadlineDate.isBefore(dayjs(), 'day') ? (
-                                                                        <Tag color="red">Deadline passed</Tag>
-                                                                    ) : (
-                                                                        <Tag color="gold">Time-limited action</Tag>
-                                                                    )}
-                                                                </div>
-                                                            </div>
+                                                            <div style={{ fontSize: 12, color: '#333' }}><strong>Current status set on:</strong> {statusSetDate.format('MMM D, YYYY')}</div>
                                                         </div>
                                                     )}
                                                     <div style={{ overflowX: 'auto', paddingTop: 8, paddingBottom: 32 }}>
@@ -1722,23 +1637,20 @@ export default function VisaApplication() {
                                                                                 }}>
                                                                                     {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
                                                                                 </span>
-                                                                                {stepIsCurrent && countdown && (
-                                                                                    <span style={{ ...countdownStyle, marginTop: 0 }}>{countdown}</span>
-                                                                                )}
                                                                             </div>
 
                                                                             <p style={{ fontSize: 11, color: '#555', margin: 0, textAlign: 'left', whiteSpace: 'normal', lineHeight: 1.4, maxWidth: '100%' }}>{step.description}</p>
 
-                                                                            {stepSetDate && (
-                                                                                <div style={{ fontSize: 11, color: '#444', textAlign: 'left', lineHeight: 1.45, maxWidth: '100%' }}>
+                                                                            <div style={{ fontSize: 11, color: '#444', textAlign: 'left', lineHeight: 1.45, maxWidth: '100%' }}>
+                                                                                {stepIsCurrent && stepSetDate && (
                                                                                     <div>Set on: {stepSetDate.format('MMM D, YYYY')}{daysAgo !== null ? ` • ${daysAgo} days ago` : ''}</div>
-                                                                                    {stepIsCurrent && stepDeadlineDate && (
-                                                                                        <div style={{ color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
-                                                                                            Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({daysLeft} days left)
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            )}
+                                                                                )}
+                                                                                {stepDeadlineDate && (
+                                                                                    <div style={{ color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
+                                                                                        Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({daysLeft} days left)
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
                                                                         </div>
                                                                     )
                                                                 };

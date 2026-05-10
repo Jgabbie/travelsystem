@@ -325,6 +325,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={clearForms}
+                    width={1000}
                     centered={true}
                 >
 
@@ -412,7 +413,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                                 <div className="signup-input-group-modal">
                                     <label className='signup-labels-modal'>Phone Number</label>
-                                    <Input addonBefore="+63" status={hasFieldError(error.phone) ? "error" : ""} maxLength={13}
+                                    <Input status={hasFieldError(error.phone) ? "error" : ""} maxLength={13}
                                         onChange={(e) => {
                                             let value = e.target.value.replace(/\D/g, "");
 

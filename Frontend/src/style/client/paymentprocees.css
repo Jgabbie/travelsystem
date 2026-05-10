@@ -442,6 +442,14 @@
     flex-direction: column;
 }
 
+/* Center images inside bank-item while keeping text left-aligned */
+.bank-item img {
+    align-self: center;
+    max-width: 100%;
+    height: auto;
+    margin-top: 8px;
+}
+
 .bank-name {
     font-weight: 700;
     color: #305797;

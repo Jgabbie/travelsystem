@@ -197,7 +197,7 @@ export default function TopNavUser() {
                 )}
                 <nav className="navbar">
                     <div className="logo-section">
-                        <img src={"/images/Logo.png"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
+                        <img src={"/images/LogoNav.png"} alt="Logo" className="user-logo-img" onClick={() => { navigate("/home") }} />
                     </div>
 
                     {/* if authenticated, show username, if not, then show signup and login button links */}
