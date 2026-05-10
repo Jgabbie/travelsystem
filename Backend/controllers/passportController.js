@@ -397,10 +397,12 @@ const getPassportApplicationById = async (req, res) => {
     try {
         const { id } = req.params;
         const application = await PassportModel.findById(id)
-            .populate('statusHistory.changedBy', 'username firstname lastname');
+            .populate('statusHistory.changedBy', 'username firstname lastname')
+            .populate('userId', 'username firstname lastname');
         if (!application) {
             return res.status(404).json({ message: "Passport application not found" });
         }
+
         // Optionally, populate documents if you have a documents field
         await sendPassportDeadlineWarning(application).catch((error) => {
             console.error('Failed to process passport deadline warning:', error);

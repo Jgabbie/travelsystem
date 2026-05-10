@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Modal, Checkbox, DatePicker, TimePicker, Input, notification } from "antd";
-import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { Descriptions, Tag, Steps, Button, Spin, Divider, Typography, Image, ConfigProvider, Switch, Modal, Checkbox, DatePicker, TimePicker, Input, InputNumber, notification } from "antd";
+import { ArrowLeftOutlined, DownloadOutlined, FilePdfOutlined, CheckCircleFilled, PictureOutlined } from "@ant-design/icons";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import apiFetch from "../../config/fetchConfig";
@@ -44,6 +44,8 @@ export default function ViewVisaApplication() {
         };
     }, []);
 
+    const applicantName = `${application?.applicantName || application?.firstName || ''} ${application?.lastName || ''}`.trim();
+
     const isBusy = loading || isSubmittingSlots || isUpdatingStatus;
 
     const fetchApplicationAndService = useCallback(async () => {
@@ -51,8 +53,6 @@ export default function ViewVisaApplication() {
             setLoading(true);
             // 1. Fetch the application first
             const appData = await apiFetch.get(`/visa/applications/${applicationItem}`);
-
-            console.log("Fetched application data:", appData); // Debug log
 
             // 2. Determine current step
             const visaProcessSteps = appData.visaProcessSteps || []; // might be undefined if service not fetched yet
@@ -222,6 +222,49 @@ export default function ViewVisaApplication() {
         return null;
     };
 
+    // Get the most recent staff/admin who changed the status (if available)
+    const getManagerName = (app) => {
+        try {
+            if (!app) return null;
+            const history = app.statusHistory;
+            if (Array.isArray(history) && history.length > 0) {
+                const applicantId = String(app.userId?._id || app.userId || '');
+                const applicantName = String(app.applicantName || app.username || '').trim().toLowerCase();
+
+                for (let i = history.length - 1; i >= 0; i -= 1) {
+                    const entry = history[i];
+                    const changedById = String(entry?.changedBy?._id || entry?.changedBy || '');
+                    const changedByName = String(entry?.changedByName || '').trim();
+
+                    if (applicantId && changedById && changedById === applicantId) {
+                        continue;
+                    }
+
+                    if (changedByName && applicantName && changedByName.toLowerCase() === applicantName) {
+                        continue;
+                    }
+
+                    if (entry?.changedBy && typeof entry.changedBy === 'object') {
+                        const first = entry.changedBy.firstname || entry.changedBy.username || '';
+                        const lastn = entry.changedBy.lastname || '';
+                        const full = [first, lastn].map(s => (s || '').trim()).filter(Boolean).join(' ');
+                        if (full) return full;
+                    }
+
+                    if (changedByName) return changedByName;
+                    if (entry?.changedBy && typeof entry.changedBy === 'string') return entry.changedBy;
+                }
+
+                return null;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const managerName = getManagerName(application);
+
     useEffect(() => {
         if (!statusDeadlineDate) {
             setAdminCountdown(null);
@@ -384,12 +427,23 @@ export default function ViewVisaApplication() {
         }
     };
 
-    const handleResubmitDocuments = async () => {
+    const handleResubmitDocuments = async (documentKey) => {
         if (isUpdatingStatus) return;
+
+        const documentKeys = documentKey
+            ? [documentKey]
+            : Object.keys(application?.submittedDocuments || application?.documents || {});
+
+        if (documentKeys.length === 0) {
+            notification.warning({ message: "Please select a document to resubmit.", placement: "topRight" });
+            return;
+        }
 
         try {
             setIsUpdatingStatus(true);
-            await apiFetch.put(`/visa/applications/${applicationItem}/resubmit-documents`);
+            await apiFetch.put(`/visa/applications/${applicationItem}/resubmit-documents`, {
+                ...(documentKey ? { documentKey } : { documentKeys })
+            });
             await fetchApplicationAndService();
 
             setIsResubmitDocumentsSentModalOpen(true);
@@ -480,6 +534,43 @@ export default function ViewVisaApplication() {
         return hours;
     }
 
+    const disablePastDates = (current) => {
+        return current && current < dayjs().startOf('day');
+    };
+
+    // Only allow digit keystrokes and numeric paste for delivery fee input
+    const handleDeliveryFeeKeyDown = (e) => {
+        const allowedKeys = [
+            'Backspace',
+            'Delete',
+            'ArrowLeft',
+            'ArrowRight',
+            'Tab',
+            'Home',
+            'End',
+            'Enter'
+        ];
+
+        // Allow control/meta combos (copy/paste/select all, etc.)
+        if (e.ctrlKey || e.metaKey) return;
+
+        if (allowedKeys.includes(e.key)) return;
+
+        // Allow digits only
+        if (/^\d$/.test(e.key)) return;
+
+        e.preventDefault();
+    };
+
+    const handleDeliveryFeePaste = (e) => {
+        e.preventDefault();
+        const paste = (e.clipboardData && e.clipboardData.getData('Text')) || '';
+        const digits = String(paste).replace(/\D/g, '');
+        if (digits) {
+            setDeliveryFee(String(digits));
+        }
+    };
+
     return (
         <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>
             {isBusy ? (
@@ -520,8 +611,8 @@ export default function ViewVisaApplication() {
                             application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" &&
                             application.suggestedAppointmentSchedules !== null && application.suggestedAppointmentSchedules.length > 0 &&
                             (
-                                <div style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6', padding: 16, borderRadius: 8 }}>
-                                    <Tag color="gold"><h2>AWAITING APPLICANT RESPONSE</h2></Tag>
+                                <div className="viewvisaapplication-tag-yellow-container">
+                                    <h2 className="viewvisaapplication-tag-yellow">AWAITING APPLICANT RESPONSE</h2>
                                     <p style={{ margin: 0, fontSize: 14 }}>
                                         You have suggested appointment schedules for this application. Kindly wait for the applicant's response. We will notify you once they have chosen an option.
                                     </p>
@@ -531,12 +622,12 @@ export default function ViewVisaApplication() {
                         {/* APPLICANT HAS CHOSEN A SUGGESTED APPOINTMENT OPTION */}
                         {statusText && statusText.toLowerCase() === "application submitted" &&
                             application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                                <div style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                    <Tag color="green"><h2>APPLICANT RESPONSE RECEIVED</h2></Tag>
-                                    <p style={{ margin: 0, fontSize: 14 }}>
+                                <div className="viewvisaapplication-tag-green-container">
+                                    <h2 className="viewvisaapplication-tag-green">APPLICANT RESPONSE RECEIVED</h2>
+                                    <p style={{ fontSize: 16, marginBottom: 8 }}>
                                         The applicant has chosen their preferred appointment schedule.
                                     </p>
-                                    <strong>
+                                    <strong style={{ fontSize: 14 }}>
                                         {dayjs(application.suggestedAppointmentScheduleChosen?.date).format("MMM DD, YYYY")} at {application.suggestedAppointmentScheduleChosen?.time}
                                     </strong>
                                 </div>
@@ -544,12 +635,12 @@ export default function ViewVisaApplication() {
 
                         {/* RELEASE OPTION CHOSEN BY THE APPLICANT */}
                         {statusText && statusText.toLowerCase() === "passport released" && (
-                            <div style={{ marginTop: 16, borderLeft: '4px solid #354ad8', backgroundColor: '#edf2ff', padding: 16, borderRadius: 8 }}>
-                                <Tag color="blue"><h2>APPLICANT'S RELEASE OPTION</h2></Tag>
-                                <p style={{ margin: 0, fontSize: 14 }}>
+                            <div className="viewvisaapplication-tag-blue-container">
+                                <h2 className="viewvisaapplication-tag-blue">APPLICANT'S RELEASE OPTION</h2>
+                                <p style={{ fontSize: 16, marginBottom: 8 }}>
                                     This is the chosen release option of the applicant.
                                 </p>
-                                <strong>
+                                <strong style={{ fontSize: 14 }}>
                                     {application.passportReleaseOption === "pickup" ? "Pickup at MRC Travel and Tours office" : `Delivery to ${application.deliveryAddress || "N/A"}`}
                                 </strong>
                             </div>
@@ -560,15 +651,16 @@ export default function ViewVisaApplication() {
                                 <div style={{ display: "flex", flexDirection: "row", gap: 24, flexWrap: "wrap" }}>
                                     <div style={{ flex: "1 1 620px", minWidth: 320 }}>
                                         <Descriptions bordered column={descriptionColumn} size="middle">
-                                            <Descriptions.Item label="Application Number">{application.applicationNumber}</Descriptions.Item>
-                                            <Descriptions.Item label="Applicant Name">{application.applicantName}</Descriptions.Item>
-                                            <Descriptions.Item label="Purpose of Travel">{application.purposeOfTravel}</Descriptions.Item>
+                                            <Descriptions.Item label="Application Number">{application?.applicationNumber}</Descriptions.Item>
+                                            <Descriptions.Item label="Applicant Name">{applicantName || 'N/A'}</Descriptions.Item>
+                                            <Descriptions.Item label="Purpose of Travel">{application?.purposeOfTravel}</Descriptions.Item>
                                             <Descriptions.Item label="Preferred Date">{application.preferredDate ? dayjs(application.preferredDate).format("MMM DD, YYYY") : "Not Set"}</Descriptions.Item>
                                             <Descriptions.Item label="Preferred Time">{application.preferredTime || "Not Set"} </Descriptions.Item>
                                             <Descriptions.Item label="Visa Type">
                                                 <Tag color="blue">{application.serviceName}</Tag>
                                             </Descriptions.Item>
                                             <Descriptions.Item label="Date Submitted">{application.createdAt ? dayjs(application.createdAt).format("MMM DD, YYYY hh:mm A") : "N/A"}</Descriptions.Item>
+                                            <Descriptions.Item label="Managed by">{managerName || 'N/A'}</Descriptions.Item>
                                             <Descriptions.Item label="Progress Editable">
                                                 <Switch checked={progressEditable} onChange={setProgressEditable} />
                                             </Descriptions.Item>
@@ -645,51 +737,41 @@ export default function ViewVisaApplication() {
                                                             return originalUrl.replace('/upload/', '/upload/fl_attachment/');
                                                         };
 
-                                                        const renderFilePreview = (url, identifier) => {
+                                                        const renderFilePreview = (url, identifier, documentKey) => {
                                                             const isPdfFile = isPdf(url);
 
                                                             return (
                                                                 <div key={identifier} className="application-doc-item" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                                                    <div className="application-doc-preview-box" style={{
-                                                                        border: '1px solid #d9d9d9',
-                                                                        borderRadius: 8,
-                                                                        overflow: 'hidden',
-                                                                        backgroundColor: '#f5f5f5',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
-                                                                    }}>
-                                                                        {isPdfFile ? (
-                                                                            <Button
-                                                                                className="application-doc-preview-media"
-                                                                                type="dashed"
-                                                                                icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
-                                                                                onClick={() => window.open(url, '_blank')}
-                                                                                style={{
-                                                                                    width: '100%',
-                                                                                    display: 'flex', flexDirection: 'column',
-                                                                                    alignItems: 'center', justifyContent: 'center',
-                                                                                    borderRadius: 8,
-                                                                                    backgroundColor: '#fafafa'
-                                                                                }}
-                                                                            >
-                                                                                <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
-                                                                            </Button>
-                                                                        ) : (
-                                                                            <Image
-                                                                                className="application-doc-preview-media"
-                                                                                src={url}
-                                                                                alt={`${label}-${identifier}`}
-                                                                                width="100%"
-                                                                                style={{ objectFit: 'cover' }}
-                                                                            />
-                                                                        )}
-                                                                    </div>
+
+                                                                    {isPdfFile ? (
+                                                                        <Button
+                                                                            className="application-doc-preview-button application-doc-preview-media"
+                                                                            type="default"
+                                                                            icon={<FilePdfOutlined style={{ fontSize: '18px', color: '#305797' }} />}
+                                                                            onClick={() => window.open(url, '_blank')}
+                                                                            size="small"
+                                                                            block
+                                                                        >
+                                                                            Preview File
+                                                                        </Button>
+                                                                    ) : (
+                                                                        <Button
+                                                                            className="application-doc-preview-button application-doc-preview-media"
+                                                                            type="default"
+                                                                            icon={<PictureOutlined style={{ fontSize: '18px', color: '#305797' }} />}
+                                                                            onClick={() => window.open(url, '_blank')}
+                                                                            size="small"
+                                                                            block
+                                                                        >
+                                                                            Preview File
+                                                                        </Button>
+                                                                    )}
+
 
                                                                     {/* DOWNLOAD BUTTON */}
                                                                     <Button
-                                                                        className='visaapplication-download-button application-doc-download'
-                                                                        type="default"
+                                                                        className='viewvisaapplication-download-button application-doc-download'
+                                                                        type="primary"
                                                                         icon={<DownloadOutlined />}
                                                                         size="small"
                                                                         block
@@ -699,6 +781,15 @@ export default function ViewVisaApplication() {
                                                                         }}
                                                                     >
                                                                         Download {isPdfFile ? 'PDF' : 'Image'}
+                                                                    </Button>
+
+                                                                    <Button
+                                                                        type="default"
+                                                                        onClick={() => handleResubmitDocuments(documentKey)}
+                                                                        disabled={isUpdatingStatus}
+                                                                        style={{ width: '50%', height: 36 }}
+                                                                    >
+                                                                        Resubmit {isPdfFile ? 'PDF' : 'Image'}
                                                                     </Button>
                                                                 </div>
                                                             );
@@ -712,12 +803,12 @@ export default function ViewVisaApplication() {
                                                                         <Image.PreviewGroup>
                                                                             {value.map((url, idx) => (
                                                                                 <div key={`${key}-${idx}`}>
-                                                                                    {renderFilePreview(url, idx)}
+                                                                                    {renderFilePreview(url, idx, key)}
                                                                                 </div>
                                                                             ))}
                                                                         </Image.PreviewGroup>
                                                                     ) : (
-                                                                        renderFilePreview(value, 'single')
+                                                                        renderFilePreview(value, 'single', key)
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -742,23 +833,39 @@ export default function ViewVisaApplication() {
                                         </div>
 
                                         {statusText && String(statusText).toLowerCase() === "passport released" && application.passportReleaseOption === "delivery" && (
-                                            <div style={{ minWidth: 280, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 16 }}>
-                                                <h3 style={{ marginTop: 0 }}>Delivery Details</h3>
-                                                <label>Delivery Fee</label>
-                                                <Input
+                                            <div className="viewvisaapplication-delivery-details-card">
+                                                <h3 className="viewvisaapplication-delivery-details-title">Delivery Details</h3>
+                                                <label className="viewvisaapplication-delivery-details-label">Delivery Fee</label>
+                                                <InputNumber
+                                                    maxLength={6}
                                                     placeholder="Enter delivery fee"
                                                     value={deliveryFee}
-                                                    onChange={(e) => setDeliveryFee(e.target.value)}
-                                                    style={{ marginBottom: 12 }}
+                                                    onChange={(value) => setDeliveryFee(value ? String(value) : "")}
+                                                    className="viewvisaapplication-delivery-details-input"
+                                                    controls={false}
+                                                    min={1}
+                                                    stringMode
+                                                    onKeyDown={handleDeliveryFeeKeyDown}
+                                                    onPaste={handleDeliveryFeePaste}
+                                                    formatter={(value) => {
+                                                        const numericValue = String(value ?? "").replace(/\D/g, "");
+                                                        if (!numericValue) return "";
+                                                        const withSpaces = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+                                                        return `₱ ${withSpaces}`;
+                                                    }}
+                                                    parser={(value) => String(value ?? "").replace(/\D/g, "")}
                                                 />
-                                                <label>Delivery Date</label>
+                                                <label className="viewvisaapplication-delivery-details-label">Delivery Date</label>
                                                 <DatePicker
-                                                    style={{ width: "100%", marginBottom: 12 }}
+                                                    showToday={false}
+                                                    className="viewvisaapplication-delivery-details-date"
                                                     value={deliveryDate}
                                                     onChange={setDeliveryDate}
+                                                    disabledDate={disablePastDates}
                                                 />
                                                 <Button
                                                     type="primary"
+                                                    className="viewvisaapplication-delivery-details-button"
                                                     onClick={handleSubmitDeliveryDetails}
                                                     loading={isSubmittingDeliveryDetails}
                                                 >

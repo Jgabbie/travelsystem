@@ -14,6 +14,83 @@
     margin-bottom: 40px;
 }
 
+/* TAGS */
+.viewvisaapplication-tag-blue-container {
+    margin-bottom: 16px;
+    border-left: 4px solid #305797;
+    background-color: rgba(48, 87, 151, 0.06);
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 8px;
+}
+
+.viewvisaapplication-tag-blue {
+    font-family: "Montserrat", sans-serif;
+    color: #305797;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.viewvisaapplication-tag-blue-container p {
+    font-family: "Montserrat", sans-serif;
+}
+
+
+.viewvisaapplication-tag-green-container {
+    margin-bottom: 16px;
+    border-left: 4px solid #52c41a;
+    background-color: rgba(82, 196, 26, 0.06);
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 8px;
+}
+
+.viewvisaapplication-tag-green {
+    font-family: "Montserrat", sans-serif;
+    background: '#f6ffed';
+    color: #52c41a;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.viewvisaapplication-tag-green-container p {
+    font-family: "Montserrat", sans-serif;
+}
+
+
+.viewvisaapplication-tag-yellow-container {
+    margin-bottom: 16px;
+    border-left: 4px solid #faad14;
+    background-color: rgba(250, 173, 20, 0.06);
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 8px;
+}
+
+.viewvisaapplication-tag-yellow {
+    font-family: "Montserrat", sans-serif;
+    background: '#f6ffed';
+    color: #faad14;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.viewvisaapplication-tag-yellow-container p {
+    font-family: "Montserrat", sans-serif;
+}
+
+
+
+
 .app-detail-shell {
     background: #ffffff;
     border-radius: 16px;
@@ -72,6 +149,53 @@
     border-radius: 12px;
     border: 1px solid #dde4ef;
     box-shadow: 0 6px 20px rgba(18, 24, 38, 0.06);
+}
+
+.viewvisaapplication-delivery-details-card {
+    min-width: 280px;
+    margin-top: 16px;
+    border: 1px solid #dde4ef;
+    border-radius: 12px;
+    padding: 18px;
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(18, 24, 38, 0.06);
+}
+
+.viewvisaapplication-delivery-details-title {
+    margin-top: 0;
+    margin-bottom: 14px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2a44;
+}
+
+.viewvisaapplication-delivery-details-label {
+    display: block;
+    margin-bottom: 6px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #3c424f;
+}
+
+.viewvisaapplication-delivery-details-input,
+.viewvisaapplication-delivery-details-date {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+.viewvisaapplication-delivery-details-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 150px;
+    height: 32px;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
 
 .application-documents-grid,
@@ -155,10 +279,35 @@
     color: #fff;
     border-radius: 10px;
     width: 250px;
-    height: 30px;
+    height: 36px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+}
+
+/* Preview button style to match provided design */
+.application-doc-preview-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
+    color: #305797;
+    border-radius: 10px;
+    width: 250px;
+    height: 36px;
+    border: 1px solid rgba(48, 87, 151, 0.12);
+    box-shadow: none;
     margin-top: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.application-doc-preview-button:hover {
+    background-color: #f5f8ff !important;
+    color: #305797 !important;
 }
 
 
@@ -169,7 +318,7 @@
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 320px;
+    width: 200px;
     height: 35px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);

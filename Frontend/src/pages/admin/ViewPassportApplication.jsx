@@ -46,6 +46,9 @@ export default function ViewPassportApplication() {
         try {
             setLoading(true);
             const response = await apiFetch.get(`/passport/applications/${applicationId}`);
+
+            console.log("Fetched application details:", response);
+
             setApplication(response);
             // Determine step based on status
             const statusMap = statusSteps.reduce((acc, step, idx) => {
@@ -74,6 +77,8 @@ export default function ViewPassportApplication() {
         };
     }, []);
 
+
+    const applicantName = `${application?.userId?.firstname || ''} ${application?.userId?.lastname || ''}`.trim();
 
     //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
     const handleSubmitAlternateSlots = async () => {
@@ -277,6 +282,49 @@ export default function ViewPassportApplication() {
         }
         return null;
     };
+
+    // Get the most recent staff/admin who changed the status (if available)
+    const getManagerName = (app) => {
+        try {
+            if (!app) return null;
+            const history = app.statusHistory;
+            if (Array.isArray(history) && history.length > 0) {
+                const applicantId = String(app.userId?._id || app.userId || '');
+                const applicantName = String(app.username || '').trim().toLowerCase();
+
+                for (let i = history.length - 1; i >= 0; i -= 1) {
+                    const entry = history[i];
+                    const changedById = String(entry?.changedBy?._id || entry?.changedBy || '');
+                    const changedByName = String(entry?.changedByName || '').trim();
+
+                    if (applicantId && changedById && changedById === applicantId) {
+                        continue;
+                    }
+
+                    if (changedByName && applicantName && changedByName.toLowerCase() === applicantName) {
+                        continue;
+                    }
+
+                    if (entry?.changedBy && typeof entry.changedBy === 'object') {
+                        const first = entry.changedBy.firstname || entry.changedBy.username || '';
+                        const lastn = entry.changedBy.lastname || '';
+                        const full = [first, lastn].map(s => (s || '').trim()).filter(Boolean).join(' ');
+                        if (full) return full;
+                    }
+
+                    if (changedByName) return changedByName;
+                    if (entry?.changedBy && typeof entry.changedBy === 'string') return entry.changedBy;
+                }
+
+                return null;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const managerName = getManagerName(application);
 
     //RENDER UPLOAD DOCUMENTS
     const renderReadOnlyFile = (url, label) => {
@@ -506,9 +554,9 @@ export default function ViewPassportApplication() {
                         application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" &&
                         application.suggestedAppointmentSchedules !== null && application.suggestedAppointmentSchedules.length > 0 &&
                         (
-                            <div style={{ marginTop: 16, borderLeft: '4px solid #faad14', backgroundColor: '#fffbe6', padding: 16, borderRadius: 8 }}>
-                                <Tag color="gold"><h2>AWAITING APPLICANT RESPONSE</h2></Tag>
-                                <p style={{ margin: 0, fontSize: 14 }}>
+                            <div className="viewpassportapplication-tag-yellow-container">
+                                <h2 className="viewpassportapplication-tag-yellow">AWAITING APPLICANT RESPONSE</h2>
+                                <p style={{ fontSize: 14, marginBottom: 8 }}>
                                     You have suggested appointment schedules for this application. Kindly wait for the applicant's response. We will notify you once they have chosen an option.
                                 </p>
                             </div>
@@ -517,12 +565,12 @@ export default function ViewPassportApplication() {
                     {/* APPLICANT HAS CHOSEN A SUGGESTED APPOINTMENT OPTION */}
                     {application.status && application.status.toLowerCase() === "application submitted" &&
                         application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                            <div style={{ marginTop: 16, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, borderRadius: 8 }}>
-                                <Tag color="green"><h2>APPLICANT RESPONSE RECEIVED</h2></Tag>
-                                <p style={{ margin: 0, fontSize: 14 }}>
+                            <div className="viewpassportapplication-tag-green-container">
+                                <h2 className="viewpassportapplication-tag-green">APPLICANT RESPONSE RECEIVED</h2>
+                                <p style={{ fontSize: 14, marginBottom: 8 }}>
                                     The applicant has chosen their preferred appointment schedule.
                                 </p>
-                                <strong>
+                                <strong style={{ fontSize: 16 }}>
                                     {dayjs(application.suggestedAppointmentScheduleChosen?.date).format("MMM DD, YYYY")} at {application.suggestedAppointmentScheduleChosen?.time}
                                 </strong>
                             </div>
@@ -530,12 +578,12 @@ export default function ViewPassportApplication() {
 
                     {/* PASSPORT RELEASE PASSPORT OPTION CHOSEN BY THE APPLICANT */}
                     {application.status && application.status.toLowerCase() === "passport released" && (
-                        <div style={{ marginTop: 16, borderLeft: '4px solid #354ad8', backgroundColor: '#edf2ff', padding: 16, borderRadius: 8 }}>
-                            <Tag color="blue"><h2>APPLICANT'S RELEASE PASSPORT OPTION</h2></Tag>
-                            <p style={{ margin: 0, fontSize: 14 }}>
+                        <div className="viewpassportapplication-tag-blue-container">
+                            <h2 className="viewpassportapplication-tag-blue">APPLICANT'S RELEASE PASSPORT OPTION</h2>
+                            <p style={{ fontSize: 14, marginBottom: 8 }}>
                                 This is the chosen release passport option of the applicant.
                             </p>
-                            <strong>
+                            <strong style={{ fontSize: 16 }}>
                                 {application.passportReleaseOption === "pickup" ? "Pickup at MRC Travel and Tours office" : `Delivery to ${application.deliveryAddress || "N/A"}`}
                             </strong>
                         </div>
@@ -551,15 +599,16 @@ export default function ViewPassportApplication() {
                             <div style={{ display: "flex", flexDirection: "row", gap: 24, flexWrap: "wrap" }}>
                                 <div style={{ flex: "1 1 620px", minWidth: 320 }}>
                                     <Descriptions bordered column={descriptionColumn} size="middle">
-                                        <Descriptions.Item label="Application Number">{application.applicationNumber}</Descriptions.Item>
-                                        <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
-                                        <Descriptions.Item label="DFA Location">{application.dfaLocation}</Descriptions.Item>
+                                        <Descriptions.Item label="Application Number">{application?.applicationNumber}</Descriptions.Item>
+                                        <Descriptions.Item label="Applicant Name">{applicantName || 'N/A'}</Descriptions.Item>
+                                        <Descriptions.Item label="DFA Location">{application?.dfaLocation}</Descriptions.Item>
                                         <Descriptions.Item label="Preferred Date">{application.preferredDate ? dayjs(application.preferredDate).format("MMM DD, YYYY") : "Not Set"}</Descriptions.Item>
                                         <Descriptions.Item label="Preferred Time">{application.preferredTime || "Not Set"}</Descriptions.Item>
                                         <Descriptions.Item label="Passport Type">
                                             <Tag color="blue">{application.applicationType}</Tag>
                                         </Descriptions.Item>
                                         <Descriptions.Item label="Date Submitted">{application.createdAt ? dayjs(application.createdAt).format("MMM DD, YYYY hh:mm A") : "N/A"}</Descriptions.Item>
+                                        <Descriptions.Item label="Managed by">{managerName || 'N/A'}</Descriptions.Item>
                                         <Descriptions.Item label="Progress Editable">
                                             <Switch checked={progressEditable} onChange={setProgressEditable} />
                                         </Descriptions.Item>
@@ -639,8 +688,7 @@ export default function ViewPassportApplication() {
                                                     const docs = application.submittedDocuments || {
                                                         birthCertificate: application.birthCertificate,
                                                         applicationForm: application.applicationForm,
-                                                        govId: application.govId,
-                                                        additionalDocs: application.additionalDocs
+                                                        govId: application.govId
                                                     };
 
                                                     return (
@@ -693,29 +741,7 @@ export default function ViewPassportApplication() {
                                                                 </div>
                                                             )}
 
-                                                            {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
-                                                                <div style={{ width: "250px" }}>
-                                                                    <b style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>Additional Documents:</b>
-                                                                    <div style={{ gap: 16 }}>
-                                                                        <Image.PreviewGroup>
-                                                                            {docs.additionalDocs.map((url, idx) => (
-                                                                                <div key={`extra-${idx}`}>
-                                                                                    {renderReadOnlyFile(url, `Additional Doc ${idx + 1}`)}
-                                                                                </div>
-                                                                            ))}
-                                                                        </Image.PreviewGroup>
-                                                                    </div>
-                                                                    <div style={{ marginTop: 8 }}>
-                                                                        <Button
-                                                                            type="default"
-                                                                            onClick={() => handleResubmitDocuments('additionalDocs')}
-                                                                            disabled={isUpdatingStatus}
-                                                                        >
-                                                                            Resubmit
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            )}
+
                                                         </>
                                                     );
                                                 })()}
@@ -740,8 +766,8 @@ export default function ViewPassportApplication() {
                                             <Tag color="blue">{application?.status || "N/A"}</Tag>
                                         </div>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                            <span>Applicant</span>
-                                            <strong>{application?.username || "N/A"}</strong>
+                                            <span>Service</span>
+                                            <strong>{application?.applicationType || "N/A"}</strong>
                                         </div>
                                     </div>
 

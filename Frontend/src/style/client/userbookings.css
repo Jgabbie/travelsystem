@@ -18,7 +18,7 @@
 
 .user-bookings-header {
     margin-bottom: 24px;
-    background: #ffffff;
+    background: #305797;
     padding: 20px 24px;
     border-radius: 16px;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
@@ -29,13 +29,13 @@
     font-family: "Montserrat", sans-serif;
     font-size: 26px;
     font-weight: 600;
-    color: #1f2a44;
+    color: #ffffff;
 }
 
 .user-bookings-header p {
     font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #3c424f;
+    color: #ffffff;
 }
 
 .user-bookings-table {
@@ -46,8 +46,8 @@
 }
 
 .user-bookings-table .ant-table-thead>tr>th {
-    background: #eef2f7 !important;
-    color: #305797 !important;
+    background: #305797 !important;
+    color: #ffffff !important;
     font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -67,6 +67,9 @@
 .user-bookings-actions {
     width: 100%;
     margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .user-bookings-actions-row {

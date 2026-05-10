@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Spin, notification, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, DeleteOutlined, CheckCircleFilled } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, DeleteOutlined, CheckCircleFilled, PictureOutlined, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
@@ -72,6 +72,30 @@ export default function VisaApplication() {
         ? application.status[application.status.length - 1]
         : application?.status;
 
+    const normalizeResubmissionTarget = (target) => String(target || '').trim();
+
+    const requestedResubmissionTargets = (() => {
+        const targets = [];
+
+        if (Array.isArray(application?.resubmissionTargets)) {
+            application.resubmissionTargets.forEach((target) => {
+                const normalized = normalizeResubmissionTarget(target);
+                if (normalized) {
+                    targets.push(normalized);
+                }
+            });
+        }
+
+        const legacyTarget = normalizeResubmissionTarget(application?.resubmissionTarget);
+        if (legacyTarget) {
+            targets.push(legacyTarget);
+        }
+
+        return [...new Set(targets)];
+    })();
+
+    const resubmissionRequested = requestedResubmissionTargets.length > 0;
+
     const terminalStatuses = new Set(['processing by embassy', 'embassy approved', 'passport released']);
 
     const appointmentDate = application?.preferredDate
@@ -126,7 +150,49 @@ export default function VisaApplication() {
         return null;
     };
 
+    // Get the most recent staff/admin who changed the status (if available)
+    const getManagerName = (app) => {
+        try {
+            if (!app) return null;
+            const history = app.statusHistory;
+            if (Array.isArray(history) && history.length > 0) {
+                const applicantId = String(app.userId?._id || app.userId || '');
+                const applicantName = String(app.username || '').trim().toLowerCase();
+
+                for (let i = history.length - 1; i >= 0; i -= 1) {
+                    const entry = history[i];
+                    const changedById = String(entry?.changedBy?._id || entry?.changedBy || '');
+                    const changedByName = String(entry?.changedByName || '').trim();
+
+                    if (applicantId && changedById && changedById === applicantId) {
+                        continue;
+                    }
+
+                    if (changedByName && applicantName && changedByName.toLowerCase() === applicantName) {
+                        continue;
+                    }
+
+                    if (entry?.changedBy && typeof entry.changedBy === 'object') {
+                        const first = entry.changedBy.firstname || entry.changedBy.username || '';
+                        const lastn = entry.changedBy.lastname || '';
+                        const full = [first, lastn].map(s => (s || '').trim()).filter(Boolean).join(' ');
+                        if (full) return full;
+                    }
+
+                    if (changedByName) return changedByName;
+                    if (entry?.changedBy && typeof entry.changedBy === 'string') return entry.changedBy;
+                }
+
+                return null;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    };
+
     const statusSetDate = getStatusSetDate(application);
+    const managerName = getManagerName(application);
     const deadlineDays = application?.statusDeadlineDays ?? null;
     const createdAt = application?.createdAt
         ? dayjs(application.createdAt).startOf('day')
@@ -260,7 +326,7 @@ export default function VisaApplication() {
             setUploading(true);
 
             const formData = new FormData();
-            const orderedRequirements = requirements.map((req, idx) => ({
+            const orderedRequirements = visibleRequirements.map((req, idx) => ({
                 key: req.key || req.req || `${req.label}-${idx}`,
                 label: req.req || req.label || `Requirement ${idx + 1}`
             }));
@@ -277,6 +343,11 @@ export default function VisaApplication() {
 
             if (missingRequirements.length > 0) {
                 notification.warning({ message: "Please upload all required documents before submitting.", placement: 'topRight' });
+                return;
+            }
+
+            if (resubmissionRequested && orderedRequirements.length === 0) {
+                notification.warning({ message: "The requested document is not available for upload.", placement: 'topRight' });
                 return;
             }
 
@@ -503,6 +574,14 @@ export default function VisaApplication() {
 
         return key;
     };
+
+    const isRequestedResubmissionTarget = (target) => {
+        if (!resubmissionRequested) return true;
+        return requestedResubmissionTargets.includes(normalizeResubmissionTarget(target));
+    };
+
+    // Always display all requirements; we'll mark which ones were requested for resubmission
+    const visibleRequirements = requirements;
 
     //HANDLE CONFIRMATION OF SUGGESTED APPOINTMENT
     const handleConfirmSuggested = async () => {
@@ -732,6 +811,9 @@ export default function VisaApplication() {
                                             <div style={{ flex: '1 1 620px', minWidth: 320 }}>
                                                 <Descriptions title="Application Info" bordered column={1}>
                                                     <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
+                                                    <Descriptions.Item label="Managed By">
+                                                        {managerName ? <Tag color="blue" style={{ fontWeight: 700, fontSize: 13 }}>{managerName}</Tag> : 'N/A'}
+                                                    </Descriptions.Item>
                                                     <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
                                                     <Descriptions.Item label="Applicant Name">{application.applicantName || application.user?.name}</Descriptions.Item>
                                                     <Descriptions.Item label="Preferred Date">{dayjs(application.preferredDate).format('MMM D, YYYY')}</Descriptions.Item>
@@ -742,7 +824,7 @@ export default function VisaApplication() {
                                                 {/* RELEASE OPTION */}
                                                 {statusValue && statusValue.toLowerCase() === 'embassy approved' && (
                                                     <div style={{ marginTop: 20 }}>
-                                                        <h3>Choose Your Release Option</h3>
+                                                        <h3 style={{ fontSize: 16 }}>Choose Your Release Option</h3>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
@@ -765,10 +847,11 @@ export default function VisaApplication() {
                                                                     textAlign: 'center',
                                                                     cursor: 'pointer',
                                                                     transition: 'all 0.2s ease',
+                                                                    borderRadius: 12,
                                                                 }}
                                                             >
-                                                                <h3 style={{ marginBottom: 8 }}>PICK UP</h3>
-                                                                <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                                <h3 style={{ marginBottom: 8, fontSize: 14 }}>PICK UP</h3>
+                                                                <p style={{ color: '#305797', fontWeight: 500, fontSize: 13 }}>
                                                                     Claim your visa documents at our office
                                                                 </p>
                                                             </div>
@@ -785,10 +868,11 @@ export default function VisaApplication() {
                                                                     textAlign: 'center',
                                                                     cursor: 'pointer',
                                                                     transition: 'all 0.2s ease',
+                                                                    borderRadius: 12,
                                                                 }}
                                                             >
-                                                                <h3 style={{ marginBottom: 8 }}>DELIVERY</h3>
-                                                                <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                                <h3 style={{ marginBottom: 8, fontSize: 14 }}>DELIVERY</h3>
+                                                                <p style={{ color: '#305797', fontWeight: 500, fontSize: 13 }}>
                                                                     Have your visa documents delivered to you
                                                                 </p>
                                                             </div>
@@ -796,13 +880,14 @@ export default function VisaApplication() {
 
                                                         {releaseOption === 'delivery' && (
                                                             <div style={{ marginTop: 20 }}>
-                                                                <p style={{ color: '#305797', fontWeight: 500 }}>
+                                                                <p style={{ color: '#305797', fontWeight: 500, fontSize: 13 }}>
                                                                     Kindly enter your complete address as reference for delivery.
                                                                     Our team will contact you for confirmation and further details regarding your delivery.
                                                                 </p>
 
                                                                 <Input.TextArea
                                                                     placeholder="Enter your complete address"
+                                                                    style={{ resize: 'none' }}
                                                                     rows={4}
                                                                     style={{ marginBottom: 12 }}
                                                                     maxLength={250}
@@ -829,7 +914,7 @@ export default function VisaApplication() {
                                                         <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
                                                         {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
                                                             <>
-                                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                                                                <div className='visaapplication-suggestedoptions'>
                                                                     {application.suggestedAppointmentSchedules.map((slot, index) => {
                                                                         const isSelected = selectedSuggestedIndex === index;
 
@@ -837,18 +922,17 @@ export default function VisaApplication() {
                                                                             <div
                                                                                 key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
                                                                                 onClick={() => setSelectedSuggestedIndex(index)}
+                                                                                className='visaapplication-suggestedoption-card'
                                                                                 style={{
                                                                                     border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
-                                                                                    padding: 12,
-                                                                                    borderRadius: 8,
-                                                                                    background: isSelected ? '#f5f8ff' : '#fff'
+                                                                                    boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
                                                                                 }}
                                                                             >
                                                                                 <Tag color="blue">Option {index + 1}</Tag>
-                                                                                <div style={{ marginTop: 8, fontWeight: 600 }}>
+                                                                                <div className='visaapplication-suggestedoptions-date' style={{ marginTop: 8, fontWeight: 600 }}>
                                                                                     {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
                                                                                 </div>
-                                                                                <div style={{ color: '#6b7280' }}>{slot.time || 'Time TBD'}</div>
+                                                                                <div className='visaapplication-suggestedoptions-time' style={{ color: '#6b7280' }}>{slot.time || 'Time TBD'}</div>
                                                                             </div>
                                                                         );
                                                                     })}
@@ -857,23 +941,24 @@ export default function VisaApplication() {
                                                                     <div
                                                                         onClick={() => setSelectedSuggestedIndex('others')}
                                                                         style={{
+                                                                            padding: 16,
+                                                                            borderRadius: 16,
                                                                             border: selectedSuggestedIndex === 'others' ? '2px solid #305797' : '1px solid #f0f0f0',
-                                                                            padding: 12,
-                                                                            borderRadius: 8,
-                                                                            background: selectedSuggestedIndex === 'others' ? '#f5f8ff' : '#fff'
+                                                                            boxShadow: selectedSuggestedIndex === 'others' ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
                                                                         }}
                                                                     >
                                                                         <Tag color="orange">Others</Tag>
-                                                                        <div style={{ marginTop: 12 }}>
+                                                                        <div className='visaapplication-suggestedoptions-group' style={{ marginTop: 8 }}>
                                                                             <Space orientation="vertical" style={{ width: '100%' }}>
                                                                                 <DatePicker
+                                                                                    className='visaapplication-suggestedoptions-datepicker'
                                                                                     disabledDate={disableDates}
                                                                                     placeholder="Select Date"
-                                                                                    style={{ width: '100%' }}
                                                                                     onChange={(date) => setCustomDateTime(prev => ({ ...prev, date }))}
                                                                                     onClick={(e) => e.stopPropagation()} // Prevents card click trigger issues
                                                                                 />
                                                                                 <TimePicker
+                                                                                    className='visaapplication-suggestedoptions-timepicker'
                                                                                     format="h:mm A"
                                                                                     use12Hours
                                                                                     showNow={false}
@@ -882,7 +967,6 @@ export default function VisaApplication() {
                                                                                         disabledHours
                                                                                     })}
                                                                                     placeholder="Select Time"
-                                                                                    style={{ width: '100%' }}
                                                                                     onChange={(time) => setCustomDateTime(prev => ({ ...prev, time }))}
                                                                                     onClick={(e) => e.stopPropagation()}
                                                                                 />
@@ -1166,80 +1250,90 @@ export default function VisaApplication() {
 
                                                 {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
                                                 {statusValue && statusValue.toLowerCase() === 'payment completed' && (
-                                                    <div style={{ padding: 4, marginTop: 32, marginBottom: 32 }}>
+                                                    <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
                                                         {requirements.length === 0 && (
                                                             <div>No requirements found for this service.</div>
                                                         )}
                                                         <div className="visa-requirements-grid">
-                                                            {requirements.map((req, idx) => {
+                                                            {visibleRequirements.map((req, idx) => {
                                                                 const requirementKey = req.key || req.req || `${req.label}-${idx}`;
                                                                 const uploadedFile = requirementFiles[requirementKey]?.[0];
-                                                                const isPdf = uploadedFile?.type === 'application/pdf' ||
-                                                                    uploadedFile?.originFileObj?.type === 'application/pdf' ||
-                                                                    uploadedFile?.name?.toLowerCase().endsWith('.pdf');
+
+                                                                // existing submission from server
+                                                                const submitted = application?.submittedDocuments || {};
+                                                                const existingValue = submitted[requirementKey];
+                                                                const existingUrl = Array.isArray(existingValue) ? existingValue[0] : existingValue || null;
+
+                                                                const previewSource = uploadedFile || existingUrl;
+                                                                const isPdf = (uploadedFile && (uploadedFile.type === 'application/pdf' || uploadedFile.originFileObj?.type === 'application/pdf' || uploadedFile.name?.toLowerCase().endsWith('.pdf'))) || (typeof existingUrl === 'string' && existingUrl.toLowerCase().split(/[?#]/)[0].endsWith('.pdf'));
+
+                                                                const isRequested = isRequestedResubmissionTarget(requirementKey);
 
                                                                 return (
                                                                     <div className="visa-requirement-card" key={requirementKey}>
                                                                         <b style={{ fontSize: 12, maxWidth: 220 }}>{req.req || req.label || `Requirement ${idx + 1}`}</b>
-                                                                        {uploadedFile ? (
-                                                                            isPdf ? (
+
+                                                                        {previewSource ? (
+                                                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                                                                                 <Button
                                                                                     className="visa-requirement-file-preview-button"
-                                                                                    type="dashed"
-                                                                                    onClick={() => handlePreview(uploadedFile)}
+                                                                                    type="default"
+                                                                                    icon={isPdf ? <FilePdfOutlined /> : <EyeOutlined />}
+                                                                                    onClick={() => handlePreview(previewSource)}
                                                                                 >
-                                                                                    Open PDF
+                                                                                    Preview
                                                                                 </Button>
-                                                                            ) : (
-                                                                                <div className="visa-requirement-placeholder">
-                                                                                    <Image
-                                                                                        src={uploadedFile.url || uploadedFile.preview}
-                                                                                        alt={req.req || req.label || `Requirement ${idx + 1}`}
-                                                                                        preview={false}
-                                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                                        onClick={() => handlePreview(uploadedFile)}
-                                                                                    />
-                                                                                </div>
-                                                                            )
+
+                                                                                {!isRequested && (
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#16a34a', fontWeight: 700, marginTop: 6 }}>
+                                                                                        <CheckCircleFilled style={{ color: '#16a34a', fontSize: 18 }} />
+                                                                                        <span style={{ fontSize: 11, lineHeight: 1 }}>Valid Requirement</span>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
                                                                         ) : (
                                                                             <div className="visa-requirement-placeholder">
                                                                                 <span className="visa-requirement-placeholder-text">No file</span>
                                                                             </div>
                                                                         )}
-                                                                        <div style={{ marginTop: 8 }}>
-                                                                            {!uploadedFile ? (
-                                                                                <Upload
-                                                                                    beforeUpload={beforeUpload}
-                                                                                    key={requirementKey}
-                                                                                    name={requirementKey}
-                                                                                    customRequest={handleUpload(requirementKey)}
-                                                                                    fileList={requirementFiles[requirementKey] || []}
-                                                                                    listType="text"
-                                                                                    accept="image/*,application/pdf"
-                                                                                    disabled={uploading}
-                                                                                    onPreview={handlePreview}
-                                                                                    maxCount={1}
-                                                                                    showUploadList={false}
-                                                                                >
-                                                                                    <Button icon={<UploadOutlined />} className='visaapplication-upload-button' type='primary'>
-                                                                                        Upload Requirement
+
+                                                                        <div>
+                                                                            {/* Only allow upload when admin requested this specific requirement */}
+                                                                            {isRequested ? (
+                                                                                !uploadedFile ? (
+                                                                                    <Upload
+                                                                                        beforeUpload={beforeUpload}
+                                                                                        key={requirementKey}
+                                                                                        name={requirementKey}
+                                                                                        customRequest={handleUpload(requirementKey)}
+                                                                                        fileList={requirementFiles[requirementKey] || []}
+                                                                                        listType="text"
+                                                                                        accept="image/*,application/pdf"
+                                                                                        disabled={uploading}
+                                                                                        onPreview={handlePreview}
+                                                                                        maxCount={1}
+                                                                                        showUploadList={false}
+                                                                                    >
+                                                                                        <Button icon={<UploadOutlined />} className='visaapplication-upload-button' type='primary'>
+                                                                                            Upload Requirement
+                                                                                        </Button>
+                                                                                    </Upload>
+                                                                                ) : (
+                                                                                    <Button
+                                                                                        className='visaapplication-removefile-button'
+                                                                                        icon={<DeleteOutlined />}
+                                                                                        type="primary"
+                                                                                        onClick={() => {
+                                                                                            const newFiles = { ...requirementFiles };
+                                                                                            newFiles[requirementKey] = [];
+                                                                                            setRequirementFiles(newFiles);
+                                                                                        }}
+                                                                                    >
+                                                                                        Remove
                                                                                     </Button>
-                                                                                </Upload>
-                                                                            ) : (
-                                                                                <Button
-                                                                                    className='visaapplication-removefile-button'
-                                                                                    icon={<DeleteOutlined />}
-                                                                                    type="primary"
-                                                                                    onClick={() => {
-                                                                                        const newFiles = { ...requirementFiles };
-                                                                                        newFiles[requirementKey] = [];
-                                                                                        setRequirementFiles(newFiles);
-                                                                                    }}
-                                                                                >
-                                                                                    Remove
-                                                                                </Button>
-                                                                            )}
+                                                                                )
+                                                                            ) : null}
                                                                         </div>
                                                                     </div>
                                                                 );
@@ -1417,7 +1511,7 @@ export default function VisaApplication() {
                                                                                 <span className="visa-requirement-placeholder-text">No file</span>
                                                                             </div>
                                                                         )}
-                                                                        <div style={{ marginTop: 8 }}>
+                                                                        <div style={{ marginTop: 2 }}>
                                                                             {!uploadedFile ? (
                                                                                 <Upload
                                                                                     beforeUpload={beforeUpload}
@@ -1467,7 +1561,7 @@ export default function VisaApplication() {
                                                     <div style={{ marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Uploaded Documents</h3>
                                                         {application.submittedDocuments && (
-                                                            <div style={{ display: 'flex', flexDirection: 'row', gap: 50, flexWrap: 'wrap' }}>
+                                                            <div style={{ display: 'flex', flexDirection: 'row', gap: 50, flexWrap: 'wrap', justifyContent: 'center' }}>
                                                                 {Object.entries(application.submittedDocuments).map(([key, value], entryIndex) => {
                                                                     if (!value) return null;
                                                                     const label = getRequirementLabel(key, entryIndex);
@@ -1483,57 +1577,36 @@ export default function VisaApplication() {
 
                                                                         return (
                                                                             <div key={identifier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                                                                <div style={{
-                                                                                    width: 250,
-                                                                                    height: 250,
-                                                                                    border: '1px solid #d9d9d9',
-                                                                                    borderRadius: 8,
-                                                                                    overflow: 'hidden',
-                                                                                    backgroundColor: '#f5f5f5',
-                                                                                    display: 'flex',
-                                                                                    alignItems: 'center',
-                                                                                    justifyContent: 'center'
-                                                                                }}>
-                                                                                    {isPdfFile ? (
+                                                                                {url ? (
+                                                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                                                                                         <Button
-                                                                                            type="dashed"
-                                                                                            icon={<FilePdfOutlined style={{ fontSize: '24px', color: '#ff4d4f' }} />}
-                                                                                            onClick={() => window.open(url, '_blank')}
-                                                                                            style={{
-                                                                                                height: 250, width: 250,
-                                                                                                display: 'flex', flexDirection: 'column',
-                                                                                                alignItems: 'center', justifyContent: 'center',
-                                                                                                borderRadius: 8,
-                                                                                                backgroundColor: '#fafafa'
-                                                                                            }}
+                                                                                            className="visa-requirement-file-preview-button"
+                                                                                            type="default"
+                                                                                            icon={isPdfFile ? <FilePdfOutlined /> : <EyeOutlined />}
+                                                                                            onClick={() => handlePreview(url)}
                                                                                         >
-                                                                                            <span style={{ fontSize: '12px', marginTop: 8, color: '#305797 !important' }}>View PDF</span>
+                                                                                            Preview
                                                                                         </Button>
-                                                                                    ) : (
-                                                                                        <Image
-                                                                                            src={url}
-                                                                                            alt={`${label}-${identifier}`}
-                                                                                            width="100%"
-                                                                                            height="100%"
-                                                                                            style={{ objectFit: 'cover' }}
-                                                                                        />
-                                                                                    )}
-                                                                                </div>
 
-                                                                                {/* DOWNLOAD BUTTON */}
-                                                                                <Button
-                                                                                    className='visaapplication-download-button'
-                                                                                    type="primary"
-                                                                                    icon={<DownloadOutlined />}
-                                                                                    size="small"
-                                                                                    block
-                                                                                    onClick={() => {
-                                                                                        const downloadUrl = getDownloadUrl(url);
-                                                                                        window.location.href = downloadUrl; // Directly triggers the attachment download
-                                                                                    }}
-                                                                                >
-                                                                                    Download {isPdfFile ? 'PDF' : 'Image'}
-                                                                                </Button>
+                                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#16a34a', fontWeight: 700, marginTop: 6 }}>
+                                                                                            <CheckCircleFilled style={{ color: '#16a34a', fontSize: 18 }} />
+                                                                                            <span>Valid Requirement</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <Button
+                                                                                        className='visaapplication-download-button'
+                                                                                        type="primary"
+                                                                                        icon={<DownloadOutlined />}
+                                                                                        style={{ width: '320px', maxWidth: '320px', height: '36px', margin: '0 auto' }}
+                                                                                        onClick={() => {
+                                                                                            const downloadUrl = getDownloadUrl(url);
+                                                                                            window.location.href = downloadUrl; // Directly triggers the attachment download
+                                                                                        }}
+                                                                                    >
+                                                                                        Download {isPdfFile ? 'PDF' : 'Image'}
+                                                                                    </Button>
+                                                                                )}
                                                                             </div>
                                                                         );
                                                                     };

@@ -5,7 +5,7 @@ const { upload } = require("../middleware/uploadFile")
 
 const uploadBufferToCloudinary = (file, folder) => new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-        { folder, resource_type: 'auto' },
+        { folder, resource_type: 'auto', type: 'private' },
         (error, result) => {
             if (error) return reject(error);
             resolve(result);
@@ -14,6 +14,33 @@ const uploadBufferToCloudinary = (file, folder) => new Promise((resolve, reject)
 
     streamifier.createReadStream(file.buffer).pipe(stream);
 });
+
+const getCloudinaryFormat = (uploadResult) => {
+    if (uploadResult?.format) {
+        return uploadResult.format;
+    }
+
+    const secureUrl = uploadResult?.secure_url || '';
+    const cleanUrl = secureUrl.split('?')[0].split('#')[0];
+    const lastSegment = cleanUrl.split('/').pop() || '';
+    const segments = lastSegment.split('.');
+
+    return segments.length > 1 ? segments.pop() : null;
+};
+
+const buildSignedCloudinaryUrl = (uploadResult) => {
+    const format = getCloudinaryFormat(uploadResult);
+
+    if (!uploadResult?.public_id || !format) {
+        return uploadResult?.secure_url || null;
+    }
+
+    return cloudinary.utils.private_download_url(uploadResult.public_id, format, {
+        resource_type: uploadResult.resource_type || 'image',
+        type: 'private',
+        expires_at: Math.floor(Date.now() / 1000) + 20,
+    });
+};
 
 
 const uploadReceiptProof = async (req, res) => {
@@ -25,11 +52,12 @@ const uploadReceiptProof = async (req, res) => {
     try {
         // Use upload_stream with a Promise to await the upload
         const uploadResult = await uploadBufferToCloudinary(req.file, 'manual-deposits');
+        const signedUrl = buildSignedCloudinaryUrl(uploadResult);
 
         // Only send response once, after upload completes
         return res.status(200).json({
             message: 'File uploaded successfully.',
-            url: uploadResult.secure_url,
+            url: signedUrl,
         });
     }
 
@@ -47,7 +75,7 @@ const uploadBookingDocuments = async (req, res) => {
 
     try {
         const uploadPromises = req.files.map(file =>
-            uploadBufferToCloudinary(file, 'booking-documents').then(result => result.secure_url)
+            uploadBufferToCloudinary(file, 'booking-documents').then(result => buildSignedCloudinaryUrl(result))
         );
 
         const uploadedUrls = await Promise.all(uploadPromises);
@@ -79,7 +107,7 @@ const uploadPackageImage = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => result.secure_url)
+            urls: uploadedResults.map(result => buildSignedCloudinaryUrl(result))
         });
     } catch (err) {
         console.error(err);
@@ -96,12 +124,13 @@ const uploadProfilePicture = async (req, res) => {
     try {
 
         const uploadResult = await uploadBufferToCloudinary(req.file, 'profile-pictures');
+        const signedUrl = buildSignedCloudinaryUrl(uploadResult);
 
 
         // Only send response once, after upload completes
         return res.status(200).json({
             message: 'File uploaded successfully.',
-            url: uploadResult.secure_url,
+            url: signedUrl,
         });
     }
 
@@ -126,7 +155,7 @@ const uploadPassportRequirements = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => result.secure_url)
+            urls: uploadedResults.map(result => buildSignedCloudinaryUrl(result))
         });
 
     } catch (err) {
@@ -151,7 +180,7 @@ const uploadVisaRequirements = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => result.secure_url)
+            urls: uploadedResults.map(result => buildSignedCloudinaryUrl(result))
         });
 
     } catch (err) {
@@ -169,12 +198,13 @@ const uploadCancellationProof = async (req, res) => {
     try {
 
         const uploadResult = await uploadBufferToCloudinary(req.file, 'cancellation-proofs');
+        const signedUrl = buildSignedCloudinaryUrl(uploadResult);
 
 
         // Only send response once, after upload completes
         return res.status(200).json({
             message: 'File uploaded successfully.',
-            url: uploadResult.secure_url,
+            url: signedUrl,
         });
     }
 

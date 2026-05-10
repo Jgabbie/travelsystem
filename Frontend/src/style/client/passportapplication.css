@@ -77,7 +77,7 @@
 
 .passportapplication-suggestedoptions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: 1fr;
     gap: 12px;
     margin-top: 12px;
 }
@@ -127,6 +127,18 @@
     border: 1px solid #cbd5e1;
     box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
     max-width: 100px;
+}
+
+.passportapplication-suggestedoption-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.passportapplication-suggestedoption-card:hover {
+    box-shadow: 0 4px 12px rgba(48, 87, 151, 0.1) !important;
 }
 
 
@@ -209,8 +221,8 @@
     background-color: #ffffff;
     color: #305797;
     border-radius: 8px;
-    width: 170px;
-    max-width: 170px;
+    width: 92%;
+    max-width: 300px;
     height: 38px;
     margin: 0 auto;
     border: 1px solid #d1dbe8;
@@ -224,7 +236,7 @@
     width: 320px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .passport-additional-doc-item .passportapplication-preview-button,
@@ -240,11 +252,17 @@
     font-weight: 600;
     background-color: #992A46;
     color: #fff;
-    border-radius: 10px;
-    width: 220px;
-    height: 30px;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 38px;
+    margin: 0 auto;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
 }
 
 .passportapplication-removefile-button:hover {
@@ -264,17 +282,17 @@
 .passport-document-container {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 12px;
     width: 320px;
 }
 
 .passport-document-container-group {
     display: flex;
     flex-direction: row;
-    gap: 24px;
+    gap: 50px;
     flex-wrap: wrap;
     align-items: flex-start;
-    justify-content: flex-start;
+    justify-content: center;
 }
 
 .passport-document-uploaded-section {
@@ -289,8 +307,9 @@
 .passport-document-uploaded-container {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 32px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .passport-requirement-placeholder {
@@ -324,9 +343,12 @@
     color: #305797;
     border-radius: 8px;
     width: 320px;
-    max-width: 320px;
-    height: 38px;
+    height: 36px;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
 }
 
 .passport-requirements-grid {
@@ -345,6 +367,8 @@
     flex-direction: column;
     gap: 6px;
     align-items: flex-start;
+    width: 100%;
+    max-width: 320px;
 }
 
 @media (max-width: 1024px) {

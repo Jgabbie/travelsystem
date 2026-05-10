@@ -282,7 +282,7 @@ export default function UserTransactions() {
                 footer={null}
                 className="transaction-view-modal"
                 width={720}
-                style={{ top: 35 }}
+                centered={true}
             >
                 {selectedTransaction && (
                     <div className="receipt-container" ref={receiptRef}>
@@ -381,7 +381,7 @@ export default function UserTransactions() {
                 onCancel={() => setIsProofModalOpen(false)}
                 className="transaction-view-modal"
                 width={720}
-                style={{ top: 150 }}
+                centered={true}
                 footer={
                     selectedTransaction && selectedTransaction.proofImage ? (
                         <Space>

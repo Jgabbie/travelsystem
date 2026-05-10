@@ -141,6 +141,7 @@ export default function UserApplications() {
                         <h2>My Applications</h2>
                         <p>Track your latest visa and passport applications.</p>
                     </div>
+
                     <Card className="userapplications-actions">
                         <div className="userapplications-actions-row">
                             <div className="userapplications-actions-filters">

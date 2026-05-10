@@ -18,7 +18,7 @@
 
 .user-quotation-header {
     margin-bottom: 24px;
-    background: #ffffff;
+    background: #305797;
     padding: 20px 24px;
     border-radius: 16px;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
@@ -29,18 +29,21 @@
     font-family: "Montserrat", sans-serif;
     font-size: 26px;
     font-weight: 600;
-    color: #1f2a44;
+    color: #ffffff;
 }
 
 .user-quotation-header p {
     font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #3c424f;
+    color: #ffffff;
 }
 
 .user-quotation-actions {
     width: 100%;
     margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .user-quotation-actions-row {
@@ -108,8 +111,8 @@
 }
 
 .user-quotation-table .ant-table-thead>tr>th {
-    background: #eef2f7 !important;
-    color: #305797 !important;
+    background: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-family: "Montserrat", sans-serif;
     font-weight: 600;

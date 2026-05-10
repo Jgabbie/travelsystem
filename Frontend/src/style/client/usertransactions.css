@@ -18,7 +18,7 @@
 
 .user-transactions-header {
     margin-bottom: 24px;
-    background: #ffffff;
+    background: #305797;
     padding: 20px 24px;
     border-radius: 16px;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
@@ -29,13 +29,13 @@
     font-family: "Montserrat", sans-serif;
     font-size: 26px;
     font-weight: 600;
-    color: #1f2a44;
+    color: #ffffff;
 }
 
 .user-transactions-header p {
     font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #3c424f;
+    color: #ffffff;
 }
 
 .user-transactions-table {
@@ -46,8 +46,8 @@
 }
 
 .user-transactions-table .ant-table-thead>tr>th {
-    background: #eef2f7 !important;
-    color: #305797 !important;
+    background: #305797 !important;
+    color: #ffffff !important;
     font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -67,6 +67,9 @@
 .user-transactions-actions {
     width: 100%;
     margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .user-transactions-actions-row {
@@ -142,13 +145,13 @@
 
 .user-transactions-viewproof-button {
     font-family: "Roboto", sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 140px;
-    height: 30px;
+    width: 115px;
+    height: 28px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }

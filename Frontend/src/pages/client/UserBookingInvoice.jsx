@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, notification, Steps, Form, Upload, Spin, Modal } from "antd";
-import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined, CheckCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined, CheckCircleOutlined, InfoCircleOutlined, CheckCircleFilled } from "@ant-design/icons";
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -1101,36 +1101,20 @@ export default function UserBookingInvoice() {
                             </Row>
 
                             {remainingBalance <= 0 && (
-                                <div style={{
-                                    marginTop: 20,
-                                    padding: 20,
-                                    borderRadius: 12,
-                                    background: 'linear-gradient(135deg, #f0f5ff 0%, #f0fdf4 100%)',
-                                    border: '2px solid #305797',
-                                    boxShadow: '0 4px 12px rgba(48, 87, 151, 0.1)',
-                                    position: 'relative',
-                                    overflow: 'hidden'
-                                }}>
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: -20,
-                                        right: -20,
-                                        width: 100,
-                                        height: 100,
-                                        background: 'radial-gradient(circle, rgba(48, 87, 151, 0.08) 0%, transparent 70%)',
-                                        borderRadius: '50%'
-                                    }} />
-                                    <Tag color="#305797" style={{ marginBottom: 16, fontWeight: 700, fontSize: '16px', padding: '14px 24px', display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'Montserrat', letterSpacing: '0.3px' }}>
-                                        <CheckCircleOutlined style={{ fontSize: '20px' }} />
-                                        Ready for Review
-                                    </Tag>
-                                    <div style={{ fontSize: 16, color: '#305797', fontWeight: 600, marginBottom: 12, position: 'relative', zIndex: 1, fontFamily: 'Montserrat' }}>
-                                        You may now submit a rating and review for the package <strong style={{ color: '#22863a' }}>{packageName}</strong>
+                                <div style={{ marginBottom: 24, marginTop: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8, fontFamily: 'Montserrat, sans-serif' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 26, lineHeight: 1 }} />
+                                        </span>
+                                        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#52c41a', lineHeight: 1.1 }}>YOU CAN NOW SUBMIT A REVIEW FOR THIS PACKAGE</h2>
                                     </div>
-                                    <div style={{ fontSize: 14, color: '#305797', fontWeight: 500, position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Montserrat' }}>
-                                        <InfoCircleOutlined style={{ fontSize: '18px' }} />
-                                        <span>M&amp;RC travel and tours will contact you 1-2 weeks before your travel date for reminders.</span>
-                                    </div>
+
+                                    <p style={{ margin: 0, fontSize: 14 }}>
+                                        M&RC Travel and Tours values your feedback!
+                                        Now that your booking is fully paid, we invite you to share your experience by submitting a review for the package you booked.
+                                        Your insights help us improve our services and assist fellow travelers in making informed decisions.
+                                        Thank you for choosing M&RC Travel and Tours, and we look forward to hearing about your journey with us!
+                                    </p>
                                 </div>
                             )}
 

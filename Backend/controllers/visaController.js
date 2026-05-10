@@ -53,6 +53,27 @@ const getVisaProcessStepsFromApplication = (application) => {
     return [];
 };
 
+const getVisaDocumentLabel = (application, documentKey) => {
+    if (!documentKey) return 'the selected document';
+
+    const visaRequirements = Array.isArray(application?.serviceId?.visaRequirements)
+        ? application.serviceId.visaRequirements
+        : [];
+
+    const matchedRequirement = visaRequirements.find((req, idx) => {
+        const key = req?.key || req?.req || req?.label || `Requirement ${idx + 1}`;
+        return String(key).toLowerCase() === String(documentKey).toLowerCase();
+    });
+
+    if (matchedRequirement?.req) return matchedRequirement.req;
+    if (matchedRequirement?.label) return matchedRequirement.label;
+
+    return String(documentKey)
+        .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 
 const VISA_TERMINAL_STATUSES = new Set(['Documents Submitted', 'Processing by Embassy', 'Embassy Approved', 'DFA Approved', 'Passport Released', 'Rejected']);
 
@@ -498,24 +519,48 @@ const updateVisaApplicationWithDocs = async (req, res) => {
 //REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------
 const requestVisaDocumentResubmission = async (req, res) => {
     const { id } = req.params;
+    const { documentKey, documentKeys } = req.body;
 
     try {
-        const application = await VisaModel.findById(id);
+        const application = await VisaModel.findById(id).populate('serviceId', 'visaName visaRequirements');
         if (!application) {
             return res.status(404).json({ message: "Visa application not found" });
         }
 
-        application.submittedDocuments = {};
+        const requestedKeys = Array.isArray(documentKeys) && documentKeys.length > 0
+            ? documentKeys
+            : documentKey
+                ? [documentKey]
+                : [];
+
+        const uniqueKeys = [...new Set(requestedKeys.filter((key) => typeof key === 'string' && key.trim()))];
+
+        if (uniqueKeys.length === 0) {
+            return res.status(400).json({ message: "Please select a valid document to resubmit." });
+        }
+
+        application.resubmissionTarget = uniqueKeys[uniqueKeys.length - 1];
+        application.resubmissionTargets = [...new Set([...(application.resubmissionTargets || []), ...uniqueKeys])];
+        application.submittedDocuments = application.submittedDocuments || {};
+
+        for (const key of uniqueKeys) {
+            application.set(`submittedDocuments.${key}`, null);
+        }
+
+        application.markModified('submittedDocuments');
+
         appendVisaStatusHistory(application, 'Payment Completed', application.userId)
         application.status = "Payment Completed";
         await application.save();
 
         const user = await UserModel.findById(application.userId);
         if (user) {
+            const requestedSummary = uniqueKeys.map((key) => getVisaDocumentLabel(application, key)).join(', ');
+
             await NotificationModel.create({
                 userId: user._id,
                 title: "Visa documents resubmission requested",
-                message: "Please resubmit your visa documents for your application.",
+                message: `Please resubmit your ${requestedSummary.toLowerCase()} for your application.`,
                 type: "visa",
                 link: "/user-applications",
                 metadata: { applicationId: application._id }
@@ -530,7 +575,7 @@ const requestVisaDocumentResubmission = async (req, res) => {
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             <h2 style="color:#305797; margin-bottom:10px;">Visa Documents Resubmission Requested</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.firstname || user.username}</b>,</p>
-                            <p style="color:#555; font-size:15px; line-height:1.6;">Our team needs you to resubmit your visa documents for your application.</p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">Our team needs you to resubmit your ${requestedSummary.toLowerCase()} for your application.</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">Please log in to your account to upload the updated documents.</p>
                             <a href="https://mrctravelandtours.com/home"
                                 style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
@@ -580,6 +625,8 @@ const getVisaApplications = async (_req, res) => {
             statusDeadlineDays: getVisaDeadlineInfo(app)?.deadlineDays ?? null,
             visaStatusTotalDaysMap: buildVisaStatusTotalDaysMapFromSteps(getVisaProcessStepsFromApplication(app)),
             statusHistory: app.statusHistory || [],
+            resubmissionTarget: app.resubmissionTarget || null,
+            resubmissionTargets: app.resubmissionTargets || [],
         }))
 
         res.status(200).json(applicationsPayload)
@@ -974,6 +1021,8 @@ const archiveVisaApplication = async (req, res) => {
             suggestedAppointmentSchedules: application.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: application.suggestedAppointmentScheduleChosen,
             submittedDocuments: application.submittedDocuments,
+            resubmissionTarget: application.resubmissionTarget,
+            resubmissionTargets: application.resubmissionTargets,
             passportReleaseOption: application.passportReleaseOption,
             deliveryAddress: application.deliveryAddress,
             deliveryFee: application.deliveryFee,
@@ -1033,6 +1082,8 @@ const restoreArchivedVisaApplication = async (req, res) => {
             suggestedAppointmentSchedules: archivedApplication.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: archivedApplication.suggestedAppointmentScheduleChosen,
             submittedDocuments: archivedApplication.submittedDocuments,
+            resubmissionTarget: archivedApplication.resubmissionTarget,
+            resubmissionTargets: archivedApplication.resubmissionTargets,
             passportReleaseOption: archivedApplication.passportReleaseOption,
             deliveryAddress: archivedApplication.deliveryAddress,
             deliveryFee: archivedApplication.deliveryFee,

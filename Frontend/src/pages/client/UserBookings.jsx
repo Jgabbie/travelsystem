@@ -369,7 +369,7 @@ export default function UserBookings() {
                             setPolicyModalOpen(false)
                         }}
                         footer={null}
-                        style={{ top: 140 }}
+                        centered={true}
                     >
                         <div className='modal-container' style={{ textAlign: 'center' }}>
                             <h1 className='modal-heading'>Continue Cancellation?</h1>
@@ -430,7 +430,7 @@ export default function UserBookings() {
                                 Confirm Cancellation
                             </div>
                         )}
-                        style={{ top: 55 }}
+                        centered={true}
                     >
                         <div className="modal-container" style={{ textAlign: 'center' }}>
                             <p className="modal-text">Are you sure you want to cancel this booking?</p>
@@ -546,7 +546,7 @@ export default function UserBookings() {
                         open={cancellationRequestedModalOpen}
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setCancellationRequestedModalOpen(false);
                         }}

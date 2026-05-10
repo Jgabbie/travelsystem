@@ -16,6 +16,8 @@ const ArchivedVisaApplicationSchema = new mongoose.Schema({
         time: { type: String, default: '' }
     },
     submittedDocuments: { type: Object, default: {} },
+    resubmissionTarget: { type: String, default: null },
+    resubmissionTargets: { type: [String], default: [] },
     passportReleaseOption: { type: String, default: '' },
     deliveryAddress: { type: String, default: '' },
     deliveryFee: { type: Number, default: 0 },

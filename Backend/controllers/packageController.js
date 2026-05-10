@@ -573,6 +573,7 @@ const getPopularPackages = async (req, res) => {
         ]);
 
         const packagePayload = popularPackages.map(entry => ({
+            packageItem: entry.package._id,
             packageCode: entry.package.packageCode,
             packageName: entry.package.packageName,
             packageDescription: entry.package.packageDescription,

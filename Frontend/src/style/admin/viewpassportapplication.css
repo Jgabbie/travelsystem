@@ -14,6 +14,86 @@
     margin-bottom: 40px;
 }
 
+
+/* TAGS */
+.viewpassportapplication-tag-blue-container {
+    margin-bottom: 16px;
+    border-left: 4px solid #305797;
+    background-color: rgba(48, 87, 151, 0.06);
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 8px;
+}
+
+.viewpassportapplication-tag-blue {
+    font-family: "Montserrat", sans-serif;
+    color: #305797;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.viewpassportapplication-tag-blue-container p {
+    font-family: "Montserrat", sans-serif;
+}
+
+
+.viewpassportapplication-tag-green-container {
+    margin-bottom: 16px;
+    border-left: 4px solid #52c41a;
+    background-color: rgba(82, 196, 26, 0.06);
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 8px;
+}
+
+.viewpassportapplication-tag-green {
+    font-family: "Montserrat", sans-serif;
+    background: '#f6ffed';
+    color: #52c41a;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.viewpassportapplication-tag-green-container p {
+    font-family: "Montserrat", sans-serif;
+}
+
+
+.viewpassportapplication-tag-yellow-container {
+    margin-bottom: 16px;
+    border-left: 4px solid #faad14;
+    background-color: rgba(250, 173, 20, 0.06);
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 8px;
+}
+
+.viewpassportapplication-tag-yellow {
+    font-family: "Montserrat", sans-serif;
+    background: '#f6ffed';
+    color: #faad14;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.viewpassportapplication-tag-yellow-container p {
+    font-family: "Montserrat", sans-serif;
+}
+
+
+
+
+
+
 .app-detail-shell {
     background: #ffffff;
     border-radius: 16px;

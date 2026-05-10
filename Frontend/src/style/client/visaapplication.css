@@ -77,6 +77,71 @@
     box-shadow: 0 6px 20px rgba(18, 24, 38, 0.06);
 }
 
+.visaapplication-suggestedoptions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.visaapplication-suggestedoptions-date {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    color: #1f2a44;
+    margin-top: 8px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+.visaapplication-suggestedoptions-time {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    margin-left: 8px;
+    color: #1f2a44;
+}
+
+.visaapplication-suggestedoptions-container {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    padding: 16px;
+    cursor: pointer;
+}
+
+.visaapplication-suggestedoptions-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.visaapplication-suggestedoptions-datepicker {
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
+    max-width: 100px;
+}
+
+.visaapplication-suggestedoptions-timepicker {
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
+    max-width: 100px;
+}
+
+.visaapplication-suggestedoption-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.visaapplication-suggestedoption-card:hover {
+    box-shadow: 0 4px 12px rgba(48, 87, 151, 0.1) !important;
+}
 
 .visaapplication-back-button {
     font-family: "Roboto", sans-serif;
@@ -98,7 +163,7 @@
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 180px;
+    width: 200px;
     height: 30px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
@@ -110,9 +175,11 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
-    width: 220px;
-    height: 30px;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 36px;
+    margin: 0 auto;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
 }
@@ -124,7 +191,7 @@
     background-color: #305797;
     color: #fff;
     border-radius: 10px;
-    width: 220px;
+    width: 140px;
     height: 40px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
@@ -136,11 +203,13 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
-    width: 250px;
-    height: 30px;
+    border-radius: 8px;
+    width: 92%;
+    max-width: 300px;
+    height: 38px;
+    margin: 0 auto;
     border: none !important;
-    box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    box-shadow: 0 6px 14px rgba(153, 42, 70, 0.18);
 }
 
 .visaapplication-submitdate-button {
@@ -163,11 +232,17 @@
     font-weight: 600;
     background-color: #992A46;
     color: #fff;
-    border-radius: 10px;
-    width: 220px;
-    height: 30px;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 38px;
+    margin: 0 auto;
     border: none !important;
     box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
 
 }
 
@@ -190,24 +265,36 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 68px;
+    justify-items: center;
+    align-items: start;
+    max-width: 100%;
 }
 
 .visa-requirement-card {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 320px;
 }
 
 .visa-requirement-placeholder {
-    width: 220px;
-    height: 220px;
-    border: 1px dashed #cbd5e1;
-    border-radius: 12px;
-    background: #f8fafc;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
+    color: #305797;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 36px;
+    margin: 0 auto;
+    border: 1px solid #d1dbe8;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    padding: 0 12px;
 }
 
 .visa-requirement-placeholder-text {
@@ -216,12 +303,17 @@
 }
 
 .visa-requirement-file-preview-button {
-    width: 220px;
-    height: 220px;
-    border: 1px dashed #94a3b8 !important;
-    border-radius: 12px;
-    background: transparent;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #ffffff;
     color: #305797;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 320px;
+    height: 36px;
+    margin: 0 auto;
+    border: 1px solid #d1dbe8;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -229,50 +321,73 @@
 
 @media (max-width: 1024px) {
     .visa-requirements-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 58px;
     }
 
-    .visa-requirement-placeholder,
+    .visa-requirement-placeholder {
+        width: 92%;
+        max-width: 280px;
+        height: 38px;
+    }
+
     .visa-requirement-file-preview-button {
-        width: 260px;
-        height: 260px;
+        width: 92%;
+        max-width: 280px;
+        height: 38px;
     }
 
     .visaapplication-upload-button,
-    .visaapplication-removefile-button {
-        width: 260px;
+    .visaapplication-removefile-button,
+    .visa-requirement-file-preview-button {
+        width: 92%;
+        max-width: 280px;
+        margin: 0 auto;
     }
 }
 
 @media (max-width: 768px) {
     .visa-requirements-grid {
         grid-template-columns: 1fr;
+        justify-items: center;
+        padding: 24px;
+        gap: 42px;
     }
 
-    .visa-requirement-placeholder,
+    .visa-requirement-placeholder {
+        width: 92%;
+        max-width: 280px;
+        height: 38px;
+    }
+
     .visa-requirement-file-preview-button {
-        width: 300px;
-        height: 300px;
+        width: 92%;
+        max-width: 280px;
+        height: 38px;
     }
 
     .visaapplication-upload-button,
-    .visaapplication-removefile-button {
-        width: 300px;
+    .visaapplication-removefile-button,
+    .visa-requirement-file-preview-button {
+        width: 92%;
+        max-width: 280px;
+        margin: 0 auto;
     }
 
 }
 
 @media (max-width: 480px) {
 
-    .visa-requirement-placeholder,
-    .visa-requirement-file-preview-button {
-        width: 320px;
-        height: 320px;
+    .visa-requirement-placeholder {
+        width: 92%;
+        max-width: 280px;
+        height: 38px;
     }
 
     .visaapplication-upload-button,
     .visaapplication-removefile-button {
-        width: 320px;
+        width: 92%;
+        max-width: 280px;
+        margin: 0 auto;
     }
 }
 

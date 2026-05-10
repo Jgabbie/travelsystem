@@ -26,6 +26,8 @@ const VisaApplicationSchema = new mongoose.Schema({
         time: { type: String, default: "" }
     },
     submittedDocuments: { type: Object },
+    resubmissionTarget: { type: String, default: null },
+    resubmissionTargets: [{ type: String }],
     passportReleaseOption: { type: String },
     deliveryAddress: { type: String },
     deliveryFee: { type: Number, default: 0 },

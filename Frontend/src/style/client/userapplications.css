@@ -18,7 +18,7 @@
 
 .userapplications-header {
     margin-bottom: 24px;
-    background: #ffffff;
+    background: #305797;
     border-radius: 16px;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     padding: 20px 24px;
@@ -29,13 +29,13 @@
     font-family: "Montserrat", sans-serif;
     font-size: 26px;
     font-weight: 600;
-    color: #1f2a44;
+    color: #ffffff;
 }
 
 .userapplications-header p {
     font-family: "Montserrat", sans-serif;
     margin: 0;
-    color: #3c424f;
+    color: #ffffff;
 }
 
 .userapplications-table {
@@ -46,8 +46,8 @@
 }
 
 .userapplications-table .ant-table-thead>tr>th {
-    background: #eef2f7 !important;
-    color: #305797 !important;
+    background: #305797 !important;
+    color: #ffffff !important;
     font-size: 13px;
     font-family: "Montserrat", sans-serif;
     font-weight: 600;
@@ -67,6 +67,9 @@
 .userapplications-actions {
     width: 100%;
     margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
 
 .userapplications-actions-row {

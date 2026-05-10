@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { Buffer } from 'buffer';
 import './index.css';
 import App from './App';
+import ScrollToTop from './components/ScrollToTop';
 import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
@@ -17,6 +18,7 @@ root.render(
   <React.StrictMode>
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <App />
       </BrowserRouter>
     </AuthProvider>

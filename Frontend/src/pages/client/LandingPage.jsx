@@ -221,7 +221,7 @@ export default function LandingPage() {
                 })
 
                 const packages = (response || []).map((pkg) => ({
-                    id: pkg._id,
+                    packageItem: pkg.packageItem,
                     packageCode: pkg.packageCode,
                     packageName: pkg.packageName,
                     packageDescription: pkg.packageDescription,
@@ -592,9 +592,9 @@ export default function LandingPage() {
                                                     {slide.map((pkg) => (
                                                         <Card
                                                             className='package-card popular-packages-card'
-                                                            key={pkg.packageCode}
+                                                            key={pkg.packageItem}
                                                             hoverable
-                                                            onClick={() => navigate('/package', { state: { packageCode: pkg.packageCode } })}
+                                                            onClick={() => navigate('/package', { state: { packageItem: pkg.packageItem } })}
                                                             cover={
                                                                 pkg.packageImages && pkg.packageImages.length > 0 ? (
                                                                     <img

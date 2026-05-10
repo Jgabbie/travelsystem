@@ -625,10 +625,11 @@ export default function QuotationBookingProcess() {
     const validateFile = (file) => {
         const isValidType =
             file.type === 'image/jpeg' ||
-            file.type === 'image/png'
+            file.type === 'image/png' ||
+            file.type === 'application/pdf'
 
         if (!isValidType) {
-            notification.error({ message: 'Only JPG or PNG', placement: 'topRight' });
+            notification.error({ message: 'Only JPG, PNG, or PDF', placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
 
@@ -1250,24 +1251,21 @@ export default function QuotationBookingProcess() {
                                         {!isDomesticPackage && (
                                             <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: '1fr 1fr' }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                                    <label className='upload-passport-label'>PASSPORT NUMBER</label>
+                                                    <label className='upload-passport-label'>PASSPORT NUMBER (Ex. P1234567A)</label>
                                                     <Input
                                                         style={{ height: 40, textAlign: 'center', fontSize: 16, letterSpacing: '2px' }}
-                                                        maxLength={8}
+                                                        maxLength={9}
                                                         size="small"
-                                                        placeholder="1234567A"
+                                                        placeholder="P1234567A"
                                                         value={(() => {
                                                             const val = String(form.getFieldValue(['travelers', index, 'passportNo']) || '');
-                                                            if (val.startsWith('P') && val.length >= 2) {
-                                                                const content = val.slice(1);
-                                                                return content.slice(0, 7) + (content.length > 7 ? content[7] : '');
-                                                            }
-                                                            return '';
+                                                            return val.slice(0, 9);
                                                         })()}
                                                         onChange={(event) => {
                                                             const raw = String(event.target.value || '');
-                                                            const digits = (raw.match(/\d/g) || []).join('').slice(0, 7);
-                                                            const lastChar = raw.replace(/\d/g, '').slice(-1);
+                                                            const cleaned = raw.replace(/^p/i, '');
+                                                            const digits = (cleaned.match(/\d/g) || []).join('').slice(0, 7);
+                                                            const lastChar = cleaned.replace(/\d/g, '').slice(-1);
                                                             const letter = /^[a-zA-Z]$/.test(lastChar) ? lastChar.toUpperCase() : '';
                                                             const passport = 'P' + digits + letter;
                                                             updateTravelerField(index, 'passportNo', passport);
@@ -1301,7 +1299,7 @@ export default function QuotationBookingProcess() {
                                                 fileList={fileLists[index]}
                                                 beforeUpload={validateFile}
                                                 onChange={(info) => handleChange(info, index)}
-                                                accept="image/jpeg,image/png"
+                                                accept="image/jpeg,image/png,.pdf"
                                                 maxCount={1}
                                                 showUploadList={false} // Hidden because you have a custom preview
                                             >
@@ -1315,7 +1313,7 @@ export default function QuotationBookingProcess() {
                                                 fileList={photoFileLists[index]}
                                                 beforeUpload={validateFile}
                                                 onChange={(info) => handlePhotoChange(info, index)}
-                                                accept="image/jpeg,image/png"
+                                                accept="image/jpeg,image/png,.pdf"
                                                 maxCount={1}
                                                 showUploadList={false}
                                             >
@@ -1349,7 +1347,7 @@ export default function QuotationBookingProcess() {
                                         {/* Hidden native inputs to trigger file pickers */}
                                         <input
                                             type="file"
-                                            accept="image/jpeg,image/png"
+                                            accept="image/jpeg,image/png,.pdf"
                                             style={{ display: 'none' }}
                                             ref={(el) => (passportFileInputs.current[index] = el)}
                                             onChange={(e) => {
@@ -1362,7 +1360,7 @@ export default function QuotationBookingProcess() {
 
                                         <input
                                             type="file"
-                                            accept="image/jpeg,image/png"
+                                            accept="image/jpeg,image/png,.pdf"
                                             style={{ display: 'none' }}
                                             ref={(el) => (photoFileInputs.current[index] = el)}
                                             onChange={(e) => {
@@ -1376,22 +1374,93 @@ export default function QuotationBookingProcess() {
                                 </div>
 
                                 <div className="upload-passport-right">
-                                    {previews[index] && (
-                                        <div className="passport-preview" style={{ marginTop: '10px' }}>
+                                    {previews[index] && fileLists[index]?.[0]?.type === 'application/pdf' ? (
+                                        <div
+                                            className="passport-preview"
+                                            style={{
+                                                marginTop: '10px',
+                                                width: isDomesticPackage ? 420 : undefined,
+                                                height: isDomesticPackage ? 260 : undefined,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#f0f0f0',
+                                                borderRadius: '4px',
+                                            }}
+                                        >
+                                            <a
+                                                href={previews[index]}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    padding: '10px 20px',
+                                                    backgroundColor: '#305797',
+                                                    color: 'white',
+                                                    borderRadius: '4px',
+                                                    textDecoration: 'none',
+                                                    cursor: 'pointer',
+                                                    fontWeight: '500',
+                                                }}
+                                            >
+                                                View PDF
+                                            </a>
+                                        </div>
+                                    ) : previews[index] ? (
+                                        <div
+                                            className="passport-preview"
+                                            style={{
+                                                marginTop: '10px',
+                                                width: isDomesticPackage ? 420 : undefined,
+                                                height: isDomesticPackage ? 260 : undefined,
+                                            }}
+                                        >
                                             <img
                                                 src={previews[index]}
                                                 alt={`Passport Preview ${index + 1}`}
                                                 className="passport-preview-image"
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                         </div>
-                                    )}
+                                    ) : null}
                                     {!previews[index] && (
-                                        <div className="passport-preview image-placeholder" aria-hidden="true">
+                                        <div
+                                            className={`passport-preview image-placeholder${isDomesticPackage ? ' landscape' : ''}`}
+                                            aria-hidden="true"
+                                            style={isDomesticPackage ? { width: 420, height: 260 } : undefined}
+                                        >
                                             <span>{travelDocumentLabel} preview</span>
                                         </div>
                                     )}
 
-                                    {photoPreviews[index] && (
+                                    {photoPreviews[index] && photoFileLists[index]?.[0]?.type === 'application/pdf' ? (
+                                        <div
+                                            className="photo-preview"
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#f0f0f0',
+                                                borderRadius: '4px',
+                                            }}
+                                        >
+                                            <a
+                                                href={photoPreviews[index]}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    padding: '10px 20px',
+                                                    backgroundColor: '#305797',
+                                                    color: 'white',
+                                                    borderRadius: '4px',
+                                                    textDecoration: 'none',
+                                                    cursor: 'pointer',
+                                                    fontWeight: '500',
+                                                }}
+                                            >
+                                                View PDF
+                                            </a>
+                                        </div>
+                                    ) : photoPreviews[index] ? (
                                         <div className="photo-preview">
                                             <img
                                                 src={photoPreviews[index]}
@@ -1399,7 +1468,7 @@ export default function QuotationBookingProcess() {
                                                 className="photo-preview-image"
                                             />
                                         </div>
-                                    )}
+                                    ) : null}
                                     {!photoPreviews[index] && (
                                         <div className="photo-preview image-placeholder" aria-hidden="true">
                                             <span>2x2 photo</span>
@@ -1420,7 +1489,7 @@ export default function QuotationBookingProcess() {
                                 ) : (
                                     <li>Upload a clear image of the passport bio page</li>
                                 )}
-                                <li>Accepted formats: JPG, PNG</li>
+                                <li>Accepted formats: JPG, PNG, PDF</li>
                                 <li>Maximum file size: 5MB</li>
                                 <li>Blurry or cropped images may delay booking confirmation</li>
                             </ul>
@@ -1433,7 +1502,7 @@ export default function QuotationBookingProcess() {
                                 <li>The photo must have a white plain background</li>
                                 <li>Face should be clearly visible and not covered by any accessories (e.g., glasses, hat)</li>
                                 <li>No Fullnames or any names printed in the photo</li>
-                                <li>Accepted formats: JPG, PNG</li>
+                                <li>Accepted formats: JPG, PNG, PDF</li>
                                 <li>Maximum file size: 5MB</li>
                                 <li>Blurry or cropped images may delay booking confirmation</li>
                             </ul>

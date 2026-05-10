@@ -60,7 +60,6 @@ export default function PassportApplication() {
     const [uploading, setUploading] = useState(false);
     const [birthCertList, setBirthCertList] = useState([]);
     const [govIdList, setGovIdList] = useState([]);
-    const [additionalDocsList, setAdditionalDocsList] = useState([]);
     const [applicationFormList, setApplicationFormList] = useState([]);
 
     const [method, setMethod] = useState(null); // default selected payment method  
@@ -125,7 +124,6 @@ export default function PassportApplication() {
                 return 'birthCert';
             case 'applicationForm':
             case 'govId':
-            case 'additionalDocs':
                 return target;
             default:
                 return null;
@@ -168,8 +166,6 @@ export default function PassportApplication() {
                 return Boolean(applicationFormList[0]);
             case 'govId':
                 return Boolean(govIdList[0]);
-            case 'additionalDocs':
-                return additionalDocsList.length > 0;
             default:
                 return false;
         }
@@ -258,17 +254,33 @@ export default function PassportApplication() {
             if (!app) return null;
             const history = app.statusHistory;
             if (Array.isArray(history) && history.length > 0) {
-                const last = history[history.length - 1];
-                // If backend populated changedBy, it may be an object with firstname/lastname
-                if (last.changedBy && typeof last.changedBy === 'object') {
-                    const first = last.changedBy.firstname || last.changedBy.username || '';
-                    const lastn = last.changedBy.lastname || '';
-                    const full = [first, lastn].map(s => (s || '').trim()).filter(Boolean).join(' ');
-                    if (full) return full;
+                const applicantId = String(app.userId?._id || app.userId || '');
+                const applicantName = String(app.username || '').trim().toLowerCase();
+
+                for (let i = history.length - 1; i >= 0; i -= 1) {
+                    const entry = history[i];
+                    const changedById = String(entry?.changedBy?._id || entry?.changedBy || '');
+                    const changedByName = String(entry?.changedByName || '').trim();
+
+                    if (applicantId && changedById && changedById === applicantId) {
+                        continue;
+                    }
+
+                    if (changedByName && applicantName && changedByName.toLowerCase() === applicantName) {
+                        continue;
+                    }
+
+                    if (entry?.changedBy && typeof entry.changedBy === 'object') {
+                        const first = entry.changedBy.firstname || entry.changedBy.username || '';
+                        const lastn = entry.changedBy.lastname || '';
+                        const full = [first, lastn].map(s => (s || '').trim()).filter(Boolean).join(' ');
+                        if (full) return full;
+                    }
+
+                    if (changedByName) return changedByName;
+                    if (entry?.changedBy && typeof entry.changedBy === 'string') return entry.changedBy;
                 }
-                // Fallback to recorded changedByName or plain changedBy (string)
-                if (last.changedByName) return last.changedByName;
-                if (last.changedBy && typeof last.changedBy === 'string') return last.changedBy;
+
                 return null;
             }
             return null;
@@ -533,8 +545,6 @@ export default function PassportApplication() {
                 return applicationFormList[0] || submittedDocuments.applicationForm || application?.applicationForm || null;
             case 'govId':
                 return govIdList[0] || submittedDocuments.govId || application?.govId || null;
-            case 'additionalDocs':
-                return additionalDocsList[0] || (Array.isArray(submittedDocuments.additionalDocs) && submittedDocuments.additionalDocs[0]) || (Array.isArray(application?.additionalDocs) && application.additionalDocs[0]) || null;
             default:
                 return null;
         }
@@ -604,12 +614,7 @@ export default function PassportApplication() {
                 appendedOrder.push('govId');
             }
 
-            if (isRequestedResubmissionTarget('additionalDocs')) {
-                additionalDocsList.forEach(file => {
-                    formData.append("files", file.originFileObj);
-                    appendedOrder.push('additionalDocs');
-                });
-            }
+
 
             if (!formData.has("files")) {
                 notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
@@ -629,12 +634,7 @@ export default function PassportApplication() {
             appendedOrder.forEach((key) => {
                 const url = uploaded[urlIndex];
                 if (!url) return;
-                if (key === 'additionalDocs') {
-                    if (!payload.additionalDocs) payload.additionalDocs = [];
-                    payload.additionalDocs.push(url);
-                } else {
-                    payload[key] = url;
-                }
+                payload[key] = url;
                 urlIndex += 1;
             });
 
@@ -644,7 +644,6 @@ export default function PassportApplication() {
             setBirthCertList([]);
             setApplicationFormList([]);
             setGovIdList([]);
-            setAdditionalDocsList([]);
 
             const refreshed = await apiFetch.get(`/passport/applications/${id}`);
             setApplication(refreshed);
@@ -777,9 +776,9 @@ export default function PassportApplication() {
                                         <div style={{ fontSize: 13 }}><strong>Action deadline:</strong> {statusDeadlineDate.format('MMM D, YYYY')} ({statusDeadlineDate.diff(dayjs(), 'day')} days left)</div>
                                     )}
                                     {countdown && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: 6 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 6 }}>
                                             <div style={{ fontSize: 12, color: '#305797', fontWeight: 700, marginBottom: 6 }}>Time left</div>
-                                            <div style={countdownStyle}>{countdown}</div>
+                                            <div style={{ ...countdownStyle, textAlign: 'left' }}>{countdown}</div>
                                         </div>
                                     )}
                                 </div>
@@ -903,7 +902,7 @@ export default function PassportApplication() {
 
 
                                         {application?.status && application.status?.toLowerCase() === 'application submitted' && application?.suggestedAppointmentScheduleChosen?.date === "" && application?.suggestedAppointmentScheduleChosen?.time === "" && (
-                                            <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
+                                            <div style={{ marginBottom: 32, marginTop: 32, padding: 4 }}>
                                                 <h3 style={{ marginTop: 0 }}>Suggested Appointment Options</h3>
                                                 {Array.isArray(application.suggestedAppointmentSchedules) && application.suggestedAppointmentSchedules.length > 0 ? (
                                                     <>
@@ -936,13 +935,16 @@ export default function PassportApplication() {
                                                             <div
                                                                 onClick={() => setSelectedSuggestedIndex('others')}
                                                                 style={{
+                                                                    padding: 16,
+                                                                    borderRadius: 16,
                                                                     border: selectedSuggestedIndex === 'others' ? '2px solid #305797' : '1px solid #f0f0f0',
                                                                     boxShadow: selectedSuggestedIndex === 'others' ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
+
                                                                 }}
                                                             >
                                                                 <Tag color="orange">Others</Tag>
-                                                                <div className='passportapplication-suggestedoptions-group'>
-                                                                    <Space style={{ marginTop: 10 }} orientation="vertical">
+                                                                <div className='passportapplication-suggestedoptions-group' style={{ marginTop: 8 }}>
+                                                                    <Space orientation="vertical" style={{ width: '100%' }}>
                                                                         <DatePicker
                                                                             className='passportapplication-suggestedoptions-datepicker'
                                                                             disabledDate={disableDates}
@@ -1177,7 +1179,7 @@ export default function PassportApplication() {
                                                                     </div>
                                                                 )
                                                             ) : (
-                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
+                                                                <div style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
                                                                     <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
                                                                     Valid Requirement
                                                                 </div>
@@ -1238,7 +1240,7 @@ export default function PassportApplication() {
                                                                     </div>
                                                                 )
                                                             ) : (
-                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
+                                                                <div style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
                                                                     <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
                                                                     Valid Requirement
                                                                 </div>
@@ -1248,125 +1250,68 @@ export default function PassportApplication() {
 
                                                     <div className="passport-requirement-card">
                                                         <b style={{ fontSize: 12 }}>One Government-issued ID</b>
-                                                        {getRequirementPreviewFile('govId') ? (
-                                                            (() => {
-                                                                const file = getRequirementPreviewFile('govId');
-                                                                return (
-                                                                    <Button
-                                                                        className='passport-requirement-file-preview-button'
-                                                                        icon={<EyeOutlined />}
-                                                                        onClick={() => handlePreview(file)}
-                                                                        type="default"
-                                                                    >
-                                                                        Preview
-                                                                    </Button>
-                                                                );
-                                                            })()
-                                                        ) : (
-                                                            <div className="passport-requirement-placeholder">
-                                                                <span className="passport-requirement-placeholder-text">No file</span>
-                                                            </div>
-                                                        )}
-                                                        <div style={{ marginTop: 8 }}>
-                                                            {isRequestedResubmissionTarget('govId') ? (
-                                                                govIdList.length === 0 ? (
-                                                                    <Upload
-                                                                        name="govId"
-                                                                        fileList={govIdList}
-                                                                        onPreview={handlePreview}
-                                                                        onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
-                                                                        showUploadList={false}
-                                                                        accept="image/*,application/pdf"
-                                                                        maxCount={1}
-                                                                        disabled={uploading}
-                                                                        beforeUpload={() => false}
-                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    >
-                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                            Upload Requirement
-                                                                        </Button>
-                                                                    </Upload>
-                                                                ) : (
-                                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                                                            {getRequirementPreviewFile('govId') ? (
+                                                                (() => {
+                                                                    const file = getRequirementPreviewFile('govId');
+                                                                    return (
                                                                         <Button
-                                                                            className='passportapplication-removefile-button'
-                                                                            icon={<DeleteOutlined />}
-                                                                            type="primary"
-                                                                            onClick={() => setGovIdList([])}
+                                                                            className='passport-requirement-file-preview-button'
+                                                                            icon={<EyeOutlined />}
+                                                                            onClick={() => handlePreview(file)}
+                                                                            type="default"
                                                                         >
-                                                                            Remove
+                                                                            Preview
                                                                         </Button>
-                                                                    </div>
-                                                                )
+                                                                    );
+                                                                })()
                                                             ) : (
-                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
-                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
-                                                                    Valid Requirement
+                                                                <div className="passport-requirement-placeholder">
+                                                                    <span className="passport-requirement-placeholder-text">No file</span>
                                                                 </div>
                                                             )}
+                                                            <div style={{ marginTop: 8 }}>
+                                                                {isRequestedResubmissionTarget('govId') ? (
+                                                                    govIdList.length === 0 ? (
+                                                                        <Upload
+                                                                            name="govId"
+                                                                            fileList={govIdList}
+                                                                            onPreview={handlePreview}
+                                                                            onChange={({ fileList: newList }) => setGovIdList(withPreview(newList))}
+                                                                            showUploadList={false}
+                                                                            accept="image/*,application/pdf"
+                                                                            maxCount={1}
+                                                                            disabled={uploading}
+                                                                            beforeUpload={() => false}
+                                                                            customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                        >
+                                                                            <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
+                                                                                Upload Requirement
+                                                                            </Button>
+                                                                        </Upload>
+                                                                    ) : (
+                                                                        <div style={{ display: 'flex', gap: 8 }}>
+                                                                            <Button
+                                                                                className='passportapplication-removefile-button'
+                                                                                icon={<DeleteOutlined />}
+                                                                                type="primary"
+                                                                                onClick={() => setGovIdList([])}
+                                                                            >
+                                                                                Remove
+                                                                            </Button>
+                                                                        </div>
+                                                                    )
+                                                                ) : (
+                                                                    <div style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
+                                                                        <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                        Valid Requirement
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="passport-requirement-card">
-                                                        <b style={{ fontSize: 12 }}>Additional Documents (optional)</b>
-                                                        {getRequirementPreviewFile('additionalDocs') ? (
-                                                            (() => {
-                                                                const file = getRequirementPreviewFile('additionalDocs');
-                                                                return (
-                                                                    <Button
-                                                                        className='passport-requirement-file-preview-button'
-                                                                        icon={<EyeOutlined />}
-                                                                        type="default"
-                                                                        onClick={() => handlePreview(file)}
-                                                                    >
-                                                                        Preview
-                                                                    </Button>
-                                                                );
-                                                            })()
-                                                        ) : (
-                                                            <div className="passport-requirement-placeholder">
-                                                                <span className="passport-requirement-placeholder-text">No file</span>
-                                                            </div>
-                                                        )}
-                                                        <div style={{ marginTop: 8 }}>
-                                                            {isRequestedResubmissionTarget('additionalDocs') ? (
-                                                                additionalDocsList.length === 0 ? (
-                                                                    <Upload
-                                                                        name="additionalDocs"
-                                                                        fileList={additionalDocsList}
-                                                                        onPreview={handlePreview}
-                                                                        onChange={({ fileList: newList }) => setAdditionalDocsList(withPreview(newList))}
-                                                                        showUploadList={false}
-                                                                        accept="image/*,application/pdf"
-                                                                        maxCount={1}
-                                                                        disabled={uploading}
-                                                                        beforeUpload={() => false}
-                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
-                                                                    >
-                                                                        <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
-                                                                            Upload Requirement
-                                                                        </Button>
-                                                                    </Upload>
-                                                                ) : (
-                                                                    <div style={{ display: 'flex', gap: 8 }}>
-                                                                        <Button
-                                                                            className='passportapplication-removefile-button'
-                                                                            icon={<DeleteOutlined />}
-                                                                            type="primary"
-                                                                            onClick={() => setAdditionalDocsList([])}
-                                                                        >
-                                                                            Remove
-                                                                        </Button>
-                                                                    </div>
-                                                                )
-                                                            ) : (
-                                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
-                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
-                                                                    Valid Requirement
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
+
                                                 </div>
 
                                                 <Button style={{ marginTop: 20 }} type="primary" className="passportapplication-submit-button" onClick={
@@ -1390,8 +1335,7 @@ export default function PassportApplication() {
                                                             const docs = application.submittedDocuments || {
                                                                 birthCertificate: application.birthCertificate,
                                                                 applicationForm: application.applicationForm,
-                                                                govId: application.govId,
-                                                                additionalDocs: application.additionalDocs
+                                                                govId: application.govId
                                                             };
 
                                                             return (
@@ -1417,20 +1361,7 @@ export default function PassportApplication() {
                                                                         </div>
                                                                     )}
 
-                                                                    {Array.isArray(docs.additionalDocs) && docs.additionalDocs.length > 0 && (
-                                                                        <div className="passport-document-container">
-                                                                            <b style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>Additional Documents:</b>
-                                                                            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                                                                                <Image.PreviewGroup>
-                                                                                    {docs.additionalDocs.map((url, idx) => (
-                                                                                        <div key={`extra-${idx}`} className="passport-additional-doc-item">
-                                                                                            {renderReadOnlyFile(url, `Additional Doc ${idx + 1}`)}
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </Image.PreviewGroup>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
+
                                                                 </div>
                                                             );
                                                         })()}
@@ -1497,7 +1428,7 @@ export default function PassportApplication() {
                                                                             {step.title.charAt(0).toUpperCase() + step.title.slice(1)}
                                                                         </span>
                                                                         {currentStep === idx && countdown && (
-                                                                            <span style={countdownStyle}>{countdown}</span>
+                                                                            <span style={{ ...countdownStyle, textAlign: 'left' }}>{countdown}</span>
                                                                         )}
                                                                     </div>
                                                                 ),

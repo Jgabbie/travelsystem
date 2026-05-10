@@ -850,17 +850,14 @@ export default function UploadBookingInvoice() {
                                                         <div style={{ marginBottom: 16 }}>
                                                             <AntText strong>Passport / Valid ID:</AntText>
                                                             <div style={{ marginTop: 8 }}>
-                                                                <img
-                                                                    src={traveler.passportFile}
-                                                                    alt={`Traveler ${index + 1} Passport`}
-                                                                    style={{
-                                                                        width: 350,
-                                                                        height: 340,
-                                                                        objectFit: "cover",
-                                                                        borderRadius: 8,
-                                                                        border: "1px solid #ccc"
-                                                                    }}
-                                                                />
+                                                                <a
+                                                                    href={traveler.passportFile}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                >
+                                                                    View Passport
+                                                                </a>
                                                             </div>
                                                         </div>
                                                     )}
@@ -869,17 +866,14 @@ export default function UploadBookingInvoice() {
                                                         <div style={{ marginBottom: 16 }}>
                                                             <AntText strong>2x2 Photo:</AntText>
                                                             <div style={{ marginTop: 8 }}>
-                                                                <img
-                                                                    src={traveler.photoFile}
-                                                                    alt={`Traveler ${index + 1} Photo`}
-                                                                    style={{
-                                                                        width: 200,
-                                                                        height: 200,
-                                                                        objectFit: "cover",
-                                                                        borderRadius: 8,
-                                                                        border: "1px solid #ccc"
-                                                                    }}
-                                                                />
+                                                                <a
+                                                                    href={traveler.photoFile}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                >
+                                                                    View 2x2 Photo
+                                                                </a>
                                                             </div>
                                                         </div>
                                                     )}
@@ -893,20 +887,18 @@ export default function UploadBookingInvoice() {
                                             {passportFiles.length > 0 && (
                                                 <div style={{ marginBottom: 16 }}>
                                                     <AntText strong>Passport Files:</AntText>
-                                                    <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+                                                    <div style={{ display: "flex", flexDirection: 'column', gap: 8, marginTop: 8 }}>
                                                         {passportFiles.map((url, index) => (
-                                                            <img
-                                                                key={index}
-                                                                src={url}
-                                                                alt={`Traveler Passport ${index + 1}`}
-                                                                style={{
-                                                                    width: 350,
-                                                                    height: 340,
-                                                                    objectFit: "cover",
-                                                                    borderRadius: 8,
-                                                                    border: "1px solid #ccc"
-                                                                }}
-                                                            />
+                                                            <div key={index}>
+                                                                <a
+                                                                    href={url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                >
+                                                                    View Passport {index + 1}
+                                                                </a>
+                                                            </div>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -915,20 +907,18 @@ export default function UploadBookingInvoice() {
                                             {photoFiles.length > 0 && (
                                                 <div style={{ marginBottom: 16 }}>
                                                     <AntText strong>Photo Files:</AntText>
-                                                    <div style={{ display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" }}>
+                                                    <div style={{ display: "flex", flexDirection: 'column', gap: 8, marginTop: 8 }}>
                                                         {photoFiles.map((url, index) => (
-                                                            <img
-                                                                key={index}
-                                                                src={url}
-                                                                alt={`Traveler Photo ${index + 1}`}
-                                                                style={{
-                                                                    width: 200,
-                                                                    height: 200,
-                                                                    objectFit: "cover",
-                                                                    borderRadius: 8,
-                                                                    border: "1px solid #ccc"
-                                                                }}
-                                                            />
+                                                            <div key={index}>
+                                                                <a
+                                                                    href={url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                >
+                                                                    View Photo {index + 1}
+                                                                </a>
+                                                            </div>
                                                         ))}
                                                     </div>
                                                 </div>
