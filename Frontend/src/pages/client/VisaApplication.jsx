@@ -1001,6 +1001,7 @@ export default function VisaApplication() {
                                                                             <span className="bank-name">BDO</span>
                                                                             <span className="account-number">006838032692</span>
                                                                             <span className="account-holder">M&RC TRAVEL AND TOURS</span>
+                                                                            <span style={{ marginTop: 8, textAlign: 'center', color: '#6b7280', fontSize: 12 }}>No QR Code</span>
                                                                         </div>
                                                                         <div className="bank-item">
                                                                             <span className="bank-name">GCASH</span>
