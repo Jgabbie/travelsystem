@@ -2010,7 +2010,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
         //visa penalty fee
         if (metadata.applicationId && metadata.applicationType === "Visa Penalty Fee") {
-            console.log('🛂 Visa payment detected');
+            console.log('Visa penalty fee payment detected');
             const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
@@ -2118,7 +2118,7 @@ const handlePayMongoWebhook = async (req, res) => {
 
         //penalty fee passport
         if (metadata.applicationId && metadata.applicationType === "Passport Penalty Fee") {
-            console.log('🛂 Passport payment detected');
+            console.log('Passport penalty fee payment detected');
             const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
