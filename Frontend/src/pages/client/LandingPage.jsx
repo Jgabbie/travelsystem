@@ -666,7 +666,7 @@ export default function LandingPage() {
                     <div className='for-you-section'>
                         <h1 className='for-you-text'>FOR YOU</h1>
 
-                        {recommendationMethod == collaborative ? (
+                        {recommendationMethod === 'collaborative' ? (
                             <p className='for-you-method'>These are the recommended packages based on the packages you have rated.</p>
                         ) : (
                             <p className='for-you-method'>These are the recommended packages based on your preferences.</p>
