@@ -105,8 +105,17 @@ const signupUser = async (req, res) => {
 
     try {
 
+        const cleanedPhoneNum = phone.replace(/\D/g, ''); //removed spaces
+
         const hashedPassword = await bcrypt.hash(password, 10)
-        const user = await UserModel.create({ username, firstname, lastname, hashedPassword, email, phone })
+        const user = await UserModel.create({
+            username,
+            firstname,
+            lastname,
+            hashedPassword,
+            email,
+            phone: cleanedPhoneNum
+        })
 
         await createVerificationLink(email, user.emailVerifyOtp)
 
@@ -335,7 +344,7 @@ const refreshToken = async (req, res) => {
 
 //CHECK DUPLICATE USERNAME OR EMAIL
 const checkDups = async (req, res) => {
-    const { username, email } = req.body
+    const { username, email, phone } = req.body
     await connectToDatabase();
     try {
         if (username) {
@@ -352,8 +361,15 @@ const checkDups = async (req, res) => {
             }
         }
 
-        res.status(200).json({ message: "Available" })
+        if (phone) {
+            const cleanedPhoneNum = phone.replace(/\D/g, ''); //removed spaces
 
+            const phoneExists = await UserModel.findOne({ phone: cleanedPhoneNum })
+            if (phoneExists) {
+                return res.status(409).json({ message: "Phone number already registered" })
+            }
+        }
+        res.status(200).json({ message: "Available" })
     } catch (e) {
         res.status(500).json({ message: "CheckDups Function failed " + e.message })
     }

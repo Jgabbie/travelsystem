@@ -65,18 +65,23 @@ export default function PackageManagement() {
     setIsSlotsModalOpen(true);
   };
 
+
+  //DISCOUNT ----------------------------------------------------------
   const showDiscountModal = (pkg) => {
     setDiscountPackage(pkg);
     setDiscountPercent(Number(pkg.packageDiscountPercent) || 0);
     setIsDiscountModalOpen(true);
   };
 
+
+  //FORMAT DATE ----------------------------------------------------------
   const formatDate = (date) => {
     return date && dayjs(date).isValid()
       ? dayjs(date).format("MMM D, YYYY")
       : "Invalid Date";
   };
 
+  //SLOTS AND DISCOUNT MODAL ACTIONS ----------------------------------------------------------
   const handleSlotsCancel = () => {
     setIsSlotsModalOpen(false);
     setSlotsPackage(null);
@@ -89,6 +94,8 @@ export default function PackageManagement() {
     setDiscountPercent(0);
   };
 
+
+  //SAVE THE SLOTS
   const handleSlotsSave = async () => {
     try {
 
@@ -124,6 +131,8 @@ export default function PackageManagement() {
     handleSlotsCancel();
   };
 
+
+  //SAVE THE DISCOUNT
   const handleDiscountSave = async () => {
     if (!discountPackage) return;
 
@@ -172,6 +181,8 @@ export default function PackageManagement() {
 
   }
 
+
+  //RESTORE PACKAGE
   const handleRestore = async (key) => {
 
     try {
@@ -183,6 +194,7 @@ export default function PackageManagement() {
       notification.error({ message: error?.response?.data?.message || 'Package restore failed', placement: 'topRight' });
     }
   }
+
 
   // GET PACKAGES ----------------------------------------------------------
   const getPackages = async () => {
@@ -207,6 +219,8 @@ export default function PackageManagement() {
     }
   }
 
+
+  //GET ARCHIVED PACKAGES
   const getArchivedPackages = async () => {
     setLoading(true);
     try {
@@ -226,6 +240,7 @@ export default function PackageManagement() {
       setLoading(false);
     }
   }
+
 
   //GET TOTAL SLOTS FOR A PACKAGE ----------------------------------------------------------
   const availableSlots = (pkg) => {
@@ -261,7 +276,6 @@ export default function PackageManagement() {
   });
 
   const totalPackages = currentPackages.length;
-
 
 
   return (
@@ -384,7 +398,6 @@ export default function PackageManagement() {
         </Card >
 
 
-
         {/* PACKAGE LIST */}
         <Spin spinning={loading}>
           {filteredPackages.length > 0 ? (
@@ -490,13 +503,7 @@ export default function PackageManagement() {
                       </Space>
                     </div>
                   </div>
-
-
-
-
                 </div>
-
-
               </Card>
             ))
           ) : (

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 
 :root {
     --pref-ink: #1f2a44;
@@ -16,7 +16,7 @@
     background: radial-gradient(circle at top, rgba(48, 87, 151, 0.12), transparent 55%),
         linear-gradient(135deg, #f7faff 0%, var(--pref-mist) 55%, var(--pref-cream) 100%);
     color: var(--pref-ink);
-    font-family: "Manrope", sans-serif;
+    font-family: "Montserrat", sans-serif;
 }
 
 .preference-hero {
@@ -43,9 +43,10 @@
 }
 
 .preference-title {
-    font-family: "Fraunces", serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 36px;
     margin: 0;
+    font-weight: 700;
 }
 
 .preference-subtitle {
@@ -124,7 +125,8 @@
 .preference-question h2 {
     margin: 0 0 6px;
     font-size: 20px;
-    font-family: "Fraunces", serif;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
 }
 
 .preference-question p {

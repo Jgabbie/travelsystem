@@ -62,11 +62,22 @@ const updateUserData = async (req, res) => {
             return res.status(409).json({ message: "User not found" })
         }
 
-        // Check if email is already taken by another user
-        if (email !== user.email) {
-            const existingUser = await UserModel.findOne({ email })
+        // Normalize incoming phone once and check duplicates while excluding current user
+        const cleanedPhoneNum = phone.replace(/\D/g, ''); // removed spaces
+
+        // Check if email is already taken by another user (exclude current user)
+        if (email && email !== user.email) {
+            const existingUser = await UserModel.findOne({ email, _id: { $ne: userId } }) //$ne means "not equal"
             if (existingUser) {
                 return res.status(400).json({ message: "Email already in use" })
+            }
+        }
+
+        // Check if phone is already taken by another user (exclude current user)
+        if (cleanedPhoneNum && cleanedPhoneNum !== user.phone) {
+            const existingUser = await UserModel.findOne({ phone: cleanedPhoneNum, _id: { $ne: userId } })
+            if (existingUser) {
+                return res.status(400).json({ message: "Phone number already in use" })
             }
         }
 
@@ -110,10 +121,13 @@ const updateUserData = async (req, res) => {
             changes.push('nationality')
         }
 
+
+        const cleanedPhone = phone.replace(/\D/g, ''); //removed spaces
+
         user.firstname = firstname
         user.lastname = lastname
         user.email = email
-        user.phone = phone
+        user.phone = cleanedPhone
         if (typeof profileImage === 'string') {
             user.profileImage = profileImage
         }
@@ -138,8 +152,6 @@ const updateUserData = async (req, res) => {
                 userId,
                 {
                     "Profile Updated": `Role: ${user.role} | Username: ${user.username} | Email: ${user.email}`,
-
-
                 }
             )
         }
@@ -169,6 +181,9 @@ const updateUserData = async (req, res) => {
     }
 }
 
+
+
+
 const getUsers = (req, res) => {
     UserModel.find()
         .then(users => res.json(users))
@@ -177,6 +192,9 @@ const getUsers = (req, res) => {
             res.status(500).json({ error: err.message })
         });
 };
+
+
+
 
 const getArchivedUsers = (req, res) => {
     ArchivedUserModel.find()
@@ -187,6 +205,7 @@ const getArchivedUsers = (req, res) => {
             res.status(500).json({ error: err.message })
         });
 };
+
 
 
 const createUsers = async (req, res) => {

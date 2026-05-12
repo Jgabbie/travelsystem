@@ -1134,6 +1134,14 @@
     align-self: flex-start;
 }
 
+
+.next-steps-highlight {
+    color: #305797;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+
 @media (max-width: 900px) {
     .contactus-section-right-card {
         flex-direction: column;

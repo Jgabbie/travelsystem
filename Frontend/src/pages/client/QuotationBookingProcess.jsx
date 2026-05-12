@@ -24,6 +24,8 @@ const toBase64 = (file) =>
         reader.onerror = error => reject(error);
     });
 
+
+//COMPUTE AGE
 const computeAge = (birthDate) => {
     if (!birthDate || !dayjs(birthDate).isValid()) return ''
     const today = dayjs()
@@ -35,6 +37,8 @@ const computeAge = (birthDate) => {
     return age < 0 ? '' : age
 }
 
+
+//GET AGE CATEGORY BASED ON AGE
 const getAgeCategoryFromAge = (age) => {
     const numericAge = Number(age)
     if (!Number.isFinite(numericAge) || numericAge < 0) return ''
@@ -43,13 +47,19 @@ const getAgeCategoryFromAge = (age) => {
     return 'ADULT'
 }
 
+
+//CHECK IF TRAVELER TYPE IS MINOR (CHILD OR INFANT)
 const isMinorTravelerType = (travelerType) => {
     const normalized = String(travelerType || '').toLowerCase()
     return normalized === 'child' || normalized === 'infant'
 }
 
+
+//GET TRAVELER CATEGORY IN LOWERCASE FOR COMPARISON
 const getTravelerCategory = (travelerType) => String(travelerType || '').toLowerCase()
 
+
+//GET BIRTHDAY BOUNDS FOR DATE PICKER BASED ON TRAVELER TYPE
 const getBirthdayBounds = (travelerType) => {
     const today = dayjs().startOf('day')
     const category = getTravelerCategory(travelerType)
@@ -80,6 +90,8 @@ const getBirthdayBounds = (travelerType) => {
     }
 }
 
+
+//CHECK IF SELECTED DATE IS VALID FOR THE TRAVELER TYPE
 const isDateAllowedForTraveler = (date, travelerType) => {
     if (!date || !dayjs(date).isValid()) return false
 
@@ -93,6 +105,8 @@ const isDateAllowedForTraveler = (date, travelerType) => {
     return true
 }
 
+
+//GET DISABLED DATES FOR DATE PICKER BASED ON TRAVELER TYPE
 const getBirthdayDisabledDate = (travelerType) => {
     const { minDate, maxDate } = getBirthdayBounds(travelerType)
 
@@ -199,17 +213,21 @@ export default function QuotationBookingProcess() {
     ]
     const packageName = data.packageName || 'Tour Package'
     const packageType = data.packageType || 'fixed'
-    const isDomesticPackage = String(packageType || '').toLowerCase().includes('domestic')
+    const isDomesticPackage = String(packageType).toLowerCase().includes('domestic')
     const travelDocumentLabel = isDomesticPackage ? 'Valid ID' : 'Passport'
     const travelDocumentShortLabel = isDomesticPackage ? 'valid ID' : 'passport'
     const bookingType = totalTravelersCount === 1 ? 'Solo Booking' : 'Group Booking'
     const images = data.images || []
+    const visaRequired = data.visaRequired || false
+
 
     //INCLUSIONS, EXCLUSIONS, ITINERARY
     const inclusions = data.inclusions || []
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
 
+
+    //FORMAT ITINERARY ENTRIES
     const itineraryEntries = (() => {
         const formatItineraryItem = (item) => {
             if (typeof item === 'string') return item;
@@ -227,10 +245,19 @@ export default function QuotationBookingProcess() {
             return activity;
         };
 
+        const extractImages = (items) => {
+            if (!Array.isArray(items)) return []
+            return items
+                .flatMap((item) => (Array.isArray(item?.itineraryImages) ? item.itineraryImages : []))
+                .filter(Boolean)
+                .slice(0, 3)
+        }
+
         if (Array.isArray(itinerary)) {
             return itinerary.map((items, index) => ({
                 key: `day-${index + 1}`,
                 label: `Day ${index + 1}`,
+                images: extractImages(items),
                 items: Array.isArray(items)
                     ? items.map(formatItineraryItem).filter(Boolean)
                     : items
@@ -250,6 +277,7 @@ export default function QuotationBookingProcess() {
             .map((dayKey) => ({
                 key: dayKey,
                 label: String(dayKey).replace('day', 'Day '),
+                images: extractImages(itinerary[dayKey]),
                 items: Array.isArray(itinerary[dayKey])
                     ? itinerary[dayKey].map(formatItineraryItem).filter(Boolean)
                     : itinerary[dayKey]
@@ -257,6 +285,7 @@ export default function QuotationBookingProcess() {
                         : []
             }))
     })()
+
 
     //FETCH DETAILS FROM QUOTATION
     useEffect(() => {
@@ -282,8 +311,9 @@ export default function QuotationBookingProcess() {
                     + (Number(quoteTravelers?.child) || 0)
                     + (Number(quoteTravelers?.infant) || 0);
 
-                const packageType = packageResponse?.packageType || 'fixed';
+                const packageType = packageResponse?.packageType;
                 const packageImages = packageResponse?.images || packageResponse?.packageImages || [];
+                const visaRequired = packageResponse?.visaRequired || false;
 
                 if (!latestDetails || !isMounted) return;
 
@@ -325,6 +355,7 @@ export default function QuotationBookingProcess() {
                     adultRate: prev.adultRate || adultRate,
                     childRate: prev.childRate || childRate,
                     infantRate: prev.infantRate || infantRate,
+                    visaRequired: prev.visaRequired !== undefined ? prev.visaRequired : visaRequired,
                     travelers: prev.travelers?.length
                         ? prev.travelers
                         : Array.from({ length: totalTravelers || travelersValue || 1 }, (_, index) => ({ id: index + 1 })),
@@ -340,7 +371,6 @@ export default function QuotationBookingProcess() {
                             : [],
                     inclusions: prev.inclusions?.length ? prev.inclusions : latestDetails.inclusions || [],
                     exclusions: prev.exclusions?.length ? prev.exclusions : latestDetails.exclusions || [],
-                    packageType: prev.packageType || packageType,
                     itinerary: Object.keys(prev.itinerary || {}).length
                         ? prev.itinerary
                         : latestDetails.itinerary || {},
@@ -361,6 +391,7 @@ export default function QuotationBookingProcess() {
     }, [quotationBookingData?.quotationId, quotationBookingData?.travelersCount, setQuotationBookingData]);
 
 
+
     //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
     const groupRoomOptions = [
         { value: 'TWIN', label: 'TWIN' },
@@ -368,6 +399,8 @@ export default function QuotationBookingProcess() {
         { value: 'TRIPLE', label: 'TRIPLE' }
     ]
 
+
+    //IF SOLO BOOKING, ONLY SINGLE ROOM OPTION. 
     const roomOptions = bookingType === 'Solo Booking'
         ? [{ value: 'SINGLE', label: 'SINGLE' }]
         : bookingType === 'Group Booking'
@@ -406,13 +439,28 @@ export default function QuotationBookingProcess() {
         Array.from({ length: totalTravelersCount || 1 }, () => null)
     );
 
+    const [visaSelections, setVisaSelections] = useState(
+        Array.from({ length: totalTravelersCount || 1 }, () => null)
+    )
+
+    const [visaFileLists, setVisaFileLists] = useState(
+        Array.from({ length: totalTravelersCount || 1 }, () => [])
+    )
+
+    const [visaPreviews, setVisaPreviews] = useState(
+        Array.from({ length: totalTravelersCount || 1 }, () => null)
+    )
+
     const passportFileInputs = useRef([]);
     const photoFileInputs = useRef([]);
+
 
     //STATE FOR CURRENT STEP AND PDF GENERATION
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+
+    //RESET FILE UPLOADS AND PREVIEWS WHEN TRAVELER COUNT CHANGES
     useEffect(() => {
         setFileLists(Array.from({ length: totalTravelersCount || 1 }, () => []));
         setPreviews(Array.from({ length: totalTravelersCount || 1 }, () => null));
@@ -420,6 +468,38 @@ export default function QuotationBookingProcess() {
         setPhotoPreviews(Array.from({ length: totalTravelersCount || 1 }, () => null));
     }, [totalTravelersCount]);
 
+    useEffect(() => {
+        setVisaSelections((prev) => {
+            const next = [...prev]
+            if (next.length < uploadTravelerCount) {
+                next.push(...Array(uploadTravelerCount - next.length).fill(null))
+            } else {
+                next.length = uploadTravelerCount
+            }
+            return next
+        })
+        setVisaFileLists((prev) => {
+            const next = [...prev]
+            if (next.length < uploadTravelerCount) {
+                next.push(...Array(uploadTravelerCount - next.length).fill([]))
+            } else {
+                next.length = uploadTravelerCount
+            }
+            return next
+        })
+        setVisaPreviews((prev) => {
+            const next = [...prev]
+            if (next.length < uploadTravelerCount) {
+                next.push(...Array(uploadTravelerCount - next.length).fill(null))
+            } else {
+                next.length = uploadTravelerCount
+            }
+            return next
+        })
+    }, [uploadTravelerCount])
+
+
+    //ADJUST TRAVELERS ARRAY IN FORM BASED ON TRAVELER COUNT
     useEffect(() => {
         const currentTravelers = form.getFieldValue('travelers') || []
         if (currentTravelers.length === uploadTravelerCount) return
@@ -434,6 +514,7 @@ export default function QuotationBookingProcess() {
         setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [form, uploadTravelerCount, setQuotationBookingData])
 
+
     //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM
     useEffect(() => {
         if (bookingType !== 'Solo Booking') return
@@ -447,6 +528,7 @@ export default function QuotationBookingProcess() {
         form.setFieldsValue({ travelers: nextTravelers })
         setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [bookingType, form, setQuotationBookingData])
+
 
     //IF GROUP BOOKING, ENSURE NO TRAVELER IS SET TO SINGLE ROOM
     useEffect(() => {
@@ -464,6 +546,7 @@ export default function QuotationBookingProcess() {
         form.setFieldsValue({ travelers: nextTravelers })
         setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [bookingType, form, setQuotationBookingData])
+
 
     //IF CHILD/INFANT TRAVELER, FORCE ROOM TYPE TO N/A
     useEffect(() => {
@@ -494,6 +577,7 @@ export default function QuotationBookingProcess() {
         form.setFieldsValue({ travelers: nextTravelers })
         setQuotationBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [form, travelerTypeLabels, bookingType, setQuotationBookingData])
+
 
     //GO TO THE NEXT PAGE OF REGISTRATION - show verification modal first
     const nextConfirmed = async () => {
@@ -608,18 +692,20 @@ export default function QuotationBookingProcess() {
         }
     };
 
+
+    //GO NEXT
     const next = async () => {
         if (currentStep === 0) {
             setIsVerifyModalOpen(true);
             return;
         }
-
         await nextConfirmed();
     }
 
 
     //GO TO THE PREVIOUS PAGE OF REGISTRATION
     const prev = () => setCurrentStep(currentStep - 1);
+
 
     //VALIDATE UPLOADED FILES
     const validateFile = (file) => {
@@ -695,6 +781,7 @@ export default function QuotationBookingProcess() {
         setPreviews(newPreviews);
     };
 
+
     //HANDLE 2BY2 PHOTO UPLOAD CHANGES
     const handlePhotoChange = (info, index) => {
         const newFileLists = [...photoFileLists];
@@ -715,6 +802,24 @@ export default function QuotationBookingProcess() {
         setPhotoPreviews(newPreviews);
     };
 
+    const handleVisaChange = (info, index) => {
+        const newFileLists = [...visaFileLists]
+        newFileLists[index] = info.fileList
+        setVisaFileLists(newFileLists)
+
+        const file = info.file
+        setVisaPreviews((prev) => {
+            const next = [...prev]
+            if (file.status === 'removed') {
+                next[index] = null
+            } else if (file instanceof File || (file.originFileObj instanceof File)) {
+                next[index] = URL.createObjectURL(file.originFileObj || file)
+            }
+            return next
+        })
+    }
+
+
     //HANDLE RESET OF UPLOADED FILES
     const handleResetUploads = (index) => {
         const newFileLists = [...fileLists];
@@ -734,7 +839,9 @@ export default function QuotationBookingProcess() {
         setPhotoPreviews(newPhotoPreviews);
     };
 
-    // Reset only passport upload for a traveler
+
+
+    // RESET PASSPORT UPLOAD
     const handleResetPassport = (index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = [];
@@ -745,7 +852,7 @@ export default function QuotationBookingProcess() {
         setPreviews(newPreviews);
     };
 
-    // Reset only 2x2 photo upload for a traveler
+    // RESET 2BY2 PHOTO UPLOAD
     const handleResetPhoto = (index) => {
         const newPhotoFileLists = [...photoFileLists];
         newPhotoFileLists[index] = [];
@@ -756,6 +863,8 @@ export default function QuotationBookingProcess() {
         setPhotoPreviews(newPhotoPreviews);
     };
 
+
+    //UPDATE A SPECIFIC FIELD FOR A TRAVELER IN THE FORM AND CONTEXT
     const updateTravelerField = (index, field, value, extras = {}) => {
         const travelers = form.getFieldValue('travelers') || []
         const nextTravelers = travelers.map((traveler, travelerIndex) =>
@@ -770,11 +879,12 @@ export default function QuotationBookingProcess() {
 
     useEffect(() => {
         return () => {
-            previews.forEach(url => {
+            [...previews, ...photoPreviews, ...visaPreviews].forEach(url => {
                 if (url) URL.revokeObjectURL(url);
             });
         };
-    }, [previews]);
+    }, [previews, photoPreviews, visaPreviews]);
+
 
     //REDIRECT TO HOME IF NO QUOTATION DATA
     useEffect(() => {
@@ -817,6 +927,8 @@ export default function QuotationBookingProcess() {
     }, [])
 
     if (!hasQuotationBookingData) return null;
+
+
 
     return (
         <ConfigProvider
@@ -1033,6 +1145,18 @@ export default function QuotationBookingProcess() {
                                     {itineraryEntries.map((day) => (
                                         <details key={day.key} className='itinerary-day'>
                                             <summary className='itinerary-day-label'>{day.label}</summary>
+                                            {day.images?.length > 0 && (
+                                                <div className='itinerary-day-images'>
+                                                    {day.images.map((src, index) => (
+                                                        <img
+                                                            key={`${day.key}-image-${index}`}
+                                                            className='itinerary-day-image'
+                                                            src={src}
+                                                            alt={`${day.label} image ${index + 1}`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
                                             {day.items.length ? (
                                                 <ul className='quotation-itinerary-items'>
                                                     {day.items.map((item, index) => (
@@ -1371,6 +1495,112 @@ export default function QuotationBookingProcess() {
                                             }}
                                         />
                                     </div>
+                                    {visaRequired && !isDomesticPackage && (
+                                        <div className="visa-question-card">
+                                            <p className="visa-question-title">
+                                                Do you have a visa for this tour package?
+                                            </p>
+                                            <div className="visa-question-actions">
+                                                <Button
+                                                    type={visaSelections[index] === 'yes' ? 'primary' : 'default'}
+                                                    size="small"
+                                                    onClick={() =>
+                                                        setVisaSelections((prev) => {
+                                                            const next = [...prev]
+                                                            next[index] = 'yes'
+                                                            return next
+                                                        })
+                                                    }
+                                                >
+                                                    Yes
+                                                </Button>
+                                                <Button
+                                                    type={visaSelections[index] === 'no' ? 'primary' : 'default'}
+                                                    size="small"
+                                                    onClick={() =>
+                                                        setVisaSelections((prev) => {
+                                                            const next = [...prev]
+                                                            next[index] = 'no'
+                                                            return next
+                                                        })
+                                                    }
+                                                >
+                                                    No
+                                                </Button>
+                                            </div>
+                                            {visaSelections[index] === 'yes' && (
+                                                <div className="visa-upload-row">
+                                                    {(!visaFileLists[index] || visaFileLists[index].length === 0) && (
+                                                        <Upload
+                                                            fileList={visaFileLists[index]}
+                                                            beforeUpload={validateFile}
+                                                            onChange={(info) => handleVisaChange(info, index)}
+                                                            accept="image/jpeg,image/png,.pdf"
+                                                            maxCount={1}
+                                                            showUploadList={false}
+                                                        >
+                                                            <Button className='upload-passport-button' type='primary'>
+                                                                Upload Visa
+                                                            </Button>
+                                                        </Upload>
+                                                    )}
+                                                    {visaFileLists[index]?.length > 0 && (
+                                                        <Button
+                                                            type='primary'
+                                                            className='upload-passport-remove-button'
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setVisaFileLists((prev) => {
+                                                                    const next = [...prev]
+                                                                    next[index] = []
+                                                                    return next
+                                                                })
+                                                                setVisaPreviews((prev) => {
+                                                                    const next = [...prev]
+                                                                    next[index] = null
+                                                                    return next
+                                                                })
+                                                            }}
+                                                        >
+                                                            Change Visa
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {visaSelections[index] === 'yes' && (
+                                                <div className="visa-preview-wrapper">
+                                                    {visaPreviews[index] && visaFileLists[index]?.[0]?.type === 'application/pdf' ? (
+                                                        <div className="visa-preview">
+                                                            <a
+                                                                href={visaPreviews[index]}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                View PDF
+                                                            </a>
+                                                        </div>
+                                                    ) : visaPreviews[index] ? (
+                                                        <div className="visa-preview">
+                                                            <img
+                                                                src={visaPreviews[index]}
+                                                                alt={`Visa Preview ${index + 1}`}
+                                                                className="visa-preview-image"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="visa-preview image-placeholder" aria-hidden="true">
+                                                            <span>visa image</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {visaSelections[index] === 'no' && (
+                                                <p className="visa-question-warning">
+                                                    This travel package requires a visa, we highly recommend for you to get one first before booking to avoid travel issues.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="upload-passport-right">

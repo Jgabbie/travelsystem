@@ -279,6 +279,7 @@ export default function PackageInternationalQuotation() {
                 packageId: packageItem,
                 quotationDetails: {
                     travelers: travelersPayload,
+                    packageType: "international",
                     preferredAirlines,
                     preferredHotels,
                     preferredDates,
@@ -303,6 +304,7 @@ export default function PackageInternationalQuotation() {
             setFlightDate('')
             setFlightTime('')
             setError({})
+            window.location.reload()
 
         } catch (error) {
             console.error('An unexpected error occurred while submitting the quotation request:', error)

@@ -22,6 +22,25 @@ const generateTransactionReference = () => {
     return `TX-${timestamp}${random}`
 }
 
+const generateTransactionInvoiceNumber = async (date = new Date()) => {
+    const invoiceDate = dayjs(date)
+    const startOfMonth = invoiceDate.startOf('month').toDate()
+    const endOfMonth = invoiceDate.endOf('month').toDate()
+
+    const transactionCount = await TransactionModel.countDocuments({
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+    })
+
+    const sequence = transactionCount + 1
+    const monthKey = invoiceDate.format('MM')
+
+    return {
+        invoiceNumber: `${monthKey}${String(sequence).padStart(2, '0')}`,
+        sequence,
+        month: monthKey
+    }
+}
+
 const getTravelerCount = (booking) => {
     const rawTravelers = booking?.travelers
 
@@ -109,6 +128,7 @@ const incrementPackageSlotsForBooking = async (booking) => {
     return false
 }
 
+
 //CREATE TRANSACTION --------------------------------------------------------------------------
 const createTransaction = async (req, res) => {
     const { transactionPayload } = req.body
@@ -120,10 +140,13 @@ const createTransaction = async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" })
         }
 
+        const { invoiceNumber } = await generateTransactionInvoiceNumber()
+
         const newTransaction = await TransactionModel.create({
             bookingId: transactionPayload.bookingId,
             packageId: transactionPayload.packageId,
             userId,
+            invoiceNumber,
             reference: generateTransactionReference(),
             amount: transactionPayload.amount,
             method: transactionPayload.method,
@@ -147,6 +170,7 @@ const createTransaction = async (req, res) => {
     }
 }
 
+
 //GET USER TRANSACTIONS --------------------------------------------------------------------------
 const getUserTransactions = async (req, res) => {
     const userId = req.userId
@@ -159,11 +183,12 @@ const getUserTransactions = async (req, res) => {
     }
 }
 
+
 //GET ALL TRANSACTIONS --------------------------------------------------------------------------
 const getAllTransactions = async (_req, res) => {
     try {
         const transactions = await TransactionModel.find({})
-            .populate('userId', 'username')
+            .populate('userId', 'username firstname lastname')
             .populate('packageId', 'packageName')
             .sort({ createdAt: -1 });
 
@@ -174,11 +199,22 @@ const getAllTransactions = async (_req, res) => {
     }
 }
 
+const getInvoiceNumber = async (_req, res) => {
+    try {
+        const invoiceData = await generateTransactionInvoiceNumber()
+        res.status(200).json(invoiceData)
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch invoice number', error: error.message })
+    }
+}
+
+
+
 //GET ARCHIVED TRANSACTIONS --------------------------------------------------------------------------
 const getArchivedTransactions = async (_req, res) => {
     try {
         const transactions = await ArchivedTransactionModel.find({})
-            .populate('userId', 'username')
+            .populate('userId', 'username firstname lastname')
             .populate('packageId', 'packageName')
             .sort({ archivedAt: -1 });
 
@@ -369,6 +405,7 @@ const deleteTransaction = async (req, res) => {
             applicationType: transaction.applicationType,
             packageId: transaction.packageId,
             userId: transaction.userId,
+            invoiceNumber: transaction.invoiceNumber,
             reference: transaction.reference,
             amount: transaction.amount,
             method: transaction.method,
@@ -411,6 +448,7 @@ const restoreArchivedTransaction = async (req, res) => {
             applicationType: archivedTransaction.applicationType,
             packageId: archivedTransaction.packageId,
             userId: archivedTransaction.userId,
+            invoiceNumber: archivedTransaction.invoiceNumber || (await generateTransactionInvoiceNumber(archivedTransaction.createdAt || new Date())).invoiceNumber,
             reference: archivedTransaction.reference,
             amount: archivedTransaction.amount,
             method: archivedTransaction.method,
@@ -529,4 +567,4 @@ const rejectTransaction = async (req, res) => {
     }
 }
 
-module.exports = { createTransaction, getUserTransactions, getAllTransactions, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction }
+module.exports = { createTransaction, getUserTransactions, getAllTransactions, getInvoiceNumber, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction }

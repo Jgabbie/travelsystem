@@ -17,8 +17,6 @@ const cleanupExpiredBookings = async () => {
             });
 
             if (hasTransaction) {
-                // If any transaction exists for this booking, skip deletion
-                console.log(`Skipping deletion, transactions found for booking: ${booking.reference}`);
                 continue;
             }
 

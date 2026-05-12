@@ -666,9 +666,11 @@ export default function LandingPage() {
                     <div className='for-you-section'>
                         <h1 className='for-you-text'>FOR YOU</h1>
 
-                        {recommendationMethod ? (
-                            <p className='for-you-method'>Powered by {recommendationMethod} recommendations</p>
-                        ) : null}
+                        {recommendationMethod == collaborative ? (
+                            <p className='for-you-method'>These are the recommended packages based on the packages you have rated.</p>
+                        ) : (
+                            <p className='for-you-method'>These are the recommended packages based on your preferences.</p>
+                        )}
 
                         {!auth && !authLoading ? (
                             <div className='for-you-empty-state'>
@@ -1246,7 +1248,7 @@ export default function LandingPage() {
                                 <CompassOutlined className="card-icon" />
                             </div>
                             <h3>Browse Packages</h3>
-                            <p>Discover amazing travel packages tailored to your preferences</p>
+                            <p>Discover amazing <span className="next-steps-highlight">Travel Packages</span> that are both domestic and international.</p>
                             <div className="card-cta">Explore Now →</div>
                         </div>
 
@@ -1258,7 +1260,7 @@ export default function LandingPage() {
                                 <ShoppingCartOutlined className="card-icon" />
                             </div>
                             <h3>Avail Services</h3>
-                            <p>Check out our additional travel services and add-ons</p>
+                            <p>Need assistance with your passport or visa? We've got you covered! <span className="next-steps-highlight">We offer Visa and Passport Assistance Services.</span></p>
                             <div className="card-cta">View Services →</div>
                         </div>
 
@@ -1270,7 +1272,7 @@ export default function LandingPage() {
                                 <UserOutlined className="card-icon" />
                             </div>
                             <h3>View Profile</h3>
-                            <p>Complete your profile and manage your account settings</p>
+                            <p>Complete and manage your <span className="next-steps-highlight">Profile Information</span>.</p>
                             <div className="card-cta">View Profile →</div>
                         </div>
                     </div>

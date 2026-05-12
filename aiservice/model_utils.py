@@ -177,14 +177,14 @@ def run_training_cycle():
         packages_df, preferences_df, ratings_df = get_data_from_mongodb()
 
         if packages_df.empty:
-            print("[Training] ⚠ No packages found in MongoDB.")
+            print("[Training]  No packages found in MongoDB.")
             return False
 
         train_and_save_models(packages_df, preferences_df, ratings_df)
-        print("[Training] ✓ Models updated with latest DB data.")
+        print("[Training]  Models updated with latest DB data.")
         return True
     except Exception as e:
-        print(f"[Training] ✗ Error during training: {e}")
+        print(f"[Training]  Error during training: {e}")
         return False
 
 
@@ -305,9 +305,9 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
             'index_to_user_id': index_to_user_id,
             'package_text_column': 'package_text',
         }, str(models_path / 'metadata.pkl'))
-        print("[Training] ✓ All models saved successfully")
+        print("[Training]  All models saved successfully")
     except Exception as e:
-        print(f"[Training] ✗ Error saving models: {e}")
+        print(f"[Training]  Error saving models: {e}")
         traceback.print_exc()
         raise
 

@@ -27,9 +27,6 @@ export default function PackageDomesticQuotation() {
     const today = dayjs();
     dayjs.extend(isSameOrBefore);
 
-    console.log('Received packageItem from navigation state:', packageItem)
-
-
     const [packageData, setPackageData] = useState(null)
     const [loading, setLoading] = useState(true)
 
@@ -209,12 +206,12 @@ export default function PackageDomesticQuotation() {
 
     const travelerSlotsRemaining = selectedDateSlots ? Math.max(selectedDateSlots - totalTravelers, 0) : null
 
-
+    //CANCEL MODAL
     const onCancelModal = () => {
         setIsBookingSuccessOpen(false)
     }
 
-    //submit quotation request
+    //SUBMIT QUOTATION REQUEST
     const handleSubmit = async () => {
         const missingItineraryNote = itineraryNotes.some((note) => !note.trim())
         const newErrors = {};
@@ -284,6 +281,7 @@ export default function PackageDomesticQuotation() {
                 packageId: packageItem,
                 quotationDetails: {
                     travelers: travelersPayload,
+                    packageType: "domestic",
                     preferredAirlines,
                     preferredHotels,
                     preferredDates,
@@ -308,6 +306,7 @@ export default function PackageDomesticQuotation() {
             setFlightDate('')
             setFlightTime('')
             setError({})
+            window.location.reload()
         } catch (error) {
             notification.error({ message: 'Failed to submit quotation request. Please try again later.', placement: 'topRight' })
             return

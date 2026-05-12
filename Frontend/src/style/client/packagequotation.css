@@ -306,16 +306,12 @@
 .quotation-field {
     display: flex;
     flex-direction: column;
-
 }
 
 .quotation-field label {
-    font-family: "Montserrat", sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: #5b677a;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2a44;
 }
 
 .quotation-input,
@@ -327,7 +323,7 @@
 }
 
 .quotation-input {
-    margin-top: 10px;
+    margin-top: 3px;
 }
 
 .quotation-input:hover,

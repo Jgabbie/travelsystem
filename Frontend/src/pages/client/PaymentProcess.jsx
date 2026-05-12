@@ -625,7 +625,7 @@ export default function PaymentProcess() {
                         </View>
                     </View>
                     <View style={styles.invoiceTitleContainer}>
-                        <Text style={styles.invoiceTitleText}>Invoice {Invoice.invoice.number}</Text>
+                        <Text style={styles.invoiceTitleText}>Booking {Invoice.invoice.number}</Text>
                     </View>
                 </View>
 
@@ -738,7 +738,7 @@ export default function PaymentProcess() {
 
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: '#333', fontFamily: 'Helvetica' },
-        logo: { width: 85, height: 60 },
+        logo: { width: 80, height: 80 },
         header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 40 },
         headerCompany: { flexDirection: 'row', alignItems: 'center', gap: 15 },
         brand: { fontSize: 12, fontWeight: 'bold' },
@@ -976,12 +976,6 @@ export default function PaymentProcess() {
                                         <h4 className="section-subtitle">Available Bank Accounts</h4>
                                         <div className="bank-grid">
                                             <div className="bank-item">
-                                                <span className="bank-name">BDO</span>
-                                                <span className="account-number">006838032692</span>
-                                                <span className="account-holder">M&RC TRAVEL AND TOURS</span>
-                                                <span style={{ marginTop: 8, textAlign: 'center', color: '#6b7280', fontSize: 12 }}>No QR Code</span>
-                                            </div>
-                                            <div className="bank-item">
                                                 <span className="bank-name">GCASH</span>
                                                 <span className="account-number">09690554806</span>
                                                 <span className="account-holder">MA****R C.</span>
@@ -1001,6 +995,12 @@ export default function PaymentProcess() {
                                                     style={{ width: 300, height: 'auto', marginTop: 8 }}
                                                 />
                                             </div>
+                                        </div>
+
+                                        <div className="bank-item" style={{ height: 120, marginBottom: 12 }}>
+                                            <span className="bank-name">BDO</span>
+                                            <span className="account-number">006838032692</span>
+                                            <span className="account-holder">M&RC TRAVEL AND TOURS</span>
                                         </div>
                                     </div>
 

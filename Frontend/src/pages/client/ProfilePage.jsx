@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Input, Button, notification, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin, Typography } from 'antd';
-import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled } from '@ant-design/icons';
+import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
@@ -17,6 +17,9 @@ export default function ProfilePage() {
     const [profileImage, setProfileImage] = useState('')
     const [isUserProfileEdited, setIsUserProfileEdited] = useState(false)
     const [isUserPreferencesEdited, setIsUserPreferencesEdited] = useState(false)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false)
+    const [reviewToDelete, setReviewToDelete] = useState(null)
 
     const fileInputRef = useRef(null)
     const [error, setError] = useState({
@@ -37,20 +40,27 @@ export default function ProfilePage() {
         nationality: ''
     });
 
+
+    //MOOD OPTIONS
     const [moodOptions, setMoodOptions] = useState([]);
 
-    //preferences options
+
+    //TOUR TYPE OPTIONS
     const tourOptions = [
         'Domestic',
         'International'
     ];
 
+
+    //USER PREFERENCES
     const [preferences, setPreferences] = useState({
         moods: [],
         tours: []
     });
     const [editingPreferences, setEditingPreferences] = useState(false);
 
+
+    //TOGGLE PREFERENCES
     const togglePreference = (key, value, limit) => {
         setPreferences(prev => {
             const current = prev[key] || [];
@@ -69,6 +79,8 @@ export default function ProfilePage() {
         });
     };
 
+
+    //SAVE PREFERENCES OF USER
     const savePreferences = async () => {
         if ((preferences.moods || []).length <= 0 && (preferences.moods || []).length > 3) {
             notification.error({ message: 'Please select up to 3 mood preferences.', placement: 'topRight' });
@@ -101,7 +113,22 @@ export default function ProfilePage() {
     const [recentBookings, setRecentBookings] = useState([])
     const [isLoading, setIsLoading] = useState(false);
 
-    //proper case function
+
+    //FORMAT PHONE NUMBER WITH SPACES
+    const formatPhoneNumber = (phoneStr) => {
+        if (!phoneStr) return '';
+        const cleaned = phoneStr.replace(/\D/g, '').slice(0, 13);
+
+        if (cleaned.length > 4 && cleaned.length <= 7) {
+            return cleaned.slice(0, 4) + " " + cleaned.slice(4);
+        }
+        if (cleaned.length > 7) {
+            return cleaned.slice(0, 4) + " " + cleaned.slice(4, 7) + " " + cleaned.slice(7);
+        }
+        return cleaned;
+    };
+
+    //UPPERCASE FIRST LETTER OF NAMES
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -117,7 +144,8 @@ export default function ProfilePage() {
             )
             .join(" ");
 
-    //input validations
+
+    //INPUT VALIDATIONS
     const validate = (field, value) => {
         if (field === "firstname") {
             if (value === "") return "First name is required.";
@@ -142,11 +170,15 @@ export default function ProfilePage() {
         return "";
     };
 
+
+    //VALUE HANDLER
     const valueHandler = (field, value) => {
         setValues(prev => ({ ...prev, [field]: value }));
         setError(prev => ({ ...prev, [field]: validate(field, value) }));
     };
 
+
+    //GET USER INITIALS
     const getInitials = () => {
         const first = values.firstname?.trim() || userData?.firstname?.trim() || ''
         const last = values.lastname?.trim() || userData?.lastname?.trim() || ''
@@ -159,9 +191,9 @@ export default function ProfilePage() {
         }
         return fallback ? fallback[0].toUpperCase() : 'U'
     }
-    // Fetch user data on component moun
 
 
+    //GET PACKAGE TAGS
     const fetchPackageTags = async () => {
         try {
             const response = await apiFetch.get('/package/get-packages-for-users');
@@ -175,6 +207,8 @@ export default function ProfilePage() {
         }
     };
 
+
+    //GET USER PREFERENCES
     const fetchPreferences = async () => {
         try {
             const response = await apiFetch.get("/preferences/me", { withCredentials: true });
@@ -192,6 +226,8 @@ export default function ProfilePage() {
         }
     };
 
+
+    //GET USER DATA
     const fetchUserData = async () => {
         try {
             const response = await apiFetch.get('/user/data', {
@@ -212,7 +248,7 @@ export default function ProfilePage() {
                     firstname: data.userData.firstname,
                     lastname: data.userData.lastname,
                     email: data.userData.email,
-                    phone: data.userData.phone,
+                    phone: formatPhoneNumber(data.userData.phone),
                     homeAddress: data.userData.homeAddress || '',
                     gender: data.userData.gender || '',
                     birthdate: data.userData.birthdate || '',
@@ -229,6 +265,8 @@ export default function ProfilePage() {
         }
     }
 
+
+    //GET USER BOOKINGS
     const fetchRecentBookings = async () => {
         try {
             const response = await apiFetch.get('/booking/my-bookings')
@@ -259,11 +297,14 @@ export default function ProfilePage() {
         }
     }
 
+
+    //GET USER REVIEWS
     const fetchRecentReviews = async () => {
         try {
             const response = await apiFetch.get('/rating/my-ratings')
             const reviews = response.map((r) => ({
                 key: r._id,
+                id: r._id,
                 packageName: r.packageId?.packageName || 'Untitled Review',
                 rating: r.rating || 0,
                 date: dayjs(r.createdAt).format('MMM D, YYYY'),
@@ -276,6 +317,40 @@ export default function ProfilePage() {
         }
     }
 
+
+    //DELETE REVIEW
+    const handleOpenDeleteModal = (review) => {
+        if (!review?.id) {
+            notification.error({ message: 'No review to delete.', placement: 'topRight' })
+            return
+        }
+
+        setReviewToDelete(review)
+        setIsDeleteModalOpen(true)
+    }
+
+
+    //DELETE REVIEW CONFIRMATION
+    const handleDeleteReview = async () => {
+        if (!reviewToDelete?.id) {
+            notification.error({ message: 'No review to delete.', placement: 'topRight' })
+            return
+        }
+
+        try {
+            await apiFetch.delete(`/rating/${reviewToDelete.id}`)
+            setRecentReviews((prev) => prev.filter((review) => review.id !== reviewToDelete.id))
+            setIsDeleteModalOpen(false)
+            setReviewToDelete(null)
+            setIsRatingDeletedModalOpen(true)
+        } catch (error) {
+            console.error('Error deleting review:', error)
+            notification.error({ message: 'Unable to delete review', placement: 'topRight' })
+        }
+    }
+
+
+    //RUN FETCHES ON PAGE LOAD
     useEffect(() => {
         const init = async () => {
             try {
@@ -299,10 +374,14 @@ export default function ProfilePage() {
         init();
     }, []);
 
+
+    //EDIT HANDLER
     const handleEdit = () => {
         setEditing(true)
     }
 
+
+    //CANCEL HANDLER - REVERTS CHANGES
     const handleCancel = () => {
         setEditing(false)
         // Reset form to previous values
@@ -312,7 +391,7 @@ export default function ProfilePage() {
                 firstname: userData.firstname,
                 lastname: userData.lastname,
                 email: userData.email,
-                phone: userData.phone,
+                phone: formatPhoneNumber(userData.phone),
                 homeAddress: userData.homeAddress || '',
                 gender: userData.gender || '',
                 birthdate: userData.birthdate || '',
@@ -333,6 +412,8 @@ export default function ProfilePage() {
         })
     }
 
+
+    //IMAGE CHANGE HANDLER
     const handleImageChange = async (event) => {
         const file = event.target.files?.[0]
         if (!file) return
@@ -373,7 +454,8 @@ export default function ProfilePage() {
         }
     }
 
-    // save profile changes
+
+    // SAVE PROFILE
     const handleSave = async () => {
         const nextErrors = {
             firstname: validate('firstname', values.firstname),
@@ -433,6 +515,9 @@ export default function ProfilePage() {
         }
     }
 
+
+
+
     return (
         <ConfigProvider
             theme={{
@@ -441,7 +526,6 @@ export default function ProfilePage() {
                 }
             }}
         >
-
 
             {isLoading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -546,9 +630,7 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.firstname || 'Not set'}</p>
                                             )}
-                                            {error.firstname && (
-                                                <p className="profile-error-message">{error.firstname}</p>
-                                            )}
+                                            <p className="profile-error-message">{error.firstname}</p>
                                         </div>
 
                                         <div className="profile-section-item">
@@ -580,9 +662,7 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.lastname || 'Not set'}</p>
                                             )}
-                                            {error.lastname && (
-                                                <p className="profile-error-message">{error.lastname}</p>
-                                            )}
+                                            <p className="profile-error-message">{error.lastname}</p>
                                         </div>
 
                                         <div className="profile-section-item">
@@ -622,39 +702,20 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.email || 'Not set'}</p>
                                             )}
-                                            {error.email && (
-                                                <p className="profile-error-message">{error.email}</p>
-                                            )}
+                                            <p className="profile-error-message">{error.email}</p>
                                         </div>
 
                                         <div className="profile-section-item">
                                             <span className="profile-section-label">Phone Number</span>
                                             {editing ? (
                                                 <Input
-                                                    maxLength={8}
+                                                    maxLength={13}
                                                     placeholder="Enter your phone number"
                                                     allowClear
                                                     status={error.phone ? "error" : ""}
                                                     value={values.phone}
                                                     onChange={(e) => {
-                                                        let value = e.target.value.replace(/\D/g, "");
-
-                                                        value = value.slice(0, 11);
-
-                                                        let formatted = value;
-
-                                                        if (value.length > 4 && value.length <= 7) {
-                                                            formatted =
-                                                                value.slice(0, 4) + " " +
-                                                                value.slice(4);
-                                                        }
-                                                        else if (value.length > 7) {
-                                                            formatted =
-                                                                value.slice(0, 4) + " " +
-                                                                value.slice(4, 7) + " " +
-                                                                value.slice(7);
-                                                        }
-
+                                                        const formatted = formatPhoneNumber(e.target.value);
                                                         valueHandler("phone", formatted);
                                                     }}
                                                     onKeyDown={(e) => {
@@ -666,9 +727,7 @@ export default function ProfilePage() {
                                             ) : (
                                                 <p className="profile-section-value">{values.phone || 'Not set'}</p>
                                             )}
-                                            {error.phone && (
-                                                <p className="profile-error-message">{error.phone}</p>
-                                            )}
+                                            <p className="profile-error-message">{error.phone}</p>
                                         </div>
 
                                     </div>
@@ -867,7 +926,17 @@ export default function ProfilePage() {
                                                         <p className="profile-review-meta">{review?.date || 'Recently'}</p>
                                                         <Rate className="profile-review-rating" disabled value={review?.rating || 0} />
                                                     </div>
-                                                    <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
+                                                    <div>
+                                                        <p className="profile-review-snippet">{review?.review || 'View review details.'}</p>
+                                                        <Button
+                                                            type="primary"
+                                                            className="profile-delete-button"
+                                                            icon={<DeleteOutlined />}
+                                                            onClick={() => handleOpenDeleteModal(review)}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -910,6 +979,100 @@ export default function ProfilePage() {
                         </div>
 
                     </div>
+
+
+                    <Modal
+                        open={isDeleteModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => {
+                            setIsDeleteModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Delete Review?</h1>
+                            <p className='signup-success-text'>Are you sure you want to delete this review?</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        handleDeleteReview();
+                                    }}
+                                >
+                                    Delete
+                                </Button>
+                                <Button
+                                    type='primary'
+                                    className='logout-cancel-btn'
+                                    onClick={() => {
+                                        setIsDeleteModalOpen(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+
+                    <Modal
+                        open={isRatingDeletedModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Custom Close Button' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => {
+                            setIsRatingDeletedModalOpen(false);
+                        }}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Review Deleted!</h1>
+
+                            <div>
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            </div>
+
+                            <p className='signup-success-text'>Your review has been successfully deleted.</p>
+
+                            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                                <Button
+                                    type='primary'
+                                    className='logout-confirm-btn'
+                                    onClick={() => {
+                                        setIsRatingDeletedModalOpen(false);
+                                    }}
+                                >
+                                    Continue
+                                </Button>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                     {/* USER PROFILE HAS BEEN EDITED MODAL */}
                     <Modal

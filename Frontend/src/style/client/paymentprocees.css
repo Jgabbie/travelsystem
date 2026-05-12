@@ -450,6 +450,10 @@
     margin-top: 8px;
 }
 
+.bank-item div {
+    align-items: center;
+}
+
 .bank-name {
     font-weight: 700;
     color: #305797;

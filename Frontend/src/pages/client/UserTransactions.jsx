@@ -31,6 +31,7 @@ export default function UserTransactions() {
                 const transactions = response.map(t => ({
                     key: t.id,
                     reference: t.reference,
+                    invoiceNumber: t.invoiceNumber,
                     applicationType: t.applicationType || '--',
                     packageName: t.packageId?.packageName,
                     date: t.createdAt ? dayjs(t.createdAt).format('MMM D, YYYY h:mm A') : '--',
@@ -165,7 +166,21 @@ export default function UserTransactions() {
         }
 
         try {
-            notification.loading({ message: "Generating PDF...", key: "pdf", placement: 'topRight' });
+            notification.open({ message: "Generating PDF...", key: "pdf", placement: 'topRight', duration: 0 });
+
+            const images = Array.from(element.querySelectorAll("img"));
+            await Promise.all(
+                images.map((img) => {
+                    if (img.complete) {
+                        return Promise.resolve();
+                    }
+
+                    return new Promise((resolve) => {
+                        img.onload = () => resolve();
+                        img.onerror = () => resolve();
+                    });
+                })
+            );
 
             const canvas = await html2canvas(element, {
                 scale: 3, // Higher scale for crisp text
@@ -190,11 +205,29 @@ export default function UserTransactions() {
                 format: 'a4',
             });
 
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const marginTop = 10;
+            const marginLeft = 5;
+            const marginRight = 5;
+            const marginBottom = 10;
+            const pdfWidth = pdf.internal.pageSize.getWidth() - marginLeft - marginRight;
+            const pdfHeight = pdf.internal.pageSize.getHeight() - marginTop - marginBottom;
+            const imageHeight = (canvas.height * pdfWidth) / canvas.width;
+            const pageHeight = (canvas.width * pdfHeight) / pdfWidth;
 
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
+            let heightLeft = imageHeight;
+            let position = marginTop;
+
+            pdf.addImage(imgData, 'PNG', marginLeft, position, pdfWidth, imageHeight);
+            heightLeft -= pdfHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imageHeight + marginTop;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', marginLeft, position, pdfWidth, imageHeight);
+                heightLeft -= pageHeight;
+            }
+
+            pdf.save(`Receipt-${selectedTransaction?.reference || 'download'}.pdf`);
 
             notification.success({ message: "Downloaded successfully!", key: "pdf", placement: 'topRight' });
         } catch (error) {
@@ -301,7 +334,7 @@ export default function UserTransactions() {
                                 </div>
                             </div>
                             <div className="receipt-title-box">
-                                <h1 className="receipt-title">Receipt</h1>
+                                <h1 className="receipt-title">INVOICE {selectedTransaction.invoiceNumber}</h1>
                             </div>
                         </div>
 
@@ -312,15 +345,17 @@ export default function UserTransactions() {
                             </div>
                             <div className="receipt-details">
                                 <div className="detail-item">
-                                    <span className="label-blue">Receipt #</span>
+                                    <span className="label-blue">Date</span>
                                     <span>{selectedTransaction.reference}</span>
                                 </div>
+                                <div className="detail-item amount-to-pay">
+                                    <span className="label-blue">Amount to Pay</span>
+                                    <span className="value-blue">{selectedTransaction.amountDisplay}</span>
+                                </div>
                                 <div className="detail-item">
-                                    <span className="label-blue">Receipt date</span>
+                                    <span className="label-blue">Reference</span>
                                     <span>
-                                        {selectedTransaction.createdAt
-                                            ? dayjs(selectedTransaction.createdAt).format("DD-MM-YYYY")
-                                            : "--"}
+                                        {selectedTransaction.reference}
                                     </span>
                                 </div>
                             </div>
@@ -345,20 +380,44 @@ export default function UserTransactions() {
                             </tbody>
                         </table>
 
-                        <div className="receipt-summary">
-                            <div className="summary-row">
-                                <span>Subtotal</span>
-                                <span>{selectedTransaction.amountDisplay}</span>
-                            </div>
-                            <div className="summary-row total-row">
-                                <span className="label-blue">Total</span>
-                                <span className="total-amount">{selectedTransaction.amountDisplay}</span>
-                            </div>
-                        </div>
+                        <div className='receipt-bank-grid'>
 
-                        <div className="receipt-footer">
-                            <p className="support-text">Thank you for your purchase!</p>
-                            <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
+                            <div className="receipt-bank-info">
+                                <div className="receipt-bank-section">
+                                    <div className="receipt-bank-label">Bank Account:</div>
+                                    <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
+                                    <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
+                                    <p className="receipt-bank-details">Account #: 006838032692</p>
+                                </div>
+
+                                <div className="receipt-bank-section">
+                                    <div className="receipt-bank-label">USD Account:</div>
+                                    <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
+                                    <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
+                                    <p className="receipt-bank-details">Account #: 113190015176</p>
+                                </div>
+
+                                <div className="receipt-divider"></div>
+
+                                <div className="receipt-bank-section">
+                                    <div className="receipt-bank-label">GCash:</div>
+                                    <p className="receipt-bank-details">Rhon Carle - 0968 888 0405</p>
+                                    <p className="receipt-bank-details">Maricar Carle - 0969 055 4806</p>
+                                </div>
+                            </div>
+
+                            <div className="receipt-summary">
+                                <div className="receipt-summary-content">
+                                    <div className="summary-row">
+                                        <span>Total</span>
+                                        <span>{selectedTransaction.amountDisplay}</span>
+                                    </div>
+                                    <div className="summary-row total-row">
+                                        <span>Total Due</span>
+                                        <span className="total-amount">{selectedTransaction.amountDisplay}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

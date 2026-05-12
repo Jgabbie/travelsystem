@@ -18,6 +18,7 @@ export default function AddPackage() {
   const location = useLocation();
   const { packageItem } = location.state || {};
   const fileInputRef = useRef(null);
+  const itineraryImageInputRefs = useRef({});
   const isEdit = Boolean(packageItem);
 
   const [backEndErrors, setBackEndErrors] = useState(null);
@@ -63,6 +64,7 @@ export default function AddPackage() {
     exclusions: null,
     termsConditions: null,
     itineraries: {},
+    itinerariesImages: {},
     tags: [],
     images: [],
   });
@@ -327,6 +329,7 @@ export default function AddPackage() {
             isOptional: false,
             optionalActivity: "",
             optionalPrice: "",
+            itineraryImages: values.itinerariesImages?.[day] || [],
           };
         }
         return {
@@ -334,6 +337,7 @@ export default function AddPackage() {
           isOptional: Boolean(item.isOptional),
           optionalActivity: item.optionalActivity ?? "",
           optionalPrice: item.optionalPrice ?? "",
+          itineraryImages: item.itineraryImages ?? [],
         };
       });
     });
@@ -344,18 +348,21 @@ export default function AddPackage() {
   const initItinerary = (days) => {
     setValues((prev) => {
       const temp = normalizeItineraries(prev.itineraries);
+      const imagesByDay = { ...(prev.itinerariesImages || {}) };
 
       for (let i = 1; i <= days; i++) {
         if (!temp[`day${i}`]) temp[`day${i}`] = [];
+        if (!imagesByDay[`day${i}`]) imagesByDay[`day${i}`] = [];
       }
 
       let i = days + 1;
       while (temp[`day${i}`]) {
         delete temp[`day${i}`];
+        delete imagesByDay[`day${i}`];
         i++;
       }
 
-      const updated = { ...prev, itineraries: temp };
+      const updated = { ...prev, itineraries: temp, itinerariesImages: imagesByDay };
 
       validateAll(updated);
 
@@ -429,11 +436,55 @@ export default function AddPackage() {
     validateAll(updated);
   };
 
+  const handleItineraryImageChange = (day, event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      notification.error({ message: "Please select a valid image file.", placement: "topRight" });
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      notification.error({ message: "Image must be 2MB or less.", placement: "topRight" });
+      event.target.value = "";
+      return;
+    }
+
+    setValues((prev) => {
+      const current = prev.itinerariesImages?.[day] || [];
+
+      if (current.length >= 3) {
+        notification.error({ message: "You can upload up to 3 images only.", placement: "topRight" });
+        return prev;
+      }
+
+      return {
+        ...prev,
+        itinerariesImages: {
+          ...(prev.itinerariesImages || {}),
+          [day]: [...current, file],
+        },
+      };
+    });
+
+    event.target.value = "";
+  };
+
+  const removeItineraryImage = (day, index) => {
+    setValues((prev) => ({
+      ...prev,
+      itinerariesImages: {
+        ...(prev.itinerariesImages || {}),
+        [day]: (prev.itinerariesImages?.[day] || []).filter((_, i) => i !== index),
+      },
+    }));
+  };
 
 
 
-
-  //upload package images
+  //UPLOAD MAIN DISPLAY PACKAGE IMAGES
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -453,10 +504,11 @@ export default function AddPackage() {
       return;
     }
 
-    // store FILE instead of base64
     valueHandler("images", [...values.images, file]);
   };
 
+
+  //REMOVE IMAGE
   const removeImage = (index) => {
     valueHandler(
       "images",
@@ -464,7 +516,34 @@ export default function AddPackage() {
     );
   };
 
+
+  //UPLOAD PACKAGE IMAGES
   const uploadPackageImages = async (files) => {
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    try {
+      const res = await apiFetch.post(
+        "/upload/upload-package-images",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return res.urls;
+    } catch (error) {
+      console.error("Upload failed:", error);
+      return [];
+    }
+  };
+
+  const uploadItineraryImages = async (files) => {
     const formData = new FormData();
 
     files.forEach((file) => {
@@ -492,10 +571,7 @@ export default function AddPackage() {
 
 
 
-
-
-
-  //add package and update package function
+  //ADD OR UPDATE PACKAGE
   const savePackage = async () => {
     let hasError = false;
 
@@ -580,6 +656,55 @@ export default function AddPackage() {
     // combine both
     const finalImages = [...existingUrls, ...uploadedImageUrls];
 
+    const itineraryImagesByDay = {};
+    const itineraryImageEntries = Object.entries(values.itinerariesImages || {});
+    const hasNewItineraryFiles = itineraryImageEntries.some(([, images]) =>
+      (images || []).some((img) => img instanceof File)
+    );
+
+    if (hasNewItineraryFiles) {
+      message.loading({ content: "Uploading itinerary images...", key: "itinerary-upload" });
+    }
+
+    for (const [day, images] of itineraryImageEntries) {
+      const dayImages = images || [];
+      const dayNewFiles = dayImages.filter((img) => img instanceof File);
+      const dayExistingUrls = dayImages.filter((img) => typeof img === "string");
+
+      let dayUploadedUrls = [];
+      if (dayNewFiles.length > 0) {
+        dayUploadedUrls = await uploadItineraryImages(dayNewFiles);
+
+        if (!dayUploadedUrls.length) {
+          notification.error({ message: "Failed to upload itinerary images", key: "itinerary-upload", placement: "topRight" });
+          return;
+        }
+      }
+
+      itineraryImagesByDay[day] = [...dayExistingUrls, ...dayUploadedUrls];
+    }
+
+    if (hasNewItineraryFiles) {
+      notification.success({ message: "Itinerary images uploaded successfully!", key: "itinerary-upload", placement: "topRight" });
+    }
+
+    const normalizedItineraries = Object.fromEntries(
+      Object.entries(values.itineraries).map(([day, items]) => [
+        day,
+        (items || []).map((item) => {
+          const normalized =
+            typeof item === "string"
+              ? { activity: item, isOptional: false, optionalActivity: "", optionalPrice: "" }
+              : { ...item };
+
+          return {
+            ...normalized,
+            itineraryImages: itineraryImagesByDay[day] || normalized.itineraryImages || [],
+          };
+        }),
+      ])
+    );
+
 
     setSavingPackage(true);
 
@@ -602,7 +727,7 @@ export default function AddPackage() {
       inclusions: formatInExTc(values.inclusions),
       exclusions: formatInExTc(values.exclusions),
       termsAndConditions: formatInExTc(values.termsConditions),
-      itineraries: values.itineraries,
+      itineraries: normalizedItineraries,
       tags: values.tags,
       images: finalImages,
     };
@@ -631,6 +756,12 @@ export default function AddPackage() {
       try {
         const pkg = await apiFetch.get(`/package/get-package/${packageItem}`);
 
+        const itineraryImagesByDay = {};
+        Object.entries(pkg.packageItineraries || {}).forEach(([day, items]) => {
+          const images = (items || []).flatMap((item) => item?.itineraryImages || []);
+          itineraryImagesByDay[day] = images.filter((img) => img && img !== "").slice(0, 3);
+        });
+
         setValues((prev) => ({
           ...prev,
           name: pkg.packageName,
@@ -656,6 +787,7 @@ export default function AddPackage() {
             slots: d.slots || "",
           })),
           itineraries: normalizeItineraries(pkg.packageItineraries || {}),
+          itinerariesImages: itineraryImagesByDay,
           tags: pkg.packageTags || [],
           images: (pkg.images || []).filter((img) => img && img !== ""),
         }));
@@ -1317,55 +1449,138 @@ export default function AddPackage() {
                 className={errors.itineraries ? "add-package-card-error" : ""}
               >
                 {Object.keys(values.itineraries ?? {}).map((day) => (
-                  <div key={day} style={{ marginBottom: 20 }}>
+                  <div key={day} style={{ marginBottom: 24 }}>
                     <h4>{day.replace("day", "Day ")}:</h4>
-                    {values.itineraries[day].map((item, index) => {
-                      const itineraryItem =
-                        typeof item === "string"
-                          ? { activity: item, isOptional: false, optionalActivity: "", optionalPrice: "" }
-                          : item;
+                    <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                      <div style={{ flex: "1 1 520px" }}>
+                        {values.itineraries[day].map((item, index) => {
+                          const itineraryItem =
+                            typeof item === "string"
+                              ? { activity: item, isOptional: false, optionalActivity: "", optionalPrice: "" }
+                              : item;
 
-                      return (
-                        <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
-                          <Input
-                            status={errors.itineraries ? "error" : ""}
-                            className="add-package-inputs"
-                            value={itineraryItem.activity}
-                            onKeyDown={(e) => {
-                              const allowedKeys = [
-                                "Backspace",
-                                "Delete",
-                                "ArrowLeft",
-                                "ArrowRight",
-                                "Tab",
-                                "-",
-                                " ",
-                              ];
-                              if (!allowedKeys.includes(e.key) && !/^[A-Za-z0-9]$/.test(e.key)) {
-                                e.preventDefault();
-                              }
-                            }}
-                            onChange={(e) => updateItineraryItem(day, index, "activity", e.target.value)}
-                            placeholder={`Activity ${index + 1}`}
-                          />
+                          return (
+                            <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
+                              <Input
+                                status={errors.itineraries ? "error" : ""}
+                                className="add-package-inputs"
+                                value={itineraryItem.activity}
+                                style={{ minWidth: 450 }}
+                                onKeyDown={(e) => {
+                                  const allowedKeys = [
+                                    "Backspace",
+                                    "Delete",
+                                    "ArrowLeft",
+                                    "ArrowRight",
+                                    "Tab",
+                                    "-",
+                                    " ",
+                                  ];
+                                  if (!allowedKeys.includes(e.key) && !/^[A-Za-z0-9]$/.test(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                onChange={(e) => updateItineraryItem(day, index, "activity", e.target.value)}
+                                placeholder={`Activity ${index + 1}`}
+                              />
 
+                              <Button
+                                className="delete-add-package-button delete-button"
+                                type="primary"
+                                onClick={() => removeItineraryItem(day, index)}
+                                icon={<DeleteOutlined />}
+                              />
+                            </Space>
+                          );
+                        })}
+                        <Button
+                          className="add-package-add-button highlighted-button"
+                          type="primary"
+                          icon={<PlusOutlined />}
+                          onClick={() => addItineraryItem(day)}
+                        >
+                          Add Activity
+                        </Button>
+                      </div>
+
+                      <div style={{ flex: "1 1 260px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 12,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <label className="add-package-input-labels" style={{ margin: 0 }}>
+                            Itinerary Images
+                          </label>
                           <Button
-                            className="delete-add-package-button delete-button"
                             type="primary"
-                            onClick={() => removeItineraryItem(day, index)}
-                            icon={<DeleteOutlined />}
-                          />
-                        </Space>
-                      );
-                    })}
-                    <Button
-                      className="add-package-add-button highlighted-button"
-                      type="primary"
-                      icon={<PlusOutlined />}
-                      onClick={() => addItineraryItem(day)}
-                    >
-                      Add Activity
-                    </Button>
+                            className="package-image-action-button highlighted-button"
+                            onClick={() => itineraryImageInputRefs.current[day]?.click()}
+                            disabled={(values.itinerariesImages?.[day] || []).length >= 3}
+                          >
+                            <UploadOutlined />
+                            Upload Image
+                          </Button>
+                        </div>
+                        <input
+                          ref={(el) => {
+                            itineraryImageInputRefs.current[day] = el;
+                          }}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleItineraryImageChange(day, e)}
+                          style={{ display: "none" }}
+                        />
+                        <p className="package-image-help">PNG/JPG up to 2MB. Max 3 images.</p>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 12,
+                            flexWrap: "wrap",
+                            marginTop: 12,
+                          }}
+                        >
+                          {(values.itinerariesImages?.[day] || []).map((img, index) => (
+                            <div
+                              key={`${day}-${index}`}
+                              style={{
+                                position: "relative",
+                                width: 135,
+                                height: 135,
+                                borderRadius: 8,
+                                overflow: "hidden",
+                                border: "1px solid #e0e0e0",
+                              }}
+                            >
+                              <img
+                                src={
+                                  img instanceof File
+                                    ? URL.createObjectURL(img)
+                                    : img || null
+                                }
+                                alt={`Itinerary ${day} ${index + 1}`}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                              <Button
+                                type="text"
+                                size="small"
+                                className="delete-add-package-button delete-button"
+                                onClick={() => removeItineraryImage(day, index)}
+                                style={{ position: "absolute", top: 4, right: 4 }}
+                              >
+                                <DeleteOutlined />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ borderTop: "1px solid #e0e0e0", marginTop: 20 }} />
                   </div>
                 ))}
               </div>

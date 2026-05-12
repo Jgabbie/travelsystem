@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Tabs, Modal, Rate, Input, notification, Card, ConfigProvider, Spin, Alert } from 'antd';
+import { Button, Tabs, Modal, Rate, Input, notification, Card, ConfigProvider, Spin, Alert, Carousel } from 'antd';
 import { CheckCircleFilled, HeartFilled, HeartOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useBooking } from '../../context/BookingContext';
@@ -247,23 +247,47 @@ export default function PackagePage() {
         }
         return (
             <div>
-                {days.map((day) => (
-                    <div key={day} style={{ marginBottom: 12 }}>
-                        <strong>{day.replace('day', 'Day ')}</strong>
-                        <ul>
-                            {(itineraries[day] || []).map((item, index) => (
-                                <li key={`${day}-${index}`}>
-                                    <div>{item.activity}</div>
-                                    {item.isOptional && (
-                                        <div>
-                                            Optional: {item.optionalActivity} - ₱{item.optionalPrice?.toLocaleString()}
-                                        </div>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                ))}
+                {days.map((day) => {
+                    const dayItems = itineraries[day] || []
+                    const dayImages = dayItems
+                        .flatMap((item) => (Array.isArray(item?.itineraryImages) ? item.itineraryImages : []))
+                        .filter(Boolean)
+                        .slice(0, 3)
+                    const dayLabel = day.replace('day', 'Day ')
+
+                    return (
+                        <div key={day} className="itinerary-day">
+                            {dayImages.length > 0 && (
+                                <div className="itinerary-carousel">
+                                    <Carousel autoplay dots>
+                                        {dayImages.map((src, index) => (
+                                            <div key={`${day}-image-${index}`} className="itinerary-carousel-slide">
+                                                <img
+                                                    className="itinerary-carousel-image"
+                                                    src={src}
+                                                    alt={`${dayLabel} image ${index + 1}`}
+                                                />
+                                            </div>
+                                        ))}
+                                    </Carousel>
+                                </div>
+                            )}
+                            <strong>{dayLabel}</strong>
+                            <ul>
+                                {dayItems.map((item, index) => (
+                                    <li key={`${day}-${index}`}>
+                                        <div>{item.activity}</div>
+                                        {item.isOptional && (
+                                            <div>
+                                                Optional: {item.optionalActivity} - ₱{item.optionalPrice?.toLocaleString()}
+                                            </div>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )
+                })}
             </div>
         )
     }, [packageData])

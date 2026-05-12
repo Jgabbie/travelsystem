@@ -819,7 +819,7 @@ export default function UserBookingInvoice() {
                         </View>
                     </View>
                     <View style={styles.invoiceTitleContainer}>
-                        <Text style={styles.invoiceTitleText}>Invoice {invoice.invoice.number}</Text>
+                        <Text style={styles.invoiceTitleText}>Booking {invoice.invoice.number}</Text>
                     </View>
                 </View>
 
@@ -969,7 +969,7 @@ export default function UserBookingInvoice() {
     //INVOICE STYLES
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: "#333", fontFamily: "Helvetica" },
-        logo: { width: 85, height: 60 },
+        logo: { width: 80, height: 80 },
         header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 40 },
         headerCompany: { flexDirection: "row", alignItems: "center", gap: 15 },
         brand: { fontSize: 12, fontWeight: "bold" },

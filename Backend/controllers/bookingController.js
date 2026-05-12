@@ -136,9 +136,6 @@ const getUserBookings = async (req, res) => {
             const totalPaid = paidMap[_id.toString()] || 0;
             const totalPrice = Number(bookingDetails?.totalPrice || 0);
 
-            console.log("total paid: ", totalPaid);
-            console.log("total price: ", totalPrice);
-
             // derive status from transactions: if any successful payment recorded, treat as Fully Paid
 
             if (rawStatus === 'Cancelled' || rawStatus === 'Cancellation Requested') {
@@ -153,8 +150,6 @@ const getUserBookings = async (req, res) => {
             }
 
             const computedStatus = totalPaid >= totalPrice ? 'Fully Paid' : totalPaid === 0 ? 'Not Paid' : 'Pending';
-
-            console.log("computed status: ", computedStatus);
 
             return {
                 bookingItem: _id,
@@ -550,7 +545,6 @@ const updateBooking = async (req, res) => {
 //ARCHIVE BOOKING (ADMIN) -----------------------------------------------------------------
 const deleteBooking = async (req, res) => {
     const { id } = req.params
-    console.log("Archiving booking with ID:", id)
 
     try {
         const booking = await BookingModel.findById(id)
@@ -592,7 +586,6 @@ const deleteBooking = async (req, res) => {
 //RESTORE BOOKING (ADMIN) -----------------------------------------------------------------
 const restoreArchivedBooking = async (req, res) => {
     const { id } = req.params
-    console.log("Restoring booking with archived ID:", id)
 
     try {
         const archivedBooking = await ArchivedBookingModel.findById(id)

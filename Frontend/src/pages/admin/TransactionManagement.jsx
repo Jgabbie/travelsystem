@@ -58,9 +58,10 @@ export default function TransactionManagement() {
 
   const mapTransactions = (response) => response.map((t) => ({
     key: t._id,
+    invoiceNumber: t.invoiceNumber || "",
     ref: t.reference,
-    username: t.userId?.username || "Unknown User",
-    firstname: t.userId?.firstname || "Unknown User",
+    username: t.userId?.username,
+    firstname: t.userId?.firstname,
     lastname: t.userId?.lastname || "",
     package: t.packageId?.packageName || t.applicationType,
     date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
@@ -81,6 +82,8 @@ export default function TransactionManagement() {
       const transactions = mapTransactions(response);
 
       setData(transactions);
+
+
     } catch (error) {
       console.error("Error fetching transactions:", error);
       notification.error({ message: "Unable to load transactions.", placement: "topRight" });
@@ -152,6 +155,20 @@ export default function TransactionManagement() {
     try {
       notification.open({ message: "Generating PDF...", key: "pdf", placement: "topRight", duration: 0 });
 
+      const images = Array.from(element.querySelectorAll("img"));
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete) {
+            return Promise.resolve();
+          }
+
+          return new Promise((resolve) => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          });
+        })
+      );
+
       const canvas = await html2canvas(element, {
         scale: 3, // Higher scale for crisp text
         useCORS: true,
@@ -175,10 +192,28 @@ export default function TransactionManagement() {
         format: 'a4',
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const marginTop = 15;
+      const marginLeft = 5;
+      const marginRight = 5;
+      const marginBottom = 10;
+      const pdfWidth = pdf.internal.pageSize.getWidth() - marginLeft - marginRight;
+      const pdfHeight = pdf.internal.pageSize.getHeight() - marginTop - marginBottom;
+      const imageHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = (canvas.width * pdfHeight) / pdfWidth;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      let heightLeft = imageHeight;
+      let position = marginTop;
+
+      pdf.addImage(imgData, 'PNG', marginLeft, position, pdfWidth, imageHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imageHeight + marginTop;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', marginLeft, position, pdfWidth, imageHeight);
+        heightLeft -= pageHeight;
+      }
+
       pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
 
       notification.success({ message: "Downloaded successfully!", key: "pdf", placement: "topRight" });
@@ -191,8 +226,9 @@ export default function TransactionManagement() {
 
   const generatePDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
-    const tableColumn = ["Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
+    const tableColumn = ["Invoice No.", "Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
     const tableRows = filteredData.map(item => [
+      item.invoiceNumber || "N/A",
       item.ref,
       item.package,
       dayjs(item.date).format("MMM DD, YYYY hh:mm A"),
@@ -369,6 +405,7 @@ export default function TransactionManagement() {
 
   // ================= TABLE =================
   const columns = [
+    { title: "Invoice No.", dataIndex: "invoiceNumber" },
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Item", dataIndex: "package" },
     { title: "Customer Name", dataIndex: "username" },
@@ -640,6 +677,7 @@ export default function TransactionManagement() {
           <Card className="transaction-table-card">
             <Form form={form} component={false}>
               <Table
+                className="transaction-table"
                 columns={showArchived ? archivedColumns : columns}
                 dataSource={filteredData}
                 loading={loading}
@@ -731,7 +769,7 @@ export default function TransactionManagement() {
 
                   </div>
                   <div className="receipt-title-box">
-                    <h1 className="receipt-title">RECEIPT</h1>
+                    <h1 className="receipt-title">INVOICE {selectedTransaction.invoiceNumber}</h1>
                   </div>
                 </div>
 
@@ -739,16 +777,28 @@ export default function TransactionManagement() {
                 <div className="receipt-meta">
                   <div className="billed-to">
                     <span className="label-blue">Billed To</span>
-                    <h3 className="customer-name" style={{ margin: 0 }}>{selectedTransaction.firstname + " " + selectedTransaction.lastname || "Customer Name"}</h3>
+                    <h3 className="customer-name" style={{ margin: 0 }}>
+                      {`${selectedTransaction.firstname || ""} ${selectedTransaction.lastname || ""}`.trim() || selectedTransaction.username || "Customer Name"}
+                    </h3>
                   </div>
                   <div className="receipt-details">
                     <div className="detail-item">
-                      <span className="label-blue">Receipt #</span>
-                      <span>{selectedTransaction.ref}</span>
+                      <span className="label-blue">Date</span>
+                      <span>
+                        {(selectedTransaction.date || selectedTransaction.createdAt)
+                          ? dayjs(selectedTransaction.date || selectedTransaction.createdAt).format("DD-MM-YYYY")
+                          : "--"}
+                      </span>
+                    </div>
+                    <div className="detail-item total-price">
+                      <span className="label-blue">Amount to Pay</span>
+                      <span className="value-blue">{selectedTransaction.price}</span>
                     </div>
                     <div className="detail-item">
-                      <span className="label-blue">Receipt date</span>
-                      <span>{selectedTransaction.date ? dayjs(selectedTransaction.date).format("DD-MM-YYYY") : "--"}</span>
+                      <span className="label-blue">Reference</span>
+                      <span>
+                        {selectedTransaction.ref || "--"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -770,35 +820,55 @@ export default function TransactionManagement() {
                       <td className="text-right">{selectedTransaction.price}</td>
                       <td className="text-right">{selectedTransaction.price}</td>
                     </tr>
-                    {/* Add more rows here if your transaction data has multiple items */}
                   </tbody>
                 </table>
 
                 {/* Calculation Section */}
-                <div className="receipt-summary">
-                  <div className="summary-row">
-                    <span>Subtotal</span>
-                    <span>{selectedTransaction.price}</span>
+                <div className='receipt-bank-grid'>
+
+                  {/* Footer Notes */}
+                  <div className="receipt-bank-info">
+                    <div className="receipt-bank-section">
+                      <div className="receipt-bank-label">Bank Account:</div>
+                      <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
+                      <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
+                      <p className="receipt-bank-details">Account #: 006838032692</p>
+                    </div>
+
+                    <div className="receipt-bank-section">
+                      <div className="receipt-bank-label">USD Account:</div>
+                      <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
+                      <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
+                      <p className="receipt-bank-details">Account #: 113190015176</p>
+                    </div>
+
+                    <div className="receipt-bank-section">
+                      <div className="receipt-bank-label">GCash:</div>
+                      <p className="receipt-bank-details">Rhon Carle - 0968 888 0405</p>
+                      <p className="receipt-bank-details">Maricar Carle - 0969 055 4806</p>
+                    </div>
                   </div>
-                  <div className="summary-row total-row">
-                    <span className="label-blue">Total</span>
-                    <span className="total-amount">{selectedTransaction.price}</span>
+
+
+                  <div className="receipt-summary">
+                    <div className="receipt-summary-content">
+                      <div className="summary-row">
+                        <span>Total</span>
+                        <span>{selectedTransaction.price}</span>
+                      </div>
+                      <div className="summary-row total-row">
+                        <span>Total Due</span>
+                        <span className="total-amount">{selectedTransaction.price}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                {/* Footer Notes */}
-                <div className="receipt-footer">
-                  <p className="support-text">Thank you for your purchase!</p>
-                  <p className="support-text">For questions or support, contact us at info1@mrctravels.com</p>
-                </div>
-
-
 
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
               <Button
-                className='user-transactions-viewproof-button'
+                className='transactionmanagement-download-button'
                 type="primary"
                 onClick={handleDownloadPDF}
               >

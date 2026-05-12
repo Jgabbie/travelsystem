@@ -129,7 +129,7 @@ const restoreArchivedService = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
 
-    console.log("Attempting to restore archived service with ID:", id);
+
     try {
         const archivedService = await ArchivedServiceModel.findById(id);
         if (!archivedService) {

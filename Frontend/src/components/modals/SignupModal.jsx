@@ -193,7 +193,6 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     }, [values.username])
 
 
-
     //CHECK FOR DUPLICATE EMAIL
     useEffect(() => {
         const frontEndError = validate("email", values.email);
@@ -216,6 +215,30 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                 }));
             });
     }, [values.email]);
+
+
+    //CHECK FOR DUPLICATE PHONE
+    useEffect(() => {
+        const frontEndError = validate("phone", values.phone);
+        if (frontEndError) return;
+
+        apiFetch.post('/auth/checkDups', { phone: values.phone })
+            .then((data) => {
+                setError(prev => ({
+                    ...prev,
+                    phone: ""
+                }));
+            })
+            .catch((err) => {
+
+                const message = err?.data.message || "Phone number already exists";
+
+                setError(prev => ({
+                    ...prev,
+                    phone: message
+                }));
+            });
+    }, [values.phone]);
 
 
     //HANDLE SIGNUP

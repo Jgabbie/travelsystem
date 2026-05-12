@@ -376,6 +376,15 @@ export default function BookingProcess() {
     const [photoPreviews, setPhotoPreviews] = useState(
         Array.from({ length: travelers.length || 1 }, () => null)
     );
+    const [visaSelections, setVisaSelections] = useState(
+        Array.from({ length: travelers.length || 1 }, () => null)
+    )
+    const [visaFileLists, setVisaFileLists] = useState(
+        Array.from({ length: travelers.length || 1 }, () => [])
+    )
+    const [visaPreviews, setVisaPreviews] = useState(
+        Array.from({ length: travelers.length || 1 }, () => null)
+    )
 
     const passportFileInputs = useRef([]);
     const photoFileInputs = useRef([]);
@@ -409,6 +418,36 @@ export default function BookingProcess() {
         form.setFieldsValue({ travelers: nextTravelers })
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [form, uploadTravelerCount, setBookingData])
+
+    useEffect(() => {
+        setVisaSelections((prev) => {
+            const next = [...prev]
+            if (next.length < uploadTravelerCount) {
+                next.push(...Array(uploadTravelerCount - next.length).fill(null))
+            } else {
+                next.length = uploadTravelerCount
+            }
+            return next
+        })
+        setVisaFileLists((prev) => {
+            const next = [...prev]
+            if (next.length < uploadTravelerCount) {
+                next.push(...Array(uploadTravelerCount - next.length).fill([]))
+            } else {
+                next.length = uploadTravelerCount
+            }
+            return next
+        })
+        setVisaPreviews((prev) => {
+            const next = [...prev]
+            if (next.length < uploadTravelerCount) {
+                next.push(...Array(uploadTravelerCount - next.length).fill(null))
+            } else {
+                next.length = uploadTravelerCount
+            }
+            return next
+        })
+    }, [uploadTravelerCount])
 
 
     //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM--------------------------------
@@ -719,6 +758,23 @@ export default function BookingProcess() {
         setPhotoPreviews(newPreviews);
     };
 
+    const handleVisaChange = (info, index) => {
+        const newFileLists = [...visaFileLists]
+        newFileLists[index] = info.fileList
+        setVisaFileLists(newFileLists)
+
+        const file = info.file
+        setVisaPreviews((prev) => {
+            const next = [...prev]
+            if (file.status === 'removed') {
+                next[index] = null
+            } else if (file instanceof File || (file.originFileObj instanceof File)) {
+                next[index] = URL.createObjectURL(file.originFileObj || file)
+            }
+            return next
+        })
+    }
+
 
     //HANDLE RESET OF UPLOADED FILES--------------------------------
     const handleResetUploads = (index) => {
@@ -778,11 +834,11 @@ export default function BookingProcess() {
     //CLEAN UP OBJECT URLS TO PREVENT MEMORY LEAKS--------------------------------
     useEffect(() => {
         return () => {
-            [...previews, ...photoPreviews].forEach(url => {
+            [...previews, ...photoPreviews, ...visaPreviews].forEach(url => {
                 if (url) URL.revokeObjectURL(url);
             });
         };
-    }, [previews, photoPreviews]);
+    }, [previews, photoPreviews, visaPreviews]);
 
 
     //FUNCTIONS TO INCREASE AND DECREASE TRAVELER COUNTS WITHIN MAX LIMITS--------------------------------
@@ -1189,6 +1245,22 @@ export default function BookingProcess() {
                                     {itineraryEntries.map((day) => (
                                         <details key={day.key} className='itinerary-day'>
                                             <summary className='itinerary-day-label'>{day.label}</summary>
+                                            {day.items.some((item) => Array.isArray(item?.itineraryImages)) && (
+                                                <div className='itinerary-day-images'>
+                                                    {day.items
+                                                        .flatMap((item) => (Array.isArray(item?.itineraryImages) ? item.itineraryImages : []))
+                                                        .filter(Boolean)
+                                                        .slice(0, 3)
+                                                        .map((src, index) => (
+                                                            <img
+                                                                key={`${day.key}-image-${index}`}
+                                                                className='itinerary-day-image'
+                                                                src={src}
+                                                                alt={`${day.label} image ${index + 1}`}
+                                                            />
+                                                        ))}
+                                                </div>
+                                            )}
                                             {day.items.length ? (
                                                 <ul className='itinerary-items'>
                                                     {day.items.map((item, index) => (
@@ -1276,6 +1348,8 @@ export default function BookingProcess() {
                         </div>
                     </div>
 
+
+                    {/* UPLOAD SECTION */}
                     <div className="booking-section-header" style={{ marginTop: 40 }}>
                         <h2 className="upload-passport-title booking-section-title">Upload {travelDocumentLabel}</h2>
                         <p className="upload-passport-text booking-section-subtitle">
@@ -1567,6 +1641,112 @@ export default function BookingProcess() {
                                             }}
                                         />
                                     </div>
+                                    {requiresVisa && !isDomesticPackage && (
+                                        <div className="visa-question-card">
+                                            <p className="visa-question-title">
+                                                Do you have a visa for this tour package?
+                                            </p>
+                                            <div className="visa-question-actions">
+                                                <Button
+                                                    type={visaSelections[index] === 'yes' ? 'primary' : 'default'}
+                                                    size="small"
+                                                    onClick={() =>
+                                                        setVisaSelections((prev) => {
+                                                            const next = [...prev]
+                                                            next[index] = 'yes'
+                                                            return next
+                                                        })
+                                                    }
+                                                >
+                                                    Yes
+                                                </Button>
+                                                <Button
+                                                    type={visaSelections[index] === 'no' ? 'primary' : 'default'}
+                                                    size="small"
+                                                    onClick={() =>
+                                                        setVisaSelections((prev) => {
+                                                            const next = [...prev]
+                                                            next[index] = 'no'
+                                                            return next
+                                                        })
+                                                    }
+                                                >
+                                                    No
+                                                </Button>
+                                            </div>
+                                            {visaSelections[index] === 'yes' && (
+                                                <div className="visa-upload-row">
+                                                    {(!visaFileLists[index] || visaFileLists[index].length === 0) && (
+                                                        <Upload
+                                                            fileList={visaFileLists[index]}
+                                                            beforeUpload={validateFile}
+                                                            onChange={(info) => handleVisaChange(info, index)}
+                                                            accept="image/jpeg,image/png,.pdf"
+                                                            maxCount={1}
+                                                            showUploadList={false}
+                                                        >
+                                                            <Button className='upload-passport-button' type='primary'>
+                                                                Upload Visa
+                                                            </Button>
+                                                        </Upload>
+                                                    )}
+                                                    {visaFileLists[index]?.length > 0 && (
+                                                        <Button
+                                                            type='primary'
+                                                            className='upload-passport-remove-button'
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setVisaFileLists((prev) => {
+                                                                    const next = [...prev]
+                                                                    next[index] = []
+                                                                    return next
+                                                                })
+                                                                setVisaPreviews((prev) => {
+                                                                    const next = [...prev]
+                                                                    next[index] = null
+                                                                    return next
+                                                                })
+                                                            }}
+                                                        >
+                                                            Change Visa
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {visaSelections[index] === 'yes' && (
+                                                <div className="visa-preview-wrapper">
+                                                    {visaPreviews[index] && visaFileLists[index]?.[0]?.type === 'application/pdf' ? (
+                                                        <div className="visa-preview">
+                                                            <a
+                                                                href={visaPreviews[index]}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                View PDF
+                                                            </a>
+                                                        </div>
+                                                    ) : visaPreviews[index] ? (
+                                                        <div className="visa-preview">
+                                                            <img
+                                                                src={visaPreviews[index]}
+                                                                alt={`Visa Preview ${index + 1}`}
+                                                                className="visa-preview-image"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="visa-preview image-placeholder" aria-hidden="true">
+                                                            <span>visa image</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {visaSelections[index] === 'no' && (
+                                                <p className="visa-question-warning">
+                                                    This travel package requires a visa, we highly recommend for you to get one first before booking to avoid travel issues.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="upload-passport-right">

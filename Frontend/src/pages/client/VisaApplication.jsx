@@ -998,12 +998,6 @@ export default function VisaApplication() {
                                                                     <h4 className="section-subtitle">Available Bank Accounts</h4>
                                                                     <div className="bank-grid">
                                                                         <div className="bank-item">
-                                                                            <span className="bank-name">BDO</span>
-                                                                            <span className="account-number">006838032692</span>
-                                                                            <span className="account-holder">M&RC TRAVEL AND TOURS</span>
-                                                                            <span style={{ marginTop: 8, textAlign: 'center', color: '#6b7280', fontSize: 12 }}>No QR Code</span>
-                                                                        </div>
-                                                                        <div className="bank-item">
                                                                             <span className="bank-name">GCASH</span>
                                                                             <span className="account-number">09690554806</span>
                                                                             <span className="account-holder">MA****R C.</span>
@@ -1023,6 +1017,16 @@ export default function VisaApplication() {
                                                                                 style={{ width: 300, height: 'auto', marginTop: 8 }}
                                                                             />
                                                                         </div>
+                                                                    </div>
+
+                                                                    <div style={{ textAlign: 'center', marginTop: 12, marginBottom: 12, color: '#6b7280', fontSize: 16 }}>
+                                                                        Or Without QR Code, you may also deposit to the following account and upload your receipt as proof of payment:
+                                                                    </div>
+
+                                                                    <div className="bank-item" style={{ height: 120 }}>
+                                                                        <span className="bank-name">BDO</span>
+                                                                        <span className="account-number">006838032692</span>
+                                                                        <span className="account-holder">M&RC TRAVEL AND TOURS</span>
                                                                     </div>
                                                                 </div>
 

@@ -38,7 +38,6 @@ const buildSignedCloudinaryUrl = (uploadResult) => {
     return cloudinary.utils.private_download_url(uploadResult.public_id, format, {
         resource_type: uploadResult.resource_type || 'image',
         type: 'private',
-        expires_at: Math.floor(Date.now() / 1000) + 20,
     });
 };
 

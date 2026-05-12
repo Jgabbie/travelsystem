@@ -379,8 +379,8 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                                     rules={[
                                                         { required: true, message: 'Contact number is required' },
                                                         {
-                                                            pattern: /^[0-9]{7,8}$/,
-                                                            message: 'Enter valid contact number (7-8 digits)'
+                                                            pattern: /^[0-9]{7,11}$/,
+                                                            message: 'Enter valid contact number (7-11 digits)'
                                                         }
                                                     ]}
                                                 >
@@ -390,7 +390,7 @@ export default function BookingRegistrationDietQuote({ form, onValuesChange, sum
                                                         size="small"
                                                         style={{ fontSize: '10px', padding: '4px' }}
                                                         onChange={(e) => {
-                                                            let value = e.target.value.replace(/\D/g, '').slice(0, 8);
+                                                            let value = e.target.value.replace(/\D/g, '').slice(0, 11);
                                                             form.setFieldsValue({
                                                                 emergencyContact: value
                                                             });

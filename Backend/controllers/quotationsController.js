@@ -311,8 +311,6 @@ const requestRevision = async (req, res) => {
     const { id } = req.params
     const { notes } = req.body
 
-    console.log('notes:', notes)
-
     try {
         const quotation = await QuotationModel.findById(id)
         const userName = await UserModel.findById(req.userId).select('username')
