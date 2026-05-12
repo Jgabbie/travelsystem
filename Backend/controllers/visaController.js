@@ -8,6 +8,10 @@ const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs')
 
+const PENALTY_AMOUNT = 1500;
+const PENALTY_PAYMENT_WINDOW_DAYS = 1;
+const SECOND_CHANCE_EXTENSION_DAYS = 3;
+
 const VISA_STATUS_TOTAL_DAYS_MAP = {
     'Application Submitted': 2,
     'Application Approved': 4,
@@ -175,6 +179,55 @@ const getVisaStatusSetDate = (application, status) => {
     return null;
 };
 
+const getVisaStoredDeadlineDate = (application, status) => {
+    if (!application || !status) return null;
+
+    const normalizedStatus = String(status || '').trim();
+    const processStep = application.processSteps && typeof application.processSteps === 'object'
+        ? application.processSteps[normalizedStatus]
+        : null;
+
+    if (processStep?.deadlineDate) {
+        const deadlineDate = normalizeVisaDate(processStep.deadlineDate);
+        if (deadlineDate) {
+            return deadlineDate;
+        }
+    }
+
+    if (String(application.status || '').trim() === normalizedStatus && application.statusDeadlineDate) {
+        const deadlineDate = normalizeVisaDate(application.statusDeadlineDate);
+        if (deadlineDate) {
+            return deadlineDate;
+        }
+    }
+
+    return null;
+};
+
+const getVisaPenaltyDeadlineDate = (application) => {
+    if (!application) return null;
+
+    const storedDeadline = normalizeVisaDate(application.penaltyDeadline);
+    if (storedDeadline) {
+        return storedDeadline;
+    }
+
+    const anchorDate = normalizeVisaDate(application.updatedAt) || normalizeVisaDate(application.createdAt);
+    return anchorDate ? anchorDate.add(PENALTY_PAYMENT_WINDOW_DAYS, 'day').startOf('day') : null;
+};
+
+const getVisaSecondChanceDeadlineDate = (application) => {
+    if (!application) return null;
+
+    const paymentCompletedDeadline = getVisaStoredDeadlineDate(application, 'Payment Completed');
+    if (paymentCompletedDeadline) {
+        return paymentCompletedDeadline.add(SECOND_CHANCE_EXTENSION_DAYS, 'day').startOf('day');
+    }
+
+    const anchorDate = normalizeVisaDate(application.updatedAt) || normalizeVisaDate(application.createdAt);
+    return anchorDate ? anchorDate.add(SECOND_CHANCE_EXTENSION_DAYS, 'day').startOf('day') : null;
+};
+
 const getVisaDeadlineInfo = (
     application,
     referenceDate = dayjs()
@@ -193,6 +246,86 @@ const getVisaDeadlineInfo = (
 
     const processSteps = getVisaProcessStepsFromApplication(application);
     const computedDaysMap = buildVisaStatusTotalDaysMapFromSteps(processSteps);
+
+    const currentDate = referenceDate.startOf('day');
+
+    if (application.secondChance) {
+        const deadlineDate = getVisaSecondChanceDeadlineDate(application);
+        if (!deadlineDate) {
+            return null;
+        }
+        const warningDate = deadlineDate.subtract(1, 'day').startOf('day');
+        const daysRemaining = deadlineDate.diff(currentDate, 'day');
+        const warningAlreadySent = Array.isArray(application.deadlineWarnings) && application.deadlineWarnings.some((warning) => (
+            warning
+            && warning.status === `${currentStatus}|SECOND_CHANCE`
+            && warning.deadlineDate === deadlineDate.format('YYYY-MM-DD')
+        ));
+
+        return {
+            status: currentStatus,
+            totalDays: SECOND_CHANCE_EXTENSION_DAYS,
+            deadlineDays: SECOND_CHANCE_EXTENSION_DAYS,
+            statusDeadlineMap: computedDaysMap,
+            deadlineDate,
+            warningDate,
+            daysRemaining,
+            warningAlreadySent,
+            shouldSendWarning: false,
+            isOverdue: daysRemaining < 0,
+        };
+    }
+
+    if (application.onPenalty) {
+        const deadlineDate = getVisaPenaltyDeadlineDate(application);
+        if (!deadlineDate) {
+            return null;
+        }
+        const warningDate = deadlineDate.subtract(1, 'day').startOf('day');
+        const daysRemaining = deadlineDate.diff(currentDate, 'day');
+        const warningAlreadySent = Array.isArray(application.deadlineWarnings) && application.deadlineWarnings.some((warning) => (
+            warning
+            && warning.status === `${currentStatus}|PENALTY`
+            && warning.deadlineDate === deadlineDate.format('YYYY-MM-DD')
+        ));
+
+        return {
+            status: currentStatus,
+            totalDays: PENALTY_PAYMENT_WINDOW_DAYS,
+            deadlineDays: PENALTY_PAYMENT_WINDOW_DAYS,
+            statusDeadlineMap: computedDaysMap,
+            deadlineDate,
+            warningDate,
+            daysRemaining,
+            warningAlreadySent,
+            shouldSendWarning: false,
+            isOverdue: daysRemaining < 0,
+        };
+    }
+
+    const storedDeadlineDate = getVisaStoredDeadlineDate(application, currentStatus);
+    if (storedDeadlineDate) {
+        const warningDate = storedDeadlineDate.subtract(1, 'day').startOf('day');
+        const daysRemaining = storedDeadlineDate.diff(currentDate, 'day');
+        const warningAlreadySent = Array.isArray(application.deadlineWarnings) && application.deadlineWarnings.some((warning) => (
+            warning
+            && warning.status === currentStatus
+            && warning.deadlineDate === storedDeadlineDate.format('YYYY-MM-DD')
+        ));
+
+        return {
+            status: currentStatus,
+            totalDays: computedDaysMap[currentStatus] ?? VISA_STATUS_TOTAL_DAYS_MAP[currentStatus] ?? null,
+            deadlineDays: computedDaysMap[currentStatus] ?? VISA_STATUS_TOTAL_DAYS_MAP[currentStatus] ?? null,
+            statusDeadlineMap: computedDaysMap,
+            deadlineDate: storedDeadlineDate,
+            warningDate,
+            daysRemaining,
+            warningAlreadySent,
+            shouldSendWarning: daysRemaining === 1 && !warningAlreadySent,
+            isOverdue: daysRemaining < 0,
+        };
+    }
 
     const totalDays = Number.isFinite(computedDaysMap[currentStatus])
         ? computedDaysMap[currentStatus]
@@ -214,11 +347,11 @@ const getVisaDeadlineInfo = (
         .subtract(1, 'day')
         .startOf('day');
 
-    const currentDate =
+    const currentDateToday =
         referenceDate.startOf('day');
 
     const daysRemaining =
-        deadlineDate.diff(currentDate, 'day');
+        deadlineDate.diff(currentDateToday, 'day');
 
     const warningAlreadySent =
         Array.isArray(application.deadlineWarnings) &&
@@ -271,6 +404,10 @@ const decorateVisaApplication = (application) => {
 };
 
 const sendVisaDeadlineWarning = async (application) => {
+    if (application?.onPenalty || application?.secondChance) {
+        return { sent: false, application };
+    }
+
     const deadlineInfo = getVisaDeadlineInfo(application);
     if (!deadlineInfo || !deadlineInfo.shouldSendWarning) {
         return { sent: false, application };
@@ -366,7 +503,76 @@ const appendVisaStatusHistory = (application, status, changedBy, changedByName) 
     });
 };
 
-const autoRejectVisaApplication = async (application, deadlineInfo = null) => {
+const sendVisaPenaltyNotification = async (application, deadlineInfo) => {
+    if (!application || !deadlineInfo) {
+        return { sent: false, application };
+    }
+
+    const populatedUser = application.userId && typeof application.userId === 'object' ? application.userId : null;
+    const userId = populatedUser?._id || application.userId;
+    const user = populatedUser && populatedUser.email
+        ? populatedUser
+        : await UserModel.findById(userId).select('email username firstname lastname');
+
+    if (!user || !user.email) {
+        return { sent: false, application };
+    }
+
+    const applicationNumber = application.applicationNumber || 'your visa application';
+    const displayName = user.firstname || user.username || 'Customer';
+    const deadlineLabel = deadlineInfo.deadlineDate.format('MMMM DD, YYYY');
+
+    await NotificationModel.create({
+        userId: user._id,
+        title: 'Visa Application On Penalty',
+        message: `Your visa application ${applicationNumber} is now on penalty. Please pay PHP ${PENALTY_AMOUNT.toLocaleString('en-PH')} within 1 day.`,
+        type: 'visa-penalty',
+        link: '/user-applications',
+        metadata: {
+            applicationId: application._id,
+            applicationNumber,
+            status: deadlineInfo.status,
+            penaltyAmount: PENALTY_AMOUNT,
+            deadlineDate: deadlineInfo.deadlineDate.format('YYYY-MM-DD'),
+        }
+    });
+
+    await transporter.sendMail({
+        from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+        to: user.email,
+        subject: `Visa Application On Penalty: ${applicationNumber}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+                    <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                    <h2 style="color:#305797;">Visa Application On Penalty</h2>
+                    <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
+                    <p style="color:#555; font-size:15px; line-height:1.6;">Your visa application <b>${applicationNumber}</b> is on penalty because <b>${deadlineInfo.status}</b> was not completed on time.</p>
+                    <p style="color:#555; font-size:15px; line-height:1.6;">Penalty fee: <b>PHP ${PENALTY_AMOUNT.toLocaleString('en-PH')}</b></p>
+                    <p style="color:#555; font-size:15px; line-height:1.6;">Pay within <b>1 day</b> to avoid rejection. Deadline: <b>${deadlineLabel}</b></p>
+
+                    <a href="https://mrctravelandtours.com/home"
+                        style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
+                        Login to Your Account
+                    </a>
+
+                    <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+                    <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                        <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                        <p>M&RC Travel and Tours</p>
+                        <p>info1@mrctravels.com</p>
+                        <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
+        `,
+    });
+
+    return { sent: true, application };
+};
+
+const rejectVisaApplicationForDeadline = async (application, deadlineInfo, reachedSecondDeadline = false) => {
     if (!application) {
         return { rejected: false, application };
     }
@@ -389,6 +595,7 @@ const autoRejectVisaApplication = async (application, deadlineInfo = null) => {
 
     appendVisaStatusHistory(application, 'Rejected', null, 'System Auto-Rejection');
     application.status = 'Rejected';
+    application.reachedSecondDeadline = Boolean(reachedSecondDeadline);
 
     if (typeof application.save === 'function') {
         await application.save();
@@ -402,7 +609,9 @@ const autoRejectVisaApplication = async (application, deadlineInfo = null) => {
         await NotificationModel.create({
             userId: user._id,
             title: 'Visa Application Automatically Rejected',
-            message: `Your visa application ${applicationNumber} was automatically rejected because ${resolvedDeadlineInfo.status} was not completed by ${deadlineLabel}.`,
+            message: reachedSecondDeadline
+                ? `Your visa application ${applicationNumber} was automatically rejected because the extra 3-day period after paying the penalty expired.`
+                : `Your visa application ${applicationNumber} was automatically rejected because the penalty fee was not paid within 1 day.`,
             type: 'visa',
             link: '/user-applications',
             metadata: {
@@ -411,6 +620,7 @@ const autoRejectVisaApplication = async (application, deadlineInfo = null) => {
                 status: 'Rejected',
                 rejectedForStatus: resolvedDeadlineInfo.status,
                 deadlineDate: resolvedDeadlineInfo.deadlineDate.format('YYYY-MM-DD'),
+                reachedSecondDeadline: Boolean(reachedSecondDeadline),
             }
         });
     }
@@ -428,7 +638,7 @@ const autoRejectVisaApplication = async (application, deadlineInfo = null) => {
 
                             <h2 style="color:#305797;">Visa Application Automatically Rejected</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
-                            <p style="color:#555; font-size:15px; line-height:1.6;">Your visa application <b>${applicationNumber}</b> was automatically rejected because <b>${resolvedDeadlineInfo.status}</b> was not completed by <b>${deadlineLabel}</b>.</p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;">Your visa application <b>${applicationNumber}</b> was automatically rejected because ${reachedSecondDeadline ? 'the extra 3-day period after penalty payment expired' : 'the penalty fee was not paid within 1 day'}.</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">Please contact our office if you need assistance or wish to submit a new application.</p>
 
                             <a href="https://mrctravelandtours.com/home"
@@ -455,6 +665,55 @@ const autoRejectVisaApplication = async (application, deadlineInfo = null) => {
     return { rejected: true, application };
 };
 
+const markVisaApplicationOnPenalty = async (application, deadlineInfo = null) => {
+    if (!application) {
+        return { penalized: false, application };
+    }
+
+    if (application.onPenalty || application.secondChance || String(application.status || '').trim() === 'Rejected') {
+        return { penalized: false, application };
+    }
+
+    const resolvedDeadlineInfo = deadlineInfo || getVisaDeadlineInfo(application);
+    if (!resolvedDeadlineInfo || !resolvedDeadlineInfo.isOverdue) {
+        return { penalized: false, application };
+    }
+
+    const penaltyDeadlineDate = getVisaPenaltyDeadlineDate(application);
+    const deadlineKey = penaltyDeadlineDate.format('YYYY-MM-DD');
+
+    application.onPenalty = true;
+    application.secondChance = false;
+    application.reachedSecondDeadline = false;
+    application.penaltyDeadline = deadlineKey;
+    application.deadlineWarnings = Array.isArray(application.deadlineWarnings) ? application.deadlineWarnings : [];
+
+    const alreadyRecorded = application.deadlineWarnings.some((warning) => (
+        warning
+        && warning.status === `Penalty:${resolvedDeadlineInfo.status}`
+        && warning.deadlineDate === deadlineKey
+    ));
+
+    if (!alreadyRecorded) {
+        application.deadlineWarnings.push({
+            status: `Penalty:${resolvedDeadlineInfo.status}`,
+            deadlineDate: deadlineKey,
+            warnedAt: new Date(),
+        });
+    }
+
+    if (typeof application.save === 'function') {
+        await application.save();
+    }
+
+    await sendVisaPenaltyNotification(application, {
+        ...resolvedDeadlineInfo,
+        deadlineDate: penaltyDeadlineDate,
+    });
+
+    return { penalized: true, application };
+};
+
 const processVisaDeadlineAction = async (application) => {
     const deadlineInfo = getVisaDeadlineInfo(application);
     if (!deadlineInfo) {
@@ -462,7 +721,15 @@ const processVisaDeadlineAction = async (application) => {
     }
 
     if (deadlineInfo.isOverdue) {
-        return autoRejectVisaApplication(application, deadlineInfo);
+        if (application?.secondChance) {
+            return rejectVisaApplicationForDeadline(application, deadlineInfo, true);
+        }
+
+        if (application?.onPenalty) {
+            return rejectVisaApplicationForDeadline(application, deadlineInfo, false);
+        }
+
+        return markVisaApplicationOnPenalty(application, deadlineInfo);
     }
 
     if (deadlineInfo.shouldSendWarning) {
@@ -559,6 +826,15 @@ const updateVisaApplicationWithDocs = async (req, res) => {
         const application = await VisaModel.findById(id);
         if (!application) {
             return res.status(404).json({ message: 'Visa application not found' })
+        }
+
+        const deadlineActionResult = await processVisaDeadlineAction(application).catch((error) => {
+            console.error('Failed to process visa deadline action before document upload:', error);
+            return null;
+        });
+
+        if (deadlineActionResult?.rejected || String(application.status || '').trim() === 'Rejected') {
+            return res.status(400).json({ message: 'Visa application has been rejected due to a missed deadline.' });
         }
 
         if (application.userId.toString() !== userId) {
@@ -1212,7 +1488,7 @@ module.exports = {
     decorateVisaApplication,
     sendVisaDeadlineWarning,
     processVisaDeadlineAction,
-    autoRejectVisaApplication,
+    autoRejectVisaApplication: rejectVisaApplicationForDeadline,
     buildProcessSteps
 };
 

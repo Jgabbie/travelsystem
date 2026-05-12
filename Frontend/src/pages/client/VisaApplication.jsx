@@ -168,6 +168,13 @@ export default function VisaApplication() {
                     ? appointmentDate.add(deadlineDays, 'day').startOf('day')
                     : null)
         : null;
+    const penaltyStateLabel = application?.reachedSecondDeadline
+        ? 'Penalty Expired'
+        : application?.secondChance
+            ? 'Penalty Paid'
+            : application?.onPenalty
+                ? 'On Penalty'
+                : null;
 
 
 
@@ -345,7 +352,7 @@ export default function VisaApplication() {
 
             if (method === 'manual') {
                 const file = fileList[0].originFileObj;
-                const amountToPay = isDeliveryFeeStage ? deliveryFeeAmount : servicePrice;
+                const amountToPay = application?.onPenalty ? 1500 : (isDeliveryFeeStage ? deliveryFeeAmount : servicePrice);
 
                 const formData = new FormData();
                 formData.append("file", file);
@@ -356,7 +363,8 @@ export default function VisaApplication() {
 
                 const imageUrl = uploadRes.url;
 
-                const paymentRes = await apiFetch.post('/payment/manual-visa', {
+                const endpoint = application?.onPenalty ? '/payment/manual-visa-penalty' : '/payment/manual-visa';
+                const paymentRes = await apiFetch.post(endpoint, {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
                     amount: amountToPay,
@@ -377,14 +385,11 @@ export default function VisaApplication() {
                 const payload = {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
-                    totalPrice: isDeliveryFeeStage ? deliveryFeeAmount : servicePrice,
-                    successUrl: `${window.location.origin}/user-applications/success/visa/${application._id}`, // redirect here after success
-                    cancelUrl: `${window.location.origin}/visa-application/${application._id}`, // stay on same page if cancelled
-                    email: application.email,
                 };
 
                 // Send request to create checkout session
-                const paymongoResponse = await apiFetch.post('/payment/create-checkout-session-visa', payload);
+                const endpoint = application?.onPenalty ? '/payment/create-checkout-session-visa-penalty' : '/payment/create-checkout-session-visa';
+                const paymongoResponse = await apiFetch.post(endpoint, payload);
                 const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
                 // Redirect user to PayMongo checkout
 
@@ -917,6 +922,147 @@ export default function VisaApplication() {
                                                     </div>
                                                 )}
 
+
+                                                {/* PAYMENT SERVICE */}
+                                                {(statusValue && statusValue.toLowerCase() === 'application approved' || application?.onPenalty) && (
+                                                    <div style={{ marginBottom: 32, marginTop: 32 }}>
+                                                        <h3 style={{ marginTop: 0 }}>Payment</h3>
+                                                        {application?.onPenalty && (
+                                                            <p style={{ marginTop: 0, color: '#305797', fontWeight: 600 }}>
+                                                                Penalty Amount due: PHP 1500.00
+                                                            </p>
+                                                        )}
+                                                        <div className="payment-methods-wrapper">
+
+                                                            <Radio.Group
+                                                                onChange={(e) => setMethod(e.target.value)}
+                                                                value={method}
+                                                                className="payment-methods-cards"
+                                                                style={{ width: '100%', display: 'flex', gap: '16px' }}
+                                                            >
+                                                                <Radio.Button
+                                                                    value="paymongo"
+                                                                    className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                >
+                                                                    <div className="card-content" >
+                                                                        <h3>Paymongo</h3>
+                                                                        <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
+                                                                    </div>
+                                                                </Radio.Button>
+
+                                                                <Radio.Button
+                                                                    value="manual"
+                                                                    className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                                                    style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
+                                                                >
+                                                                    <div className="card-content">
+                                                                        <h3>Manual Payment</h3>
+                                                                        <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                                                        <p style={{ color: "#FF4D4F", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                                                    </div>
+                                                                </Radio.Button>
+                                                            </Radio.Group>
+                                                        </div>
+
+                                                        {method === 'manual' && (
+                                                            <div className="manual-transfer-details">
+                                                                <div className="bank-accounts-section">
+                                                                    <h4 className="section-subtitle">Available Bank Accounts</h4>
+                                                                    <div className="bank-grid">
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09690554806</span>
+                                                                            <span className="account-holder">MA****R C.</span>
+                                                                            <img
+                                                                                src="/images/QRCode_GCash_Maricar.jpg"
+                                                                                alt="GCash QR Maricar"
+                                                                                style={{ width: 300, height: 'auto', marginTop: 8 }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="bank-item">
+                                                                            <span className="bank-name">GCASH</span>
+                                                                            <span className="account-number">09688880405</span>
+                                                                            <span className="account-holder">RH*N C.</span>
+                                                                            <img
+                                                                                src="/images/QRCode_GCash_Rhon.jpg"
+                                                                                alt="GCash QR Rhon"
+                                                                                style={{ width: 300, height: 'auto', marginTop: 8 }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div style={{ textAlign: 'center', marginTop: 12, marginBottom: 12, color: '#6b7280', fontSize: 16 }}>
+                                                                        Or Without QR Code, you may also deposit to the following account and upload your receipt as proof of payment:
+                                                                    </div>
+
+                                                                    <div className="bank-item" style={{ height: 120 }}>
+                                                                        <span className="bank-name">BDO</span>
+                                                                        <span className="account-number">006838032692</span>
+                                                                        <span className="account-holder">M&RC TRAVEL AND TOURS</span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="upload-section">
+                                                                    <h4 className="section-subtitle">Upload Proof of Payment</h4>
+                                                                    <p className="upload-hint">Please upload a clear screenshot or photo of your deposit slip or transfer confirmation.</p>
+                                                                    <p className="upload-hint">Accepted formats: JPG or PNG. Max size: 2MB.</p>
+
+                                                                    <p className="upload-note">Note: Our team will manually verify your payment, which may take 1-2 business days. You will receive a confirmation email once your payment is verified.</p>
+
+                                                                    <Upload
+                                                                        listType="picture"
+                                                                        maxCount={1}
+                                                                        fileList={fileList}
+                                                                        onChange={handleUploadChange}
+                                                                        beforeUpload={() => false}
+                                                                        customRequest={({ onSuccess }) => onSuccess("ok")}
+                                                                        action={undefined}
+                                                                        accept=".jpg,.jpeg,.png,.pdf"
+                                                                    >
+                                                                        <Button icon={<UploadOutlined />} className="visaapplication-uploadreceipt-button" type="primary">
+                                                                            Select Receipt Image
+                                                                        </Button>
+                                                                    </Upload>
+
+                                                                    {fileList.length > 0 && (
+                                                                        <div className="upload-preview-container">
+                                                                            <h4 className="section-subtitle">Preview</h4>
+
+                                                                            <div className="upload-preview-box">
+                                                                                <Image
+                                                                                    src={fileList[0].preview}
+                                                                                    alt="Receipt Preview"
+                                                                                    className="upload-preview-image"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <Button
+                                                            style={{ marginTop: 20 }}
+                                                            className='visaapplication-submit-button'
+                                                            type="primary"
+                                                            onClick={handleSubmitPayment}
+                                                            disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                        >
+                                                            {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                                        </Button>
+
+                                                    </div>
+                                                )}
+
+
+
+
+
+
+
+                                                {/* PENALTY FEE */}
                                                 {statusValue && statusValue.toLowerCase() === 'application approved' && (
                                                     <div style={{ marginBottom: 32, marginTop: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Payment</h3>
@@ -1046,7 +1192,7 @@ export default function VisaApplication() {
 
 
 
-
+                                                {/* DELIVERY FEE */}
                                                 {isDeliveryFeeStage && (
                                                     <div style={{ marginBottom: 32, marginTop: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Delivery Fee Payment</h3>
@@ -1163,7 +1309,7 @@ export default function VisaApplication() {
                                                 )}
 
                                                 {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                                {statusValue && statusValue.toLowerCase() === 'payment completed' && (
+                                                {statusValue && statusValue.toLowerCase() === 'payment completed' && !application?.onPenalty && (
                                                     <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                         <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
                                                         {requirements.length === 0 && (
@@ -1549,6 +1695,9 @@ export default function VisaApplication() {
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                                                         <span>Status</span>
                                                         <Tag color="blue">{application?.status || 'N/A'}</Tag>
+                                                        {penaltyStateLabel && (
+                                                            <Tag color={application?.reachedSecondDeadline ? 'red' : 'volcano'}>{penaltyStateLabel}</Tag>
+                                                        )}
                                                     </div>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                         <span>Service Fee</span>

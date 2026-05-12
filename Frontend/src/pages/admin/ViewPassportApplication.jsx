@@ -192,6 +192,13 @@ export default function ViewPassportApplication() {
         : appointmentDate && Number.isFinite(deadlineDays)
             ? appointmentDate.subtract(deadlineDays, 'day').startOf('day')
             : null;
+    const penaltyStateLabel = application?.reachedSecondDeadline
+        ? 'Penalty Expired'
+        : application?.secondChance
+            ? 'Penalty Paid'
+            : application?.onPenalty
+                ? 'On Penalty'
+                : null;
     // Auto-reject application if deadline is passed
     useEffect(() => {
         if (!application || !statusDeadlineDate || hasProcessedRejection) return;
@@ -719,6 +726,9 @@ export default function ViewPassportApplication() {
                                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                                             <span>Status</span>
                                             <Tag color="blue">{application?.status || "N/A"}</Tag>
+                                            {penaltyStateLabel && (
+                                                <Tag color={application?.reachedSecondDeadline ? 'red' : 'volcano'}>{penaltyStateLabel}</Tag>
+                                            )}
                                         </div>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                                             <span>Service</span>

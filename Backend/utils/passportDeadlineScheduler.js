@@ -1,5 +1,5 @@
 const PassportModel = require('../models/passport');
-const { getPassportDeadlineInfo, sendPassportDeadlineWarning } = require('../controllers/passportController');
+const { processPassportDeadlineAction } = require('../controllers/passportController');
 
 const processPassportDeadlines = async () => {
     const applications = await PassportModel.find({
@@ -8,12 +8,7 @@ const processPassportDeadlines = async () => {
 
     for (const application of applications) {
         try {
-            const deadlineInfo = getPassportDeadlineInfo(application);
-            if (!deadlineInfo || !deadlineInfo.shouldSendWarning) {
-                continue;
-            }
-
-            await sendPassportDeadlineWarning(application);
+            await processPassportDeadlineAction(application);
         } catch (error) {
             console.error('Failed to process passport deadline reminder:', error);
         }

@@ -135,6 +135,13 @@ export default function ViewVisaApplication() {
         : application?.updatedAt
             ? dayjs(application.updatedAt)
             : null;
+    const penaltyStateLabel = application?.reachedSecondDeadline
+        ? 'Penalty Expired'
+        : application?.secondChance
+            ? 'Penalty Paid'
+            : application?.onPenalty
+                ? 'On Penalty'
+                : null;
 
     const getProcessStepInfoForTitle = (app, title) => app?.processSteps?.[title] || null;
 
@@ -774,7 +781,12 @@ export default function ViewVisaApplication() {
                                             <p className="app-detail-kicker" style={{ marginBottom: 6 }}>Overview</p>
                                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                                                 <span>Status</span>
-                                                <Tag color="blue">{statusText || "N/A"}</Tag>
+                                                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                                    <Tag color="blue">{statusText || "N/A"}</Tag>
+                                                    {penaltyStateLabel && (
+                                                        <Tag color={application?.reachedSecondDeadline ? 'red' : 'volcano'}>{penaltyStateLabel}</Tag>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div style={{ display: "flex", justifyContent: "space-between" }}>
                                                 <span>Service</span>

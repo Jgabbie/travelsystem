@@ -48,6 +48,10 @@ const VisaApplicationSchema = new mongoose.Schema({
         warnedAt: { type: Date }
     }],
     processSteps: { type: mongoose.Schema.Types.Mixed, default: {} },
+    onPenalty: { type: Boolean, default: false },
+    penaltyDeadline: { type: String, default: "" },
+    secondChance: { type: Boolean, default: false },
+    reachedSecondDeadline: { type: Boolean, default: false },
     currentStepIndex: { type: Number, default: 0 }
 }, { timestamps: true })
 

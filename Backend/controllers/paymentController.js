@@ -517,6 +517,242 @@ const createManualPaymentDeposit = async (req, res) => {
 };
 
 
+//MANUAL PAYMENT FOR PASSPORT PENALTY FEE
+const createManualPaymentPassportPenalty = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const {
+            applicationId,
+            amount,
+            proofImage,
+        } = req.body;
+        if (!proofImage) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const token = crypto.randomUUID();
+
+        const tokenCheckout = await TokenCheckoutPassportModel.create({
+            token,
+            userId,
+            applicationId,
+            amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+
+        const reference = generateTransactionReference();
+        const { invoiceNumber } = await generateTransactionInvoiceNumber();
+        const transaction = await TransactionModel.create({
+            applicationId,
+            applicationType: "Passport Penalty Fee",
+            userId,
+            invoiceNumber,
+            reference,
+            amount,
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+        });
+
+
+        const passportApp = await PassportModel.findById(applicationId);
+        const user = await UserModel.findById(userId).select('email username');
+
+        await NotificationModel.create({
+            userId,
+            title: "Manual Payment Submitted",
+            message: `Your manual payment for passport penalty fee ${passportApp.applicationNumber} has been submitted and is pending review.`,
+            link: `/user-transactions`,
+        });
+
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Passport Penalty Fee Payment Submitted`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Passport Penalty Fee Payment Submitted!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your manual passport penalty fee payment has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${reference} <br/>
+                                <b>Application Number:</b> ${applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>info1@mrctravels.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send passport email:', emailError);
+        }
+
+        logAction('MANUAL_PAYMENT', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Passport Penalty Fee` });
+
+        return res.status(200).json({
+            redirectUrl: `/user-applications/success/passport?token=${token}`
+        });
+
+    } catch (error) {
+        console.error('Manual payment for passport penalty fee error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment for passport penalty fee.' });
+    }
+};
+
+
+//MANUAL PAYMENT FOR VISA PENALTY FEE
+const createManualPaymentVisaPenalty = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const {
+            applicationId,
+            amount,
+            proofImage,
+        } = req.body;
+        if (!proofImage) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const token = crypto.randomUUID();
+
+        const tokenCheckout = await TokenCheckoutPassportModel.create({
+            token,
+            userId,
+            applicationId,
+            amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+
+        const reference = generateTransactionReference();
+        const { invoiceNumber } = await generateTransactionInvoiceNumber();
+        const transaction = await TransactionModel.create({
+            applicationId,
+            applicationType: "Visa Penalty Fee",
+            userId,
+            invoiceNumber,
+            reference,
+            amount,
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+        });
+
+
+        const visaApp = await VisaModel.findById(applicationId);
+        const user = await UserModel.findById(userId).select('email username');
+
+        await NotificationModel.create({
+            userId,
+            title: "Manual Payment Submitted",
+            message: `Your manual payment for visa penalty fee ${visaApp.applicationNumber} has been submitted and is pending review.`,
+            link: `/user-transactions`,
+        });
+
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Visa Penalty Fee Payment Submitted`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Visa Penalty Fee Payment Submitted!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your manual visa penalty fee payment has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${reference} <br/>
+                                <b>Application Number:</b> ${applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>info1@mrctravels.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send visa email:', emailError);
+        }
+
+        logAction('MANUAL_PAYMENT', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Visa Penalty Fee` });
+
+        return res.status(200).json({
+            redirectUrl: `/user-applications/success/visa?token=${token}`
+        });
+
+    } catch (error) {
+        console.error('Manual payment for visa penalty fee error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment for visa penalty fee.' });
+    }
+};
+
+
+
+
+
+
 //MANUAL PAYMENT FOR PASSPORT APPLICATIONS
 const createManualPaymentPassport = async (req, res) => {
     const userId = req.userId;
@@ -845,6 +1081,7 @@ const createCheckoutSessionPassport = async (req, res) => {
     }
 };
 
+
 const createCheckoutSessionVisa = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -939,6 +1176,205 @@ const createCheckoutSessionVisa = async (req, res) => {
         res.status(500).json({ error: error.response?.data || error.message });
     }
 };
+
+
+const createCheckoutSessionPassportPenalty = async (req, res) => {
+    const userId = req.userId;
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+    try {
+        if (!process.env.PAYMONGO_SECRET_KEY) {
+            return res.status(500).json({ error: "PayMongo secret key is not configured." });
+        }
+
+        const { applicationId } = req.body;
+
+        if (!applicationId) {
+            return res.status(400).json({ error: "Missing required fields." });
+        }
+
+        const penaltyAmount = 1500; // Fixed penalty amount in PHP
+        const token = crypto.randomUUID();
+
+        const tokenCheckoutPassport = await TokenCheckoutPassportModel.create({
+            token,
+            userId,
+            applicationId,
+            amount: penaltyAmount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+
+        const successUrl = `${FRONTEND_URL}/user-applications/success/passport-penalty?token=${token}`;
+        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+
+        const baseAmountCents = Math.round(penaltyAmount * 100);
+        const convenienceFeeCents = Math.round(baseAmountCents * 0.035); // 3.5% convenience fee
+        const finalTotalCents = baseAmountCents + convenienceFeeCents;
+
+        const email = await UserModel.findById(userId).select('email');
+        const username = await UserModel.findById(userId).select('username');
+
+        const metadata = {
+            userId,
+            applicationId,
+            applicationType: "Passport Penalty Fee",
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents,
+        };
+
+        const response = await apiFetch.post(
+            "https://api.paymongo.com/v1/checkout_sessions",
+            {
+                data: {
+                    attributes: {
+                        billing: {
+                            name: username.username || "Visa Applicant",
+                            email: email.email || "test@example.com",
+                        },
+                        line_items: [
+                            {
+                                name: "Passport Application Penalty Fee",
+                                quantity: 1,
+                                amount: baseAmountCents,
+                                currency: "PHP",
+                            },
+                            {
+                                name: "Convenience Fee",
+                                description: "Payment processing and service fee",
+                                quantity: 1,
+                                amount: convenienceFeeCents,
+                                currency: "PHP",
+                            }
+                        ],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        success_url: successUrl,
+                        cancel_url: cancelUrl,
+                        metadata,
+                        show_description: true,
+                        show_line_items: true,
+                    },
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64")}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        res.json(response);
+
+    } catch (error) {
+        console.error("Visa Checkout Error:", error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+};
+
+
+
+const createCheckoutSessionVisaPenalty = async (req, res) => {
+    const userId = req.userId;
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+    try {
+        if (!process.env.PAYMONGO_SECRET_KEY) {
+            return res.status(500).json({ error: "PayMongo secret key is not configured." });
+        }
+
+        const { applicationId } = req.body;
+
+        if (!applicationId) {
+            return res.status(400).json({ error: "Missing required fields." });
+        }
+
+        const penaltyAmount = 1500; // Fixed penalty amount in PHP
+        const token = crypto.randomUUID();
+
+        const tokenCheckoutVisa = await TokenCheckoutVisaModel.create({
+            token,
+            userId,
+            applicationId,
+            amount: penaltyAmount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+
+        const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
+        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+
+        const baseAmountCents = Math.round(penaltyAmount * 100);
+        const convenienceFeeCents = Math.round(baseAmountCents * 0.035); // 3.5% convenience fee
+        const finalTotalCents = baseAmountCents + convenienceFeeCents;
+
+        const email = await UserModel.findById(userId).select('email');
+        const username = await UserModel.findById(userId).select('username');
+
+        const metadata = {
+            userId,
+            applicationId,
+            applicationType: "Visa Penalty Fee",
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents,
+        };
+
+        const response = await apiFetch.post(
+            "https://api.paymongo.com/v1/checkout_sessions",
+            {
+                data: {
+                    attributes: {
+                        billing: {
+                            name: username.username || "Visa Applicant",
+                            email: email.email || "test@example.com",
+                        },
+                        line_items: [
+                            {
+                                name: "Visa Penalty Fee",
+                                quantity: 1,
+                                amount: baseAmountCents,
+                                currency: "PHP",
+                            },
+                            {
+                                name: "Convenience Fee",
+                                description: "Payment processing and service fee",
+                                quantity: 1,
+                                amount: convenienceFeeCents,
+                                currency: "PHP",
+                            }
+                        ],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        success_url: successUrl,
+                        cancel_url: cancelUrl,
+                        metadata,
+                        show_description: true,
+                        show_line_items: true,
+                    },
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64")}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        res.json(response);
+
+    } catch (error) {
+        console.error("Visa Checkout Error:", error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+};
+
+
+
+
+
+
 
 const createCheckoutSessionDeposit = async (req, res) => {
     const userId = req.userId;
@@ -1571,6 +2007,229 @@ const handlePayMongoWebhook = async (req, res) => {
             return
         }
 
+
+        //visa penalty fee
+        if (metadata.applicationId && metadata.applicationType === "Visa Penalty Fee") {
+            console.log('🛂 Visa payment detected');
+            const grossAmount =
+                Number(metadata.totalAmountCents || 0) / 100 ||
+                Number(sessionAttributes?.amount_total || 0) / 100;
+            const net = grossAmount - ((grossAmount * 0.035) + 15);
+            const amount = Math.round(net / 100) * 100;
+
+            const transactionReference = generateTransactionReference();
+
+            const { invoiceNumber: invoiceNumberVisa } = await generateTransactionInvoiceNumber();
+            await TransactionModel.create({
+                userId: user._id,
+                applicationId: metadata.applicationId,
+                applicationType: "Visa Penalty Fee",
+                invoiceNumber: invoiceNumberVisa,
+                reference: transactionReference,
+                amount: Math.round(metadata.baseAmountCents / 100),
+                method: 'Paymongo',
+                status: 'Successful',
+            });
+
+            logAction('PAYMONGO_PAYMENT', user._id, { "Visa Penalty Fee Paid": `Transaction Reference: ${transactionReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Visa Penalty Fee` });
+
+            console.log('Created transaction for visa penalty fee:', metadata.applicationId);
+
+            const updatedVisa = await VisaModel.findOneAndUpdate(
+                { _id: metadata.applicationId }, // filter object
+                {
+                    $set: { status: ["Payment Completed"], currentStepIndex: 1 } // replace array & update progress
+                },
+                { new: true } // return the updated document
+            );
+
+            if (!updatedVisa) {
+                console.warn(`No visa application found with applicationId ${metadata.applicationId}`);
+            } else {
+                console.log("Visa payment status updated:", updatedVisa.status);
+            }
+
+            await NotificationModel.create({
+                userId: user._id,
+                title: 'Visa Payment Successful',
+                message: `Your visa application ${metadata.applicationNumber} was successful.`,
+                type: 'visa',
+                link: '/user-transactions',
+            });
+
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Visa Payment Successful`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Visa Penalty Fee Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your visa penalty fee payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${transactionReference} <br/>
+                                <b>Application Number:</b> ${metadata.applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>info1@mrctravels.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    `
+                });
+            } catch (emailError) {
+                console.error('Failed to send visa email:', emailError);
+            }
+
+            console.log('Visa payment processed successfully');
+            return
+        }
+
+
+
+        //penalty fee passport
+        if (metadata.applicationId && metadata.applicationType === "Passport Penalty Fee") {
+            console.log('🛂 Passport payment detected');
+            const grossAmount =
+                Number(metadata.totalAmountCents || 0) / 100 ||
+                Number(sessionAttributes?.amount_total || 0) / 100;
+            const net = grossAmount - ((grossAmount * 0.035) + 15);
+            const amount = Math.round(net / 100) * 100;
+
+            const transactionReference = generateTransactionReference();
+
+            const { invoiceNumber: invoiceNumberPassport } = await generateTransactionInvoiceNumber();
+            const transaction = await TransactionModel.create({
+                userId: user._id,
+                applicationId: metadata.applicationId,
+                applicationType: "Passport Penalty Fee",
+                invoiceNumber: invoiceNumberPassport,
+                reference: transactionReference,
+                amount: Math.round(metadata.baseAmountCents / 100),
+                method: 'Paymongo',
+                status: 'Successful',
+            });
+
+            console.log('Created transaction for passport application:', metadata.applicationId);
+
+            const updatedApp = await PassportModel.findOneAndUpdate(
+                { _id: metadata.applicationId },
+                { status: "Payment Completed" },
+                { new: true }
+            );
+
+            if (!updatedApp) {
+                console.warn(`No passport application found with applicationId ${metadata.applicationId}`);
+            } else {
+                console.log("Updated status:", updatedApp.status);
+            }
+            console.log("Updated status:", updatedApp.status);
+
+            await NotificationModel.create({
+                userId: user._id,
+                title: 'Passport Payment Successful',
+                message: `Your passport application ${metadata.applicationNumber} was successful.`,
+                type: 'passport',
+                link: '/user-transactions',
+            });
+
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Passport Penalty Fee Payment Successful`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Passport Penalty Fee Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your passport penalty fee payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${transactionReference} <br/>
+                                <b>Application Number:</b> ${metadata.applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>info1@mrctravels.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    `
+                });
+            } catch (emailError) {
+                console.error('Failed to send passport email:', emailError);
+            }
+
+            logAction('PAYMONGO_PAYMENT', user._id, { "Passport Application Paid": `Transaction Reference: ${transactionReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Passport Application` });
+
+            console.log('Passport payment processed successfully');
+            return
+        }
+
+
+
+
+
+
+
+
+
+
         //INSTALLMENT PAYMENT --------------------------------------------------------------------------
         if (metadata.transactionType === "Installment Payment") {
             console.log('💰 Installment payment detected');
@@ -2001,4 +2660,4 @@ const createCheckoutToken = async (req, res) => {
 };
 
 
-module.exports = { createCheckoutSession, createCheckoutSessionQuotation, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentQuotation, createManualPaymentDeposit, createManualPaymentVisa, createManualPaymentPassport };
+module.exports = { createCheckoutSession, createCheckoutSessionQuotation, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionVisaPenalty, createCheckoutSessionPassportPenalty, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentQuotation, createManualPaymentDeposit, createManualPaymentVisa, createManualPaymentPassport, createManualPaymentVisaPenalty, createManualPaymentPassportPenalty };

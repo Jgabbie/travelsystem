@@ -7,6 +7,8 @@ router.post("/create-checkout-session", userAuth, paymentController.createChecko
 router.post("/create-checkout-session-quotation", userAuth, paymentController.createCheckoutSessionQuotation);
 router.post("/create-checkout-session-passport", userAuth, paymentController.createCheckoutSessionPassport);
 router.post("/create-checkout-session-visa", userAuth, paymentController.createCheckoutSessionVisa);
+router.post("/create-checkout-session-visa-penalty", userAuth, paymentController.createCheckoutSessionVisaPenalty);
+router.post("/create-checkout-session-passport-penalty", userAuth, paymentController.createCheckoutSessionPassportPenalty);
 router.post("/create-checkout-session-deposit", userAuth, paymentController.createCheckoutSessionDeposit);
 router.post("/create-checkout-token", userAuth, paymentController.createCheckoutToken);
 router.post("/manual", userAuth, paymentController.createManualPayment);
@@ -14,5 +16,7 @@ router.post("/manual-quotation", userAuth, paymentController.createManualPayment
 router.post("/manual-deposit", userAuth, paymentController.createManualPaymentDeposit);
 router.post("/manual-visa", userAuth, paymentController.createManualPaymentVisa);
 router.post("/manual-passport", userAuth, paymentController.createManualPaymentPassport);
+router.post("/manual-visa-penalty", userAuth, paymentController.createManualPaymentVisaPenalty);
+router.post("/manual-passport-penalty", userAuth, paymentController.createManualPaymentPassportPenalty);
 router.post('/webhook/paymongo', express.raw({ type: 'application/json' }), paymentController.handlePayMongoWebhook);
 module.exports = router;
