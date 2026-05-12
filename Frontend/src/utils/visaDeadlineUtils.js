@@ -18,3 +18,19 @@ export const buildVisaStatusTotalDaysMapFromSteps = (steps = []) => {
 
     return cumulativeMap;
 };
+
+export const normalizeVisaProcessSteps = (processSteps = {}) => {
+    if (!processSteps || typeof processSteps !== 'object' || Array.isArray(processSteps)) {
+        return [];
+    }
+
+    return Object.entries(processSteps)
+        .filter(([title, value]) => Boolean(title) && value && typeof value === 'object')
+        .map(([title, value], index) => ({
+            title,
+            description: value.description || title,
+            setDate: value.setDate || null,
+            deadlineDate: value.deadlineDate || null,
+            order: index,
+        }));
+};

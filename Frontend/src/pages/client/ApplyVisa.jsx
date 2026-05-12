@@ -217,6 +217,7 @@ export default function ApplyVisa() {
                                 preferredDate: '',
                                 preferredTime: '',
                             })
+                            window.location.reload()
                         }}
                     >
                         Continue

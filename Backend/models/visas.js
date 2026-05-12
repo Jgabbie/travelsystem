@@ -47,6 +47,7 @@ const VisaApplicationSchema = new mongoose.Schema({
         deadlineDate: { type: String },
         warnedAt: { type: Date }
     }],
+    processSteps: { type: mongoose.Schema.Types.Mixed, default: {} },
     currentStepIndex: { type: Number, default: 0 }
 }, { timestamps: true })
 

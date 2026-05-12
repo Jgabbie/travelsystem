@@ -5,7 +5,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../../style/admin/viewvisaapplication.css"
 import apiFetch from "../../config/fetchConfig";
 import dayjs from "dayjs";
-import { buildVisaStatusTotalDaysMapFromSteps } from "../../utils/visaDeadlineUtils";
+import { normalizeVisaProcessSteps } from "../../utils/visaDeadlineUtils";
 
 const { Title } = Typography;
 
@@ -54,24 +54,6 @@ export default function ViewVisaApplication() {
             // 1. Fetch the application first
             const appData = await apiFetch.get(`/visa/applications/${applicationItem}`);
 
-            // 2. Determine current step
-            const visaProcessSteps = appData.visaProcessSteps || []; // might be undefined if service not fetched yet
-
-            // if visaProcessSteps already exist in appData
-            const statusMap = visaProcessSteps.reduce((acc, step, idx) => {
-                const key = typeof step === "string" ? step : step?.title;
-                if (key) {
-                    acc[key] = idx;
-                }
-                return acc;
-            }, {});
-
-            const normalizedStatus = Array.isArray(appData.status)
-                ? appData.status[appData.status.length - 1]
-                : appData.status;
-
-            setCurrentStep(statusMap[normalizedStatus] ?? 0);
-
             // 3. Fetch the service using serviceId from application
             if (appData.serviceId) {
                 try {
@@ -83,9 +65,7 @@ export default function ViewVisaApplication() {
                         ...appData,
                         visaName: serviceData.visaName,
                         visaPrice: serviceData.visaPrice,
-                        visaProcessSteps: serviceData.visaProcessSteps,
                         visaRequirements: serviceData.visaRequirements,
-                        visaStatusTotalDaysMap: appData.visaStatusTotalDaysMap || serviceData.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(serviceData.visaProcessSteps || appData.visaProcessSteps || []),
                         serviceName: serviceData.visaName // for your Tag
                     });
                 } catch (err) {
@@ -146,30 +126,9 @@ export default function ViewVisaApplication() {
         ? application.status[application.status.length - 1]
         : application?.status;
 
+    const processStepEntries = useMemo(() => normalizeVisaProcessSteps(application?.processSteps), [application?.processSteps]);
+
     const terminalStatuses = new Set(['processing by embassy', 'embassy approved', 'passport released']);
-
-    const normalizedVisaSteps = useMemo(() => {
-        return (application?.visaProcessSteps || []).map((step, idx) => {
-            if (typeof step === "string") {
-                return {
-                    title: step,
-                    description: `Description for ${step}`,
-                    daysToBeCompleted: 0,
-                    _idx: idx,
-                };
-            }
-
-            const title = String(step?.title || '').trim() || `Step ${idx + 1}`;
-            return {
-                title,
-                description: step?.description || `Description for ${title}`,
-                daysToBeCompleted: Number(step?.daysToBeCompleted ?? step?.days ?? 0) || 0,
-                _idx: idx,
-            };
-        });
-    }, [application?.visaProcessSteps]);
-
-    const cumulativeStepDaysMap = application?.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(normalizedVisaSteps);
 
     const statusSetDate = application?.statusUpdatedAt
         ? dayjs(application.statusUpdatedAt)
@@ -177,19 +136,7 @@ export default function ViewVisaApplication() {
             ? dayjs(application.updatedAt)
             : null;
 
-    const getStepSetDateForTitle = (app, title) => {
-        if (!app || !title) return null;
-        const history = app.statusHistory;
-        if (Array.isArray(history) && history.length > 0) {
-            for (let i = history.length - 1; i >= 0; i--) {
-                const h = history[i];
-                if (String(h.status).toLowerCase() === String(title).toLowerCase()) {
-                    return dayjs(h.changedAt);
-                }
-            }
-        }
-        return null;
-    };
+    const getProcessStepInfoForTitle = (app, title) => app?.processSteps?.[title] || null;
 
     // Get the most recent staff/admin who changed the status (if available)
     const getManagerName = (app) => {
@@ -235,18 +182,17 @@ export default function ViewVisaApplication() {
     const managerName = getManagerName(application);
 
     useEffect(() => {
-        if (!application?.visaProcessSteps || !statusText) return;
+        if (!processStepEntries.length || !statusText) return;
 
-        const statusMap = application.visaProcessSteps.reduce((acc, step, idx) => {
-            const key = typeof step === "string" ? step : step?.title;
-            if (key) {
-                acc[key] = idx;
+        const statusMap = processStepEntries.reduce((acc, step, idx) => {
+            if (step?.title) {
+                acc[String(step.title).toLowerCase()] = idx;
             }
             return acc;
         }, {});
 
-        setCurrentStep(statusMap[statusText] ?? 0);
-    }, [application?.visaProcessSteps, statusText]);
+        setCurrentStep(statusMap[String(statusText).toLowerCase()] ?? 0);
+    }, [processStepEntries, statusText]);
 
     useEffect(() => {
         if ((application?.passportReleaseOption || "").toLowerCase() !== "delivery") return;
@@ -349,9 +295,7 @@ export default function ViewVisaApplication() {
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable || isUpdatingStatus) return;
         // Map step index to status string
-        const statusArr = application.visaProcessSteps.map((step) =>
-            typeof step === "string" ? step : step?.title
-        );
+        const statusArr = processStepEntries.map((step) => step?.title).filter(Boolean);
         const newStatus = statusArr[stepIdx];
 
         if (!newStatus || newStatus === statusText) return;
@@ -854,48 +798,21 @@ export default function ViewVisaApplication() {
                                                     current={currentStep}
                                                     // This is the only place that should handle the click
                                                     onChange={undefined}
-                                                    items={normalizedVisaSteps.map((step, idx) => {
+                                                    items={processStepEntries.map((step, idx) => {
                                                         const stepTitle = step.title;
                                                         const stepDescription = step.description;
 
                                                         const stepIsCurrent = currentStep === idx;
 
-                                                        const stepDeadlineDays =
-                                                            cumulativeStepDaysMap[stepTitle] ?? null;
-
                                                         const isTerminalStep = terminalStatuses.has(
                                                             String(stepTitle || '').toLowerCase()
                                                         );
 
-                                                        const stepSetDate = getStepSetDateForTitle(application, stepTitle);
-
-                                                        const daysAgo = stepSetDate
-                                                            ? dayjs().diff(stepSetDate, 'day')
-                                                            : null;
-
-                                                        let stepDeadlineDate = null;
-
-                                                        if (!isTerminalStep && Number.isFinite(stepDeadlineDays)) {
-                                                            const baseDate = application?.createdAt
-                                                                ? dayjs(application.createdAt).startOf('day')
-                                                                : null;
-
-                                                            if (baseDate) {
-                                                                stepDeadlineDate = baseDate.add(stepDeadlineDays, 'day').startOf('day');
-                                                            }
-                                                        }
-
-                                                        if (
-                                                            !isTerminalStep &&
-                                                            application?.statusDeadlineDate &&
-                                                            String(statusText || '') === String(stepTitle)
-                                                        ) {
-                                                            stepDeadlineDate = dayjs(application.statusDeadlineDate);
-                                                        }
-
-                                                        const daysLeft = stepDeadlineDate
-                                                            ? stepDeadlineDate.diff(dayjs(), 'day')
-                                                            : null;
+                                                        const stepInfo = getProcessStepInfoForTitle(application, stepTitle);
+                                                        const stepSetDate = stepInfo?.setDate ? dayjs(stepInfo.setDate) : null;
+                                                        const stepDeadlineDate = stepInfo?.deadlineDate ? dayjs(stepInfo.deadlineDate) : null;
+                                                        const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
+                                                        const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
 
                                                         return {
                                                             title: (

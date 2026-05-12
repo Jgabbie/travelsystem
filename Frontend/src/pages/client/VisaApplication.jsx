@@ -5,19 +5,7 @@ import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, D
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
-import { buildVisaStatusTotalDaysMapFromSteps } from '../../utils/visaDeadlineUtils';
-
-//PLACE HOLDER FOR VISA PROCESS STEPS - these should ideally come from the backend based on the service
-const VISA_STEPS = [
-    { title: 'Application Submitted', description: 'Application submitted', daysToBeCompleted: 0 },
-    { title: 'Application Approved', description: 'Application approved', daysToBeCompleted: 0 },
-    { title: 'Payment Completed', description: 'Payment completed', daysToBeCompleted: 0 },
-    { title: 'Documents Uploaded', description: 'Documents uploaded', daysToBeCompleted: 0 },
-    { title: 'Documents Approved', description: 'Documents approved', daysToBeCompleted: 0 },
-    { title: 'Documents Received', description: 'Documents received', daysToBeCompleted: 0 },
-    { title: 'Documents Submitted', description: 'Documents submitted', daysToBeCompleted: 0 },
-    { title: 'Processing DFA', description: 'Processing | DFA', daysToBeCompleted: 0 },
-];
+import { normalizeVisaProcessSteps } from '../../utils/visaDeadlineUtils';
 
 export default function VisaApplication() {
     const location = useLocation();
@@ -33,7 +21,7 @@ export default function VisaApplication() {
     const [requirements, setRequirements] = useState([]);
     const [requirementFiles, setRequirementFiles] = useState({});
     const [servicePrice, setServicePrice] = useState(0);
-    const [process, setProcess] = useState(VISA_STEPS.map(s => ({ ...s, status: 'pending' })));
+    const [process, setProcess] = useState([]);
 
     const [method, setMethod] = useState('paymongo'); // default selected payment method
     const [fileList, setFileList] = useState([]);
@@ -56,16 +44,6 @@ export default function VisaApplication() {
     const [isPassportReleaseOptionSelectedModalOpen, setIsPassportReleaseOptionSelectedModalOpen] = useState(false);
 
     const fetchVisaApplication = `/visa/applications/${id}`;
-
-    const normalizeVisaSteps = (steps = []) => {
-        return steps
-            .filter(Boolean)
-            .map((step, idx) => ({
-                title: String(step?.title || '').trim() || `Step ${idx + 1}`,
-                description: step?.description || '',
-                daysToBeCompleted: Number(step?.daysToBeCompleted ?? step?.days ?? 0) || 0
-            }));
-    };
 
     const statusText = Array.isArray(application?.status)
         ? application.status[application.status.length - 1]
@@ -181,9 +159,6 @@ export default function VisaApplication() {
     const createdAt = application?.createdAt
         ? dayjs(application.createdAt).startOf('day')
         : null;
-    const cumulativeStepDaysMap = React.useMemo(() => {
-        return application?.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(process);
-    }, [application?.visaStatusTotalDaysMap, process]);
     const statusDeadlineDate = !terminalStatuses.has(String(statusText || '').toLowerCase())
         ? (application?.statusDeadlineDate
             ? dayjs(application.statusDeadlineDate)
@@ -209,6 +184,7 @@ export default function VisaApplication() {
             try {
                 const res = await apiFetch.get(fetchVisaApplication);
                 setApplication(res);
+                setProcess(normalizeVisaProcessSteps(res?.processSteps || {}));
                 // If the application has a serviceId, fetch the service for requirements
                 if (res && res.serviceId) {
                     try {
@@ -217,23 +193,9 @@ export default function VisaApplication() {
                         const serviceRes = await apiFetch.get(serviceResEndpoint);
                         setRequirements(serviceRes.visaRequirements || []);
                         setServicePrice(serviceRes.visaPrice || 0);
-                        const stepsSource = serviceRes.visaProcessSteps || [];
-                        const normalizedSteps = stepsSource.map((step, idx) => ({
-                            title: typeof step === 'string' ? step : step?.title,
-                            description: typeof step === 'string' ? step : (step?.description || step?.title || ''),
-                            daysToBeCompleted: typeof step === 'object' && step !== null
-                                ? (step.daysToBeCompleted ?? step.days ?? 0)
-                                : 0,
-                            status: idx < VISA_STEPS.length ? 'process' : 'pending',
-                        }));
-                        setProcess(normalizedSteps);
-                        setApplication((prev) => ({
-                            ...prev,
-                            visaStatusTotalDaysMap: prev?.visaStatusTotalDaysMap || serviceRes.visaStatusTotalDaysMap || buildVisaStatusTotalDaysMapFromSteps(serviceRes.visaProcessSteps || prev?.visaProcessSteps || [])
-                        }));
                     } catch (err) {
                         setRequirements([]);
-                        setProcess(VISA_STEPS.map(s => ({ ...s, status: 'pending' })));
+                        setProcess(normalizeVisaProcessSteps(res?.processSteps || {}));
                     }
                 } else {
                     setRequirements([]);
@@ -1608,21 +1570,11 @@ export default function VisaApplication() {
                                                             current={currentStep}
                                                             style={{ width: '100%', paddingTop: 4, paddingBottom: 8 }}
                                                             items={process.map((step, idx) => {
-                                                                const stepSetDate = getStepSetDateForTitle(application, step.title);
+                                                                const stepSetDate = step?.setDate ? dayjs(step.setDate) : null;
+                                                                const stepDeadlineDate = step?.deadlineDate ? dayjs(step.deadlineDate) : null;
                                                                 const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
-                                                                const stepDeadlineDays = cumulativeStepDaysMap[step.title] ?? null;
                                                                 const stepIsCurrent = currentStep === idx;
-
-                                                                let stepDeadlineDate = null;
                                                                 const isTerminalStep = terminalStatuses.has(String(step.title || '').toLowerCase());
-
-                                                                if (!isTerminalStep && Number.isFinite(stepDeadlineDays) && createdAt) {
-                                                                    stepDeadlineDate = createdAt.add(stepDeadlineDays, 'day').startOf('day');
-                                                                }
-
-                                                                if (!isTerminalStep && application?.statusDeadlineDate && String(statusText || '') === String(step.title)) {
-                                                                    stepDeadlineDate = dayjs(application.statusDeadlineDate);
-                                                                }
 
                                                                 const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
 

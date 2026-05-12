@@ -145,16 +145,8 @@ export default function ViewPassportApplication() {
 
     // Compute when the current status was set and a deadline (days) for action
     const statusDeadlineDaysMap = {
-        'Application Submitted': 7,
         'Application Approved': 4,
         'Payment Completed': 2,
-        'Documents Uploaded': 5,
-        'Documents Approved': 3,
-        'Documents Received': 3,
-        'Documents Submitted': 4,
-        'Processing by DFA': 14,
-        'DFA Approved': 0,
-        'Passport Released': 0,
     };
 
     const appointmentDate = application?.preferredDate

@@ -19,6 +19,21 @@ const VISA_STATUS_TOTAL_DAYS_MAP = {
     'Processing by Embassy': 19,
 };
 
+const VISA_STEPS_ORDER = [
+    'Application Submitted',
+    'Application Approved',
+    'Payment Completed',
+    'Documents Uploaded',
+    'Documents Approved',
+    'Documents Received',
+    'Documents Submitted',
+    'Processing by Embassy',
+    'Embassy Approved',
+    'DFA Approved',
+    'Passport Released',
+    'Rejected'
+];
+
 const buildVisaStatusTotalDaysMapFromSteps = (steps = []) => {
     const map = {};
     let total = 0;
@@ -41,10 +56,6 @@ const buildVisaStatusTotalDaysMapFromSteps = (steps = []) => {
 
 const getVisaProcessStepsFromApplication = (application) => {
     if (!application) return [];
-
-    if (Array.isArray(application.visaProcessSteps)) {
-        return application.visaProcessSteps;
-    }
 
     if (application.serviceId && typeof application.serviceId === 'object' && Array.isArray(application.serviceId.visaProcessSteps)) {
         return application.serviceId.visaProcessSteps;
@@ -92,6 +103,58 @@ const normalizeVisaDate = (value) => {
 
     const parsed = dayjs(value);
     return parsed.isValid() ? parsed.startOf('day') : null;
+};
+
+const getVisaProcessStepsFromService = (application) => {
+    if (!application) return [];
+
+    if (application.serviceId && typeof application.serviceId === 'object' && Array.isArray(application.serviceId.visaProcessSteps)) {
+        return application.serviceId.visaProcessSteps;
+    }
+
+    return [];
+};
+
+const buildProcessSteps = (application, serviceProcessSteps = []) => {
+    const out = {};
+    if (!application) return out;
+
+    const preferredDate = normalizeVisaDate(application.preferredDate);
+    const createdAt = normalizeVisaDate(application.createdAt) || dayjs().startOf('day');
+    const steps = Array.isArray(serviceProcessSteps) ? serviceProcessSteps : [];
+
+    let prevDeadline = null;
+
+    for (const step of steps) {
+        const stepTitle = String(step?.title || '').trim();
+        if (!stepTitle) continue;
+
+        const setDate = getVisaStatusSetDate(application, stepTitle) || (stepTitle === 'Application Submitted' ? createdAt : null);
+        const deadlineDays = Number(step?.daysToBeCompleted ?? 0);
+
+        let deadline = null;
+
+        if (Number.isFinite(deadlineDays) && deadlineDays > 0) {
+            if (stepTitle === 'Application Submitted') {
+                if (setDate) deadline = setDate.add(deadlineDays, 'day').startOf('day');
+            } else if (prevDeadline) {
+                deadline = prevDeadline.add(deadlineDays, 'day').startOf('day');
+            } else if (setDate) {
+                deadline = setDate.add(deadlineDays, 'day').startOf('day');
+            } else if (preferredDate) {
+                deadline = preferredDate.startOf('day').add(deadlineDays, 'day');
+            }
+        }
+
+        if (deadline) prevDeadline = deadline;
+
+        out[stepTitle] = {
+            setDate: setDate ? setDate.format('YYYY-MM-DD') : null,
+            deadlineDate: deadline ? deadline.format('YYYY-MM-DD') : null,
+        };
+    }
+
+    return out;
 };
 
 const getVisaStatusSetDate = (application, status) => {
@@ -192,10 +255,12 @@ const decorateVisaApplication = (application) => {
 
     const deadlineInfo = getVisaDeadlineInfo(plainApplication);
     const statusText = getCurrentVisaStatus(plainApplication);
+    const processSteps = plainApplication.processSteps || buildProcessSteps(plainApplication, getVisaProcessStepsFromApplication(plainApplication));
 
     return {
         ...plainApplication,
         status: statusText || plainApplication.status,
+        processSteps,
         statusDeadlineDate: deadlineInfo ? deadlineInfo.deadlineDate.toISOString() : null,
         statusDeadlineDays: deadlineInfo ? deadlineInfo.deadlineDays : null,
         visaStatusTotalDaysMap: deadlineInfo ? deadlineInfo.statusDeadlineMap : buildVisaStatusTotalDaysMapFromSteps(getVisaProcessStepsFromApplication(plainApplication)),
@@ -426,9 +491,13 @@ const applyVisa = async (req, res) => {
 
     try {
         const user = await UserModel.findById(userId).select('firstname lastname username')
+        const serviceDoc = await ServiceModel.findById(serviceId).select('visaProcessSteps')
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' })
+        }
+        if (!serviceDoc) {
+            return res.status(404).json({ message: 'Service not found' })
         }
         const applicantName = `${user.firstname} ${user.lastname}`.trim() || user.username
 
@@ -449,6 +518,13 @@ const applyVisa = async (req, res) => {
                 changedByName: user.username || `${user.firstname || ''} ${user.lastname || ''}`.trim() || undefined,
             }],
         })
+
+        try {
+            application.processSteps = buildProcessSteps(application, serviceDoc.visaProcessSteps);
+            await application.save();
+        } catch (processStepsError) {
+            console.error('Failed to build/persist visa processSteps:', processStepsError);
+        }
 
         logAction('APPLY_VISA', userId, { "Visa Application Created": `Application Number: ${application.applicationNumber}` });
 
@@ -495,6 +571,13 @@ const updateVisaApplicationWithDocs = async (req, res) => {
         application.submittedDocuments = submittedDocuments || application.submittedDocuments
         appendVisaStatusHistory(application, 'Documents Uploaded', userId)
         application.status = 'Documents Uploaded'
+
+        try {
+            const serviceDoc = await ServiceModel.findById(application.serviceId).select('visaProcessSteps')
+            application.processSteps = buildProcessSteps(application, serviceDoc?.visaProcessSteps || [])
+        } catch (processStepsError) {
+            console.error('Failed to rebuild visa processSteps:', processStepsError);
+        }
 
         await application.save();
 
@@ -619,6 +702,7 @@ const getVisaApplications = async (_req, res) => {
             preferredTime: app.preferredTime,
             purposeOfTravel: app.purposeOfTravel,
             status: getCurrentVisaStatus(app) || app.status,
+            processSteps: app.processSteps || buildProcessSteps(app, getVisaProcessStepsFromApplication(app)),
             suggestedAppointmentSchedules: app.suggestedAppointmentSchedules,
             suggestedAppointmentScheduleChosen: app.suggestedAppointmentScheduleChosen,
             statusDeadlineDate: getVisaDeadlineInfo(app)?.deadlineDate.toISOString() || null,
@@ -1031,6 +1115,7 @@ const archiveVisaApplication = async (req, res) => {
             statusHistory: application.statusHistory,
             deadlineWarnings: application.deadlineWarnings,
             currentStepIndex: application.currentStepIndex,
+            processSteps: application.processSteps,
             createdAt: application.createdAt
         })
 
@@ -1092,6 +1177,7 @@ const restoreArchivedVisaApplication = async (req, res) => {
             statusHistory: archivedApplication.statusHistory,
             deadlineWarnings: archivedApplication.deadlineWarnings,
             currentStepIndex: archivedApplication.currentStepIndex,
+            processSteps: archivedApplication.processSteps,
             createdAt: archivedApplication.createdAt,
             updatedAt: archivedApplication.createdAt
         })
@@ -1126,6 +1212,7 @@ module.exports = {
     decorateVisaApplication,
     sendVisaDeadlineWarning,
     processVisaDeadlineAction,
-    autoRejectVisaApplication
+    autoRejectVisaApplication,
+    buildProcessSteps
 };
 

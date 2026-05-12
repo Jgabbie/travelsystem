@@ -34,6 +34,7 @@ const ArchivedVisaApplicationSchema = new mongoose.Schema({
         deadlineDate: { type: String },
         warnedAt: { type: Date }
     }],
+    processSteps: { type: mongoose.Schema.Types.Mixed, default: {} },
     currentStepIndex: { type: Number, default: 0 },
     createdAt: { type: Date },
     archivedAt: { type: Date, default: Date.now }

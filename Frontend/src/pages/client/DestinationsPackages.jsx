@@ -343,12 +343,6 @@ export default function DestinationsPackages() {
                     </div>
 
                     <div className="destinations-controls">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <SlidersOutlined className='destinations-primary-label-icon' />
-                            <Text className="destinations-primary-label">Filter By</Text>
-                        </div>
-
-
                         <Row gutter={[16, 16]} className="destinations-filter-grid">
                             <Col xs={24} md={12} xl={6}>
                                 <div className="filter-field">

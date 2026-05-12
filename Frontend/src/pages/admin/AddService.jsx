@@ -39,12 +39,12 @@ export default function AddService() {
     });
 
     const STANDARD_PROCESS_STEPS = [
-        { title: 'Application Submitted', description: 'The user has submitted the visa application.', daysToBeCompleted: 2 },
-        { title: 'Application Approved', description: 'The visa application has been approved.', daysToBeCompleted: 2 },
-        { title: 'Payment Completed', description: 'The payment for the visa application has been completed.', daysToBeCompleted: 3 },
-        { title: 'Documents Uploaded', description: 'The required documents for the visa application have been uploaded.', daysToBeCompleted: 5 },
-        { title: 'Documents Received', description: 'The documents for the visa application have been received.', daysToBeCompleted: 2 },
-        { title: 'Documents Submitted', description: 'The documents for the visa application have been submitted.', daysToBeCompleted: 2 },
+        { title: 'Application Submitted', description: 'The user has submitted the visa application.', daysToBeCompleted: 0 },
+        { title: 'Application Approved', description: 'The visa application has been approved.', daysToBeCompleted: 3 },
+        { title: 'Payment Completed', description: 'The payment for the visa application has been completed.', daysToBeCompleted: 5 },
+        { title: 'Documents Uploaded', description: 'The required documents for the visa application have been uploaded.', daysToBeCompleted: 0 },
+        { title: 'Documents Received', description: 'The documents for the visa application have been received.', daysToBeCompleted: 0 },
+        { title: 'Documents Submitted', description: 'The documents for the visa application have been submitted.', daysToBeCompleted: 0 },
         { title: 'Processing By Embassy', description: 'The visa application is being processed by the embassy.', daysToBeCompleted: 0 },
         { title: 'Embassy Approved', description: 'The visa application has been approved by the embassy.', daysToBeCompleted: 0 },
         { title: 'Passport Released', description: 'The passport has been released to the applicant.', daysToBeCompleted: 0 },
@@ -520,20 +520,22 @@ export default function AddService() {
                                                     style={{ marginTop: 2 }}
                                                 />
                                             </div>
-                                            <div>
-                                                <label className="add-service-input-labels">Days to be completed</label>
-                                                <Input
-                                                    type="number"
-                                                    min={0}
-                                                    value={step.daysToBeCompleted}
-                                                    className="add-service-inputs"
-                                                    onChange={isStandard
-                                                        ? (event) => updateStandardStep(step.standardIndex, "daysToBeCompleted", event.target.value)
-                                                        : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "daysToBeCompleted")}
-                                                    placeholder="Enter days"
-                                                    style={{ marginTop: 2 }}
-                                                />
-                                            </div>
+                                            {(step.title === 'Application Approved' || step.title === 'Payment Completed') && (
+                                                <div>
+                                                    <label className="add-service-input-labels">Days to be completed</label>
+                                                    <Input
+                                                        type="number"
+                                                        min={0}
+                                                        value={step.daysToBeCompleted}
+                                                        className="add-service-inputs"
+                                                        onChange={isStandard
+                                                            ? (event) => updateStandardStep(step.standardIndex, "daysToBeCompleted", event.target.value)
+                                                            : (event) => updateBullet("processSteps", step.customIndex, event.target.value, "daysToBeCompleted")}
+                                                        placeholder="Enter days"
+                                                        style={{ marginTop: 2 }}
+                                                    />
+                                                </div>
+                                            )}
                                             <div style={{ height: 1, background: '#e8e8e8', margin: '12px 0' }} />
                                         </div>
                                     );

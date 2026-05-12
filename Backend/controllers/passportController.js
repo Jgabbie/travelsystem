@@ -9,20 +9,8 @@ const logAction = require('../utils/logger');
 const dayjs = require('dayjs');
 
 const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
-    // Days before the appointment (preferredDate) when each status must be completed
-    // e.g. deadlineDate = preferredDate.subtract(deadlineDays, 'day')
-    'Application Submitted': 2,
-    'Application Approved': 2,
-    'Payment Completed': 3,
-    'Documents Uploaded': 5,
-    'Documents Approved': 2,
-    // documents received/submitted should be done in 2 days (relative to appointment)
-    'Documents Received': 2,
-    'Documents Submitted': 0,
-    // processing by DFA happens on the appointment date itself
-    'Processing by DFA': 0,
-    'DFA Approved': 0,
-    'Passport Released': 0,
+    'Application Approved': 4,
+    'Payment Completed': 5,
 };
 
 const PASSPORT_TERMINAL_STATUSES = new Set(['DFA Approved', 'Passport Released', 'Rejected']);

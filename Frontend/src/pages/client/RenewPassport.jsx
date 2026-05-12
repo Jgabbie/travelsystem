@@ -140,6 +140,7 @@ export default function RenewPassport() {
                                 preferredDate: '',
                                 preferredTime: '',
                             })
+                            window.location.reload()
                         }}
                     >
                         Continue

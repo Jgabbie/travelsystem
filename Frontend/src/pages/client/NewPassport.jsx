@@ -138,6 +138,7 @@ export default function NewPassport() {
                                 preferredDate: '',
                                 preferredTime: ''
                             })
+                            window.location.reload()
                         }}
                     >
                         Continue
