@@ -1187,9 +1187,9 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const { applicationId } = req.body;
+        const { applicationId, applicationNumber } = req.body;
 
-        if (!applicationId) {
+        if (!applicationId || !applicationNumber) {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
@@ -1200,12 +1200,13 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
             token,
             userId,
             applicationId,
+            applicationNumber,
             amount: penaltyAmount,
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
 
 
-        const successUrl = `${FRONTEND_URL}/user-applications/success/passport-penalty?token=${token}`;
+        const successUrl = `${FRONTEND_URL}/user-applications/success/passport?token=${token}`;
         const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
 
         const baseAmountCents = Math.round(penaltyAmount * 100);
@@ -1218,6 +1219,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
         const metadata = {
             userId,
             applicationId,
+            applicationNumber,
             applicationType: "Passport Penalty Fee",
             baseAmountCents,
             convenienceFeeCents,
@@ -1284,9 +1286,9 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
             return res.status(500).json({ error: "PayMongo secret key is not configured." });
         }
 
-        const { applicationId } = req.body;
+        const { applicationId, applicationNumber } = req.body;
 
-        if (!applicationId) {
+        if (!applicationId || !applicationNumber) {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
@@ -1297,6 +1299,7 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
             token,
             userId,
             applicationId,
+            applicationNumber,
             amount: penaltyAmount,
             expiresAt: dayjs().add(5, 'minutes').toDate()
         });
@@ -1315,6 +1318,7 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
         const metadata = {
             userId,
             applicationId,
+            applicationNumber,
             applicationType: "Visa Penalty Fee",
             baseAmountCents,
             convenienceFeeCents,
