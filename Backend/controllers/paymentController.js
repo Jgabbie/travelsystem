@@ -1237,16 +1237,16 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
                             {
                                 name: "Passport Application Penalty Fee",
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 1,
                                 currency: "PHP",
                             },
-                            {
-                                name: "Convenience Fee",
-                                description: "Payment processing and service fee",
-                                quantity: 1,
-                                amount: convenienceFeeCents,
-                                currency: "PHP",
-                            }
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
                         success_url: successUrl,
@@ -1334,16 +1334,16 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
                             {
                                 name: "Visa Penalty Fee",
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 1,
                                 currency: "PHP",
                             },
-                            {
-                                name: "Convenience Fee",
-                                description: "Payment processing and service fee",
-                                quantity: 1,
-                                amount: convenienceFeeCents,
-                                currency: "PHP",
-                            }
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
                         success_url: successUrl,
