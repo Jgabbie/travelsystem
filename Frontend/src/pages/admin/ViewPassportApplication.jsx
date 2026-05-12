@@ -145,8 +145,7 @@ export default function ViewPassportApplication() {
 
     // Compute when the current status was set and a deadline (days) for action
     const statusDeadlineDaysMap = {
-        'Application Approved': 4,
-        'Payment Completed': 2,
+        'Payment Completed': 5,
     };
 
     const appointmentDate = application?.preferredDate

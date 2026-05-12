@@ -9,7 +9,6 @@ const logAction = require('../utils/logger');
 const dayjs = require('dayjs');
 
 const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
-    'Application Approved': 4,
     'Payment Completed': 5,
 };
 

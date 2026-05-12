@@ -520,7 +520,7 @@ export default function AddService() {
                                                     style={{ marginTop: 2 }}
                                                 />
                                             </div>
-                                            {(step.title === 'Application Approved' || step.title === 'Payment Completed') && (
+                                            {(step.title === 'Payment Completed') && (
                                                 <div>
                                                     <label className="add-service-input-labels">Days to be completed</label>
                                                     <Input
