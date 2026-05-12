@@ -1237,7 +1237,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
                             {
                                 name: "Passport Application Penalty Fee",
                                 quantity: 1,
-                                amount: 1,
+                                amount: 100,
                                 currency: "PHP",
                             },
                             // {
@@ -1268,7 +1268,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
         res.json(response);
 
     } catch (error) {
-        console.error("Visa Checkout Error:", error.response?.data || error.message);
+        console.error("Passport Checkout Error:", error.response?.data || error.message);
         res.status(500).json({ error: error.response?.data || error.message });
     }
 };
@@ -1334,7 +1334,7 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
                             {
                                 name: "Visa Penalty Fee",
                                 quantity: 1,
-                                amount: 1,
+                                amount: 100,
                                 currency: "PHP",
                             },
                             // {
