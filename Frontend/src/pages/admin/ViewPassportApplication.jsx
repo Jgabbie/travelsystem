@@ -47,7 +47,6 @@ export default function ViewPassportApplication() {
             setLoading(true);
             const response = await apiFetch.get(`/passport/applications/${applicationId}`);
 
-            console.log("Fetched application details:", response);
 
             setApplication(response);
             // Determine step based on status
@@ -538,20 +537,6 @@ export default function ViewPassportApplication() {
                             </div>
                         )}
 
-                    {/* PASSPORT RELEASE PASSPORT OPTION CHOSEN BY THE APPLICANT */}
-                    {application.status && application.status.toLowerCase() === "passport released" && (
-                        <div className="viewpassportapplication-tag-blue-container">
-                            <h2 className="viewpassportapplication-tag-blue">APPLICANT'S RELEASE PASSPORT OPTION</h2>
-                            <p style={{ fontSize: 14, marginBottom: 8 }}>
-                                This is the chosen release passport option of the applicant.
-                            </p>
-                            <strong style={{ fontSize: 16 }}>
-                                {application.passportReleaseOption === "pickup" ? "Pickup at MRC Travel and Tours office" : `Delivery to ${application.deliveryAddress || "N/A"}`}
-                            </strong>
-                        </div>
-                    )}
-
-
 
 
                     <div className="app-detail-shell" style={{ marginTop: 24, border: '1px solid #dde4ef', borderRadius: 12, padding: 20, background: '#ffffff', boxShadow: '0 6px 20px rgba(18, 24, 38, 0.06)', display: "flex", flexDirection: "column", gap: 24 }}>
@@ -835,7 +820,7 @@ export default function ViewPassportApplication() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsSuggestedDatesSentModalOpen(false);
                 }}
@@ -872,7 +857,7 @@ export default function ViewPassportApplication() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsResubmitDocumentsSentModalOpen(false);
                 }}

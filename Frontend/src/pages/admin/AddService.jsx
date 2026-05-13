@@ -16,8 +16,6 @@ export default function AddService() {
     const { serviceId } = location.state || {};
     const isEdit = Boolean(serviceId);
 
-    console.log("Service ID from location state:", serviceId);
-
     const [errors, setErrors] = useState({
         visaName: "",
         description: "",

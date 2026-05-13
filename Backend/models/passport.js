@@ -61,6 +61,7 @@ const PassportSchema = new mongoose.Schema({
     onPenalty: { type: Boolean, default: false },
     penaltyDeadline: { type: String, default: "" },
     secondChance: { type: Boolean, default: false },
+    secondDeadline: { type: String, default: "" },
     reachedSecondDeadline: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });

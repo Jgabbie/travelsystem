@@ -131,8 +131,6 @@ export default function UserBookingInvoice() {
                 const fetchedBooking = bookingRes?.booking || null;
                 const fetchedTransactions = bookingRes?.transactions || [];
 
-                console.log("Fetched Booking:", bookingRes.booking);
-
                 setBooking(fetchedBooking);
                 setTransactions(fetchedTransactions);
 
@@ -447,13 +445,12 @@ export default function UserBookingInvoice() {
         try {
             setDownloading(true);
             setIsGeneratingPdf(true);
+            setCurrentStep(0);
 
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
-            const waitForRender = (ms = 450) => new Promise((resolve) => {
-                requestAnimationFrame(() => {
-                    setTimeout(resolve, ms);
-                });
+            const waitForRender = (ms = 2000) => new Promise((resolve) => {
+                setTimeout(resolve, ms);
             });
 
             for (let i = 0; i < stepsToCapture.length; i += 1) {
@@ -461,41 +458,68 @@ export default function UserBookingInvoice() {
                 setCurrentStep(step);
                 await waitForRender();
 
-                if (!pdfStepRef.current) {
+                let element = pdfStepRef.current;
+
+                if (!element) {
+                    element = document.querySelector('.pdf-capture');
+                    console.warn(`Ref was null, using querySelector. Found element:`, element);
+                }
+
+                if (!element) {
+                    console.error(`PDF element not found for step ${step}`);
                     continue;
                 }
 
-                const canvas = await html2canvas(pdfStepRef.current, {
-                    scale: 1.5,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
+                try {
+                    const canvas = await html2canvas(element, {
+                        scale: 1.5,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        allowTaint: true,
+                        logging: false,
+                        windowWidth: 900,
+                        windowHeight: 1200
+                    });
 
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-                const renderHeight = Math.min(imgHeight, pdfHeight);
+                    if (canvas.width === 0 || canvas.height === 0) {
+                        console.error(`Invalid canvas dimensions for step ${step}`);
+                        continue;
+                    }
 
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                    const renderHeight = Math.min(imgHeight, pdfHeight);
 
-                pdf.setFillColor(255, 255, 255);
-                pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderHeight);
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, renderHeight);
 
-                if (i < stepsToCapture.length - 1) {
-                    pdf.addPage();
+                    if (i < stepsToCapture.length - 1) {
+                        pdf.addPage();
+                    }
+                } catch (canvasError) {
+                    console.error(`Canvas capture error for step ${step}:`, canvasError);
                 }
+            }
+
+            const pageCount = pdf.getNumberOfPages();
+
+            if (pageCount === 0) {
+                throw new Error('No pages were captured in the PDF');
             }
 
             pdf.save(`Booking_${reference}.pdf`);
             notification.success({ message: "Booking Registration PDF downloaded successfully.", placement: 'topRight' });
 
         } catch (err) {
-            notification.error({ message: "Submission failed.", placement: 'topRight' });
-            console.error("Error during PDF generation:", err);
+            console.error("PDF generation error:", err);
+            notification.error({ message: "Failed to download PDF: " + (err?.message || "Unknown error"), placement: 'topRight' });
         } finally {
             setDownloading(false);
             setIsGeneratingPdf(false);
+            setCurrentStep(0);
         }
     };
 
@@ -1009,12 +1033,25 @@ export default function UserBookingInvoice() {
             }}
         >
 
-            {loading || downloading ? (
+            {loading ? (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "80vh" }}>
-                    <Spin description={loading ? "Loading Booking Details..." : "Downloading Registration Form..."} size="large" />
+                    <Spin description="Loading Booking Details..." size="large" />
                 </div>
             ) : (
-                <div className="user-invoice-container">
+                <div className="user-invoice-container" style={{ position: "relative" }}>
+                    {downloading && (
+                        <div style={{
+                            position: "absolute",
+                            inset: 0,
+                            zIndex: 50,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "rgba(255, 255, 255, 0.75)"
+                        }}>
+                            <Spin description="Downloading Registration Form..." size="large" />
+                        </div>
+                    )}
                     <div className="user-invoice-page">
                         <Button className="user-invoice-back-button" type="primary" onClick={() => navigate("/user-bookings")}>
                             <ArrowLeftOutlined />
@@ -1588,8 +1625,11 @@ export default function UserBookingInvoice() {
                                             ref={pdfStepRef}
                                             style={{
                                                 flex: 1,
-                                                position: isGeneratingPdf ? "absolute" : "relative",
-                                                left: isGeneratingPdf ? "-9999px" : "0"
+                                                position: "relative",
+                                                overflow: "visible",
+                                                backgroundColor: "#ffffff",
+                                                padding: "20px",
+                                                borderRadius: "8px"
                                             }}
                                         >
                                             {currentStep === 0 && (

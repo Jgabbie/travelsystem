@@ -609,7 +609,6 @@ export default function BookingProcess() {
             }));
 
             setCurrentStep(currentStep + 1);
-            console.log('Save Successful, moving to next step');
 
 
         } catch (error) {

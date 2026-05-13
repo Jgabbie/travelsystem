@@ -50,6 +50,7 @@ const VisaApplicationSchema = new mongoose.Schema({
     processSteps: { type: mongoose.Schema.Types.Mixed, default: {} },
     onPenalty: { type: Boolean, default: false },
     penaltyDeadline: { type: String, default: "" },
+    secondDeadline: { type: String, default: "" },
     secondChance: { type: Boolean, default: false },
     reachedSecondDeadline: { type: Boolean, default: false },
     currentStepIndex: { type: Number, default: 0 }

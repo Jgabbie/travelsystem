@@ -67,6 +67,9 @@ export default function PassportApplication() {
     const [paymentCompleted, setPaymentCompleted] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
 
+    const [pendingManualPayment, setPendingManualPayment] = useState(false);
+    const [servicePendingManualPayment, setServicePendingManualPayment] = useState(false);
+
     const [selectedSuggestedIndex, setSelectedSuggestedIndex] = useState(null);
     const [customDateTime, setCustomDateTime] = useState({ date: null, time: null });
     const [confirmingSuggested, setConfirmingSuggested] = useState(false);
@@ -101,12 +104,32 @@ export default function PassportApplication() {
                 setLoading(false);
             }
         };
+        const checkPendingManualPayment = async () => {
+            try {
+                const transactionsRes = await apiFetch.get(`/transaction/application/${id}`);
+                const transactions = Array.isArray(transactionsRes) ? transactionsRes : (transactionsRes?.transactions || []);
+                const hasPendingPenalty = transactions.some(
+                    (tx) => tx.status === 'Pending' &&
+                        tx.method === 'Manual' &&
+                        (tx.applicationType === 'Passport Penalty Fee')
+                );
+
+                const hasPendingRegularPayment = transactions.some(
+                    (tx) => tx.status === 'Pending' &&
+                        tx.method === 'Manual' &&
+                        (tx.applicationType === 'Passport Application')
+                );
+
+                setPendingManualPayment(hasPendingPenalty);
+                setServicePendingManualPayment(hasPendingRegularPayment);
+            } catch (err) {
+                console.error('Could not fetch transactions:', err);
+            }
+        };
         const getUserEmail = async () => {
             setLoading(true);
             try {
                 const res = await apiFetch.get('/user/data')
-                console.log("User data:", res);
-                console.log("User email:", res.userData.email);
                 setApplication(prev => ({ ...prev, email: res.userData.email }));
             } catch (err) {
                 notification.error({ message: 'Failed to load user data', placement: 'topRight' });
@@ -116,6 +139,7 @@ export default function PassportApplication() {
         }
         getUserEmail();
         fetchApplication();
+        checkPendingManualPayment();
     }, [id]);
 
     const normalizeResubmissionTarget = (target) => {
@@ -278,11 +302,15 @@ export default function PassportApplication() {
 
     const currentStatusSetDate = getStatusSetDate(application);
     const deadlineDays = application?.statusDeadlineDays ?? statusDeadlineDaysMap[application?.status] ?? null;
-    const statusDeadlineDate = application?.statusDeadlineDate
+    let statusDeadlineDate = application?.statusDeadlineDate
         ? dayjs(application.statusDeadlineDate)
         : appointmentDate && Number.isFinite(deadlineDays)
             ? appointmentDate.subtract(deadlineDays, 'day').startOf('day')
             : null;
+
+    if (String(application?.status || '').toLowerCase() === 'payment completed' && application?.secondChance && application?.secondDeadline) {
+        statusDeadlineDate = dayjs(application.secondDeadline);
+    }
     const penaltyStateLabel = application?.reachedSecondDeadline
         ? 'Penalty Expired'
         : application?.secondChance
@@ -340,6 +368,8 @@ export default function PassportApplication() {
         setFileList(newFileList);
     };
 
+
+    //SUBMIT PAYMENT
     const handleSubmitPayment = async () => {
         if (method === 'manual' && fileList.length === 0) {
             notification.warning({ message: 'Please upload a receipt first.', placement: 'topRight' });
@@ -350,11 +380,9 @@ export default function PassportApplication() {
             setPaymentLoading(true);
 
             if (method === 'manual') {
-                console.log("Submitting manual payment with receipt...");
 
                 const file = fileList[0].originFileObj;
 
-                console.log("Selected file:", file);
 
                 const formData = new FormData();
                 formData.append("file", file);
@@ -365,8 +393,6 @@ export default function PassportApplication() {
 
                 const imageUrl = uploadRes.url;
 
-                console.log("Uploaded receipt URL:", imageUrl);
-
                 const amountToPay = application?.onPenalty ? 1500 : 2000;
                 const endpoint = application?.onPenalty ? '/payment/manual-passport-penalty' : '/payment/manual-passport';
                 const paymentRes = await apiFetch.post(endpoint, {
@@ -376,7 +402,6 @@ export default function PassportApplication() {
                     proofImage: imageUrl,
                 });
 
-                console.log("Manual payment response:", paymentRes);
 
                 navigate(paymentRes.redirectUrl);
                 notification.success({ message: "Manual payment submitted successfully. Awaiting verification.", placement: 'topRight' });
@@ -397,7 +422,6 @@ export default function PassportApplication() {
                     applicationNumber: application.applicationNumber,
                 };
 
-                console.log("Creating checkout session with payload:", payload);
 
                 // Send request to create checkout session
                 const endpoint = application?.onPenalty ? '/payment/create-checkout-session-passport-penalty' : '/payment/create-checkout-session-passport';
@@ -421,12 +445,16 @@ export default function PassportApplication() {
         }
     };
 
+
     //RENDER PREVIEW OF UPLOADED DOCUMENTS
     const renderFilePreview = (fileList, setter) => {
         if (fileList.length === 0) return null;
 
         const file = fileList[0];
         const isPDF = file.type === 'application/pdf' || file.name?.toLowerCase().endsWith('.pdf');
+
+
+
 
         return (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
@@ -537,6 +565,14 @@ export default function PassportApplication() {
             }
             return file;
         });
+
+    const beforeRequirementUpload = (file) => {
+        const isLt3M = file.size / 1024 / 1024 < 3;
+        if (!isLt3M) {
+            notification.error({ message: 'Image/PDF must be smaller than 3MB!', placement: 'topRight' });
+        }
+        return isLt3M || Upload.LIST_IGNORE;
+    };
 
     //HANDLE SUBMISSION OF UPLOADED DOCUMENTS
     const handleSubmit = async () => {
@@ -706,6 +742,14 @@ export default function PassportApplication() {
             navigate('/home');
         }
     }, [id, navigate]);
+
+
+    //UPLOAD DOCUMENTS SECTION STATUS CONDITION
+    const status = application?.status?.toLowerCase();
+
+    const shouldShow =
+        status === 'payment completed' ||
+        application?.secondChance === true;
 
 
     return (
@@ -937,14 +981,23 @@ export default function PassportApplication() {
                                         {/* PAYMENT SERVICE */}
                                         {application?.status && application?.status?.toLowerCase() === 'application approved' && !paymentCompleted && (
                                             <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
-                                                <h3 style={{ marginTop: 0 }}>Payment</h3>
+                                                <h3 style={{ marginTop: 0 }}>Payment {servicePendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
 
+                                                {servicePendingManualPayment ? (
+                                                    <div style={{ padding: '16px', backgroundColor: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '8px', marginBottom: '16px' }}>
+                                                        <p style={{ margin: 0, color: '#8b6914' }}>
+                                                            Your manual payment for the service fee is currently pending verification. Our team will review your proof of payment within 1-2 business days. You will receive a confirmation email once verified.
+                                                        </p>
+                                                    </div>
+                                                ) : null}
                                                 <div className="payment-methods-wrapper">
                                                     <Radio.Group
                                                         onChange={(e) => setMethod(e.target.value)}
                                                         value={method}
                                                         className="payment-methods-cards"
                                                         style={{ width: '100%', display: 'flex', gap: '16px' }}
+                                                        disabled={servicePendingManualPayment}
+
                                                     >
                                                         <Radio.Button
                                                             value="paymongo"
@@ -1059,9 +1112,9 @@ export default function PassportApplication() {
                                                     type="primary"
                                                     className="passportapplication-submit-button"
                                                     onClick={handleSubmitPayment}
-                                                    disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                    disabled={paymentLoading || (method === 'manual' && fileList.length === 0) || servicePendingManualPayment}
                                                 >
-                                                    {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                                    {servicePendingManualPayment ? 'Payment Pending Verification' : (method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo')}
                                                 </Button>
 
                                             </div>
@@ -1070,16 +1123,33 @@ export default function PassportApplication() {
 
 
                                         {/* PAYMENT PENALTY*/}
-                                        {application?.status && application?.onPenalty === true && (
+                                        {application?.status && application?.onPenalty === true && application?.status.toLowerCase() !== 'rejected' && (
                                             <div style={{ marginBottom: 32, marginTop: 32, border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff' }}>
-                                                <h3 style={{ marginTop: 0 }}>Payment</h3>
+                                                <h3 style={{ marginTop: 0 }}>Payment {pendingManualPayment && <Tag color="orange">Pending Payment</Tag>}</h3>
 
-                                                <div className="payment-methods-wrapper">
+                                                {pendingManualPayment ? (
+                                                    <div style={{ padding: '16px', backgroundColor: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '8px', marginBottom: '16px' }}>
+                                                        <p style={{ margin: 0, color: '#8b6914' }}>
+                                                            Your manual payment for the penalty fee is currently pending verification. Our team will review your proof of payment within 1-2 business days. You will receive a confirmation email once verified.
+                                                        </p>
+                                                    </div>
+                                                ) : null}
+
+                                                {application?.secondChance && application?.onPenalty && (
+                                                    <div style={{ padding: '16px', backgroundColor: '#e6f7ff', border: '1px solid #91d5ff', borderRadius: '8px', marginBottom: '16px' }}>
+                                                        <p style={{ margin: 0, color: '#0050b3' }}>
+                                                            Your penalty payment has been approved. You now have a grace period to complete your application.
+                                                        </p>
+                                                    </div>
+                                                )}
+
+                                                <div className="payment-methods-wrapper" style={{ opacity: application?.secondChance || pendingManualPayment ? 0.6 : 1, pointerEvents: application?.secondChance || pendingManualPayment ? 'none' : 'auto' }}>
                                                     <Radio.Group
                                                         onChange={(e) => setMethod(e.target.value)}
                                                         value={method}
                                                         className="payment-methods-cards"
                                                         style={{ width: '100%', display: 'flex', gap: '16px' }}
+                                                        disabled={application?.secondChance || pendingManualPayment}
                                                     >
                                                         <Radio.Button
                                                             value="paymongo"
@@ -1194,9 +1264,9 @@ export default function PassportApplication() {
                                                     type="primary"
                                                     className="passportapplication-submit-button"
                                                     onClick={handleSubmitPayment}
-                                                    disabled={paymentLoading || (method === 'manual' && fileList.length === 0)}
+                                                    disabled={paymentLoading || (method === 'manual' && fileList.length === 0) || application?.secondChance || pendingManualPayment}
                                                 >
-                                                    {method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'}
+                                                    {application?.secondChance ? 'Grace Period Active' : (pendingManualPayment ? 'Payment Pending Verification' : (method === 'manual' ? 'Submit Payment' : 'Proceed Paymongo'))}
                                                 </Button>
 
                                             </div>
@@ -1204,7 +1274,7 @@ export default function PassportApplication() {
 
 
                                         {/* UPLOAD DOCUMENTS AND PAYMENT COMPLETE */}
-                                        {application?.status && application?.status?.toLowerCase() === 'payment completed' && application?.onPenalty === false || application?.secondChance === true && (
+                                        {shouldShow && (
                                             <div style={{ border: '1px solid #dde4ef', borderRadius: 12, padding: 16, background: '#ffffff', marginTop: 32, marginBottom: 32 }}>
                                                 <h3 style={{ marginTop: 0 }}>Upload Requirements</h3>
 
@@ -1242,7 +1312,7 @@ export default function PassportApplication() {
                                                                         accept="image/*,application/pdf"
                                                                         maxCount={1}
                                                                         disabled={uploading}
-                                                                        beforeUpload={() => false}
+                                                                        beforeUpload={beforeRequirementUpload}
                                                                         customRequest={({ onSuccess }) => onSuccess("ok")}
                                                                     >
                                                                         <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
@@ -1303,7 +1373,7 @@ export default function PassportApplication() {
                                                                         accept="image/*,application/pdf"
                                                                         maxCount={1}
                                                                         disabled={uploading}
-                                                                        beforeUpload={() => false}
+                                                                        beforeUpload={beforeRequirementUpload}
                                                                         customRequest={({ onSuccess }) => onSuccess("ok")}
                                                                     >
                                                                         <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
@@ -1365,7 +1435,7 @@ export default function PassportApplication() {
                                                                             accept="image/*,application/pdf"
                                                                             maxCount={1}
                                                                             disabled={uploading}
-                                                                            beforeUpload={() => false}
+                                                                            beforeUpload={beforeRequirementUpload}
                                                                             customRequest={({ onSuccess }) => onSuccess("ok")}
                                                                         >
                                                                             <Button icon={<UploadOutlined />} className='passportapplication-upload-button' type='primary'>
@@ -1550,7 +1620,7 @@ export default function PassportApplication() {
                         closable={{ 'aria-label': 'Close modal' }}
                         footer={null}
                         onCancel={() => setIsConfirmDocumentsOpen(false)}
-                        style={{ top: 200 }}
+                        centered={true}
                     >
                         <div className="signup-success-container">
                             <h1 className="signup-success-heading">Submit Documents</h1>
@@ -1587,7 +1657,7 @@ export default function PassportApplication() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsSelectDateModalOpen(false);
                         }}
@@ -1629,7 +1699,7 @@ export default function PassportApplication() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsDateSelectedModalOpen(false);
                         }}
@@ -1666,7 +1736,7 @@ export default function PassportApplication() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsDocumentsUploadedModalOpen(false);
                         }}
@@ -1706,7 +1776,7 @@ export default function PassportApplication() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsPassportReleaseOptionSelectedModalOpen(false);
                         }}

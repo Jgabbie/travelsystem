@@ -319,7 +319,7 @@ export default function Wishlist() {
                     className='signup-success-modal'
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
-                    style={{ top: 220 }}
+                    centered={true}
                     onCancel={() => {
                         setIsDeleteModalOpen(false);
                     }}
@@ -365,7 +365,7 @@ export default function Wishlist() {
                     className='signup-success-modal'
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
-                    style={{ top: 220 }}
+                    centered={true}
                     onCancel={() => {
                         setIsPackageRemovedModalOpen(false);
                     }}

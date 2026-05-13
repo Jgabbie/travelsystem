@@ -18,6 +18,8 @@ const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
 
 const PASSPORT_TERMINAL_STATUSES = new Set(['DFA Approved', 'Passport Released', 'Rejected']);
 
+
+//NORMALIZE DATE TO START OF DAY
 const normalizePassportDate = (value) => {
     if (!value) return null;
 
@@ -27,6 +29,7 @@ const normalizePassportDate = (value) => {
 
 // Return the day the given status was set on the application (startOf day).
 // Falls back to updatedAt or createdAt when no explicit history entry exists.
+//GET THE STATUS SET DATE FROM THE APPLICATION
 const getStatusSetDateFromApplication = (application, status) => {
     if (!application) return null;
     const history = Array.isArray(application.statusHistory) ? application.statusHistory : [];
@@ -42,6 +45,8 @@ const getStatusSetDateFromApplication = (application, status) => {
     return null;
 };
 
+
+//GETS THE STORED DEADLINE DATE FOR A PASSPORT APPLICATION STATUS
 const getPassportStoredDeadlineDate = (application, status) => {
     if (!application || !status) return null;
 
@@ -67,6 +72,8 @@ const getPassportStoredDeadlineDate = (application, status) => {
     return null;
 };
 
+
+//MAIN FUNCTION TO GET THE DEADLINE INFO FOR A PASSPORT APPLICATION
 const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
     if (!application) return null;
 
@@ -226,6 +233,8 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
     };
 };
 
+
+//
 const getPassportPenaltyDeadlineDate = (application) => {
     if (!application) return null;
 
@@ -241,15 +250,42 @@ const getPassportPenaltyDeadlineDate = (application) => {
 const getPassportSecondChanceDeadlineDate = (application) => {
     if (!application) return null;
 
-    const paymentCompletedDeadline = getPassportStoredDeadlineDate(application, 'Payment Completed');
-    if (paymentCompletedDeadline) {
-        return paymentCompletedDeadline.add(SECOND_CHANCE_EXTENSION_DAYS, 'day').startOf('day');
+    if (application.secondDeadline) {
+        return normalizePassportDate(application.secondDeadline);
     }
 
-    const anchorDate = normalizePassportDate(application.updatedAt) || normalizePassportDate(application.createdAt);
-    return anchorDate ? anchorDate.add(SECOND_CHANCE_EXTENSION_DAYS, 'day').startOf('day') : null;
+    return dayjs().startOf('day').add(SECOND_CHANCE_EXTENSION_DAYS, 'day');
 };
 
+
+//SETS SECONDDEADLINE AND CHANGE THE "PAYMENT COMPLETED" DEADLINE TO THE SECOND CHANCE DEADLINE
+const setPassportSecondChance = (application) => {
+    if (!application) return application;
+
+    const secondChanceDeadlineDate = getPassportSecondChanceDeadlineDate(application);
+
+    if (secondChanceDeadlineDate) {
+        application.secondChance = true;
+        application.secondDeadline = secondChanceDeadlineDate.format('YYYY-MM-DD');
+        application.processSteps = {
+            ...(application.processSteps || {}),
+            'Payment Completed': {
+                ...((application.processSteps && application.processSteps['Payment Completed']) || {}),
+                deadlineDate: secondChanceDeadlineDate.format('YYYY-MM-DD'),
+            },
+        };
+        application.penaltyDeadline = '';
+
+        if (typeof application.markModified === 'function') {
+            application.markModified('processSteps');
+        }
+    }
+
+    return application;
+};
+
+
+//SEND EMAIL AND NOTIFICATION IF THEIR APPLICATION IS ON PENALTY
 const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
     if (!application || !deadlineInfo) {
         return { sent: false, application };
@@ -319,6 +355,8 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
     return { sent: true, application };
 };
 
+
+//REJECTS APPLICATION IF PENALTY DEADLINE IS OVERDUE WITHOUT PAYMENT OR IF SECOND CHANCE DEADLINE IS OVERDUE
 const rejectPassportApplicationForDeadline = async (application, deadlineInfo, reachedSecondDeadline = false) => {
     if (!application || !deadlineInfo) {
         return { rejected: false, application };
@@ -414,6 +452,8 @@ const rejectPassportApplicationForDeadline = async (application, deadlineInfo, r
     return { rejected: true, application };
 };
 
+
+//MARKS APPLICATION ON PENALTY IF DEADLINE IS OVERDUE AND PENALTY NOT YET APPLIED
 const markPassportApplicationOnPenalty = async (application, deadlineInfo = null) => {
     if (!application) {
         return { penalized: false, application };
@@ -465,6 +505,8 @@ const markPassportApplicationOnPenalty = async (application, deadlineInfo = null
     return { penalized: true, application };
 };
 
+
+//CHECKS DEADLINES AND APPLIES PENALTIES OR REJECTION IF NEEDED.
 const processPassportDeadlineAction = async (application) => {
     const deadlineInfo = getPassportDeadlineInfo(application);
 
@@ -472,7 +514,10 @@ const processPassportDeadlineAction = async (application) => {
         return { application, warned: false, penalized: false, rejected: false };
     }
 
-    if (application?.secondChance && deadlineInfo.isOverdue) {
+    const currentStatus = String(application?.status || '').trim();
+    const isPaymentCompleted = currentStatus.toLowerCase() === 'payment completed';
+
+    if (application?.secondChance && isPaymentCompleted && deadlineInfo.isOverdue) {
         return rejectPassportApplicationForDeadline(application, deadlineInfo, true);
     }
 
@@ -511,6 +556,8 @@ const decoratePassportApplication = (application) => {
     };
 };
 
+
+//SENDS WARNING NOTIFICATION FOR APPLICATIONS APPROACHING DEADLINE (1 DAY BEFORE)
 const sendPassportDeadlineWarning = async (application) => {
     if (application?.onPenalty || application?.secondChance) {
         return { sent: false, application };
@@ -640,10 +687,6 @@ const applyPassport = async (req, res) => {
             console.error('Failed to build/persist processSteps:', e);
         }
 
-
-
-
-
         const io = req.app.get('io')
         if (io) {
             io.emit('passport:created', {
@@ -659,6 +702,7 @@ const applyPassport = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 //UPDATE PASSPORT APPLICATION WITH DOCUMENTS ------------------------------------------------
 const updatePassportApplicationWithDocs = async (req, res) => {
@@ -700,6 +744,12 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         if (additionalDocs && Array.isArray(additionalDocs)) {
             application.submittedDocuments.additionalDocs = additionalDocs; // now array is valid
         }
+
+        application.onPenalty = false;
+        application.secondChance = false;
+        application.reachedSecondDeadline = false;
+        application.penaltyDeadline = '';
+
         application.status = "Documents Uploaded";
         // record status change in history
         try {
@@ -742,6 +792,7 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 //GET USER'S PASSPORT APPLICATIONS ------------------------------------------------------
 const getUserPassportApplications = async (req, res) => {
@@ -902,6 +953,8 @@ const chosenSuggestedSchedule = async (req, res) => {
 
         application.suggestedAppointmentSchedules = [];
         application.suggestedAppointmentScheduleChosen = { date, time };
+        application.preferredDate = date;
+        application.preferredTime = time;
         await application.save();
 
         res.status(200).json({ message: "Preferred appointment schedule updated", application });
@@ -1387,6 +1440,7 @@ module.exports = {
     decoratePassportApplication,
     sendPassportDeadlineWarning,
     processPassportDeadlineAction,
+    setPassportSecondChance,
 };
 
 //REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------

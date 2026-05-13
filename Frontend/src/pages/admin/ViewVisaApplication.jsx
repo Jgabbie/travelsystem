@@ -903,7 +903,7 @@ export default function ViewVisaApplication() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsSuggestedDatesSentModalOpen(false);
                 }}
@@ -940,7 +940,7 @@ export default function ViewVisaApplication() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsResubmitDocumentsSentModalOpen(false);
                 }}

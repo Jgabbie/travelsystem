@@ -443,7 +443,7 @@ export default function ReviewRatings() {
                 open={isDeleteModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsDeleteModalOpen(false);
                 }}
@@ -485,7 +485,7 @@ export default function ReviewRatings() {
                 open={isRatingDeletedModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRatingDeletedModalOpen(false);
                 }}
@@ -520,7 +520,7 @@ export default function ReviewRatings() {
                 open={isRestoreModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRestoreModalOpen(false);
                 }}
@@ -560,7 +560,7 @@ export default function ReviewRatings() {
                 open={isRatingRestoredModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRatingRestoredModalOpen(false);
                 }}

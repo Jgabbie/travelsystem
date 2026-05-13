@@ -1,5 +1,6 @@
 const express = require("express")
 const cloudinary = require("../config/cloudinary")
+const https = require("https")
 const streamifier = require("streamifier")
 const { upload } = require("../middleware/uploadFile")
 
@@ -28,17 +29,23 @@ const getCloudinaryFormat = (uploadResult) => {
     return segments.length > 1 ? segments.pop() : null;
 };
 
-const buildSignedCloudinaryUrl = (uploadResult) => {
-    const format = getCloudinaryFormat(uploadResult);
-
-    if (!uploadResult?.public_id || !format) {
-        return uploadResult?.secure_url || null;
+const buildPrivateAccessUrl = (req, uploadResult) => {
+    if (!uploadResult?.public_id) {
+        return null;
     }
 
-    return cloudinary.utils.private_download_url(uploadResult.public_id, format, {
-        resource_type: uploadResult.resource_type || 'image',
-        type: 'private',
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const params = new URLSearchParams({
+        publicId: uploadResult.public_id,
+        resourceType: uploadResult.resource_type || 'image',
     });
+
+    const format = getCloudinaryFormat(uploadResult);
+    if (format) {
+        params.set('format', format);
+    }
+
+    return `${baseUrl}/api/upload/private-file?${params.toString()}`;
 };
 
 
@@ -51,7 +58,7 @@ const uploadReceiptProof = async (req, res) => {
     try {
         // Use upload_stream with a Promise to await the upload
         const uploadResult = await uploadBufferToCloudinary(req.file, 'manual-deposits');
-        const signedUrl = buildSignedCloudinaryUrl(uploadResult);
+        const signedUrl = buildPrivateAccessUrl(req, uploadResult);
 
         // Only send response once, after upload completes
         return res.status(200).json({
@@ -74,7 +81,7 @@ const uploadBookingDocuments = async (req, res) => {
 
     try {
         const uploadPromises = req.files.map(file =>
-            uploadBufferToCloudinary(file, 'booking-documents').then(result => buildSignedCloudinaryUrl(result))
+            uploadBufferToCloudinary(file, 'booking-documents').then(result => buildPrivateAccessUrl(req, result))
         );
 
         const uploadedUrls = await Promise.all(uploadPromises);
@@ -106,7 +113,7 @@ const uploadPackageImage = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => buildSignedCloudinaryUrl(result))
+            urls: uploadedResults.map(result => buildPrivateAccessUrl(req, result))
         });
     } catch (err) {
         console.error(err);
@@ -123,7 +130,7 @@ const uploadProfilePicture = async (req, res) => {
     try {
 
         const uploadResult = await uploadBufferToCloudinary(req.file, 'profile-pictures');
-        const signedUrl = buildSignedCloudinaryUrl(uploadResult);
+        const signedUrl = buildPrivateAccessUrl(req, uploadResult);
 
 
         // Only send response once, after upload completes
@@ -154,7 +161,7 @@ const uploadPassportRequirements = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => buildSignedCloudinaryUrl(result))
+            urls: uploadedResults.map(result => buildPrivateAccessUrl(req, result))
         });
 
     } catch (err) {
@@ -179,7 +186,7 @@ const uploadVisaRequirements = async (req, res) => {
 
         return res.status(200).json({
             message: 'Files uploaded successfully.',
-            urls: uploadedResults.map(result => buildSignedCloudinaryUrl(result))
+            urls: uploadedResults.map(result => buildPrivateAccessUrl(req, result))
         });
 
     } catch (err) {
@@ -197,7 +204,7 @@ const uploadCancellationProof = async (req, res) => {
     try {
 
         const uploadResult = await uploadBufferToCloudinary(req.file, 'cancellation-proofs');
-        const signedUrl = buildSignedCloudinaryUrl(uploadResult);
+        const signedUrl = buildPrivateAccessUrl(req, uploadResult);
 
 
         // Only send response once, after upload completes
@@ -215,16 +222,55 @@ const uploadCancellationProof = async (req, res) => {
 
 const viewQuotationPdf = async (req, res) => {
     try {
-        const publicId = req.params.publicId;
+        const publicId = req.query.publicId;
+        const resourceType = req.query.resourceType || 'raw';
+        const format = req.query.format || 'pdf';
 
-        // generate temporary signed URL
-        const url = cloudinary.url(publicId, {
-            resource_type: "raw",
-            type: "authenticated",
-            sign_url: true,
+        if (!publicId) {
+            return res.status(400).json({ message: 'publicId is required' });
+        }
+
+        const url = cloudinary.utils.private_download_url(publicId, format, {
+            resource_type: resourceType,
+            type: 'private',
         });
 
-        return res.json({ url });
+        return https.get(url, (cloudRes) => {
+            if (cloudRes.statusCode && cloudRes.statusCode >= 400) {
+                let errorBody = '';
+                cloudRes.on('data', (chunk) => {
+                    errorBody += chunk.toString();
+                });
+                cloudRes.on('end', () => {
+                    res.status(cloudRes.statusCode || 502).json({
+                        message: 'Failed to fetch private file',
+                        error: errorBody || 'Cloudinary request failed',
+                    });
+                });
+                return;
+            }
+
+            if (cloudRes.headers['content-type']) {
+                res.setHeader('Content-Type', cloudRes.headers['content-type']);
+            }
+
+            if (cloudRes.headers['content-length']) {
+                res.setHeader('Content-Length', cloudRes.headers['content-length']);
+            }
+
+            if (cloudRes.headers['content-disposition']) {
+                res.setHeader('Content-Disposition', cloudRes.headers['content-disposition']);
+            }
+
+            res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+            cloudRes.pipe(res);
+        }).on('error', (error) => {
+            console.error(error);
+            if (!res.headersSent) {
+                res.status(500).json({ message: 'Failed to generate signed URL' });
+            }
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Failed to generate signed URL" });

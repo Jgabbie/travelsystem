@@ -54,7 +54,6 @@ export default function UserQuotationRequest() {
                     pdfRevisions: quotationData.pdfRevisions || [],
                     revisionComments: quotationData.revisionComments || []
                 })
-                // console.log("Fetched quotation details:", response.data);
             } catch (error) {
                 console.error("Error fetching quotation details:", error);
                 setNotes("Unable to load quotation details.");
@@ -110,7 +109,6 @@ export default function UserQuotationRequest() {
             notification.error({ message: "Please provide notes for revision.", placement: 'topRight' });
             return;
         }
-        console.log("Revision requested with notes:", notes);
         setActionLoading(true);
         apiFetch.post(`/quotation/${id}/request-revision`, {
             notes
@@ -119,7 +117,7 @@ export default function UserQuotationRequest() {
             notification.success({ message: "Revision requested successfully.", placement: 'topRight' });
             setNotes("");
         }).catch(err => {
-            console.log(err.data.error || err.message);
+            console.error(err.data.error || err.message);
             notification.error({ message: "Failed to request revision.", placement: 'topRight' });
         }).finally(() => {
             setActionLoading(false);
@@ -361,7 +359,7 @@ export default function UserQuotationRequest() {
                                     open={isRevisionModalOpen}
                                     footer={null}
                                     onCancel={() => setIsRevisionModalOpen(false)}
-                                    style={{ top: 200 }}
+                                    centered={true}
                                 >
                                     <div className="userquotationrequest-revision-container">
                                         <h2 className="userquotationrequest-revision-heading">Revision Requested</h2>
@@ -387,7 +385,7 @@ export default function UserQuotationRequest() {
                                     open={isAcceptModalOpen}
                                     footer={null}
                                     onCancel={() => setIsAcceptModalOpen(false)}
-                                    style={{ top: 200 }}
+                                    centered={true}
                                 >
                                     <div className="userquotationrequest-accept-container">
                                         <h2 className="userquotationrequest-accept-heading">Accepting Quotation</h2>

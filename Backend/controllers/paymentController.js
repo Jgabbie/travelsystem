@@ -593,7 +593,7 @@ const createManualPaymentPassportPenalty = async (req, res) => {
                             <p style="color:#555; font-size:15px; line-height:1.6;">
 
                                 <b>Transaction Reference:</b> ${reference} <br/>
-                                <b>Application Number:</b> ${applicationNumber} <br/>
+                                <b>Application Number:</b> ${passportApp.applicationNumber} <br/>
                                 <b>Total Paid:</b> ₱${amount.toFixed(2)}
 
                                 <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
@@ -986,6 +986,224 @@ const createManualPaymentVisa = async (req, res) => {
 };
 
 
+//MANUAL PAYMENT FOR DELIVERY FEE
+const createManualPaymentDeliveryFee = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        const {
+            applicationId,
+            applicationNumber,
+            amount,
+            proofImage,
+        } = req.body;
+        if (!proofImage) {
+            return res.status(400).json({ error: "Proof of payment image is required." });
+        }
+
+        const token = crypto.randomUUID();
+
+        const tokenCheckout = await TokenCheckoutVisaModel.create({
+            token,
+            userId,
+            applicationId,
+            amount,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+
+        const reference = generateTransactionReference();
+        const { invoiceNumber } = await generateTransactionInvoiceNumber();
+        const transaction = await TransactionModel.create({
+            applicationId,
+            applicationType: "Delivery Fee",
+            userId,
+            invoiceNumber,
+            reference,
+            amount,
+            method: 'Manual',
+            status: 'Pending',
+            proofImage,
+        });
+
+
+        const visaApp = await VisaModel.findById(applicationId);
+        const user = await UserModel.findById(userId).select('email username');
+
+        await NotificationModel.create({
+            userId,
+            title: "Manual Payment Submitted",
+            message: `Your manual payment for delivery fee ${visaApp.applicationNumber} has been submitted and is pending review.`,
+            link: `/user-transactions`,
+        });
+
+        try {
+            await transporter.sendMail({
+                from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                to: user.email,
+                subject: `Delivery Fee Payment Submitted`,
+                html: `
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Delivery Fee Payment Submitted!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your delivery fee payment has been successfully submitted and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${reference} <br/>
+                                <b>Application Number:</b> ${applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>info1@mrctravels.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    `
+            });
+        } catch (emailError) {
+            console.error('Failed to send delivery fee email:', emailError);
+        }
+
+        logAction('MANUAL_PAYMENT', userId, { "Manual Payment Submitted": `Transaction Reference: ${transaction.reference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Delivery Fee` });
+
+        return res.status(200).json({
+            redirectUrl: `/user-applications/success/visa?token=${token}`
+        });
+    } catch (error) {
+        console.error('Manual payment for delivery fee error:', error.message);
+        return res.status(500).json({ error: 'Failed to submit manual payment for delivery fee.' });
+    }
+};
+
+
+
+
+
+const createCheckoutSessionDeliveryFee = async (req, res) => {
+    const userId = req.userId;
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+    try {
+        if (!process.env.PAYMONGO_SECRET_KEY) {
+            return res.status(500).json({ error: "PayMongo secret key is not configured." });
+        }
+
+        const { applicationId, applicationNumber, totalPrice } = req.body;
+
+        if (!applicationId || !applicationNumber || !totalPrice) {
+            return res.status(400).json({ error: "Missing required fields." });
+        }
+
+        const token = crypto.randomUUID();
+
+        const tokenCheckoutVisa = await TokenCheckoutVisaModel.create({
+            token,
+            userId,
+            applicationId,
+            amount: totalPrice,
+            expiresAt: dayjs().add(5, 'minutes').toDate()
+        });
+
+
+        const successUrl = `${FRONTEND_URL}/user-applications/success/visa?token=${token}`;
+        const cancelUrl = `${FRONTEND_URL}/user-applications?status=cancel`;
+
+        const convenienceFeeCents = Math.round(totalPrice * 0.035 * 100) + 1500; // 3.5% + 15 PHP in cents
+        const baseAmountCents = Math.round(totalPrice * 100);
+        const finalTotalCents = baseAmountCents + convenienceFeeCents;
+
+        const email = await UserModel.findById(userId).select('email');
+        const username = await UserModel.findById(userId).select('username');
+
+        const metadata = {
+            userId,
+            applicationId,
+            applicationNumber,
+            applicationType: "Delivery Fee",
+            baseAmountCents,
+            convenienceFeeCents,
+            totalAmountCents: finalTotalCents,
+        };
+
+        const response = await apiFetch.post(
+            "https://api.paymongo.com/v1/checkout_sessions",
+            {
+                data: {
+                    attributes: {
+                        billing: {
+                            name: username.username || "Passport Applicant",
+                            email: email.email || "test@example.com",
+                        },
+                        line_items: [
+                            {
+                                name: "Delivery Fee",
+                                quantity: 1,
+                                amount: baseAmountCents,
+                                currency: "PHP",
+                            },
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
+                        ],
+                        payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
+                        success_url: successUrl,
+                        cancel_url: cancelUrl,
+                        metadata,
+                        show_description: true,
+                        show_line_items: true,
+                    },
+                },
+            },
+            {
+                headers: {
+                    Authorization: `Basic ${Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64")}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        res.json(response);
+
+    } catch (error) {
+        console.error("Passport Checkout Error:", error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+};
+
+
+
+
+
 const createCheckoutSessionPassport = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1080,6 +1298,8 @@ const createCheckoutSessionPassport = async (req, res) => {
         res.status(500).json({ error: error.response?.data || error.message });
     }
 };
+
+
 
 
 const createCheckoutSessionVisa = async (req, res) => {
@@ -1828,11 +2048,9 @@ const handlePayMongoWebhook = async (req, res) => {
             console.log('Created transaction for visa application:', metadata.applicationId);
 
             const updatedVisa = await VisaModel.findOneAndUpdate(
-                { _id: metadata.applicationId }, // filter object
-                {
-                    $set: { status: ["Payment Completed"], currentStepIndex: 1 } // replace array & update progress
-                },
-                { new: true } // return the updated document
+                { _id: metadata.applicationId },
+                { _id: metadata.applicationId, status: ["Payment Completed"], currentStepIndex: 1 },
+                { returnDocument: 'after' } // return the updated document
             );
 
             if (!updatedVisa) {
@@ -1933,8 +2151,8 @@ const handlePayMongoWebhook = async (req, res) => {
 
             const updatedApp = await PassportModel.findOneAndUpdate(
                 { _id: metadata.applicationId },
-                { status: "Payment Completed" },
-                { new: true }
+                { _id: metadata.applicationId, status: "Payment Completed" },
+                { returnDocument: 'after' }
             );
 
             if (!updatedApp) {
@@ -2044,7 +2262,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 {
                     $set: { status: ["Payment Completed"], currentStepIndex: 1 } // replace array & update progress
                 },
-                { new: true } // return the updated document
+                { returnDocument: 'after' } // return the updated document
             );
 
             if (!updatedVisa) {
@@ -2148,7 +2366,7 @@ const handlePayMongoWebhook = async (req, res) => {
             const updatedApp = await PassportModel.findOneAndUpdate(
                 { _id: metadata.applicationId },
                 { status: "Payment Completed" },
-                { new: true }
+                { returnDocument: 'after' }
             );
 
             if (!updatedApp) {
@@ -2222,6 +2440,106 @@ const handlePayMongoWebhook = async (req, res) => {
             logAction('PAYMONGO_PAYMENT', user._id, { "Passport Application Paid": `Transaction Reference: ${transactionReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Passport Application` });
 
             console.log('Passport payment processed successfully');
+            return
+        }
+
+
+        //DELIVERY FEE PAYMENT ----------------------------------------------------------------------------------------
+        if (metadata.applicationId && metadata.applicationType === "Delivery Fee") {
+            console.log('Delivery fee payment detected');
+            const grossAmount =
+                Number(metadata.totalAmountCents || 0) / 100 ||
+                Number(sessionAttributes?.amount_total || 0) / 100;
+            const net = grossAmount - ((grossAmount * 0.035) + 15);
+            const amount = Math.round(net / 100) * 100;
+
+            const transactionReference = generateTransactionReference();
+
+            const { invoiceNumber: invoiceNumberPassport } = await generateTransactionInvoiceNumber();
+            const transaction = await TransactionModel.create({
+                userId: user._id,
+                applicationId: metadata.applicationId,
+                applicationType: "Delivery Fee",
+                invoiceNumber: invoiceNumberPassport,
+                reference: transactionReference,
+                amount: Math.round(metadata.baseAmountCents / 100),
+                method: 'Paymongo',
+                status: 'Successful',
+            });
+
+            console.log('Created transaction for delivery fee:', metadata.applicationId);
+
+            if (!updatedApp) {
+                console.warn(`No passport application found with applicationId ${metadata.applicationId}`);
+            } else {
+                console.log("Updated status:", updatedApp.status);
+            }
+            console.log("Updated status:", updatedApp.status);
+
+            await NotificationModel.create({
+                userId: user._id,
+                title: 'Delivery Fee Payment Successful',
+                message: `Your delivery fee payment for application ${metadata.applicationNumber} was successful.`,
+                type: 'delivery-fee',
+                link: '/user-transactions',
+            });
+
+            try {
+                await transporter.sendMail({
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: user.email,
+                    subject: `Delivery Fee Payment Successful`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
+                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
+
+                            <h2 style="color:#305797; margin-bottom:10px;">
+                                Delivery Fee Payment Successful!
+                            </h2>
+
+                            <p style="color:#555; font-size:16px;">
+                                Hello <b>${user.username}</b>,
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+                                Your delivery fee payment has been successfully processed!
+                            </p>
+
+                            <p style="color:#555; font-size:15px; line-height:1.6;">
+
+                                <b>Transaction Reference:</b> ${transactionReference} <br/>
+                                <b>Application Number:</b> ${metadata.applicationNumber} <br/>
+                                <b>Total Paid:</b> ₱${amount.toFixed(2)}
+
+                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            </p>
+
+                            <p style="color:#777; font-size:13px; margin-top:30px;">
+                                If you did not make this payment, please ignore this email.
+                            </p>
+
+                            <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
+
+                            <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
+                                <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
+                                <p>M&RC Travel and Tours</p>
+                                <p>info1@mrctravels.com</p>
+                                <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                    `
+                });
+            } catch (emailError) {
+                console.error('Failed to send passport email:', emailError);
+            }
+
+            logAction('PAYMONGO_PAYMENT', user._id, { "Delivery Fee Paid": `Transaction Reference: ${transactionReference} | Amount: ₱${amount.toFixed(2)} | Payment Purpose: Delivery Fee` });
+
+            console.log('Delivery fee payment processed successfully');
             return
         }
 
@@ -2664,4 +2982,23 @@ const createCheckoutToken = async (req, res) => {
 };
 
 
-module.exports = { createCheckoutSession, createCheckoutSessionQuotation, createCheckoutSessionPassport, createCheckoutSessionVisa, createCheckoutSessionVisaPenalty, createCheckoutSessionPassportPenalty, createCheckoutSessionDeposit, createCheckoutToken, handlePayMongoWebhook, createManualPayment, createManualPaymentQuotation, createManualPaymentDeposit, createManualPaymentVisa, createManualPaymentPassport, createManualPaymentVisaPenalty, createManualPaymentPassportPenalty };
+module.exports = {
+    createCheckoutSession,
+    createCheckoutSessionQuotation,
+    createCheckoutSessionPassport,
+    createCheckoutSessionVisa,
+    createCheckoutSessionVisaPenalty,
+    createCheckoutSessionPassportPenalty,
+    createCheckoutSessionDeposit,
+    createCheckoutSessionDeliveryFee,
+    createCheckoutToken,
+    handlePayMongoWebhook,
+    createManualPayment,
+    createManualPaymentQuotation,
+    createManualPaymentDeposit,
+    createManualPaymentVisa,
+    createManualPaymentPassport,
+    createManualPaymentVisaPenalty,
+    createManualPaymentPassportPenalty,
+    createManualPaymentDeliveryFee
+};

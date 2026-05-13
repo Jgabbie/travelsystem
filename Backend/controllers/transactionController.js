@@ -6,6 +6,8 @@ const VisaModel = require('../models/visas')
 const PassportModel = require('../models/passport')
 const NotificationModel = require('../models/notification')
 const UserModel = require('../models/user')
+const { setVisaSecondChance } = require('./visaController')
+const { setPassportSecondChance } = require('./passportController')
 const transporter = require('../config/nodemailer')
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs')
@@ -184,6 +186,29 @@ const getUserTransactions = async (req, res) => {
 }
 
 
+//GET TRANSACTIONS FOR APPLICATION (VISA/PASSPORT) --------------------------------------------------------------------------
+const getTransactionsForApplication = async (req, res) => {
+    const userId = req.userId
+    const { applicationId } = req.params
+    try {
+        const transactions = await TransactionModel.find({ userId, applicationId }).sort({ createdAt: -1 })
+        res.status(200).json(transactions)
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch transactions", error: error.message })
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 //GET ALL TRANSACTIONS --------------------------------------------------------------------------
 const getAllTransactions = async (_req, res) => {
     try {
@@ -264,6 +289,26 @@ const updateTransaction = async (req, res) => {
                     { status: 'Payment Completed' },
                     { new: true }
                 )
+            }
+
+            if (updatedTransaction.applicationType === 'Visa Penalty Fee' && updatedTransaction.applicationId) {
+                const visaApplication = await VisaModel.findById(updatedTransaction.applicationId)
+                if (visaApplication) {
+                    visaApplication.onPenalty = true
+                    visaApplication.reachedSecondDeadline = false
+                    setVisaSecondChance(visaApplication)
+                    await visaApplication.save()
+                }
+            }
+
+            if (updatedTransaction.applicationType === 'Passport Penalty Fee' && updatedTransaction.applicationId) {
+                const passportApplication = await PassportModel.findById(updatedTransaction.applicationId)
+                if (passportApplication) {
+                    passportApplication.onPenalty = true
+                    passportApplication.reachedSecondDeadline = false
+                    setPassportSecondChance(passportApplication)
+                    await passportApplication.save()
+                }
             }
 
             await NotificationModel.create({
@@ -567,4 +612,4 @@ const rejectTransaction = async (req, res) => {
     }
 }
 
-module.exports = { createTransaction, getUserTransactions, getAllTransactions, getInvoiceNumber, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction }
+module.exports = { createTransaction, getUserTransactions, getTransactionsForApplication, getAllTransactions, getInvoiceNumber, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction }

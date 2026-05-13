@@ -21,12 +21,11 @@ export default function SuccessfulPaymentVisa() {
         // Call backend API to verify payment using token
         apiFetch.post(`/visa/verify-payment`, { token })
             .then(res => {
-                console.log("Payment verification response:", res);
 
                 if (res.success) {
-                    console.log("Payment verified successfully.");
+                    console.success("Payment verified successfully.");
                 } else {
-                    console.log("Payment verification failed.");
+                    console.error("Payment verification failed.");
                 }
             })
             .catch(err => {

@@ -509,7 +509,7 @@ export default function CancellationRequests() {
                     onCancel={() => setIsViewModalOpen(false)}
                     className="transaction-view-modal"
                     width={720}
-                    style={{ top: 150 }}
+                    centered={true}
                     footer={null}
                     title={"Cancellation Request Proof - " + (selectedRequest?.ref || "")}
                 >
@@ -565,7 +565,7 @@ export default function CancellationRequests() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsAcceptModalOpen(false);
                 }}
@@ -606,7 +606,7 @@ export default function CancellationRequests() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRejectModalOpen(false);
                 }}
@@ -647,7 +647,7 @@ export default function CancellationRequests() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsCancellationAcceptedModalOpen(false);
                 }}
@@ -684,7 +684,7 @@ export default function CancellationRequests() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsCancellationRejectedModalOpen(false);
                 }}
@@ -720,7 +720,7 @@ export default function CancellationRequests() {
                 open={isDeleteModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsDeleteModalOpen(false);
                 }}
@@ -761,7 +761,7 @@ export default function CancellationRequests() {
                 open={isRestoreModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRestoreModalOpen(false);
                 }}
@@ -803,7 +803,7 @@ export default function CancellationRequests() {
                 open={isRequestDeletedModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRequestDeletedModalOpen(false);
                 }}
@@ -838,7 +838,7 @@ export default function CancellationRequests() {
                 open={isRequestRestoredModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRequestRestoredModalOpen(false);
                 }}

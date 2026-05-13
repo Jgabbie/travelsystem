@@ -63,7 +63,6 @@ export default function VisaApplications() {
                 status: a.status,
             }))
 
-            console.log("Fetched applications:", applications)
 
             setApplications(applications)
         } catch (error) {
@@ -244,12 +243,16 @@ export default function VisaApplications() {
                     Pending: 'orange',
                     Approved: 'green',
                     Rejected: 'red',
-                    'Payment Completed': 'blue',
+                    'Application Submitted': 'blue',
+                    'Application Approved': 'green',
+                    'Payment Completed': 'green',
                     'Documents Uploaded': 'gold',
                     'Documents Approved': 'green',
                     'Documents Received': 'cyan',
                     'Documents Submitted': 'purple',
-                    'Processing DFA': 'geekblue'
+                    'Processing by Emabasyy': 'geekblue',
+                    'Embassy Approved': 'green',
+                    'Passport Released': 'green',
                 };
 
                 const fallbackColors = ['magenta', 'volcano', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
@@ -488,7 +491,7 @@ export default function VisaApplications() {
                 open={isDeleteModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsDeleteModalOpen(false);
                 }}
@@ -529,7 +532,7 @@ export default function VisaApplications() {
                 open={isRestoreModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRestoreModalOpen(false);
                 }}
@@ -571,7 +574,7 @@ export default function VisaApplications() {
                 open={isVisaApplicationDeletedModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsVisaApplicationDeletedModalOpen(false);
                 }}
@@ -606,7 +609,7 @@ export default function VisaApplications() {
                 open={isVisaApplicationRestoredModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsVisaApplicationRestoredModalOpen(false);
                 }}

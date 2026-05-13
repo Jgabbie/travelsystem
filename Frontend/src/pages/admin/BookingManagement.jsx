@@ -103,7 +103,6 @@ export default function BookingManagement() {
     }
   };
 
-  console.log(data)
 
   const fetchArchivedBookings = async () => {
     setLoading(true);
@@ -230,7 +229,6 @@ export default function BookingManagement() {
   };
 
   const handleArchive = async (key) => {
-    console.log("Archiving booking with key:", key);
 
     try {
       await apiFetch.delete(`/booking/${key}`);

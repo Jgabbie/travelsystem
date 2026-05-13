@@ -37,7 +37,6 @@ export default function UserBookings() {
             try {
                 const response = await apiFetch.get('/booking/my-bookings')
 
-                console.log("Raw Bookings Response:", response)
                 const bookings = response.map((b) => ({
                     key: b.bookingItem,
                     reference: b.reference,
@@ -49,7 +48,6 @@ export default function UserBookings() {
                     status: b.status || 'N/A'
                 }))
 
-                console.log("Processed Bookings Data:", bookings)
 
                 setBookings(bookings)
             } catch (error) {

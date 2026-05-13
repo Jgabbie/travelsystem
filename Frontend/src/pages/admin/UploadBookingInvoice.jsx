@@ -164,13 +164,12 @@ export default function UploadBookingInvoice() {
         try {
             setDownloading(true);
             setIsGeneratingPdf(true);
+            setCurrentStep(0);
 
             const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
 
-            const waitForRender = (ms = 450) => new Promise((resolve) => {
-                requestAnimationFrame(() => {
-                    setTimeout(resolve, ms);
-                });
+            const waitForRender = (ms = 2000) => new Promise((resolve) => {
+                setTimeout(resolve, ms);
             });
 
             for (let i = 0; i < stepsToCapture.length; i += 1) {
@@ -178,30 +177,56 @@ export default function UploadBookingInvoice() {
                 setCurrentStep(step);
                 await waitForRender();
 
-                if (!pdfStepRef.current) {
+                let element = pdfStepRef.current;
+
+                if (!element) {
+                    element = document.querySelector('.pdf-capture');
+                    console.warn(`Ref was null, using querySelector. Found element:`, element);
+                }
+
+                if (!element) {
+                    console.error(`PDF element not found for step ${step}`);
                     continue;
                 }
 
-                const canvas = await html2canvas(pdfStepRef.current, {
-                    scale: 1.5,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
+                try {
+                    const canvas = await html2canvas(element, {
+                        scale: 1.5,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        allowTaint: true,
+                        logging: false,
+                        windowWidth: 900,
+                        windowHeight: 1200
+                    });
 
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-                const renderHeight = Math.min(imgHeight, pdfHeight);
+                    if (canvas.width === 0 || canvas.height === 0) {
+                        console.error(`Invalid canvas dimensions for step ${step}`);
+                        continue;
+                    }
 
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                    const renderHeight = Math.min(imgHeight, pdfHeight);
 
-                pdf.setFillColor(255, 255, 255);
-                pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderHeight);
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, renderHeight);
 
-                if (i < stepsToCapture.length - 1) {
-                    pdf.addPage();
+                    if (i < stepsToCapture.length - 1) {
+                        pdf.addPage();
+                    }
+                } catch (canvasError) {
+                    console.error(`Canvas capture error for step ${step}:`, canvasError);
                 }
+            }
+
+            const pageCount = pdf.getNumberOfPages();
+
+            if (pageCount === 0) {
+                throw new Error('No pages were captured in the PDF');
             }
 
             pdf.save(`Booking_${reference}.pdf`);
@@ -212,11 +237,12 @@ export default function UploadBookingInvoice() {
             }, 1000);
 
         } catch (err) {
-            notification.error({ message: "Submission failed.", placement: "topRight" });
-            console.error("Error during PDF generation:", err);
+            console.error("PDF generation error:", err);
+            notification.error({ message: "Failed to download PDF: " + (err?.message || "Unknown error"), placement: "topRight" });
         } finally {
             setDownloading(false);
             setIsGeneratingPdf(false);
+            setCurrentStep(0);
         }
     };
 
@@ -641,12 +667,25 @@ export default function UploadBookingInvoice() {
                 }
             }}
         >
-            {loading || downloading ? (
+            {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '75vh' }}>
-                    <Spin description={loading ? "Loading Booking Details..." : "Downloading Registration Form..."} size="large" />
+                    <Spin description="Loading Booking Details..." size="large" />
                 </div>
             ) : (
-                <div className="upload-invoice-container">
+                <div className="upload-invoice-container" style={{ position: 'relative' }}>
+                    {downloading && (
+                        <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 50,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'rgba(255, 255, 255, 0.75)'
+                        }}>
+                            <Spin description="Downloading Registration Form..." size="large" />
+                        </div>
+                    )}
                     <div className="upload-invoice-page">
                         <Button type="primary" className="upload-invoice-back-button" onClick={handleBackNavigation}>
                             <ArrowLeftOutlined />
@@ -963,68 +1002,77 @@ export default function UploadBookingInvoice() {
                                         style={{ marginBottom: '30px' }}
                                     />
 
-                                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-
-                                        {currentStep > 0 && (
-                                            <Button
-                                                type="primary"
-                                                className="user-invoice-form-button"
-                                                onClick={prev}
-                                                style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
-                                            >
-                                                <ArrowLeftOutlined />
-                                            </Button>
-                                        )}
-
-
-                                        {/* PAGES FOR PDF GENERATION */}
-                                        <div
-                                            className="form-content-wrapper pdf-capture"
-                                            ref={pdfStepRef}
-                                            style={{
-                                                position: isGeneratingPdf ? "absolute" : "relative",
-                                                left: isGeneratingPdf ? "-9999px" : "0"
-                                            }}
-                                        >
-                                            {currentStep === 0 && (
-                                                <BookingRegistrationTravelersInvoice
-                                                    form={form}
-                                                    summaryInvoice={summaryInvoice}
-                                                    totalCount={bookingDetails?.travelerCounts?.total || 1}
-                                                />
-                                            )}
-
-                                            {currentStep === 1 && (
-                                                <BookingRegistrationDietInvoice
-                                                    form={form}
-                                                    summaryInvoice={summaryInvoice}
-                                                />
-                                            )}
-
-                                            {currentStep === 2 && (
-                                                <BookingRegistrationTermsInvoicePart1
-                                                    form={form}
-                                                    summaryInvoice={summaryInvoice}
-                                                />
-                                            )}
-
-                                            {currentStep === 3 && (
-                                                <BookingRegistrationTermsInvoicePart2
-                                                    form={form}
-                                                    summaryInvoice={summaryInvoice}
-                                                />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+                                        <div style={{ width: 48, display: 'flex', justifyContent: 'center' }}>
+                                            {currentStep > 0 && (
+                                                <Button
+                                                    type="primary"
+                                                    className="user-invoice-form-button"
+                                                    onClick={prev}
+                                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                                >
+                                                    <ArrowLeftOutlined />
+                                                </Button>
                                             )}
                                         </div>
 
-                                        {currentStep < 3 && (
-                                            <Button
-                                                type="primary"
-                                                className="user-invoice-form-button"
-                                                onClick={next}
-                                                style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
-                                            >
-                                                <ArrowRightOutlined />
-                                            </Button>
+                                        <div style={{ flex: 1 }} />
+
+                                        <div style={{ width: 48, display: 'flex', justifyContent: 'center' }}>
+                                            {currentStep < 3 && (
+                                                <Button
+                                                    type="primary"
+                                                    className="user-invoice-form-button"
+                                                    onClick={next}
+                                                    style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                                                >
+                                                    <ArrowRightOutlined />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* PAGES FOR PDF GENERATION */}
+                                    <div
+                                        className="form-content-wrapper pdf-capture"
+                                        ref={pdfStepRef}
+                                        style={{
+                                            width: '100%',
+                                            minWidth: 0,
+                                            position: "relative",
+                                            overflow: "visible",
+                                            backgroundColor: "#ffffff",
+                                            padding: "20px",
+                                            borderRadius: "8px"
+                                        }}
+                                    >
+                                        {currentStep === 0 && (
+                                            <BookingRegistrationTravelersInvoice
+                                                form={form}
+                                                summaryInvoice={summaryInvoice}
+                                                totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                            />
+                                        )}
+
+                                        {currentStep === 1 && (
+                                            <BookingRegistrationDietInvoice
+                                                form={form}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        )}
+
+                                        {currentStep === 2 && (
+                                            <BookingRegistrationTermsInvoicePart1
+                                                form={form}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        )}
+
+                                        {currentStep === 3 && (
+                                            <BookingRegistrationTermsInvoicePart2
+                                                form={form}
+                                                summaryInvoice={summaryInvoice}
+                                            />
                                         )}
                                     </div>
 

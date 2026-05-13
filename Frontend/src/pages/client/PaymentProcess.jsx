@@ -1066,7 +1066,7 @@ export default function PaymentProcess() {
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={() => { setIsProceedModalOpen(false) }}
-                    style={{ top: 200 }}
+                    centered={true}
                 >
                     <div className='signup-success-container'>
                         <h1 className='signup-success-heading'>Proceed to Payment</h1>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Input, Button, ConfigProvider, DatePicker, TimePicker, Modal } from 'antd'
-import { useLocation } from 'react-router-dom'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useLocation, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import { useAuth } from '../../hooks/useAuth'
 import LoginModal from '../../components/modals/LoginModal'
@@ -11,6 +12,8 @@ export default function ApplyVisa() {
     const [loginModalVisible, setLoginModalVisible] = useState(false)
     const [sentModalVisible, setSentModalVisible] = useState(false)
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     const [services, setServices] = useState([])
     const [selectedServiceId, setSelectedServiceId] = useState('')
     const [preferredDate, setPreferredDate] = useState('')
@@ -19,6 +22,7 @@ export default function ApplyVisa() {
 
     const { auth } = useAuth()
     const location = useLocation()
+    const navigate = useNavigate()
 
     const normalizeServiceValue = (value) => String(value || '').trim().toLowerCase()
 
@@ -138,6 +142,8 @@ export default function ApplyVisa() {
         }
 
         try {
+            setIsSubmitting(true)
+
             await apiFetch.post('/visa/apply', {
                 serviceName: selectedService?.visaName || selectedServiceId,
                 preferredDate,
@@ -147,9 +153,10 @@ export default function ApplyVisa() {
                 status: typeof steps[0] === 'string' ? steps[0] : (steps[0]?.title || '')
             })
             setSentModalVisible(true)
-            console.log('Submitting visa application request')
         } catch (submitError) {
             console.error('Error submitting visa application request:', submitError)
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -199,7 +206,7 @@ export default function ApplyVisa() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
             >
                 <div className='signup-success-container'>
                     <h1 className='signup-success-heading'>Application submitted</h1>
@@ -226,6 +233,18 @@ export default function ApplyVisa() {
             </Modal>
 
             <div className="passport-container">
+                <Button
+                    className='passport-back-button'
+                    type='primary'
+                    onClick={() => {
+                        navigate('/passandvisa-service');
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
+                >
+                    <ArrowLeftOutlined />
+                    Back
+                </Button>
+
                 <header className="passport-header">
                     <h2>Visa Application Assistance</h2>
                     <p>Choose a visa service, review the requirements, and submit your preferred schedule.</p>
@@ -392,7 +411,7 @@ export default function ApplyVisa() {
                                     </div>
                                 </div>
                             </div>
-                            <Button className="passport-submit" type="primary" onClick={submitRequest}>
+                            <Button className="passport-submit" type="primary" onClick={submitRequest} loading={isSubmitting}>
                                 Submit request
                             </Button>
                         </section>

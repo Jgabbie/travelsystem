@@ -23,9 +23,9 @@ export default function SuccessfulPaymentPassport() {
         apiFetch.post(`/passport/verify-payment`, { token })
             .then(res => {
                 if (res.success) {
-                    console.log("Payment verified successfully.");
+                    console.success("Payment verified successfully.");
                 } else {
-                    console.log("Payment verification failed.");
+                    console.error("Payment verification failed.");
                 }
             })
             .catch(err => {

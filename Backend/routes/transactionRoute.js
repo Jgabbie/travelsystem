@@ -5,6 +5,7 @@ const userAuth = require('../middleware/userAuth');
 
 router.post('/create-transaction', userAuth, transactionController.createTransaction);
 router.get('/user-transactions', userAuth, transactionController.getUserTransactions);
+router.get('/application/:applicationId', userAuth, transactionController.getTransactionsForApplication);
 router.get('/all-transactions', userAuth, transactionController.getAllTransactions);
 router.get('/invoice-number', userAuth, transactionController.getInvoiceNumber);
 router.get('/archived-transactions', userAuth, transactionController.getArchivedTransactions);

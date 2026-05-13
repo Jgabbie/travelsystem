@@ -1186,7 +1186,7 @@ export default function QuotationRequest() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsQuotationSentModalOpen(false);
                         }}

@@ -296,13 +296,11 @@ export default function QuotationsPaymentProcess() {
         endDate: dayjs(endTravelDate).format("YYYY-MM-DD")
     };
 
-    console.log(startTravelDate)
 
     const name = quotationBookingData?.leadFullName || 'Customer';
     const email = quotationBookingData?.leadEmail || 'Email'
     const phone = quotationBookingData?.leadContact || 'Phone Number';
 
-    console.log(quotationBookingData)
 
     //PAYLOAD FOR PAYMENT
     const paymentDetails = {
@@ -1066,7 +1064,7 @@ export default function QuotationsPaymentProcess() {
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
                     onCancel={() => { setIsProceedModalOpen(false) }}
-                    style={{ top: 200 }}
+                    centered={true}
                 >
                     <div className='signup-success-container'>
                         <h1 className='signup-success-heading'>Proceed to Payment</h1>

@@ -747,7 +747,7 @@ export default function PackageDomesticQuotation() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={onCancelModal}
                     >
                         <div className='signup-success-container'>

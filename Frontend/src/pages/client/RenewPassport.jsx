@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { Select, Button, ConfigProvider, DatePicker, TimePicker, Modal } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import dayjs from 'dayjs'
 import LoginModal from '../../components/modals/LoginModal'
@@ -23,10 +25,13 @@ export default function RenewPassport() {
     const [loginModalVisible, setLoginModalVisible] = useState(false);
     const [sentModalVisible, setSentModalVisible] = useState(false);
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const [location, setLocation] = useState(undefined)
     const [preferredDate, setPreferredDate] = useState('')
     const [preferredTime, setPreferredTime] = useState('')
     const { auth } = useAuth()
+
+    const navigate = useNavigate()
 
     const [error, setError] = useState({
         location: '',
@@ -66,6 +71,8 @@ export default function RenewPassport() {
         }
 
         try {
+            setIsSubmitting(true)
+
             await apiFetch.post('/passport/apply', {
                 dfaLocation: location,
                 preferredDate,
@@ -75,6 +82,8 @@ export default function RenewPassport() {
             setSentModalVisible(true);
         } catch (error) {
             console.error('Error submitting passport application request:', error);
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -123,7 +132,7 @@ export default function RenewPassport() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
             >
                 <div className='signup-success-container'>
                     <h1 className='signup-success-heading'>Application submitted</h1>
@@ -149,6 +158,17 @@ export default function RenewPassport() {
             </Modal>
 
             <div className="passport-container">
+                <Button
+                    className='passport-back-button'
+                    type='primary'
+                    onClick={() => {
+                        navigate('/passandvisa-service');
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
+                >
+                    <ArrowLeftOutlined />
+                    Back
+                </Button>
                 <header className="passport-header">
                     <h2>Passport Renewal Assistance</h2>
                     <p>Keep your documents ready and reserve your renewal schedule.</p>
@@ -273,7 +293,7 @@ export default function RenewPassport() {
                                 </div>
                             </div>
 
-                            <Button className="passport-submit" type="primary" onClick={submitRequest}>
+                            <Button className="passport-submit" type="primary" onClick={submitRequest} loading={isSubmitting}>
                                 Submit request
                             </Button>
                         </section>

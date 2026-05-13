@@ -12,8 +12,8 @@ const savePreferrences = async (req, res) => {
 
         const updated = await PreferrencesModel.findOneAndUpdate(
             { userId },
-            { moods, tours, pace },
-            { new: true, upsert: true }
+            { userId, moods, tours, pace },
+            { returnDocument: 'after', upsert: true }
         );
 
         // Keep recommendations fresh after preference updates.

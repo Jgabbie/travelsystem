@@ -336,7 +336,7 @@ export default function TransactionManagement() {
       setIsProofDecision(null);
       setProofTransaction(null);
     } catch (error) {
-      console.log(error)
+      console.error(error)
       notification.error({ message: "Failed to update proof status.", description: error?.message || "Please try again.", placement: "topRight" });
     } finally {
       setIsProofDecisionLoading(false);

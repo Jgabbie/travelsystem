@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { Select, Button, ConfigProvider, DatePicker, TimePicker, Modal } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import dayjs from 'dayjs'
 import LoginModal from '../../components/modals/LoginModal'
@@ -23,10 +25,14 @@ const dfaLocations = [
 export default function NewPassport() {
     const [loginModalVisible, setLoginModalVisible] = useState(false);
     const [sentModalVisible, setSentModalVisible] = useState(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const [location, setLocation] = useState(undefined)
     const [preferredDate, setPreferredDate] = useState(null)
     const [preferredTime, setPreferredTime] = useState(null)
     const { auth } = useAuth()
+
+    const navigate = useNavigate()
 
     const [error, setError] = useState({
         preferredDate: '',
@@ -64,6 +70,8 @@ export default function NewPassport() {
         }
 
         try {
+            setIsSubmitting(true)
+
             await apiFetch.post('/passport/apply', {
                 dfaLocation: location,
                 preferredDate,
@@ -73,6 +81,8 @@ export default function NewPassport() {
             setSentModalVisible(true);
         } catch (error) {
             console.error('Error submitting passport application request:', error);
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -121,7 +131,7 @@ export default function NewPassport() {
                 className='signup-success-modal'
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
             >
                 <div className='signup-success-container'>
                     <h1 className='signup-success-heading'>Application submitted</h1>
@@ -147,6 +157,18 @@ export default function NewPassport() {
             </Modal>
 
             <div className="passport-container">
+                <Button
+                    className='passport-back-button'
+                    type='primary'
+                    onClick={() => {
+                        navigate('/passandvisa-service');
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
+                >
+                    <ArrowLeftOutlined />
+                    Back
+                </Button>
+
                 <header className="passport-header">
                     <h2>New Passport Assistance</h2>
                     <p>Prepare your documents and pick a schedule for your application.</p>
@@ -282,7 +304,7 @@ export default function NewPassport() {
 
                             </div>
 
-                            <Button className="passport-submit" type="primary" onClick={submitRequest}>
+                            <Button className="passport-submit" type="primary" onClick={submitRequest} loading={isSubmitting}>
                                 Submit request
                             </Button>
                         </section>

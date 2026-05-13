@@ -83,12 +83,18 @@ export default function UserApplications() {
         Pending: 'orange',
         Approved: 'green',
         Rejected: 'red',
+        'Application Submitted': 'blue',
+        'Application Approved': 'green',
         'Payment Completed': 'green',
         'Documents Uploaded': 'gold',
         'Documents Approved': 'green',
         'Documents Received': 'cyan',
         'Documents Submitted': 'purple',
-        'Processing DFA': 'geekblue'
+        'Processing by DFA': 'geekblue',
+        'DFA Approved': 'green',
+        'Processing by Emabasyy': 'geekblue',
+        'Embassy Approved': 'green',
+        'Passport Released': 'green',
     };
 
     const fallbackColors = ['magenta', 'volcano', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];

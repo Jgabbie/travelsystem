@@ -271,8 +271,6 @@ export default function ProfilePage() {
         try {
             const response = await apiFetch.get('/booking/my-bookings')
 
-            console.log('Raw bookings response:', response) // Debug log
-
             const bookings = response.map((b) => ({
                 _id: b.bookingItem,
                 key: b.bookingItem,
@@ -1080,7 +1078,7 @@ export default function ProfilePage() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsUserProfileEdited(false);
                         }}
@@ -1117,7 +1115,7 @@ export default function ProfilePage() {
                         className='signup-success-modal'
                         closable={{ 'aria-label': 'Custom Close Button' }}
                         footer={null}
-                        style={{ top: 220 }}
+                        centered={true}
                         onCancel={() => {
                             setIsUserPreferencesEdited(false);
                         }}

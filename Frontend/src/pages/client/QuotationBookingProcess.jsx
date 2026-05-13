@@ -674,8 +674,6 @@ export default function QuotationBookingProcess() {
             }));
 
             setCurrentStep(currentStep + 1);
-            console.log('Save Successful, moving to next step');
-
 
         } catch (error) {
             console.error('Validation error:', error);

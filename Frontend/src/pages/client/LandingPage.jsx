@@ -1182,7 +1182,7 @@ export default function LandingPage() {
                 className='emailverify-success-modal'
                 footer={null}
                 closable={false}
-                style={{ top: 230 }}
+                centered={true}
             >
                 <div className='emailverify-container-modal'>
                     <h1 className='emailverify-heading-modal'>Your message has been sent</h1>
@@ -1206,7 +1206,7 @@ export default function LandingPage() {
                 className='emailverify-fail-modal'
                 footer={null}
                 closable={false}
-                style={{ top: 230 }}
+                centered={true}
             >
                 <div className='emailverify-container-modal'>
                     <h1 className='emailverify-heading-modal'>Failed to Send Message</h1>
@@ -1226,7 +1226,7 @@ export default function LandingPage() {
             {/* Next Steps Modal - Shown after User Preferences */}
             <Modal
                 title={null}
-                centered
+                centered={true}
                 open={showNextStepsModal}
                 onCancel={() => setShowNextStepsModal(false)}
                 footer={null}

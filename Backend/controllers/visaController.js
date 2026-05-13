@@ -219,14 +219,41 @@ const getVisaPenaltyDeadlineDate = (application) => {
 const getVisaSecondChanceDeadlineDate = (application) => {
     if (!application) return null;
 
-    const paymentCompletedDeadline = getVisaStoredDeadlineDate(application, 'Payment Completed');
-    if (paymentCompletedDeadline) {
-        return paymentCompletedDeadline.add(SECOND_CHANCE_EXTENSION_DAYS, 'day').startOf('day');
+    if (application.secondDeadline) {
+        return normalizeVisaDate(application.secondDeadline);
     }
 
-    const anchorDate = normalizeVisaDate(application.updatedAt) || normalizeVisaDate(application.createdAt);
-    return anchorDate ? anchorDate.add(SECOND_CHANCE_EXTENSION_DAYS, 'day').startOf('day') : null;
+    return dayjs().startOf('day').add(SECOND_CHANCE_EXTENSION_DAYS, 'day');
 };
+
+
+//SETS SECONDDEADLINE AND CHANGE THE "PAYMENT COMPLETED" DEADLINE TO THE SECOND CHANCE DEADLINE
+const setVisaSecondChance = (application) => {
+    if (!application) return application;
+
+    const secondChanceDeadlineDate = getVisaSecondChanceDeadlineDate(application);
+
+    if (secondChanceDeadlineDate) {
+        application.secondChance = true;
+        application.secondDeadline = secondChanceDeadlineDate.format('YYYY-MM-DD');
+        application.processSteps = {
+            ...(application.processSteps || {}),
+            'Payment Completed': {
+                ...((application.processSteps && application.processSteps['Payment Completed']) || {}),
+                deadlineDate: secondChanceDeadlineDate.format('YYYY-MM-DD'),
+            },
+        };
+        application.penaltyDeadline = '';
+
+        if (typeof application.markModified === 'function') {
+            application.markModified('processSteps');
+        }
+    }
+
+    return application;
+};
+
+
 
 const getVisaDeadlineInfo = (
     application,
@@ -714,14 +741,18 @@ const markVisaApplicationOnPenalty = async (application, deadlineInfo = null) =>
     return { penalized: true, application };
 };
 
+
 const processVisaDeadlineAction = async (application) => {
     const deadlineInfo = getVisaDeadlineInfo(application);
     if (!deadlineInfo) {
         return { application, warned: false, rejected: false };
     }
 
+    const currentStatus = String(getCurrentVisaStatus(application) || '').trim();
+    const isPaymentCompleted = currentStatus.toLowerCase() === 'payment completed';
+
     if (deadlineInfo.isOverdue) {
-        if (application?.secondChance) {
+        if (application?.secondChance && isPaymentCompleted) {
             return rejectVisaApplicationForDeadline(application, deadlineInfo, true);
         }
 
@@ -841,6 +872,11 @@ const updateVisaApplicationWithDocs = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized to update this application' })
         }
 
+        application.onPenalty = false;
+        application.secondChance = false;
+        application.reachedSecondDeadline = false;
+        application.penaltyDeadline = '';
+
         application.preferredDate = preferredDate || application.preferredDate
         application.preferredTime = preferredTime || application.preferredTime
         application.purposeOfTravel = purposeOfTravel || application.purposeOfTravel
@@ -959,6 +995,9 @@ const requestVisaDocumentResubmission = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
+
 const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
@@ -995,6 +1034,7 @@ const getVisaApplications = async (_req, res) => {
     }
 }
 
+
 const getUserVisaApplications = async (req, res) => {
     try {
         const userId = req.userId
@@ -1011,6 +1051,7 @@ const getUserVisaApplications = async (req, res) => {
         res.status(500).json({ message: 'Error fetching user visa applications', error: error.message })
     }
 }
+
 
 const getVisaApplicationById = async (req, res) => {
     try {
@@ -1031,6 +1072,7 @@ const getVisaApplicationById = async (req, res) => {
         res.status(500).json({ message: 'Error fetching visa application', error: error.message });
     }
 };
+
 
 const suggestAppointmentSchedules = async (req, res) => {
     const { id } = req.params;
@@ -1147,6 +1189,8 @@ const chosenSuggestedSchedule = async (req, res) => {
 
         application.suggestedAppointmentSchedules = [];
         application.suggestedAppointmentScheduleChosen = { date, time };
+        application.preferredDate = date;
+        application.preferredTime = time;
         await application.save();
 
         res.status(200).json({ message: "Preferred appointment schedule updated", application });
@@ -1489,6 +1533,7 @@ module.exports = {
     sendVisaDeadlineWarning,
     processVisaDeadlineAction,
     autoRejectVisaApplication: rejectVisaApplicationForDeadline,
-    buildProcessSteps
+    buildProcessSteps,
+    setVisaSecondChance
 };
 

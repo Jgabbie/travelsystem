@@ -11,6 +11,7 @@ router.post('/upload-passport-requirements', upload.array('files', 10), uploadCo
 router.post('/upload-visa-requirements', upload.array('files', 20), uploadController.uploadVisaRequirements);
 router.post('/upload-cancel-proof', upload.single('file'), uploadController.uploadCancellationProof);
 router.get('/quotation/signed-url', uploadController.viewQuotationPdf);
+router.get('/private-file', uploadController.viewQuotationPdf);
 
 
 module.exports = router;

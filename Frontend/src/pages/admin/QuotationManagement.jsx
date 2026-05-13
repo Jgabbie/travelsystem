@@ -531,7 +531,7 @@ export default function QuotationManagement() {
                 open={isDeleteModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsDeleteModalOpen(false);
                 }}
@@ -572,7 +572,7 @@ export default function QuotationManagement() {
                 open={isRestoreModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsRestoreModalOpen(false);
                 }}
@@ -614,7 +614,7 @@ export default function QuotationManagement() {
                 open={isQuotationDeletedModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsQuotationDeletedModalOpen(false);
                 }}
@@ -649,7 +649,7 @@ export default function QuotationManagement() {
                 open={isQuotationRestoredModalOpen}
                 closable={{ 'aria-label': 'Custom Close Button' }}
                 footer={null}
-                style={{ top: 220 }}
+                centered={true}
                 onCancel={() => {
                     setIsQuotationRestoredModalOpen(false);
                 }}
