@@ -239,6 +239,7 @@ export default function PackagePage() {
     //ITINERARY CONTENT ------------------------------------------------
     const itineraryContent = useMemo(() => {
         const itineraries = packageData?.packageItineraries || {}
+        const itineraryImagesByDay = packageData?.packageItineraryImages || {}
         const days = Object.keys(itineraries)
             .sort((a, b) => Number(a.replace('day', '')) - Number(b.replace('day', '')))
 
@@ -249,10 +250,10 @@ export default function PackagePage() {
             <div>
                 {days.map((day) => {
                     const dayItems = itineraries[day] || []
-                    const dayImages = dayItems
+                    const dayImages = (itineraryImagesByDay[day] || dayItems
                         .flatMap((item) => (Array.isArray(item?.itineraryImages) ? item.itineraryImages : []))
                         .filter(Boolean)
-                        .slice(0, 3)
+                        .slice(0, 3))
                     const dayLabel = day.replace('day', 'Day ')
 
                     return (
@@ -441,6 +442,7 @@ export default function PackagePage() {
         inclusions: packageData?.packageInclusions || [],
         exclusions: packageData?.packageExclusions || [],
         itinerary: packageData?.packageItineraries || {},
+        packageItineraryImages: packageData?.packageItineraryImages || {},
         visaRequired: packageData?.visaRequired || false,
         images: packageData?.images || []
     }

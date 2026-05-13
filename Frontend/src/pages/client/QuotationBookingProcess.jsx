@@ -225,6 +225,9 @@ export default function QuotationBookingProcess() {
     const inclusions = data.inclusions || []
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
+    const itineraryImagesByDay = data.packageItineraryImages || {}
+
+    console.log(itineraryImagesByDay)
 
 
     //FORMAT ITINERARY ENTRIES
@@ -253,11 +256,34 @@ export default function QuotationBookingProcess() {
                 .slice(0, 3)
         }
 
+        const getDayImages = (dayKey, index, items) => {
+            const tryKeys = [];
+            if (dayKey) {
+                tryKeys.push(String(dayKey));
+                const numMatch = String(dayKey).match(/(\d+)/);
+                if (numMatch) {
+                    const n = numMatch[1];
+                    tryKeys.push(`day${n}`, `day-${n}`, `day ${n}`);
+                }
+            }
+            if (typeof index === 'number') {
+                const n = index + 1;
+                tryKeys.push(`day${n}`, `day-${n}`, `day ${n}`);
+            }
+
+            for (const k of tryKeys) {
+                const imgs = itineraryImagesByDay?.[k];
+                if (Array.isArray(imgs) && imgs.length) return imgs.slice(0, 3);
+            }
+
+            return extractImages(items);
+        }
+
         if (Array.isArray(itinerary)) {
             return itinerary.map((items, index) => ({
                 key: `day-${index + 1}`,
                 label: `Day ${index + 1}`,
-                images: extractImages(items),
+                images: getDayImages(`day${index + 1}`, index, items),
                 items: Array.isArray(items)
                     ? items.map(formatItineraryItem).filter(Boolean)
                     : items
@@ -277,7 +303,7 @@ export default function QuotationBookingProcess() {
             .map((dayKey) => ({
                 key: dayKey,
                 label: String(dayKey).replace('day', 'Day '),
-                images: extractImages(itinerary[dayKey]),
+                images: getDayImages(dayKey, undefined, itinerary[dayKey]),
                 items: Array.isArray(itinerary[dayKey])
                     ? itinerary[dayKey].map(formatItineraryItem).filter(Boolean)
                     : itinerary[dayKey]
@@ -287,7 +313,8 @@ export default function QuotationBookingProcess() {
     })()
 
 
-    //FETCH DETAILS FROM QUOTATION
+
+    //FETCH DETAILS FROM QUOTATION --------------------------------------------------------
     useEffect(() => {
         if (!quotationBookingData?.quotationId) return;
 
@@ -313,6 +340,7 @@ export default function QuotationBookingProcess() {
 
                 const packageType = packageResponse?.packageType;
                 const packageImages = packageResponse?.images || packageResponse?.packageImages || [];
+                const itineraryImages = packageResponse?.packageItineraryImages || {};
                 const visaRequired = packageResponse?.visaRequired || false;
 
                 if (!latestDetails || !isMounted) return;
@@ -374,6 +402,7 @@ export default function QuotationBookingProcess() {
                     itinerary: Object.keys(prev.itinerary || {}).length
                         ? prev.itinerary
                         : latestDetails.itinerary || {},
+                    packageItineraryImages: itineraryImages || {},
                     images: prev.images?.length
                         ? prev.images
                         : (latestDetails.images && latestDetails.images.length)

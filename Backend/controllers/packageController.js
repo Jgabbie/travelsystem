@@ -131,6 +131,7 @@ const addPackage = async (req, res) => {
             packageInclusions: inclusions,
             packageExclusions: exclusions,
             packageItineraries: itineraries,
+            packageItineraryImages: req.body.packageItineraryImages || {},
             packageTags: tags,
             visaRequired: visaRequired,
             images: images || []
@@ -424,6 +425,7 @@ const getPackage = async (req, res) => {
             packageExclusions: pkg.packageExclusions,
             packageTermsConditions: pkg.packageTermsConditions,
             packageItineraries: pkg.packageItineraries,
+            packageItineraryImages: pkg.packageItineraryImages || {},
             visaRequired: pkg.visaRequired || false,
             packageTags: pkg.packageTags || [],
             packageDiscountPercent: pkg.packageDiscountPercent || 0
@@ -483,6 +485,7 @@ const updatePackage = async (req, res) => {
                 packageExclusions: req.body.exclusions,
                 packageTermsConditions: req.body.termsAndConditions,
                 packageItineraries: req.body.itineraries,
+                packageItineraryImages: req.body.packageItineraryImages || {},
                 packageTags: req.body.tags,
                 visaRequired: req.body.visaRequired,
                 images: req.body.images || []

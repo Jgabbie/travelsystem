@@ -96,8 +96,11 @@ export default function UserQuotationRequest() {
                 inclusions: details.inclusions || [],
                 exclusions: details.exclusions || [],
                 itinerary: details.itinerary || {},
+                packageItineraryImages: quotation?.packageId?.packageItineraryImages || quotation?.packageItineraryImages || {},
                 images: details.images || []
             }));
+
+
             navigate("/quotation-booking-process");
         } catch (error) {
             notification.error({ message: "Unable to accept quotation", placement: 'topRight' });

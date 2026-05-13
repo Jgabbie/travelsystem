@@ -285,12 +285,14 @@ export default function BookingProcess() {
     const inclusions = data.inclusions || []
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
+    const itineraryImagesByDay = data.packageItineraryImages || {}
 
     const itineraryEntries = (() => {
         if (Array.isArray(itinerary)) {
             return itinerary.map((items, index) => ({
                 key: `day-${index + 1}`,
                 label: `Day ${index + 1}`,
+                images: itineraryImagesByDay[`day${index + 1}`] || [],
                 items: Array.isArray(items)
                     ? items
                     : items
@@ -310,6 +312,7 @@ export default function BookingProcess() {
             .map((dayKey) => ({
                 key: dayKey,
                 label: String(dayKey).replace('day', 'Day '),
+                images: itineraryImagesByDay[dayKey] || [],
                 items: Array.isArray(itinerary[dayKey])
                     ? itinerary[dayKey]
                     : itinerary[dayKey]
@@ -1244,20 +1247,16 @@ export default function BookingProcess() {
                                     {itineraryEntries.map((day) => (
                                         <details key={day.key} className='itinerary-day'>
                                             <summary className='itinerary-day-label'>{day.label}</summary>
-                                            {day.items.some((item) => Array.isArray(item?.itineraryImages)) && (
+                                            {day.images?.length > 0 && (
                                                 <div className='itinerary-day-images'>
-                                                    {day.items
-                                                        .flatMap((item) => (Array.isArray(item?.itineraryImages) ? item.itineraryImages : []))
-                                                        .filter(Boolean)
-                                                        .slice(0, 3)
-                                                        .map((src, index) => (
-                                                            <img
-                                                                key={`${day.key}-image-${index}`}
-                                                                className='itinerary-day-image'
-                                                                src={src}
-                                                                alt={`${day.label} image ${index + 1}`}
-                                                            />
-                                                        ))}
+                                                    {day.images.slice(0, 3).filter(Boolean).map((src, index) => (
+                                                        <img
+                                                            key={`${day.key}-image-${index}`}
+                                                            className='itinerary-day-image'
+                                                            src={src}
+                                                            alt={`${day.label} image ${index + 1}`}
+                                                        />
+                                                    ))}
                                                 </div>
                                             )}
                                             {day.items.length ? (

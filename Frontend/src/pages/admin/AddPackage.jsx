@@ -329,7 +329,6 @@ export default function AddPackage() {
             isOptional: false,
             optionalActivity: "",
             optionalPrice: "",
-            itineraryImages: values.itinerariesImages?.[day] || [],
           };
         }
         return {
@@ -337,7 +336,6 @@ export default function AddPackage() {
           isOptional: Boolean(item.isOptional),
           optionalActivity: item.optionalActivity ?? "",
           optionalPrice: item.optionalPrice ?? "",
-          itineraryImages: item.itineraryImages ?? [],
         };
       });
     });
@@ -699,7 +697,6 @@ export default function AddPackage() {
 
           return {
             ...normalized,
-            itineraryImages: itineraryImagesByDay[day] || normalized.itineraryImages || [],
           };
         }),
       ])
@@ -728,6 +725,7 @@ export default function AddPackage() {
       exclusions: formatInExTc(values.exclusions),
       termsAndConditions: formatInExTc(values.termsConditions),
       itineraries: normalizedItineraries,
+      packageItineraryImages: itineraryImagesByDay,
       tags: values.tags,
       images: finalImages,
     };
@@ -762,6 +760,8 @@ export default function AddPackage() {
           itineraryImagesByDay[day] = images.filter((img) => img && img !== "").slice(0, 3);
         });
 
+        const packageItineraryImages = pkg.packageItineraryImages || itineraryImagesByDay;
+
         setValues((prev) => ({
           ...prev,
           name: pkg.packageName,
@@ -787,7 +787,7 @@ export default function AddPackage() {
             slots: d.slots || "",
           })),
           itineraries: normalizeItineraries(pkg.packageItineraries || {}),
-          itinerariesImages: itineraryImagesByDay,
+          itinerariesImages: packageItineraryImages,
           tags: pkg.packageTags || [],
           images: (pkg.images || []).filter((img) => img && img !== ""),
         }));
@@ -1442,6 +1442,9 @@ export default function AddPackage() {
               </div>
             </div>
 
+
+
+
             <div className="add-package-section-half add-package-section" >
               <h2 className="section-headers">Itinerary</h2>
               {/* ITINERARIES */}
@@ -1586,6 +1589,11 @@ export default function AddPackage() {
               </div>
               <p className="add-package-error-message">{errors.itineraries}</p>
             </div>
+
+
+
+
+
 
             <div className="add-package-section-half add-package-section" style={{ marginTop: 40 }}>
               <h2 className="section-headers">Package Image</h2>

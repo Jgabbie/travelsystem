@@ -26,6 +26,8 @@ export default function ViewVisaApplication() {
     ]);
     const [isSuggestedDatesSentModalOpen, setIsSuggestedDatesSentModalOpen] = useState(false);
     const [isResubmitDocumentsSentModalOpen, setIsResubmitDocumentsSentModalOpen] = useState(false);
+    const [isSubmitDeliveryDetailsModalOpen, setIsSubmitDeliveryDetailsModalOpen] = useState(false);
+
     const [descriptionColumn, setDescriptionColumn] = useState(2);
     const [deliveryFee, setDeliveryFee] = useState("");
     const [deliveryDate, setDeliveryDate] = useState(null);
@@ -203,8 +205,9 @@ export default function ViewVisaApplication() {
 
     useEffect(() => {
         if ((application?.passportReleaseOption || "").toLowerCase() !== "delivery") return;
+        const defaultDeliveryDate = dayjs().add(1, 'month').startOf('day');
         setDeliveryFee(application?.deliveryFee ? String(application.deliveryFee) : "");
-        setDeliveryDate(application?.deliveryDate ? dayjs(application.deliveryDate) : null);
+        setDeliveryDate(application?.deliveryDate ? dayjs(application.deliveryDate) : defaultDeliveryDate);
     }, [application?.passportReleaseOption, application?.deliveryFee, application?.deliveryDate]);
 
     const requirements = application?.visaRequirements || [];
@@ -347,6 +350,7 @@ export default function ViewVisaApplication() {
         }
     };
 
+    //SUBMIT DELIVERY DETAILS
     const handleSubmitDeliveryDetails = async () => {
         const parsedFee = Number(deliveryFee);
         if (!Number.isFinite(parsedFee) || parsedFee <= 0) {
@@ -360,13 +364,13 @@ export default function ViewVisaApplication() {
         }
 
         try {
-            setIsSubmittingDeliveryDetails(true);
+            setIsSubmittingDeliveryDetails(true)
             const response = await apiFetch.put(`/visa/applications/${applicationItem}/delivery-details`, {
                 deliveryFee: parsedFee,
                 deliveryDate: dayjs(deliveryDate).format("YYYY-MM-DD")
             });
-
             setApplication((prev) => ({ ...prev, ...response.application }));
+            setIsSubmitDeliveryDetailsModalOpen(true);
             notification.success({ message: "Delivery details sent to applicant.", placement: "topRight" });
         } catch (error) {
             notification.error({ message: error?.message || "Failed to send delivery details.", placement: "topRight" });
@@ -428,7 +432,8 @@ export default function ViewVisaApplication() {
     }
 
     const disablePastDates = (current) => {
-        return current && current < dayjs().startOf('day');
+        const minimumDate = dayjs().add(1, 'month').startOf('day');
+        return current && current < minimumDate;
     };
 
     // Only allow digit keystrokes and numeric paste for delivery fee input
@@ -725,7 +730,7 @@ export default function ViewVisaApplication() {
                                             </div>
                                         </div>
 
-                                        {statusText && String(statusText).toLowerCase() === "passport released" && application.passportReleaseOption === "delivery" && (
+                                        {statusText && String(statusText).toLowerCase() === "passport released" && application.passportReleaseOption === "delivery" && application.deliveryDate === "" && (
                                             <div className="viewvisaapplication-delivery-details-card">
                                                 <h3 className="viewvisaapplication-delivery-details-title">Delivery Details</h3>
                                                 <label className="viewvisaapplication-delivery-details-label">Delivery Fee</label>
@@ -969,6 +974,48 @@ export default function ViewVisaApplication() {
 
                 </div>
             </Modal>
+
+
+
+
+            {/* SUBMIT DELIVERY DETAILS MODAL */}
+            <Modal
+                open={isSubmitDeliveryDetailsModalOpen}
+                className='signup-success-modal'
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                footer={null}
+                centered={true}
+                onCancel={() => {
+                    setIsSubmitDeliveryDetailsModalOpen(false);
+                }}
+            >
+                <div className='signup-success-container'>
+                    <h1 className='signup-success-heading'>Submit Delivery Details!</h1>
+
+                    <div>
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                    </div>
+
+                    <p className='signup-success-text'>The delivery details have been submitted.</p>
+
+                    <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+
+                        <Button
+                            type='primary'
+                            className='logout-confirm-btn'
+                            onClick={() => {
+                                setIsSubmitDeliveryDetailsModalOpen(false);
+                            }}
+                        >
+                            Continue
+                        </Button>
+                    </div>
+
+                </div>
+            </Modal>
+
+
+
 
         </ConfigProvider>
     );
