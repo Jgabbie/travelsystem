@@ -385,7 +385,7 @@ export default function DestinationsPackages() {
                                     <Slider
                                         range
                                         min={0}
-                                        max={200000}
+                                        max={500000}
                                         value={budgetRange}
                                         onChange={(value) => setBudgetRange(value)}
                                         tooltip={{ formatter: (value) => `₱${value}` }}

@@ -969,7 +969,7 @@ export default function AddPackage() {
                 <label className="add-package-input-labels">Package Name</label>
                 <Input
                   status={errors.name ? "error" : ""}
-                  maxLength={50}
+                  maxLength={150}
                   value={values.name}
                   className={`add-package-inputs${errors.name ? " add-package-inputs-error" : "add-package-inputs"
                     }`}
@@ -1189,6 +1189,12 @@ export default function AddPackage() {
                     { label: "12 Days", value: 12 },
                     { label: "13 Days", value: 13 },
                     { label: "14 Days", value: 14 },
+                    { label: "15 Days", value: 15 },
+                    { label: "16 Days", value: 16 },
+                    { label: "17 Days", value: 17 },
+                    { label: "18 Days", value: 18 },
+                    { label: "19 Days", value: 19 },
+                    { label: "20 Days", value: 20 },
                   ]}
                 ></Select>
                 <p className="add-package-error-message">{errors.duration}</p>
