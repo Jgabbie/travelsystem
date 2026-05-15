@@ -110,6 +110,7 @@ export default function UserBookingInvoice() {
     const [fileList, setFileList] = useState([]);
     const [passportUploadLists, setPassportUploadLists] = useState([]);
     const [photoUploadLists, setPhotoUploadLists] = useState([]);
+    const [visaUploadLists, setVisaUploadLists] = useState([]);
 
     const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState(false);
@@ -118,6 +119,7 @@ export default function UserBookingInvoice() {
     const stepsToCapture = [0, 1, 2, 3];
     const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
     const reference = booking?.reference || booking?.ref || booking?._id || "--";
+    const bookingId = booking?.bookingItem ?? booking?._id ?? booking?.id ?? booking?.bookingId ?? booking?.reference ?? booking?.ref ?? null;
 
 
     useEffect(() => {
@@ -250,6 +252,7 @@ export default function UserBookingInvoice() {
         : booking?.travelers || []
     const passportFiles = booking.passportFiles || [];
     const photoFiles = booking.photoFiles || [];
+    const visaFiles = booking.visaFiles || [];
     const resubmissionTravelerIndexes = useMemo(() => {
         const normalizedIndexes = new Set();
 
@@ -286,7 +289,8 @@ export default function UserBookingInvoice() {
         booking?.documentsResubmissionTravelerIndexes,
         travelersWithDocs,
         passportFiles,
-        photoFiles
+        photoFiles,
+        visaFiles
     ]);
 
     //REGISTRATION FORM
@@ -325,6 +329,15 @@ export default function UserBookingInvoice() {
         });
     };
 
+    const handleVisaUploadChange = async (index, { fileList: newFileList }) => {
+        const updated = await enhanceFilePreviews(newFileList);
+        setVisaUploadLists((prev) => {
+            const next = [...prev];
+            next[index] = updated;
+            return next;
+        });
+    };
+
     const beforeDocumentUpload = (file) => {
         const isImage = file.type === "image/jpeg" || file.type === "image/png";
         if (!isImage) {
@@ -335,6 +348,21 @@ export default function UserBookingInvoice() {
         const isLt2M = file.size / 1024 / 1024 < 2;
         if (!isLt2M) {
             notification.error({ message: "Image must be smaller than 2MB", placement: 'topRight' });
+            return Upload.LIST_IGNORE;
+        }
+        return false;
+    };
+
+    const beforeVisaUpload = (file) => {
+        const isAllowed = file.type === "image/jpeg" || file.type === "image/png" || file.type === "application/pdf";
+        if (!isAllowed) {
+            notification.error({ message: "Only JPG/PNG/PDF files are allowed for visa.", placement: 'topRight' });
+            return Upload.LIST_IGNORE;
+        }
+
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            notification.error({ message: "File must be smaller than 2MB", placement: 'topRight' });
             return Upload.LIST_IGNORE;
         }
         return false;
@@ -359,24 +387,26 @@ export default function UserBookingInvoice() {
     };
 
     const handleSubmitTravelerResubmission = async (index) => {
-        if (!booking?._id) {
+        if (!bookingId) {
             notification.error({ message: "Booking ID not found.", placement: 'topRight' });
             return;
         }
 
         const passportList = passportUploadLists[index] || [];
         const photoList = photoUploadLists[index] || [];
+        const visaList = visaUploadLists[index] || [];
 
-        if (passportList.length === 0 && photoList.length === 0) {
-            notification.warning({ message: "Please upload passport/ID or 2x2 photo.", placement: 'topRight' });
+        if (passportList.length === 0 && photoList.length === 0 && visaList.length === 0) {
+            notification.warning({ message: "Please upload passport/ID, 2x2 photo, or visa file.", placement: 'topRight' });
             return;
         }
 
         setSubmittingTravelerIndex(index);
         try {
-            const [passportUrls, photoUrls] = await Promise.all([
+            const [passportUrls, photoUrls, visaUrls] = await Promise.all([
                 uploadBookingDocuments(passportList),
-                uploadBookingDocuments(photoList)
+                uploadBookingDocuments(photoList),
+                uploadBookingDocuments(visaList)
             ]);
 
             const updatedTravelers = (travelersWithDocs || []).map((traveler, travelerIndex) => {
@@ -385,22 +415,28 @@ export default function UserBookingInvoice() {
                     ...traveler,
                     documentsResubmissionRequired: false,
                     passportFile: passportUrls[0] || traveler?.passportFile || null,
-                    photoFile: photoUrls[0] || traveler?.photoFile || null
+                    photoFile: photoUrls[0] || traveler?.photoFile || null,
+                    visaFile: visaUrls[0] || traveler?.visaFile || null
                 };
             });
 
             const updatedPassportFiles = [...(passportFiles || [])];
             const updatedPhotoFiles = [...(photoFiles || [])];
+            const updatedVisaFiles = [...(visaFiles || [])];
             if (passportUrls[0]) {
                 updatedPassportFiles[index] = passportUrls[0];
             }
             if (photoUrls[0]) {
                 updatedPhotoFiles[index] = photoUrls[0];
             }
+            if (visaUrls[0]) {
+                updatedVisaFiles[index] = visaUrls[0];
+            }
 
-            const response = await apiFetch.post(`/booking/${booking._id}/resubmit-documents`, {
+            const response = await apiFetch.post(`/booking/${bookingId}/resubmit-documents`, {
                 passportFiles: updatedPassportFiles,
                 photoFiles: updatedPhotoFiles,
+                visaFiles: updatedVisaFiles,
                 travelers: updatedTravelers,
                 travelerIndex: index
             });
@@ -413,6 +449,11 @@ export default function UserBookingInvoice() {
                 return next;
             });
             setPhotoUploadLists((prev) => {
+                const next = [...prev];
+                next[index] = [];
+                return next;
+            });
+            setVisaUploadLists((prev) => {
                 const next = [...prev];
                 next[index] = [];
                 return next;
@@ -1482,6 +1523,22 @@ export default function UserBookingInvoice() {
                                                                             </div>
                                                                         </div>
                                                                     )}
+
+                                                                {traveler?.visaFile && (
+                                                                    <div style={{ marginBottom: 16 }}>
+                                                                        <h1 className="user-invoice-section-header">Visa File</h1>
+                                                                        <div>
+                                                                            <a
+                                                                                href={traveler.visaFile}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                            >
+                                                                                View Visa
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                             {needsResubmission && (
                                                                 <div className="user-invoice-doc-actions">
@@ -1507,6 +1564,18 @@ export default function UserBookingInvoice() {
                                                                     >
                                                                         <Button type="primary" className="user-invoice-form-button">
                                                                             Upload 2x2 Photo
+                                                                        </Button>
+                                                                    </Upload>
+                                                                    <Upload
+                                                                        listType="picture"
+                                                                        fileList={visaUploadLists[index] || []}
+                                                                        beforeUpload={beforeVisaUpload}
+                                                                        onChange={(info) => handleVisaUploadChange(index, info)}
+                                                                        accept="image/jpeg,image/png,application/pdf"
+                                                                        maxCount={1}
+                                                                    >
+                                                                        <Button type="primary" className="user-invoice-form-button">
+                                                                            Upload Visa File
                                                                         </Button>
                                                                     </Upload>
                                                                     <Button

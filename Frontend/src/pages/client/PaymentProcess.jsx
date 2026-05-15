@@ -123,9 +123,10 @@ export default function PaymentProcess() {
         (acc, traveler) => {
             if (traveler?.passportFile) acc.passport.push(traveler.passportFile)
             if (traveler?.photoFile) acc.photo.push(traveler.photoFile)
+            if (traveler?.visaFile) acc.visa.push(traveler.visaFile)
             return acc
         },
-        { passport: [], photo: [] }
+        { passport: [], photo: [], visa: [] }
     )
 
     const passportFiles = (bookingData?.passportFiles?.length
@@ -134,6 +135,9 @@ export default function PaymentProcess() {
     const photoFiles = (bookingData?.photoFiles?.length
         ? bookingData.photoFiles
         : travelerDocuments.photo) || []
+    const visaFiles = (bookingData?.visaFiles?.length
+        ? bookingData.visaFiles
+        : travelerDocuments.visa) || []
 
     //DISABLE DEPOSIT IF TRAVEL DATE IS LESS THAN 7 DAYS AWAY
     const travelDateStart = bookingData?.travelDate?.startDate
@@ -212,8 +216,8 @@ export default function PaymentProcess() {
         return false;
     };
 
-    //UPLOAD ALL FILES (PASSPORT, PHOTO, PROOF) AND RETURN THEIR URLS
-    const uploadAllFiles = async (passportFiles, photoFiles) => {
+    //UPLOAD ALL FILES (PASSPORT, PHOTO, VISA) AND RETURN THEIR URLS
+    const uploadAllFiles = async (passportFiles, photoFiles, visaFiles) => {
         const formData = new FormData();
 
         const passportFileObjs = passportFiles
@@ -224,7 +228,11 @@ export default function PaymentProcess() {
             .filter(f => f.base64) // Safety check
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
-        [...passportFileObjs, ...photoFileObjs].forEach(file => {
+        const visaFileObjs = visaFiles
+            .filter(f => f.base64) // Safety check
+            .map(file => base64ToFile(file.base64, file.name, file.type));
+
+        [...passportFileObjs, ...photoFileObjs, ...visaFileObjs].forEach(file => {
             if (file) formData.append("files", file);
         });
 
@@ -378,15 +386,17 @@ export default function PaymentProcess() {
             let activeBooking = canReusePendingBooking ? pendingBooking : null;
 
             if (!activeBooking) {
-                const allUrls = await uploadAllFiles(passportFiles, photoFiles);
+                const allUrls = await uploadAllFiles(passportFiles, photoFiles, visaFiles);
 
                 const passportUrls = allUrls.slice(0, passportFiles.length);
                 const photoUrls = allUrls.slice(passportFiles.length);
+                const visaUrls = allUrls.slice(passportFiles.length + photoFiles.length);
 
                 const travelersWithUrls = (bookingData?.travelers || []).map((traveler, index) => ({
                     ...traveler,
                     passportFile: passportUrls[index] || traveler?.passportFile || null,
-                    photoFile: photoUrls[index] || traveler?.photoFile || null
+                    photoFile: photoUrls[index] || traveler?.photoFile || null,
+                    visaFile: visaUrls[index] || traveler?.visaFile || bookingData?.visaFiles?.[index] || null
                 }))
 
                 const bookingDetailsWithUrls = {

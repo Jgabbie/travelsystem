@@ -201,8 +201,8 @@ export default function QuotationsPaymentProcess() {
         return false;
     };
 
-    //UPLOAD ALL FILES (PASSPORT, PHOTO, PROOF) AND RETURN THEIR URLS
-    const uploadAllFiles = async (passportFiles, photoFiles) => {
+    //UPLOAD ALL FILES (PASSPORT, PHOTO, VISA) AND RETURN THEIR URLS
+    const uploadAllFiles = async (passportFiles, photoFiles, visaFiles) => {
         const formData = new FormData();
 
         // Helper to process arrays
@@ -225,6 +225,7 @@ export default function QuotationsPaymentProcess() {
 
         processFiles(passportFiles, 'passport');
         processFiles(photoFiles, 'photo');
+        processFiles(visaFiles, 'visa');
 
         // If no files were added, don't even make the request
         if (!formData.has("files")) {
@@ -379,15 +380,17 @@ export default function QuotationsPaymentProcess() {
             let activeBooking = canReusePendingBooking ? pendingBooking : null;
 
             if (!activeBooking) {
-                const allUrls = await uploadAllFiles(passportFiles, photoFiles);
+                const allUrls = await uploadAllFiles(passportFiles, photoFiles, quotationBookingData?.visaFiles || []);
 
                 const passportUrls = allUrls.slice(0, passportFiles.length);
                 const photoUrls = allUrls.slice(passportFiles.length);
+                const visaUrls = allUrls.slice(passportFiles.length + photoFiles.length);
 
                 const travelersWithUrls = (quotationBookingData?.travelers || []).map((traveler, index) => ({
                     ...traveler,
                     passportFile: passportUrls[index] || traveler?.passportFile || null,
-                    photoFile: photoUrls[index] || traveler?.photoFile || null
+                    photoFile: photoUrls[index] || traveler?.photoFile || null,
+                    visaFile: visaUrls[index] || traveler?.visaFile || quotationBookingData?.visaFiles?.[index] || null
                 }))
 
                 const bookingDetailsWithUrls = {

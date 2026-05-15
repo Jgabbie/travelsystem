@@ -350,7 +350,8 @@ const requestDocumentResubmission = async (req, res) => {
                     ...traveler,
                     documentsResubmissionRequired: true,
                     passportFile: null,
-                    photoFile: null
+                    photoFile: null,
+                    visaFile: null
                 }
             })
 
@@ -364,18 +365,25 @@ const requestDocumentResubmission = async (req, res) => {
                 updatedPhotoFiles[travelerIndex] = null
                 booking.photoFiles = updatedPhotoFiles
             }
+            if (Array.isArray(booking.visaFiles)) {
+                const updatedVisaFiles = [...booking.visaFiles]
+                updatedVisaFiles[travelerIndex] = null
+                booking.visaFiles = updatedVisaFiles
+            }
             booking.markModified('bookingDetails')
         } else {
             booking.documentsResubmissionTravelerIndexes = travelerList.map((_traveler, index) => index)
             booking.passportFiles = []
             booking.photoFiles = []
+            booking.visaFiles = []
 
             if (travelerList.length) {
                 booking.bookingDetails.travelers = travelerList.map((traveler) => ({
                     ...traveler,
                     documentsResubmissionRequired: true,
                     passportFile: null,
-                    photoFile: null
+                    photoFile: null,
+                    visaFile: null
                 }))
                 booking.markModified('bookingDetails')
             }
@@ -446,7 +454,7 @@ const requestDocumentResubmission = async (req, res) => {
 const resubmitBookingDocuments = async (req, res) => {
     const { id } = req.params
     const userId = req.userId
-    const { passportFiles = [], photoFiles = [], travelers = [], travelerIndex } = req.body
+    const { passportFiles = [], photoFiles = [], visaFiles = [], travelers = [], travelerIndex } = req.body
 
     try {
         const booking = await BookingModel.findById(id)
@@ -464,6 +472,9 @@ const resubmitBookingDocuments = async (req, res) => {
         }
         if (Array.isArray(photoFiles) && photoFiles.length) {
             booking.photoFiles = photoFiles
+        }
+        if (Array.isArray(visaFiles) && visaFiles.length) {
+            booking.visaFiles = visaFiles
         }
 
         if (Array.isArray(travelers) && travelers.length) {

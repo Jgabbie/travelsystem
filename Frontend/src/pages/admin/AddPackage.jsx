@@ -1182,6 +1182,13 @@ export default function AddPackage() {
                     { label: "5 Days", value: 5 },
                     { label: "6 Days", value: 6 },
                     { label: "7 Days", value: 7 },
+                    { label: "8 Days", value: 8 },
+                    { label: "9 Days", value: 9 },
+                    { label: "10 Days", value: 10 },
+                    { label: "11 Days", value: 11 },
+                    { label: "12 Days", value: 12 },
+                    { label: "13 Days", value: 13 },
+                    { label: "14 Days", value: 14 },
                   ]}
                 ></Select>
                 <p className="add-package-error-message">{errors.duration}</p>

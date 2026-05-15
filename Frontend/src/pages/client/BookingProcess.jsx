@@ -557,6 +557,7 @@ export default function BookingProcess() {
 
             let photoFilesFormatted = bookingData?.photoFiles || [];
             let passportFilesFormatted = bookingData?.passportFiles || [];
+            let visaFilesFormatted = bookingData?.visaFiles || [];
 
             if (currentStep === 2) {
                 photoFilesFormatted = await Promise.all(
@@ -590,12 +591,29 @@ export default function BookingProcess() {
                         };
                     })
                 );
+
+                visaFilesFormatted = await Promise.all(
+                    visaFileLists.map(async (list) => {
+                        const fileObj = list?.[0]?.originFileObj;
+
+                        if (!fileObj) {
+                            return null;
+                        }
+
+                        return {
+                            name: fileObj.name,
+                            type: fileObj.type,
+                            base64: await toBase64(fileObj),
+                        };
+                    })
+                );
             }
 
             const travelersWithDocuments = (currentFormValues.travelers || []).map((traveler, index) => ({
                 ...traveler,
                 passportFile: passportFilesFormatted[index] || null,
-                photoFile: photoFilesFormatted[index] || null
+                photoFile: photoFilesFormatted[index] || null,
+                visaFile: visaFilesFormatted[index] || null
             }));
 
             form.setFieldsValue({ travelers: travelersWithDocuments });
@@ -608,7 +626,8 @@ export default function BookingProcess() {
                 bookingType: bookingType,
                 totalPrice: totalPrice,
                 passportFiles: passportFilesFormatted,
-                photoFiles: photoFilesFormatted
+                photoFiles: photoFilesFormatted,
+                visaFiles: visaFilesFormatted
             }));
 
             setCurrentStep(currentStep + 1);
@@ -678,10 +697,12 @@ export default function BookingProcess() {
                 : fallbackTravelers
             const finalPassportFiles = bookingData?.passportFiles || []
             const finalPhotoFiles = bookingData?.photoFiles || []
+            const finalVisaFiles = bookingData?.visaFiles || []
             const travelersWithDocuments = finalTravelers.map((traveler, index) => ({
                 ...traveler,
                 passportFile: traveler?.passportFile || finalPassportFiles[index] || null,
-                photoFile: traveler?.photoFile || finalPhotoFiles[index] || null
+                photoFile: traveler?.photoFile || finalPhotoFiles[index] || null,
+                visaFile: traveler?.visaFile || finalVisaFiles[index] || null
             }))
 
             setBookingData(prev => ({
@@ -690,6 +711,7 @@ export default function BookingProcess() {
                 travelers: travelersWithDocuments,
                 passportFiles: finalPassportFiles,
                 photoFiles: finalPhotoFiles,
+                visaFiles: finalVisaFiles,
                 status: 'pending_payment',
                 submittedAt: new Date().toISOString()
             }));

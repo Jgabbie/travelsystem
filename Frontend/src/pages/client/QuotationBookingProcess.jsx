@@ -648,6 +648,7 @@ export default function QuotationBookingProcess() {
 
             let photoFilesFormatted = quotationBookingData?.photoFiles || [];
             let passportFilesFormatted = quotationBookingData?.passportFiles || [];
+            let visaFilesFormatted = quotationBookingData?.visaFiles || [];
 
             if (currentStep === 2) {
                 photoFilesFormatted = await Promise.all(
@@ -681,12 +682,29 @@ export default function QuotationBookingProcess() {
                         };
                     })
                 );
+
+                visaFilesFormatted = await Promise.all(
+                    visaFileLists.map(async (list) => {
+                        const fileObj = list?.[0]?.originFileObj;
+
+                        if (!fileObj) {
+                            return null;
+                        }
+
+                        return {
+                            name: fileObj.name,
+                            type: fileObj.type,
+                            base64: await toBase64(fileObj),
+                        };
+                    })
+                );
             }
 
             const travelersWithDocuments = (currentFormValues.travelers || []).map((traveler, index) => ({
                 ...traveler,
                 passportFile: passportFilesFormatted[index] || null,
-                photoFile: photoFilesFormatted[index] || null
+                photoFile: photoFilesFormatted[index] || null,
+                visaFile: visaFilesFormatted[index] || null
             }));
 
             form.setFieldsValue({ travelers: travelersWithDocuments });
@@ -699,7 +717,8 @@ export default function QuotationBookingProcess() {
                 bookingType: bookingType,
                 totalPrice: totalPrice,
                 passportFiles: passportFilesFormatted,
-                photoFiles: photoFilesFormatted
+                photoFiles: photoFilesFormatted,
+                visaFiles: visaFilesFormatted
             }));
 
             setCurrentStep(currentStep + 1);

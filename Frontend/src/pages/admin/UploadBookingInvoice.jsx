@@ -96,6 +96,8 @@ export default function UploadBookingInvoice() {
     const [transactions, setTransactions] = useState([]);
     const [isRequestingResubmission, setIsRequestingResubmission] = useState(false);
     const reference = booking?.reference || booking?.ref || booking?._id;
+    const bookingId = booking?.bookingItem ?? booking?._id ?? booking?.id ?? booking?.bookingId ?? booking?.reference ?? booking?.ref ?? null;
+
     const handleBackNavigation = () => {
         const fromState = location.state?.from;
         if (typeof fromState === "string" && fromState.trim()) {
@@ -247,14 +249,14 @@ export default function UploadBookingInvoice() {
     };
 
     const handleRequestDocumentsResubmission = async (travelerIndex = null) => {
-        if (!booking?._id) {
+        if (!bookingId) {
             notification.error({ message: "Booking ID not found.", placement: "topRight" });
             return;
         }
 
         setIsRequestingResubmission(true);
         try {
-            const response = await apiFetch.post(`/booking/${booking._id}/request-document-resubmission`,
+            const response = await apiFetch.post(`/booking/${bookingId}/request-document-resubmission`,
                 Number.isInteger(travelerIndex) ? { travelerIndex } : {}
             );
             const updatedBooking = response?.booking || booking;
@@ -869,7 +871,7 @@ export default function UploadBookingInvoice() {
                                                         className="upload-invoice-form-button"
                                                         onClick={() => handleRequestDocumentsResubmission(index)}
                                                         loading={isRequestingResubmission}
-                                                        disabled={!booking?._id || isRequestingResubmission}
+                                                        disabled={!bookingId || isRequestingResubmission}
                                                     >
                                                         Resubmit Traveler
                                                     </Button>
@@ -912,6 +914,22 @@ export default function UploadBookingInvoice() {
                                                                     style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
                                                                 >
                                                                     View 2x2 Photo
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {traveler?.visaFile && (
+                                                        <div style={{ marginBottom: 16 }}>
+                                                            <AntText strong>Visa File:</AntText>
+                                                            <div style={{ marginTop: 8 }}>
+                                                                <a
+                                                                    href={traveler.visaFile}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    style={{ color: '#305797', textDecoration: 'underline', cursor: 'pointer' }}
+                                                                >
+                                                                    View Visa
                                                                 </a>
                                                             </div>
                                                         </div>
@@ -972,7 +990,7 @@ export default function UploadBookingInvoice() {
                                         className="upload-invoice-form-button"
                                         onClick={() => handleRequestDocumentsResubmission()}
                                         loading={isRequestingResubmission}
-                                        disabled={!booking?._id || isRequestingResubmission}
+                                        disabled={!bookingId || isRequestingResubmission}
                                     >
                                         Resubmit All
                                     </Button>
