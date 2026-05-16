@@ -17,7 +17,7 @@ export default function DestinationsPackages() {
     const [budgetRange, setBudgetRange] = useState([0, 200000])
     const [selectedTags, setSelectedTags] = useState([])
     const [tourType, setTourType] = useState('All')
-    const [daysValue, setDaysValue] = useState(6)
+    const [daysValue, setDaysValue] = useState(14)
     const [travelersValue, setTravelersValue] = useState(null)
     const [loading, setLoading] = useState(false)
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
@@ -579,7 +579,7 @@ export default function DestinationsPackages() {
                                                 </div>
                                                 <div className="destinations-card-badges">
                                                     <div className="destinations-card-meta">
-                                                        <Text type="secondary">Slots: {pkg.availableSlots}</Text>
+                                                        <Text type="secondary" className="destinations-slots-count">Slots: {pkg.availableSlots}</Text>
                                                     </div>
                                                     <Space style={{}}>
                                                         {pkg.discountPercent > 0 && (

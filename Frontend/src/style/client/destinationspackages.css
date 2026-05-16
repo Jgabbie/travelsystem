@@ -302,17 +302,20 @@
 }
 
 .destinations-discount-tag {
-    background: #305797;
+    background: #1f8f4c;
     border: none;
     color: #ffffff;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 4px 12px;
+    border-radius: 999px;
     transition: all 0.3s ease;
 }
 
 .destinations-card:not(.destinations-card-disabled):hover .destinations-discount-tag {
-    background: #1e3a5f;
+    background: #17743d;
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(48, 87, 151, 0.3);
+    box-shadow: 0 4px 12px rgba(31, 143, 76, 0.28);
 }
 
 .destinations-status-tag {
@@ -380,6 +383,12 @@
     padding: 0 18px;
     font-weight: 600;
     background: #305797;
+
+    .destinations-slots-count {
+        font-weight: 700;
+        color: #1e3a5f !important;
+    }
+
     border-color: #305797;
 }
 

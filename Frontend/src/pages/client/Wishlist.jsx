@@ -59,9 +59,8 @@ export default function Wishlist() {
             return {
                 wishlistId: entry._id,
                 packageId: resolvedPackageId,
-                packageCode: pkg.packageCode || null,
                 title: pkg.packageName || 'Package',
-                location: pkg.packageCode || pkg.packageType || 'Package',
+                location: pkg.packageType || 'Package',
                 duration: pkg.packageDuration ? `${pkg.packageDuration} DAYS` : 'N/A',
                 price: pkg.packagePricePerPax ?? 0,
                 discountPercent: Number(pkg.packageDiscountPercent) || 0,
@@ -211,7 +210,7 @@ export default function Wishlist() {
 
                     <section className="wishlist-results">
                         <div className="wishlist-results-header">
-                            <Title level={4}>Packages</Title>
+                            <Title level={4}>Wishlisted Packages</Title>
                             <Text type="secondary">{filteredPackages.length} found</Text>
                         </div>
 
@@ -244,9 +243,6 @@ export default function Wishlist() {
                                                         <Title level={5} className="wishlist-card-title">
                                                             {pkg.title}
                                                         </Title>
-                                                        <Text type="secondary" className="wishlist-location">
-                                                            {pkg.location}
-                                                        </Text>
                                                     </div>
                                                 </div>
                                                 <div className="wishlist-card-meta">
@@ -299,7 +295,7 @@ export default function Wishlist() {
                                                     </div>
                                                 </div>
                                                 <div className="wishlist-card-badges">
-                                                    <Text type="secondary">Slots: {pkg.availableSlots}</Text>
+                                                    <Text type="secondary" className="wishlist-slots-count">Slots: {pkg.availableSlots}</Text>
                                                     {pkg.discountPercent > 0 ? (
                                                         <Tag className="wishlist-discount-tag">-{pkg.discountPercent}%</Tag>
                                                     ) : null}

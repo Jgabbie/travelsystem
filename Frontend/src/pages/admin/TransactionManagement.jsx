@@ -214,6 +214,31 @@ export default function TransactionManagement() {
         heightLeft -= pageHeight;
       }
 
+      // Add watermark based on transaction status
+      const totalPages = pdf.internal.pages.length - 1;
+      const watermarkText = selectedTransaction?.status === 'Successful' ? 'PAID' : 'NOT PAID';
+      const watermarkColor = selectedTransaction?.status === 'Successful' ? [76, 175, 80] : [244, 67, 54]; // Green for PAID, Red for NOT PAID
+
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+
+        // Set text properties for watermark
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(80);
+
+        // Set color with reduced opacity by using lighter shade
+        const lighterColor = watermarkColor.map(c => Math.min(c + 100, 255));
+        pdf.setTextColor(...lighterColor);
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const centerX = pageWidth / 2;
+        const centerY = pageHeight / 2;
+
+        // Add diagonal watermark text with rotation
+        pdf.text(watermarkText, centerX, centerY, { align: 'center' });
+      }
+
       pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
 
       notification.success({ message: "Downloaded successfully!", key: "pdf", placement: "topRight" });
@@ -297,14 +322,6 @@ export default function TransactionManagement() {
   };
 
   const openViewModal = (record) => {
-    if (record.status !== "Successful") {
-      notification.warning({
-        message: "Receipt Not Available",
-        description: `Receipts are only available for successful transactions. Current status: ${record.status}`,
-        placement: "topRight"
-      });
-      return;
-    }
     setSelectedTransaction(record);
     setIsViewModalOpen(true);
   };

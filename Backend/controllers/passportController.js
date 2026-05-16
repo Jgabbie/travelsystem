@@ -1137,6 +1137,13 @@ const updatePassportStatus = async (req, res) => {
         }
 
         app.status = status;
+
+        if (status === 'Documents Approved') {
+            if (app.processSteps && app.processSteps['Payment Completed']) {
+                app.processSteps['Payment Completed'].deadlineDate = null;
+            }
+        }
+
         try {
             app.statusHistory = app.statusHistory || [];
             const userWho = await UserModel.findById(req.userId).select('username firstname lastname');

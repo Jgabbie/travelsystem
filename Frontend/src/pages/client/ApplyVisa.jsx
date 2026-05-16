@@ -68,6 +68,11 @@ export default function ApplyVisa() {
         [services, selectedServiceId]
     )
 
+    const selectedServiceLabel = useMemo(
+        () => selectedService?.visaName || selectedService?.visaItem || selectedServiceId || 'Visa Service',
+        [selectedService, selectedServiceId]
+    )
+
     useEffect(() => {
         if (!selectedServiceId && services.length > 0) {
             setSelectedServiceId(services[0].visaName)
@@ -252,6 +257,10 @@ export default function ApplyVisa() {
 
                 <div className="passport-page">
                     <div className='passport-content'>
+                        <p style={{ marginTop: 6, marginBottom: 8, fontWeight: 700, fontSize: 40, fontFamily: 'Montserrat, sans-serif' }}>
+                            {selectedServiceLabel}
+                        </p>
+
                         <section className="passport-grid">
                             <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
                                 <h3>Requirements</h3>
