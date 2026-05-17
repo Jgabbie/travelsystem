@@ -758,7 +758,6 @@ export default function PackagePage() {
 
                                 {packageData?.packageVideo && (
                                     <div className="package-video-section" style={{ marginTop: 20 }}>
-                                        <h3 style={{ marginBottom: 12 }}>Package Video</h3>
                                         <video
                                             controls
                                             playsInline
