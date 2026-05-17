@@ -1,6 +1,7 @@
 
 const crypto = require('crypto');
-const transporter = require('../config/nodemailer')
+const baseTransporter = require('../config/nodemailer')
+const { buildBrandedEmail } = require('../utils/emailTemplate')
 const dayjs = require('dayjs');
 const TokenCheckoutModel = require("../models/tokencheckout");
 const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
@@ -16,6 +17,24 @@ const QuotationModel = require("../models/quotations")
 const logAction = require('../utils/logger')
 const apiFetch = require('../config/fetchConfig');
 const axios = require('axios');
+
+const transporter = {
+    ...baseTransporter,
+    sendMail: (mailOptions = {}) => {
+        const subjectText = String(mailOptions.subject || '').trim();
+        const derivedTitle = subjectText
+            ? subjectText.replace(/^M&RC Travel and Tours\s*-\s*/i, '')
+            : 'M&RC Travel and Tours';
+
+        return baseTransporter.sendMail({
+            ...mailOptions,
+            html: buildBrandedEmail({
+                title: derivedTitle || 'M&RC Travel and Tours',
+                bodyHtml: typeof mailOptions.html === 'string' ? mailOptions.html : '',
+            }),
+        });
+    },
+};
 
 
 const parseAmount = (value) => {

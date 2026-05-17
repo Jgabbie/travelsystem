@@ -2,8 +2,27 @@ const UserModel = require('../models/user');
 const ArchivedUserModel = require('../models/archivedusers');
 const bcrypt = require("bcryptjs");
 const logAction = require('../utils/logger');
-const transporter = require('../config/nodemailer')
+const baseTransporter = require('../config/nodemailer')
+const { buildBrandedEmail } = require('../utils/emailTemplate')
 const jwt = require('jsonwebtoken')
+
+const transporter = {
+    ...baseTransporter,
+    sendMail: (mailOptions = {}) => {
+        const subjectText = String(mailOptions.subject || '').trim()
+        const derivedTitle = subjectText
+            ? subjectText.replace(/^M&RC Travel and Tours\s*-\s*/i, '')
+            : 'M&RC Travel and Tours'
+
+        return baseTransporter.sendMail({
+            ...mailOptions,
+            html: buildBrandedEmail({
+                title: derivedTitle || 'M&RC Travel and Tours',
+                bodyHtml: typeof mailOptions.html === 'string' ? mailOptions.html : '',
+            }),
+        })
+    },
+}
 
 const getUserData = async (req, res) => {
     try {

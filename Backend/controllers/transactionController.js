@@ -8,9 +8,28 @@ const NotificationModel = require('../models/notification')
 const UserModel = require('../models/user')
 const { setVisaSecondChance } = require('./visaController')
 const { setPassportSecondChance } = require('./passportController')
-const transporter = require('../config/nodemailer')
+const baseTransporter = require('../config/nodemailer')
+const { buildBrandedEmail } = require('../utils/emailTemplate')
 const logAction = require('../utils/logger')
 const dayjs = require('dayjs')
+
+const transporter = {
+    ...baseTransporter,
+    sendMail: (mailOptions = {}) => {
+        const subjectText = String(mailOptions.subject || '').trim()
+        const derivedTitle = subjectText
+            ? subjectText.replace(/^M&RC Travel and Tours\s*-\s*/i, '')
+            : 'M&RC Travel and Tours'
+
+        return baseTransporter.sendMail({
+            ...mailOptions,
+            html: buildBrandedEmail({
+                title: derivedTitle || 'M&RC Travel and Tours',
+                bodyHtml: typeof mailOptions.html === 'string' ? mailOptions.html : '',
+            }),
+        })
+    },
+}
 
 const parseAmount = (value) => {
     if (value == null) return 0
