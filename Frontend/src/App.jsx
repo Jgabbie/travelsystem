@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import ResetPassword from './components/ResetPassword';
+import NewPassword from './components/NewPassword';
 import VerifyEmail from './pages/client/VerifyEmail';
 import LandingPage from "./pages/client/LandingPage";
 
@@ -96,6 +97,7 @@ function App() {
 
             <Route element={<PublicRoute />}>
               <Route path='/reset-password' element={<ResetPassword />} />
+              <Route path='/new-password' element={<NewPassword />} />
               <Route path='/verify-email' element={<VerifyEmail />} />
             </Route>
 

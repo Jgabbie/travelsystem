@@ -1593,8 +1593,11 @@ export default function PassportApplication() {
                                                                             )}
                                                                         </span>
                                                                         {stepDeadlineDate && (
-                                                                            <span style={{ fontSize: 12, color: stepDeadlineDate.isBefore(dayjs(), 'day') ? '#ff4d4f' : '#333' }}>
-                                                                                Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({stepDeadlineDate.diff(dayjs(), 'day')} days left)
+                                                                            <span style={{ fontSize: 12, color: stepDeadlineDate.isBefore(dayjs()) ? '#ff4d4f' : '#333' }}>
+                                                                                Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({stepDeadlineDate.isBefore(dayjs()) ? 'Deadline overdue' : (stepDeadlineDate.diff(dayjs(), 'day') === 0 ? (() => {
+                                                                                    const hoursLeft = stepDeadlineDate.diff(dayjs(), 'hour');
+                                                                                    return hoursLeft > 1 ? `${hoursLeft} hours left` : hoursLeft === 1 ? '1 hour left' : 'Less than 1 hour left';
+                                                                                })() : `${stepDeadlineDate.diff(dayjs(), 'day')} days left`)})
                                                                             </span>
                                                                         )}
                                                                     </div>

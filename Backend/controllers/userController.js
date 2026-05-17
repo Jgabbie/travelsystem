@@ -3,6 +3,7 @@ const ArchivedUserModel = require('../models/archivedusers');
 const bcrypt = require("bcryptjs");
 const logAction = require('../utils/logger');
 const transporter = require('../config/nodemailer')
+const jwt = require('jsonwebtoken')
 
 const getUserData = async (req, res) => {
     try {
@@ -223,9 +224,9 @@ const createUsers = async (req, res) => {
         }
 
         if (role === "Admin" || role === "Employee") {
-            const randomPassword = Math.random().toString(36).slice(-8);
-
-            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+            // Generate a temporary random password (never sent) and store its hash so schema validation passes
+            const tempPassword = Math.random().toString(36).slice(-12)
+            const hashedTempPassword = await bcrypt.hash(tempPassword, 10)
 
             const newUser = await UserModel.create({
                 username,
@@ -233,15 +234,19 @@ const createUsers = async (req, res) => {
                 lastname,
                 email,
                 phone,
-                hashedPassword,
+                hashedPassword: hashedTempPassword,
                 role,
-                isAccountVerified: true
+                isAccountVerified: false
             });
+
+            const resetToken = jwt.sign({ id: newUser._id, scope: 'password-reset' }, process.env.JWT_SECRET_RESET_KEY, { expiresIn: '1d' })
+            const clientUrl = 'http://localhost:3000'
+            const resetLink = `${clientUrl}/new-password?token=${resetToken}`
 
             await transporter.sendMail({
                 from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
                 to: email,
-                subject: `Your ${role} Account Has Been Created`,
+                subject: `Set up your ${role} account`,
                 html: `
             <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
@@ -257,28 +262,10 @@ const createUsers = async (req, res) => {
                 </p>
 
                 <p style="color:#555; font-size:15px; line-height:1.6;">
-                    Your account has been successfully created!
+                    An account has been created for you as <b>${role}</b>. To set your password and activate your account, click the button below.
                 </p>
 
-                <p style="color:#555; font-size:15px; line-height:1.6;">
-                    Here is your password. Kindly log in to your account immediately and reset your password.
-                </p>
-
-                    <div style="
-                        margin:25px 0;
-                        font-size:32px;
-                        font-weight:bold;
-                        letter-spacing:8px;
-                        color:#992A46;
-                        background:#f9fafb;
-                        padding:15px;
-                        border-radius:8px;
-                        border:1px dashed #ddd;
-                    ">
-                        ${randomPassword}
-                    </div>
-
-                <a href="http://mrctravelandtours.com/home"
+                <a href="${resetLink}"
                     style="
                         display:inline-block;
                         margin-top:25px;
@@ -290,7 +277,7 @@ const createUsers = async (req, res) => {
                         font-weight:bold;
                         font-size:14px;
                     ">
-                    Login to Your Account
+                    Set Your Password
                 </a>
 
                 <p style="color:#777; font-size:13px; margin-top:30px;">

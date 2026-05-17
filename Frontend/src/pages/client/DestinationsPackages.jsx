@@ -262,42 +262,75 @@ export default function DestinationsPackages() {
     }, [maxDuration])
 
 
-    const filteredPackages = packages.filter((item) => {
-        const matchesSearch =
-            (item.packageName.toLowerCase().includes(search.toLowerCase())) ||
-            (item.packageType.toLowerCase().includes(search.toLowerCase())) ||
-            (item.days.toString().toLowerCase().includes(search.toLowerCase())) ||
-            (item.budget.toString().toLowerCase().includes(search.toLowerCase())) ||
-            (item.availableSlots.toString().toLowerCase().includes(search.toLowerCase())) ||
-            (item.tags?.some((tag) => tag.toLowerCase().includes(search.toLowerCase())))
+    // Build filteredPackages with search-priority ordering: packages that match the
+    // search term appear first, followed by packages that pass the active filters.
+    const filteredPackages = (() => {
+        const q = (search || '').trim().toLowerCase()
 
-        const matchesBudget =
-            item.discountedBudget >= budgetRange[0] && item.discountedBudget <= budgetRange[1]
+        const computeMatches = (item) => {
+            const pkgName = String(item.packageName || '').toLowerCase()
+            const pkgType = String(item.packageType || '').toLowerCase()
+            const days = String(item.days || '').toLowerCase()
+            const budget = String(item.budget || '').toLowerCase()
+            const slots = String(item.availableSlots || '').toLowerCase()
+            const tagsMatch = Array.isArray(item.tags) && item.tags.some((tag) => String(tag).toLowerCase().includes(q))
 
-        const matchesTags =
-            selectedTags.length === 0 ||
-            selectedTags.every((tag) =>
-                item.tags?.includes(tag)
+            const matchesSearch = q.length > 0 && (
+                pkgName.includes(q) ||
+                pkgType.includes(q) ||
+                days.includes(q) ||
+                budget.includes(q) ||
+                slots.includes(q) ||
+                tagsMatch
             )
 
-        const matchesType = tourType === 'All' || item.packageType === tourType
+            const matchesBudget =
+                item.discountedBudget >= budgetRange[0] && item.discountedBudget <= budgetRange[1]
 
-        const matchesDays =
-            item.days >= 1 && item.days <= daysValue
+            const matchesTags =
+                selectedTags.length === 0 ||
+                selectedTags.every((tag) => item.tags?.includes(tag))
 
-        const matchesTravelers =
-            !Number.isFinite(travelersValue) || travelersValue <= 0 || item.availableSlots >= travelersValue
+            const matchesType = tourType === 'All' || item.packageType === tourType
 
-        const otherFiltersPass = matchesBudget && matchesTags && matchesType && matchesDays && matchesTravelers
+            const matchesDays = item.days >= 1 && item.days <= daysValue
 
-        // Prioritize search: if user entered a search term and this package matches it,
-        // include it regardless of the other filter settings. Otherwise fall back to filters.
-        if (search && search.trim().length > 0) {
-            return matchesSearch || otherFiltersPass
+            const matchesTravelers =
+                !Number.isFinite(travelersValue) || travelersValue <= 0 || item.availableSlots >= travelersValue
+
+            const otherFiltersPass = matchesBudget && matchesTags && matchesType && matchesDays && matchesTravelers
+
+            return { matchesSearch, otherFiltersPass }
         }
 
-        return otherFiltersPass
-    })
+        if (!q) {
+            // No search term -> return packages that pass filters only
+            return packages.filter((item) => computeMatches(item).otherFiltersPass)
+        }
+
+        const searchMatches = []
+        const filteredByOther = []
+        const seen = new Set()
+
+        for (const item of packages) {
+            const { matchesSearch } = computeMatches(item)
+            const key = String(item.id || item.packageCode || item.packageName)
+
+            if (matchesSearch) {
+                searchMatches.push(item)
+                seen.add(key)
+            }
+        }
+
+        for (const item of packages) {
+            const key = String(item.id || item.packageCode || item.packageName)
+            if (seen.has(key)) continue
+            const { otherFiltersPass } = computeMatches(item)
+            if (otherFiltersPass) filteredByOther.push(item)
+        }
+
+        return [...searchMatches, ...filteredByOther]
+    })()
 
 
     return (
@@ -352,7 +385,7 @@ export default function DestinationsPackages() {
                                         <InputNumber
                                             className='destinations-inputs'
                                             min={0}
-                                            max={200000}
+                                            max={500000}
                                             maxLength={6}
                                             value={budgetRange[0]}
                                             onChange={(value) => setBudgetRange([value, budgetRange[1]])}
@@ -369,7 +402,7 @@ export default function DestinationsPackages() {
                                         <InputNumber
                                             className='destinations-inputs'
                                             min={0}
-                                            max={200000}
+                                            max={500000}
                                             maxLength={6}
                                             value={budgetRange[1]}
                                             onChange={(value) => setBudgetRange([budgetRange[0], value])}

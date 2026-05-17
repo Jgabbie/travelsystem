@@ -830,6 +830,8 @@ export default function ViewVisaApplication() {
                                                         const stepDeadlineDate = stepInfo?.deadlineDate ? dayjs(stepInfo.deadlineDate) : null;
                                                         const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
                                                         const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
+                                                        const hoursLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'hour') : null;
+                                                        const isOverdue = stepDeadlineDate ? stepDeadlineDate.isBefore(dayjs()) : false;
 
                                                         return {
                                                             title: (
@@ -862,13 +864,10 @@ export default function ViewVisaApplication() {
                                                                         {stepDeadlineDate && (
                                                                             <div
                                                                                 style={{
-                                                                                    color: stepDeadlineDate.isBefore(dayjs(), 'day')
-                                                                                        ? '#ff4d4f'
-                                                                                        : '#333'
+                                                                                    color: isOverdue ? '#ff4d4f' : '#333'
                                                                                 }}
                                                                             >
-                                                                                Deadline: {stepDeadlineDate.format('MMM D, YYYY')}
-                                                                                ({daysLeft} days left)
+                                                                                Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({isOverdue ? 'Deadline overdue' : (daysLeft === 0 ? (hoursLeft > 1 ? `${hoursLeft} hours left` : hoursLeft === 1 ? '1 hour left' : 'Less than 1 hour left') : `${daysLeft} days left`)})
                                                                             </div>
                                                                         )}
                                                                     </div>

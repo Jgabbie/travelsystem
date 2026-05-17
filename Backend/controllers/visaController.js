@@ -138,7 +138,9 @@ const buildProcessSteps = (application, serviceProcessSteps = []) => {
 
         let deadline = null;
 
-        if (Number.isFinite(deadlineDays) && deadlineDays > 0) {
+        if (stepTitle === 'Processing by Embassy' && preferredDate) {
+            deadline = preferredDate.startOf('day');
+        } else if (Number.isFinite(deadlineDays) && deadlineDays > 0) {
             if (stepTitle === 'Application Submitted') {
                 if (setDate) deadline = setDate.add(deadlineDays, 'day').startOf('day');
             } else if (prevDeadline) {
@@ -1191,6 +1193,16 @@ const chosenSuggestedSchedule = async (req, res) => {
         application.suggestedAppointmentScheduleChosen = { date, time };
         application.preferredDate = date;
         application.preferredTime = time;
+
+        try {
+            const serviceDoc = await ServiceModel.findById(application.serviceId).select('visaProcessSteps');
+            if (serviceDoc) {
+                application.processSteps = buildProcessSteps(application, serviceDoc.visaProcessSteps);
+            }
+        } catch (e) {
+            console.error('Failed to rebuild processSteps after appointment date change:', e);
+        }
+
         await application.save();
 
         res.status(200).json({ message: "Preferred appointment schedule updated", application });

@@ -679,6 +679,8 @@ const resetPassword = async (req, res) => {
         user.hashedPassword = hashedPassword
         user.resetOtp = ''
         user.resetOtpExpireAt = 0
+        // mark account as verified when password is set via reset link
+        user.isAccountVerified = true
 
         await user.save()
 

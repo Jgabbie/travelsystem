@@ -113,7 +113,6 @@ export default function UploadBookingInvoice() {
         ? `${window.location.origin}/images/Logo.png`
         : "/images/Logo.png";
 
-    const stepsToCapture = [0, 1, 2, 3];
     const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
 
     //FETCH BOOKING DETAILS
@@ -145,7 +144,8 @@ export default function UploadBookingInvoice() {
     const summaryInvoice = bookingDetails
 
     const [form] = Form.useForm();
-    const pdfStepRef = useRef(null);
+    const [captureForm] = Form.useForm();
+    const pdfContainerRef = useRef(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -166,77 +166,48 @@ export default function UploadBookingInvoice() {
         try {
             setDownloading(true);
             setIsGeneratingPdf(true);
-            setCurrentStep(0);
 
-            const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
-
-            const waitForRender = (ms = 2000) => new Promise((resolve) => {
-                setTimeout(resolve, ms);
-            });
-
-            for (let i = 0; i < stepsToCapture.length; i += 1) {
-                const step = stepsToCapture[i];
-                setCurrentStep(step);
-                await waitForRender();
-
-                let element = pdfStepRef.current;
-
-                if (!element) {
-                    element = document.querySelector('.pdf-capture');
-                    console.warn(`Ref was null, using querySelector. Found element:`, element);
-                }
-
-                if (!element) {
-                    console.error(`PDF element not found for step ${step}`);
-                    continue;
-                }
-
-                try {
-                    const canvas = await html2canvas(element, {
-                        scale: 1.5,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        allowTaint: true,
-                        logging: false,
-                        windowWidth: 900,
-                        windowHeight: 1200
-                    });
-
-                    if (canvas.width === 0 || canvas.height === 0) {
-                        console.error(`Invalid canvas dimensions for step ${step}`);
-                        continue;
-                    }
-
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-                    const renderHeight = Math.min(imgHeight, pdfHeight);
-
-                    pdf.setFillColor(255, 255, 255);
-                    pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, renderHeight);
-
-                    if (i < stepsToCapture.length - 1) {
-                        pdf.addPage();
-                    }
-                } catch (canvasError) {
-                    console.error(`Canvas capture error for step ${step}:`, canvasError);
-                }
+            if (!pdfContainerRef.current) {
+                throw new Error('PDF container not found');
             }
 
-            const pageCount = pdf.getNumberOfPages();
+            const element = pdfContainerRef.current;
+            const pages = element.querySelectorAll('[data-booking-page]');
 
-            if (pageCount === 0) {
+            if (!pages.length) {
                 throw new Error('No pages were captured in the PDF');
             }
 
-            pdf.save(`Booking_${reference}.pdf`);
-            notification.success({ message: "Booking Registration PDF downloaded successfully.", placement: "topRight" });
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
 
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            for (let i = 0; i < pages.length; i += 1) {
+                const pageEl = pages[i];
+                const canvas = await html2canvas(pageEl, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                if (i > 0) {
+                    pdf.addPage();
+                }
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
+            }
+
+            const pdfBlob = pdf.output('blob');
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Booking_${reference}.pdf`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            notification.success({ message: "Booking Registration PDF downloaded successfully.", placement: "topRight" });
 
         } catch (err) {
             console.error("PDF generation error:", err);
@@ -244,7 +215,6 @@ export default function UploadBookingInvoice() {
         } finally {
             setDownloading(false);
             setIsGeneratingPdf(false);
-            setCurrentStep(0);
         }
     };
 
@@ -677,13 +647,15 @@ export default function UploadBookingInvoice() {
                 <div className="upload-invoice-container" style={{ position: 'relative' }}>
                     {downloading && (
                         <div style={{
-                            position: 'absolute',
+                            position: 'fixed',
                             inset: 0,
-                            zIndex: 50,
+                            zIndex: 9999,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: 'rgba(255, 255, 255, 0.75)'
+                            background: 'rgba(255, 255, 255, 0.82)',
+                            width: '100vw',
+                            height: '100vh'
                         }}>
                             <Spin description="Downloading Registration Form..." size="large" />
                         </div>
@@ -1003,6 +975,47 @@ export default function UploadBookingInvoice() {
                             <div>
 
                                 <div className="booking-form-stepper-container">
+                                    <div
+                                        ref={pdfContainerRef}
+                                        aria-hidden="true"
+                                        style={{
+                                            position: 'absolute',
+                                            left: '-10000px',
+                                            top: 0,
+                                            width: '850px',
+                                            pointerEvents: 'none'
+                                        }}
+                                    >
+                                        <div data-booking-page>
+                                            <BookingRegistrationTravelersInvoice
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                                totalCount={bookingDetails?.travelerCounts?.total || 1}
+                                            />
+                                        </div>
+
+                                        <div data-booking-page>
+                                            <BookingRegistrationDietInvoice
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        </div>
+
+                                        <div data-booking-page>
+                                            <BookingRegistrationTermsInvoicePart1
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        </div>
+
+                                        <div data-booking-page>
+                                            <BookingRegistrationTermsInvoicePart2
+                                                form={captureForm}
+                                                summaryInvoice={summaryInvoice}
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div style={{ marginBottom: 30 }}>
                                         <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
                                         <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
@@ -1053,7 +1066,6 @@ export default function UploadBookingInvoice() {
                                     {/* PAGES FOR PDF GENERATION */}
                                     <div
                                         className="form-content-wrapper pdf-capture"
-                                        ref={pdfStepRef}
                                         style={{
                                             width: '100%',
                                             minWidth: 0,

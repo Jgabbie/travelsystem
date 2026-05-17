@@ -955,6 +955,14 @@ const chosenSuggestedSchedule = async (req, res) => {
         application.suggestedAppointmentScheduleChosen = { date, time };
         application.preferredDate = date;
         application.preferredTime = time;
+
+        try {
+            const built = buildProcessSteps(application);
+            application.processSteps = built;
+        } catch (e) {
+            console.error('Failed to rebuild processSteps after appointment date change:', e);
+        }
+
         await application.save();
 
         res.status(200).json({ message: "Preferred appointment schedule updated", application });
@@ -1375,7 +1383,9 @@ const buildProcessSteps = (application) => {
 
         let deadline = null;
 
-        if (Number.isFinite(deadlineDays) && deadlineDays > 0) {
+        if (step === 'Processing by DFA' && preferredDate) {
+            deadline = preferredDate.startOf('day');
+        } else if (Number.isFinite(deadlineDays) && deadlineDays > 0) {
             if (step === 'Application Submitted') {
                 if (setDate) deadline = setDate.add(deadlineDays, 'day').startOf('day');
             } else if (prevDeadline) {
