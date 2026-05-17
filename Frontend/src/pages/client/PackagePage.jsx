@@ -303,7 +303,7 @@ export default function PackagePage() {
         return (
             <div style={{ display: 'grid', gap: 16 }}>
                 <div className="inclusions-container">
-                    <div className="section-header">Inclusions</div>
+                    <div className="section-header-packagepage">Inclusions</div>
                     {inclusions.length ? (
                         <ul>
                             {inclusions.map((item, index) => (
@@ -765,6 +765,8 @@ export default function PackagePage() {
                                 {packageData?.packageVideo && (
                                     <div className="package-video-section" style={{ marginTop: 20 }}>
                                         <video
+                                            autoPlay
+                                            loop
                                             controls
                                             playsInline
                                             preload="metadata"

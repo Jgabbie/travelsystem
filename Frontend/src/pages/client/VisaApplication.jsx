@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Spin, notification, Upload, Button, Tag, Descriptions, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker } from 'antd';
+import { Steps, Spin, notification, Upload, Button, Tag, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker, Descriptions } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, DeleteOutlined, CheckCircleFilled, PictureOutlined, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
@@ -805,16 +805,40 @@ export default function VisaApplication() {
                                     <div style={{ marginBottom: 32, width: '100%' }}>
                                         <div style={{ display: 'flex', flexDirection: 'row', gap: 24, flexWrap: 'wrap' }}>
                                             <div style={{ flex: '1 1 620px', minWidth: 320 }}>
-                                                <Descriptions title="Application Info" bordered column={1}>
-                                                    <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
-                                                    <Descriptions.Item label="Managed By">
+                                                <Descriptions
+                                                    className="app-info-card"
+                                                    bordered
+                                                    column={1}
+                                                    size="small"
+                                                    style={{ background: '#fff' }}
+                                                >
+                                                    <Descriptions.Item label="Reference" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                        {application.applicationNumber || application._id}
+                                                    </Descriptions.Item>
+
+                                                    <Descriptions.Item label="Managed By" labelStyle={{ color: '#305797', fontWeight: 700 }}>
                                                         {managerName ? <Tag color="blue" style={{ fontWeight: 700, fontSize: 13 }}>{managerName}</Tag> : 'N/A'}
                                                     </Descriptions.Item>
-                                                    <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
-                                                    <Descriptions.Item label="Applicant Name">{application.applicantName || application.user?.name}</Descriptions.Item>
-                                                    <Descriptions.Item label="Preferred Date">{dayjs(application.preferredDate).format('MMM D, YYYY')}</Descriptions.Item>
-                                                    <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
-                                                    <Descriptions.Item label="Application Type">{application.serviceName}</Descriptions.Item>
+
+                                                    <Descriptions.Item label="Date Submitted" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                        {dayjs(application.createdAt).format('MMM D, YYYY')}
+                                                    </Descriptions.Item>
+
+                                                    <Descriptions.Item label="Applicant Name" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                        {application.applicantName || application.user?.name}
+                                                    </Descriptions.Item>
+
+                                                    <Descriptions.Item label="Preferred Date" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                        {application.preferredDate ? dayjs(application.preferredDate).format('MMM D, YYYY') : 'N/A'}
+                                                    </Descriptions.Item>
+
+                                                    <Descriptions.Item label="Preferred Time" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                        {application.preferredTime || 'N/A'}
+                                                    </Descriptions.Item>
+
+                                                    <Descriptions.Item label="Application Type" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                        {application.serviceName || 'N/A'}
+                                                    </Descriptions.Item>
                                                 </Descriptions>
 
                                                 {/* RELEASE OPTION */}

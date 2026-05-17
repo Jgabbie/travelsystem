@@ -195,12 +195,14 @@
 .itinerary-day ul {
     margin: 0;
     padding-left: 22px;
-    list-style: none; /* hide default markers to use a custom marker */
+    list-style: none;
+    /* hide default markers to use a custom marker */
 }
 
 .itinerary-day ul li {
     margin-bottom: 8px;
-    color: #1f2a44; /* keep body text dark */
+    color: #1f2a44;
+    /* keep body text dark */
     position: relative;
     padding-left: 18px;
 }
@@ -254,7 +256,8 @@
     background: #305797;
     border-radius: 999px;
     padding: 8px 18px;
-    width: calc(100% + 28px); /* account for the negative margins */
+    width: calc(100% + 28px);
+    /* account for the negative margins */
 }
 
 .itinerary-day-header strong {
@@ -279,7 +282,7 @@
 }
 
 /* Section headers for Inclusions, Exclusions, and Terms - match DAY pill style */
-.section-header {
+.section-header-packagepage {
     display: block;
     margin: 8px -14px 6px;
     background: #305797;
@@ -389,7 +392,7 @@
 
 /* New styling for Package Details small boxes: header band + value */
 /* Header band: only the direct child span used as the label */
-.package-detail-item > span {
+.package-detail-item>span {
     display: block;
     padding: 10px 12px;
     background: #305797;

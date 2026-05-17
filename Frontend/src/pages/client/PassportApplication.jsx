@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Steps, Spin, notification, Upload, Tag, Descriptions, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal } from 'antd';
+import { Steps, Spin, notification, Upload, Tag, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal, Descriptions } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
@@ -863,9 +863,17 @@ export default function PassportApplication() {
                             <div className="app-detail-shell">
                                 <div style={{ display: 'flex', flexDirection: 'row', gap: 24, flexWrap: 'wrap' }}>
                                     <div style={{ flex: '1 1 620px', minWidth: 320 }}>
-                                        <Descriptions title="Application Info" bordered column={1}>
-                                            <Descriptions.Item label="Reference">{application.applicationNumber || application._id}</Descriptions.Item>
-                                            <Descriptions.Item label="Managed By">
+                                        <Descriptions
+                                            className="app-info-card"
+                                            bordered
+                                            column={1}
+                                            size="small"
+                                            style={{ background: '#fff' }}
+                                        >
+                                            <Descriptions.Item label="Reference" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                {application.applicationNumber || application._id}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Managed By" labelStyle={{ color: '#305797', fontWeight: 700 }}>
                                                 {(() => {
                                                     const mgr = getManagerName(application);
                                                     return mgr ? (
@@ -875,13 +883,24 @@ export default function PassportApplication() {
                                                     );
                                                 })()}
                                             </Descriptions.Item>
-                                            <Descriptions.Item label="Date Submitted">{dayjs(application.createdAt).format('MMM D, YYYY')}</Descriptions.Item>
-                                            <Descriptions.Item label="Applicant Name">{application.username}</Descriptions.Item>
-                                            <Descriptions.Item label="DFA Location">{application.dfaLocation}</Descriptions.Item>
-                                            <Descriptions.Item label="Preferred Date">{dayjs(application.preferredDate).format('MMM D, YYYY')}</Descriptions.Item>
-                                            <Descriptions.Item label="Preferred Time">{application.preferredTime}</Descriptions.Item>
-                                            <Descriptions.Item label="Application Type">{application.applicationType}</Descriptions.Item>
-
+                                            <Descriptions.Item label="Date Submitted" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                {dayjs(application.createdAt).format('MMM D, YYYY')}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Applicant Name" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                {application.username}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="DFA Location" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                {application.dfaLocation || 'N/A'}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Date" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                {application.preferredDate ? dayjs(application.preferredDate).format('MMM D, YYYY') : 'N/A'}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Preferred Time" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                {application.preferredTime || 'N/A'}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Description" labelStyle={{ color: '#305797', fontWeight: 700 }}>
+                                                {application.description || application.applicationType || 'N/A'}
+                                            </Descriptions.Item>
                                         </Descriptions>
 
 
