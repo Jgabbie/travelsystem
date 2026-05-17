@@ -165,29 +165,27 @@ export default function ApplyVisa() {
         }
     }
 
-    // DISABLE DATES AND HOURS --------------------------------
     const disableDates = (current) => {
-        const today = dayjs().startOf('day');
-        const twoWeeksFromNow = today.add(14, 'day');
+        const today = dayjs().startOf('day')
+        const twoWeeksFromNow = today.add(14, 'day')
 
-        return (
-            current &&
-            (
-                current < twoWeeksFromNow ||
-                current.day() === 0 ||
-                current.day() === 6
-            )
-        );
-    };
+        return current && (
+            current < twoWeeksFromNow ||
+            current.day() === 0 ||
+            current.day() === 6
+        )
+    }
 
     const disabledHours = () => {
-        const hours = [];
-        for (let i = 0; i < 24; i++) {
+        const hours = []
+
+        for (let i = 0; i < 24; i += 1) {
             if (i < 8 || i > 17) {
-                hours.push(i);
+                hours.push(i)
             }
         }
-        return hours;
+
+        return hours
     }
 
     return (
@@ -257,176 +255,169 @@ export default function ApplyVisa() {
 
                 <div className="passport-page">
                     <div className='passport-content'>
-                        <p style={{ marginTop: 6, marginBottom: 8, fontWeight: 700, fontSize: 40, fontFamily: 'Montserrat, sans-serif' }}>
+                        <p style={{ marginTop: 10, marginBottom: 15, marginLeft: 20, fontWeight: 700, fontSize: 30, fontFamily: 'Montserrat, sans-serif', color: '#992A46' }}>
                             {selectedServiceLabel}
                         </p>
 
                         <section className="passport-grid">
-                            <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
-                                <h3>Requirements</h3>
+                            <div className="passport-column passport-column-left">
+                                <div className="passport-panel">
+                                    <h3>Requirements</h3>
 
-                                <h4>Required</h4>
-                                {requiredRequirements.length ? (
-                                    <ul className="passport-list">
-                                        {requiredRequirements.map((item, index) => (
-                                            <li key={`req-required-${index}`}>
-                                                <strong>{item.req}</strong>
-                                                <br />
-                                                <span>{item.desc}</span>
-                                                {item.applicationLink && (
-                                                    <div style={{ marginTop: 8 }}>
-                                                        <Button
-                                                            className='visaapplication-link-button'
-                                                            size="small"
-                                                            type="link"
-                                                            onClick={() => handleOpenLink(item.applicationLink)}
-                                                        >
-                                                            Open Application Link
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p>No required items.</p>
-                                )}
-                            </div>
-
-                            {hasAdditionalRequirements ? (
-                                <div className="passport-panel" style={{ gridColumn: "1 / -1" }}>
-                                    <h3>Additional Requirements</h3>
-                                    {additionalRequirements.map((group, groupIndex) => (
-                                        <div key={`additional-group-${groupIndex}`} style={{ marginBottom: 16 }}>
-                                            <h4 style={{ marginBottom: 8 }}>{group.customer || `Customer ${groupIndex + 1}`}</h4>
-                                            <ul className="passport-list">
-                                                {(group.requirements || []).map((reqItem, reqIndex) => (
-                                                    <li key={`additional-req-${groupIndex}-${reqIndex}`}>
-                                                        <strong>{reqItem.requirement}</strong>
-                                                        {reqItem.isReq ? <span>{` (${reqItem.isReq})`}</span> : null}
-                                                        <br />
-                                                        <span>{reqItem.description}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    ))}
+                                    <h4>Required</h4>
+                                    {requiredRequirements.length ? (
+                                        <ul className="passport-list">
+                                            {requiredRequirements.map((item, index) => (
+                                                <li key={`req-required-${index}`}>
+                                                    <strong>{item.req}</strong>
+                                                    <br />
+                                                    <span>{item.desc}</span>
+                                                    {item.applicationLink && (
+                                                        <div style={{ marginTop: 8 }}>
+                                                            <Button
+                                                                className='visaapplication-link-button'
+                                                                size="small"
+                                                                type="link"
+                                                                onClick={() => handleOpenLink(item.applicationLink)}
+                                                            >
+                                                                Open Application Link
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p>No required items.</p>
+                                    )}
                                 </div>
-                            ) : null}
 
-                            <div className="passport-panel">
-                                <h3>Reminders</h3>
-                                {reminders.length ? (
-                                    <ul className="passport-list">
-                                        {reminders.map((item, index) => (
-                                            <li key={`reminder-${index}`}>{item}</li>
+                                {hasAdditionalRequirements ? (
+                                    <div className="passport-panel">
+                                        <h3>Additional Requirements</h3>
+                                        {additionalRequirements.map((group, groupIndex) => (
+                                            <div key={`additional-group-${groupIndex}`} style={{ marginBottom: 16 }}>
+                                                <h4 style={{ marginBottom: 8 }}>{group.customer || `Customer ${groupIndex + 1}`}</h4>
+                                                <ul className="passport-list">
+                                                    {(group.requirements || []).map((reqItem, reqIndex) => (
+                                                        <li key={`additional-req-${groupIndex}-${reqIndex}`}>
+                                                            <strong>{reqItem.requirement}</strong>
+                                                            {reqItem.isReq ? <span>{` (${reqItem.isReq})`}</span> : null}
+                                                            <br />
+                                                            <span>{reqItem.description}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         ))}
-                                    </ul>
-                                ) : (
-                                    <p>No reminders available.</p>
-                                )}
-                            </div>
+                                    </div>
+                                ) : null}
 
-                            <div className="passport-panel">
-                                <h3>Step-by-step process</h3>
-                                <div className="passport-steps">
-                                    {steps.map((step, index) => (
-                                        <div className="passport-step" key={`step-${index}`}>
-                                            <span className="passport-step-number">{index + 1}</span>
+                                <div className="passport-panel">
+                                    <section className="renew-passport-card">
+                                        <h3>Application Details</h3>
+                                        <div
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 8,
+                                                padding: '6px 12px',
+                                                marginTop: 6,
+                                                marginBottom: 14,
+                                                borderRadius: 999,
+                                                background: 'rgba(48, 87, 151, 0.08)',
+                                                border: '1px solid rgba(48, 87, 151, 0.25)',
+                                                color: '#305797',
+                                                fontWeight: 600,
+                                            }}
+                                        >
+                                            <span>Visa Fee</span>
+                                            <span>₱{selectedService?.visaPrice || 0}</span>
+                                        </div>
+                                        <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
                                             <div>
-                                                <h4>{`Step ${index + 1}`}</h4>
-                                                <p>
-                                                    <strong>{typeof step === 'string' ? step : step?.title}</strong><br />
-                                                    {typeof step === 'object' && step?.description ? step.description : null}
+                                                <div className="form-group">
+                                                    <label className="passport-label">Preferred appointment date</label>
+                                                    <DatePicker
+                                                        value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
+                                                        disabledDate={disableDates}
+                                                        onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
+                                                        className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
+                                                    />
+                                                    <p className="error-message">{error.preferredDate || ''}</p>
+                                                </div>
 
-                                                </p>
+                                                <div className="form-group">
+                                                    <label className="passport-label">Preferred appointment time</label>
+                                                    <TimePicker
+                                                        value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
+                                                        format="h:mm A"
+                                                        use12Hours
+                                                        showNow={false}
+                                                        minuteStep={30}
+                                                        disabledTime={() => ({
+                                                            disabledHours
+                                                        })}
+                                                        onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
+                                                        className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
+                                                    />
+                                                    <p className="error-message">{error.preferredTime || ''}</p>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="passport-label">Purpose of travel</label>
+                                                    <Input.TextArea
+                                                        className={`passport-input ${error.purpose ? 'input-error' : ''}`}
+                                                        rows={3}
+                                                        placeholder="Share your purpose of travel"
+                                                        value={purpose}
+                                                        onChange={(event) => setPurpose(event.target.value)}
+                                                    />
+                                                    <p className="error-message">{error.purpose || ''}</p>
+                                                </div>
                                             </div>
                                         </div>
-                                    ))}
+                                        <Button className="passport-submit" type="primary" onClick={submitRequest} loading={isSubmitting}>
+                                            Submit request
+                                        </Button>
+                                    </section>
                                 </div>
                             </div>
-                        </section>
 
-                        <section className="renew-passport-card">
+                            <div className="passport-column passport-column-right">
+                                <div className="passport-panel">
+                                    <h3>Reminders</h3>
+                                    {reminders.length ? (
+                                        <ul className="passport-list">
+                                            {reminders.map((item, index) => (
+                                                <li key={`reminder-${index}`}>{item}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p>No reminders available.</p>
+                                    )}
+                                </div>
 
-                            <h3>Application Details</h3>
-                            <div
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    padding: '6px 12px',
-                                    marginTop: 6,
-                                    marginBottom: 14,
-                                    borderRadius: 999,
-                                    background: 'rgba(48, 87, 151, 0.08)',
-                                    border: '1px solid rgba(48, 87, 151, 0.25)',
-                                    color: '#305797',
-                                    fontWeight: 600,
-                                }}
-                            >
-                                <span>Visa Fee</span>
-                                <span>₱{selectedService?.visaPrice || 0}</span>
-                            </div>
-                            <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
-
-                                <div>
-                                    <div className="form-group">
-                                        <label className="passport-label">Preferred appointment date</label>
-                                        <DatePicker
-                                            value={preferredDate ? dayjs(preferredDate, 'YYYY-MM-DD') : null}
-                                            disabledDate={disableDates}
-                                            onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
-                                            className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
-                                        />
-                                        <p className="error-message">
-                                            {error.preferredDate || ''}
-                                        </p>
-                                    </div>
-
-
-                                    <div className="form-group">
-                                        <label className="passport-label">Preferred appointment time</label>
-                                        <TimePicker
-                                            value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
-                                            format="h:mm A"
-                                            use12Hours
-                                            showNow={false}
-                                            minuteStep={30}
-                                            disabledTime={() => ({
-                                                disabledHours
-                                            })}
-                                            onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
-                                            className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
-                                        />
-                                        <p className="error-message">
-                                            {error.preferredTime || ''}
-                                        </p>
-                                    </div>
-
-
-                                    <div className="form-group">
-                                        <label className="passport-label">Purpose of travel</label>
-                                        <Input.TextArea
-                                            className={`passport-input ${error.purpose ? 'input-error' : ''}`}
-                                            rows={3}
-                                            placeholder="Share your purpose of travel"
-                                            value={purpose}
-                                            onChange={(event) => setPurpose(event.target.value)}
-                                        />
-                                        <p className="error-message">
-                                            {error.purpose || ''}
-                                        </p>
+                                <div className="passport-panel">
+                                    <h3>Step-by-step process</h3>
+                                    <div className="passport-steps">
+                                        {steps.map((step, index) => (
+                                            <div className="passport-step" key={`step-${index}`}>
+                                                <span className="passport-step-number">{index + 1}</span>
+                                                <div>
+                                                    <h4>{`Step ${index + 1}`}</h4>
+                                                    <p>
+                                                        <strong>{typeof step === 'string' ? step : step?.title}</strong><br />
+                                                        {typeof step === 'object' && step?.description ? step.description : null}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
-                            <Button className="passport-submit" type="primary" onClick={submitRequest} loading={isSubmitting}>
-                                Submit request
-                            </Button>
                         </section>
                     </div>
-
-
                 </div>
             </div>
         </ConfigProvider>
