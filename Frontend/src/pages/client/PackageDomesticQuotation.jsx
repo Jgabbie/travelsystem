@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Modal, Input, Slider, Button, notification, Select, ConfigProvider, DatePicker, Spin, TimePicker } from 'antd'
+import { Modal, Input, Slider, Button, notification, Select, ConfigProvider, DatePicker, Spin, TimePicker, Carousel } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
@@ -82,15 +82,26 @@ export default function PackageDomesticQuotation() {
         [fixedItinerary, days]
     )
 
+    const itineraryImagesByDay = packageData?.packageItineraryImages || {}
+
     const fixedItineraryEntries = useMemo(() => {
         if (!fixedItinerary || typeof fixedItinerary !== 'object') return []
         return Object.keys(fixedItinerary)
             .sort((a, b) => Number(a.replace('day', '')) - Number(b.replace('day', '')))
-            .map((dayKey) => ({
-                label: dayKey.replace('day', 'Day '),
-                items: fixedItinerary[dayKey] || []
-            }))
-    }, [fixedItinerary])
+            .map((dayKey) => {
+                const dayItems = fixedItinerary[dayKey] || []
+                const dayImages = [
+                    ...(Array.isArray(itineraryImagesByDay[dayKey]) ? itineraryImagesByDay[dayKey] : []),
+                    ...dayItems.flatMap((item) => (Array.isArray(item?.itineraryImages) ? item.itineraryImages : []))
+                ].filter(Boolean).slice(0, 3)
+
+                return {
+                    label: dayKey.replace('day', 'Day '),
+                    items: dayItems,
+                    images: dayImages
+                }
+            })
+    }, [fixedItinerary, itineraryImagesByDay])
 
     const maxBudget = Math.max(120000, Number(basePrice) || 0)
     const minBudget = Number(basePrice) || 0
@@ -663,6 +674,22 @@ export default function PackageDomesticQuotation() {
                                             <div className="quotation-fixed-list">
                                                 {fixedItineraryEntries.map((entry) => (
                                                     <div key={entry.label} className="quotation-fixed-day">
+                                                        {entry.images?.length > 0 && (
+                                                            <div className="quotation-day-images">
+                                                                <Carousel dots={entry.images.length > 1} adaptiveHeight>
+                                                                    {entry.images.map((src, index) => (
+                                                                        <div key={`${entry.label}-image-${index}`} className="quotation-day-image-slide">
+                                                                            <img
+                                                                                src={src}
+                                                                                alt={`${entry.label} itinerary ${index + 1}`}
+                                                                                className="quotation-day-image"
+                                                                                loading="lazy"
+                                                                            />
+                                                                        </div>
+                                                                    ))}
+                                                                </Carousel>
+                                                            </div>
+                                                        )}
                                                         <h4>{entry.label}</h4>
                                                         <ul>
                                                             {(entry.items || []).map((item, index) => (

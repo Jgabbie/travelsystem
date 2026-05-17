@@ -250,7 +250,7 @@ export default function AdminDashboard() {
   ];
 
   // Conversion rate
-  const completedBookingsCount = bookingStatusCount.fullyPaid;
+  const completedBookingsCount = Array.isArray(quotations) ? quotations.filter(q => q?.status?.toLowerCase() === 'booked').length : 0;
   const totalQuotationRequests = Array.isArray(quotations) ? quotations.length : 0;
   const conversionRate = totalQuotationRequests === 0 ? 0 : (completedBookingsCount / totalQuotationRequests) * 100;
 

@@ -756,6 +756,19 @@ export default function PackagePage() {
                                     )}
                                 </div>
 
+                                {packageData?.packageVideo && (
+                                    <div className="package-video-section" style={{ marginTop: 20 }}>
+                                        <h3 style={{ marginBottom: 12 }}>Package Video</h3>
+                                        <video
+                                            controls
+                                            playsInline
+                                            preload="metadata"
+                                            src={packageData.packageVideo}
+                                            style={{ width: '100%', maxHeight: 420, borderRadius: 12, backgroundColor: '#000' }}
+                                        />
+                                    </div>
+                                )}
+
                                 {!showReviews && (
                                     <Tabs
                                         className="package-tabs"

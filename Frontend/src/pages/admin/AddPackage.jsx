@@ -19,6 +19,7 @@ export default function AddPackage() {
   const { packageItem } = location.state || {};
   const fileInputRef = useRef(null);
   const itineraryImageInputRefs = useRef({});
+  const videoInputRef = useRef(null);
   const isEdit = Boolean(packageItem);
 
   const [backEndErrors, setBackEndErrors] = useState(null);
@@ -67,6 +68,7 @@ export default function AddPackage() {
     itinerariesImages: {},
     tags: [],
     images: [],
+    video: null,
   });
 
   //package validation
@@ -506,6 +508,33 @@ export default function AddPackage() {
   };
 
 
+  //UPLOAD VIDEO
+  const handleVideoChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      notification.error({ message: 'Please select a valid video file.', placement: 'topRight' });
+      event.target.value = "";
+      return;
+    }
+
+    // Limit to 100MB
+    if (file.size > 100 * 1024 * 1024) {
+      notification.error({ message: 'Video must be 100MB or less.', placement: 'topRight' });
+      event.target.value = "";
+      return;
+    }
+
+    valueHandler("video", file);
+    event.target.value = "";
+  };
+
+  const removeVideo = () => {
+    valueHandler("video", null);
+  };
+
+
   //REMOVE IMAGE
   const removeImage = (index) => {
     valueHandler(
@@ -538,6 +567,22 @@ export default function AddPackage() {
     } catch (error) {
       console.error("Upload failed:", error);
       return [];
+    }
+  };
+
+  const uploadPackageVideo = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await apiFetch.post('/upload/upload-package-video', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      return res.url || null;
+    } catch (error) {
+      console.error('Video upload failed:', error);
+      return null;
     }
   };
 
@@ -654,6 +699,24 @@ export default function AddPackage() {
     // combine both
     const finalImages = [...existingUrls, ...uploadedImageUrls];
 
+    // handle video upload (optional)
+    const newVideoFile = values.video instanceof File ? values.video : null;
+    const existingVideoUrl = typeof values.video === "string" ? values.video : null;
+    let uploadedVideoUrl = null;
+
+    if (newVideoFile) {
+      message.loading({ content: "Uploading video...", key: "video-upload" });
+      const uploaded = await uploadPackageVideo(newVideoFile);
+      if (!uploaded) {
+        notification.error({ message: 'Failed to upload video', key: 'video-upload', placement: 'topRight' });
+        return;
+      }
+      uploadedVideoUrl = uploaded;
+      notification.success({ message: 'Video uploaded', key: 'video-upload', placement: 'topRight' });
+    }
+
+    const finalVideo = existingVideoUrl || uploadedVideoUrl || null;
+
     const itineraryImagesByDay = {};
     const itineraryImageEntries = Object.entries(values.itinerariesImages || {});
     const hasNewItineraryFiles = itineraryImageEntries.some(([, images]) =>
@@ -728,6 +791,7 @@ export default function AddPackage() {
       packageItineraryImages: itineraryImagesByDay,
       tags: values.tags,
       images: finalImages,
+      video: finalVideo,
     };
 
     try {
@@ -790,6 +854,7 @@ export default function AddPackage() {
           itinerariesImages: packageItineraryImages,
           tags: pkg.packageTags || [],
           images: (pkg.images || []).filter((img) => img && img !== ""),
+          video: pkg.video || pkg.packageVideo || null,
         }));
 
 
@@ -1682,6 +1747,50 @@ export default function AddPackage() {
                       </Button>
                     </div>
                   ))}
+                </div>
+
+                {/* PACKAGE VIDEO UPLOAD */}
+                <div style={{ marginTop: 18, textAlign: 'center' }}>
+                  <input
+                    ref={videoInputRef}
+                    className="package-video-input"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                    style={{ display: "none" }}
+                  />
+
+                  <Button
+                    type="default"
+                    className="package-image-action-button highlighted-button"
+                    onClick={() => videoInputRef.current?.click()}
+                    disabled={Boolean(values.video)}
+                  >
+                    <UploadOutlined />
+                    Upload Video
+                  </Button>
+                  <p className="package-image-help">MP4/WEBM up to 100MB. One video.</p>
+
+                  {values.video ? (
+                    <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
+                      <div style={{ position: 'relative', width: 360, borderRadius: 8, overflow: 'hidden', border: '1px solid #e0e0e0' }}>
+                        <video
+                          controls
+                          src={values.video instanceof File ? URL.createObjectURL(values.video) : values.video}
+                          style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
+                        />
+                        <Button
+                          type="text"
+                          size="small"
+                          className="delete-add-package-button delete-button"
+                          onClick={() => removeVideo()}
+                          style={{ position: 'absolute', top: 6, right: 6 }}
+                        >
+                          <DeleteOutlined />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>

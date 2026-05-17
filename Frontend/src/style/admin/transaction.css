@@ -227,6 +227,37 @@
   padding: 20px;
   font-family: 'Helvetica', sans-serif;
   color: #333;
+  position: relative;
+  overflow: hidden;
+}
+
+.receipt-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 72px;
+  font-weight: 800;
+  letter-spacing: 10px;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+  opacity: 0.08;
+}
+
+.receipt-watermark--paid {
+  color: #2e7d32;
+}
+
+.receipt-watermark--unpaid {
+  color: #c62828;
+}
+
+.receipt-content {
+  position: relative;
+  z-index: 1;
 }
 
 .receipt-header {
@@ -415,6 +446,8 @@
   font-family: 'Montserrat', sans-serif;
   color: #333;
   background: #fff;
+  position: relative;
+  overflow: hidden;
 }
 
 .receipt-header {
