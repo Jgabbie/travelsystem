@@ -144,6 +144,8 @@ export default function TransactionManagement() {
   const totalSuccessful = filteredData.filter(t => t.status === "Successful").length;
   const totalPending = filteredData.filter(t => t.status === "Pending").length;
   const totalFailed = filteredData.filter(t => t.status === "Failed").length;
+  const receiptWatermarkText = selectedTransaction?.status === "Successful" ? "PAID" : "NOT PAID";
+  const receiptWatermarkClass = selectedTransaction?.status === "Successful" ? "receipt-watermark--paid" : "receipt-watermark--unpaid";
 
   const handleDownloadPDF = async () => {
     const element = receiptRef.current;
@@ -212,31 +214,6 @@ export default function TransactionManagement() {
         pdf.addPage();
         pdf.addImage(imgData, 'PNG', marginLeft, position, pdfWidth, imageHeight);
         heightLeft -= pageHeight;
-      }
-
-      // Add watermark based on transaction status
-      const totalPages = pdf.internal.pages.length - 1;
-      const watermarkText = selectedTransaction?.status === 'Successful' ? 'PAID' : 'NOT PAID';
-      const watermarkColor = selectedTransaction?.status === 'Successful' ? [76, 175, 80] : [244, 67, 54]; // Green for PAID, Red for NOT PAID
-
-      for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-
-        // Set text properties for watermark
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(80);
-
-        // Set color with reduced opacity by using lighter shade
-        const lighterColor = watermarkColor.map(c => Math.min(c + 100, 255));
-        pdf.setTextColor(...lighterColor);
-
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const centerX = pageWidth / 2;
-        const centerY = pageHeight / 2;
-
-        // Add diagonal watermark text with rotation
-        pdf.text(watermarkText, centerX, centerY, { align: 'center' });
       }
 
       pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
@@ -766,121 +743,122 @@ export default function TransactionManagement() {
           >
             {selectedTransaction && (
               <div className="receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
-                {/* Header Section */}
-                <div className="receipt-header">
-                  <div className="company-info">
+                <div className={`receipt-watermark ${receiptWatermarkClass}`}>{receiptWatermarkText}</div>
+                <div className="receipt-content">
+                  <div className="receipt-header">
+                    <div className="company-info">
 
-                    <div className="header-flex-container">
-                      <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+                      <div className="header-flex-container">
+                        <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
 
-                      <div className="address-details">
-                        <h2 className="brand-name">M&RC Travel and Tours</h2>
-                        <p className="sub-info">2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1</p>
-                        <p className="sub-info">Parañaque City, Philippines</p>
-                        <p className="sub-info">1709 PHL</p>
-                        <p className="sub-info">+63 969 055 4806</p>
-                        <p className="sub-info">info1@mrctravels.com</p>
+                        <div className="address-details">
+                          <h2 className="brand-name">M&RC Travel and Tours</h2>
+                          <p className="sub-info">2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1</p>
+                          <p className="sub-info">Parañaque City, Philippines</p>
+                          <p className="sub-info">1709 PHL</p>
+                          <p className="sub-info">+63 969 055 4806</p>
+                          <p className="sub-info">info1@mrctravels.com</p>
+                        </div>
+                      </div>
+
+
+                    </div>
+                    <div className="receipt-title-box">
+                      <h1 className="receipt-title">INVOICE {selectedTransaction.invoiceNumber}</h1>
+                    </div>
+                  </div>
+
+                  {/* Billing & Meta Section */}
+                  <div className="receipt-meta">
+                    <div className="billed-to">
+                      <span className="label-blue">Billed To</span>
+                      <h3 className="customer-name" style={{ margin: 0 }}>
+                        {`${selectedTransaction.firstname || ""} ${selectedTransaction.lastname || ""}`.trim() || selectedTransaction.username || "Customer Name"}
+                      </h3>
+                    </div>
+                    <div className="receipt-details">
+                      <div className="detail-item">
+                        <span className="label-blue">Date</span>
+                        <span>
+                          {(selectedTransaction.date || selectedTransaction.createdAt)
+                            ? dayjs(selectedTransaction.date || selectedTransaction.createdAt).format("DD-MM-YYYY")
+                            : "--"}
+                        </span>
+                      </div>
+                      <div className="detail-item total-price">
+                        <span className="label-blue">Amount to Pay</span>
+                        <span className="value-blue">{selectedTransaction.price}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label-blue">Reference</span>
+                        <span>
+                          {selectedTransaction.ref || "--"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Items Table */}
+                  <table className="receipt-table">
+                    <thead>
+                      <tr>
+                        <th>QTY</th>
+                        <th>Description</th>
+                        <th className="text-right">Unit Price</th>
+                        <th className="text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td>{selectedTransaction.package}</td>
+                        <td className="text-right">{selectedTransaction.price}</td>
+                        <td className="text-right">{selectedTransaction.price}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* Calculation Section */}
+                  <div className='receipt-bank-grid'>
+
+                    {/* Footer Notes */}
+                    <div className="receipt-bank-info">
+                      <div className="receipt-bank-section">
+                        <div className="receipt-bank-label">Bank Account:</div>
+                        <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
+                        <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
+                        <p className="receipt-bank-details">Account #: 006838032692</p>
+                      </div>
+
+                      <div className="receipt-bank-section">
+                        <div className="receipt-bank-label">USD Account:</div>
+                        <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
+                        <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
+                        <p className="receipt-bank-details">Account #: 113190015176</p>
+                      </div>
+
+                      <div className="receipt-bank-section">
+                        <div className="receipt-bank-label">GCash:</div>
+                        <p className="receipt-bank-details">Rhon Carle - 0968 888 0405</p>
+                        <p className="receipt-bank-details">Maricar Carle - 0969 055 4806</p>
                       </div>
                     </div>
 
 
-                  </div>
-                  <div className="receipt-title-box">
-                    <h1 className="receipt-title">INVOICE {selectedTransaction.invoiceNumber}</h1>
-                  </div>
-                </div>
-
-                {/* Billing & Meta Section */}
-                <div className="receipt-meta">
-                  <div className="billed-to">
-                    <span className="label-blue">Billed To</span>
-                    <h3 className="customer-name" style={{ margin: 0 }}>
-                      {`${selectedTransaction.firstname || ""} ${selectedTransaction.lastname || ""}`.trim() || selectedTransaction.username || "Customer Name"}
-                    </h3>
-                  </div>
-                  <div className="receipt-details">
-                    <div className="detail-item">
-                      <span className="label-blue">Date</span>
-                      <span>
-                        {(selectedTransaction.date || selectedTransaction.createdAt)
-                          ? dayjs(selectedTransaction.date || selectedTransaction.createdAt).format("DD-MM-YYYY")
-                          : "--"}
-                      </span>
-                    </div>
-                    <div className="detail-item total-price">
-                      <span className="label-blue">Amount to Pay</span>
-                      <span className="value-blue">{selectedTransaction.price}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label-blue">Reference</span>
-                      <span>
-                        {selectedTransaction.ref || "--"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Items Table */}
-                <table className="receipt-table">
-                  <thead>
-                    <tr>
-                      <th>QTY</th>
-                      <th>Description</th>
-                      <th className="text-right">Unit Price</th>
-                      <th className="text-right">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>{selectedTransaction.package}</td>
-                      <td className="text-right">{selectedTransaction.price}</td>
-                      <td className="text-right">{selectedTransaction.price}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                {/* Calculation Section */}
-                <div className='receipt-bank-grid'>
-
-                  {/* Footer Notes */}
-                  <div className="receipt-bank-info">
-                    <div className="receipt-bank-section">
-                      <div className="receipt-bank-label">Bank Account:</div>
-                      <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
-                      <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
-                      <p className="receipt-bank-details">Account #: 006838032692</p>
-                    </div>
-
-                    <div className="receipt-bank-section">
-                      <div className="receipt-bank-label">USD Account:</div>
-                      <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
-                      <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
-                      <p className="receipt-bank-details">Account #: 113190015176</p>
-                    </div>
-
-                    <div className="receipt-bank-section">
-                      <div className="receipt-bank-label">GCash:</div>
-                      <p className="receipt-bank-details">Rhon Carle - 0968 888 0405</p>
-                      <p className="receipt-bank-details">Maricar Carle - 0969 055 4806</p>
-                    </div>
-                  </div>
-
-
-                  <div className="receipt-summary">
-                    <div className="receipt-summary-content">
-                      <div className="summary-row">
-                        <span>Total</span>
-                        <span>{selectedTransaction.price}</span>
-                      </div>
-                      <div className="summary-row total-row">
-                        <span>Total Due</span>
-                        <span className="total-amount">{selectedTransaction.price}</span>
+                    <div className="receipt-summary">
+                      <div className="receipt-summary-content">
+                        <div className="summary-row">
+                          <span>Total</span>
+                          <span>{selectedTransaction.price}</span>
+                        </div>
+                        <div className="summary-row total-row">
+                          <span>Total Due</span>
+                          <span className="total-amount">{selectedTransaction.price}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>

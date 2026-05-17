@@ -106,7 +106,7 @@ const notifyWishlistUsers = async ({ packageId, title, message, type, link, meta
 
 //ADD PACKAGE
 const addPackage = async (req, res) => {
-    const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags, visaRequired } = req.body;
+    const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags, visaRequired, video } = req.body;
     try {
 
         if (name === null || code === null || pricePerPax === null
@@ -153,7 +153,8 @@ const addPackage = async (req, res) => {
             packageItineraryImages: req.body.packageItineraryImages || {},
             packageTags: tags,
             visaRequired: visaRequired,
-            images: images || []
+            images: images || [],
+            packageVideo: video || null
         });
 
         await logAction(
@@ -201,6 +202,7 @@ const getPackages = async (req, res) => {
                 packageSpecificDate: pkg.packageSpecificDate || [],
                 packageType: pkg.packageType,
                 packageImages: pkg.images || [],
+                packageVideo: pkg.packageVideo || null,
                 packageTags: pkg.packageTags || [],
                 packageDiscountPercent: pkg.packageDiscountPercent || 0
             };
@@ -240,6 +242,7 @@ const getArchivedPackages = async (_req, res) => {
                 packageSpecificDate: pkg.packageSpecificDate || [],
                 packageType: pkg.packageType,
                 packageImages: pkg.images || [],
+                packageVideo: pkg.packageVideo || null,
                 packageTags: pkg.packageTags || [],
                 packageDiscountPercent: pkg.packageDiscountPercent || 0
             };
@@ -273,6 +276,7 @@ const getPackagesForUsers = async (req, res) => {
                 packageAvailableSlots: availableSlots,
                 packageType: pkg.packageType,
                 packageImages: pkg.images || [],
+                packageVideo: pkg.packageVideo || null,
                 packageTags: pkg.packageTags || [],
                 packageDiscountPercent: pkg.packageDiscountPercent || 0
             };
@@ -321,6 +325,7 @@ const removePackage = async (req, res) => {
             packageTags: pkg.packageTags,
             packageDiscountPercent: pkg.packageDiscountPercent,
             images: pkg.images,
+            packageVideo: pkg.packageVideo,
             visaRequired: pkg.visaRequired,
             createdAt: pkg.createdAt
         });
@@ -389,6 +394,7 @@ const restoreArchivedPackage = async (req, res) => {
             packageTags: archivedPackage.packageTags,
             packageDiscountPercent: archivedPackage.packageDiscountPercent,
             images: archivedPackage.images,
+            packageVideo: archivedPackage.packageVideo,
             visaRequired: archivedPackage.visaRequired
         });
 
@@ -438,6 +444,7 @@ const getPackage = async (req, res) => {
             availableSlots: availableSlots,
             packageType: pkg.packageType,
             images: pkg.images || [],
+            packageVideo: pkg.packageVideo || null,
             packageHotels: pkg.packageHotels,
             packageAirlines: pkg.packageAirlines,
             packageInclusions: pkg.packageInclusions,
@@ -507,7 +514,8 @@ const updatePackage = async (req, res) => {
                 packageItineraryImages: req.body.packageItineraryImages || {},
                 packageTags: req.body.tags,
                 visaRequired: req.body.visaRequired,
-                images: req.body.images || []
+                images: req.body.images || [],
+                packageVideo: req.body.video || req.body.packageVideo || null
             },
             { new: true }
         );

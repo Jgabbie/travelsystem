@@ -119,6 +119,25 @@ const uploadPackageImage = async (req, res) => {
     }
 };
 
+const uploadPackageVideo = async (req, res) => {
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    try {
+        const uploadResult = await uploadBufferToCloudinary(req.file, 'package-videos');
+
+        return res.status(200).json({
+            message: 'Video uploaded successfully.',
+            url: uploadResult?.secure_url || buildPrivateAccessUrl(req, uploadResult)
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Upload failed", error: err.message });
+    }
+};
+
 const uploadProfilePicture = async (req, res) => {
 
     if (!req.file) {
@@ -270,4 +289,4 @@ const viewQuotationPdf = async (req, res) => {
     }
 }
 
-module.exports = { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof, viewQuotationPdf };
+module.exports = { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadPackageVideo, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof, viewQuotationPdf };

@@ -220,16 +220,16 @@ export default function PaymentProcess() {
     const uploadAllFiles = async (passportFiles, photoFiles, visaFiles) => {
         const formData = new FormData();
 
-        const passportFileObjs = passportFiles
-            .filter(f => f.base64) // Safety check
+        const passportFileObjs = (passportFiles || [])
+            .filter(f => f && f.base64) // Filter null values first, then check base64
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
-        const photoFileObjs = photoFiles
-            .filter(f => f.base64) // Safety check
+        const photoFileObjs = (photoFiles || [])
+            .filter(f => f && f.base64) // Filter null values first, then check base64
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
-        const visaFileObjs = visaFiles
-            .filter(f => f.base64) // Safety check
+        const visaFileObjs = (visaFiles || [])
+            .filter(f => f && f.base64) // Filter null values first, then check base64
             .map(file => base64ToFile(file.base64, file.name, file.type));
 
         [...passportFileObjs, ...photoFileObjs, ...visaFileObjs].forEach(file => {
