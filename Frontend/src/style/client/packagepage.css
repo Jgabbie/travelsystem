@@ -88,9 +88,11 @@
 
 .package-description p {
     margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
     font-size: 14px;
     line-height: 1.7;
-    color: #374151;
+    color: #6b7280;
 }
 
 .package-actions-left {
@@ -183,6 +185,161 @@
     margin-bottom: 12px;
 }
 
+/* New: style the Day header as a pill and give the day block a soft background */
+.itinerary-day {
+    background: #eef6fb;
+    padding: 14px;
+    border-radius: 12px;
+}
+
+.itinerary-day ul {
+    margin: 0;
+    padding-left: 22px;
+    list-style: none; /* hide default markers to use a custom marker */
+}
+
+.itinerary-day ul li {
+    margin-bottom: 8px;
+    color: #1f2a44; /* keep body text dark */
+    position: relative;
+    padding-left: 18px;
+}
+
+/* Use Roboto regular for the small itinerary texts */
+.itinerary-day ul,
+.itinerary-day ul li,
+.itinerary-day ul li div {
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+/* Fallback-safe custom bullet */
+.itinerary-day ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 7px;
+    height: 7px;
+    background: #305797;
+    border-radius: 50%;
+}
+
+/* Make list bullets (markers) use the brand blue while keeping text color dark */
+.itinerary-day h2,
+.itinerary-day .day-title {
+    display: block;
+    margin: 8px -14px 6px;
+    background: #305797;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 8px 18px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: "Montserrat", sans-serif;
+}
+
+/* Day header with icon and text */
+.itinerary-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 8px -14px 6px;
+    background: #305797;
+    border-radius: 999px;
+    padding: 8px 18px;
+    width: calc(100% + 28px); /* account for the negative margins */
+}
+
+.itinerary-day-header strong {
+    display: inline;
+    margin: 0;
+    background: none;
+    color: #ffffff;
+    border-radius: 0;
+    padding: 0;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.itinerary-day-icon {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+/* Section headers for Inclusions, Exclusions, and Terms - match DAY pill style */
+.section-header {
+    display: block;
+    margin: 8px -14px 6px;
+    background: #305797;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 8px 18px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: "Montserrat", sans-serif;
+}
+
+/* Inclusions and Exclusions Containers - match Itinerary styling */
+.inclusions-container,
+.exclusions-container,
+.terms-container {
+    background: #eef6fb;
+    padding: 14px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.inclusions-container ul,
+.exclusions-container ul,
+.terms-container ul {
+    margin: 0;
+    padding-left: 22px;
+    list-style: none;
+}
+
+.inclusions-container ul li,
+.exclusions-container ul li,
+.terms-container ul li {
+    margin-bottom: 8px;
+    color: #1f2a44;
+    position: relative;
+    padding-left: 18px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.inclusions-container ul li::before,
+.exclusions-container ul li::before,
+.terms-container ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 7px;
+    height: 7px;
+    background: #305797;
+    border-radius: 50%;
+}
+
 .itinerary-carousel {
     border-radius: 12px;
     overflow: hidden;
@@ -202,9 +359,11 @@
 }
 
 .package-detail-section h3 {
-    margin: 0 0 12px;
-    font-size: 18px;
-    color: #1f2a44;
+    margin: 0 0 16px;
+    font-size: 24px;
+    color: #305797;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
 }
 
 .package-detail-grid {
@@ -214,19 +373,47 @@
 }
 
 .package-detail-item {
-    display: grid;
-    gap: 4px;
-    padding: 10px 12px;
+    display: block;
+    padding: 0;
     border-radius: 12px;
-    background: #f7f9fc;
+    background: #ffffff;
     border: 1px solid #e6e8ee;
-    font-size: 12px;
     color: #6b7280;
+    overflow: hidden;
 }
 
 .package-detail-item strong {
     font-size: 14px;
     color: #1f2a44;
+}
+
+/* New styling for Package Details small boxes: header band + value */
+/* Header band: only the direct child span used as the label */
+.package-detail-item > span {
+    display: block;
+    padding: 10px 12px;
+    background: #305797;
+    color: #ffffff;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.package-detail-item strong {
+    display: block;
+    padding: 12px 12px 16px 12px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #305797;
+}
+
+/* Ensure any spans inside the value don't inherit the header band styling */
+.package-detail-item strong span {
+    display: inline;
+    padding: 0;
+    background: none;
+    color: inherit;
 }
 
 .package-right {
@@ -254,7 +441,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.7px;
-    color: #6b7280;
+    color: #992A46;
 }
 
 .package-pricepax {

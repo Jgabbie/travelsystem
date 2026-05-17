@@ -273,7 +273,10 @@ export default function PackagePage() {
                                     </Carousel>
                                 </div>
                             )}
-                            <strong>{dayLabel}</strong>
+                            <div className="itinerary-day-header">
+                                <img src="/images/checklist-svgrepo-com.svg" alt="Checklist" className="itinerary-day-icon" />
+                                <strong>{dayLabel}</strong>
+                            </div>
                             <ul>
                                 {dayItems.map((item, index) => (
                                     <li key={`${day}-${index}`}>
@@ -299,8 +302,8 @@ export default function PackagePage() {
         const exclusions = packageData?.packageExclusions || []
         return (
             <div style={{ display: 'grid', gap: 16 }}>
-                <div>
-                    <strong>Inclusions</strong>
+                <div className="inclusions-container">
+                    <div className="section-header">Inclusions</div>
                     {inclusions.length ? (
                         <ul>
                             {inclusions.map((item, index) => (
@@ -311,8 +314,8 @@ export default function PackagePage() {
                         <p>No inclusions listed.</p>
                     )}
                 </div>
-                <div>
-                    <strong>Exclusions</strong>
+                <div className="exclusions-container">
+                    <div className="section-header">Exclusions</div>
                     {exclusions.length ? (
                         <ul>
                             {exclusions.map((item, index) => (
@@ -332,11 +335,14 @@ export default function PackagePage() {
         const terms = packageData?.packageTermsConditions || []
         if (!terms.length) return <p>No terms and conditions listed.</p>
         return (
-            <ul>
-                {terms.map((item, index) => (
-                    <li key={`term-${index}`}>{item}</li>
-                ))}
-            </ul>
+            <div className="terms-container">
+                <div className="section-header">Terms and Conditions</div>
+                <ul>
+                    {terms.map((item, index) => (
+                        <li key={`term-${index}`}>{item}</li>
+                    ))}
+                </ul>
+            </div>
         )
     }, [packageData])
 
