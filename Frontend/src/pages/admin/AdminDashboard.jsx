@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const [transactions, setTransactions] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [popularPackages, setPopularPackages] = useState([]);
+  const [quotations, setQuotations] = useState([]);
 
 
   //top 3 packages
@@ -87,7 +88,7 @@ export default function AdminDashboard() {
 
   const topDurationEntries = Object.entries(durationCountMap)
     .sort((a, b) => b[1] - a[1]) // sort by count DESC
-    .slice(0, 3) // 👈 top 3
+    .slice(0, 3) // top 3
     .map(([duration, count]) => ({
       label: `${duration} Days`,
       count
@@ -205,10 +206,53 @@ export default function AdminDashboard() {
       }
     };
 
+    const fetchQuotations = async () => {
+      try {
+        const resp = await apiFetch.get('/quotation/all-quotations');
+        setQuotations(resp || []);
+      } catch (err) {
+        console.error('Failed to load quotations', err);
+      }
+    };
+
     fetchTransactions();
     fetchBookings();
     fetchPopularPackages();
+    fetchQuotations();
   }, []);
+
+  // Booking status breakdown
+  const bookingStatusCount = {
+    pending: 0,
+    notPaid: 0,
+    fullyPaid: 0,
+    cancelled: 0,
+  };
+
+  bookings.forEach((b) => {
+    const s = (b.status || '').toString().toLowerCase();
+    if (s.includes('cancel')) {
+      bookingStatusCount.cancelled++;
+    } else if (s === 'fully paid' || s === 'fully_paid' || s === 'paid' || s === 'successful') {
+      bookingStatusCount.fullyPaid++;
+    } else if (s === 'not paid' || s === 'not_paid') {
+      bookingStatusCount.notPaid++;
+    } else {
+      bookingStatusCount.pending++;
+    }
+  });
+
+  const bookingStatusSeries = [
+    { id: 0, value: bookingStatusCount.pending, label: 'Pending' },
+    { id: 1, value: bookingStatusCount.notPaid, label: 'Not Paid' },
+    { id: 2, value: bookingStatusCount.fullyPaid, label: 'Fully Paid' },
+    { id: 3, value: bookingStatusCount.cancelled, label: 'Cancelled' },
+  ];
+
+  // Conversion rate
+  const completedBookingsCount = bookingStatusCount.fullyPaid;
+  const totalQuotationRequests = Array.isArray(quotations) ? quotations.length : 0;
+  const conversionRate = totalQuotationRequests === 0 ? 0 : (completedBookingsCount / totalQuotationRequests) * 100;
 
   useEffect(() => {
     const updateWidth = (node, setter, fallback) => {
@@ -396,48 +440,100 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+
+
+      <div className="dashboard-chart-row" style={{ marginTop: 20 }}>
+        <Card className="dashboard-chart-card">
+          <div className="dashboard-chart-header">
+            <h2>Booking Status Breakdown</h2>
+            <p>Pending / Not Paid / Fully Paid / Cancelled</p>
+          </div>
+          <div className="dashboard-chart-body" style={{ minHeight: 260 }}>
+            {pieWidth > 0 && (
+              <PieChart
+                series={[{ data: bookingStatusSeries, innerRadius: 40, outerRadius: 80, paddingAngle: 2 }]}
+                colors={[themeColor, "#4b74b8", "#89a5d6", "#d9534f"]}
+                width={Math.min(420, pieWidth)}
+                height={260}
+                slotProps={{
+                  legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } }
+                }}
+              />
+            )}
+          </div>
+        </Card>
+
+        <Card className="dashboard-chart-card">
+          <div className="dashboard-chart-header">
+            <h2>Booking Conversion Rate</h2>
+            <p>Completed bookings vs quotation requests</p>
+          </div>
+          <div className="dashboard-chart-body" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: 260 }}>
+            <h2 style={{ fontSize: 28, margin: 0 }}>{conversionRate.toFixed(2)}%</h2>
+            <p style={{ margin: '8px 0 0' }}>{completedBookingsCount} completed bookings</p>
+            <p style={{ margin: 0 }}>{totalQuotationRequests} quotation requests</p>
+          </div>
+        </Card>
+      </div>
+
       <div className="dashboard-section-packages-cards">
         <h2>Top 3 Most Booked Packages</h2>
 
-        <Row gutter={[16, 16]}>
-          {displayTopPackages.map((pkg, idx) => {
-            const imgs = pkg.packageImages || pkg.images || [];
-            const first = Array.isArray(imgs) ? imgs[0] : imgs;
-            const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
+        {displayTopPackages && displayTopPackages.length > 0 ? (
+          <Row gutter={[16, 16]}>
+            {displayTopPackages.map((pkg, idx) => {
+              const imgs = pkg.packageImages || pkg.images || [];
+              const first = Array.isArray(imgs) ? imgs[0] : imgs;
+              const imageUrl = first && typeof first === 'string' ? first : (first && (first.url || first.path || first.src)) || null;
 
-            return (
-              <Col xs={24} sm={24} md={8} key={pkg.packageName + idx}>
-                <Card
-                  className={`top-package-card ${imageUrl ? 'has-image' : ''}`}
-                  style={{
-                    height: 300,
-                    backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
-                    backgroundSize: imageUrl ? 'cover' : undefined,
-                    backgroundPosition: imageUrl ? 'center' : undefined,
-                    color: imageUrl ? '#ffffff' : undefined
-                  }}
-                >
-                  <div className="top-package-content">
-                    <h3 className="top-package-card-name">
-                      {idx + 1}. {pkg.packageName}
-                    </h3>
-                    <p className="top-package-card-bookings" >
-                      {pkg.count} bookings
-                    </p>
-                    <div className="top-package-card-number">#{idx + 1}</div>
-                  </div>
-                </Card>
-              </Col>
-            )
-          })}
-        </Row>
+              return (
+                <Col xs={24} sm={24} md={8} key={pkg.packageName + idx}>
+                  <Card
+                    className={`top-package-card ${imageUrl ? 'has-image' : ''}`}
+                    style={{
+                      height: 300,
+                      backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
+                      backgroundSize: imageUrl ? 'cover' : undefined,
+                      backgroundPosition: imageUrl ? 'center' : undefined,
+                      color: imageUrl ? '#ffffff' : undefined
+                    }}
+                  >
+                    <div className="top-package-content">
+                      <h3 className="top-package-card-name">
+                        {idx + 1}. {pkg.packageName}
+                      </h3>
+                      <p className="top-package-card-bookings">
+                        {pkg.count} bookings
+                      </p>
+                      <div className="top-package-card-number">#{idx + 1}</div>
+                    </div>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        ) : (
+          <Card
+            style={{
+              padding: '40px 20px',
+              textAlign: 'center',
+              backgroundColor: '#fafafa',
+              border: '1px dashed #d9d9d9',
+              borderRadius: '8px',
+              fontFamily: 'Montserrat'
+            }}
+          >
+            <AppstoreOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
+            <p style={{ color: '#8c8c8c', fontSize: '14px', margin: 0, fontFamily: 'Montserrat' }}>No booking data available yet</p>
+            <p style={{ color: '#bfbfbf', fontSize: '12px', marginTop: '8px', fontFamily: 'Montserrat' }}>Packages will appear here once bookings are made</p>
+          </Card>
+        )}
 
         <div style={{ marginTop: 24 }}>
           <h2>Most Booked Durations</h2>
-          {topDurationEntries.length ? (
+          {topDurationEntries.length > 0 ? (
             <Row gutter={[16, 16]}>
               {topDurationEntries.map((entry, idx) => {
-                // attempt to find an image for this duration
                 const durationNumber = Number(entry.label.split(' ')[0]);
                 const imageUrl = durationImageMap[durationNumber] || null;
                 return (
@@ -463,7 +559,20 @@ export default function AdminDashboard() {
               })}
             </Row>
           ) : (
-            <div style={{ marginTop: 8, fontWeight: 600 }}>N/A</div>
+            <Card
+              style={{
+                padding: '40px 20px',
+                textAlign: 'center',
+                backgroundColor: '#fafafa',
+                border: '1px dashed #d9d9d9',
+                borderRadius: '8px',
+                fontFamily: 'Montserrat'
+              }}
+            >
+              <ShoppingCartOutlined style={{ fontSize: '48px', color: '#bfbfbf', marginBottom: '16px' }} />
+              <p style={{ color: '#8c8c8c', fontSize: '14px', margin: 0, fontFamily: 'Montserrat' }}>No duration data available yet</p>
+              <p style={{ color: '#bfbfbf', fontSize: '12px', marginTop: '8px', fontFamily: 'Montserrat' }}>Duration trends will appear here once bookings are made</p>
+            </Card>
           )}
         </div>
       </div>

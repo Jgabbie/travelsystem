@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card, Spin, Descriptions, Upload, Button, ConfigProvider, Tag, Input, Modal, notification } from "antd";
+import { Card, Spin, Upload, Button, ConfigProvider, Tag, Input, Modal, notification } from "antd";
 import { UploadOutlined, SendOutlined, ArrowLeftOutlined, ArrowRightOutlined, CheckCircleFilled } from "@ant-design/icons";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -665,6 +665,57 @@ export default function QuotationRequest() {
         });
     };
 
+    const detailGroups = [
+        {
+            title: "Trip Overview",
+            items: [
+                { label: "Package", value: packageName },
+                { label: "Customer", value: customerName },
+                { label: "Travelers", value: formatTravelers(travelers) },
+                { label: "Preferred Date", value: formatTravelDates(travelDates) },
+                { label: "Budget Range", value: budgetRange },
+                { label: "Package Category", value: details.packageCategory || packageCategory || "N/A" },
+            ],
+        },
+        {
+            title: "Preferences",
+            items: [
+                { label: "Preferred Airlines", value: airline || "N/A" },
+                { label: "Preferred Hotels", value: hotel || "N/A" },
+                ...["flightAirline", "flightDate", "flightTime"]
+                    .map((key) => {
+                        const value = flightDetails[key];
+                        if (!value || value === "N/A") return null;
+
+                        const label = key
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^./, (str) => str.toUpperCase());
+
+                        return { label, value };
+                    })
+                    .filter(Boolean),
+            ],
+        },
+        {
+            title: "Request Notes",
+            items: [
+                {
+                    label: "Itinerary Notes",
+                    value: itineraryNotes.length === 0
+                        ? "N/A"
+                        : itineraryNotes.map((note, index) => (
+                            <div key={index} className="quotationrequest-note-line">
+                                <span>Day {index + 1}</span>
+                                {note}
+                            </div>
+                        )),
+                    wide: true,
+                },
+                { label: "Additional Comments", value: details.additionalComments || "N/A", wide: true },
+            ],
+        },
+    ];
+
 
 
     return (
@@ -680,22 +731,27 @@ export default function QuotationRequest() {
                     <Spin description={"Loading quotation..."} size="large" />
                 </div>
             ) : (
-                <div>
+                <div className="quotationrequest-page">
                     {uploading && (
                         <div className="booking-loading-overlay">
                             <Spin description={"Uploading quotation..."} size="large" />
                         </div>
                     )}
 
-                    <Button onClick={() => navigate(-1)} style={{ marginBottom: 16, marginLeft: 20 }} type="primary" className="viewvisaapplication-back-button">
-                        <ArrowLeftOutlined />
-                        Back
-                    </Button>
-                    <h1 style={{ margin: 20 }}>Initial Quotation Request</h1>
+                    <div >
+                        <h1 className="quotationrequest-page-header">Quotation Request</h1>
+                    </div>
+
+                    <div className="quotationrequest-header">
+                        <Button onClick={() => navigate(-1)} type="primary" className="viewvisaapplication-back-button">
+                            <ArrowLeftOutlined />
+                            Back
+                        </Button>
+                    </div>
                     {/* BOOKED OR COMPLETE STATUS */}
                     {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
                         <Card
-                            style={{ margin: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                            style={{ borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
                             className={`quotationrequest-status-card${isBooked ? ' is-booked' : ''}`}
                             title={<Tag color="green">Quotation {quotation.status}</Tag>}
                         >
@@ -704,75 +760,68 @@ export default function QuotationRequest() {
                             </p>
                         </Card>
                     ) : null}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 20, margin: 20 }}>
+                    <div className="quotationrequest-content-stack">
                         <Card
-                            title={`Quotation Details - ${quotation.reference || "N/A"}`}
-                            style={{ margin: 0 }}
+                            className="quotationrequest-details-card"
+                            title={
+                                <div className="quotationrequest-card-title">
+                                    <span>Quotation Details</span>
+                                    <Tag color={isBooked ? "green" : "blue"}>{quotation.status || "N/A"}</Tag>
+                                </div>
+                            }
                         >
-                            <Descriptions bordered column={1}>
-                                <Descriptions.Item label="Package Name">{packageName}</Descriptions.Item>
-                                <Descriptions.Item label="Customer Name">{customerName}</Descriptions.Item>
-                                <Descriptions.Item label="Travelers">
-                                    {formatTravelers(travelers)}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Preferred Airlines">{airline || "N/A"}</Descriptions.Item>
-                                <Descriptions.Item label="Preferred Hotels">{hotel || "N/A"}</Descriptions.Item>
-                                <Descriptions.Item label="Preferred Date">{travelDates || "N/A"}</Descriptions.Item>
-                                <Descriptions.Item label="Budget Range">{budgetRange}</Descriptions.Item>
-                                <Descriptions.Item label="Itinerary Notes">
-                                    {itineraryNotes.length === 0
-                                        ? "N/A"
-                                        : itineraryNotes.map((note, index) => (
-                                            <div key={index}><strong>Day {index + 1}:</strong> {note}</div>
-                                        ))
-                                    }
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Package Category">{details.packageCategory || "N/A"}</Descriptions.Item>
-                                {["flightAirline", "flightDate", "flightTime"].map((key) => {
-                                    const value = flightDetails[key];
-                                    if (!value || value === "N/A") return null; // skip N/A or empty values
 
-                                    // Convert key to readable label
-                                    const label = key
-                                        .replace(/([A-Z])/g, " $1") // add space before capital letters
-                                        .replace(/^./, (str) => str.toUpperCase()); // capitalize first letter
-
-                                    return (
-                                        <Descriptions.Item key={key} label={label}>
-                                            {value}
-                                        </Descriptions.Item>
-                                    );
-                                })}
-                                <Descriptions.Item label="Additional Comments">{details.additionalComments || "N/A"}</Descriptions.Item>
-                                <Descriptions.Item label="Status">{quotation.status || "N/A"}</Descriptions.Item>
-                            </Descriptions>
+                            <div className="quotationrequest-detail-groups">
+                                {detailGroups.map((group) => (
+                                    <section key={group.title} className="quotationrequest-detail-group">
+                                        <h3>{group.title}</h3>
+                                        <div className="quotationrequest-detail-grid">
+                                            {group.items.map((item) => (
+                                                <div
+                                                    key={item.label}
+                                                    className={`quotationrequest-detail-item${item.wide ? " wide" : ""}`}
+                                                >
+                                                    <span>{item.label}</span>
+                                                    <div className="quotationrequest-detail-value">{item.value || "N/A"}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                ))}
+                            </div>
                         </Card>
                     </div>
 
                     {!isBooked && (
-                        <div style={{ margin: 20, display: "flex", gap: 16, flexWrap: "wrap" }}>
-                            <Card
-                                hoverable
-                                onClick={() => setViewMode("form")}
-                                className={`quotationrequest-selection-card ${viewMode === "form" ? "selected" : ""}`}
-                            >
-                                <h3 style={{ margin: 0 }}>Quotation Form</h3>
-                                <p style={{ marginTop: 8, color: "#6b7280" }}>Create and preview the quotation form.</p>
-                            </Card>
-                            <Card
-                                hoverable
-                                onClick={() => setViewMode("upload")}
-                                className={`quotationrequest-selection-card ${viewMode === "upload" ? "selected" : ""}`}
-                            >
-                                <h3 style={{ margin: 0 }}>Upload Quotation</h3>
-                                <p style={{ marginTop: 8, color: "#6b7280" }}>Upload a prepared quotation PDF.</p>
-                            </Card>
-                        </div>
+                        <>
+                            <h1 className="quotationrequest-page-secondheader" style={{ marginTop: 32, marginBottom: 16 }}>
+                                Prepare Quotation
+                            </h1>
+                            <div className="quotationrequest-mode-grid">
+                                <Card
+                                    hoverable
+                                    onClick={() => setViewMode("form")}
+                                    className={`quotationrequest-selection-card ${viewMode === "form" ? "selected" : ""}`}
+                                >
+                                    <h3 style={{ margin: 0 }}>Quotation Form</h3>
+                                    <p style={{ marginTop: 8, color: "#6b7280" }}>Create and preview the quotation form.</p>
+                                </Card>
+                                <Card
+                                    hoverable
+                                    onClick={() => setViewMode("upload")}
+                                    className={`quotationrequest-selection-card ${viewMode === "upload" ? "selected" : ""}`}
+                                >
+                                    <h3 style={{ margin: 0 }}>Upload Quotation</h3>
+                                    <p style={{ marginTop: 8, color: "#6b7280" }}>Upload a prepared quotation PDF.</p>
+                                </Card>
+                            </div>
+                        </>
+
                     )}
 
 
                     {viewMode === "form" && !isBooked && (
-                        <Card title={previewItems[previewStep].title} style={{ margin: 20 }}>
+                        <Card title={previewItems[previewStep].title} >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                                 {previewStep > 0 ? (
                                     <Button
@@ -884,7 +933,7 @@ export default function QuotationRequest() {
                     )}
 
                     {viewMode === "upload" && !isBooked && (
-                        <Card title="Upload Quotation PDF" style={{ margin: 20 }}>
+                        <Card title="Upload Quotation PDF">
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 16 }}>
                                 <div>
                                     <label className="quotationrequest-label">Travel Dates</label>
@@ -1140,16 +1189,17 @@ export default function QuotationRequest() {
 
                         </Card>
                     )}
-                    <div flexDirection="column" gap={20} style={{ display: "flex", marginBottom: 20 }}>
-                        <Card title="Quotation Revision History" style={{ margin: 20, width: 600 }}>
+                    <div className="quotationrequest-revision-grid">
+                        <Card title="Quotation Revision History">
                             {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
-                                <p>No PDF revisions uploaded yet.</p>
+                                <p className="quotationrequest-empty-text">No PDF revisions uploaded yet.</p>
                             ) : (
                                 quotation.pdfRevisions
                                     .filter((rev) => rev?.url)
                                     .map((rev, index) => (
-                                        <div key={index} style={{ marginBottom: "10px" }}>
-                                            <p><strong>Version {rev.version}:</strong> Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</p>
+                                        <div key={index} className="quotationrequest-revision-item">
+                                            <p><strong>Version {rev.version}</strong></p>
+                                            <span>Uploaded by {rev.uploaderName} on {new Date(rev.uploadedAt).toLocaleString()}</span>
                                             <Button
                                                 href={rev.url}
                                                 target="_blank"
@@ -1165,14 +1215,17 @@ export default function QuotationRequest() {
                         </Card>
 
 
-                        <Card title="Revision Comments" style={{ margin: 20, width: 600 }}>
+                        <Card title="Revision Comments">
                             {quotation.revisionComments?.length === 0 ? (
-                                <p>No revision comments.</p>
+                                <p className="quotationrequest-empty-text">No revision comments.</p>
                             ) : (
                                 quotation.revisionComments.map((comment, index) => (
-                                    <div key={index} style={{ marginBottom: 15 }}>
-                                        <strong>{comment.authorName}</strong> ({comment.role}) - {comment.comments}
-                                        <br />
+                                    <div key={index} className="quotationrequest-comment-item">
+                                        <div>
+                                            <strong>{comment.authorName}</strong>
+                                            <Tag>{comment.role}</Tag>
+                                        </div>
+                                        <p>{comment.comments}</p>
                                         <small>{new Date(comment.createdAt).toLocaleString()}</small>
                                     </div>
                                 ))
