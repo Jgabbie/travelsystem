@@ -344,7 +344,7 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
         to: user.email,
         subject: `Passport Application On Penalty: ${applicationNumber}`,
         html: `
-            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+            <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                     <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
