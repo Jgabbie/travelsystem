@@ -1183,7 +1183,7 @@ const createCheckoutSessionDeliveryFee = async (req, res) => {
                             {
                                 name: "Delivery Fee",
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 100,
                                 currency: "PHP",
                             },
                             // {
@@ -1282,7 +1282,7 @@ const createCheckoutSessionPassport = async (req, res) => {
                             {
                                 name: "Passport Assistance",
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 100,
                                 currency: "PHP",
                             },
                             // {
@@ -1380,16 +1380,16 @@ const createCheckoutSessionVisa = async (req, res) => {
                             {
                                 name: "Visa Application",
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 100,
                                 currency: "PHP",
                             },
-                            {
-                                name: "Convenience Fee",
-                                description: "Payment processing and service fee",
-                                quantity: 1,
-                                amount: convenienceFeeCents,
-                                currency: "PHP",
-                            }
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"], // start with card first
                         success_url: successUrl,
@@ -1684,16 +1684,16 @@ const createCheckoutSessionDeposit = async (req, res) => {
                             {
                                 name: packageName || 'Tour Package',
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 100,
                                 currency: "PHP",
                             },
-                            {
-                                name: "Convenience Fee",
-                                description: "Payment processing and service fee",
-                                quantity: 1,
-                                amount: convenienceFeeCents,
-                                currency: "PHP",
-                            }
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
                         success_url: successUrl,
@@ -1788,16 +1788,16 @@ const createCheckoutSession = async (req, res) => {
                             {
                                 name: packageName || 'Tour Package',
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 100,
                                 currency: "PHP",
                             },
-                            {
-                                name: "Convenience Fee",
-                                description: "Payment processing and service fee",
-                                quantity: 1,
-                                amount: convenienceFeeCents,
-                                currency: "PHP",
-                            }
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
                         success_url: successUrl,
@@ -1893,16 +1893,16 @@ const createCheckoutSessionQuotation = async (req, res) => {
                             {
                                 name: packageName || 'Tour Package',
                                 quantity: 1,
-                                amount: baseAmountCents,
+                                amount: 100,
                                 currency: "PHP",
                             },
-                            {
-                                name: "Convenience Fee",
-                                description: "Payment processing and service fee",
-                                quantity: 1,
-                                amount: convenienceFeeCents,
-                                currency: "PHP",
-                            }
+                            // {
+                            //     name: "Convenience Fee",
+                            //     description: "Payment processing and service fee",
+                            //     quantity: 1,
+                            //     amount: convenienceFeeCents,
+                            //     currency: "PHP",
+                            // }
                         ],
                         payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
                         success_url: successUrl,
@@ -1995,7 +1995,7 @@ const handlePayMongoWebhook = async (req, res) => {
             return res.status(400).send('Invalid payload');
         }
 
-        console.log('📦 Parsed Payload:', JSON.stringify(payload, null, 2));
+        console.log(' Parsed Payload:', JSON.stringify(payload, null, 2));
         console.log('STEP 4: PROCESSING EVENT');
 
         //paymongo can send different types of events, but we're mainly interested in the checkout_session.payment.paid event which indicates a successful payment. We will extract the metadata from the event to know which user and booking this payment is for, then we can update our database accordingly.
