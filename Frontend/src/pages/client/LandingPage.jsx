@@ -206,9 +206,9 @@ export default function LandingPage() {
         }
     };
 
-    const handleNextStepsModalOption = (path) => {
+    const handleNextStepsModalOption = (path, state) => {
         setShowNextStepsModal(false);
-        navigate(path);
+        navigate(path, state ? { state } : undefined);
     };
 
     //FETCH PACKAGES
@@ -1254,7 +1254,7 @@ export default function LandingPage() {
 
                         <div
                             className="next-steps-card"
-                            onClick={() => handleNextStepsModalOption('/services')}
+                            onClick={() => handleNextStepsModalOption('/passandvisa-service')}
                         >
                             <div className="card-icon-wrapper">
                                 <ShoppingCartOutlined className="card-icon" />
@@ -1266,7 +1266,7 @@ export default function LandingPage() {
 
                         <div
                             className="next-steps-card"
-                            onClick={() => handleNextStepsModalOption('/profile')}
+                            onClick={() => handleNextStepsModalOption('/profile', { skipPreferences: true })}
                         >
                             <div className="card-icon-wrapper">
                                 <UserOutlined className="card-icon" />

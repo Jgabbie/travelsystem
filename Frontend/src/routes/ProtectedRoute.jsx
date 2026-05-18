@@ -22,7 +22,12 @@ const ProtectedRoute = () => {
         return <Navigate to="/employee/dashboard" replace />;
     }
 
-    if (auth && auth.loginOnce === false && location.pathname !== '/user-preferences') {
+    if (
+        auth &&
+        auth.loginOnce === false &&
+        location.pathname !== '/user-preferences' &&
+        location.state?.skipPreferences !== true
+    ) {
         return <Navigate to="/user-preferences" replace />;
     }
 

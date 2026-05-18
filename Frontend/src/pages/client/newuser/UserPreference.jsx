@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { notification, Spin, ConfigProvider, Modal } from 'antd';
 import { CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import apiFetch from '../../../config/fetchConfig';
+import { useAuth } from '../../../hooks/useAuth';
 import '../../../style/client/userpreference.css';
 
 export default function UserPreference() {
     const navigate = useNavigate();
+    const { checkAuth } = useAuth();
     const [moodOptions, setMoodOptions] = useState([]);
 
     const tourOptions = useMemo(
@@ -64,6 +66,7 @@ export default function UserPreference() {
         try {
             await apiFetch.post('/preferences/save', selections, { withCredentials: true });
             await apiFetch.post('/user/login-once', {}, { withCredentials: true });
+            await checkAuth();
             notification.success({ message: 'Preferences saved', placement: 'topRight' });
             console.log('Preferences saved:', selections);
             // Set flag in localStorage to show modal on homepage
