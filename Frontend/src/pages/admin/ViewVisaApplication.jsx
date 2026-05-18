@@ -666,20 +666,7 @@ export default function ViewVisaApplication() {
                                                                     )}
 
 
-                                                                    {/* DOWNLOAD BUTTON */}
-                                                                    <Button
-                                                                        className='viewvisaapplication-download-button application-doc-download'
-                                                                        type="primary"
-                                                                        icon={<DownloadOutlined />}
-                                                                        size="small"
-                                                                        block
-                                                                        onClick={() => {
-                                                                            const downloadUrl = getDownloadUrl(url);
-                                                                            window.location.href = downloadUrl; // Directly triggers the attachment download
-                                                                        }}
-                                                                    >
-                                                                        Download {isPdfFile ? 'PDF' : 'Image'}
-                                                                    </Button>
+                                                                    {/* Download disabled */}
 
                                                                     <Button
                                                                         type="default"

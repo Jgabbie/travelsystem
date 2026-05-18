@@ -320,15 +320,7 @@ export default function ViewPassportApplication() {
                     )}
                 </Button>
 
-                <Button
-                    className='viewpassportapplication-download-button application-doc-download'
-                    type="primary"
-                    icon={<DownloadOutlined />}
-                    size="small"
-                    onClick={handleDownload}
-                >
-                    Download {isPdf ? 'PDF' : 'File'}
-                </Button>
+                {/* Download disabled */}
             </div>
         );
     };

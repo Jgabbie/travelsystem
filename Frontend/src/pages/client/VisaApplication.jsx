@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Spin, notification, Upload, Button, Tag, ConfigProvider, Radio, Modal, Image, Input, Space, DatePicker, TimePicker, Descriptions } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DownloadOutlined, DeleteOutlined, CheckCircleFilled, PictureOutlined, EyeOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, CheckCircleFilled, PictureOutlined, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/visaapplication.css';
 import dayjs from 'dayjs';
@@ -1591,45 +1591,8 @@ export default function VisaApplication() {
                                                                     const label = getRequirementLabel(key, entryIndex);
 
                                                                     const isPdf = (url) => typeof url === 'string' && url.toLowerCase().endsWith('.pdf');
-                                                                    const getDownloadUrl = (originalUrl) => {
-                                                                        if (!originalUrl.includes('cloudinary.com')) return originalUrl;
-                                                                        return originalUrl.replace('/upload/', '/upload/fl_attachment/');
-                                                                    };
-
                                                                     const renderFilePreview = (url, identifier) => {
                                                                         const isPdfFile = isPdf(url);
-                                                                        const handleDownload = async () => {
-                                                                            if (!url) return;
-
-                                                                            const downloadUrl = getDownloadUrl(url);
-                                                                            const fallbackName = `${String(label || 'document').replace(/[^a-z0-9-_]+/gi, '_')}${isPdfFile ? '.pdf' : ''}`;
-
-                                                                            try {
-                                                                                const response = await fetch(downloadUrl, { mode: 'cors' });
-                                                                                if (!response.ok) {
-                                                                                    throw new Error('Download failed');
-                                                                                }
-
-                                                                                const blob = await response.blob();
-                                                                                const objectUrl = URL.createObjectURL(blob);
-                                                                                const link = document.createElement('a');
-                                                                                link.href = objectUrl;
-                                                                                link.download = fallbackName;
-                                                                                document.body.appendChild(link);
-                                                                                link.click();
-                                                                                link.remove();
-                                                                                URL.revokeObjectURL(objectUrl);
-                                                                            } catch (error) {
-                                                                                const link = document.createElement('a');
-                                                                                link.href = downloadUrl;
-                                                                                link.download = fallbackName;
-                                                                                link.target = '_blank';
-                                                                                link.rel = 'noopener noreferrer';
-                                                                                document.body.appendChild(link);
-                                                                                link.click();
-                                                                                link.remove();
-                                                                            }
-                                                                        };
 
                                                                         return (
                                                                             <div key={identifier} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1644,14 +1607,7 @@ export default function VisaApplication() {
                                                                                             Preview
                                                                                         </Button>
 
-                                                                                        <Button
-                                                                                            className='visaapplication-download-button'
-                                                                                            type="primary"
-                                                                                            icon={<DownloadOutlined />}
-                                                                                            onClick={handleDownload}
-                                                                                        >
-                                                                                            Download {isPdfFile ? 'PDF' : 'File'}
-                                                                                        </Button>
+                                                                                        {/* Download disabled */}
                                                                                     </div>
                                                                                 ) : (
                                                                                     <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>

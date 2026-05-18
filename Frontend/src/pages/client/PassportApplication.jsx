@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Steps, Spin, notification, Upload, Tag, ConfigProvider, Button, Radio, Image, DatePicker, TimePicker, Space, Input, Modal, Descriptions } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, DownloadOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, FilePdfOutlined, DeleteOutlined, CheckCircleFilled, EyeOutlined } from '@ant-design/icons';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
@@ -496,14 +496,6 @@ export default function PassportApplication() {
         // Check if the URL contains '.pdf' (case insensitive)
         const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
 
-        const handleDownload = () => {
-            if (!url) return;
-            const downloadUrl = url.includes('cloudinary.com')
-                ? url.replace('/upload/', '/upload/fl_attachment/')
-                : url;
-            window.location.href = downloadUrl;
-        };
-
         if (!url) {
             return <div style={{ fontSize: 13, color: '#6b7280' }}>No file</div>;
         }
@@ -519,15 +511,7 @@ export default function PassportApplication() {
                     Preview File
                 </Button>
 
-                <Button
-                    className='passportapplication-download-button'
-                    type="primary"
-                    icon={<DownloadOutlined />}
-                    size="small"
-                    onClick={handleDownload}
-                >
-                    Download {isPdf ? 'PDF' : 'File'}
-                </Button>
+                {/* Download disabled */}
             </div>
         );
     };
