@@ -10,6 +10,7 @@ import joblib
 from pathlib import Path
 from dotenv import load_dotenv
 import traceback
+import time
 
 # Create models directory relative to this file (service-local)
 models_dir = Path(__file__).parent / 'models'
@@ -23,6 +24,19 @@ load_dotenv(dotenv_path=Path(__file__).parent / '.env', override=True)
 MONGO_URI = os.getenv('MONGO_URI') or os.getenv(
     'MONGODB_URI') or 'mongodb://localhost:27017/'
 DB_NAME = os.getenv('MONGO_DB_NAME') or os.getenv('MONGODB_DB') or 'TravexDB'
+
+# In-memory cache to avoid re-loading model artifacts on every request
+_MODEL_CACHE = {
+    'loaded_at': 0.0,
+    'tfidf_matrix': None,
+    'vectorizer': None,
+    'meta': None,
+    'model': None,
+    'user_item_matrix': None,
+}
+MODEL_CACHE_TTL_SECONDS = int(os.getenv('MODEL_CACHE_TTL_SECONDS') or 120)
+
+# This gets called by the API
 
 
 def _as_text_list(value):
@@ -317,6 +331,31 @@ def models_exist():
     return (models_dir / 'tfidf_matrix.pkl').exists() and (models_dir / 'tfidf_vectorizer.pkl').exists() and (models_dir / 'metadata.pkl').exists()
 
 
+def _load_models_cached(force=False):
+    """Load artifacts from disk with a short-lived in-memory cache."""
+    now = time.time()
+    if not force and _MODEL_CACHE['loaded_at'] and (now - _MODEL_CACHE['loaded_at']) < MODEL_CACHE_TTL_SECONDS:
+        return _MODEL_CACHE
+
+    tfidf_matrix = joblib.load(models_dir / 'tfidf_matrix.pkl')
+    vectorizer = joblib.load(models_dir / 'tfidf_vectorizer.pkl')
+    meta = joblib.load(models_dir / 'metadata.pkl')
+    model = joblib.load(
+        models_dir / 'als_model.pkl') if (models_dir / 'als_model.pkl').exists() else None
+    user_item_matrix = joblib.load(models_dir / 'user_item_matrix.pkl') if (
+        models_dir / 'user_item_matrix.pkl').exists() else None
+
+    _MODEL_CACHE.update({
+        'loaded_at': now,
+        'tfidf_matrix': tfidf_matrix,
+        'vectorizer': vectorizer,
+        'meta': meta,
+        'model': model,
+        'user_item_matrix': user_item_matrix,
+    })
+    return _MODEL_CACHE
+
+
 def _recommend_content_based(packages_df, tfidf_matrix, vectorizer, query_text, num_recommendations, exclude_ids=None):
     exclude_ids = set(exclude_ids or [])
     if packages_df.empty:
@@ -370,13 +409,12 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
         if not models_exist():
             return {"error": "Models not trained yet", "recommendations": []}
 
-        tfidf_matrix = joblib.load(models_dir / 'tfidf_matrix.pkl')
-        vectorizer = joblib.load(models_dir / 'tfidf_vectorizer.pkl')
-        meta = joblib.load(models_dir / 'metadata.pkl')
-        model = joblib.load(
-            models_dir / 'als_model.pkl') if (models_dir / 'als_model.pkl').exists() else None
-        user_item_matrix = joblib.load(models_dir / 'user_item_matrix.pkl') if (
-            models_dir / 'user_item_matrix.pkl').exists() else None
+        cached = _load_models_cached()
+        tfidf_matrix = cached['tfidf_matrix']
+        vectorizer = cached['vectorizer']
+        meta = cached['meta']
+        model = cached['model']
+        user_item_matrix = cached['user_item_matrix']
 
         packages_df = meta.get('packages_df', pd.DataFrame())
         preferences_df = meta.get('preferences_df', pd.DataFrame())
