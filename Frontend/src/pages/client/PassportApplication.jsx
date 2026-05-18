@@ -30,6 +30,8 @@ const getStatusColor = (status) => {
             return 'green';
         case 'passport released':
             return 'success';
+        case 'rejected':
+            return 'red';
         default:
             return 'default';
     }

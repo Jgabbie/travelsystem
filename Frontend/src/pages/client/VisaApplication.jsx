@@ -264,6 +264,39 @@ export default function VisaApplication() {
     // FIND CURRENT STEP INDEX BASED ON APPLICATION STATUS
     const statusValue = statusText;
 
+    const getStatusColor = (status) => {
+        switch (String(status || '').toLowerCase()) {
+            case 'application submitted':
+                return 'blue';
+            case 'application approved':
+                return 'geekblue';
+            case 'payment completed':
+                return 'cyan';
+            case 'documents uploaded':
+                return 'orange';
+            case 'documents approved':
+                return 'green';
+            case 'documents received':
+                return 'gold';
+            case 'documents submitted':
+                return 'magenta';
+            case 'processing by dfa':
+                return 'volcano';
+            case 'processing by embassy':
+                return 'purple';
+            case 'embassy approved':
+                return 'lime';
+            case 'passport released':
+                return 'success';
+            case 'delivery fee fully paid':
+                return 'success';
+            case 'rejected':
+                return 'red';
+            default:
+                return 'default';
+        }
+    };
+
     const currentStep = statusValue
         ? Math.max(
             0,
@@ -1659,7 +1692,7 @@ export default function VisaApplication() {
                                                     <p className="app-detail-kicker" style={{ marginBottom: 6 }}>Overview</p>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                                                         <span>Status</span>
-                                                        <Tag color="blue">{application?.status || 'N/A'}</Tag>
+                                                        <Tag color={getStatusColor(statusValue)}>{statusValue || 'N/A'}</Tag>
                                                         {penaltyStateLabel && (
                                                             <Tag color={application?.reachedSecondDeadline ? 'red' : 'volcano'}>{penaltyStateLabel}</Tag>
                                                         )}
