@@ -497,9 +497,7 @@ const sendVisaDeadlineWarning = async (application) => {
         html: `
             <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                    <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
-                    <h2 style="color:#305797;">Visa Deadline Reminder</h2>
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">One day remains to complete <b>${statusLabel}</b> for your visa application <b>${applicationNumber}</b>.</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Deadline: <b>${deadlineLabel}</b></p>
