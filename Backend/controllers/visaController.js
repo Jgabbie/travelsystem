@@ -590,11 +590,9 @@ const sendVisaPenaltyNotification = async (application, deadlineInfo) => {
         to: user.email,
         subject: `Visa Application On Penalty: ${applicationNumber}`,
         html: `
-            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+            <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                    <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
-                    <h2 style="color:#305797;">Visa Application On Penalty</h2>
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Your visa application <b>${applicationNumber}</b> is on penalty because <b>${deadlineInfo.status}</b> was not completed on time.</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Penalty fee: <b>PHP ${PENALTY_AMOUNT.toLocaleString('en-PH')}</b></p>
@@ -680,11 +678,9 @@ const rejectVisaApplicationForDeadline = async (application, deadlineInfo, reach
                 to: user.email,
                 subject: `Visa Application Automatically Rejected: ${applicationNumber}`,
                 html: `
-                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                    <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
-                            <h2 style="color:#305797;">Visa Application Automatically Rejected</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">Your visa application <b>${applicationNumber}</b> was automatically rejected because ${reachedSecondDeadline ? 'the extra 3-day period after penalty payment expired' : 'the penalty fee was not paid within 1 day'}.</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">Please contact our office if you need assistance or wish to submit a new application.</p>
@@ -1367,11 +1363,9 @@ const updateVisaApplicationStatus = async (req, res) => {
                     to: user.email,
                     subject: 'Visa Application Status Update',
                     html: `
-                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                    <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                             <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                                <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
 
-                                <h2 style="color:#305797;">M&RC Travel and Tours</h2>
                                 <p style="color:#555;">Your visa application status has been updated.</p>
 
                                 <div style="text-align:center; color:#333; margin-top:15px;">
