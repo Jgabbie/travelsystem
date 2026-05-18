@@ -369,7 +369,7 @@ export default function UserTransactions() {
                                 <tbody>
                                     <tr>
                                         <td>1</td>
-                                        <td>{selectedTransaction.packageName}</td>
+                                        <td>{selectedTransaction.packageName ? selectedTransaction.packageName : selectedTransaction.applicationType}</td>
                                         <td className="text-right">{selectedTransaction.amountDisplay}</td>
                                         <td className="text-right">{selectedTransaction.amountDisplay}</td>
                                     </tr>

@@ -811,7 +811,7 @@ export default function TransactionManagement() {
                     <tbody>
                       <tr>
                         <td>1</td>
-                        <td>{selectedTransaction.package}</td>
+                        <td>{selectedTransaction.package || selectedTransaction.applicationType || "--"}</td>
                         <td className="text-right">{selectedTransaction.price}</td>
                         <td className="text-right">{selectedTransaction.price}</td>
                       </tr>

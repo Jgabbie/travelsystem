@@ -11,18 +11,21 @@ from pathlib import Path
 from dotenv import load_dotenv
 import traceback
 
+
+# Setup
 models_dir = Path(__file__).parent / 'models'
 models_dir.mkdir(parents=True, exist_ok=True)
 
-
+# get env variables
 load_dotenv(dotenv_path=Path(__file__).parent / '.env', override=True)
 
-# Get MongoDB URI from environment or use default
+# get mongo db connection info from env vars.
 MONGO_URI = os.getenv('MONGO_URI') or os.getenv(
     'MONGODB_URI') or 'mongodb://localhost:27017/'
 DB_NAME = os.getenv('MONGO_DB_NAME') or os.getenv('MONGODB_DB') or 'TravexDB'
 
 
+# utility functions - convert to clean strings
 def _as_text_list(value):
     if value is None:
         return []
@@ -34,6 +37,7 @@ def _as_text_list(value):
     return [text] if text else []
 
 
+# combination of package fields
 def _build_package_text(row):
     parts = [
         row.get('packageName', ''),
@@ -44,6 +48,7 @@ def _build_package_text(row):
     return ' '.join(part for part in parts if str(part).strip())
 
 
+# converts user preferences into a search query
 def _build_user_query_text(pref_row):
     parts = [
         ' '.join(_as_text_list(pref_row.get('moods'))),
@@ -53,10 +58,13 @@ def _build_user_query_text(pref_row):
     return ' '.join(part for part in parts if part).strip()
 
 
+# if column of is empty or missing, fallback
 def _series_or_empty(df, column, dtype=object):
     if column in df.columns:
         return df[column]
     return pd.Series([None] * len(df), index=df.index, dtype=dtype)
+
+# get data from MongoDB
 
 
 def get_data_from_mongodb():
@@ -168,6 +176,7 @@ def get_user_ratings_from_mongodb(user_id):
         return pd.DataFrame(columns=['packageId', 'userId', 'rating'])
 
 
+# training the model, fetch data and train
 def run_training_cycle():
     """Fetch data from MongoDB and train models."""
     try:
@@ -262,7 +271,7 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
         if ratings_df.empty or len(user_id_to_index) < 2 or len(package_id_to_index) < 2:
             model = None
             print(
-                "[Training] ⚠ Not enough ratings to train ALS yet; saving content-based model only.")
+                "[Training] Not enough ratings to train ALS yet; saving content-based model only.")
         else:
             print("[Training] Training Collaborative Filtering model from ratings...")
             model = implicit.als.AlternatingLeastSquares(
@@ -287,7 +296,7 @@ def train_and_save_models(packages_df, preferences_df, ratings_df):
                 pass
             except Exception:
                 print(
-                    f"[Training] ⚠ Could not remove stale ALS file: {als_path}")
+                    f"[Training] Could not remove stale ALS file: {als_path}")
 
         joblib.dump(tfidf_matrix, str(models_path / 'tfidf_matrix.pkl'))
         joblib.dump(tfidf, str(models_path / 'tfidf_vectorizer.pkl'))

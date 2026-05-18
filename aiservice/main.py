@@ -29,12 +29,12 @@ async def startup_event():
         logger.info("[Startup] Models not found. Attempting to train...")
         success = run_training_cycle()
         if success:
-            logger.info("[Startup] ✓ Models trained successfully")
+            logger.info("[Startup] Models trained successfully")
         else:
             logger.warning(
-                "[Startup] ⚠ Models training failed or insufficient data")
+                "[Startup] Models training failed or insufficient data")
     else:
-        logger.info("[Startup] ✓ Models loaded successfully")
+        logger.info("[Startup] Models loaded successfully")
 
 
 @app.get("/")
