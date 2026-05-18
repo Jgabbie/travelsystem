@@ -157,7 +157,7 @@ def get_user_preferences_from_mongodb(user_id):
         return pd.DataFrame(columns=['userId', 'moods', 'tours', 'pace'])
 
 
-def get_user_ratings_from_mongodb(user_id):
+def get_user_ratings_from_mongodb(user_id, return_status=False):
     """Fetch the latest ratings for a single user so collaborative filtering works immediately."""
     try:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -172,16 +172,24 @@ def get_user_ratings_from_mongodb(user_id):
         client.close()
 
         if not ratings_data:
-            return pd.DataFrame(columns=['packageId', 'userId', 'rating'])
+            empty_df = pd.DataFrame(columns=['packageId', 'userId', 'rating'])
+            if return_status:
+                return empty_df, True
+            return empty_df
 
         df = pd.DataFrame(ratings_data)
         df['userId'] = _series_or_empty(df, 'userId', dtype=str).astype(str)
         df['packageId'] = _series_or_empty(
             df, 'packageId', dtype=str).astype(str)
+        if return_status:
+            return df, True
         return df
     except Exception as e:
         print(f"[Ratings] Could not load live ratings for user {user_id}: {e}")
-        return pd.DataFrame(columns=['packageId', 'userId', 'rating'])
+        empty_df = pd.DataFrame(columns=['packageId', 'userId', 'rating'])
+        if return_status:
+            return empty_df, False
+        return empty_df
 
 
 def run_training_cycle():
@@ -195,6 +203,7 @@ def run_training_cycle():
             return False
 
         train_and_save_models(packages_df, preferences_df, ratings_df)
+        _clear_model_cache()
         print("[Training]  Models updated with latest DB data.")
         return True
     except Exception as e:
@@ -356,6 +365,18 @@ def _load_models_cached(force=False):
     return _MODEL_CACHE
 
 
+def _clear_model_cache():
+    """Reset cached artifacts so the next request reloads fresh models."""
+    _MODEL_CACHE.update({
+        'loaded_at': 0.0,
+        'tfidf_matrix': None,
+        'vectorizer': None,
+        'meta': None,
+        'model': None,
+        'user_item_matrix': None,
+    })
+
+
 def _recommend_content_based(packages_df, tfidf_matrix, vectorizer, query_text, num_recommendations, exclude_ids=None):
     exclude_ids = set(exclude_ids or [])
     if packages_df.empty:
@@ -431,9 +452,10 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
                 preferences_df, 'userId', dtype=str).astype(str) == user_id]
 
         # Fetch live ratings from MongoDB instead of using stale training data
-        user_ratings = get_user_ratings_from_mongodb(user_id)
-        if user_ratings.empty:
-            # Fallback to training data if no live ratings found
+        user_ratings, live_ok = get_user_ratings_from_mongodb(
+            user_id, return_status=True)
+        if user_ratings.empty and not live_ok:
+            # Fallback only when live fetch failed
             user_ratings = ratings_df[_series_or_empty(
                 ratings_df, 'userId', dtype=str).astype(str) == user_id]
 
