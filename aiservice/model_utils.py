@@ -10,7 +10,6 @@ import joblib
 from pathlib import Path
 from dotenv import load_dotenv
 import traceback
-import time
 
 # Create models directory relative to this file (service-local)
 models_dir = Path(__file__).parent / 'models'
@@ -24,19 +23,6 @@ load_dotenv(dotenv_path=Path(__file__).parent / '.env', override=True)
 MONGO_URI = os.getenv('MONGO_URI') or os.getenv(
     'MONGODB_URI') or 'mongodb://localhost:27017/'
 DB_NAME = os.getenv('MONGO_DB_NAME') or os.getenv('MONGODB_DB') or 'TravexDB'
-
-# In-memory cache to avoid re-loading model artifacts on every request
-_MODEL_CACHE = {
-    'loaded_at': 0.0,
-    'tfidf_matrix': None,
-    'vectorizer': None,
-    'meta': None,
-    'model': None,
-    'user_item_matrix': None,
-}
-MODEL_CACHE_TTL_SECONDS = int(os.getenv('MODEL_CACHE_TTL_SECONDS') or 120)
-
-# This gets called by the API
 
 
 def _as_text_list(value):
@@ -157,7 +143,7 @@ def get_user_preferences_from_mongodb(user_id):
         return pd.DataFrame(columns=['userId', 'moods', 'tours', 'pace'])
 
 
-def get_user_ratings_from_mongodb(user_id, return_status=False):
+def get_user_ratings_from_mongodb(user_id):
     """Fetch the latest ratings for a single user so collaborative filtering works immediately."""
     try:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -172,24 +158,16 @@ def get_user_ratings_from_mongodb(user_id, return_status=False):
         client.close()
 
         if not ratings_data:
-            empty_df = pd.DataFrame(columns=['packageId', 'userId', 'rating'])
-            if return_status:
-                return empty_df, True
-            return empty_df
+            return pd.DataFrame(columns=['packageId', 'userId', 'rating'])
 
         df = pd.DataFrame(ratings_data)
         df['userId'] = _series_or_empty(df, 'userId', dtype=str).astype(str)
         df['packageId'] = _series_or_empty(
             df, 'packageId', dtype=str).astype(str)
-        if return_status:
-            return df, True
         return df
     except Exception as e:
         print(f"[Ratings] Could not load live ratings for user {user_id}: {e}")
-        empty_df = pd.DataFrame(columns=['packageId', 'userId', 'rating'])
-        if return_status:
-            return empty_df, False
-        return empty_df
+        return pd.DataFrame(columns=['packageId', 'userId', 'rating'])
 
 
 def run_training_cycle():
@@ -203,7 +181,6 @@ def run_training_cycle():
             return False
 
         train_and_save_models(packages_df, preferences_df, ratings_df)
-        _clear_model_cache()
         print("[Training]  Models updated with latest DB data.")
         return True
     except Exception as e:
@@ -340,43 +317,6 @@ def models_exist():
     return (models_dir / 'tfidf_matrix.pkl').exists() and (models_dir / 'tfidf_vectorizer.pkl').exists() and (models_dir / 'metadata.pkl').exists()
 
 
-def _load_models_cached(force=False):
-    """Load artifacts from disk with a short-lived in-memory cache."""
-    now = time.time()
-    if not force and _MODEL_CACHE['loaded_at'] and (now - _MODEL_CACHE['loaded_at']) < MODEL_CACHE_TTL_SECONDS:
-        return _MODEL_CACHE
-
-    tfidf_matrix = joblib.load(models_dir / 'tfidf_matrix.pkl')
-    vectorizer = joblib.load(models_dir / 'tfidf_vectorizer.pkl')
-    meta = joblib.load(models_dir / 'metadata.pkl')
-    model = joblib.load(
-        models_dir / 'als_model.pkl') if (models_dir / 'als_model.pkl').exists() else None
-    user_item_matrix = joblib.load(models_dir / 'user_item_matrix.pkl') if (
-        models_dir / 'user_item_matrix.pkl').exists() else None
-
-    _MODEL_CACHE.update({
-        'loaded_at': now,
-        'tfidf_matrix': tfidf_matrix,
-        'vectorizer': vectorizer,
-        'meta': meta,
-        'model': model,
-        'user_item_matrix': user_item_matrix,
-    })
-    return _MODEL_CACHE
-
-
-def _clear_model_cache():
-    """Reset cached artifacts so the next request reloads fresh models."""
-    _MODEL_CACHE.update({
-        'loaded_at': 0.0,
-        'tfidf_matrix': None,
-        'vectorizer': None,
-        'meta': None,
-        'model': None,
-        'user_item_matrix': None,
-    })
-
-
 def _recommend_content_based(packages_df, tfidf_matrix, vectorizer, query_text, num_recommendations, exclude_ids=None):
     exclude_ids = set(exclude_ids or [])
     if packages_df.empty:
@@ -430,12 +370,13 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
         if not models_exist():
             return {"error": "Models not trained yet", "recommendations": []}
 
-        cached = _load_models_cached()
-        tfidf_matrix = cached['tfidf_matrix']
-        vectorizer = cached['vectorizer']
-        meta = cached['meta']
-        model = cached['model']
-        user_item_matrix = cached['user_item_matrix']
+        tfidf_matrix = joblib.load(models_dir / 'tfidf_matrix.pkl')
+        vectorizer = joblib.load(models_dir / 'tfidf_vectorizer.pkl')
+        meta = joblib.load(models_dir / 'metadata.pkl')
+        model = joblib.load(
+            models_dir / 'als_model.pkl') if (models_dir / 'als_model.pkl').exists() else None
+        user_item_matrix = joblib.load(models_dir / 'user_item_matrix.pkl') if (
+            models_dir / 'user_item_matrix.pkl').exists() else None
 
         packages_df = meta.get('packages_df', pd.DataFrame())
         preferences_df = meta.get('preferences_df', pd.DataFrame())
@@ -452,10 +393,9 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
                 preferences_df, 'userId', dtype=str).astype(str) == user_id]
 
         # Fetch live ratings from MongoDB instead of using stale training data
-        user_ratings, live_ok = get_user_ratings_from_mongodb(
-            user_id, return_status=True)
-        if user_ratings.empty and not live_ok:
-            # Fallback only when live fetch failed
+        user_ratings = get_user_ratings_from_mongodb(user_id)
+        if user_ratings.empty:
+            # Fallback to training data if no live ratings found
             user_ratings = ratings_df[_series_or_empty(
                 ratings_df, 'userId', dtype=str).astype(str) == user_id]
 
