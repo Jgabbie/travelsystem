@@ -11,12 +11,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 import traceback
 
-# Create models directory relative to this file (service-local)
 models_dir = Path(__file__).parent / 'models'
 models_dir.mkdir(parents=True, exist_ok=True)
 
-# Load .env from the service folder (if present)
-# Override existing environment values so the deployed service uses the service-local config.
+
 load_dotenv(dotenv_path=Path(__file__).parent / '.env', override=True)
 
 # Get MongoDB URI from environment or use default
