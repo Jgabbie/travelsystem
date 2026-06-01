@@ -788,7 +788,9 @@ const processVisaDeadlineAction = async (application) => {
 
 
 const generateApplicationNumber = () => {
-    return `APP-VISA-${Math.floor(100000000 + Math.random() * 900000000)}`
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `APP-VISA-${timestamp}${random}`
 }
 
 const applyVisa = async (req, res) => {
@@ -1190,7 +1192,7 @@ const suggestAppointmentSchedules = async (req, res) => {
 
 
 //CHOSEN SUGGESTED APPOINTMENT SCHEDULE ------------------------------------------------------
-const chosenSuggestedSchedule = async (req, res) => {
+const chooseAppointment = async (req, res) => {
     const { id } = req.params;
     const { date, time } = req.body;
     try {
@@ -1543,7 +1545,7 @@ module.exports = {
     updateVisaApplicationWithDocs,
     requestVisaDocumentResubmission,
     suggestAppointmentSchedules,
-    chosenSuggestedSchedule,
+    chooseAppointment,
     passportReleaseOptionUpdate,
     updateVisaDeliveryDetails,
     updateVisaApplicationStatus,

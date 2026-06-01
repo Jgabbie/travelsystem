@@ -14,7 +14,7 @@ router.delete('/applications/:id/archive', userAuth, visaController.archiveVisaA
 router.put('/applications/:id/status', userAuth, visaController.updateVisaApplicationStatus)
 router.put('/applications/:id/documents', userAuth, visaController.updateVisaApplicationWithDocs)
 router.put('/applications/:id/suggest-appointments', userAuth, visaController.suggestAppointmentSchedules)
-router.put('/applications/:id/choose-appointment', userAuth, visaController.chosenSuggestedSchedule)
+router.put('/applications/:id/choose-appointment', userAuth, visaController.chooseAppointment)
 router.put('/applications/:id/release-option', userAuth, visaController.passportReleaseOptionUpdate)
 router.put('/applications/:id/delivery-details', userAuth, visaController.updateVisaDeliveryDetails)
 router.put('/applications/:id/resubmit-documents', userAuth, visaController.requestVisaDocumentResubmission)

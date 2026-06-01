@@ -48,7 +48,7 @@
 .destinations-search {
     max-width: 1280px;
     margin: 0 auto 16px;
-    background: #ffffff;
+    background: #305797;
     box-shadow: 0 14px 32px rgba(31, 42, 68, 0.12);
     border-radius: 16px;
     padding: 22px 26px;
@@ -67,19 +67,29 @@
     font-family: "Montserrat", sans-serif;
     font-weight: 600;
     font-size: 18px;
-    color: #1f2a44;
+    color: #ffffff;
     margin: 0;
 }
 
 .destinations-primary-label-icon {
-    color: #305797;
+    color: #ffffff;
     font-size: 22px;
 }
 
 .destinations-search .ant-input {
+    background: transparent;
+    color: #ffffff;
     border-radius: 10px;
     padding: 14px 14px;
     font-size: 16px;
+}
+
+.destinations-search .ant-input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.destinations-search .ant-input-clear-icon {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .destinations-filter-grid .ant-select {
@@ -163,6 +173,15 @@
     margin: 0;
     font-family: "Montserrat", sans-serif;
     color: #1f2a44;
+}
+
+.destinations-results-count {
+    background: #305797;
+    color: #ffffff !important;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .destinations-card {

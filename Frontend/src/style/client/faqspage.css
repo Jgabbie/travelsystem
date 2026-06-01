@@ -115,7 +115,7 @@
 
 .faq-search {
     max-width: 1280px;
-    background: #ffffff;
+    background: #305797;
     padding: 20px;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     border-radius: 16px;
@@ -123,6 +123,24 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
+}
+
+.faq-search .destinations-primary-label,
+.faq-search .destinations-primary-label-icon {
+    color: #ffffff;
+}
+
+.faq-search .ant-input {
+    background: transparent;
+    color: #ffffff;
+}
+
+.faq-search .ant-input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.faq-search .ant-input-clear-icon {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .faq-collapse {

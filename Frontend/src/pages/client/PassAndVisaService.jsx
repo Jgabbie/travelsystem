@@ -121,7 +121,7 @@ export default function PassAndVisaService() {
                     </header>
                     <div className="passport-visa-layout">
                         <section className="visa-section">
-                            <div className="section-header">
+                            <div className="passandvisasection-header">
                                 <h3>Visa Services</h3>
                                 <p>Search and filter the visa you need to apply.</p>
                             </div>
@@ -170,7 +170,7 @@ export default function PassAndVisaService() {
                         </section>
 
                         <section className="passport-section">
-                            <div className="section-header">
+                            <div className="passandvisasection-header">
                                 <h3>Passport Assistance</h3>
                                 <p>Select the passport service you need.</p>
                             </div>

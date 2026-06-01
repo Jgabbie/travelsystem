@@ -110,31 +110,36 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                                         marginBottom: '4px'
                                     }}
                                 >
-                                    {item.role === 'user' ? <UserOutlined /> : <RobotOutlined />}
                                     <span>{item.role === 'user' ? 'You' : 'TRAVEX Assistant'}</span>
                                     <span>•</span>
                                     <span>{formatTimestamp(item.timestamp)}</span>
                                 </div>
-                                <div style={{
-                                    display: 'inline-block',
-                                    padding: '8px 12px',
-                                    borderRadius: '12px',
-                                    backgroundColor: item.role === 'user' ? '#305797' : '#f0f0f0',
-                                    color: item.role === 'user' ? '#fff' : '#000',
-                                    maxWidth: '80%'
-                                }}>
-                                    <ReactMarkdown
-                                        remarkPlugins={[remarkGfm]}
-                                        components={{
-                                            p: ({ children }) => (
-                                                <span style={{ textAlign: 'justify', display: 'inline-block' }}>
-                                                    {children}
-                                                </span>
-                                            )
+                                <div
+                                    className="chatbot-message-row"
+                                    style={{ justifyContent: item.role === 'user' ? 'flex-end' : 'flex-start' }}
+                                >
+                                    {item.role !== 'user' && <RobotOutlined className="chatbot-message-icon" />}
+                                    <div
+                                        className="chatbot-message-bubble"
+                                        style={{
+                                            backgroundColor: item.role === 'user' ? '#305797' : '#f0f0f0',
+                                            color: item.role === 'user' ? '#fff' : '#000'
                                         }}
                                     >
-                                        {item.content}
-                                    </ReactMarkdown>
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                p: ({ children }) => (
+                                                    <span style={{ textAlign: 'justify', display: 'inline-block' }}>
+                                                        {children}
+                                                    </span>
+                                                )
+                                            }}
+                                        >
+                                            {item.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                    {item.role === 'user' && <UserOutlined className="chatbot-message-icon" />}
                                 </div>
                             </div>
                         )}

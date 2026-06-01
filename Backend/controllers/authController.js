@@ -149,7 +149,7 @@ const loginUser = async (req, res) => {
 
         await transporter.sendMail(mailOptions)
 
-        await logAction("LOGIN_OTP_SENT", user._id, { Username: user.username });
+        await logAction("LOGIN_OTP_SENT", user._id, { "Login OTP": `OTP sent to ${user.email}` });
 
         return res.status(200).json({
             message: "OTP sent to your email address",

@@ -39,6 +39,8 @@ export default function PackagePage() {
     const [isRatingSubmittedModalOpen, setIsRatingSubmittedModalOpen] = useState(false)
     const [isRatingDeletedModalOpen, setIsRatingDeletedModalOpen] = useState(false)
     const [wishlistedIds, setWishlistedIds] = useState(() => new Set())
+    const [isPassportConfirmModalOpen, setIsPassportConfirmModalOpen] = useState(false)
+    const [isPassportRecommendModalOpen, setIsPassportRecommendModalOpen] = useState(false)
     const [isVisaConfirmModalOpen, setIsVisaConfirmModalOpen] = useState(false)
     const [isVisaRecommendModalOpen, setIsVisaRecommendModalOpen] = useState(false)
 
@@ -567,11 +569,10 @@ export default function PackagePage() {
             return;
         }
 
-        // If package is international and requires visa, ask user first
         const pkgType = (packageData?.packageType || packageData?.packageCategory || '').toString().toLowerCase();
-        const requiresVisa = pkgType === 'international' && Boolean(packageData?.visaRequired);
-        if (requiresVisa) {
-            setIsVisaConfirmModalOpen(true);
+        const isInternational = pkgType === 'international';
+        if (isInternational) {
+            setIsPassportConfirmModalOpen(true);
             return;
         }
 
@@ -1037,14 +1038,34 @@ export default function PackagePage() {
                                                 Check Availability
                                             </Button>
 
-                                            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #eee' }}>
-                                                <p className="package-price-label">CANCELLATION POLICY</p>
-                                                <p style={{ fontSize: '13px', color: '#555', textAlign: 'justify' }}>
-                                                    All tour packages will not be converted to any travel funds in case the tour will not push through whether it
-                                                    be government mandated, due to natural calamities, etc. Tour package purchase is non-refundable , non-reroutable, non-rebookable, and non-transferable
-                                                    unless otherwise stated and is due to natural calamities and force majeur that is beyond our control otherwise NON-REFUNDABLE.
-                                                </p>
-                                            </div>
+
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                marginTop: 16,
+                                                padding: 16,
+                                                borderRadius: 10,
+                                                backgroundColor: '#305797'
+                                            }}
+                                        >
+                                            <p
+                                                className="package-price-label"
+                                                style={{ color: '#fff' }}
+                                            >
+                                                CANCELLATION POLICY
+                                            </p>
+                                            <p
+                                                style={{
+                                                    fontSize: '13px',
+                                                    color: '#fff',
+                                                    textAlign: 'justify'
+                                                }}
+                                            >
+                                                All tour packages will not be converted to any travel funds in case the tour will not push through whether it
+                                                be government mandated, due to natural calamities, etc. Tour package purchase is non-refundable , non-reroutable, non-rebookable, and non-transferable
+                                                unless otherwise stated and is due to natural calamities and force majeur that is beyond our control otherwise NON-REFUNDABLE.
+                                            </p>
                                         </div>
                                     </>
                                 )}
@@ -1075,6 +1096,94 @@ export default function PackagePage() {
                             setSelectedDateSlots(slots || 0);
                         }}
                     />
+
+                    {/* PASSPORT CONFIRMATION MODAL: Ask if user already has a passport for this trip */}
+                    <Modal
+                        open={isPassportConfirmModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Close' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => setIsPassportConfirmModalOpen(false)}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Passport Required</h1>
+                            <p className='signup-success-text'>This international package requires a passport. Do you already have a valid passport for this trip?</p>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        const pkgType = (packageData?.packageType || packageData?.packageCategory || '').toString().toLowerCase();
+                                        const requiresVisa = pkgType === 'international' && Boolean(packageData?.visaRequired);
+                                        setIsPassportConfirmModalOpen(false);
+                                        if (requiresVisa) {
+                                            setIsVisaConfirmModalOpen(true);
+                                        } else {
+                                            setIsArrangementModalOpen(true);
+                                        }
+                                    }}
+                                >
+                                    Yes - I have a Passport
+                                </Button>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        setIsPassportConfirmModalOpen(false);
+                                        setIsPassportRecommendModalOpen(true);
+                                    }}
+                                >
+                                    No - I need a Passport
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
+
+                    {/* PASSPORT RECOMMENDATION MODAL: Recommend getting a passport before booking or proceed to passport services */}
+                    <Modal
+                        open={isPassportRecommendModalOpen}
+                        className='signup-success-modal'
+                        closable={{ 'aria-label': 'Close' }}
+                        footer={null}
+                        centered={true}
+                        onCancel={() => setIsPassportRecommendModalOpen(false)}
+                    >
+                        <div className='signup-success-container'>
+                            <h1 className='signup-success-heading'>Passport is Highly Recommended</h1>
+                            <p className='signup-success-text'>We highly recommend that you obtain a passport before booking this tour package to avoid issues during travel.</p>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        const pkgType = (packageData?.packageType || packageData?.packageCategory || '').toString().toLowerCase();
+                                        const requiresVisa = pkgType === 'international' && Boolean(packageData?.visaRequired);
+                                        setIsPassportRecommendModalOpen(false);
+                                        if (requiresVisa) {
+                                            setIsVisaConfirmModalOpen(true);
+                                        } else {
+                                            setIsArrangementModalOpen(true);
+                                        }
+                                    }}
+                                >
+                                    Continue to Booking
+                                </Button>
+                                <Button
+                                    className="package-availability-button"
+                                    type='primary'
+                                    onClick={() => {
+                                        setIsPassportRecommendModalOpen(false);
+                                        navigate('/passandvisa-service', { state: { passportItem: packageItem, passportName: packageData?.packageName } });
+                                    }}
+                                >
+                                    Proceed to Passport Services
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
 
                     {/* VISA CONFIRMATION MODAL: Ask if user already has a visa for this trip */}
                     <Modal

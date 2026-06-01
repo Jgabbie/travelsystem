@@ -661,8 +661,10 @@ const sendPassportDeadlineWarning = async (application) => {
 
 
 //GENERATE RANDOM APPLICATION NUMBER -----------------------------------------------------
-const randomApplicationNumber = () => {
-    return 'APP-PASS-' + Math.floor(100000000 + Math.random() * 900000000);
+const generateApplicationNumber = () => {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `APP-PASS-${timestamp}${random}`
 }
 
 
@@ -686,7 +688,7 @@ const applyPassport = async (req, res) => {
             preferredDate,
             preferredTime,
             applicationType,
-            applicationNumber: randomApplicationNumber()
+            applicationNumber: generateApplicationNumber()
         })
 
         logAction('APPLY_PASSPORT', userId, { "Passport Application": ` DFA Location: ${dfaLocation} | Preferred Date: ${preferredDate} | Preferred Time: ${preferredTime} | Application Type: ${applicationType}` });
@@ -781,9 +783,8 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         await application.save();
 
         // Log action
-        logAction('UPDATE_PASSPORT', userId, {
-            id,
-            "Documents Updated": `Application Number: ${application.applicationNumber}`
+        logAction('UPDATE_PASSPORT_APPLICATION', userId, {
+            "Passport Application Updated": `Application Number: ${application.applicationNumber}`
         });
 
         // Emit socket event

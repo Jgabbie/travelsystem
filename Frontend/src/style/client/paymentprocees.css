@@ -221,7 +221,13 @@
 
 .payment-section .payment-card.selected {
     border-color: #305797;
+    background: #ecf4ff;
     box-shadow: 0 16px 30px rgba(48, 87, 151, 0.16);
+}
+
+.payment-section .payment-card.selected h3,
+.payment-section .payment-card.selected p {
+    color: #000000;
 }
 
 .payment-section .bank-grid {

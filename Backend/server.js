@@ -32,6 +32,7 @@ const { startBillingDeadlineScheduler } = require('./utils/billingDeadlineSchedu
 const { startCleanupScheduler } = require('./utils/cleanupBookings');
 const { startPassportDeadlineScheduler } = require('./utils/passportDeadlineScheduler');
 const { startVisaDeadlineScheduler } = require('./utils/visaDeadlineScheduler');
+const { startTravelReminderScheduler } = require('./utils/travelReminderScheduler');
 
 const rateLimit = require('express-rate-limit');
 
@@ -166,6 +167,9 @@ if (!isServerless) {
 
                 startVisaDeadlineScheduler();
                 console.log('Visa deadline scheduler started.');
+
+                startTravelReminderScheduler();
+                console.log('Travel reminder scheduler started.');
             })
             .catch((error) => {
                 console.error('Failed to start schedulers:', error);

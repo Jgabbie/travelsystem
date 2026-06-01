@@ -276,7 +276,7 @@ const uploadQuotationPDF = async (req, res) => {
             console.error('Failed to create notification:', notificationError)
         }
 
-        logAction('QUOTATION_FORM_UPLOADED', req.userId, { "Quotation FORM Uploaded": `Reference: ${quotation.reference}` });
+        logAction('QUOTATION_FORM_UPLOADED', req.userId, { "Quotation Form Uploaded": `Reference: ${quotation.reference}` });
 
         res.status(200).json({ message: "PDF uploaded successfully", quotation: quotation });
     } catch (error) {

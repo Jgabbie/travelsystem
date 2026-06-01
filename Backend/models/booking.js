@@ -24,6 +24,7 @@ const BookingSchema = new mongoose.Schema({
     paymentPenaltyTotal: { type: Number, default: 0 },
     paymentPenaltyKeys: [{ type: String }],
     paymentReminderKeys: [{ type: String }],
+    travelReminderKeys: [{ type: String }],
     createdAt: { type: Date, default: Date.now, index: true },
     expiresAt: { type: Date, required: true, index: true }
 }, { timestamps: true })

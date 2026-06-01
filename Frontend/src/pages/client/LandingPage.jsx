@@ -596,37 +596,51 @@ export default function LandingPage() {
                                                             hoverable
                                                             onClick={() => navigate('/package', { state: { packageItem: pkg.packageItem } })}
                                                             cover={
-                                                                pkg.packageImages && pkg.packageImages.length > 0 ? (
-                                                                    <img
-                                                                        style={{ height: 250 }}
-                                                                        draggable={false}
-                                                                        alt={pkg.packageName}
-                                                                        src={pkg.packageImages[0]}
-                                                                    />
-                                                                ) : (
-                                                                    <div
-                                                                        style={{
-                                                                            height: 250,
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            justifyContent: 'center',
-                                                                            background: '#f5f5f5',
-                                                                            color: '#777'
-                                                                        }}
-                                                                    >
-                                                                        No Image
+                                                                <div className="popular-card-cover">
+                                                                    {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                                                                        <img
+                                                                            className="popular-card-image"
+                                                                            draggable={false}
+                                                                            alt={pkg.packageName}
+                                                                            src={pkg.packageImages[0]}
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="popular-card-image popular-card-image-placeholder">
+                                                                            No Image
+                                                                        </div>
+                                                                    )}
+
+                                                                    <div className="popular-card-badges">
+                                                                        {pkg.discountPercent > 0 && (
+                                                                            <span className="popular-card-badge">{pkg.discountPercent}% OFF</span>
+                                                                        )}
+                                                                        <span className="popular-card-type">
+                                                                            {(pkg.packageType && String(pkg.packageType).length)
+                                                                                ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1)
+                                                                                : 'Package'}
+                                                                        </span>
                                                                     </div>
-                                                                )
+
+                                                                </div>
                                                             }
                                                         >
-                                                            {pkg.discountPercent > 0 && (
-                                                                <span className="popular-discount-badge">-{pkg.discountPercent}% OFF</span>
-                                                            )}
-
-                                                            <h2>{pkg.packageName}</h2>
-                                                            <div className="popular-card-meta">
-                                                                <span className="popular-package-type">{(pkg.packageType && String(pkg.packageType).length) ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1) : 'Package'}</span>
+                                                            <div className="popular-card-title">
+                                                                <EnvironmentOutlined className="popular-card-title-icon" />
+                                                                <span>{pkg.packageName}</span>
                                                             </div>
+                                                            <p className="popular-card-description">
+                                                                {formatDescription(pkg.packageDescription, 120)}
+                                                            </p>
+                                                            <button
+                                                                type="button"
+                                                                className="popular-card-cta"
+                                                                onClick={(event) => {
+                                                                    event.stopPropagation()
+                                                                    navigate('/package', { state: { packageItem: pkg.packageItem } })
+                                                                }}
+                                                            >
+                                                                View Package
+                                                            </button>
                                                         </Card>
                                                     ))}
                                                 </div>
@@ -687,43 +701,55 @@ export default function LandingPage() {
                             <div className='for-you-grid'>
                                 {forYouPackages.map((pkg) => (
                                     <Card
-                                        className='package-card for-you-card'
+                                        className='package-card for-you-card popular-packages-card'
                                         key={pkg.packageCode || pkg.id}
                                         hoverable
                                         onClick={() => navigate('/package', { state: { packageCode: pkg.packageCode } })}
                                         cover={
-                                            pkg.packageImages && pkg.packageImages.length > 0 ? (
-                                                <img
-                                                    style={{ height: 250 }}
-                                                    draggable={false}
-                                                    alt={pkg.packageName}
-                                                    src={pkg.packageImages[0]}
-                                                />
-                                            ) : (
-                                                <div
-                                                    style={{
-                                                        height: 250,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        background: '#f5f5f5',
-                                                        color: '#777'
-                                                    }}
-                                                >
-                                                    No Image
+                                            <div className="popular-card-cover">
+                                                {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                                                    <img
+                                                        className="popular-card-image"
+                                                        draggable={false}
+                                                        alt={pkg.packageName}
+                                                        src={pkg.packageImages[0]}
+                                                    />
+                                                ) : (
+                                                    <div className="popular-card-image popular-card-image-placeholder">
+                                                        No Image
+                                                    </div>
+                                                )}
+
+                                                <div className="popular-card-badges">
+                                                    {pkg.discountPercent > 0 && (
+                                                        <span className="popular-card-badge">{pkg.discountPercent}% OFF</span>
+                                                    )}
+                                                    <span className="popular-card-type">
+                                                        {(pkg.packageType && String(pkg.packageType).length)
+                                                            ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1)
+                                                            : 'Package'}
+                                                    </span>
                                                 </div>
-                                            )
+                                            </div>
                                         }
                                     >
-                                        {pkg.discountPercent > 0 && (
-                                            <span className="popular-discount-badge">-{pkg.discountPercent}% OFF</span>
-                                        )}
-
-                                        <h2>{pkg.packageName}</h2>
-                                        <p>{formatDescription(pkg.packageDescription, 120)}</p>
-                                        <div className="popular-card-meta">
-                                            <span className="popular-package-type">{(pkg.packageType && String(pkg.packageType).length) ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1) : 'Package'}</span>
+                                        <div className="popular-card-title">
+                                            <EnvironmentOutlined className="popular-card-title-icon" />
+                                            <span>{pkg.packageName}</span>
                                         </div>
+                                        <p className="popular-card-description">
+                                            {formatDescription(pkg.packageDescription, 120)}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            className="popular-card-cta"
+                                            onClick={(event) => {
+                                                event.stopPropagation()
+                                                navigate('/package', { state: { packageCode: pkg.packageCode } })
+                                            }}
+                                        >
+                                            View Package
+                                        </button>
                                     </Card>
                                 ))}
                             </div>

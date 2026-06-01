@@ -35,11 +35,15 @@ const transporter = {
 
 
 const generateBookingReference = () => {
-    return `BK-${Math.floor(10000000 + Math.random() * 900000000)}`
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `BK-${timestamp}${random}`;
 }
 
 const generateCancellationReference = () => {
-    return `CN-${Math.floor(10000000 + Math.random() * 900000000)}`
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `CN-${timestamp}${random}`;
 }
 
 
@@ -599,6 +603,7 @@ const deleteBooking = async (req, res) => {
             paymentPenaltyTotal: booking.paymentPenaltyTotal,
             paymentPenaltyKeys: booking.paymentPenaltyKeys,
             paymentReminderKeys: booking.paymentReminderKeys,
+            travelReminderKeys: booking.travelReminderKeys,
             createdAt: booking.createdAt,
             expiresAt: booking.expiresAt
         })
@@ -646,6 +651,7 @@ const restoreArchivedBooking = async (req, res) => {
             paymentPenaltyTotal: archivedBooking.paymentPenaltyTotal,
             paymentPenaltyKeys: archivedBooking.paymentPenaltyKeys,
             paymentReminderKeys: archivedBooking.paymentReminderKeys,
+            travelReminderKeys: archivedBooking.travelReminderKeys,
             createdAt: archivedBooking.createdAt,
             expiresAt: restoredExpiresAt
         })
