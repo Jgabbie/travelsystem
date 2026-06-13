@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import * as transactionController from '../controllers/transactionController.js';
+import userAuth from '../middleware/userAuth.js';
+
 const router = express.Router();
-const transactionController = require('../controllers/transactionController');
-const userAuth = require('../middleware/userAuth');
 
 router.post('/create-transaction', userAuth, transactionController.createTransaction);
 router.get('/user-transactions', userAuth, transactionController.getUserTransactions);
@@ -13,4 +14,4 @@ router.post('/archived-transactions/:id/restore', userAuth, transactionControlle
 router.put('/:id', userAuth, transactionController.updateTransaction);
 router.put('/:id/reject', userAuth, transactionController.rejectTransaction);
 router.delete('/:id', userAuth, transactionController.deleteTransaction);
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedPackageSchema = new mongoose.Schema({
     originalPackageId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -31,4 +31,4 @@ const ArchivedPackageSchema = new mongoose.Schema({
 
 const ArchivedPackageModel = mongoose.model('archivedpackages', ArchivedPackageSchema);
 
-module.exports = ArchivedPackageModel;
+export default ArchivedPackageModel;

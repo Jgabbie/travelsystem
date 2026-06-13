@@ -1,10 +1,18 @@
-const UserModel = require('../models/user');
-const ArchivedUserModel = require('../models/archivedusers');
-const bcrypt = require("bcryptjs");
-const logAction = require('../utils/logger');
-const baseTransporter = require('../config/nodemailer')
-const { buildBrandedEmail } = require('../utils/emailTemplate')
-const jwt = require('jsonwebtoken')
+// const UserModel = require('../models/user');
+// const ArchivedUserModel = require('../models/archivedusers');
+// const bcrypt = require("bcryptjs");
+// const logAction = require('../utils/logger');
+// const baseTransporter = require('../config/nodemailer')
+// const { buildBrandedEmail } = require('../utils/emailTemplate')
+// const jwt = require('jsonwebtoken')
+
+import UserModel from '../models/user.js';
+import ArchivedUserModel from '../models/archivedusers.js';
+import bcrypt from "bcryptjs";
+import logAction from '../utils/logger.js';
+import baseTransporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
+import jwt from 'jsonwebtoken';
 
 const transporter = {
     ...baseTransporter,
@@ -498,4 +506,4 @@ const restoreArchivedUser = async (req, res) => {
     }
 };
 
-module.exports = { getUsers, getArchivedUsers, createUsers, delUsers, restoreArchivedUser, getUserData, updateUserData, markLoginOnce };
+export { getUsers, getArchivedUsers, createUsers, delUsers, restoreArchivedUser, getUserData, updateUserData, markLoginOnce };

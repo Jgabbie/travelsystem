@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const wishlistController = require('../controllers/wishlistController');
-const userAuth = require('../middleware/userAuth');
+import * as wishlistController from '../controllers/wishlistController.js';
+import userAuth from '../middleware/userAuth.js';
 
 router.post('/add', userAuth, wishlistController.addToWishlist);
 router.get('/', userAuth, wishlistController.getWishlist);
 router.delete('/remove', userAuth, wishlistController.removeFromWishlist);
 router.delete('/remove/:id', userAuth, wishlistController.removeWishlistItem);
 
-module.exports = router;
+export default router;

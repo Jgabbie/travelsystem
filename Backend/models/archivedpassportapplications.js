@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedPassportApplicationSchema = new mongoose.Schema({
     originalPassportApplicationId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -31,4 +31,4 @@ const ArchivedPassportApplicationSchema = new mongoose.Schema({
 
 const ArchivedPassportApplicationModel = mongoose.model('archivedpassportapplications', ArchivedPassportApplicationSchema);
 
-module.exports = ArchivedPassportApplicationModel;
+export default ArchivedPassportApplicationModel;

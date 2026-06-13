@@ -1,8 +1,8 @@
-const OpenAI = require('openai');
-const pdfParse = require('pdf-parse');
-const KnowledgeChunk = require('../models/knowledgeChunk');
-const PackageModel = require('../models/package');
-const ServiceModel = require('../models/service');
+import OpenAI from 'openai';
+import pdfParse from 'pdf-parse';
+import KnowledgeChunk from '../models/knowledgeChunk.js';
+import PackageModel from '../models/package.js';
+import ServiceModel from '../models/service.js';
 
 const MAX_HISTORY = 3;
 const MAX_MESSAGE_CHARS = 500;
@@ -400,4 +400,4 @@ const chatAction = async (req, res) => {
     }
 };
 
-module.exports = { chatAction, uploadKnowledge, knowledgeStatus };
+export { chatAction, uploadKnowledge, knowledgeStatus };

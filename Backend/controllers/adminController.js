@@ -1,8 +1,8 @@
-const UserModel = require("../models/user");
-const BookingModel = require("../models/booking");
-const PackageModel = require("../models/package");
-const TransactionModel = require("../models/transactions");
-const logAction = require("../utils/logger");
+import UserModel from "../models/user.js";
+import BookingModel from "../models/booking.js";
+import PackageModel from "../models/package.js";
+import TransactionModel from "../models/transactions.js";
+import logAction from "../utils/logger.js";
 
 const getAdmins = async (req, res) => {
     try {
@@ -118,5 +118,5 @@ const getDashboardStats = async (req, res) => {
     }
 };
 
-module.exports = { getAdmins, editUser, getDashboardStats };
+export { getAdmins, editUser, getDashboardStats };
 

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const RevisionCommentSchema = new mongoose.Schema({
     comments: { type: String, required: true },
@@ -66,4 +66,4 @@ const QuotationSchema = new mongoose.Schema({
 
 }, { timestamps: true })
 
-module.exports = mongoose.model('quotations', QuotationSchema)
+export default mongoose.model('quotations', QuotationSchema)

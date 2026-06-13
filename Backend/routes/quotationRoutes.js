@@ -1,8 +1,9 @@
-const express = require('express')
+import express from 'express'
+import * as quotationsController from '../controllers/quotationsController.js'
+import userAuth from '../middleware/userAuth.js'
+import { upload } from '../middleware/uploadFile.js'
+
 const router = express.Router()
-const quotationsController = require('../controllers/quotationsController')
-const userAuth = require('../middleware/userAuth')
-const { upload } = require('../middleware/uploadFile')
 
 router.post('/create-quotation', userAuth, quotationsController.createQuotation)
 router.get('/my-quotations', userAuth, quotationsController.getUserQuotations)
@@ -16,4 +17,4 @@ router.post('/:id/upload-pdf', userAuth, upload.single('pdf'), quotationsControl
 router.post('/:id/request-revision', userAuth, quotationsController.requestRevision)
 router.put('/:id/upload-travel-details', userAuth, quotationsController.uploadTravelDetails)
 
-module.exports = router
+export default router;

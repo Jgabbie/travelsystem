@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const PreferrencesSchema = new mongoose.Schema(
     {
@@ -12,4 +12,4 @@ const PreferrencesSchema = new mongoose.Schema(
 
 const PreferrencesModel = mongoose.model('preferrences', PreferrencesSchema);
 
-module.exports = PreferrencesModel;
+export default PreferrencesModel;

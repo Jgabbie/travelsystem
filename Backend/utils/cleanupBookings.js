@@ -1,6 +1,6 @@
-const BookingModel = require('../models/booking');
-const TransactionModel = require('../models/transactions');
-const TokenCheckoutModel = require('../models/tokencheckout');
+import BookingModel from '../models/booking.js';
+import TransactionModel from '../models/transactions.js';
+import TokenCheckoutModel from '../models/tokencheckout.js';
 
 const cleanupExpiredBookings = async () => {
     try {
@@ -44,7 +44,7 @@ const startCleanupScheduler = () => {
     }, 1 * 60 * 1000);
 };
 
-module.exports = {
+export {
     cleanupExpiredBookings,
     startCleanupScheduler
 };

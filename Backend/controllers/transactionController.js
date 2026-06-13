@@ -1,17 +1,33 @@
-const TransactionModel = require('../models/transactions')
-const ArchivedTransactionModel = require('../models/archivedtransactions')
-const BookingModel = require('../models/booking')
-const PackageModel = require('../models/package')
-const VisaModel = require('../models/visas')
-const PassportModel = require('../models/passport')
-const NotificationModel = require('../models/notification')
-const UserModel = require('../models/user')
-const { setVisaSecondChance } = require('./visaController')
-const { setPassportSecondChance } = require('./passportController')
-const baseTransporter = require('../config/nodemailer')
-const { buildBrandedEmail } = require('../utils/emailTemplate')
-const logAction = require('../utils/logger')
-const dayjs = require('dayjs')
+// const TransactionModel = require('../models/transactions')
+// const ArchivedTransactionModel = require('../models/archivedtransactions')
+// const BookingModel = require('../models/booking')
+// const PackageModel = require('../models/package')
+// const VisaModel = require('../models/visas')
+// const PassportModel = require('../models/passport')
+// const NotificationModel = require('../models/notification')
+// const UserModel = require('../models/user')
+// const { setVisaSecondChance } = require('./visaController')
+// const { setPassportSecondChance } = require('./passportController')
+// const baseTransporter = require('../config/nodemailer')
+// const { buildBrandedEmail } = require('../utils/emailTemplate')
+// const logAction = require('../utils/logger')
+// const dayjs = require('dayjs')
+
+
+import TransactionModel from '../models/transactions.js'
+import ArchivedTransactionModel from '../models/archivedtransactions.js'
+import BookingModel from '../models/booking.js'
+import PackageModel from '../models/package.js'
+import VisaModel from '../models/visas.js'
+import PassportModel from '../models/passport.js'
+import NotificationModel from '../models/notification.js'
+import UserModel from '../models/user.js'
+import { setVisaSecondChance } from './visaController.js'
+import { setPassportSecondChance } from './passportController.js'
+import baseTransporter from '../config/nodemailer.js'
+import { buildBrandedEmail } from '../utils/emailTemplate.js'
+import logAction from '../utils/logger.js'
+import dayjs from 'dayjs'
 
 const transporter = {
     ...baseTransporter,
@@ -631,4 +647,4 @@ const rejectTransaction = async (req, res) => {
     }
 }
 
-module.exports = { createTransaction, getUserTransactions, getTransactionsForApplication, getAllTransactions, getInvoiceNumber, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction }
+export { createTransaction, getUserTransactions, getTransactionsForApplication, getAllTransactions, getInvoiceNumber, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction };

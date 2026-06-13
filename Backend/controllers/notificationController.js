@@ -1,4 +1,4 @@
-const NotificationModel = require('../models/notification')
+import NotificationModel from '../models/notification.js';
 
 const createNotification = async (req, res) => {
     const { userId, title, message, type, link, metadata } = req.body
@@ -69,7 +69,7 @@ const markAllRead = async (req, res) => {
     }
 }
 
-module.exports = {
+export {
     createNotification,
     getUserNotifications,
     markNotificationRead,

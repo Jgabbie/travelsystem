@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const ArchivedUserSchema = new mongoose.Schema({
     originalUserId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -16,4 +16,4 @@ const ArchivedUserSchema = new mongoose.Schema({
 
 const ArchivedUserModel = mongoose.model("archivedusers", ArchivedUserSchema);
 
-module.exports = ArchivedUserModel;
+export default ArchivedUserModel;

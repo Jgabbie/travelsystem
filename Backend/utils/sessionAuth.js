@@ -35,7 +35,7 @@ const isSessionIdleExpired = (lastActivityAt) => {
     return Date.now() - Number(lastActivityAt) >= SESSION_IDLE_TIMEOUT_MS;
 };
 
-module.exports = {
+export {
     SESSION_IDLE_TIMEOUT_MS,
     IDLE_LOGOUT_MESSAGE,
     clearAuthCookies,

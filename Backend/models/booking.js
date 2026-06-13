@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const BookingSchema = new mongoose.Schema({
     packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'packages', required: true },
@@ -29,4 +29,4 @@ const BookingSchema = new mongoose.Schema({
     expiresAt: { type: Date, required: true, index: true }
 }, { timestamps: true })
 
-module.exports = mongoose.model('bookings', BookingSchema)
+export default mongoose.model('bookings', BookingSchema)

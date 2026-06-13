@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedQuotationSchema = new mongoose.Schema({
     originalQuotationId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -16,4 +16,4 @@ const ArchivedQuotationSchema = new mongoose.Schema({
 
 const ArchivedQuotationModel = mongoose.model('archivedquotations', ArchivedQuotationSchema);
 
-module.exports = ArchivedQuotationModel;
+export default ArchivedQuotationModel;

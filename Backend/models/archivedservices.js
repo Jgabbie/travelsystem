@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedServiceSchema = new mongoose.Schema({
     originalServiceItem: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -14,4 +14,4 @@ const ArchivedServiceSchema = new mongoose.Schema({
 
 const ArchivedServiceModel = mongoose.model('archivedservices', ArchivedServiceSchema);
 
-module.exports = ArchivedServiceModel;
+export default ArchivedServiceModel;

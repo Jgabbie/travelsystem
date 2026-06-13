@@ -1,8 +1,8 @@
-const express = require('express');
-const multer = require('multer');
+import express from 'express';
+import multer from 'multer';
+import * as chatbotController from '../controllers/chatbotController.js';
 
 const router = express.Router();
-const chatbotController = require('../controllers/chatbotController');
 
 const upload = multer({
 	storage: multer.memoryStorage(),
@@ -13,4 +13,4 @@ router.post('/chat', chatbotController.chatAction);
 router.post('/knowledge/upload', upload.single('file'), chatbotController.uploadKnowledge);
 router.get('/knowledge/status', chatbotController.knowledgeStatus);
 
-module.exports = router;
+export default router;

@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import * as sendEmailController from '../controllers/sendEmailController.js';
+
 const router = express.Router();
-const contactController = require('../controllers/sendEmailController');
 
 // Route to handle contact form submission
-router.post('/contact', contactController.sendContactEmail);
+router.post('/contact', sendEmailController.sendContactEmail);
 
-module.exports = router;
+export default router;

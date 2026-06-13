@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import * as logController from '../controllers/logController.js';
+import userAuth from '../middleware/userAuth.js';
+import UserModel from '../models/user.js';
+
 const router = express.Router();
-const logController = require('../controllers/logController');
-const userAuth = require('../middleware/userAuth');
-const UserModel = require('../models/user');
 
 // Ensure only admins can view logs
 const adminOnly = async (req, res, next) => {
@@ -20,4 +21,4 @@ const adminOnly = async (req, res, next) => {
 router.get('/get-logs', userAuth, adminOnly, logController.getLogs);
 router.get('/get-audits', userAuth, adminOnly, logController.getAudits);
 
-module.exports = router;
+export default router;

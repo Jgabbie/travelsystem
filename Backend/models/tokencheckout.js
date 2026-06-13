@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tokenCheckoutSchema = new mongoose.Schema({
     token: { type: String, required: true, unique: true },
@@ -10,4 +10,4 @@ const tokenCheckoutSchema = new mongoose.Schema({
 });
 
 const TokenCheckoutModel = mongoose.model('tokencheckouts', tokenCheckoutSchema);
-module.exports = TokenCheckoutModel;
+export default TokenCheckoutModel;

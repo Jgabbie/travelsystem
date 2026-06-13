@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedCancellationSchema = new mongoose.Schema({
     originalCancellationId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -16,4 +16,4 @@ const ArchivedCancellationSchema = new mongoose.Schema({
 
 const ArchivedCancellationModel = mongoose.model('archivedcancellations', ArchivedCancellationSchema);
 
-module.exports = ArchivedCancellationModel;
+export default ArchivedCancellationModel;

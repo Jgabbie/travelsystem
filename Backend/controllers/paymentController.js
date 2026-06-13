@@ -1,22 +1,21 @@
-
-const crypto = require('crypto');
-const baseTransporter = require('../config/nodemailer')
-const { buildBrandedEmail } = require('../utils/emailTemplate')
-const dayjs = require('dayjs');
-const TokenCheckoutModel = require("../models/tokencheckout");
-const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
-const TokenCheckoutVisaModel = require("../models/tokencheckoutvisa");
-const PackageModel = require("../models/package");
-const BookingModel = require("../models/booking");
-const TransactionModel = require("../models/transactions");
-const UserModel = require("../models/user");
-const NotificationModel = require("../models/notification");
-const PassportModel = require("../models/passport");
-const VisaModel = require("../models/visas");
-const QuotationModel = require("../models/quotations")
-const logAction = require('../utils/logger')
-const apiFetch = require('../config/fetchConfig');
-const axios = require('axios');
+import crypto from 'crypto';
+import baseTransporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
+import dayjs from 'dayjs';
+import TokenCheckoutModel from "../models/tokencheckout.js";
+import TokenCheckoutPassportModel from "../models/tokencheckoutpassport.js";
+import TokenCheckoutVisaModel from "../models/tokencheckoutvisa.js";
+import PackageModel from "../models/package.js";
+import BookingModel from "../models/booking.js";
+import TransactionModel from "../models/transactions.js";
+import UserModel from "../models/user.js";
+import NotificationModel from "../models/notification.js";
+import PassportModel from "../models/passport.js";
+import VisaModel from "../models/visas.js";
+import QuotationModel from "../models/quotations.js";
+import logAction from '../utils/logger.js';
+import apiFetch from '../config/fetchConfig.js';
+import axios from 'axios';
 
 const transporter = {
     ...baseTransporter,
@@ -1648,8 +1647,8 @@ const createCheckoutSessionDeposit = async (req, res) => {
         const cancelUrl = `${FRONTEND_URL}/booking-payment?status=cancel`;
 
 
-        const package = await PackageModel.findById(packageId).select('packageName');
-        const packageName = package.packageName
+        const packageDoc = await PackageModel.findById(packageId).select('packageName');
+        const packageName = packageDoc.packageName
 
         const baseAmountCents = Math.round(totalPrice * 100);
         const convenienceFeeCents = Math.round((baseAmountCents * 0.035) + 1500);
@@ -3001,7 +3000,7 @@ const createCheckoutToken = async (req, res) => {
 };
 
 
-module.exports = {
+export {
     createCheckoutSession,
     createCheckoutSessionQuotation,
     createCheckoutSessionPassport,

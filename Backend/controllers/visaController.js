@@ -1,13 +1,13 @@
-const VisaModel = require('../models/visas')
-const ArchivedVisaApplicationModel = require('../models/archivedvisaapplications')
-const TokenCheckoutVisaModel = require('../models/tokencheckoutvisa')
-const ServiceModel = require('../models/service')
-const UserModel = require('../models/user')
-const NotificationModel = require('../models/notification')
-const baseTransporter = require('../config/nodemailer')
-const { buildBrandedEmail } = require('../utils/emailTemplate')
-const logAction = require('../utils/logger')
-const dayjs = require('dayjs')
+import VisaModel from '../models/visas.js';
+import ArchivedVisaApplicationModel from '../models/archivedvisaapplications.js';
+import TokenCheckoutVisaModel from '../models/tokencheckoutvisa.js';
+import ServiceModel from '../models/service.js';
+import UserModel from '../models/user.js';
+import NotificationModel from '../models/notification.js';
+import baseTransporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
+import logAction from '../utils/logger.js';
+import dayjs from 'dayjs';
 
 const transporter = {
     ...baseTransporter,
@@ -910,7 +910,7 @@ const updateVisaApplicationWithDocs = async (req, res) => {
 
         await application.save();
 
-        logAction('UPDATE_VISA_APPLICATION', userId, { "Visa Application Updated": `Application Number: ${application.applicationNumber}` });
+        logAction('VISA_DOCUMENTS_UPLOADED', userId, { "Documents Uploaded": `Application Number: ${application.applicationNumber}` });
 
         const io = req.app.get('io')
         if (io) {
@@ -1217,6 +1217,12 @@ const chooseAppointment = async (req, res) => {
         } catch (e) {
             console.error('Failed to rebuild processSteps after appointment date change:', e);
         }
+
+        logAction('VISA_APPOINTMENT_CHOSEN', req.userId, {
+            "Visa Application Updated": `Application Number: ${application.applicationNumber}`,
+            "Date": date,
+            "Time": time
+        });
 
         await application.save();
 
@@ -1537,7 +1543,7 @@ const restoreArchivedVisaApplication = async (req, res) => {
     }
 }
 
-module.exports = {
+export {
     applyVisa,
     getVisaApplications,
     getUserVisaApplications,
@@ -1557,7 +1563,7 @@ module.exports = {
     decorateVisaApplication,
     sendVisaDeadlineWarning,
     processVisaDeadlineAction,
-    autoRejectVisaApplication: rejectVisaApplicationForDeadline,
+    rejectVisaApplicationForDeadline,
     buildProcessSteps,
     setVisaSecondChance
 };

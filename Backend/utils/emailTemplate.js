@@ -50,6 +50,6 @@ const buildBrandedEmail = ({
     `;
 };
 
-module.exports = {
+export {
     buildBrandedEmail,
 };

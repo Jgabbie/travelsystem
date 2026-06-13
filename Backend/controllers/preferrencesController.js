@@ -1,5 +1,8 @@
-const PreferrencesModel = require('../models/preferrences');
-const { scheduleRetrain } = require('../utils/recommendationRetrainQueue');
+// const PreferrencesModel = require('../models/preferrences');
+// const { scheduleRetrain } = require('../utils/recommendationRetrainQueue');
+
+import PreferrencesModel from '../models/preferrences.js';
+import { scheduleRetrain } from '../utils/recommendationRetrainQueue.js';
 
 const savePreferrences = async (req, res) => {
     try {
@@ -35,5 +38,5 @@ const getMyPreferrences = async (req, res) => {
     }
 };
 
-module.exports = { savePreferrences, getMyPreferrences };
+export { savePreferrences, getMyPreferrences };
 

@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import * as userController from '../controllers/userController.js';
+import userAuth from '../middleware/userAuth.js';
+import UserModel from '../models/user.js';
+
 const router = express.Router();
-const userController = require('../controllers/userController');
-const userAuth = require('../middleware/userAuth');
-const UserModel = require('../models/user');
 
 const authorizeRoles = (allowedRoles) => async (req, res, next) => {
     try {
@@ -31,4 +32,4 @@ router.get('/getArchivedUsers', userAuth, authorizeRoles(['Admin', 'Employee']),
 router.post('/archived-users/:id/restore', userAuth, authorizeRoles(['Admin', 'Employee']), userController.restoreArchivedUser);
 router.delete('/deleteUsers/:id', userAuth, authorizeRoles(['Admin', 'Employee']), userController.delUsers);
 
-module.exports = router;
+export default router;

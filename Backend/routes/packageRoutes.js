@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import * as packageController from '../controllers/packageController.js';
+import userAuth from '../middleware/userAuth.js';
+
 const router = express.Router();
-const packageController = require('../controllers/packageController');
-const userAuth = require('../middleware/userAuth');
 
 const adminAuth = (req, res, next) => {
     if (!req.user || req.user.role !== "admin") {
@@ -22,4 +23,4 @@ router.put('/update-package/:id', userAuth, packageController.updatePackage);
 router.put('/update-slots', userAuth, packageController.updateSlots);
 router.put('/update-discount', userAuth, packageController.updateDiscount);
 
-module.exports = router;
+export default router;

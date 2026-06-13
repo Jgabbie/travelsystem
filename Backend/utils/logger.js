@@ -1,5 +1,5 @@
-const LogModel = require('../models/log');
-const AuditModel = require('../models/audit');
+import LogModel from '../models/log.js';
+import AuditModel from '../models/audit.js';
 
 const auditExcludedActions = new Set([
     'CUSTOMER_LOGIN',
@@ -42,4 +42,4 @@ const logAction = async (action, userId, details = {}) => {
     }
 };
 
-module.exports = logAction;
+export default logAction;

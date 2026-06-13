@@ -1,13 +1,13 @@
-const PackageModel = require("../models/package");
-const ArchivedPackageModel = require("../models/archivedpackages");
-const BookingModel = require("../models/booking");
-const WishlistModel = require("../models/wishlist");
-const NotificationModel = require("../models/notification");
-const logAction = require("../utils/logger");
-const dayjs = require("dayjs");
-const baseTransporter = require("../config/nodemailer");
-const { buildBrandedEmail } = require("../utils/emailTemplate");
-const mongoose = require("mongoose");
+import PackageModel from "../models/package.js";
+import ArchivedPackageModel from "../models/archivedpackages.js";
+import BookingModel from "../models/booking.js";
+import WishlistModel from "../models/wishlist.js";
+import NotificationModel from "../models/notification.js";
+import logAction from "../utils/logger.js";
+import dayjs from "dayjs";
+import baseTransporter from "../config/nodemailer.js";
+import { buildBrandedEmail } from "../utils/emailTemplate.js";
+import mongoose from "mongoose";
 
 const transporter = {
     ...baseTransporter,
@@ -800,4 +800,4 @@ const updateDiscount = async (req, res) => {
     }
 };
 
-module.exports = { addPackage, getPackages, getArchivedPackages, restoreArchivedPackage, getPackagesForUsers, removePackage, getPackage, updatePackage, getPopularPackages, updateSlots, updateDiscount };
+export { addPackage, getPackages, getArchivedPackages, restoreArchivedPackage, getPackagesForUsers, removePackage, getPackage, updatePackage, getPopularPackages, updateSlots, updateDiscount };

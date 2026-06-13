@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedBookingSchema = new mongoose.Schema({
     originalBookingId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -30,4 +30,4 @@ const ArchivedBookingSchema = new mongoose.Schema({
 
 const ArchivedBookingModel = mongoose.model('archivedbookings', ArchivedBookingSchema);
 
-module.exports = ArchivedBookingModel;
+export default ArchivedBookingModel;

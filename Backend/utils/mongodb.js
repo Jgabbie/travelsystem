@@ -1,5 +1,5 @@
 // utils/mongodb.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 let cached = global.mongoose;
 
@@ -17,4 +17,4 @@ async function connectToDatabase() {
     return cached.conn;
 }
 
-module.exports = connectToDatabase;
+export default connectToDatabase;

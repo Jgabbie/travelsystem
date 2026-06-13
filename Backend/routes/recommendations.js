@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import * as recommendController from '../controllers/recommendController.js';
+import userAuth from '../middleware/userAuth.js';
+
 const router = express.Router();
-const recommendController = require('../controllers/recommendController');
-const userAuth = require('../middleware/userAuth');
 
 // Personalized recommendations for currently authenticated user
 router.get('/', userAuth, recommendController.getRecommendations);
@@ -12,4 +13,4 @@ router.post('/train', recommendController.trainModels);
 // Health status of AI service
 router.get('/health', recommendController.checkHealth);
 
-module.exports = router;
+export default router;

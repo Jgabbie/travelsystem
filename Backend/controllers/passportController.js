@@ -1,13 +1,12 @@
-
-const PassportModel = require("../models/passport");
-const ArchivedPassportApplicationModel = require("../models/archivedpassportapplications");
-const TokenCheckoutPassportModel = require("../models/tokencheckoutpassport");
-const UserModel = require("../models/user");
-const NotificationModel = require("../models/notification");
-const baseTransporter = require("../config/nodemailer");
-const { buildBrandedEmail } = require("../utils/emailTemplate");
-const logAction = require('../utils/logger');
-const dayjs = require('dayjs');
+import PassportModel from "../models/passport.js";
+import ArchivedPassportApplicationModel from "../models/archivedpassportapplications.js";
+import TokenCheckoutPassportModel from "../models/tokencheckoutpassport.js";
+import UserModel from "../models/user.js";
+import NotificationModel from "../models/notification.js";
+import baseTransporter from "../config/nodemailer.js";
+import { buildBrandedEmail } from "../utils/emailTemplate.js";
+import logAction from '../utils/logger.js';
+import dayjs from 'dayjs';
 
 const transporter = {
     ...baseTransporter,
@@ -783,9 +782,7 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         await application.save();
 
         // Log action
-        logAction('UPDATE_PASSPORT_APPLICATION', userId, {
-            "Passport Application Updated": `Application Number: ${application.applicationNumber}`
-        });
+        logAction('PASSPORT_DOCUMENTS_UPLOADED', userId, { "Documents Uploaded": `Application Number: ${application.applicationNumber}` });
 
         // Emit socket event
         const io = req.app.get('io');
@@ -953,7 +950,7 @@ const suggestAppointmentSchedules = async (req, res) => {
 
 
 //CHOSEN SUGGESTED APPOINTMENT SCHEDULE ------------------------------------------------------
-const chosenSuggestedSchedule = async (req, res) => {
+const chooseAppointment = async (req, res) => {
     const { id } = req.params;
     const { date, time } = req.body;
     try {
@@ -976,6 +973,12 @@ const chosenSuggestedSchedule = async (req, res) => {
         } catch (e) {
             console.error('Failed to rebuild processSteps after appointment date change:', e);
         }
+
+        logAction('PASSPORT_APPOINTMENT_CHOSEN', req.userId, {
+            "Passport Application Updated": `Application Number: ${application.applicationNumber}`,
+            "Date": date,
+            "Time": time
+        });
 
         await application.save();
 
@@ -1448,7 +1451,7 @@ const getPassportApplications = async (req, res) => {
 
 
 
-module.exports = {
+export {
     applyPassport,
     getPassportApplications,
     getUserPassportApplications,
@@ -1457,7 +1460,7 @@ module.exports = {
     updatePassportApplicationWithDocs,
     requestPassportDocumentResubmission,
     suggestAppointmentSchedules,
-    chosenSuggestedSchedule,
+    chooseAppointment,
     passportReleaseOptionUpdate,
     verifyTokenCheckout,
     archivePassportApplication,

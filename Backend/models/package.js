@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const PackageSchema = new mongoose.Schema({
     packageName: { type: String, required: true },
     packageCode: { type: String, required: true, unique: true },
@@ -28,4 +28,4 @@ const PackageSchema = new mongoose.Schema({
 
 const PackageModel = mongoose.model("packages", PackageSchema);
 
-module.exports = PackageModel;
+export default PackageModel;

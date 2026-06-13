@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedVisaApplicationSchema = new mongoose.Schema({
     originalVisaApplicationId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -42,4 +42,4 @@ const ArchivedVisaApplicationSchema = new mongoose.Schema({
 
 const ArchivedVisaApplicationModel = mongoose.model('archivedvisaapplications', ArchivedVisaApplicationSchema);
 
-module.exports = ArchivedVisaApplicationModel;
+export default ArchivedVisaApplicationModel;

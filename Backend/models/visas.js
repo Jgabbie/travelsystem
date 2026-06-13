@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const VisaApplicationSchema = new mongoose.Schema({
     userId: {
@@ -56,4 +56,4 @@ const VisaApplicationSchema = new mongoose.Schema({
     currentStepIndex: { type: Number, default: 0 }
 }, { timestamps: true })
 
-module.exports = mongoose.model('visas', VisaApplicationSchema)
+export default mongoose.model('visas', VisaApplicationSchema)

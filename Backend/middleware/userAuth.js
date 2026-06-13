@@ -1,11 +1,11 @@
-const jwt = require("jsonwebtoken")
-const User = require("../models/user")
-const {
+import jwt from "jsonwebtoken"
+import User from "../models/user.js"
+import {
     clearAuthCookies,
     setAccessTokenCookie,
     IDLE_LOGOUT_MESSAGE,
     isSessionIdleExpired,
-} = require("../utils/sessionAuth")
+} from "../utils/sessionAuth.js"
 
 //This gatekeeps the cookie, and checks if the cookie is real.
 const userAuth = async (req, res, next) => {
@@ -109,4 +109,4 @@ const userAuth = async (req, res, next) => {
     }
 }
 
-module.exports = userAuth
+export default userAuth

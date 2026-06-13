@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedTransactionSchema = new mongoose.Schema({
     originalTransactionId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -22,4 +22,4 @@ const ArchivedTransactionSchema = new mongoose.Schema({
 
 const ArchivedTransactionModel = mongoose.model('archivedtransactions', ArchivedTransactionSchema);
 
-module.exports = ArchivedTransactionModel;
+export default ArchivedTransactionModel;

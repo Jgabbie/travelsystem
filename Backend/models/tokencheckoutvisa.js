@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tokenCheckoutVisaSchema = new mongoose.Schema({
     token: { type: String, required: true, unique: true },
@@ -10,4 +10,4 @@ const tokenCheckoutVisaSchema = new mongoose.Schema({
 });
 
 const TokenCheckoutVisaModel = mongoose.model('tokencheckoutvisa', tokenCheckoutVisaSchema);
-module.exports = TokenCheckoutVisaModel;
+export default TokenCheckoutVisaModel;

@@ -1,19 +1,19 @@
-const BookingModel = require('../models/booking')
-const ArchivedBookingModel = require('../models/archivedbookings')
-const TransactionModel = require('../models/transactions')
-const CancellationModel = require('../models/cancellations')
-const ArchivedCancellationModel = require('../models/archivedcancellations')
-const TokenCheckoutModel = require('../models/tokencheckout')
-const PackageModel = require('../models/package')
-const NotificationModel = require('../models/notification')
-const UserModel = require('../models/user')
-const baseTransporter = require('../config/nodemailer')
-const { buildBrandedEmail } = require('../utils/emailTemplate')
-const crypto = require('crypto');
-const logAction = require('../utils/logger')
-const dayjs = require('dayjs');
-const mongoose = require('mongoose');
-const { processBillingForBookingId } = require('../utils/billingDeadlineScheduler')
+import BookingModel from '../models/booking.js';
+import ArchivedBookingModel from '../models/archivedbookings.js';
+import TransactionModel from '../models/transactions.js';
+import CancellationModel from '../models/cancellations.js';
+import ArchivedCancellationModel from '../models/archivedcancellations.js';
+import TokenCheckoutModel from '../models/tokencheckout.js';
+import PackageModel from '../models/package.js';
+import NotificationModel from '../models/notification.js';
+import UserModel from '../models/user.js';
+import baseTransporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
+import crypto from 'crypto';
+import logAction from '../utils/logger.js';
+import dayjs from 'dayjs';
+import mongoose from 'mongoose';
+import { processBillingForBookingId } from '../utils/billingDeadlineScheduler.js';
 
 const transporter = {
     ...baseTransporter,
@@ -1049,4 +1049,4 @@ const verifyTokenCheckout = async (req, res) => {
         return { valid: false, message: 'Error verifying token' }
     }
 }
-module.exports = { createBooking, getUserBookings, getAllBookings, getArchivedBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, restoreArchivedBooking, cancelBooking, getcancellations, getArchivedCancellations, archiveCancellation, restoreArchivedCancellation, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation, requestDocumentResubmission, resubmitBookingDocuments }
+export { createBooking, getUserBookings, getAllBookings, getArchivedBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, restoreArchivedBooking, cancelBooking, getcancellations, getArchivedCancellations, archiveCancellation, restoreArchivedCancellation, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation, requestDocumentResubmission, resubmitBookingDocuments };

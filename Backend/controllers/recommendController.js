@@ -1,7 +1,6 @@
-// Backend/controllers/recommendController.js
-const axios = require('axios');
-const PackageModel = require('../models/package');
-const mongoose = require('mongoose');
+import axios from 'axios';
+import PackageModel from '../models/package.js';
+import mongoose from 'mongoose';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'https://recommendationtravex.onrender.com';
 const AI_SERVICE_TIMEOUT = 10000; // 10 seconds
@@ -12,7 +11,7 @@ const aiService = axios.create({
     timeout: AI_SERVICE_TIMEOUT
 });
 
-exports.getRecommendations = async (req, res) => {
+export const getRecommendations = async (req, res) => {
     try {
         const userId = req.userId ? String(req.userId) : null;
         if (!userId) {
@@ -116,7 +115,7 @@ exports.getRecommendations = async (req, res) => {
  * Trigger manual model training/retraining
  * Called after significant user interactions or on a schedule
  */
-exports.trainModels = async (req, res) => {
+export const trainModels = async (req, res) => {
     try {
         console.log("[Train] Triggering model training...");
 
@@ -146,7 +145,7 @@ exports.trainModels = async (req, res) => {
 /**
  * Check AI Service health and model status
  */
-exports.checkHealth = async (req, res) => {
+export const checkHealth = async (req, res) => {
     try {
         const response = await aiService.get('/health');
 

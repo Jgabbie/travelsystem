@@ -1,7 +1,8 @@
-const express = require("express");
+import express from 'express';
+import * as paymentController from '../controllers/paymentController.js';
+import userAuth from '../middleware/userAuth.js';
+
 const router = express.Router();
-const paymentController = require("../controllers/paymentController");
-const userAuth = require("../middleware/userAuth");
 
 router.post("/create-checkout-session", userAuth, paymentController.createCheckoutSession);
 router.post("/create-checkout-session-quotation", userAuth, paymentController.createCheckoutSessionQuotation);
@@ -21,4 +22,4 @@ router.post("/manual-visa-penalty", userAuth, paymentController.createManualPaym
 router.post("/manual-passport-penalty", userAuth, paymentController.createManualPaymentPassportPenalty);
 router.post("/manual-delivery-fee", userAuth, paymentController.createManualPaymentDeliveryFee);
 router.post('/webhook/paymongo', express.raw({ type: 'application/json' }), paymentController.handlePayMongoWebhook);
-module.exports = router;
+export default router;

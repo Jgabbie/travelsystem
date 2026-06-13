@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken")
+import jwt from "jsonwebtoken"
 
 const userAuthOptional = (req, res, next) => {
     const { accessToken } = req.cookies
@@ -20,4 +20,4 @@ const userAuthOptional = (req, res, next) => {
     }
 }
 
-module.exports = userAuthOptional
+export default userAuthOptional

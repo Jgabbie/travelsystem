@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const TransactionSchema = new mongoose.Schema({
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'bookings', required: false }, // make optional
@@ -17,4 +17,4 @@ const TransactionSchema = new mongoose.Schema({
     paymentType: { type: String }
 }, { timestamps: true });
 
-module.exports = mongoose.model('transactions', TransactionSchema);
+export default mongoose.model('transactions', TransactionSchema);

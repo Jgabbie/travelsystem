@@ -1,8 +1,8 @@
-const dayjs = require('dayjs');
-const BookingModel = require('../models/booking');
-const NotificationModel = require('../models/notification');
-const baseTransporter = require('../config/nodemailer');
-const { buildBrandedEmail } = require('./emailTemplate');
+import dayjs from 'dayjs';
+import BookingModel from '../models/booking.js';
+import NotificationModel from '../models/notification.js';
+import baseTransporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from './emailTemplate.js';
 
 const REMINDER_DAYS_BEFORE_TRAVEL = [3, 1];
 
@@ -163,7 +163,7 @@ const startTravelReminderScheduler = () => {
     }, 60 * 60 * 1000);
 };
 
-module.exports = {
+export {
     processTravelReminders,
     startTravelReminderScheduler,
 };

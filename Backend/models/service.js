@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const serviceSchema = new mongoose.Schema({
     visaName: { type: String, required: true },
@@ -9,4 +9,4 @@ const serviceSchema = new mongoose.Schema({
     visaReminders: { type: [String], required: true }
 });
 
-module.exports = mongoose.model('services', serviceSchema);
+export default mongoose.model('services', serviceSchema);

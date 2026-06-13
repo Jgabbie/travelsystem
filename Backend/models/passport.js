@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const PassportSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true },
     applicationNumber: { type: String, unique: true, required: true },
@@ -66,4 +66,4 @@ const PassportSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('passport', PassportSchema);
+export default mongoose.model('passport', PassportSchema);

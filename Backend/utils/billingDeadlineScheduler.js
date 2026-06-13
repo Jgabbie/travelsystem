@@ -1,8 +1,8 @@
-const dayjs = require('dayjs');
-const BookingModel = require('../models/booking');
-const TransactionModel = require('../models/transactions');
-const NotificationModel = require('../models/notification');
-const transporter = require('../config/nodemailer');
+import dayjs from 'dayjs';
+import BookingModel from '../models/booking.js';
+import TransactionModel from '../models/transactions.js';
+import NotificationModel from '../models/notification.js';
+import transporter from '../config/nodemailer.js';
 
 const PENALTY_AMOUNT = 200;
 const REMINDER_DAYS_BEFORE_DUE = 3;
@@ -326,7 +326,7 @@ const startBillingDeadlineScheduler = () => {
     }, 60 * 60 * 1000);
 };
 
-module.exports = {
+export {
     startBillingDeadlineScheduler,
     processBillingDeadlines,
     processBillingForBookingId,

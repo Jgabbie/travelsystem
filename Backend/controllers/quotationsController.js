@@ -1,9 +1,16 @@
-const cloudinary = require('../config/cloudinary')
-const QuotationModel = require('../models/quotations')
-const ArchivedQuotationModel = require('../models/archivedquotations')
-const UserModel = require('../models/user')
-const NotificationModel = require('../models/notification')
-const logAction = require('../utils/logger')
+// const cloudinary = require('../config/cloudinary')
+// const QuotationModel = require('../models/quotations')
+// const ArchivedQuotationModel = require('../models/archivedquotations')
+// const UserModel = require('../models/user')
+// const NotificationModel = require('../models/notification')
+// const logAction = require('../utils/logger')
+
+import cloudinary from '../config/cloudinary.js'
+import QuotationModel from '../models/quotations.js'
+import ArchivedQuotationModel from '../models/archivedquotations.js'
+import UserModel from '../models/user.js'
+import NotificationModel from '../models/notification.js'
+import logAction from '../utils/logger.js'
 
 
 //GENERATE UNIQUE QUOTATION REFERENCE -----------------------------------------------------
@@ -338,7 +345,7 @@ const requestRevision = async (req, res) => {
 }
 
 
-module.exports = {
+export {
     createQuotation,
     getUserQuotations,
     getAllQuotations,
@@ -350,4 +357,4 @@ module.exports = {
     uploadQuotationPDF,
     requestRevision,
     uploadTravelDetails
-}
+};

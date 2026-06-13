@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ArchivedRatingSchema = new mongoose.Schema({
     originalRatingId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -14,4 +14,4 @@ const ArchivedRatingSchema = new mongoose.Schema({
 
 const ArchivedRatingModel = mongoose.model('archivedratings', ArchivedRatingSchema);
 
-module.exports = ArchivedRatingModel;
+export default ArchivedRatingModel;

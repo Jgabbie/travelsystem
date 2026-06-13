@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const KnowledgeChunkSchema = new mongoose.Schema(
     {
@@ -12,4 +12,4 @@ const KnowledgeChunkSchema = new mongoose.Schema(
 
 const KnowledgeChunk = mongoose.model('knowledge_chunks', KnowledgeChunkSchema);
 
-module.exports = KnowledgeChunk;
+export default KnowledgeChunk;

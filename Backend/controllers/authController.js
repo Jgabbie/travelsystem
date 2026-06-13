@@ -1,19 +1,19 @@
-const UserModel = require('../models/user');
-const bcrypt = require("bcryptjs")
-const crypto = require("crypto")
-const jwt = require("jsonwebtoken")
-const transporter = require('../config/nodemailer')
-const logAction = require('../utils/logger');
-const connectToDatabase = require('../utils/mongodb');
-const { buildBrandedEmail } = require('../utils/emailTemplate');
+import UserModel from '../models/user.js';
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import transporter from '../config/nodemailer.js';
+import logAction from '../utils/logger.js';
+import connectToDatabase from '../utils/mongodb.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
 
-const {
+import {
     clearAuthCookies,
     setAccessTokenCookie,
     setRefreshTokenCookie,
     IDLE_LOGOUT_MESSAGE,
     isSessionIdleExpired,
-} = require('../utils/sessionAuth');
+} from '../utils/sessionAuth.js';
 
 
 // CREATE VERIFICATION LINK AND SEND EMAIL
@@ -599,4 +599,4 @@ const resetPassword = async (req, res) => {
 }
 
 
-module.exports = { loginUser, allowLogin, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified, refreshToken };
+export { loginUser, allowLogin, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified, refreshToken };

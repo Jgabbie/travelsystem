@@ -1,40 +1,44 @@
-require('dotenv').config();
+import dotenv from 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
+import path from 'path';
+import http from 'http';
+import { Server } from 'socket.io';
+import { fileURLToPath } from 'url';
 
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
-const path = require('path');
-const http = require('http');
-const { Server } = require('socket.io');
+import userRoutes from "./routes/userRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import logRoutes from "./routes/logRoutes.js";
+import packageRoutes from "./routes/packageRoutes.js";
+import adminRoutes from "./routes/adminRoute.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
+import ratingRoutes from "./routes/ratingRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js";
+import paymentRoutes from "./routes/paymentRoute.js";
+import transactionRoute from "./routes/transactionRoute.js";
+import quotationRoutes from "./routes/quotationRoutes.js";
+import passportRoutes from "./routes/passportRoutes.js";
+import serviceRoutes from "./routes/serviceRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import visaRoutes from "./routes/visaRoutes.js";
+import sendEmailRoutes from "./routes/sendEmailRoutes.js";
+import preferencesRoutes from "./routes/preferencesRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import chatbotRoutes from "./routes/chatbotRoutes.js";
+import recommendationsRoutes from "./routes/recommendations.js";
+import { startBillingDeadlineScheduler } from './utils/billingDeadlineScheduler.js';
+import { startCleanupScheduler } from './utils/cleanupBookings.js';
+import { startPassportDeadlineScheduler } from './utils/passportDeadlineScheduler.js';
+import { startVisaDeadlineScheduler } from './utils/visaDeadlineScheduler.js';
+import { startTravelReminderScheduler } from './utils/travelReminderScheduler.js';
+import rateLimit from 'express-rate-limit';
 
-const userRoutes = require("./routes/userRoutes")
-const authRoutes = require("./routes/authRoutes")
-const logRoutes = require("./routes/logRoutes");
-const packageRoutes = require("./routes/packageRoutes");
-const adminRoutes = require("./routes/adminRoute");
-const bookingRoutes = require("./routes/bookingRoutes");
-const ratingRoutes = require("./routes/ratingRoutes");
-const wishlistRoutes = require("./routes/wishlistRoutes");
-const paymentRoutes = require("./routes/paymentRoute");
-const transactionRoute = require("./routes/transactionRoute");
-const quotationRoutes = require("./routes/quotationRoutes")
-const passportRoutes = require("./routes/passportRoutes")
-const serviceRoutes = require("./routes/serviceRoutes")
-const notificationRoutes = require("./routes/notificationRoutes")
-const visaRoutes = require("./routes/visaRoutes")
-const sendEmailRoutes = require("./routes/sendEmailRoutes")
-const preferencesRoutes = require("./routes/preferencesRoutes")
-const uploadRoutes = require("./routes/uploadRoutes")
-const chatbotRoutes = require("./routes/chatbotRoutes")
-const recommendationsRoutes = require("./routes/recommendations")
-const { startBillingDeadlineScheduler } = require('./utils/billingDeadlineScheduler');
-const { startCleanupScheduler } = require('./utils/cleanupBookings');
-const { startPassportDeadlineScheduler } = require('./utils/passportDeadlineScheduler');
-const { startVisaDeadlineScheduler } = require('./utils/visaDeadlineScheduler');
-const { startTravelReminderScheduler } = require('./utils/travelReminderScheduler');
 
-const rateLimit = require('express-rate-limit');
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const contactLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -148,7 +152,7 @@ if (!isServerless) {
 
     // Use the PORT variable provided by the host, default to 8080
     //const LOCAL_PORT = 8000
-    const PORT = 8080; //change to 8000 for local testing, 8080 for cloud deployment
+    const PORT = 8000; //change to 8000 for local testing, 8080 for cloud deployment
 
     // Remove the 'production' check so it actually runs on the cloud
     server.listen(PORT, '0.0.0.0', () => {
@@ -177,4 +181,4 @@ if (!isServerless) {
     });
 }
 
-module.exports = app;
+export default app;

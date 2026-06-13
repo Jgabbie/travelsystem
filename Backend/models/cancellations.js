@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const CancellationSchema = new mongoose.Schema({
     bookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'bookings', required: true },
@@ -12,4 +12,4 @@ const CancellationSchema = new mongoose.Schema({
     status: { type: String, enum: ['Pending', 'Approved', 'Disapproved'], default: 'Pending' }
 });
 
-module.exports = mongoose.model('cancellations', CancellationSchema);
+export default mongoose.model('cancellations', CancellationSchema);

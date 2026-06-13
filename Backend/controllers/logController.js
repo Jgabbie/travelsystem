@@ -1,11 +1,11 @@
-const LogModel = require('../models/log');
-const AuditModel = require('../models/audit');
+import LogModel from '../models/log.js';
+import AuditModel from '../models/audit.js';
 
 const getLogs = async (req, res) => {
     try {
         // Fetch logs and populate 'performedBy' with username, email, AND role
         const logs = await LogModel.find()
-            .populate('performedBy', 'username email role') 
+            .populate('performedBy', 'username email role')
             .sort({ timestamp: -1 });
 
         res.status(200).json(logs);
@@ -26,4 +26,4 @@ const getAudits = async (req, res) => {
     }
 };
 
-module.exports = { getLogs, getAudits };
+export { getLogs, getAudits };

@@ -1,9 +1,10 @@
-const express = require('express')
-const router = express.Router()
-const ratingController = require('../controllers/ratingController')
-const userAuth = require('../middleware/userAuth')
-const userAuthOptional = require('../middleware/userAuthOptional')
-const UserModel = require('../models/user')
+import express from 'express';
+import * as ratingController from '../controllers/ratingController.js';
+import userAuth from '../middleware/userAuth.js';
+import userAuthOptional from '../middleware/userAuthOptional.js'
+import UserModel from '../models/user.js'
+
+const router = express.Router();
 
 const adminOnly = async (req, res, next) => {
     try {
@@ -29,4 +30,4 @@ router.put('/:id', userAuth, ratingController.updateRating)
 router.get('/average-rating/:id', ratingController.getAverageRating)
 router.get('/average-ratings', ratingController.getAverageRatings)
 
-module.exports = router
+export default router;

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tokenCheckoutPassportSchema = new mongoose.Schema({
     token: { type: String, required: true, unique: true },
@@ -10,4 +10,4 @@ const tokenCheckoutPassportSchema = new mongoose.Schema({
 });
 
 const TokenCheckoutPassportModel = mongoose.model('tokencheckoutpassport', tokenCheckoutPassportSchema);
-module.exports = TokenCheckoutPassportModel;
+export default TokenCheckoutPassportModel;

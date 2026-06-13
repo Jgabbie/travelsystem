@@ -1,8 +1,14 @@
-const express = require("express")
-const cloudinary = require("../config/cloudinary")
-const https = require("https")
-const streamifier = require("streamifier")
-const { upload } = require("../middleware/uploadFile")
+// const express = require("express")
+// const cloudinary = require("../config/cloudinary")
+// const https = require("https")
+// const streamifier = require("streamifier")
+// const { upload } = require("../middleware/uploadFile")
+
+import express from 'express';
+import cloudinary from '../config/cloudinary.js';
+import https from 'https';
+import streamifier from 'streamifier';
+import { upload } from '../middleware/uploadFile.js';
 
 const uploadBufferToCloudinary = (file, folder) => new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -289,4 +295,4 @@ const viewQuotationPdf = async (req, res) => {
     }
 }
 
-module.exports = { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadPackageVideo, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof, viewQuotationPdf };
+export { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadPackageVideo, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof, viewQuotationPdf };

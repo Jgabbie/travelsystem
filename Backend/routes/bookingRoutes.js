@@ -1,9 +1,10 @@
-const express = require('express')
-const router = express.Router()
-const bookingController = require('../controllers/bookingController')
-const userAuth = require('../middleware/userAuth')
-const UserModel = require('../models/user')
-const upload = require('../middleware/upload')
+import express from 'express';
+import * as bookingController from '../controllers/bookingController.js';
+import userAuth from '../middleware/userAuth.js';
+import UserModel from '../models/user.js';
+import upload from '../middleware/upload.js';
+
+const router = express.Router();
 
 //to make sure that the admin-only routes are only accessible by admins, we create a middleware function that checks the user's role before allowing access to the route. 
 // This is done by fetching the user from the database using their ID (which is set in the userAuth middleware) and checking if their role is 'Admin'. 
@@ -39,4 +40,5 @@ router.post('/cancellations/:id/reject', userAuth, adminOnly, bookingController.
 router.post('/verify-payment', userAuth, bookingController.verifyTokenCheckout)
 router.post('/:id/request-document-resubmission', userAuth, adminOnly, bookingController.requestDocumentResubmission)
 router.post('/:id/resubmit-documents', userAuth, bookingController.resubmitBookingDocuments)
-module.exports = router
+
+export default router;

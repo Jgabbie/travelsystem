@@ -1,7 +1,8 @@
-const express = require('express')
+import express from 'express'
+import * as visaController from '../controllers/visaController.js'
+import userAuth from '../middleware/userAuth.js'
+
 const router = express.Router()
-const visaController = require('../controllers/visaController')
-const userAuth = require('../middleware/userAuth')
 
 
 router.post('/apply', userAuth, visaController.applyVisa)
@@ -20,4 +21,4 @@ router.put('/applications/:id/delivery-details', userAuth, visaController.update
 router.put('/applications/:id/resubmit-documents', userAuth, visaController.requestVisaDocumentResubmission)
 router.post('/verify-payment', userAuth, visaController.verifyTokenCheckout);
 
-module.exports = router
+export default router;

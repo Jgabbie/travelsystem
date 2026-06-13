@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'https://recommendationtravex.onrender.com';
 const RETRAIN_DEBOUNCE_MS = Number(process.env.RECOMMEND_RETRAIN_DEBOUNCE_MS || 15000);
@@ -47,6 +47,6 @@ const scheduleRetrain = (reason = 'unspecified-change') => {
     }, RETRAIN_DEBOUNCE_MS);
 };
 
-module.exports = {
+export {
     scheduleRetrain,
 };

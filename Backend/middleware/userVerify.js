@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken")
-const User = require('../models/user')
+import jwt from "jsonwebtoken"
+import User from '../models/user.js'
 
 //This checks if user is verified
 const userVerify = async (req, res, next) => {
@@ -24,4 +24,4 @@ const userVerify = async (req, res, next) => {
     }
 }
 
-module.exports = userVerify
+export default userVerify

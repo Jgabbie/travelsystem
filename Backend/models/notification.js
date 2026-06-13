@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const NotificationSchema = new mongoose.Schema({
     userId: {
@@ -15,4 +15,4 @@ const NotificationSchema = new mongoose.Schema({
     metadata: { type: Object, default: {} }
 }, { timestamps: true })
 
-module.exports = mongoose.model('notifications', NotificationSchema)
+export default mongoose.model('notifications', NotificationSchema)

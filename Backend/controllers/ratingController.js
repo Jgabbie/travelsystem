@@ -1,9 +1,16 @@
-const Rating = require('../models/rating')
-const ArchivedRatingModel = require('../models/archivedratings')
-const PackageModel = require('../models/package')
-const mongoose = require('mongoose')
-const logAction = require('../utils/logger')
-const { scheduleRetrain } = require('../utils/recommendationRetrainQueue')
+// const Rating = require('../models/rating')
+// const ArchivedRatingModel = require('../models/archivedratings')
+// const PackageModel = require('../models/package')
+// const mongoose = require('mongoose')
+// const logAction = require('../utils/logger')
+// const { scheduleRetrain } = require('../utils/recommendationRetrainQueue')
+
+import Rating from '../models/rating.js';
+import ArchivedRatingModel from '../models/archivedratings.js';
+import PackageModel from '../models/package.js';
+import mongoose from 'mongoose';
+import logAction from '../utils/logger.js';
+import { scheduleRetrain } from '../utils/recommendationRetrainQueue.js';
 
 const submitRating = async (req, res) => {
     const { packageId, rating, review } = req.body;
@@ -334,4 +341,4 @@ const restoreArchivedRating = async (req, res) => {
     }
 }
 
-module.exports = { submitRating, getPackageRatings, deleteRating, adminDeleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings, getArchivedRatings, restoreArchivedRating }
+export { submitRating, getPackageRatings, deleteRating, adminDeleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings, getArchivedRatings, restoreArchivedRating };

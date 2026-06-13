@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import * as authController from '../controllers/authController.js';
+import userAuth from '../middleware/userAuth.js';
+import userVerify from '../middleware/userVerify.js';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
-const userAuth = require('../middleware/userAuth')
-const userVerify = require('../middleware/userVerify')
 
 //Authentication Controllers
 router.post('/checkDups', authController.checkDups)
@@ -20,4 +21,4 @@ router.post('/reset-password', authController.resetPassword)
 router.post('/refresh-token', authController.refreshToken)
 router.get('/refresh', authController.refreshToken)
 
-module.exports = router;
+export default router;

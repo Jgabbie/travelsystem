@@ -1,8 +1,8 @@
-const VisaModel = require('../models/visas');
-const {
+import VisaModel from '../models/visas.js';
+import {
     getVisaDeadlineInfo,
     processVisaDeadlineAction,
-} = require('../controllers/visaController');
+} from '../controllers/visaController.js';
 
 const processVisaDeadlines = async () => {
     const applications = await VisaModel.find({
@@ -35,7 +35,7 @@ const startVisaDeadlineScheduler = () => {
     }, 60 * 60 * 1000);
 };
 
-module.exports = {
+export {
     processVisaDeadlines,
     startVisaDeadlineScheduler,
 };

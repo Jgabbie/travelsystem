@@ -74,4 +74,6 @@ apiFetch.patch = (endpoint, data, options = {}) => {
 
 apiFetch.delete = (endpoint, options = {}) => apiFetch(endpoint, { ...options, method: 'DELETE' });
 
-module.exports = apiFetch;
+// module.exports = apiFetch;
+
+export default apiFetch;

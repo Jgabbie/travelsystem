@@ -1,5 +1,5 @@
-const PassportModel = require('../models/passport');
-const { processPassportDeadlineAction } = require('../controllers/passportController');
+import PassportModel from '../models/passport.js';
+import { processPassportDeadlineAction } from '../controllers/passportController.js';
 
 const processPassportDeadlines = async () => {
     const applications = await PassportModel.find({
@@ -27,7 +27,7 @@ const startPassportDeadlineScheduler = () => {
     }, 60 * 60 * 1000);
 };
 
-module.exports = {
+export {
     processPassportDeadlines,
     startPassportDeadlineScheduler,
 };

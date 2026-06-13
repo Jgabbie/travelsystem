@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import * as preferrencesController from '../controllers/preferrencesController.js';
+import userAuth from '../middleware/userAuth.js';
+
 const router = express.Router();
-const preferrencesController = require('../controllers/preferrencesController');
-const userAuth = require('../middleware/userAuth');
 
 router.post('/save', userAuth, preferrencesController.savePreferrences);
 router.get('/me', userAuth, preferrencesController.getMyPreferrences);
 
-module.exports = router;
+export default router;
