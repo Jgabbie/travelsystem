@@ -205,32 +205,21 @@ export default function QuotationsPaymentProcess() {
     const uploadAllFiles = async (passportFiles, photoFiles, visaFiles) => {
         const formData = new FormData();
 
-        // Helper to process arrays
-        const processFiles = (fileArray, label) => {
-            fileArray.forEach((file, index) => {
-                // Check if it's already a File object or needs conversion
-                let fileToAppend;
-                if (file.originFileObj) {
-                    fileToAppend = file.originFileObj;
-                } else if (file.base64) {
-                    fileToAppend = base64ToFile(file.base64, file.name || `${label}_${index}.jpg`, file.type);
-                }
+        const passportFileObjs = (passportFiles || [])
+            .filter(f => f && f.base64) // Filter null values first, then check base64
+            .map(file => base64ToFile(file.base64, file.name, file.type));
 
-                if (fileToAppend) {
-                    // IMPORTANT: Ensure the key matches what your backend expects (e.g., "files")
-                    formData.append("files", fileToAppend);
-                }
-            });
-        };
+        const photoFileObjs = (photoFiles || [])
+            .filter(f => f && f.base64) // Filter null values first, then check base64
+            .map(file => base64ToFile(file.base64, file.name, file.type));
 
-        processFiles(passportFiles, 'passport');
-        processFiles(photoFiles, 'photo');
-        processFiles(visaFiles, 'visa');
+        const visaFileObjs = (visaFiles || [])
+            .filter(f => f && f.base64) // Filter null values first, then check base64
+            .map(file => base64ToFile(file.base64, file.name, file.type));
 
-        // If no files were added, don't even make the request
-        if (!formData.has("files")) {
-            throw new Error("No files selected for upload");
-        }
+        [...passportFileObjs, ...photoFileObjs, ...visaFileObjs].forEach(file => {
+            if (file) formData.append("files", file);
+        });
 
         const res = await apiFetch.post(
             "/upload/upload-booking-documents",
