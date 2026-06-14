@@ -31,7 +31,7 @@ export default function SuccessfulBooking() {
             })
             .catch(err => {
                 console.error(err);
-                notification.error({ message: 'Unable to verify booking.', placement: 'topRight' });
+                //notification.error({ message: 'Unable to verify booking.', placement: 'topRight' });
             });
 
         // Ensure local state is cleared regardless

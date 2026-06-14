@@ -45,7 +45,7 @@ export default function QuotationFormInEx({
     const ensureArray = (value) => {
         if (Array.isArray(value)) return value;
         if (typeof value === 'string') {
-            return value.split('\n').map((line) => line.trim());
+            return value.split('\n')
         }
         return [];
     };
@@ -76,13 +76,15 @@ export default function QuotationFormInEx({
 
     }, [setFormData]);
 
-    const inclusionLines = formData?.inclusions?.length
-        ? ensureArray(formData.inclusions)
-        : normalizeList(inclusions);
+    const inclusionLines =
+        formData?.inclusions !== undefined
+            ? ensureArray(formData.inclusions)
+            : normalizeList(inclusions);
 
-    const exclusionLines = formData?.exclusions?.length
-        ? ensureArray(formData.exclusions)
-        : normalizeList(exclusions);
+    const exclusionLines =
+        formData?.exclusions !== undefined
+            ? ensureArray(formData.exclusions)
+            : normalizeList(exclusions);
 
     const displayInclusionLines = stripEmptyLines(inclusionLines);
     const displayExclusionLines = stripEmptyLines(exclusionLines);
@@ -134,7 +136,11 @@ export default function QuotationFormInEx({
                                 }))
                             }
                             rows={Math.max(4, inclusionLines.length)}
-                            style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
+                            style={{
+                                width: '100%',
+                                resize: 'none',
+                                marginTop: 4
+                            }}
                             placeholder="Add one inclusion per line"
                         />
                     )}
@@ -161,7 +167,11 @@ export default function QuotationFormInEx({
                                 }))
                             }
                             rows={Math.max(4, exclusionLines.length)}
-                            style={{ width: '100%', resize: 'vertical', marginTop: 4 }}
+                            style={{
+                                width: '100%',
+                                resize: 'none',
+                                marginTop: 4
+                            }}
                             placeholder="Add one exclusion per line"
                         />
                     )}

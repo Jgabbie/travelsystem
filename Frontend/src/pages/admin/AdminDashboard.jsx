@@ -494,6 +494,7 @@ export default function AdminDashboard() {
                       height: 300,
                       backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
                       backgroundSize: imageUrl ? 'cover' : undefined,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
                       backgroundPosition: imageUrl ? 'center' : undefined,
                       color: imageUrl ? '#ffffff' : undefined
                     }}
@@ -530,7 +531,7 @@ export default function AdminDashboard() {
         )}
 
         <div style={{ marginTop: 24 }}>
-          <h2>Most Booked Durations</h2>
+          <h2>Top 3 Most Booked Durations</h2>
           {topDurationEntries.length > 0 ? (
             <Row gutter={[16, 16]}>
               {topDurationEntries.map((entry, idx) => {
@@ -539,12 +540,13 @@ export default function AdminDashboard() {
                 return (
                   <Col xs={24} sm={12} md={8} key={entry.label}>
                     <Card
-                      className={`top-duration-card ${imageUrl ? 'has-image' : ''}`}
                       style={{
-                        height: 300,
-                        backgroundImage: imageUrl ? `linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.30)), url(${imageUrl})` : undefined,
+                        height: 170,
                         backgroundSize: imageUrl ? 'cover' : undefined,
                         backgroundPosition: imageUrl ? 'center' : undefined,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        border: '2px solid #d9d9d9',
+                        borderRadius: 8,
                         color: imageUrl ? '#ffffff' : undefined
                       }}
                     >
