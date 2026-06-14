@@ -40,6 +40,141 @@ export default function ProfilePage() {
         nationality: ''
     });
 
+    //NATIONALITIES
+    const nationalities = [
+        'Afghan',
+        'Albanian',
+        'Algerian',
+        'American',
+        'Andorran',
+        'Angolan',
+        'Argentine',
+        'Armenian',
+        'Australian',
+        'Austrian',
+        'Azerbaijani',
+        'Bahraini',
+        'Bangladeshi',
+        'Barbadian',
+        'Belarusian',
+        'Belgian',
+        'Belizean',
+        'Beninese',
+        'Bhutanese',
+        'Bolivian',
+        'Bosnian',
+        'Botswanan',
+        'Brazilian',
+        'British',
+        'Bruneian',
+        'Bulgarian',
+        'Burkinabe',
+        'Burmese',
+        'Burundian',
+        'Cambodian',
+        'Cameroonian',
+        'Canadian',
+        'Chilean',
+        'Chinese',
+        'Colombian',
+        'Congolese',
+        'Costa Rican',
+        'Croatian',
+        'Cuban',
+        'Cypriot',
+        'Czech',
+        'Danish',
+        'Dominican',
+        'Dutch',
+        'Ecuadorian',
+        'Egyptian',
+        'English',
+        'Estonian',
+        'Ethiopian',
+        'Fijian',
+        'Filipino',
+        'Finnish',
+        'French',
+        'Georgian',
+        'German',
+        'Ghanaian',
+        'Greek',
+        'Guatemalan',
+        'Haitian',
+        'Honduran',
+        'Hungarian',
+        'Icelandic',
+        'Indian',
+        'Indonesian',
+        'Iranian',
+        'Iraqi',
+        'Irish',
+        'Israeli',
+        'Italian',
+        'Jamaican',
+        'Japanese',
+        'Jordanian',
+        'Kazakh',
+        'Kenyan',
+        'Kuwaiti',
+        'Laotian',
+        'Latvian',
+        'Lebanese',
+        'Liberian',
+        'Libyan',
+        'Lithuanian',
+        'Luxembourgish',
+        'Malaysian',
+        'Malian',
+        'Maltese',
+        'Mexican',
+        'Mongolian',
+        'Moroccan',
+        'Nepalese',
+        'New Zealander',
+        'Nigerian',
+        'Norwegian',
+        'Omani',
+        'Pakistani',
+        'Panamanian',
+        'Paraguayan',
+        'Peruvian',
+        'Polish',
+        'Portuguese',
+        'Qatari',
+        'Romanian',
+        'Russian',
+        'Saudi',
+        'Scottish',
+        'Senegalese',
+        'Serbian',
+        'Singaporean',
+        'Slovak',
+        'Slovenian',
+        'Somali',
+        'South African',
+        'South Korean',
+        'Spanish',
+        'Sri Lankan',
+        'Sudanese',
+        'Swedish',
+        'Swiss',
+        'Syrian',
+        'Taiwanese',
+        'Tanzanian',
+        'Thai',
+        'Tunisian',
+        'Turkish',
+        'Ukrainian',
+        'Uruguayan',
+        'Venezuelan',
+        'Vietnamese',
+        'Welsh',
+        'Yemeni',
+        'Zambian',
+        'Zimbabwean'
+    ];
+
 
     //MOOD OPTIONS
     const [moodOptions, setMoodOptions] = useState([]);
@@ -668,12 +803,19 @@ export default function ProfilePage() {
                                             {editing ? (
                                                 <DatePicker
                                                     placeholder="Select birthdate"
-                                                    value={values.birthdate ? dayjs(values.birthdate) : null}
+                                                    value={values.birthdate
+                                                        ? dayjs(values.birthdate)
+                                                        : dayjs('2000-01-01')
+                                                    }
                                                     onChange={(date) =>
                                                         valueHandler('birthdate', date ? date.format('YYYY-MM-DD') : '')
                                                     }
                                                     format="YYYY-MM-DD"
                                                     allowClear
+                                                    showToday={false}
+                                                    disabledDate={(current) =>
+                                                        current && current > dayjs().subtract(18, 'years').endOf('day')
+                                                    }
                                                     style={{ width: '100%' }}
                                                 />
                                             ) : (
@@ -759,11 +901,20 @@ export default function ProfilePage() {
                                         <div className="profile-section-item">
                                             <span className="profile-section-label">Nationality</span>
                                             {editing ? (
-                                                <Input
-                                                    placeholder="Enter your nationality"
+                                                <Select
+                                                    showSearch
                                                     allowClear
-                                                    value={values.nationality}
-                                                    onChange={(e) => valueHandler('nationality', e.target.value)}
+                                                    placeholder="Select nationality"
+                                                    value={values.nationality || undefined}
+                                                    onChange={(value) => valueHandler('nationality', value)}
+                                                    style={{ width: '100%' }}
+                                                    options={nationalities.map((nationality) => ({
+                                                        label: nationality,
+                                                        value: nationality,
+                                                    }))}
+                                                    filterOption={(input, option) =>
+                                                        option?.label.toLowerCase().includes(input.toLowerCase())
+                                                    }
                                                 />
                                             ) : (
                                                 <p className="profile-section-value">{values.nationality || 'Not set'}</p>
