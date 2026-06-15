@@ -728,7 +728,7 @@ const updatePassportApplicationWithDocs = async (req, res) => {
             birthCertificate,
             applicationForm,
             govId,
-            additionalDocs
+            // additionalDocs
         } = req.body;
 
         // Find the application
@@ -755,9 +755,9 @@ const updatePassportApplicationWithDocs = async (req, res) => {
         if (birthCertificate) application.submittedDocuments.birthCertificate = birthCertificate;
         if (applicationForm) application.submittedDocuments.applicationForm = applicationForm;
         if (govId) application.submittedDocuments.govId = govId;
-        if (additionalDocs && Array.isArray(additionalDocs)) {
-            application.submittedDocuments.additionalDocs = additionalDocs; // now array is valid
-        }
+        // if (additionalDocs && Array.isArray(additionalDocs)) {
+        //     application.submittedDocuments.additionalDocs = additionalDocs; // now array is valid
+        // }
 
         application.onPenalty = false;
         application.secondChance = false;
@@ -1036,7 +1036,7 @@ const requestPassportDocumentResubmission = async (req, res) => {
         birthCertificate: 'PSA Birth Certificate',
         applicationForm: 'Application Form',
         govId: 'Government-issued ID',
-        additionalDocs: 'Additional Documents'
+        // additionalDocs: 'Additional Documents'
     };
 
     try {
@@ -1061,13 +1061,13 @@ const requestPassportDocumentResubmission = async (req, res) => {
         application.resubmissionTargets = [...new Set([...(application.resubmissionTargets || []), ...uniqueKeys])];
         application.submittedDocuments = application.submittedDocuments || {};
 
-        for (const key of uniqueKeys) {
-            if (key === 'additionalDocs') {
-                application.submittedDocuments.additionalDocs = [];
-            } else {
-                application.set(`submittedDocuments.${key}`, null);
-            }
-        }
+        // for (const key of uniqueKeys) {
+        //     if (key === 'additionalDocs') {
+        //         application.submittedDocuments.additionalDocs = [];
+        //     } else {
+        //         application.set(`submittedDocuments.${key}`, null);
+        //     }
+        // }
 
         application.markModified('submittedDocuments');
         application.status = "Payment Completed";
