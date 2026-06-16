@@ -2,6 +2,10 @@
     min-height: 100vh;
 }
 
+.reviewratings-statistics {
+    margin-bottom: 20px;
+}
+
 .rating-management-card {
     border-radius: 16px;
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
@@ -214,24 +218,15 @@
     color: #1f8f3a !important;
 }
 
-@media (max-width: 768px) {
-
-    .reviewratings-actions-row,
-    .reviewratings-actions-filters,
-    .reviewratings-actions-buttons {
-        flex-direction: column;
-        align-items: stretch;
+@media (max-width: 576px) {
+    .reviewratings-statistics {
+        gap: 12px;
     }
 
-    .reviewratings-actions-field,
-    .reviewratings-actions-field--search,
-    .reviewratings-actions-buttons .ant-btn,
-    .reviewratings-search-input,
-    .reviewratings-select,
-    .reviewratings-date-filter {
-        width: 100% !important;
-        flex: none !important;
+    .reviewratings-actions-field {
+        width: 100%;
     }
+
 }
 
 /* Table styling */

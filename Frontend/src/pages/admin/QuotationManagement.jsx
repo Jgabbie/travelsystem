@@ -373,7 +373,7 @@ export default function QuotationManagement() {
                 <h1 className="page-header">Quotation Management</h1>
 
                 {!showArchived && (
-                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Row gutter={16} className="quotation-statistics">
                         <Col xs={24} sm={6}>
                             <Card className="quotation-management-card">
                                 <Statistic

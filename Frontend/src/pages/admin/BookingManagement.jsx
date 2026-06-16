@@ -456,7 +456,7 @@ export default function BookingManagement() {
       <div className="booking-management-container">
         <h1 className="page-header">Booking Management</h1>
         {!showArchived && (
-          <Row gutter={16} style={{ marginBottom: 20 }}>
+          <Row gutter={16} className="booking-statistics">
             <Col xs={24} sm={6}>
               <Card className="booking-management-card">
                 <Statistic title="Total" value={totalBookings} prefix={<CalendarOutlined />} />

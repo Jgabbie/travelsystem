@@ -352,7 +352,7 @@ export default function VisaApplications() {
                 <h1 className="page-header">Visa Applications</h1>
 
                 {!showArchived && (
-                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Row gutter={16} className="visa-applications-statistics">
                         <Col xs={24} sm={6}>
                             <Card className="visaapps-management-card">
                                 <Statistic

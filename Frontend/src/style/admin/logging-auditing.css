@@ -103,25 +103,11 @@
     font-size: 12px;
 }
 
-@media (max-width: 640px) {
-
-    .logging-actions-row,
-    .auditing-actions-row,
-    .logging-actions-filters,
-    .auditing-actions-filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
+@media (max-width: 576px) {
 
     .logging-actions-field,
-    .auditing-actions-field,
-    .logging-actions-field--search,
-    .auditing-actions-field--search,
-    .logging-search-input,
-    .auditing-search-input,
-    .logging-select,
-    .auditing-select {
-        width: 100% !important;
-        max-width: 100%;
+    .auditing-actions-field {
+        width: 100%;
     }
+
 }

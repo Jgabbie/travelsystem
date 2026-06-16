@@ -534,7 +534,7 @@ export default function TransactionManagement() {
 
 
           {!showArchived && (
-            <Row gutter={16} style={{ marginBottom: 20 }}>
+            <Row gutter={16} className="transaction-statistics">
               <Col xs={24} sm={6}>
                 <Card className="transaction-management-card">
                   <Statistic

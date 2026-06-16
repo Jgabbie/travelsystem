@@ -5,6 +5,10 @@
   margin-bottom: 24px;
 }
 
+.transaction-statistics {
+  margin-bottom: 20px;
+}
+
 .transaction-management-card {
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
@@ -796,6 +800,16 @@
   margin: 0;
 }
 
+@media (max-width: 576px) {
+  .transaction-statistics {
+    gap: 12px;
+  }
+
+  .transaction-actions-field {
+    width: 100%;
+  }
+
+}
 
 
 
@@ -818,8 +832,7 @@
 
 
 
-
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
 
   .transaction-actions-row,
   .transaction-actions-filters,
@@ -854,4 +867,4 @@
   .transaction-view-grid {
     grid-template-columns: 1fr;
   }
-}
+} */

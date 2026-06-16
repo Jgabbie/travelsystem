@@ -7,6 +7,10 @@
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+.package-statistics {
+  margin-bottom: 20px;
+}
+
 /* Statistic / management card styling */
 .package-management-card,
 .package-management-card .ant-card {
@@ -382,25 +386,7 @@
   color: #305797 !important;
 }
 
-@media (max-width: 768px) {
 
-  .packagemanagement-actions-row,
-  .packagemanagement-actions-filters,
-  .packagemanagement-actions-buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .packagemanagement-actions-field,
-  .packagemanagement-actions-field--search,
-  .packagemanagement-actions-buttons .ant-btn,
-  .packagemanagement-search-input,
-  .packagemanagement-select,
-  .package-date-filter {
-    width: 100% !important;
-    flex: none !important;
-  }
-}
 
 
 
@@ -684,4 +670,15 @@
   .package-details-stats {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 576px) {
+  .package-statistics {
+    gap: 12px;
+  }
+
+  .packagemanagement-actions-field {
+    width: 100%;
+  }
+
 }

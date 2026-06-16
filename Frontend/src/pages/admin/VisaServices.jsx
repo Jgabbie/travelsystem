@@ -142,7 +142,7 @@ export default function VisaServices() {
                 <h1 className="page-header">Visa Services</h1>
 
                 {!showArchived && (
-                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Row gutter={16} className="visaservice-statistics">
                         <Col xs={24} sm={8}>
                             <Card className="visaservice-management-card">
                                 <Statistic

@@ -5,6 +5,10 @@
     margin-bottom: 24px;
 }
 
+.quotation-statistics {
+    margin-bottom: 20px;
+}
+
 .quotation-management-card {
     border-radius: 16px;
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
@@ -211,22 +215,13 @@
     color: #992A46 !important;
 }
 
-@media (max-width: 768px) {
-
-    .quotation-management-actions-row,
-    .quotation-management-actions-filters,
-    .quotation-management-actions-buttons {
-        flex-direction: column;
-        align-items: stretch;
+@media (max-width: 576px) {
+    .quotation-statistics {
+        gap: 12px;
     }
 
-    .quotation-management-actions-field,
-    .quotation-management-actions-field--search,
-    .quotation-management-actions-buttons .ant-btn,
-    .quotationmanagement-search-input,
-    .quotation-select,
-    .quotation-date-filter {
-        width: 100% !important;
-        flex: none !important;
+    .quotation-management-actions-field {
+        width: 100%;
     }
+
 }

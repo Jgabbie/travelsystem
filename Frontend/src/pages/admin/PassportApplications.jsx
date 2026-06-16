@@ -338,7 +338,7 @@ export default function PassportApplications() {
                 <h1 className="page-header">Passport Applications</h1>
 
                 {!showArchived && (
-                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Row gutter={16} className="passportapplications-statistics">
                         <Col xs={24} sm={6}>
                             <Card className="passportapps-management-card">
                                 <Statistic

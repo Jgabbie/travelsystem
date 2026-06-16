@@ -2,6 +2,10 @@
     min-height: 100vh;
 }
 
+.cancellation-statistics {
+    margin-bottom: 20px;
+}
+
 .cancellation-management-card {
     border-radius: 16px;
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
@@ -264,25 +268,18 @@
 }
 
 
-@media (max-width: 768px) {
-
-    .cancel-actions-row,
-    .cancel-actions-filters,
-    .cancel-actions-buttons {
-        flex-direction: column;
-        align-items: stretch;
+@media (max-width: 576px) {
+    .cancellation-statistics {
+        gap: 12px;
     }
 
-    .cancel-actions-field,
-    .cancel-actions-field--search,
-    .cancel-actions-buttons .ant-btn,
-    .cancellationrequests-search-input,
-    .cancellationrequests-select,
-    .cancellation-date-filter {
-        width: 100% !important;
-        flex: none !important;
+    .cancel-actions-field {
+        width: 100%;
     }
+
 }
+
+
 
 /* View modal */
 .cancellation-view-modal .ant-modal-content {
@@ -392,19 +389,4 @@
 /* DatePicker */
 .cancellations-container .ant-picker {
     border-radius: 8px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 576px) {
-    .ant-table {
-        font-size: 12px;
-    }
-
-    .user-actions {
-        gap: 8px;
-    }
-
-    .cancellation-view-grid {
-        grid-template-columns: 1fr;
-    }
 }

@@ -291,7 +291,7 @@ export default function PackageManagement() {
 
         {/* STATISTICS */}
         {!showArchived && (
-          <Row gutter={16} style={{ marginBottom: 20 }}>
+          <Row gutter={16} className="package-statistics">
             <Col xs={24} sm={8}>
               <Card className="package-management-card">
                 <Statistic

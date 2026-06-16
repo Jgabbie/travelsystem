@@ -3,6 +3,10 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+.visa-applications-statistics {
+    margin-bottom: 20px;
+}
+
 /* Statistic / management card styling */
 .visaapps-management-card,
 .visaapps-management-card .ant-card {
@@ -204,22 +208,13 @@
     color: #1f8f3a !important;
 }
 
-@media (max-width: 768px) {
-
-    .visaapplications-actions-row,
-    .visaapplications-actions-filters,
-    .visaapplications-actions-buttons {
-        flex-direction: column;
-        align-items: stretch;
+@media (max-width: 576px) {
+    .visa-applications-statistics {
+        gap: 12px;
     }
 
-    .visaapplications-actions-field,
-    .visaapplications-actions-field--search,
-    .visaapplications-actions-buttons .ant-btn,
-    .visaapplications-search-input,
-    .visaapplications-select,
-    .visaapplications-date-filter {
-        width: 100% !important;
-        flex: none !important;
+    .visapplications-actions-field {
+        width: 100%;
     }
+
 }

@@ -387,7 +387,7 @@ export default function CancellationRequests() {
                 <h1 className="page-header">Cancellation Requests</h1>
 
                 {!showArchived && (
-                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Row gutter={16} className="cancellation-statistics">
                         <Col xs={24} sm={8}>
                             <Card className='cancellation-management-card'>
                                 <Statistic

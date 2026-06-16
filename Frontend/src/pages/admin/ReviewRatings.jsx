@@ -322,7 +322,7 @@ export default function ReviewRatings() {
                 <h1 className="page-header">Reviews & Ratings</h1>
 
                 {!showArchived && (
-                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                    <Row gutter={16} className="reviewratings-statistics">
                         <Col xs={24} sm={8}>
                             <Card className="rating-management-card">
                                 <Statistic

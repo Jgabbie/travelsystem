@@ -5,6 +5,10 @@
   margin-bottom: 24px;
 }
 
+.booking-statistics {
+  margin-bottom: 20px;
+}
+
 .booking-management-card {
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
@@ -262,24 +266,23 @@
 }
 
 
-@media (max-width: 768px) {
 
-  .bookingmanagement-actions-row,
-  .bookingmanagement-actions-filters,
-  .bookingmanagement-actions-buttons {
-    flex-direction: column;
-    align-items: stretch;
+
+
+
+@media (max-width: 576px) {
+  .booking-statistics {
+    gap: 12px;
   }
 
-  .bookingmanagement-actions-field,
-  .bookingmanagement-actions-field--search,
-  .bookingmanagement-actions-buttons .ant-btn,
-  .bookingmanagement-search-input,
-  .bookingmanagement-select,
+  .bookingmanagement-actions-field {
+    width: 100%;
+  }
+
   .booking-date-filter {
-    width: 100% !important;
-    flex: none !important;
+    width: 100%;
   }
+
 }
 
 

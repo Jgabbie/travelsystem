@@ -3,6 +3,10 @@
     box-shadow: 0 6px 20px rgba(48, 87, 151, 0.1);
 }
 
+.passportapplications-statistics {
+    margin-bottom: 20px;
+}
+
 /* Statistic / management card styling */
 .passportapps-management-card,
 .passportapps-management-card .ant-card {
@@ -205,22 +209,13 @@
     color: #1f8f3a !important;
 }
 
-@media (max-width: 768px) {
-
-    .passportapplications-actions-row,
-    .passportapplications-actions-filters,
-    .passportapplications-actions-buttons {
-        flex-direction: column;
-        align-items: stretch;
+@media (max-width: 576px) {
+    .passportapplications-statistics {
+        gap: 12px;
     }
 
-    .passportapplications-actions-field,
-    .passportapplications-actions-field--search,
-    .passportapplications-actions-buttons .ant-btn,
-    .passportapplications-search-input,
-    .passportapplications-select,
-    .passportapplications-date-filter {
-        width: 100% !important;
-        flex: none !important;
+    .passportapplications-actions-field {
+        width: 100%;
     }
+
 }
