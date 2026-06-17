@@ -336,7 +336,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                 {
                                     timer > 0 ? <p id='footer-text-modal'> Wait for <span style={{ color: "#992A46" }}>{timer}</span> sec to send OTP again </p>
                                         :
-                                        <p id='footer-text-modal'>Didn't get the code? <Button className='login-otp-button-links-modal' type='link' onClick={(e) => {
+                                        <p id='footer-text-modal'>Didn't get the code? <Button className='login-otp-button-links-modal-click-here' type='link' onClick={(e) => {
                                             resendOTP(e);
                                             setTimer(60);
                                         }}>Click here</Button></p>

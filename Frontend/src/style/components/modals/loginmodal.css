@@ -192,8 +192,20 @@ body {
     border: none !important;
 }
 
+.login-otp-button-links-modal-click-here {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 4px;
+    margin-left: 0px;
+    padding-left: 4px;
+    margin-right: 5px;
+    color: #305797;
+    border: none !important;
+}
+
 .login-button-links-modal:hover,
-.login-otp-button-links-modal:hover {
+.login-otp-button-links-modal:hover,
+.login-otp-button-links-modal-click-here:hover {
     text-decoration: underline;
     color: #992A46 !important;
     border: "none" !important;
