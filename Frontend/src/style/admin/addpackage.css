@@ -1,6 +1,12 @@
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+  }
 
   .add-package-container {
     flex: 1;
@@ -61,6 +67,19 @@
     min-width: 340px;
   }
 
+  .add-package-package-type-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+
+  .add-package-visarequirement-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    margin-top: 20px;
+  }
+
   .package-type-card-group {
     display: flex;
     gap: 15px;
@@ -80,6 +99,12 @@
   .package-type-card.selected {
     border: 2px solid #305797 !important;
     box-shadow: 0 0 8px rgba(48, 87, 151, 0.3);
+  }
+
+  .package-type-card-text,
+  .visarequirement-card-text {
+    font-size: 12px;
+    color: #555;
   }
 
   .startenddates-add-package {
@@ -297,8 +322,10 @@
     color: #fff !important;
     border-radius: 10px;
     height: 40px;
+    width: 120px;
     border: none !important;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+    margin-bottom: 20px;
   }
 
   .delete-button {

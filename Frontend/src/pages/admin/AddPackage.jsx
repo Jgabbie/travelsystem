@@ -901,16 +901,15 @@ export default function AddPackage() {
       }}
     >
       {loadingPackage || savingPackage ? (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
+        <div className="loading-container">
           <Spin description={loadingPackage ? "Loading package..." : "Saving..."} />
         </div>
       ) : (
 
         <div>
           <Button
-            style={{ marginBottom: 20, width: 120 }}
             type="primary"
-            className="back-add-package-button backsubmit-button"
+            className="backsubmit-button"
             onClick={() => {
               navigate(`${basePath}/packages`);
             }}
@@ -928,7 +927,7 @@ export default function AddPackage() {
               <h2 className="section-headers">Basic Information</h2>
 
               {/* Package Type */}
-              <div style={{ display: "flex", flexDirection: "column", marginBottom: 20 }}>
+              <div className="add-package-package-type-section">
                 <label className="add-package-input-labels">Package Type</label>
 
                 <div className="package-type-card-group">
@@ -949,7 +948,7 @@ export default function AddPackage() {
                     }}
                   >
                     <h3>Domestic</h3>
-                    <p style={{ fontSize: 12, color: "#666" }}>
+                    <p className="package-type-card-text">
                       Travel within the country
                     </p>
                   </Card>
@@ -971,7 +970,7 @@ export default function AddPackage() {
                     }}
                   >
                     <h3>International</h3>
-                    <p style={{ fontSize: 12, color: "#666" }}>
+                    <p className="package-type-card-text">
                       Travel outside the country
                     </p>
                   </Card>
@@ -980,7 +979,7 @@ export default function AddPackage() {
               </div>
 
               {values.packageType === "international" && (
-                <div style={{ display: "flex", flexDirection: "column", marginTop: 20, marginBottom: 20 }}>
+                <div className="add-package-visarequirement-section">
                   <label className="add-package-input-labels">Visa Requirement</label>
 
                   <div className="package-type-card-group">
@@ -999,7 +998,7 @@ export default function AddPackage() {
                       }}
                     >
                       <h3>Visa Required</h3>
-                      <p style={{ fontSize: 12, color: "#666" }}>
+                      <p className="visarequirement-card-text">
                         Travelers must apply for a visa
                       </p>
                     </Card>
@@ -1020,7 +1019,7 @@ export default function AddPackage() {
                       }}
                     >
                       <h3>No Visa Needed</h3>
-                      <p style={{ fontSize: 12, color: "#666" }}>
+                      <p className="visarequirement-card-text">
                         Visa-free destination
                       </p>
                     </Card>
@@ -1761,7 +1760,7 @@ export default function AddPackage() {
                   />
 
                   <Button
-                    type="default"
+                    type="primary"
                     className="package-image-action-button highlighted-button"
                     onClick={() => videoInputRef.current?.click()}
                     disabled={Boolean(values.video)}
