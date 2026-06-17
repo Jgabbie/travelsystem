@@ -43,6 +43,18 @@
     border-radius: 8px;
 }
 
+.quotation-request-tag {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.quotation-request-tag-text {
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    margin: 0;
+}
+
 .quotationrequest-details-card,
 .quotationrequest-revision-grid .ant-card {
     border: 1px solid #e6ebf2;

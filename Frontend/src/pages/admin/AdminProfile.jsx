@@ -3,6 +3,7 @@ import { Input, Button, notification, Spin, Card, Space, ConfigProvider } from '
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined } from '@ant-design/icons';
 import '../../style/client/profilepage.css'
 import apiFetch from '../../config/fetchConfig';
+import dayjs from 'dayjs';
 
 export default function AdminProfile() {
     const [userData, setUserData] = useState(null)
@@ -155,8 +156,11 @@ export default function AdminProfile() {
                 .slice(0, 3) //just get 3 recent pending approvals
                 .map((booking) => { //get necessary details for display
                     const details = booking.bookingDetails || {}
-                    const travelDate = details.travelDate
-                    const packageType = details.packageType || ''
+
+                    console.log('Booking details:', details) // Log the booking details to see what is available
+
+                    const travelDate = dayjs(details.travelDate.startDate).format('MMMM D, YYYY')
+                    const packageType = details.bookingType || ''
                     const date = travelDate
                         ? new Date(travelDate).toLocaleDateString('en-US', {
                             month: 'short',
@@ -167,7 +171,7 @@ export default function AdminProfile() {
 
                     return { //create new object with necessary details for display
                         _id: booking._id,
-                        title: details.packageName || 'Package',
+                        title: details.tourPackageTitle || 'Package',
                         date,
                         status: 'Pending',
                         packageType: packageType,
@@ -537,7 +541,7 @@ export default function AdminProfile() {
                                                         {booking?.status || 'Pending'}
                                                     </span>
                                                 </div>
-                                                <p className="profile-booking-details">Ref: {booking?.reference || 'BK-00000'} • {booking?.packageType === 'fixed' ? 'Fixed Booking' : 'Customized'}</p>
+                                                <p className="profile-booking-details">Ref: {booking?.reference || 'BK-00000'} • {booking?.packageType}</p>
                                             </div>
                                         ))}
                                     </div>

@@ -753,9 +753,9 @@ export default function QuotationRequest() {
                         <Card
                             style={{ borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
                             className={`quotationrequest-status-card${isBooked ? ' is-booked' : ''}`}
-                            title={<Tag color="green">Quotation {quotation.status}</Tag>}
+                            title={<Tag className="quotation-request-tag" color="green">Quotation {quotation.status}</Tag>}
                         >
-                            <p style={{ margin: 0, fontSize: 14 }}>
+                            <p className="quotation-request-tag-text">
                                 This quotation has been successfully booked.
                             </p>
                         </Card>
