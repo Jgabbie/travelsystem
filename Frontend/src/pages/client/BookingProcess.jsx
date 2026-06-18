@@ -562,7 +562,7 @@ export default function BookingProcess() {
             if (currentStep === 2) {
                 photoFilesFormatted = await Promise.all(
                     photoFileLists.map(async (list) => {
-                        const fileObj = list?.[0]?.originFileObj;
+                        const fileObj = getUploadFileObj(list?.[0]);
 
                         if (!fileObj) {
                             throw new Error("Invalid photo upload");
@@ -578,7 +578,7 @@ export default function BookingProcess() {
 
                 passportFilesFormatted = await Promise.all(
                     fileLists.map(async (list) => {
-                        const fileObj = list?.[0]?.originFileObj;
+                        const fileObj = getUploadFileObj(list?.[0]);
 
                         if (!fileObj) {
                             throw new Error("Invalid file upload");
@@ -594,7 +594,7 @@ export default function BookingProcess() {
 
                 visaFilesFormatted = await Promise.all(
                     visaFileLists.map(async (list) => {
-                        const fileObj = list?.[0]?.originFileObj;
+                        const fileObj = getUploadFileObj(list?.[0]);
 
                         if (!fileObj) {
                             return null;
@@ -660,6 +660,12 @@ export default function BookingProcess() {
 
     //GO TO PREVIOUS PAGE OF REGISTRATION--------------------------------
     const prev = () => setCurrentStep(currentStep - 1);
+
+    const getUploadFileObj = (item) => {
+        return item?.originFileObj || item;
+    };
+
+
 
 
     //VALIDATE UPLOADED FILES--------------------------------
@@ -1619,7 +1625,7 @@ export default function BookingProcess() {
                                                 size="small"
                                                 onClick={() => passportFileInputs.current[index]?.click()}
                                             >
-                                                Change Passport
+                                                {isDomesticPackage ? 'Change Valid ID' : 'Change Passport'}
                                             </Button>
                                         )}
 
@@ -1643,7 +1649,24 @@ export default function BookingProcess() {
                                             onChange={(e) => {
                                                 const f = e.target.files && e.target.files[0];
                                                 if (!f) return;
-                                                handleChange({ file: f, fileList: [f] }, index);
+
+                                                if (validateFile(f) === Upload.LIST_IGNORE) {
+                                                    e.target.value = '';
+                                                    return;
+                                                }
+
+                                                handleChange({
+                                                    file: f,
+                                                    fileList: [{
+                                                        uid: `${Date.now()}-${f.name}`,
+                                                        name: f.name,
+                                                        type: f.type,
+                                                        size: f.size,
+                                                        status: 'done',
+                                                        originFileObj: f,
+                                                    }]
+                                                }, index);
+
                                                 e.target.value = '';
                                             }}
                                         />
@@ -1656,7 +1679,24 @@ export default function BookingProcess() {
                                             onChange={(e) => {
                                                 const f = e.target.files && e.target.files[0];
                                                 if (!f) return;
-                                                handlePhotoChange({ file: f, fileList: [f] }, index);
+
+                                                if (validateFile(f) === Upload.LIST_IGNORE) {
+                                                    e.target.value = '';
+                                                    return;
+                                                }
+
+                                                handlePhotoChange({
+                                                    file: f,
+                                                    fileList: [{
+                                                        uid: `${Date.now()}-${f.name}`,
+                                                        name: f.name,
+                                                        type: f.type,
+                                                        size: f.size,
+                                                        status: 'done',
+                                                        originFileObj: f,
+                                                    }]
+                                                }, index);
+
                                                 e.target.value = '';
                                             }}
                                         />
