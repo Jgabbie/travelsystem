@@ -416,12 +416,11 @@ const updateTransaction = async (req, res) => {
                     status: 'Successful'
                 })
 
-                const paymentType = booking?.bookingDetails?.paymentDetails?.paymentType || null
-                const paymentMode = booking?.bookingDetails?.paymentMode || null
-                const isDepositPayment = paymentType === 'deposit' || paymentMode === 'Deposit'
+                const isFirstSuccessfulPayment = successfulCount === 1
 
-                if (isDepositPayment && successfulCount === 1 && !booking.slotDecremented) {
+                if (isFirstSuccessfulPayment && !booking.slotDecremented) {
                     const slotDecremented = await decrementPackageSlotsForBooking(booking)
+
                     if (!slotDecremented) {
                         console.warn('No matching date range found or no slots remaining for booking:', booking._id)
                     }
