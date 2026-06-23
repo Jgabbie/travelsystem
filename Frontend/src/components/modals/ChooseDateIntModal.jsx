@@ -15,7 +15,9 @@ export default function ChooseDateIntModal({
     selectedDateRate,
     onDateChange
 }) {
-    // Single object for start and end dates
+
+
+    // single object for start and end dates
     dayjs.extend(isSameOrBefore);
     const [selectedDateRange, setSelectedDateRange] = useState({ startDate: null, endDate: null });
     const [searchText, setSearchText] = useState('');
@@ -28,7 +30,8 @@ export default function ChooseDateIntModal({
         setShowAvailableOnly(false);
     }
 
-    // Sync local selection with parent
+
+    // sync local selection with parent
     useEffect(() => {
         if (selectedDate) {
             const d = dayjs(selectedDate);
@@ -40,6 +43,8 @@ export default function ChooseDateIntModal({
         }
     }, [selectedDate, packageData]);
 
+
+    // handle proceed action
     const handleProceed = () => {
         const { startDate, endDate } = selectedDateRange;
         if (!startDate || !endDate) return;
@@ -51,10 +56,14 @@ export default function ChooseDateIntModal({
         });
     };
 
+
+    // handle cancel action
     const handleCancel = () => {
         setSelectedDateRange({ startDate: null, endDate: null });
         onCancel?.();
     };
+
+
 
     return (
         <Modal
@@ -63,7 +72,7 @@ export default function ChooseDateIntModal({
             footer={null}
             rootClassName="choose-date-int-modal"
             width={860}
-            centered={true}
+            centered
         >
             <div className="choose-date-int-content">
                 <h1 className="choose-date-heading">Select Preferred Date</h1>
@@ -72,19 +81,21 @@ export default function ChooseDateIntModal({
                 </h3>
 
                 <div style={{ marginBottom: 12 }} className="choose-date-filters">
-                    <Space direction="horizontal" size="small">
+                    <Space className="choose-date-space" direction="horizontal" size="small" wrap>
                         <Input.Search
                             placeholder="Search dates (e.g. Mar, Apr)"
                             allowClear
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
-                            style={{ width: 220 }}
+                            className="choose-date-search"
                         />
 
                         <DatePicker
                             placeholder="Filter by date"
+                            allowClear
                             value={filterDate}
                             onChange={(d) => setFilterDate(d)}
+                            className="choose-date-datepicker"
                         />
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -196,7 +207,7 @@ export default function ChooseDateIntModal({
 
                 <div className="choose-date-actions">
                     <div className="left-content">
-                        <h3 style={{ fontSize: 12 }}>
+                        <h3 className="left-content-text" >
                             You have selected: <span style={{ fontWeight: "bold" }}>
                                 {selectedDateRange.startDate && selectedDateRange.endDate
                                     ? `${selectedDateRange.startDate.format('MMMM D, YYYY')} - ${selectedDateRange.endDate.format('MMMM D, YYYY')}`

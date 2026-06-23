@@ -8,6 +8,8 @@ import LoginModal from '../../components/modals/LoginModal'
 import '../../style/client/passport.css'
 import apiFetch from '../../config/fetchConfig'
 
+
+// list of DFA locations for the dropdown
 const dfaLocations = [
     'DFA Aseana (Paranaque)',
     'DFA Manila (Robinsons Place)',
@@ -33,12 +35,16 @@ export default function RenewPassport() {
 
     const navigate = useNavigate()
 
+
+    // error state for form validation
     const [error, setError] = useState({
         location: '',
         preferredDate: '',
         preferredTime: ''
     });
 
+
+    // form submission handler
     const submitRequest = async () => {
 
         const newErrors = {
@@ -87,6 +93,8 @@ export default function RenewPassport() {
         }
     }
 
+
+    // disable dates that are less than 2 weeks from now and weekends
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
         const twoWeeksFromNow = today.add(14, 'day');
@@ -101,6 +109,8 @@ export default function RenewPassport() {
         );
     };
 
+
+    // disable hours outside of 8am-5pm
     const disabledHours = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {
@@ -110,6 +120,9 @@ export default function RenewPassport() {
         }
         return hours;
     }
+
+
+
 
     return (
         <ConfigProvider
@@ -164,7 +177,6 @@ export default function RenewPassport() {
                     onClick={() => {
                         navigate('/passandvisa-service');
                     }}
-                    style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
                 >
                     <ArrowLeftOutlined />
                     Back

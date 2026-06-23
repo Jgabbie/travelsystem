@@ -610,7 +610,7 @@
 
     .package-left,
     .package-right {
-        max-width: 900px;
+        min-width: 900px;
     }
 
     .package-tabs {
@@ -624,9 +624,28 @@
     }
 }
 
+@media (max-width: 940px) {
+
+    .packagepage-container {
+        padding: 20px 16px 32px;
+    }
+
+    .package-left,
+    .package-right {
+        min-width: 760px;
+        width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .packagepage-container {
-        padding: 100px 16px 32px;
+        padding: 60px 16px 32px;
+    }
+
+    .package-left,
+    .package-right {
+        min-width: 460px;
+        width: 100%;
     }
 
     .package-left {
@@ -662,9 +681,15 @@
 
 @media (max-width: 480px) {
 
+    .packagepage-container {
+        padding: 80px 16px 32px;
+    }
+
     .package-left,
     .package-right {
         gap: 14px;
+        min-width: 330px;
+        width: 100%;
     }
 
     .package-description p {

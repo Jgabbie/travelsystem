@@ -180,6 +180,10 @@
     text-align: left;
 }
 
+.left-content-text {
+    font-size: 12px;
+}
+
 .right-actions {
     display: flex;
     gap: 10px;
@@ -238,4 +242,171 @@
 .choose-date-cancel:hover {
     background-color: #e9e9e9 !important;
     color: #992A46 !important;
+}
+
+@media (max-width: 768px) {
+    .choose-date-int-modal .ant-modal {
+        width: calc(100% - 40px) !important;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .choose-date-heading {
+        font-size: 24px;
+    }
+
+    .choose-date-secondheading {
+        font-size: 18px;
+    }
+
+    .choose-date-space {
+        width: 100%;
+    }
+
+    .choose-date-search,
+    .choose-date-datepicker {
+        max-width: 160px;
+        width: 100%;
+    }
+
+    .choose-date-filters,
+    .choose-date-actions {
+        width: 100%;
+    }
+
+    .choose-date-proceed,
+    .choose-date-cancel {
+        max-width: 120px;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .choose-date-int-modal .ant-modal {
+        width: calc(100% - 24px) !important;
+        max-width: none;
+        margin: 0 auto;
+    }
+
+    .choose-date-int-content {
+        padding: 0;
+    }
+
+
+    .choose-date-heading {
+        font-size: 20px;
+    }
+
+    .choose-date-secondheading {
+        font-size: 14px;
+    }
+
+    .choose-date-space {
+        width: 100%;
+    }
+
+    .choose-date-search {
+        min-width: 300px !important;
+        width: 100%;
+    }
+
+    .choose-date-datepicker {
+        min-width: 300px !important;
+        width: 100%;
+    }
+
+
+    .budget-card {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 14px;
+        box-sizing: border-box;
+    }
+
+    .budget-card-info {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .budget-card-daterange {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .budget-card-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .budget-card-daterange-dates {
+        font-weight: 600;
+    }
+
+    .range-price {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        font-size: 13px;
+        white-space: normal;
+    }
+
+    .range-price-extrarate {
+        display: block;
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .range-slots {
+        width: 100%;
+        display: block;
+        padding-top: 8px;
+        border-top: 1px solid #e5e5e5;
+        font-size: 12px;
+        text-align: left;
+    }
+
+    .budget-card.selected {
+        padding-top: 48px;
+        box-shadow: 0 10px 22px rgba(31, 42, 68, 0.14);
+    }
+
+    .budget-card.selected::before {
+        top: 12px;
+        right: 12px;
+        font-size: 9px;
+        letter-spacing: 0.3px;
+        padding: 3px 7px;
+    }
+
+
+    .choose-date-filters,
+    .choose-date-actions {
+        width: 100%;
+    }
+
+    .choose-date-proceed,
+    .choose-date-cancel {
+        max-width: 80px;
+    }
+
+    .left-content-text,
+    .left-content-text span {
+        font-size: 10px;
+    }
+
 }

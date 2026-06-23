@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from 'react'
-import { Button, Collapse, ConfigProvider, Input, Modal, Image, Typography } from 'antd'
+import { Button, Collapse, ConfigProvider, Input, Typography } from 'antd'
 import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import '../../style/client/faqspage.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 const { Panel } = Collapse
 
+
+// faq data for the page
 const faqData = [
     {
         category: 'Bookings',
@@ -64,13 +66,16 @@ export default function FAQsPage() {
     const [activeCategory, setActiveCategory] = useState('All')
 
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
-    const [chatMessage, setChatMessage] = useState('')
 
+
+    // chatbot modal handlers
     const categories = useMemo(() => {
         const unique = new Set(faqData.map((item) => item.category))
         return ['All', ...Array.from(unique)]
     }, [])
 
+
+    // filter the faq data based on search term and active category
     const filteredFaqs = useMemo(() => {
         const term = searchTerm.trim().toLowerCase()
 
@@ -83,6 +88,8 @@ export default function FAQsPage() {
             return matchesTerm && matchesCategory
         })
     }, [activeCategory, searchTerm])
+
+
 
     return (
         <ConfigProvider

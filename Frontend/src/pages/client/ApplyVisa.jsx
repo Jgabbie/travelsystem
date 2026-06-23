@@ -264,7 +264,6 @@ export default function ApplyVisa() {
                     onClick={() => {
                         navigate('/passandvisa-service');
                     }}
-                    style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
                 >
                     <ArrowLeftOutlined />
                     Back
@@ -357,7 +356,7 @@ export default function ApplyVisa() {
                                             <span>₱{selectedService?.visaPrice || 0}</span>
                                         </div>
                                         <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <div>
+                                            <div className="form-group-section">
                                                 <div className="form-group">
                                                     <label className="passport-label">Preferred appointment date</label>
                                                     <DatePicker
