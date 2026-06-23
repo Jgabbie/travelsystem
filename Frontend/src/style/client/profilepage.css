@@ -567,9 +567,15 @@
 }
 
 @media (max-width: 480px) {
+
+    .profile-header {
+        padding-top: 50px;
+        margin-left: 20px;
+    }
+
     .profile-container {
         padding: 12px;
-        padding-top: 100px;
+        padding-top: 20px;
     }
 
     .profile-avatar {

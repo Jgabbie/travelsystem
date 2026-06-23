@@ -20,6 +20,19 @@
     gap: 6px;
 }
 
+.wishlist-primary-label {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.wishlist-primary-label-icon {
+    color: #1f2a44;
+    font-size: 22px;
+}
+
 .wishlist-header h2 {
     font-family: "Montserrat", sans-serif;
     font-size: 28px;
@@ -409,5 +422,11 @@
         flex: unset;
         border-radius: 14px 14px 0 0;
         height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .wishlist-page {
+        padding: 30px 20px 32px;
     }
 }

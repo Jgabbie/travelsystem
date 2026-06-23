@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Input, Button, notification, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin, Typography } from 'antd';
+import { Input, Button, notification, Card, Space, Rate, DatePicker, Select, ConfigProvider, Tag, Modal, Spin } from 'antd';
 import { EditOutlined, SaveOutlined, CloseOutlined, FileImageOutlined, CheckCircleFilled, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/profilepage.css'
 import '../../style/client/userpreference.css';
-
-
-const { Title, Text } = Typography;
 
 
 export default function ProfilePage() {
@@ -22,12 +19,18 @@ export default function ProfilePage() {
     const [reviewToDelete, setReviewToDelete] = useState(null)
 
     const fileInputRef = useRef(null)
+
+
+    //error states for input validation
     const [error, setError] = useState({
         firstname: '',
         lastname: '',
         email: '',
         phone: ''
     })
+
+
+    //values for user profile
     const [values, setValues] = useState({
         username: '',
         firstname: '',
@@ -40,7 +43,7 @@ export default function ProfilePage() {
         nationality: ''
     });
 
-    //NATIONALITIES
+    //nationalities
     const nationalities = [
         'Afghan',
         'Albanian',
@@ -176,18 +179,18 @@ export default function ProfilePage() {
     ];
 
 
-    //MOOD OPTIONS
+    //mood options
     const [moodOptions, setMoodOptions] = useState([]);
 
 
-    //TOUR TYPE OPTIONS
+    //tour type options
     const tourOptions = [
         'Domestic',
         'International'
     ];
 
 
-    //USER PREFERENCES
+    //user preferences
     const [preferences, setPreferences] = useState({
         moods: [],
         tours: []
@@ -195,7 +198,7 @@ export default function ProfilePage() {
     const [editingPreferences, setEditingPreferences] = useState(false);
 
 
-    //TOGGLE PREFERENCES
+    //toggle preferences
     const togglePreference = (key, value, limit) => {
         setPreferences(prev => {
             const current = prev[key] || [];
@@ -215,7 +218,7 @@ export default function ProfilePage() {
     };
 
 
-    //SAVE PREFERENCES OF USER
+    //save preferences
     const savePreferences = async () => {
         if ((preferences.moods || []).length <= 0 && (preferences.moods || []).length > 3) {
             notification.error({ message: 'Please select up to 3 mood preferences.', placement: 'topRight' });
@@ -244,12 +247,14 @@ export default function ProfilePage() {
         }
     };
 
+
+    //recent reviews and bookings
     const [recentReviews, setRecentReviews] = useState([])
     const [recentBookings, setRecentBookings] = useState([])
     const [isLoading, setIsLoading] = useState(false);
 
 
-    //FORMAT PHONE NUMBER WITH SPACES
+    //format phone number
     const formatPhoneNumber = (phoneStr) => {
         if (!phoneStr) return '';
         const cleaned = phoneStr.replace(/\D/g, '').slice(0, 13);
@@ -263,7 +268,8 @@ export default function ProfilePage() {
         return cleaned;
     };
 
-    //UPPERCASE FIRST LETTER OF NAMES
+
+    //uppercase first letter of each word and lowercase the rest
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -280,7 +286,7 @@ export default function ProfilePage() {
             .join(" ");
 
 
-    //INPUT VALIDATIONS
+    //validation function for input fields
     const validate = (field, value) => {
         if (field === "firstname") {
             if (value === "") return "First name is required.";
@@ -306,14 +312,14 @@ export default function ProfilePage() {
     };
 
 
-    //VALUE HANDLER
+    //value handler for input fields
     const valueHandler = (field, value) => {
         setValues(prev => ({ ...prev, [field]: value }));
         setError(prev => ({ ...prev, [field]: validate(field, value) }));
     };
 
 
-    //GET USER INITIALS
+    //get initials for profile avatar
     const getInitials = () => {
         const first = values.firstname?.trim() || userData?.firstname?.trim() || ''
         const last = values.lastname?.trim() || userData?.lastname?.trim() || ''
@@ -328,7 +334,7 @@ export default function ProfilePage() {
     }
 
 
-    //GET PACKAGE TAGS
+    //get package tags for mood options
     const fetchPackageTags = async () => {
         try {
             const response = await apiFetch.get('/package/get-packages-for-users');
@@ -343,7 +349,7 @@ export default function ProfilePage() {
     };
 
 
-    //GET USER PREFERENCES
+    //get user preferences
     const fetchPreferences = async () => {
         try {
             const response = await apiFetch.get("/preferences/me", { withCredentials: true });
@@ -362,7 +368,7 @@ export default function ProfilePage() {
     };
 
 
-    //GET USER DATA
+    //get user data
     const fetchUserData = async () => {
         try {
             const response = await apiFetch.get('/user/data', {
@@ -401,7 +407,7 @@ export default function ProfilePage() {
     }
 
 
-    //GET USER BOOKINGS
+    //get user bookings
     const fetchRecentBookings = async () => {
         try {
             const response = await apiFetch.get('/booking/my-bookings')
@@ -431,7 +437,7 @@ export default function ProfilePage() {
     }
 
 
-    //GET USER REVIEWS
+    //get user reviews
     const fetchRecentReviews = async () => {
         try {
             const response = await apiFetch.get('/rating/my-ratings')
@@ -451,7 +457,7 @@ export default function ProfilePage() {
     }
 
 
-    //DELETE REVIEW
+    //delete review modal
     const handleOpenDeleteModal = (review) => {
         if (!review?.id) {
             notification.error({ message: 'No review to delete.', placement: 'topRight' })
@@ -463,7 +469,7 @@ export default function ProfilePage() {
     }
 
 
-    //DELETE REVIEW CONFIRMATION
+    //delete review handler
     const handleDeleteReview = async () => {
         if (!reviewToDelete?.id) {
             notification.error({ message: 'No review to delete.', placement: 'topRight' })
@@ -483,7 +489,7 @@ export default function ProfilePage() {
     }
 
 
-    //RUN FETCHES ON PAGE LOAD
+    //run all the fetch functions on page load
     useEffect(() => {
         const init = async () => {
             try {
@@ -508,13 +514,13 @@ export default function ProfilePage() {
     }, []);
 
 
-    //EDIT HANDLER
+    //edit handler
     const handleEdit = () => {
         setEditing(true)
     }
 
 
-    //CANCEL HANDLER - REVERTS CHANGES
+    //cancel handler
     const handleCancel = () => {
         setEditing(false)
         // Reset form to previous values
@@ -546,7 +552,7 @@ export default function ProfilePage() {
     }
 
 
-    //IMAGE CHANGE HANDLER
+    //image change handler
     const handleImageChange = async (event) => {
         const file = event.target.files?.[0]
         if (!file) return
@@ -588,7 +594,7 @@ export default function ProfilePage() {
     }
 
 
-    // SAVE PROFILE
+    // save handler
     const handleSave = async () => {
         const nextErrors = {
             firstname: validate('firstname', values.firstname),
@@ -647,7 +653,6 @@ export default function ProfilePage() {
             setSaving(false)
         }
     }
-
 
 
 
@@ -969,7 +974,7 @@ export default function ProfilePage() {
                                     className="profile-card"
                                 >
                                     <div className="preference-section">
-                                        <div className='profile-card-header' style={{ marginBottom: 15 }}>
+                                        <div className='profile-section-header' style={{ marginBottom: 15 }}>
                                             <h3 className="profile-section-title">My Preferences</h3>
                                             <Button
                                                 type="primary"

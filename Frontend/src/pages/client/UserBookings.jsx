@@ -5,7 +5,6 @@ import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/userbookings.css'
 import { useNavigate } from 'react-router-dom'
-import TopNavUser from '../../components/topnav/TopNavUser'
 
 
 export default function UserBookings() {
@@ -31,6 +30,8 @@ export default function UserBookings() {
     const navigate = useNavigate()
     const fileInputRef = useRef()
 
+
+    //fetch bookings on component mount
     useEffect(() => {
         const fetchBookings = async () => {
             setLoading(true)
@@ -60,6 +61,8 @@ export default function UserBookings() {
         fetchBookings()
     }, [])
 
+
+    //filter bookings based on search and filters
     const filteredData = bookings.filter(item => {
         const matchesSearch =
             (item.reference?.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -84,40 +87,21 @@ export default function UserBookings() {
         return matchesSearch && matchesStatus && matchesBookingDate && matchesTravelDate;
     });
 
+
+    //navigate to booking invoice page
     const viewBookingInvoice = (booking) => {
         navigate('/user-booking-invoice', { state: { booking } })
     }
 
+
+    //open cancellation policy modal
     const openPolicyModal = (key) => {
         setCancelTargetKey(key)
         setPolicyModalOpen(true)
     }
 
-    const closePolicyModal = () => {
-        setPolicyModalOpen(false)
-        setCancelTargetKey(null)
-    }
 
-    const proceedToCancelModal = () => {
-        setPolicyModalOpen(false)
-        setCancelReason('')
-        setCancelOtherReason('')
-        setCancelImages([])
-        setCancelComments('')
-        setPreviewImage(null)
-        setCancelModalOpen(true)
-    }
-
-    const closeCancelModal = () => {
-        setCancelModalOpen(false)
-        setCancelTargetKey(null)
-        setPreviewImage(null);
-        setCancelReason('')
-        setCancelOtherReason('')
-        setCancelImages([])
-        setCancelComments('')
-    }
-
+    //handle image selection and preview for cancellation proof
     const handleImageChange = (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -136,6 +120,8 @@ export default function UserBookings() {
         setPreviewImage(URL.createObjectURL(file));
     };
 
+
+    //confirm cancellation by uploading proof and sending cancellation request
     const confirmCancelBooking = async () => {
         setCancelModalOpen(false)
         setLoadingCancel(true)
@@ -200,6 +186,8 @@ export default function UserBookings() {
         }
     };
 
+
+    //define table columns with action buttons
     const columns = [
         {
             title: 'Reference',
@@ -271,6 +259,9 @@ export default function UserBookings() {
             )
         }
     ]
+
+
+
 
     return (
         <ConfigProvider

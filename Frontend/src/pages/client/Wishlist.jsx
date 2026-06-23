@@ -4,7 +4,6 @@ import { DeleteOutlined, EyeOutlined, CheckCircleFilled, SearchOutlined } from '
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/wishlist.css'
-import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function Wishlist() {
     const navigate = useNavigate()
@@ -20,6 +19,8 @@ export default function Wishlist() {
 
     const { Title, Text } = Typography
 
+
+    // fetch wishlist items on component mount
     useEffect(() => {
         const loadWishlist = async () => {
             try {
@@ -41,6 +42,8 @@ export default function Wishlist() {
         loadWishlist()
     }, [])
 
+
+    // memoized wishlist packages for filtering and rendering
     const wishlistPackages = useMemo(() => {
         return wishlistItems.map((entry) => {
             const pkg = entry?.packageId || {}
@@ -73,12 +76,16 @@ export default function Wishlist() {
         })
     }, [wishlistItems])
 
+
+    // memoized category options for the category filter
     const categoryOptions = useMemo(() => ([
         { value: 'All', label: 'All' },
         { value: 'Domestic', label: 'Domestic' },
         { value: 'International', label: 'International' }
     ]), [])
 
+
+    // memoized filtered packages based on search, category, availability, and price range
     const filteredPackages = useMemo(() => {
         const query = search.trim().toLowerCase();
         const normalizedCategory = category.toLowerCase();
@@ -102,6 +109,8 @@ export default function Wishlist() {
         });
     }, [search, category, availability, priceRange, wishlistPackages]);
 
+
+    // handle removal of a wishlist item
     const handleRemove = async (wishlistId) => {
         if (!wishlistId) return
         try {
@@ -116,6 +125,9 @@ export default function Wishlist() {
             notification.error({ message: errorMessage, placement: 'topRight' })
         }
     }
+
+
+
 
     return (
         <ConfigProvider
@@ -145,8 +157,8 @@ export default function Wishlist() {
                         <div className="wishlist-controls">
                             <div className="wishlist-search">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <SearchOutlined className='destinations-primary-label-icon' />
-                                    <Text className="destinations-primary-label">Search</Text>
+                                    <SearchOutlined className='wishlist-primary-label-icon' />
+                                    <Text className="wishlist-primary-label">Search</Text>
                                 </div>
                                 <Input
                                     allowClear

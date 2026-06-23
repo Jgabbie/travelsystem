@@ -25,6 +25,8 @@ export default function UserTransactions() {
     const receiptWatermarkText = selectedTransaction?.status === 'Successful' ? 'PAID' : 'NOT PAID';
     const receiptWatermarkClass = selectedTransaction?.status === 'Successful' ? 'receipt-watermark--paid' : 'receipt-watermark--unpaid';
 
+
+    //fetch user transactions on component mount
     useEffect(() => {
         const fetchTransactions = async () => {
             setLoading(true)
@@ -56,6 +58,8 @@ export default function UserTransactions() {
         fetchTransactions()
     }, [])
 
+
+    //filter transactions based on search text, status, and date
     const filteredData = transactions.filter(item => {
         const matchesSearch =
             (item.packageName?.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -74,6 +78,8 @@ export default function UserTransactions() {
         return matchesSearch && matchesStatus && matchesDate;
     })
 
+
+    //define table columns with action buttons
     const columns = [
         {
             title: 'Reference',
@@ -152,6 +158,8 @@ export default function UserTransactions() {
         }
     ]
 
+
+    //handle PDF generation and download for the receipt
     const handleDownloadPDF = async () => {
         const element = receiptRef.current;
         if (!element) {
@@ -229,6 +237,9 @@ export default function UserTransactions() {
             notification.error({ message: "Failed to generate PDF.", key: "pdf", placement: 'topRight' });
         }
     };
+
+
+
 
     return (
         <ConfigProvider
