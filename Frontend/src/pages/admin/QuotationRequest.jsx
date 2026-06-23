@@ -54,6 +54,8 @@ export default function QuotationRequest() {
 
     const [formErrors, setFormErrors] = useState({});
 
+
+    //fetch quotation data
     useEffect(() => {
         const fetchQuotation = async () => {
             setLoading(true);
@@ -85,6 +87,8 @@ export default function QuotationRequest() {
         getAdminName();
     }, [id]);
 
+
+    //format date value
     const formatDateValue = (value) => {
         const parsed = dayjs(value);
         if (!parsed.isValid()) {
@@ -93,6 +97,8 @@ export default function QuotationRequest() {
         return parsed.format('MMM DD, YYYY');
     };
 
+
+    //format travel dates
     const formatTravelDates = (value) => {
         if (!value) return 'N/A';
 
@@ -114,6 +120,8 @@ export default function QuotationRequest() {
         return formatDateValue(value);
     };
 
+
+    //format travelers
     const formatTravelers = (value) => {
         if (typeof value === 'number') return String(value);
         if (!value || typeof value !== 'object') return 'N/A';
@@ -130,6 +138,8 @@ export default function QuotationRequest() {
         return parts.join(', ');
     };
 
+
+    //parse traveler counts
     const parseTravelerCounts = (value) => {
         if (!value) return { adult: 0, child: 0, infant: 0, total: 0 };
 
@@ -162,6 +172,8 @@ export default function QuotationRequest() {
         return { adult, child, infant, total: adult + child + infant };
     };
 
+
+    //calculate total price function
     const calculateTotalPrice = (data) => {
         const totalRate = parseFloat(data.totalRate) || 0;
         const totalChildRate = parseFloat(data.totalChildRate) || 0;
@@ -173,6 +185,8 @@ export default function QuotationRequest() {
             + (totalInfantRate * counts.infant);
     };
 
+
+    //normalize bullet points
     const normalizeBullets = (value) => {
         if (!value) return '';
         return value
@@ -188,6 +202,8 @@ export default function QuotationRequest() {
             .join('\n');
     };
 
+
+    //parse bullet lines
     const parseBulletLines = (value) =>
         String(value || '')
             .split('\n')
@@ -230,6 +246,8 @@ export default function QuotationRequest() {
     const itineraryNotes = details.itineraryNotes || [];
     const flightDetails = details.flightDetails || {};
 
+
+    // update formData when quotation data changes
     useEffect(() => {
         if (!quotation) return;
 
@@ -281,6 +299,8 @@ export default function QuotationRequest() {
         });
     }, [quotation, travelDates, hotel, airline, inclusions, exclusions, itinerary, itineraryNotes]);
 
+
+    //computed value
     useEffect(() => {
         const computed = calculateTotalPrice(formData);
         const computedValue = Number.isFinite(computed) ? String(computed) : '';
@@ -315,6 +335,8 @@ export default function QuotationRequest() {
         setEditableItinerary(newEditableItinerary);
     }, [quotation]);
 
+
+    //quotation forms
     const previewItems = [
         {
             title: "Quotation Form Preview",
@@ -355,6 +377,8 @@ export default function QuotationRequest() {
         },
     ];
 
+
+    //validation function
     const validateForm = () => {
         const errors = {};
         const travelerCounts = parseTravelerCounts(formData.travelers);
@@ -449,7 +473,8 @@ export default function QuotationRequest() {
         return Object.keys(errors).length === 0;
     };
 
-    // When a file is selected
+
+    // handle file selection for upload
     const handleFileSelect = (file) => {
         if (file.type !== "application/pdf") {
             notification.error({ message: "Only PDF files are allowed.", placement: "topRight" });
@@ -462,7 +487,8 @@ export default function QuotationRequest() {
         return Upload.LIST_IGNORE; // prevent default upload
     };
 
-    // Upload when "Send" button is clicked
+
+    // send quotation form function
     const handleSend = async () => {
         const isValid = validateForm();
         if (!isValid) {
@@ -546,6 +572,8 @@ export default function QuotationRequest() {
         }
     };
 
+
+    //generate and upload pdf function
     const generateAndUploadPdf = async () => {
         if (!pdfContainerRef.current) return;
 
@@ -633,6 +661,8 @@ export default function QuotationRequest() {
         }
     };
 
+
+    //next function in quotation form
     const handleNextPreview = () => {
         if (previewStep === 0) {
             const isValid = validateForm();
@@ -657,6 +687,8 @@ export default function QuotationRequest() {
         }));
     };
 
+
+    //remove row in quotation form details
     const updateDynamicRow = (index, field, value) => {
         setFormData(prev => {
             const newRows = [...(prev.dynamicRows || [])];
@@ -665,6 +697,8 @@ export default function QuotationRequest() {
         });
     };
 
+
+    //remove row in quotation form details
     const detailGroups = [
         {
             title: "Trip Overview",

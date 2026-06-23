@@ -34,6 +34,8 @@ export default function VisaServices() {
         return "";
     };
 
+
+    //fetch services
     const getServices = async () => {
         setLoading(true);
         try {
@@ -54,6 +56,8 @@ export default function VisaServices() {
         }
     };
 
+
+    //fetch archived services
     const getArchivedServices = async () => {
         setLoading(true);
         try {
@@ -76,15 +80,21 @@ export default function VisaServices() {
         getServices();
     }, []);
 
+
+    //show modal function
     const showModal = (service) => {
         setSelectedService(service);
         setIsModalOpen(true);
     };
 
+
+    //cancel modal function
     const handleCancel = () => {
         setIsModalOpen(false);
     };
 
+
+    //archive service function
     const handleArchive = async (key) => {
         try {
 
@@ -101,6 +111,8 @@ export default function VisaServices() {
         }
     };
 
+
+    //archive service function
     const handleRestore = async (key) => {
         try {
             await apiFetch.post(`/services/archived-services/${key}/restore`);
@@ -116,6 +128,7 @@ export default function VisaServices() {
     };
 
 
+    //filter functions
     const currentServices = showArchived ? archivedServices : servicesData;
 
     const filteredServices = currentServices.filter((service) => {
@@ -129,6 +142,9 @@ export default function VisaServices() {
     });
 
     const totalServices = servicesData.length;
+
+
+
 
     return (
         <ConfigProvider

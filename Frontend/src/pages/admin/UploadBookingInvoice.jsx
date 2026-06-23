@@ -15,7 +15,7 @@ import BookingRegistrationTermsInvoicePart2 from "../../components/form_bookingi
 
 const { Title, Text: AntText } = Typography;
 
-//INSTALLMENT AND PAYMENT COMPUTATION LOGIC
+//installment and payment schedule logic
 const getFrequencyWeeks = (value) => {
     if (value === "Every week") return 1;
     if (value === "Every 3 weeks") return 3;
@@ -115,7 +115,7 @@ export default function UploadBookingInvoice() {
 
     const documentsResubmissionRequired = Boolean(booking?.documentsResubmissionRequired);
 
-    //FETCH BOOKING DETAILS
+    //fetch booking details
     useEffect(() => {
         if (!reference) return;
         setLoading(true);
@@ -140,7 +140,7 @@ export default function UploadBookingInvoice() {
     }, [reference]);
 
 
-    //DOCUMENTS
+    //documents
     const summaryInvoice = bookingDetails
 
     const [form] = Form.useForm();
@@ -158,6 +158,7 @@ export default function UploadBookingInvoice() {
             notification.error({ message: "Please complete required fields.", placement: "topRight" });
         }
     };
+
 
     //go to previous step
     const prev = () => setCurrentStep(currentStep - 1);
@@ -218,6 +219,8 @@ export default function UploadBookingInvoice() {
         }
     };
 
+
+    //handle request document resubmission
     const handleRequestDocumentsResubmission = async (travelerIndex = null) => {
         if (!bookingId) {
             notification.error({ message: "Booking ID not found.", placement: "topRight" });
@@ -299,6 +302,8 @@ export default function UploadBookingInvoice() {
         || (bookingDetails?.paymentDetails?.paymentType === "deposit" ? "Deposit" : "Full Payment");
     const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
 
+
+    //generate invoice number
     const buildInvoiceNumber = (allBookings, currentBooking) => {
         if (!currentBooking) return "";
         const createdAtValue = currentBooking.bookingDate || currentBooking.createdAt;
@@ -341,6 +346,8 @@ export default function UploadBookingInvoice() {
         return `${monthKey}${String(sequence).padStart(2, "0")}`;
     };
 
+
+    //fetch invoice number
     useEffect(() => {
         if (!reference || !booking) return;
         const fetchInvoiceNumber = async () => {
@@ -372,6 +379,7 @@ export default function UploadBookingInvoice() {
     }, [booking]);
 
 
+    //prepare invoice data
     const invoice = {
         company: {
             name: "M&RC Travel and Tours",
@@ -408,6 +416,8 @@ export default function UploadBookingInvoice() {
         notes: 'Thank you for booking with M&RC Travel and Tours. Safe travels!'
     };
 
+
+    //calculate totals
     const calculateTotals = (items) => {
         const subtotal = items.reduce((sum, item) => sum + item.qty * item.rate, 0);
         const tax = 0;
@@ -441,6 +451,7 @@ export default function UploadBookingInvoice() {
         : null;
 
 
+    //invoice styles
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: "#333", fontFamily: "Helvetica" },
         logo: { width: 80, height: 80 },
@@ -473,6 +484,8 @@ export default function UploadBookingInvoice() {
         thankYou: { fontSize: 9, fontWeight: "bold", color: "#555" }
     });
 
+
+    //invoice document
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -630,6 +643,9 @@ export default function UploadBookingInvoice() {
         : booking?.travelers || []
     const passportFiles = booking?.passportFiles || [];
     const photoFiles = booking?.photoFiles || [];
+
+
+
 
     return (
         <ConfigProvider

@@ -11,6 +11,7 @@ import "../../style/components/modals/modaldesign.css";
 import { useAuth } from "../../hooks/useAuth";
 
 
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -53,6 +54,8 @@ export default function BookingManagement() {
   const isEmployee = auth?.role === 'Employee';
   const basePath = isEmployee ? '/employee' : '';
 
+
+  // function to map bookings from API response to table data
   const mapBookings = (response) => response.map((b) => {
     const rawTravel = b?.travelDate || b?.bookingDetails?.travelDate || null;
     const travelStart = rawTravel?.startDate
@@ -90,6 +93,8 @@ export default function BookingManagement() {
     };
   });
 
+
+  //fetch bookings
   const fetchBookings = async () => {
     setLoading(true);
     try {
@@ -104,6 +109,7 @@ export default function BookingManagement() {
   };
 
 
+  //fetch archived bookings
   const fetchArchivedBookings = async () => {
     setLoading(true);
     try {
@@ -124,6 +130,8 @@ export default function BookingManagement() {
 
   const currentData = showArchived ? archivedData : data;
 
+
+  //filter data functions
   const filteredData = currentData.filter(item => {
     const matchesSearch =
       (item.username.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -154,6 +162,7 @@ export default function BookingManagement() {
   })
 
 
+  //generate PDF function
   const generatePDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
 
@@ -219,6 +228,8 @@ export default function BookingManagement() {
     notification.success({ message: 'Report exported to PDF successfully.', placement: 'topRight' });
   };
 
+
+  //edit function
   const edit = (record) => {
     setEditingBooking(record);
     const bookingDetails = record.bookingDetails || {};
@@ -228,6 +239,8 @@ export default function BookingManagement() {
     setIsEditModalOpen(true);
   };
 
+
+  //archive function
   const handleArchive = async (key) => {
 
     try {
@@ -240,6 +253,8 @@ export default function BookingManagement() {
 
   };
 
+
+  //restore function
   const handleRestore = async (key) => {
 
     try {
@@ -252,6 +267,8 @@ export default function BookingManagement() {
 
   };
 
+
+  //view function
   const handleView = (key) => {
     const booking = data.find((item) => item.key === key);
     if (booking) {
@@ -260,6 +277,8 @@ export default function BookingManagement() {
     }
   };
 
+
+  //save function
   const save = async () => {
     try {
       if (!editingBooking) {
@@ -325,6 +344,8 @@ export default function BookingManagement() {
     }
   };
 
+
+  //table columns
   const columns = [
     { title: "Booking Reference", dataIndex: "ref" },
     { title: "Travel Package", dataIndex: "pkg" },
@@ -389,6 +410,8 @@ export default function BookingManagement() {
     }
   ];
 
+
+  //archived table columns
   const archivedColumns = [
     { title: "Booking Reference", dataIndex: "ref" },
     { title: "Travel Package", dataIndex: "pkg" },
@@ -444,6 +467,9 @@ export default function BookingManagement() {
   const totalFullyPaid = filteredData.filter(b => b.status === "Fully Paid" || b.status === "Confirmed").length;
   const totalPending = filteredData.filter(b => b.status === "Pending").length;
   const totalCancelled = filteredData.filter(b => b.status === "Cancelled").length;
+
+
+
 
   return (
     <ConfigProvider

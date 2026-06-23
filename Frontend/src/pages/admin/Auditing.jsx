@@ -36,6 +36,8 @@ export default function Auditing() {
         return uniqueActions.map((action) => ({ label: action, value: action }));
     }, [logs]);
 
+
+    //use memo - code only runs when logs changes
     const roleOptions = useMemo(() => {
         const uniqueRoles = Array.from(
             new Set(logs.map((log) => log?.performedBy?.role).filter(Boolean))
@@ -43,7 +45,8 @@ export default function Auditing() {
         return uniqueRoles.map((role) => ({ label: role, value: role }));
     }, [logs]);
 
-    // Filter logic for Search Bar
+
+    // filter logic for Search Bar
     const filteredLogs = logs.filter(log => {
         const searchLower = searchText.toLowerCase();
         const matchesSearch = log.action?.toLowerCase().includes(searchLower) ||
@@ -55,6 +58,7 @@ export default function Auditing() {
 
         return matchesSearch && matchesRole && matchesAction;
     });
+
 
     //columns for the audit logs table
     const columns = [
@@ -125,6 +129,9 @@ export default function Auditing() {
             }
         }
     ];
+
+
+
 
     return (
         <ConfigProvider

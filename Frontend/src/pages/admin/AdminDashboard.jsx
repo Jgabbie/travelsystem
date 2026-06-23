@@ -46,6 +46,8 @@ export default function AdminDashboard() {
   packageCountArray.sort((a, b) => b.count - a.count);
   const top3Packages = packageCountArray.slice(0, 3);
 
+
+  //display top packages function
   const displayTopPackages = (Array.isArray(popularPackages) && popularPackages.length)
     ? popularPackages.map(p => ({
       packageName: p.packageName,
@@ -86,6 +88,8 @@ export default function AdminDashboard() {
     durationCountMap[key] = (durationCountMap[key] || 0) + 1;
   });
 
+
+  //top 3 durations functions
   const topDurationEntries = Object.entries(durationCountMap)
     .sort((a, b) => b[1] - a[1]) // sort by count DESC
     .slice(0, 3) // top 3
@@ -94,8 +98,11 @@ export default function AdminDashboard() {
       count
     }));
 
+
   // build a map from duration -> image (take first package image found for that duration)
   const durationImageMap = {};
+
+
   // prefer popularPackages (API) first
   if (Array.isArray(popularPackages) && popularPackages.length) {
     popularPackages.forEach((p) => {
@@ -107,6 +114,8 @@ export default function AdminDashboard() {
       if (imageUrl && !durationImageMap[dur]) durationImageMap[dur] = imageUrl;
     });
   }
+
+
   // fallback: scan bookings' package info
   bookings.forEach((b) => {
     const dur = Number(b.packageId?.packageDuration);
@@ -155,7 +164,7 @@ export default function AdminDashboard() {
   const monthlyRevenue = monthlyRevenueData
 
 
-
+  //fetch stats
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -173,6 +182,8 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
+
+  //fetch transactions, bookings, popular packages, and quotations
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -221,7 +232,8 @@ export default function AdminDashboard() {
     fetchQuotations();
   }, []);
 
-  // Booking status breakdown
+
+  // booking status breakdown
   const bookingStatusCount = {
     pending: 0,
     notPaid: 0,
@@ -242,6 +254,8 @@ export default function AdminDashboard() {
     }
   });
 
+
+  //booking status breakdown series for pie chart
   const bookingStatusSeries = [
     { id: 0, value: bookingStatusCount.pending, label: 'Pending' },
     { id: 1, value: bookingStatusCount.notPaid, label: 'Not Paid' },
@@ -249,11 +263,14 @@ export default function AdminDashboard() {
     { id: 3, value: bookingStatusCount.cancelled, label: 'Cancelled' },
   ];
 
-  // Conversion rate
+
+  // conversion rate
   const completedBookingsCount = Array.isArray(quotations) ? quotations.filter(q => q?.status?.toLowerCase() === 'booked').length : 0;
   const totalQuotationRequests = Array.isArray(quotations) ? quotations.length : 0;
   const conversionRate = totalQuotationRequests === 0 ? 0 : (completedBookingsCount / totalQuotationRequests) * 100;
 
+
+  // update chart widths on resize
   useEffect(() => {
     const updateWidth = (node, setter, fallback) => {
       if (!node) return;
@@ -292,6 +309,9 @@ export default function AdminDashboard() {
 
     return () => observer.disconnect();
   }, []);
+
+
+
 
   return (
     <div>

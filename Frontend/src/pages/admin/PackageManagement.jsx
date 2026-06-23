@@ -51,12 +51,15 @@ export default function PackageManagement() {
     { label: "Unavailable", value: "unavailable" },
   ];
 
-  //SLOTS ----------------------------------------------------------
+
+  //show modal for package details
   const showModal = (pkg) => {
     setPkg(pkg);
     setIsModalOpen(true);
   };
 
+
+  //show modal for slots
   const showSlotsModal = (pkg) => {
     setSlotsPackage(pkg);
     setEditableSlots(
@@ -66,7 +69,7 @@ export default function PackageManagement() {
   };
 
 
-  //DISCOUNT ----------------------------------------------------------
+  //show modal for discount
   const showDiscountModal = (pkg) => {
     setDiscountPackage(pkg);
     setDiscountPercent(Number(pkg.packageDiscountPercent) || 0);
@@ -74,14 +77,14 @@ export default function PackageManagement() {
   };
 
 
-  //FORMAT DATE ----------------------------------------------------------
+  //format date
   const formatDate = (date) => {
     return date && dayjs(date).isValid()
       ? dayjs(date).format("MMM D, YYYY")
       : "Invalid Date";
   };
 
-  //SLOTS AND DISCOUNT MODAL ACTIONS ----------------------------------------------------------
+  //slots and discounts cancel modal functions
   const handleSlotsCancel = () => {
     setIsSlotsModalOpen(false);
     setSlotsPackage(null);
@@ -95,7 +98,7 @@ export default function PackageManagement() {
   };
 
 
-  //SAVE THE SLOTS
+  //save slots functions
   const handleSlotsSave = async () => {
     try {
 
@@ -132,7 +135,7 @@ export default function PackageManagement() {
   };
 
 
-  //SAVE THE DISCOUNT
+  //save discount function
   const handleDiscountSave = async () => {
     if (!discountPackage) return;
 
@@ -162,13 +165,13 @@ export default function PackageManagement() {
   };
 
 
-  //SHOW PACKAGE DETAILS MODAL ----------------------------------------------------------
+  //show package details cancel modal
   const handleCancel = () => {
     setIsModalOpen(false);
   }
 
 
-  //REMOVE PACKAGE ----------------------------------------------------------
+  //archive function
   const handleArchive = async (key) => {
     try {
       await apiFetch.delete(`/package/remove-package/${key}`);
@@ -182,7 +185,7 @@ export default function PackageManagement() {
   }
 
 
-  //RESTORE PACKAGE
+  //restore function
   const handleRestore = async (key) => {
 
     try {
@@ -196,7 +199,7 @@ export default function PackageManagement() {
   }
 
 
-  // GET PACKAGES ----------------------------------------------------------
+  // fetch packages
   const getPackages = async () => {
     setLoading(true);
     try {
@@ -220,7 +223,7 @@ export default function PackageManagement() {
   }
 
 
-  //GET ARCHIVED PACKAGES
+  //fetch archive functions
   const getArchivedPackages = async () => {
     setLoading(true);
     try {
@@ -242,7 +245,7 @@ export default function PackageManagement() {
   }
 
 
-  //GET TOTAL SLOTS FOR A PACKAGE ----------------------------------------------------------
+  //get total slots for function
   const availableSlots = (pkg) => {
     if (!pkg.packageSpecificDate || pkg.packageSpecificDate.length === 0) {
       return 0; // No specific dates means no available slots
@@ -258,7 +261,7 @@ export default function PackageManagement() {
   }, []);
 
 
-  // FILTERING ----------------------------------------------------------
+  // filter fucntions
   const currentPackages = showArchived ? archivedPackagesData : packagesData;
 
   const filteredPackages = currentPackages.filter((pkg) => {
@@ -276,6 +279,8 @@ export default function PackageManagement() {
   });
 
   const totalPackages = currentPackages.length;
+
+
 
 
   return (

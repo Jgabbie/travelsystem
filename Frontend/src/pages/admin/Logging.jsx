@@ -11,6 +11,8 @@ export default function Logging() {
     const [actionFilter, setActionFilter] = useState('');
     const [searchText, setSearchText] = useState('');
 
+
+    //role options for filtering
     const roleOptions = useMemo(() => {
         const uniqueRoles = Array.from(
             new Set(logs.map((log) => log?.performedBy?.role).filter(Boolean))
@@ -18,11 +20,15 @@ export default function Logging() {
         return uniqueRoles.map((role) => ({ label: role, value: role }));
     }, [logs]);
 
+
+    //actions options for filtering
     const actionOptions = useMemo(() => {
         const uniqueActions = Array.from(new Set(logs.map((log) => log.action))).filter(Boolean);
         return uniqueActions.map((action) => ({ label: action, value: action }));
     }, [logs]);
 
+
+    //fetch logs function
     useEffect(() => {
         const fetchLogs = async () => {
             try {
@@ -39,7 +45,7 @@ export default function Logging() {
         fetchLogs();
     }, []);
 
-    // Filter logic for Search Bar
+    // filter logic for Search Bar
     const filteredLogs = logs.filter(log => {
         const searchLower = searchText.toLowerCase();
         const matchesSearch = log.action?.toLowerCase().includes(searchLower) ||
@@ -52,6 +58,8 @@ export default function Logging() {
         return matchesSearch && matchesRole && matchesAction;
     });
 
+
+    //table columns
     const columns = [
         {
             title: 'Date/Time',
@@ -125,6 +133,9 @@ export default function Logging() {
             }
         },
     ];
+
+
+
 
     return (
         <ConfigProvider

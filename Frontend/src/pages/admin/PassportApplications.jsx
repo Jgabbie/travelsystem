@@ -9,6 +9,8 @@ import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/passportapplications.css";
 import "../../style/components/modals/modaldesign.css";
 
+
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -45,6 +47,7 @@ export default function PassportApplications() {
     const [archivingApplication, setArchivingApplication] = useState(null);
 
 
+    //fetch passport applications
     const getPassportApplications = async () => {
         try {
             setIsFetchingApplications(true);
@@ -70,6 +73,8 @@ export default function PassportApplications() {
         }
     }
 
+
+    //fetch archived passport applications
     const getArchivedPassportApplications = async () => {
         try {
             setIsFetchingApplications(true);
@@ -99,6 +104,8 @@ export default function PassportApplications() {
         getPassportApplications();
     }, []);
 
+
+    //filter functions
     const currentData = showArchived ? archivedApplications : passportApplications
 
     const filteredData = currentData.filter(item => {
@@ -124,6 +131,8 @@ export default function PassportApplications() {
     const approved = passportApplications.filter((item) => item.status === 'Approved').length
     const rejected = passportApplications.filter((item) => item.status === 'Rejected').length
 
+
+    //generate PDF function
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["Application Number", "Applicant Name", "Passport Type", "Submission Date", "Status"];
@@ -178,6 +187,8 @@ export default function PassportApplications() {
         notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
+
+    //archive passport application function
     const handleArchive = async (key) => {
         if (!key) {
             notification.error({ message: "Passport application not found", placement: "topRight" });
@@ -193,6 +204,8 @@ export default function PassportApplications() {
         }
     }
 
+
+    //restore passport application function
     const handleRestore = async (key) => {
         if (!key) {
             notification.error({ message: "Passport application not found", placement: "topRight" });
@@ -209,6 +222,7 @@ export default function PassportApplications() {
     }
 
 
+    //table columns
     const columns = [
         {
             title: "Application Number",
@@ -324,6 +338,9 @@ export default function PassportApplications() {
             ),
         },
     ];
+
+
+
 
     return (
         <ConfigProvider

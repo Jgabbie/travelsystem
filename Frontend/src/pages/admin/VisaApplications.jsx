@@ -10,6 +10,8 @@ import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/visaapplications.css";
 import "../../style/components/modals/modaldesign.css";
 
+
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -48,6 +50,8 @@ export default function VisaApplications() {
     const [isVisaApplicationRestoredModalOpen, setIsVisaApplicationRestoredModalOpen] = useState(false);
     const [archivingApplication, setArchivingApplication] = useState(null);
 
+
+    //fetch visa applications 
     const loadApplications = async () => {
         try {
             setIsFetchingApplications(true);
@@ -74,6 +78,8 @@ export default function VisaApplications() {
         }
     }
 
+
+    //fetch archived visa applications
     const loadArchivedApplications = async () => {
         try {
             setIsFetchingApplications(true);
@@ -104,6 +110,7 @@ export default function VisaApplications() {
     }, [])
 
 
+    //filter functions
     const currentData = showArchived ? archivedApplications : applications
 
     const filteredData = currentData.filter(item => {
@@ -129,6 +136,7 @@ export default function VisaApplications() {
     const rejected = applications.filter((item) => item.status === 'Rejected').length
 
 
+    //generate PDF function
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["Application Number", "Applicant Name", "Visa Type", "Submission Date", "Status"];
@@ -183,6 +191,8 @@ export default function VisaApplications() {
         notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
+
+    //archive visa application function
     const handleArchive = async (key) => {
         try {
             await apiFetch.delete(`/visa/applications/${key}/archive`)
@@ -194,6 +204,8 @@ export default function VisaApplications() {
         }
     }
 
+
+    //restore visa application function
     const handleRestore = async (key) => {
         try {
             await apiFetch.post(`/visa/archived-applications/${key}/restore`)
@@ -206,6 +218,8 @@ export default function VisaApplications() {
 
     }
 
+
+    //table columns
     const columns = [
         {
             title: "Application Number",
@@ -315,6 +329,8 @@ export default function VisaApplications() {
         },
     ];
 
+
+    //archived table columns with restore button
     const archivedColumns = columns.map((col) => {
         if (col.title !== "Actions") {
             return col;
@@ -339,6 +355,9 @@ export default function VisaApplications() {
             )
         };
     });
+
+
+
 
     return (
         <ConfigProvider

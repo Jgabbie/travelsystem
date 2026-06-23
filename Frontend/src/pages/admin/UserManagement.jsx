@@ -22,7 +22,7 @@ import "../../style/admin/users.css";
 import "../../style/components/modals/modaldesign.css";
 
 
-// HELPER: Converts Logo.png to Base64
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -64,6 +64,8 @@ export default function UserManagement() {
   const [isUserRestoredModalOpen, setIsUserRestoredModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("customers");
 
+
+  //fetch users function
   const getUsers = async () => {
     setLoading(true);
     try {
@@ -92,6 +94,8 @@ export default function UserManagement() {
     }
   };
 
+
+  //fetch archived users function
   const getArchivedUsers = async () => {
     setLoading(true);
     try {
@@ -120,7 +124,8 @@ export default function UserManagement() {
 
   useEffect(() => { getUsers(); }, []);
 
-  // PDF GENERATION WITH LOGO & HEADER
+
+  // generate pdf function
   const generatePDF = async () => {
     const doc = new jsPDF();
     const tableColumn = ["Name", "Username", "Email", "Role", "Status"];
@@ -129,14 +134,14 @@ export default function UserManagement() {
     ]);
 
     try {
-      // 1. Add Logo
+      //logo
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
       doc.addImage(imgData, "PNG", 14, 12, 35, 22);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
 
-    // 2. Company Info Header
+    // company info header
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text("M&RC TRAVEL AND TOURS", 52, 18);
@@ -146,7 +151,7 @@ export default function UserManagement() {
     doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
     doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
 
-    // 3. Report Title & Search Input Display
+    // report title
     doc.setDrawColor(48, 87, 151);
     doc.line(14, 38, 196, 38);
 
@@ -160,7 +165,7 @@ export default function UserManagement() {
     doc.setFont("helvetica", "normal");
     doc.text(`Date Generated: ${new Date().toLocaleString()}`, 14, 55);
 
-    // Display Search Value if any
+    // display search value
     let tableStartY = 62;
     if (searchText) {
       doc.setFont("helvetica", "bold");
@@ -169,7 +174,7 @@ export default function UserManagement() {
       tableStartY = 68;
     }
 
-    // 4. Generate Table
+    //geerate table
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
@@ -183,6 +188,8 @@ export default function UserManagement() {
     notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
   };
 
+
+  //handle archive user
   const handleArchive = async (key) => {
     try {
       await apiFetch.delete(`/user/deleteUsers/${key}`, { withCredentials: true });
@@ -192,6 +199,8 @@ export default function UserManagement() {
     } catch { notification.error({ message: "Archive failed", placement: "topRight" }); }
   };
 
+
+  //handle restore user
   const handleRestore = async (key) => {
     try {
       await apiFetch.post(`/user/archived-users/${key}/restore`, {}, { withCredentials: true });
@@ -204,6 +213,8 @@ export default function UserManagement() {
     }
   };
 
+
+  //handle edit user
   const edit = (record) => {
     setEditingUser(record);
 
@@ -219,6 +230,8 @@ export default function UserManagement() {
     setIsEditModalOpen(true);
   };
 
+
+  //handle save edited user
   const save = async () => {
     try {
       const values = await editForm.validateFields();
@@ -256,6 +269,8 @@ export default function UserManagement() {
   const customers = filteredUsers.filter(u => u.role === "Customer");
   const staff = filteredUsers.filter(u => u.role !== "Customer");
 
+
+  //table columns
   const columns = [
     { title: "Name", dataIndex: "name", editable: true },
     { title: "Username", dataIndex: "username", editable: true },
@@ -309,6 +324,8 @@ export default function UserManagement() {
     }
   ];
 
+
+  //archived table columns
   const archivedColumns = [
     { title: "Name", dataIndex: "name" },
     { title: "Username", dataIndex: "username" },
@@ -343,12 +360,16 @@ export default function UserManagement() {
     }
   ];
 
+
+  //function to resolve avatar url
   const resolveAvatarUrl = (value) => {
     if (!value) return "";
     if (value.startsWith("http") || value.startsWith("data:")) return value;
     const normalized = value.startsWith("/") ? value.slice(1) : value;
     return `${window.location.origin}/${normalized}`;
   };
+
+
 
 
   return (

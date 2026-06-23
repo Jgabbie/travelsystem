@@ -11,6 +11,7 @@ import "../../style/components/modals/modaldesign.css";
 import { useAuth } from "../../hooks/useAuth";
 
 
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -61,6 +62,8 @@ export default function QuotationManagement() {
         return adult + child + infant;
     };
 
+
+    //fetch quotations
     const fetchQuotations = async () => {
         setLoading(true);
         try {
@@ -88,6 +91,8 @@ export default function QuotationManagement() {
         fetchQuotations();
     }, []);
 
+
+    //fetch archived quotations function
     const fetchArchivedQuotations = async () => {
         setLoading(true);
         try {
@@ -111,6 +116,8 @@ export default function QuotationManagement() {
         }
     }
 
+
+    //filter functions
     const currentData = showArchived ? archivedData : data
 
     const filteredData = currentData.filter(item => {
@@ -136,6 +143,7 @@ export default function QuotationManagement() {
     });
 
 
+    //generate PDF function
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
 
@@ -209,6 +217,8 @@ export default function QuotationManagement() {
         notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
     };
 
+
+    //view function
     const handleView = (key) => {
         const quotation = data.find((item) => item.key === key);
         if (quotation) {
@@ -216,6 +226,8 @@ export default function QuotationManagement() {
         }
     }
 
+
+    //archive function
     const handleArchive = async (key) => {
         if (!key) {
             notification.error({ message: "Quotation not found", placement: "topRight" });
@@ -231,6 +243,8 @@ export default function QuotationManagement() {
         }
     }
 
+
+    //restore function
     const handleRestore = async (key) => {
         if (!key) {
             notification.error({ message: "Quotation not found", placement: "topRight" });
@@ -247,6 +261,8 @@ export default function QuotationManagement() {
 
     }
 
+
+    //table columns
     const columns = [
         {
             title: "Quotation Request No.",
@@ -360,6 +376,9 @@ export default function QuotationManagement() {
             </td>
         );
     }
+
+
+
 
     return (
         <ConfigProvider

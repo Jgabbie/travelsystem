@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 
-//STATUS STEPS FOR PASSPORT APPLICATION
+//status steps in order for passport application process
 const statusSteps = [
     { title: "Application Submitted", summary: "Application Submitted" },
     { title: "Application Approved", summary: "Application Approved" },
@@ -42,6 +42,8 @@ export default function ViewPassportApplication() {
     const [descriptionColumn, setDescriptionColumn] = useState(2);
     const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
 
+
+    //fetch applications
     const fetchApplication = useCallback(async () => {
         try {
             setLoading(true);
@@ -79,7 +81,8 @@ export default function ViewPassportApplication() {
 
     const applicantName = `${application?.userId?.firstname || ''} ${application?.userId?.lastname || ''}`.trim();
 
-    //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
+
+    //submit alternate appointment slots
     const handleSubmitAlternateSlots = async () => {
         setIsSubmittingSlots(true);
         try {
@@ -112,6 +115,8 @@ export default function ViewPassportApplication() {
         }
     };
 
+
+    //handle resubmit documents (send notification to applicant to resubmit specific document)
     const handleResubmitDocuments = async (documentKey) => {
         if (isUpdatingStatus) return;
 
@@ -135,14 +140,14 @@ export default function ViewPassportApplication() {
         }
     };
 
-    //GET PASSPORT APPLICATION DETAILS ON COMPONENT MOUNT ------------------------------------------------------
+    //refetch application details on component mount
     useEffect(() => {
         fetchApplication();
     }, [fetchApplication]);
 
 
 
-    // Compute when the current status was set and a deadline (days) for action
+    // compute when the current status was set and a deadline (days) for action
     const statusDeadlineDaysMap = {
         'Payment Completed': 5,
     };
@@ -153,7 +158,8 @@ export default function ViewPassportApplication() {
             ? dayjs(application.suggestedAppointmentScheduleChosen.date)
             : null;
 
-    // Use backend-provided processSteps if available
+
+    // use backend-provided processSteps if available
     const getProcessStepInfo = (stepTitle) => {
         if (!application?.processSteps || !application.processSteps[stepTitle]) {
             return { setDate: null, deadlineDate: null };
@@ -164,6 +170,9 @@ export default function ViewPassportApplication() {
             deadlineDate: step.deadlineDate ? dayjs(step.deadlineDate) : null,
         };
     };
+
+
+    //get the date when the current status was set, using statusHistory or fallback to timestamps
     const getStatusSetDate = (app) => {
         if (!app) return null;
         // prefer explicit status history entry
@@ -198,7 +207,9 @@ export default function ViewPassportApplication() {
             : application?.onPenalty
                 ? 'On Penalty'
                 : null;
-    // Auto-reject application if deadline is passed
+
+
+    // auto-reject application if deadline is passed
     useEffect(() => {
         if (!application || !statusDeadlineDate || hasProcessedRejection) return;
 
@@ -229,7 +240,8 @@ export default function ViewPassportApplication() {
         }
     }, [statusDeadlineDate, application, hasProcessedRejection, applicationId]);
 
-    // Helper: get when a particular step/status was set from statusHistory (fallback none)
+
+    //get when a particular step/status was set from statusHistory (fallback none)
     const getStepSetDateForTitle = (app, title) => {
         if (!app || !title) return null;
         const history = app.statusHistory;
@@ -244,7 +256,8 @@ export default function ViewPassportApplication() {
         return null;
     };
 
-    // Get the most recent staff/admin who changed the status (if available)
+
+    // get the most recent staff/admin who changed the status (if available)
     const getManagerName = (app) => {
         try {
             if (!app) return null;
@@ -287,7 +300,8 @@ export default function ViewPassportApplication() {
 
     const managerName = getManagerName(application);
 
-    //RENDER UPLOAD DOCUMENTS
+
+    //render a read-only file preview with download option
     const renderReadOnlyFile = (url, label) => {
         // Check if the URL contains '.pdf' (case insensitive)
         const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
@@ -325,6 +339,8 @@ export default function ViewPassportApplication() {
         );
     };
 
+
+    //label
     const normalizeLabel = (value) => (
         String(value)
             .replace(/_/g, " ")
@@ -332,6 +348,8 @@ export default function ViewPassportApplication() {
             .trim()
     );
 
+
+    //build a list of documents
     const buildDocumentList = (docs) => {
         if (!docs) return [];
 
@@ -391,7 +409,8 @@ export default function ViewPassportApplication() {
 
     const submittedDocuments = buildDocumentList(application?.submittedDocuments || application?.documents);
 
-    // STATUS UPDATE HANDLER ------------------------------------------------------
+
+    // status update handler
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable || isUpdatingStatus) return;
         // Map step index to status string
@@ -411,7 +430,8 @@ export default function ViewPassportApplication() {
         }
     };
 
-    //DFA REJECTED HANDLER ------------------------------------------------------
+
+    //dfa rejected handler
     const handleDFARejected = async () => {
         try {
             setIsUpdatingStatus(true);
@@ -425,6 +445,8 @@ export default function ViewPassportApplication() {
         }
     };
 
+
+    //dfa approved handler
     const handleDFAApproved = async () => {
         try {
             setIsUpdatingStatus(true);
@@ -439,7 +461,7 @@ export default function ViewPassportApplication() {
     }
 
 
-    // DISABLE PAST DATES AND WEEKENDS IN DATE PICKER -----------------------------------------------------
+    //disable dates for date picker
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
         const twoWeeksFromNow = today.add(14, 'day');
@@ -453,6 +475,9 @@ export default function ViewPassportApplication() {
             )
         );
     };
+
+
+    //disable hours for time picker
     const disabledHours = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {

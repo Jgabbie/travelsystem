@@ -16,6 +16,8 @@ export default function AddService() {
     const { serviceId } = location.state || {};
     const isEdit = Boolean(serviceId);
 
+
+    //form values and error states
     const [errors, setErrors] = useState({
         visaName: "",
         description: "",
@@ -30,12 +32,12 @@ export default function AddService() {
         visaPrice: "",
         requirements: [{ req: "", desc: "", isReq: "", applicationLink: "" }],
         standardProcessSteps: [],
-        // `processSteps` now holds only custom steps that will be inserted between
-        // the permanent standard steps 'Documents Submitted' and 'Processing By Embassy'.
         processSteps: [],
         reminders: [""],
     });
 
+
+    // standard process steps
     const STANDARD_PROCESS_STEPS = [
         { title: 'Application Submitted', description: 'The user has submitted the visa application.', daysToBeCompleted: 0 },
         { title: 'Application Approved', description: 'The visa application has been approved.', daysToBeCompleted: 0 },
@@ -53,6 +55,7 @@ export default function AddService() {
     const insertIndex = STANDARD_PROCESS_STEPS.findIndex(s => s.title === INSERT_AFTER_TITLE);
     const customCount = values.processSteps.length;
 
+    //set the standard steps
     useEffect(() => {
         setValues(prev => {
             if (Array.isArray(prev.standardProcessSteps) && prev.standardProcessSteps.length > 0) {
@@ -65,6 +68,8 @@ export default function AddService() {
         });
     }, []);
 
+
+    //validate values
     const validate = (field, value) => {
         if (field === "visaName" && !value.trim()) return "Visa name is required.";
         if (field === "description" && !value.trim()) return "Description is required.";
@@ -84,6 +89,8 @@ export default function AddService() {
         return "";
     };
 
+
+    //validate all fields at once
     const validateAll = (updatedValues) => {
         setErrors({
             visaName: validate("visaName", updatedValues.visaName),
@@ -94,11 +101,15 @@ export default function AddService() {
         });
     };
 
+
+    //handle value changes and validation
     const valueHandler = (field, value) => {
         setValues(prev => ({ ...prev, [field]: value }));
         setErrors(prev => ({ ...prev, [field]: validate(field, value) }));
     };
 
+
+    //add bullet function
     const addBullet = (type) => {
         if (type === "requirements") {
             const updated = [...values.requirements, { req: "", desc: "", isReq: "" }];
@@ -114,6 +125,8 @@ export default function AddService() {
         }
     };
 
+
+    //update bullet function
     const updateBullet = (type, index, value, subfield) => {
         if (type === "requirements") {
             const updated = [...values.requirements];
@@ -140,6 +153,8 @@ export default function AddService() {
         }
     };
 
+
+    //remove bullet function
     const removeBullet = (type, index) => {
         if (type === "requirements") {
             const updated = values.requirements.filter((_, i) => i !== index);
@@ -155,12 +170,16 @@ export default function AddService() {
         }
     };
 
+
+    //update standard step function
     const updateStandardStep = (index, field, value) => {
         const updated = [...values.standardProcessSteps];
         updated[index] = { ...updated[index], [field]: value };
         valueHandler("standardProcessSteps", updated);
     };
 
+
+    //save service function
     const saveService = async () => {
         const newErrors = {
             visaName: validate("visaName", values.visaName),
@@ -226,10 +245,14 @@ export default function AddService() {
         navigate(`${basePath}/visa-services`);
     };
 
+
+    //format price input
     const priceFormat = (value) => {
         return value?.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ") || "";
     };
 
+
+    //load existing service details if in edit mode
     useEffect(() => {
         if (!isEdit) return;
 
@@ -284,6 +307,7 @@ export default function AddService() {
 
         getService();
     }, [serviceId, isEdit]);
+
 
 
     return (

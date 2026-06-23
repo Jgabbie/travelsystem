@@ -26,6 +26,8 @@ export default function AddPackage() {
   const [loadingPackage, setLoadingPackage] = useState(false);
   const [savingPackage, setSavingPackage] = useState(false);
 
+
+  //form values and errors
   const [errors, setErrors] = useState({
     packageType: "",
     visaRequired: "",
@@ -46,6 +48,8 @@ export default function AddPackage() {
     itineraries: "",
   });
 
+
+  //form values
   const [values, setValues] = useState({
     packageType: null,
     visaRequired: false,
@@ -70,6 +74,7 @@ export default function AddPackage() {
     images: [],
     video: null,
   });
+
 
   //package validation
   const validateAll = (updatedValues) => {
@@ -97,6 +102,8 @@ export default function AddPackage() {
     setErrors(newErrors);
   };
 
+
+  //handle value changes
   const valueHandler = (field, value) => {
     const updatedValues = { ...values, [field]: value };
     setValues(updatedValues);
@@ -106,6 +113,8 @@ export default function AddPackage() {
     }));
   };
 
+
+  //display backend errors
   useEffect(() => {
     if (backEndErrors) {
       let errorMsg = "";
@@ -123,6 +132,7 @@ export default function AddPackage() {
       notification.error({ message: errorMsg, placement: 'topRight' });
     }
   }, [backEndErrors]);
+
 
   //validations
   const validate = (field, value, allValues = values) => {
@@ -237,6 +247,7 @@ export default function AddPackage() {
     return "";
   };
 
+
   //date range validation
   const isRangeInvalid = (range) => {
     if (!range.startdaterange || !range.enddaterange) return false;
@@ -251,6 +262,7 @@ export default function AddPackage() {
     return diffDays !== Number(values.duration);
   };
 
+
   //date range functions
   const addDateRange = () => {
     valueHandler("dateRanges", [
@@ -264,6 +276,8 @@ export default function AddPackage() {
     ]);
   };
 
+
+  //update date range
   const removeDateRange = (index) => {
     valueHandler(
       "dateRanges",
@@ -271,11 +285,14 @@ export default function AddPackage() {
     );
   };
 
+
+  //update date range
   const updateDateRange = (index, field, value) => {
     const updated = [...values.dateRanges];
     updated[index][field] = value;
     valueHandler("dateRanges", updated);
   };
+
 
   //hotel functions
   const addHotel = () =>
@@ -285,26 +302,34 @@ export default function AddPackage() {
     updated[index][field] = value;
     valueHandler("hotels", updated);
   };
+
+
+  //remove hotel
   const removeHotel = (index) =>
     valueHandler(
       "hotels",
       values.hotels.filter((_, i) => i !== index)
     );
 
+
   //airline functions
   const addAirline = () =>
     valueHandler("airlines", [...values.airlines, { name: "", type: null }]);
+
   const updateAirline = (index, field, value) => {
     const updated = [...values.airlines];
     updated[index][field] = value;
     valueHandler("airlines", updated);
   };
+
   const removeAirline = (index) =>
     valueHandler(
       "airlines",
       values.airlines.filter((_, i) => i !== index)
     );
 
+
+  //text area functions
   const handleTextAreaChange = (field, e) => {
     let val = e.target.value;
 
@@ -316,6 +341,7 @@ export default function AddPackage() {
 
     valueHandler(field, val);
   };
+
 
   //itinerary functions
   const normalizeItineraries = (itineraries) => {
@@ -345,6 +371,8 @@ export default function AddPackage() {
     return normalized;
   };
 
+
+  //initialize itineraries based on duration
   const initItinerary = (days) => {
     setValues((prev) => {
       const temp = normalizeItineraries(prev.itineraries);
@@ -370,6 +398,7 @@ export default function AddPackage() {
     });
   };
 
+
   //add, update, remove itinerary items
   const addItineraryItem = (day) => {
     const updated = {
@@ -387,6 +416,8 @@ export default function AddPackage() {
     validateAll(updated);
   };
 
+
+  //update itinerary item
   const updateItineraryItem = (day, index, field, value) => {
     const updated = {
       ...values,
@@ -423,6 +454,8 @@ export default function AddPackage() {
     validateAll(updated);
   };
 
+
+  //remove itinerary item
   const removeItineraryItem = (day, index) => {
     const updated = {
       ...values,
@@ -436,6 +469,8 @@ export default function AddPackage() {
     validateAll(updated);
   };
 
+
+  //itinerary image functions
   const handleItineraryImageChange = (day, event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -472,6 +507,8 @@ export default function AddPackage() {
     event.target.value = "";
   };
 
+
+  //remove itinerary image
   const removeItineraryImage = (day, index) => {
     setValues((prev) => ({
       ...prev,
@@ -483,8 +520,7 @@ export default function AddPackage() {
   };
 
 
-
-  //UPLOAD MAIN DISPLAY PACKAGE IMAGES
+  //upload main package images
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -508,7 +544,7 @@ export default function AddPackage() {
   };
 
 
-  //UPLOAD VIDEO
+  //upload video
   const handleVideoChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -535,7 +571,7 @@ export default function AddPackage() {
   };
 
 
-  //REMOVE IMAGE
+  //remove image
   const removeImage = (index) => {
     valueHandler(
       "images",
@@ -544,7 +580,7 @@ export default function AddPackage() {
   };
 
 
-  //UPLOAD PACKAGE IMAGES
+  //upload package images
   const uploadPackageImages = async (files) => {
     const formData = new FormData();
 
@@ -570,6 +606,8 @@ export default function AddPackage() {
     }
   };
 
+
+  //upload package video
   const uploadPackageVideo = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -586,6 +624,8 @@ export default function AddPackage() {
     }
   };
 
+
+  //upload itinerary images
   const uploadItineraryImages = async (files) => {
     const formData = new FormData();
 
@@ -612,9 +652,7 @@ export default function AddPackage() {
   };
 
 
-
-
-  //ADD OR UPDATE PACKAGE
+  //add or update package
   const savePackage = async () => {
     let hasError = false;
 
@@ -809,6 +847,7 @@ export default function AddPackage() {
     }
   };
 
+
   //load package data if edit mode
   useEffect(() => {
     if (!isEdit) return;
@@ -857,8 +896,6 @@ export default function AddPackage() {
           video: pkg.video || pkg.packageVideo || null,
         }));
 
-
-
       } catch (err) {
         console.error("Failed to load package", err);
         setBackEndErrors(err.data || err.message);
@@ -870,6 +907,8 @@ export default function AddPackage() {
     getPackage();
   }, [packageItem]);
 
+
+  //generate package code if not in edit mode
   useEffect(() => {
     if (isEdit) return; // skip if editing
 
@@ -885,10 +924,12 @@ export default function AddPackage() {
     }));
   }, [isEdit]);
 
+
   //price formatting
   const priceFormat = (value) => {
     return value?.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ") || "";
   };
+
 
 
 

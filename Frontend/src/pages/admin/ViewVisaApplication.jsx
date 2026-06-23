@@ -33,6 +33,8 @@ export default function ViewVisaApplication() {
     const [deliveryDate, setDeliveryDate] = useState(null);
     const [isSubmittingDeliveryDetails, setIsSubmittingDeliveryDetails] = useState(false);
 
+
+    // adjust description column based on window width
     useEffect(() => {
         const updateDescriptionColumn = () => {
             setDescriptionColumn(window.innerWidth <= 640 ? 1 : 2);
@@ -50,6 +52,8 @@ export default function ViewVisaApplication() {
 
     const isBusy = loading || isSubmittingSlots || isUpdatingStatus;
 
+
+    // fetch application and service details
     const fetchApplicationAndService = useCallback(async () => {
         try {
             setLoading(true);
@@ -90,7 +94,7 @@ export default function ViewVisaApplication() {
     }, [fetchApplicationAndService]);
 
 
-    //SUBMIT SUGGESTED APPOINTMENT OPTIONS ------------------------------------------------------
+    //submit alternate slots handler
     const handleSubmitAlternateSlots = async () => {
         setIsSubmittingSlots(true);
         try {
@@ -147,7 +151,8 @@ export default function ViewVisaApplication() {
 
     const getProcessStepInfoForTitle = (app, title) => app?.processSteps?.[title] || null;
 
-    // Get the most recent staff/admin who changed the status (if available)
+
+    // get the most recent staff/admin who changed the status (if available)
     const getManagerName = (app) => {
         try {
             if (!app) return null;
@@ -190,6 +195,8 @@ export default function ViewVisaApplication() {
 
     const managerName = getManagerName(application);
 
+
+    // determine the current step based on the application's status
     useEffect(() => {
         if (!processStepEntries.length || !statusText) return;
 
@@ -203,6 +210,8 @@ export default function ViewVisaApplication() {
         setCurrentStep(statusMap[String(statusText).toLowerCase()] ?? 0);
     }, [processStepEntries, statusText]);
 
+
+    // set delivery fee and date if release option is delivery
     useEffect(() => {
         if ((application?.passportReleaseOption || "").toLowerCase() !== "delivery") return;
         const defaultDeliveryDate = dayjs().add(1, 'month').startOf('day');
@@ -218,6 +227,8 @@ export default function ViewVisaApplication() {
         return acc;
     }, {});
 
+
+    //get the label for a requirement based on its key or fallback to index
     const getRequirementLabel = (key, fallbackIndex) => {
         if (requirementLabelMap[key]) {
             return requirementLabelMap[key];
@@ -238,6 +249,8 @@ export default function ViewVisaApplication() {
         return key;
     };
 
+
+    // build a list of documents from the submittedDocuments or documents object
     const buildDocumentList = (docs) => {
         if (!docs) return [];
 
@@ -301,7 +314,7 @@ export default function ViewVisaApplication() {
         return null;
     }
 
-    // STATUS UPDATE HANDLER ---------------------------------------------------------------
+    // status update handler
     const handleStepChange = async (stepIdx) => {
         if (!progressEditable || isUpdatingStatus) return;
         // Map step index to status string
@@ -323,6 +336,8 @@ export default function ViewVisaApplication() {
         }
     };
 
+
+    // resubmit documents handler
     const handleResubmitDocuments = async (documentKey) => {
         if (isUpdatingStatus) return;
 
@@ -350,7 +365,8 @@ export default function ViewVisaApplication() {
         }
     };
 
-    //SUBMIT DELIVERY DETAILS
+
+    //submit delivery details handler
     const handleSubmitDeliveryDetails = async () => {
         const parsedFee = Number(deliveryFee);
         if (!Number.isFinite(parsedFee) || parsedFee <= 0) {
@@ -379,7 +395,8 @@ export default function ViewVisaApplication() {
         }
     };
 
-    //EMBASSY REJECTED HANDLER ------------------------------------------------------
+
+    //embassy rejected handler
     const handleEmbassyRejected = async () => {
         try {
             setIsUpdatingStatus(true);
@@ -393,6 +410,8 @@ export default function ViewVisaApplication() {
         }
     };
 
+
+    //embassy approved handler
     const handleEmbassyApproved = async () => {
         try {
             setIsUpdatingStatus(true);
@@ -406,7 +425,8 @@ export default function ViewVisaApplication() {
         }
     }
 
-    // DISABLE PAST DATES AND WEEKENDS IN DATE PICKER ------------------------------------------------------
+
+    // disable past dates and weekends in date picker
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
         const twoWeeksFromNow = today.add(14, 'day');
@@ -421,6 +441,8 @@ export default function ViewVisaApplication() {
         );
     };
 
+
+    //disable hours for time picker
     const disabledHours = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {
@@ -431,12 +453,15 @@ export default function ViewVisaApplication() {
         return hours;
     }
 
+
+    // disable past dates for delivery date picker (must be at least 1 month from today)
     const disablePastDates = (current) => {
         const minimumDate = dayjs().add(1, 'month').startOf('day');
         return current && current < minimumDate;
     };
 
-    // Only allow digit keystrokes and numeric paste for delivery fee input
+
+    // only allow digit keystrokes and numeric paste for delivery fee input
     const handleDeliveryFeeKeyDown = (e) => {
         const allowedKeys = [
             'Backspace',
@@ -460,6 +485,8 @@ export default function ViewVisaApplication() {
         e.preventDefault();
     };
 
+
+    // only allow numeric paste for delivery fee input
     const handleDeliveryFeePaste = (e) => {
         e.preventDefault();
         const paste = (e.clipboardData && e.clipboardData.getData('Text')) || '';
@@ -468,6 +495,9 @@ export default function ViewVisaApplication() {
             setDeliveryFee(String(digits));
         }
     };
+
+
+
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: "#305797" } }}>

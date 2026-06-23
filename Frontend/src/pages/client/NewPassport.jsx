@@ -256,7 +256,7 @@ export default function NewPassport() {
                             </div>
                             <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
 
-                                <div>
+                                <div className="form-group-section">
                                     <div className="form-group">
                                         <label className="passport-label">Select DFA location</label>
                                         <Select

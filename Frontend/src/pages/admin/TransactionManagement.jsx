@@ -9,6 +9,8 @@ import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/transaction.css";
 import "../../style/components/modals/modaldesign.css";
 
+
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
@@ -56,6 +58,8 @@ export default function TransactionManagement() {
   const [data, setData] = useState([]);
   const [archivedData, setArchivedData] = useState([]);
 
+
+  //fetch transactions function
   const mapTransactions = (response) => response.map((t) => ({
     key: t._id,
     invoiceNumber: t.invoiceNumber || "",
@@ -92,6 +96,8 @@ export default function TransactionManagement() {
     }
   };
 
+
+  //fetch archived transactions function
   const fetchArchivedTransactions = async () => {
     setLoading(true);
     try {
@@ -110,6 +116,8 @@ export default function TransactionManagement() {
     fetchTransactions();
   }, []);
 
+
+  //filter functions
   const currentData = showArchived ? archivedData : data;
 
   const filteredData = currentData.filter(item => {
@@ -147,6 +155,8 @@ export default function TransactionManagement() {
   const receiptWatermarkText = selectedTransaction?.status === "Successful" ? "PAID" : "NOT PAID";
   const receiptWatermarkClass = selectedTransaction?.status === "Successful" ? "receipt-watermark--paid" : "receipt-watermark--unpaid";
 
+
+  //download PDF function
   const handleDownloadPDF = async () => {
     const element = receiptRef.current;
     if (!element) {
@@ -226,6 +236,7 @@ export default function TransactionManagement() {
   };
 
 
+  //generate PDF function
   const generatePDF = async () => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const tableColumn = ["Invoice No.", "Reference", "Travel Package", "Payment Date & Time", "Total Price", "Method", "Status"];
@@ -290,6 +301,8 @@ export default function TransactionManagement() {
     notification.success({ message: "Report exported to PDF successfully.", placement: "topRight" });
   };
 
+
+  //edit function
   const edit = (record) => {
     setEditingTransaction(record);
     editForm.setFieldsValue({
@@ -298,18 +311,22 @@ export default function TransactionManagement() {
     setIsEditModalOpen(true);
   };
 
+
+  //open view modal function
   const openViewModal = (record) => {
     setSelectedTransaction(record);
     setIsViewModalOpen(true);
   };
 
+
+  //open proof modal function
   const openProofModal = (record) => {
     setProofTransaction(record);
     setIsProofModalOpen(true);
   };
 
 
-  //HANDLE PROOF DECISION (ACCEPT OR REJECT) ----------------------------
+  //reject or approve proof function
   const handleProofDecision = async (record, status) => {
     setIsProofDecisionLoading(true);
 
@@ -338,7 +355,7 @@ export default function TransactionManagement() {
   };
 
 
-  //HANDLE ARCHIVE TRANSACTION ----------------------------
+  //archive funtion
   const handleArchive = async (key) => {
     try {
       await apiFetch.delete(`/transaction/${key}`);
@@ -349,6 +366,8 @@ export default function TransactionManagement() {
     }
   };
 
+
+  //restore function
   const handleRestore = async (key) => {
     try {
       await apiFetch.post(`/transaction/archived-transactions/${key}/restore`);
@@ -360,6 +379,8 @@ export default function TransactionManagement() {
 
   };
 
+
+  //save function for edit modal
   const save = async () => {
     try {
       if (!editingTransaction) {
@@ -397,7 +418,8 @@ export default function TransactionManagement() {
     }
   };
 
-  // ================= TABLE =================
+
+  // table columns
   const columns = [
     { title: "Invoice No.", dataIndex: "invoiceNumber" },
     { title: "Transaction Reference", dataIndex: "ref" },
@@ -467,6 +489,8 @@ export default function TransactionManagement() {
     }
   ];
 
+
+  // archived table columns
   const archivedColumns = [
     { title: "Transaction Reference", dataIndex: "ref" },
     { title: "Item", dataIndex: "package" },
@@ -512,6 +536,7 @@ export default function TransactionManagement() {
       )
     }
   ];
+
 
 
 

@@ -11,6 +11,8 @@ import "../../style/components/modals/modaldesign.css";
 
 dayjs.extend(isBetween);
 
+
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -42,7 +44,8 @@ export default function ReviewRatings() {
     const [isRatingRestoredModalOpen, setIsRatingRestoredModalOpen] = useState(false);
     const [deletingRating, setDeletingRating] = useState(null);
 
-    // GET ALL RATINGS FOR ADMIN ----------------------------------------------------------------------------
+
+    // fetch all ratings function
     const fetchRatings = async () => {
         setLoading(true);
         try {
@@ -71,6 +74,8 @@ export default function ReviewRatings() {
         }
     };
 
+
+    //fetch archived ratings function
     const fetchArchivedRatings = async () => {
         setLoading(true);
         try {
@@ -103,7 +108,8 @@ export default function ReviewRatings() {
         fetchRatings();
     }, []);
 
-    // FILTERING RATINGS ----------------------------------------------------------------------------
+
+    // filtering functions
     const currentRatings = showArchived ? archivedRatings : ratings;
 
     const filteredRatings = currentRatings.filter((item) => {
@@ -123,13 +129,15 @@ export default function ReviewRatings() {
     });
 
 
-    // CALCULATE AVERAGE RATING AND LATEST REVIEW DATE ----------------------------------------------------------------------------
+    // calculate average rating 
     const averageRating = useMemo(() => {
         if (!ratings.length) return null;
         const total = ratings.reduce((sum, item) => sum + (item.rating || 0), 0);
         return (total / ratings.length).toFixed(1);
     }, [ratings]);
 
+
+    //latest review date
     const latestReview = useMemo(() => {
         if (!ratings.length) return "—";
         const sortedByDate = ratings
@@ -140,7 +148,7 @@ export default function ReviewRatings() {
     }, [ratings]);
 
 
-    // GENERATE RATING REPORT PDF ----------------------------------------------------------------------------
+    //generate PDF function
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
         const tableColumn = ["User", "Package", "Rating", "Comment", "Date"];
@@ -204,7 +212,7 @@ export default function ReviewRatings() {
     };
 
 
-    // DELETE RATING ----------------------------------------------------------------------------
+    //archive rating function
     const handleArchive = async (key) => {
         if (!key) {
             notification.error({ message: "Rating not found", placement: "topRight" });
@@ -220,6 +228,8 @@ export default function ReviewRatings() {
 
     };
 
+
+    //restore rating function
     const handleRestore = async (key) => {
         if (!key) {
             notification.error({ message: "Rating not found", placement: "topRight" });
@@ -236,7 +246,7 @@ export default function ReviewRatings() {
     };
 
 
-    // TABLE COLUMNS ----------------------------------------------------------------------------
+    // table columns
     const columns = [
         {
             title: "Customer Name",
@@ -288,6 +298,8 @@ export default function ReviewRatings() {
         },
     ];
 
+
+    // archived table columns
     const archivedColumns = [
         ...columns.filter((col) => col.title !== "Actions"),
         {
@@ -308,6 +320,8 @@ export default function ReviewRatings() {
             )
         }
     ];
+
+
 
 
     return (

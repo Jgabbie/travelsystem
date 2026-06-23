@@ -8,6 +8,8 @@ import apiFetch from '../../config/fetchConfig'
 import '../../style/admin/cancellationrequests.css'
 import "../../style/components/modals/modaldesign.css";
 
+
+//function to convert image to base64
 const getBase64ImageFromURL = (url) => {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -50,18 +52,23 @@ export default function CancellationRequests() {
     const [isFetchingRequests, setIsFetchingRequests] = useState(false)
 
 
+    //show confirm modal function
     const showConfirmModal = (record, type) => {
         setPendingActionRequest(record);
         if (type === 'Approve') setIsAcceptModalOpen(true);
         if (type === 'Reject') setIsRejectModalOpen(true);
     };
 
+
+    //accept function
     const handleAccept = async () => {
         if (!pendingActionRequest) return;
         await handleAction(pendingActionRequest.key, 'Approved');
         setIsCancellationAcceptedModalOpen(true);
     };
 
+
+    //reject function
     const handleReject = async () => {
         if (!pendingActionRequest) return;
         await handleAction(pendingActionRequest.key, 'Disapproved');
@@ -72,6 +79,8 @@ export default function CancellationRequests() {
         getCancellationRequests()
     }, [])
 
+
+    //fetch cancellation requests
     const getCancellationRequests = async () => {
         try {
             setIsFetchingRequests(true)
@@ -98,6 +107,8 @@ export default function CancellationRequests() {
         return []
     }
 
+
+    //fetch archived cancellation requests
     const getArchivedCancellationRequests = async () => {
         try {
             setIsFetchingRequests(true)
@@ -126,6 +137,8 @@ export default function CancellationRequests() {
 
     const currentData = showArchived ? archivedRequests : requests
 
+
+    //filtered functions
     const filteredData = currentData.filter(item => {
         const matchesSearch =
             (item.ref.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -148,6 +161,7 @@ export default function CancellationRequests() {
     const disapprovedRequests = requests.filter((item) => item.status === 'Disapproved').length
 
 
+    //generate PDF function
     const generatePDF = async () => {
         const doc = new jsPDF('p', 'mm', 'a4');
 
@@ -223,6 +237,8 @@ export default function CancellationRequests() {
         notification.success({ message: 'Report exported to PDF successfully.', placement: 'topRight' });
     };
 
+
+    //approve or reject function
     const handleAction = async (key, status) => {
         try {
             setLoading(true)
@@ -240,11 +256,15 @@ export default function CancellationRequests() {
         }
     }
 
+
+    //view function
     const openViewModal = (record) => {
         setSelectedRequest(record)
         setIsViewModalOpen(true)
     }
 
+
+    //archive function
     const handleArchive = async (key) => {
 
         try {
@@ -258,6 +278,8 @@ export default function CancellationRequests() {
 
     }
 
+
+    //restore function
     const handleRestore = async (key) => {
 
         try {
@@ -270,6 +292,8 @@ export default function CancellationRequests() {
         }
     }
 
+
+    //table columns
     const columns = useMemo(() => [
         {
             title: 'Cancellation Request No.',
@@ -374,6 +398,9 @@ export default function CancellationRequests() {
     ], [showArchived])
 
     const archivedColumns = columns
+
+
+
 
     return (
         <ConfigProvider

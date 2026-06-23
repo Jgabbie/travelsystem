@@ -29,6 +29,8 @@ export default function AdminProfile() {
     const [recentActions, setRecentActions] = useState([])
     const [pendingApprovals, setPendingApprovals] = useState([])
 
+
+    //proper casing function
     const toProperCase = (value) =>
         value
             .toLowerCase()
@@ -44,6 +46,8 @@ export default function AdminProfile() {
             )
             .join(" ");
 
+
+    // validate fields
     const validate = (field, value) => {
         if (field === "firstname") {
             if (value === "") return "First name is required.";
@@ -68,11 +72,15 @@ export default function AdminProfile() {
         return "";
     };
 
+
+    //value handler
     const valueHandler = (field, value) => {
         setValues(prev => ({ ...prev, [field]: value }));
         setError(prev => ({ ...prev, [field]: validate(field, value) }));
     };
 
+
+    //get user initials
     const getInitials = () => {
         const first = values.firstname?.trim() || userData?.firstname?.trim() || ''
         const last = values.lastname?.trim() || userData?.lastname?.trim() || ''
@@ -86,12 +94,16 @@ export default function AdminProfile() {
         return fallback ? fallback[0].toUpperCase() : 'U'
     }
 
+
+    //fetch user data, recent actions, and pending approvals on component mount
     useEffect(() => {
         fetchUserData()
         fetchRecentActions()
         fetchPendingApprovals()
     }, [])
 
+
+    //fetch user data
     const fetchUserData = async () => {
         try {
             setLoading(true)
@@ -125,6 +137,8 @@ export default function AdminProfile() {
         }
     }
 
+
+    //fetch recent actions function
     const fetchRecentActions = async () => {
         try {
             const response = await apiFetch.get('/logs/get-audits')
@@ -147,6 +161,8 @@ export default function AdminProfile() {
         }
     }
 
+
+    //fetch pending approvals function
     const fetchPendingApprovals = async () => {
         try {
             const response = await apiFetch.get('/booking/all-bookings')
@@ -185,6 +201,8 @@ export default function AdminProfile() {
         }
     }
 
+
+    //handle edit, cancel, image change, and save functions
     const handleEdit = () => {
         setEditing(true)
     }
@@ -280,6 +298,8 @@ export default function AdminProfile() {
             setSaving(false)
         }
     }
+
+
 
 
     return (
