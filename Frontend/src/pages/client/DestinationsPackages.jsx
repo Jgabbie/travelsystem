@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, Button, Image, Modal, notification } from 'antd'
-import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined, SlidersOutlined, SearchOutlined, StarFilled } from '@ant-design/icons'
+import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, notification } from 'antd'
+import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined, SearchOutlined, StarFilled } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
 import apiFetch from '../../config/fetchConfig'
-import TopNavUser from '../../components/topnav/TopNavUser'
 import { useAuth } from '../../hooks/useAuth'
 
 
@@ -24,11 +23,11 @@ export default function DestinationsPackages() {
     const [wishlistEntryMap, setWishlistEntryMap] = useState(() => new Map())
 
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
-    const [chatMessage, setChatMessage] = useState('')
 
     const { auth } = useAuth()
 
     const { Title, Text } = Typography
+
 
     //get all packages from package collection and map it
     useEffect(() => {
@@ -81,6 +80,8 @@ export default function DestinationsPackages() {
         fetchPackages()
     }, [])
 
+
+    // fetch the user's wishlist and store the wishlisted package IDs and their corresponding wishlist entry IDs in state
     const fetchWishlist = useCallback(async () => {
         if (!auth) {
             setWishlistedIds(new Set())
@@ -113,10 +114,14 @@ export default function DestinationsPackages() {
         }
     }, [auth])
 
+
+    // fetch the wishlist when the component mounts or when the auth state changes
     useEffect(() => {
         fetchWishlist()
     }, [fetchWishlist])
 
+
+    // resolve the wishlist entry ID for a given package ID, using the cached map if available
     const resolveWishlistEntryId = useCallback(async (packageKey) => {
         const cachedId = wishlistEntryMap.get(packageKey)
         if (cachedId) return cachedId
@@ -135,6 +140,8 @@ export default function DestinationsPackages() {
         }
     }, [wishlistEntryMap])
 
+
+    // handle adding or removing a package from the user's wishlist
     const handleWishlistToggle = useCallback(async (event, packageId) => {
         event?.stopPropagation()
 
@@ -234,6 +241,7 @@ export default function DestinationsPackages() {
     }, [location.search])
 
 
+    // compute available tags from packages so filters adapt dynamically
     const tagOptions = useMemo(() => {
         const unique = new Set()
 
@@ -243,6 +251,7 @@ export default function DestinationsPackages() {
 
         return Array.from(unique)
     }, [packages])
+
 
     // compute available durations (days) from packages so filters adapt dynamically
     const durationOptions = useMemo(() => {
@@ -256,13 +265,13 @@ export default function DestinationsPackages() {
 
     const maxDuration = durationOptions.length > 0 ? Math.max(...durationOptions) : 10
 
+
     // ensure current daysValue doesn't exceed available max
     useEffect(() => {
         if (daysValue > maxDuration) setDaysValue(maxDuration)
     }, [maxDuration])
 
 
-    // Build filteredPackages with search-priority ordering: packages that match the
     // search term appear first, followed by packages that pass the active filters.
     const filteredPackages = (() => {
         const q = (search || '').trim().toLowerCase()
@@ -331,6 +340,7 @@ export default function DestinationsPackages() {
 
         return [...searchMatches, ...filteredByOther]
     })()
+
 
 
     return (

@@ -26,11 +26,15 @@ export default function ApplyVisa() {
 
     const normalizeServiceValue = (value) => String(value || '').trim().toLowerCase()
 
+
+    //get selected service from location state or default to first service in the list
     const routeServiceValue = useMemo(
         () => location?.state?.visaName || location?.state?.serviceId || location?.state?.visaItem || '',
         [location?.state]
     )
 
+
+    //error state for form validation
     const [error, setError] = useState({
         selectedServiceId: '',
         preferredDate: '',
@@ -38,6 +42,8 @@ export default function ApplyVisa() {
         purpose: ''
     })
 
+
+    //load visa services from the backend
     useEffect(() => {
         const loadServices = async () => {
             try {
@@ -58,6 +64,7 @@ export default function ApplyVisa() {
     }, [routeServiceValue])
 
 
+    //get selected service from the list of services based on the selectedServiceId
     const selectedService = useMemo(
         () => services.find((service) => {
             const serviceName = normalizeServiceValue(service?.visaName)
@@ -68,38 +75,45 @@ export default function ApplyVisa() {
         [services, selectedServiceId]
     )
 
+
+    //get the label for the selected service to display in the UI
     const selectedServiceLabel = useMemo(
         () => selectedService?.visaName || selectedService?.visaItem || selectedServiceId || 'Visa Service',
         [selectedService, selectedServiceId]
     )
 
+
+    //set the selected service to the first service in the list if no service is selected
     useEffect(() => {
         if (!selectedServiceId && services.length > 0) {
             setSelectedServiceId(services[0].visaName)
         }
     }, [selectedServiceId, services])
 
+
+    //get the requirements, reminders, additional requirements, and steps for the selected service
     const requirements = selectedService?.visaRequirements || []
     const reminders = selectedService?.visaReminders || []
     const additionalRequirements = selectedService?.visaAdditionalRequirements || []
     const steps = selectedService?.visaProcessSteps || []
 
+
+    //filter the requirements into required and optional lists
     const requiredRequirements = useMemo(
         () => requirements.filter((item) => item.isReq === 'Required'),
         [requirements]
     )
 
-    const optionalRequirements = useMemo(
-        () => requirements.filter((item) => item.isReq === 'Optional'),
-        [requirements]
-    )
 
+    //handle opening external links in a new tab with proper security
     const handleOpenLink = (url) => {
         if (!url) return;
         const safeUrl = url.startsWith('http') ? url : `https://${url}`;
         window.open(safeUrl, '_blank', 'noopener,noreferrer');
     };
 
+
+    //check if there are any additional requirements to display
     const hasAdditionalRequirements = useMemo(
         () => additionalRequirements.some((group) =>
             group.customer?.trim?.() || (group.requirements || []).some((req) =>
@@ -109,6 +123,8 @@ export default function ApplyVisa() {
         [additionalRequirements]
     )
 
+
+    //submit the visa application request to the backend
     const submitRequest = async () => {
         const newErrors = {
             selectedServiceId: '',
@@ -165,6 +181,8 @@ export default function ApplyVisa() {
         }
     }
 
+
+    //disable dates that are less than 2 weeks from today or on weekends
     const disableDates = (current) => {
         const today = dayjs().startOf('day')
         const twoWeeksFromNow = today.add(14, 'day')
@@ -176,6 +194,8 @@ export default function ApplyVisa() {
         )
     }
 
+
+    //disable hours outside of 8 AM to 5 PM
     const disabledHours = () => {
         const hours = []
 
@@ -187,6 +207,8 @@ export default function ApplyVisa() {
 
         return hours
     }
+
+
 
     return (
         <ConfigProvider

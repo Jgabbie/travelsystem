@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Input, Typography, ConfigProvider, Empty } from 'antd'
+import { Button, Input, ConfigProvider, Empty } from 'antd'
 import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
@@ -16,10 +16,11 @@ export default function PassAndVisaService() {
     const [loginModalVisible, setLoginModalVisible] = useState(false)
     const [signupModalVisible, setSignupModalVisible] = useState(false)
     const [pendingNavigation, setPendingNavigation] = useState(null)
-    const { Title, Text } = Typography
     const navigate = useNavigate()
     const { auth } = useAuth()
 
+
+    //handle navigation to protected routes, if user is not logged in, show login modal first
     const handleProtectedNavigation = (path, state = undefined) => {
         if (!auth || !auth?.username) {
             setPendingNavigation({ path, state })
@@ -30,6 +31,8 @@ export default function PassAndVisaService() {
         navigate(path, state ? { state } : undefined)
     }
 
+
+    //fetch visa services from backend
     useEffect(() => {
         const loadServices = async () => {
             try {
@@ -43,16 +46,8 @@ export default function PassAndVisaService() {
         loadServices()
     }, [])
 
-    const visaTypeOptions = useMemo(() => {
-        const types = services.map((service) => service.visaType).filter(Boolean)
-        return ['All', ...new Set(types)]
-    }, [services])
 
-    const processingOptions = useMemo(() => {
-        const types = services.map((service) => service.processing).filter(Boolean)
-        return ['All', ...new Set(types)]
-    }, [services])
-
+    //useMemo hooks to generate unique visa type and processing options for filtering
     const filteredVisas = useMemo(() => {
         const query = search.trim().toLowerCase()
         return services.filter((visa) => {
@@ -68,6 +63,8 @@ export default function PassAndVisaService() {
             return matchesSearch && matchesType && matchesProcessing
         })
     }, [search, visaType, processing, services])
+
+
 
     return (
         <ConfigProvider

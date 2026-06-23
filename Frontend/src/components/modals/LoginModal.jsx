@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, Spin, ConfigProvider, Alert, notification } from 'antd';
+import { Button, Modal, Input, Spin, ConfigProvider, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/loginmodal.css';
 import '../../style/components/modals/emailverifymodal.css';
