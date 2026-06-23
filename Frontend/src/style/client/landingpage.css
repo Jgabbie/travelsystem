@@ -16,7 +16,7 @@
     width: 100%;
 }
 
-/* FIRST SECTION OF LANDING PAGE -------------------------------------*/
+/* first section*/
 .hero-section {
     position: relative;
     height: 600px;
@@ -63,7 +63,7 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* SEARCH WIDGET -------------------------------------*/
+/* search widget*/
 .search-widget {
     bottom: -60px;
     background: transparent;
@@ -394,8 +394,7 @@
     height: 100%;
 }
 
-/* meta row under package title */
-/* Card cover styling */
+/* row under package title */
 .popular-card-cover {
     position: relative;
     height: 250px;
@@ -457,7 +456,7 @@
 }
 
 
-/* Card-level layout */
+/* card layout */
 .popular-packages-card {
     position: relative;
     overflow: hidden;
@@ -514,7 +513,8 @@
     color: #7f1d1d;
 }
 
-/* For-you card meta elements */
+
+/* For-you card elements */
 .popular-card-meta {
     display: flex;
     align-items: center;
@@ -897,8 +897,7 @@
 }
 
 .aboutus-text-col,
-.aboutus-image-col,
-.aboutus-vision-mission {
+.aboutus-image-col {
     width: 100%;
     flex: 1;
 }
@@ -1553,11 +1552,13 @@
         margin-right: 0;
     }
 
+    .aboutus-text-wrap {
+        padding-left: 35px;
+        padding-right: 35px;
+    }
+
     .aboutus-text {
-        margin-left: 0px;
-        margin-right: 0px;
-        padding-left: 10px;
-        padding-right: 10px
+        text-align: center;
     }
 
     .explore-text {
@@ -1572,14 +1573,9 @@
         padding: 30px 0;
     }
 
-    .aboutus-text-col,
     .aboutus-image-col {
         width: 100%;
         margin-left: 0;
-    }
-
-    .aboutus-text-wrap {
-        padding-left: 0;
     }
 
     .aboutus-image {
@@ -1611,18 +1607,9 @@
 
     .aboutus-vision-mission {
         flex-direction: column;
-        gap: 20px;
         width: 100%;
-        align-items: stretch;
-    }
-
-    .aboutus-vision-mision-block {
-        width: 100% !important;
-    }
-
-    .aboutus-vision-mision-block,
-    .aboutus-vision-mision-block p {
-        max-width: 100%;
+        padding-left: 35px;
+        padding-right: 35px;
     }
 
     .text-underline {

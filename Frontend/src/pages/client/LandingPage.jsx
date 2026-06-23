@@ -7,13 +7,10 @@ import apiFetch from '../../config/fetchConfig';
 import '../../style/client/landingpage.css'
 import Chatbot from '../../components/chatbot/Chatbot';
 import { useAuth } from '../../hooks/useAuth';
-//import { useBooking } from '../../context/BookingContext';
 
 export default function LandingPage() {
     const navigate = useNavigate()
-    //const location = useLocation()
     const { auth, authLoading } = useAuth()
-    //const { clearBookingData } = useBooking()
 
     const packagesRef = useRef(null)
     const exploreRef = useRef(null)
@@ -51,6 +48,8 @@ export default function LandingPage() {
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
     const [popularCardsPerView, setPopularCardsPerView] = useState(3)
 
+
+    //handle activity tag selection with max of 3 tags
     const handleActivityChange = (values) => {
         if (values.length > 3) {
             notification.warning({ message: 'Select up to 3 tags only.', placement: 'topRight' });
@@ -59,6 +58,8 @@ export default function LandingPage() {
         setActivity(values);
     };
 
+
+    //handle contact form values
     const [contactValues, setContactValues] = useState({
         name: '',
         email: '',
@@ -66,6 +67,8 @@ export default function LandingPage() {
         message: '',
     })
 
+
+    //handle contact form errors
     const [contactErrors, setContactErrors] = useState({
         name: '',
         email: '',
@@ -73,6 +76,8 @@ export default function LandingPage() {
         message: '',
     })
 
+
+    //validate contact form
     const validateContact = () => {
         let errors = {
             name: '',
@@ -121,6 +126,8 @@ export default function LandingPage() {
         return isValid;
     };
 
+
+    //carousel slides for explore section
     const exploreSlides = [
         {
             src: '/images/Homepage1.png',
@@ -139,7 +146,8 @@ export default function LandingPage() {
         }
     ]
 
-    //SEARCH BAR -------------------------------------------------------------
+
+    //handle search button click
     const handleSearch = () => {
         const params = new URLSearchParams();
         const trimmed = searchTerm.trim();
@@ -178,7 +186,7 @@ export default function LandingPage() {
     }
 
 
-    // SEND MESSAGE ---------------------------------------------------------------------
+    // handle contact form submission
     const sendMessage = async () => {
         if (!validateContact()) return;
 
@@ -206,12 +214,15 @@ export default function LandingPage() {
         }
     };
 
+
+    //handle next steps modal option selection
     const handleNextStepsModalOption = (path, state) => {
         setShowNextStepsModal(false);
         navigate(path, state ? { state } : undefined);
     };
 
-    //FETCH PACKAGES
+
+    //fetch popular packages for carousel
     useEffect(() => {
         const fetchPopularPackages = async () => {
             setIsPopularLoading(true)
@@ -295,12 +306,16 @@ export default function LandingPage() {
         fetchPopularPackages()
     }, [])
 
+
+    //close chatbot when user logs out
     useEffect(() => {
         if (!auth && !authLoading) {
             setIsChatbotOpen(false)
         }
     }, [auth, authLoading])
 
+
+    //fetch personalized recommendations for "for you" section
     useEffect(() => {
         if (authLoading) return
 
@@ -366,6 +381,7 @@ export default function LandingPage() {
         }
     }, [auth, authLoading])
 
+
     // Check for next steps modal flag from preferences
     useEffect(() => {
         const shouldShowModal = localStorage.getItem('showNextStepsModal');
@@ -376,7 +392,8 @@ export default function LandingPage() {
         }
     }, []);
 
-    //FETCH DOMESTIC PACKAGES -----------------------------------------------
+
+    //fetch domestic packages for "explore now" section
     useEffect(() => {
         const fetchDomesticPackages = async () => {
             setIsDomesticLoading(true)
@@ -403,6 +420,8 @@ export default function LandingPage() {
         fetchDomesticPackages()
     }, [])
 
+
+    //fetch activity tags for search filter options
     useEffect(() => {
         const fetchActivityTags = async () => {
             try {
@@ -442,6 +461,8 @@ export default function LandingPage() {
         fetchActivityTags()
     }, [])
 
+
+    //auto-rotate explore section carousel every 4 seconds
     useEffect(() => {
         if (exploreSlides.length === 0) return undefined
 
@@ -452,8 +473,12 @@ export default function LandingPage() {
         return () => clearInterval(interval)
     }, [exploreSlides.length])
 
+
+    //determine which popular package to display in carousel
     const displayedPopularPackages = popularPackages.length > 0 ? popularPackages : fallbackPopularPackages
 
+
+    //calculate how many cards to show in popular packages carousel based on screen width
     useEffect(() => {
         const calculateCardsPerView = () => {
             if (typeof window === 'undefined') return 3
@@ -471,17 +496,23 @@ export default function LandingPage() {
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
+
+    //create slides for popular packages carousel based on cards per view
     const popularSlides = []
     for (let index = 0; index < displayedPopularPackages.length; index += popularCardsPerView) {
         popularSlides.push(displayedPopularPackages.slice(index, index + popularCardsPerView))
     }
 
+
+    //reset carousel index if number of slides changes
     useEffect(() => {
         if (popularSlides.length > 0) {
             setPopularSlideIndex(0)
         }
     }, [popularSlides.length])
 
+
+    //format package descriptions with max length and ellipsis
     const formatDescription = (text, maxLength = 160) => {
         if (!text) return 'No description available.'
         if (text.length <= maxLength) return text
@@ -505,7 +536,7 @@ export default function LandingPage() {
             <div className="landing-container">
 
 
-                {/* FIRST SECTION */}
+                {/* first section */}
                 <div className="hero-section">
                     <div className="hero-overlay"></div>
                     <div className="hero-content">
