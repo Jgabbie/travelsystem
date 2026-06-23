@@ -80,10 +80,6 @@
 
 @media (max-width: 480px) {
 
-    .modal-main {
-        top: 150px !important;
-    }
-
     .modal-container {
         padding: 16px 12px;
     }

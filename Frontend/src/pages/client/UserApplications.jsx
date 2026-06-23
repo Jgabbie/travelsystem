@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import apiFetch from '../../config/fetchConfig';
 import '../../style/client/userapplications.css'
 import { useNavigate } from 'react-router-dom';
-import TopNavUser from '../../components/topnav/TopNavUser';
+
 
 export default function UserApplications() {
     const [applications, setApplications] = useState([]);
@@ -16,6 +16,8 @@ export default function UserApplications() {
     const [dateFilter, setDateFilter] = useState(null);
     const navigate = useNavigate();
 
+
+    //fetch user applications on component mount
     useEffect(() => {
         const fetchApplications = async () => {
             setLoading(true);
@@ -58,6 +60,8 @@ export default function UserApplications() {
         fetchApplications();
     }, []);
 
+
+    //filter applications based on search text, type, status, and date
     const filteredData = applications.filter(item => {
         const search = searchText.toLowerCase();
 
@@ -79,6 +83,8 @@ export default function UserApplications() {
         return matchesSearch && matchesType && matchesStatus && matchesDate;
     });
 
+
+    //define status color mapping and fallback colors for unknown statuses
     const statusColorMap = {
         Pending: 'orange',
         Approved: 'green',
@@ -97,6 +103,8 @@ export default function UserApplications() {
         'Passport Released': 'green',
     };
 
+
+    //generate consistent colors for unknown statuses based on their string value
     const fallbackColors = ['magenta', 'volcano', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple'];
     const getStatusColor = (value) => {
         if (!value) return 'default';
@@ -108,6 +116,8 @@ export default function UserApplications() {
         return fallbackColors[hash];
     };
 
+
+    //define table columns with action buttons
     const columns = [
         { title: 'Reference', dataIndex: 'ref', key: 'ref' },
         { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -138,6 +148,9 @@ export default function UserApplications() {
             )
         },
     ];
+
+
+
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>

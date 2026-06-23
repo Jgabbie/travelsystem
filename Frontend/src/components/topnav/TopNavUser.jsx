@@ -8,6 +8,7 @@ import LoginModal from '../modals/LoginModal';
 import SignupModal from '../modals/SignupModal';
 import Notifications from '../Notifications'
 import '../../style/components/topnavuser.css'
+import '../../style/components/modals/modaldesign.css'
 
 export default function TopNavUser() {
     const { auth, setAuth, checkAuth, authLoading } = useAuth();
@@ -19,26 +20,53 @@ export default function TopNavUser() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+
+    // render authentication controls based on user login status
     const renderAuthControls = () => {
         if (auth) {
             return (
                 <>
                     <div className="dropdown-div">
-                        <Dropdown menu={{ items, onClick: handleMenuClick }} className='user-dropdown'>
-                            <Space className='dropdown-space'>
-                                <div className='nav-user-avatar'>
+                        <Dropdown
+                            trigger={['click']}
+                            open={isDropdownOpen}
+                            destroyOnHidden
+                            onOpenChange={(open, info) => {
+                                if (info.source === 'trigger') {
+                                    setIsDropdownOpen(open);
+                                }
+                            }}
+                            menu={{
+                                items,
+                                onClick: handleMenuClick,
+                            }}
+                            className="user-dropdown"
+                        >
+                            <Space className="dropdown-space">
+                                <div className="nav-user-avatar">
                                     {auth?.profileImage ? (
-                                        <img src={auth.profileImage} alt="Profile" className='nav-user-avatar-img' />
+                                        <img
+                                            src={auth.profileImage}
+                                            alt="Profile"
+                                            className="nav-user-avatar-img"
+                                        />
                                     ) : (
-                                        <div className='nav-user-avatar-placeholder'>{getInitials()}</div>
+                                        <div className="nav-user-avatar-placeholder">
+                                            {getInitials()}
+                                        </div>
                                     )}
                                 </div>
-                                <h4 className='username-text'>
-                                    Welcome, <span className='username-dropdown'>
+
+                                <h4 className="username-text">
+                                    Welcome,{' '}
+                                    <span className="username-dropdown">
                                         {auth?.username?.toUpperCase()}
                                     </span>
                                 </h4>
-                                <DownOutlined className='user-dropdown-icon' />
+
+                                <DownOutlined className="user-dropdown-icon" />
                             </Space>
                         </Dropdown>
                     </div>
@@ -47,6 +75,7 @@ export default function TopNavUser() {
                 </>
             );
         }
+
 
         return (
             <span className="regsignin">
@@ -69,6 +98,8 @@ export default function TopNavUser() {
         );
     };
 
+
+    // logout modal handlers
     const handleOk = async () => {
         setIsModalOpen(false);
         try {
@@ -88,6 +119,7 @@ export default function TopNavUser() {
     };
 
     const showModal = () => {
+        setIsDropdownOpen(false);
         setIsModalOpen(true);
     };
 
@@ -98,6 +130,7 @@ export default function TopNavUser() {
             console.error('Logout failed:', err);
         }
     };
+
 
     //dropdown menu items
     const items = [
@@ -148,10 +181,13 @@ export default function TopNavUser() {
         },
     ];
 
+
     //dropdown menu items handler/functions
     const handleMenuClick = ({ key }) => {
+        setIsDropdownOpen(false);
+
         if (key === '8') {
-            logout()
+            showModal();
         } else if (key === '1') {
             navigate('/home');
         } else if (key === '2') {
@@ -167,20 +203,26 @@ export default function TopNavUser() {
         } else if (key === '7') {
             navigate('/user-transactions');
         }
-    }
+    };
 
+
+    // get initials from username for avatar placeholder
     const getInitials = () => {
         const name = auth?.username?.trim() || '';
         if (!name) return 'U';
         return name[0].toUpperCase();
     }
 
+
+    // navigation items for the top nav bar
     const navItems = [
         { label: 'HOME', route: '/home' },
         { label: 'DESTINATIONS', route: '/destinations-packages' },
         { label: 'SERVICES', route: '/passandvisa-service' },
         { label: 'FAQ', route: '/general-faq' },
     ];
+
+
 
 
     return (
@@ -241,28 +283,28 @@ export default function TopNavUser() {
 
                 <Modal
                     open={isModalOpen}
-                    className='signup-success-modal'
+                    className='modal-main'
+                    centered
                     closable={{ 'aria-label': 'Custom Close Button' }}
                     footer={null}
-                    style={{ top: 220 }}
                     onCancel={handleCancel}
                 >
-                    <div className='signup-success-container'>
-                        <h1 className='signup-success-heading'>Confirm Logout?</h1>
-                        <p className='signup-success-text'>Are you sure you want to logout?</p>
+                    <div className='modal-container'>
+                        <h1 className='modal-heading'>Confirm Logout?</h1>
+                        <p className='modal-text'>Are you sure you want to logout?</p>
 
-                        <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+                        <div className='modal-actions'>
 
                             <Button
                                 type='primary'
-                                className='logout-confirm-btn'
+                                className='modal-button'
                                 onClick={handleOk}
                             >
                                 Logout
                             </Button>
                             <Button
                                 type='primary'
-                                className='logout-cancel-btn'
+                                className='modal-button-cancel'
                                 onClick={handleCancel}
                             >
                                 Cancel

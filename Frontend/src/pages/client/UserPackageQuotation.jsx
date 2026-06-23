@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/userquotation.css'
-import TopNavUser from '../../components/topnav/TopNavUser'
 
 export default function UserPackageQuotation() {
     const [searchText, setSearchText] = useState('')
@@ -18,6 +17,8 @@ export default function UserPackageQuotation() {
 
     const navigate = useNavigate()
 
+
+    //fetch user quotations on component mount
     useEffect(() => {
         const fetchQuotations = async () => {
             setLoading(true);
@@ -55,10 +56,14 @@ export default function UserPackageQuotation() {
         fetchQuotations();
     }, [])
 
+
+    //navigate to quotation details page when view button is clicked
     const viewQuotation = (id) => {
         navigate(`/user-quotation-request`, { state: { quotationId: id } });
     }
 
+
+    //filter quotations based on search text, status, and requested date
     const filteredDataSource = quotations.filter(item => {
         const matchesSearch =
             (item.reference?.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -74,6 +79,8 @@ export default function UserPackageQuotation() {
         return matchesSearch && matchesStatus && matchesDate;
     })
 
+
+    //define table columns with status color coding and action buttons
     const columns = [
         {
             title: 'Quotation Request No.',
@@ -126,6 +133,9 @@ export default function UserPackageQuotation() {
             )
         }
     ]
+
+
+
 
     return (
         <ConfigProvider

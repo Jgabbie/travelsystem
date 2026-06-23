@@ -12,7 +12,6 @@ import AllInOrLandArrangementModal from '../../components/modals/AllInOrLandArra
 import ChooseDateIntModal from '../../components/modals/ChooseDateIntModal';
 import LoginModal from '../../components/modals/LoginModal';
 import SignupModal from '../../components/modals/SignupModal';
-import TopNavUser from '../../components/topnav/TopNavUser';
 
 
 export default function PackagePage() {
@@ -25,11 +24,13 @@ export default function PackagePage() {
 
     const navigate = useNavigate();
 
-    //LOGIN STATE --------------------------------------------------
+
+    //login state
     const [isLoginVisible, setIsLoginVisible] = useState(false);
     const [isSignupVisible, setIsSignupVisible] = useState(false);
 
-    //STATES FOR MODALS --------------------------------------------------
+
+    //modal states
     const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false)
     const [isDateModalOpen, setIsDateModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -44,7 +45,8 @@ export default function PackagePage() {
     const [isVisaConfirmModalOpen, setIsVisaConfirmModalOpen] = useState(false)
     const [isVisaRecommendModalOpen, setIsVisaRecommendModalOpen] = useState(false)
 
-    //STATES FOR BOOKING FLOW --------------------------------------------------
+
+    //booking flow states
     const [selectedDate, setSelectedDate] = useState(null)
     const [selectedDatePrice, setSelectedDatePrice] = useState(0)
     const [selectedDateRate, setSelectedDateRate] = useState(0)
@@ -53,7 +55,8 @@ export default function PackagePage() {
     const [arrangementSelection, setArrangementSelection] = useState(null)
     const [soloGroupSelection, setSoloGroupSelection] = useState(null)
 
-    //STATES FOR REVIEWS --------------------------------------------------
+
+    //review states
     const [showReviews, setShowReviews] = useState(false)
     const [isEditingReview, setIsEditingReview] = useState(false);
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -65,7 +68,8 @@ export default function PackagePage() {
     const [hasValidBooking, setHasValidBooking] = useState(false);
     const [bookingCheckLoading, setBookingCheckLoading] = useState(false);
 
-    //STATES FOR PACKAGE DATA --------------------------------------------------
+
+    //package data states
     const [packageData, setPackageData] = useState(null)
     const [packageLoading, setPackageLoading] = useState(true)
     const [packageError, setPackageError] = useState('')
@@ -73,7 +77,8 @@ export default function PackagePage() {
     const currentAuthUserId = auth?.id || auth?._id || null
     const currentAuthUsername = auth?.username ? String(auth.username).trim().toLowerCase() : null
 
-    //RESET ALL BOOKING FLOW STATES WHEN USER CANCELS OR COMPLETES BOOKING TO START FRESH ON NEXT BOOKING ATTEMPT----------------------------
+
+    //reset booking flow states when user cancels or completes the booking process
     const resetBookingFlow = () => {
         setSelectedDate(null)
         setSelectedDatePrice(0)
@@ -89,7 +94,8 @@ export default function PackagePage() {
 
     const resolvedPackageItem = packageItem
 
-    //FETCH PACKAGE DATA BASED ON PACKAGE ITEM FORM LOCATION STATE -----------------------------------
+
+    //fetch package data when packageItem changes, and handle loading and error states
     useEffect(() => {
         const fetchPackage = async () => {
             if (!packageItem) {
@@ -113,7 +119,8 @@ export default function PackagePage() {
         fetchPackage()
     }, [packageItem])
 
-    //FETCH WISHLIST TO CHECK IF PACKAGE IS WISHLISTED------------------------------------------------
+
+    //fetch wishlist data when auth changes, and handle loading and error states
     useEffect(() => {
         const fetchWishlist = async () => {
             if (!auth) {
@@ -138,7 +145,8 @@ export default function PackagePage() {
         fetchWishlist()
     }, [auth])
 
-    //GET RATINGS FOR THIS PACKAGE AND MAP TO REVIEW OBJECTS FOR DISPLAY IN REVIEWS SECTION------------------------------------------------
+
+    //get ratings for the package and map them to a format suitable for display, handle errors by setting reviews to an empty array
     const fetchRatings = useCallback(async () => {
         if (!packageItem) return
         try {
@@ -164,7 +172,8 @@ export default function PackagePage() {
         fetchRatings()
     }, [fetchRatings])
 
-    //CHECK IF USER HAS A VALID BOOKING FOR THIS PACKAGE WITH FULLY PAID STATUS ------------------------------------------------
+
+    //check if the user has a valid booking for this package with fully paid status, and update the hasValidBooking state accordingly
     useEffect(() => {
         const checkUserBooking = async () => {
             if (!auth || !packageItem) {
@@ -201,14 +210,20 @@ export default function PackagePage() {
         checkUserBooking()
     }, [auth, packageItem])
 
+
+    //calculate average rating, rounded average rating for stars, and rating breakdown for display
     const averageRating = useMemo(() => {
         if (!reviews.length) return 0
         const total = reviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0)
         return total / reviews.length
     }, [reviews])
 
+
+    //calculate average rating stars, rounded to the nearest whole number
     const averageRatingStars = useMemo(() => Math.round(averageRating || 0), [averageRating])
 
+
+    //calculate rating breakdown for each star level (1-5) for display
     const ratingBreakdown = useMemo(() => {
         const breakdown = [0, 0, 0, 0, 0]
         reviews.forEach((review) => {
@@ -220,7 +235,8 @@ export default function PackagePage() {
         return breakdown
     }, [reviews])
 
-    //USER ALREADY RATED ------------------------------------------------
+
+    //user already rated this package, find their review for editing or deleting
     const userReview = useMemo(() => {
         if (!auth) return null
 
@@ -238,7 +254,8 @@ export default function PackagePage() {
         )
     }, [reviews, auth, currentAuthUserId, currentAuthUsername])
 
-    //ITINERARY CONTENT ------------------------------------------------
+
+    //itinerary content for itinerary tab
     const itineraryContent = useMemo(() => {
         const itineraries = packageData?.packageItineraries || {}
         const itineraryImagesByDay = packageData?.packageItineraryImages || {}
@@ -268,7 +285,7 @@ export default function PackagePage() {
                                                 <img
                                                     className="itinerary-carousel-image"
                                                     src={src}
-                                                    alt={`${dayLabel} image ${index + 1}`}
+                                                    alt={`${dayLabel} ${index + 1}`}
                                                 />
                                             </div>
                                         ))}
@@ -298,7 +315,8 @@ export default function PackagePage() {
         )
     }, [packageData])
 
-    //INCLUSIONS AND EXCLUSIONS CONTENT ------------------------------------------------
+
+    //inclusions and exclusions content for inclusions and exclusions tab
     const inclusionsExclusionsContent = useMemo(() => {
         const inclusions = packageData?.packageInclusions || []
         const exclusions = packageData?.packageExclusions || []
@@ -332,7 +350,8 @@ export default function PackagePage() {
         )
     }, [packageData])
 
-    //TERMS AND CONDITIONS CONTENT ------------------------------------------------
+
+    //terms and conditions content for terms and conditions tab
     const termsContent = useMemo(() => {
         const terms = packageData?.packageTermsConditions || []
         if (!terms.length) return <p>No terms and conditions listed.</p>
@@ -348,7 +367,8 @@ export default function PackagePage() {
         )
     }, [packageData])
 
-    //TAB ITEMS FOR PACKAGE DETAILS SECTION ------------------------------------------------
+
+    //tab items for the package details section, including itinerary, inclusions/exclusions, and terms/conditions
     const itemsTab = useMemo(() => [
         {
             label: 'Itinerary',
@@ -368,7 +388,7 @@ export default function PackagePage() {
     ], [itineraryContent, inclusionsExclusionsContent, termsContent])
 
 
-    // HANDLE WISHLIST CLICK ------------------------------------------------
+    // handle wishlist click, check if user is authenticated, if not show login modal, if yes add package to wishlist and show confirmation modal
     const handleWishlistClick = async () => {
 
         if (!auth) {
@@ -403,7 +423,8 @@ export default function PackagePage() {
         }
     }
 
-    //PACKAGE DATA SUMMARY FOR BOOKING PROCESS ------------------------------------------------
+
+    // derive summary data for booking process, including traveler counts, total price, and package details
     const travelerSummary = [
         ['adult', 'Adult'],
         ['child', 'Child'],
@@ -455,7 +476,8 @@ export default function PackagePage() {
         images: packageData?.images || []
     }
 
-    //SUBMIT REVIEW FUNCTION ------------------------------------------------
+
+    //submit review funtion
     const handleSubmitReview = async () => {
         if (!auth) {
             setIsLoginVisible(true)
@@ -507,7 +529,8 @@ export default function PackagePage() {
         }
     };
 
-    //DELETE REVIEW FUNCTION ------------------------------------------------
+
+    //delete review funtion
     const handleDeleteReview = async () => {
         if (!auth) {
             setIsLoginVisible(true)
@@ -539,7 +562,8 @@ export default function PackagePage() {
         }
     }
 
-    //DELETE REVIEW FUNCTION ------------------------------------------------
+
+    //open delete review modal
     const handleOpenDeleteModal = () => {
         if (!auth) {
             setIsLoginVisible(true)
@@ -554,7 +578,8 @@ export default function PackagePage() {
         setIsDeleteModalOpen(true)
     }
 
-    //PROCEED TO BOOKING PROCESS WITH SELECTED ARRANGEMENT ------------------------------------------------
+
+    //proceed to booking process with summary data, navigate to booking process page
     const handleProceedDate = () => {
         setIsDateModalOpen(false)
 
@@ -562,7 +587,8 @@ export default function PackagePage() {
         navigate("/booking-process")
     }
 
-    //OPEN ARRANGEMENT SELECTION MODAL OR LOGIN MODAL IF NOT AUTHENTICATED WHEN BOOKING PROCESS IS INITIATED ------------------------------------------------
+
+    //handle booking process, check if user is authenticated, if not show login modal, if yes check package type and show appropriate modals for arrangement selection or date selection
     const handleBookingProcess = () => {
         if (!auth) {
             setIsLoginVisible(true);
@@ -579,7 +605,8 @@ export default function PackagePage() {
         setIsArrangementModalOpen(true)
     };
 
-    //PROCEED TO BOOKING PROCESS WITH SELECTED ARRANGEMENT ------------------------------------------------
+
+    //proceed to arrangement selection
     const handleProceedArrangement = () => {
         setIsArrangementModalOpen(false)
         if (arrangementSelection === 'fixed') {
@@ -591,7 +618,8 @@ export default function PackagePage() {
         }
     }
 
-    //DERIVE VARIOUS DATA POINTS FROM PACKAGE DATA FOR DISPLAY AND LOGIC ------------------------------------------------
+
+    //derive discounted package price per pax and discounted price
     const packageDiscountPercent = Number(packageData?.packageDiscountPercent || 0)
     const basePackagePricePerPax = Number(packageData?.packagePricePerPax || 0)
     const basePackageDeposit = Number(packageData?.packageDeposit || 0)
@@ -605,16 +633,6 @@ export default function PackagePage() {
     const hasUserReview = Boolean(userReview)
     const packageLocation = packageData?.packageDestination || packageData?.packageLocation || packageData?.packageCountry || packageData?.packageOrigin
     const packageCategory = packageData?.packageCategory || packageData?.packageType
-    const nextAvailableDate = useMemo(() => {
-        const dates = packageData?.packageSpecificDate || []
-        const parsed = dates
-            .map((entry) => dayjs(entry?.date))
-            .filter((date) => date.isValid())
-            .sort((a, b) => a.valueOf() - b.valueOf())
-
-        if (!parsed.length) return 'Flexible'
-        return parsed[0].format('MMM D, YYYY')
-    }, [packageData])
     const totalSlots = useMemo(() => {
         return (packageData?.packageSpecificDate || []).reduce(
             (sum, date) => sum + Number(date?.slots || 0),
@@ -626,6 +644,9 @@ export default function PackagePage() {
         if (!images.length) return []
         return [images[0], images[1] || images[0], images[2] || images[0]]
     }, [packageData])
+
+
+
 
     return (
         <ConfigProvider
@@ -684,7 +705,7 @@ export default function PackagePage() {
                                             <img
                                                 className="package-image"
                                                 draggable={false}
-                                                alt={packageData?.packageName || 'Package image'}
+                                                alt={packageData?.packageName || 'Package'}
                                                 src={heroImages[0]}
                                             />
                                         ) : (
