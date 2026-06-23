@@ -28,9 +28,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     const [getOTP, setOTP] = useState("")
     const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false)
 
-    //--------------------------------------------------------------------------------------- FUNCTIONS ---------------------------------------------------------------------------------------
 
-    //START TIMER OF OTP MODAL WHEN IT OPENS, SET TO 60 SECONDS
+    //start timer 60 seconds for OTP
     useEffect(() => {
         if (isOTPModalVisible) {
             setTimer(60);
@@ -38,7 +37,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }, [isOTPModalVisible]);
 
 
-    //DECREASE TIMER EVERY SECOND, CLEAR INTERVAL WHEN TIMER REACHES 0
+    //decrease timer every second, stop when timer reaches 0
     useEffect(() => {
         let interval = null;
         if (timer > 0) {
@@ -50,7 +49,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }, [timer]);
 
 
-    //CLEAR FORM FUNCTION
+    //clear form function
     const clearForm = () => {
         setValues({
             username: '',
@@ -63,7 +62,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }
 
 
-    //LOGIN FUNCTION
+    //login function
     const handleLogin = async (e) => {
         e.preventDefault();
 
@@ -116,7 +115,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }
 
 
-    //SUBMIT OTP FUNCTION, VERIFY OTP, THEN AUTO LOGIN IF VERIFIED
+    //submit OTP function, verify OTP and login user
     const submitOTP = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -175,7 +174,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }
 
 
-    //RESEND OTP FUNCTION, ONLY WORKS WHEN TIMER IS 0, SET TIMER BACK TO 60 SECONDS AFTER RESENDING
+    //resend OTP function, send OTP to email again
     const resendOTP = async (e) => {
         e.preventDefault()
         try {
@@ -189,7 +188,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }
 
 
-    //NAVIGATE TO SIGNUP PAGE, CLOSE LOGIN MODAL, CLEAR FORM
+    //navigate to signup modal, close login modal, clear form
     const goToSignup = (e) => {
         e.preventDefault();
         if (onOpenSignup) {
@@ -201,7 +200,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }
 
 
-    //NAVIGATE TO RESET PASSWORD PAGE, CLOSE LOGIN MODAL, CLEAR FORM
+    //navigate to reset password page, close login modal, clear form
     const resetPassword = (e) => {
         e.preventDefault();
         isCloseLogin();
@@ -209,7 +208,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     }
 
 
-    //BLOCK CLIPBOARD SHORTCUTS, ONLY FEW SHORTCUTS
+    //block copy, paste, cut shortcuts and ctrl+a, ctrl+x
     const blockClipboardKeys = (e) => {
         const isCtrlOrCmd = e.ctrlKey || e.metaKey;
 
@@ -222,7 +221,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
     };
 
 
-    //BLOCK COPY, PASTE, CUT SHORTCUTS
+    //block copy, paste, cut shortcuts
     const blockShortcuts = (e) => {
         e.preventDefault();
     };

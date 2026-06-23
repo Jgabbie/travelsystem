@@ -1681,6 +1681,15 @@
 
 @media (max-width: 480px) {
 
+    .hero-section {
+        height: auto;
+        padding: 120px 16px 40px;
+    }
+
+    .hero-section-packages {
+        padding: 120px;
+    }
+
     .hero-content h1,
     .hero-content-packages h1,
     .hero-content-aboutus h1 {
@@ -1709,6 +1718,12 @@
         width: 100%;
         max-width: 320px;
         font-size: 16px;
+    }
+
+    .page-link-buttons-container {
+        margin-top: 20px;
+        padding-bottom: 20px;
+        padding-top: 20px;
     }
 
     .popular-packages-text,

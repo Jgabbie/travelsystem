@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Card, Input, Modal, Select, Slider, Image, ConfigProvider, InputNumber, notification } from 'antd';
+import { Button, Card, Input, Modal, Select, Image, ConfigProvider } from 'antd';
 import { SearchOutlined, FacebookFilled, InstagramFilled, LeftOutlined, RightOutlined, EnvironmentOutlined, ClockCircleOutlined, CompassOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../../components/modals/LoginModal';
@@ -27,7 +27,6 @@ export default function LandingPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoginVisible, setIsLoginVisible] = useState(false)
     const [isChatbotOpen, setIsChatbotOpen] = useState(false)
-    const [chatMessage, setChatMessage] = useState('')
 
     const [openModalSuccess, setOpenModalSuccess] = useState(false)
     const [openModalError, setOpenModalError] = useState(false)
@@ -47,16 +46,6 @@ export default function LandingPage() {
     const [exploreSlideIndex, setExploreSlideIndex] = useState(0)
     const [popularSlideIndex, setPopularSlideIndex] = useState(0)
     const [popularCardsPerView, setPopularCardsPerView] = useState(3)
-
-
-    //handle activity tag selection with max of 3 tags
-    const handleActivityChange = (values) => {
-        if (values.length > 3) {
-            notification.warning({ message: 'Select up to 3 tags only.', placement: 'topRight' });
-            return;
-        }
-        setActivity(values);
-    };
 
 
     //handle contact form values
