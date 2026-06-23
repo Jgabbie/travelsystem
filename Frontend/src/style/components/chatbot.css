@@ -2,6 +2,35 @@
     width: 750px !important;
 }
 
+.chatbot-loading {
+    text-align: left;
+    color: #8c8c8c;
+    font-family: 12px;
+}
+
+.chatbot-body {
+    display: flex;
+    flex-direction: column;
+    height: 450px;
+    width: 100%;
+}
+
+.chatbot-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.messages-window {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+}
+
 .chatbot-send-button {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
@@ -36,4 +65,27 @@
     padding: 8px 12px;
     border-radius: 12px;
     max-width: 80%;
+}
+
+@media (max-width: 1024px) {
+    .ant-modal.chatbot-modal {
+        margin-top: 100px !important;
+    }
+
+}
+
+@media (max-width: 768px) {
+    .ant-modal.chatbot-modal {
+        padding-left: 60px !important;
+    }
+
+
+
+    @media (max-width: 480px) {
+        .ant-modal.chatbot-modal {
+            margin-top: 280px !important;
+            padding-left: 25px !important;
+        }
+
+    }
 }

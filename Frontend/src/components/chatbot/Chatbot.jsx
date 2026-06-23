@@ -84,21 +84,22 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
             width={900}
             className='chatbot-modal'
         >
-            <div className="chatbot-body" style={{ display: 'flex', flexDirection: 'column', height: '450px', width: '100%' }}>
+            <div className="chatbot-body">
 
                 {/* Message Display Area */}
                 <div
                     className="messages-window"
                     ref={scrollRef}
-                    style={{ flex: 1, overflowY: 'auto', marginBottom: '15px', padding: '10px', border: '1px solid #f0f0f0', borderRadius: '8px' }}
                 >
                     <List
                         dataSource={messages}
                         renderItem={(item) => (
-                            <div style={{
-                                textAlign: item.role === 'user' ? 'right' : 'left',
-                                marginBottom: '10px'
-                            }}>
+                            <div
+                                style={{
+                                    textAlign: item.role === 'user' ? 'right' : 'left',
+                                    marginBottom: '10px'
+                                }}
+                            >
                                 <div
                                     style={{
                                         display: 'flex',
@@ -145,7 +146,7 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                         )}
                     />
                     {loading && (
-                        <div style={{ textAlign: 'left', color: '#8c8c8c', fontSize: '12px' }}>
+                        <div className="chatbot-loading">
                             <Spin size="small" style={{ marginRight: '8px' }} /> TRAVEX is thinking...
                         </div>
                     )}
@@ -166,7 +167,7 @@ const Chatbot = ({ isChatbotOpen, setIsChatbotOpen }) => {
                             }
                         }}
                     />
-                    <div className="chatbot-actions" style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <div className="chatbot-actions">
                         <Button
                             className='chatbot-send-button'
                             type='primary'
