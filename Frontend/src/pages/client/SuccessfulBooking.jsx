@@ -63,33 +63,34 @@ export default function SuccessfulBooking() {
                 },
             }}
         >
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    minHeight: '100vh',
-                    paddingBottom: 60,
-                }}
-            >
+            <div className="successpayment-page successpayment-page-booking">
+                <div className="successpayment-content">
+                    <CheckCircleFilled className="successpayment-icon" />
 
-                <div style={{ maxWidth: 520, width: '100%', textAlign: 'center' }}>
-
-                    <div style={{ marginBottom: 24 }}>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
-                    </div>
-
-                    <h1 style={{ marginBottom: 12 }}>Payment Successful</h1>
-                    <p style={{ marginBottom: 24 }}>
+                    <h1 className="successpayment-title">Payment Successful</h1>
+                    <p className="successpayment-message">
                         Your booking has been confirmed. Your booking will appear in your account shortly once payment is verified.
                     </p>
 
-                    <p style={{ color: 'rgba(0, 0, 0, 0.45)', marginBottom: 24 }}>
+                    <p className="successpayment-redirect">
                         Redirecting to home in <strong>{countdown}</strong> seconds...
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-                        <Button className='successpayment-button' type='primary' onClick={() => navigate('/user-bookings')}>View Bookings</Button>
-                        <Button className='successpayment-button' type='primary' onClick={() => navigate('/home')}>Go to Home</Button>
+
+                    <div className="successpayment-actions">
+                        <Button
+                            className="successpayment-button"
+                            type="primary"
+                            onClick={() => navigate('/user-bookings')}
+                        >
+                            View Bookings
+                        </Button>
+                        <Button
+                            className="successpayment-button"
+                            type="primary"
+                            onClick={() => navigate('/home')}
+                        >
+                            Go to Home
+                        </Button>
                     </div>
                 </div>
             </div>

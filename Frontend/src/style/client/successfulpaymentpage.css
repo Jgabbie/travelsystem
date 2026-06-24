@@ -1,3 +1,64 @@
+.successpayment-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 32px 24px;
+    box-sizing: border-box;
+}
+
+.successpayment-page-booking {
+    padding-bottom: 60px;
+}
+
+.successpayment-content {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+}
+
+.successpayment-icon {
+    display: block;
+    margin-bottom: 24px;
+    color: #52c41a;
+    font-size: 72px;
+}
+
+.successpayment-title {
+    margin: 0 0 12px;
+    color: #172033;
+    font-family: "Montserrat", sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.successpayment-message {
+    margin: 0 auto 24px;
+    color: #374151;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.successpayment-redirect {
+    margin: 0 0 24px;
+    color: rgba(0, 0, 0, 0.45);
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.successpayment-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+
 .successpayment-button {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
@@ -14,4 +75,86 @@
 .successpayment-button:hover {
     background-color: #e9e9e9 !important;
     color: #305797 !important;
+}
+
+
+
+@media (max-width: 768px) {
+    .successpayment-page {
+        padding: 28px 20px;
+    }
+
+    .successpayment-page-booking {
+        padding-bottom: 48px;
+    }
+
+    .successpayment-content {
+        max-width: 480px;
+    }
+
+    .successpayment-icon {
+        margin-bottom: 20px;
+        font-size: 64px;
+    }
+
+    .successpayment-title {
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .successpayment-page,
+    .successpayment-page-booking {
+        padding: 24px 16px;
+    }
+
+    .successpayment-icon {
+        margin-bottom: 18px;
+        font-size: 56px;
+    }
+
+    .successpayment-title {
+        margin-bottom: 10px;
+        font-size: 24px;
+    }
+
+    .successpayment-message {
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.55;
+    }
+
+    .successpayment-redirect {
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+
+    .successpayment-actions {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .successpayment-button {
+        width: 100%;
+        max-width: 280px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 360px) {
+
+    .successpayment-page,
+    .successpayment-page-booking {
+        padding: 20px 12px;
+    }
+
+    .successpayment-icon {
+        font-size: 50px;
+    }
+
+    .successpayment-title {
+        font-size: 22px;
+    }
 }

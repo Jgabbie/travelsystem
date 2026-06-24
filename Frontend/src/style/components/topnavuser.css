@@ -498,6 +498,11 @@
 
 @media (max-width: 480px) {
 
+    .logout-confirm-btn,
+    .logout-cancel-btn {
+        min-width: 120px;
+        width: 100%;
+    }
 
     .nav-buttonlinks.ant-btn-link {
         font-size: 11px;

@@ -51,26 +51,35 @@ export default function SuccessfulPaymentVisa() {
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <div style={{ maxWidth: 520, width: '100%', textAlign: 'center' }}>
-                    <>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a', marginBottom: 24 }} />
-                        <h1>Payment Successful</h1>
-                        <p>Your payment has been verified successfully.</p>
+            <div className="successpayment-page">
+                <div className="successpayment-content">
+                    <CheckCircleFilled className="successpayment-icon" />
 
-                        <p style={{ color: 'rgba(0, 0, 0, 0.45)', marginBottom: 24 }}>
-                            Redirecting to home in <strong>{countdown}</strong> seconds...
-                        </p>
+                    <h1 className="successpayment-title">Payment Successful</h1>
+                    <p className="successpayment-message">
+                        Your payment has been verified successfully.
+                    </p>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
-                            <Button className='successpayment-button' type='primary' onClick={() => navigate('/user-applications')}>
-                                View Applications
-                            </Button>
-                            <Button className='successpayment-button' type='primary' onClick={() => navigate('/home')}>
-                                Go to Home
-                            </Button>
-                        </div>
-                    </>
+                    <p className="successpayment-redirect">
+                        Redirecting to home in <strong>{countdown}</strong> seconds...
+                    </p>
+
+                    <div className="successpayment-actions">
+                        <Button
+                            className="successpayment-button"
+                            type="primary"
+                            onClick={() => navigate('/user-applications')}
+                        >
+                            View Applications
+                        </Button>
+                        <Button
+                            className="successpayment-button"
+                            type="primary"
+                            onClick={() => navigate('/home')}
+                        >
+                            Go to Home
+                        </Button>
+                    </div>
                 </div>
             </div>
         </ConfigProvider>
