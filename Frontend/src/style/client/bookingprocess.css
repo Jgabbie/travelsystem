@@ -901,6 +901,47 @@
     border-radius: 10px;
 }
 
+.upload-passport-right .passport-preview {
+    margin-top: 10px;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Applied only when isDomesticPackage is true */
+.upload-passport-right .passport-preview-domestic {
+    width: 420px;
+    height: 260px;
+}
+
+/* PDF preview */
+.upload-passport-right .passport-preview-pdf {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+}
+
+.upload-passport-right .passport-preview-pdf-link {
+    padding: 10px 20px;
+    background-color: #305797;
+    color: #ffffff;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Image preview */
+.upload-passport-right .passport-preview-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
 .booking-section .image-placeholder {
     border: 1px dashed #cfd8ee;
     background: linear-gradient(135deg, #f6f8ff 0%, #ffffff 100%);
@@ -1061,7 +1102,21 @@
     .booking-section .passport-preview {
         width: 100%;
         max-width: 320px;
-        max-height: 220px;
+        box-sizing: border-box;
+    }
+
+    .booking-section .passport-preview.passport-preview-domestic {
+        width: 100%;
+        max-width: 420px;
+        height: 260px;
+        max-height: none;
+    }
+
+    .booking-section .passport-preview-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
     }
 
     .booking-section .photo-preview {
@@ -1134,5 +1189,25 @@
     .booking-section-title,
     .itinerary-section-title {
         font-size: 22px;
+    }
+
+    .upload-passport-right {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .upload-passport-right .passport-preview-domestic {
+        width: 100%;
+        height: clamp(200px, 55vw, 240px);
+        min-height: 200px;
+        aspect-ratio: auto;
+    }
+
+    .upload-passport-right .passport-preview-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
     }
 }

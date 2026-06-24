@@ -12,6 +12,8 @@ import apiFetch from '../../config/fetchConfig';
 
 const PAYMENT_STATE_KEY = 'booking_payment_state';
 
+
+//convert file to base64
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -71,7 +73,7 @@ export default function PaymentProcess() {
     });
 
 
-    //BROWSER BACK BUTTON INTERCEPTION TO PREVENT ACCIDENTAL NAV AWAY AND SHOW CANCEL MODAL INSTEAD
+    //browser back button
     useEffect(() => {
         // Push ONE history entry when component mounts
         window.history.pushState({ page: "payment" }, "", window.location.pathname);
@@ -92,7 +94,7 @@ export default function PaymentProcess() {
     }, []);
 
 
-    //THIS GETS THE PAYMENT TYPE, FREQUENCY, AND METHOD AND PERSISTS IT IN THE SESSION STORAGE SO THAT IT DOES NOT GET LOST ON PAGE RELOAD
+    //gets saved state from session storage on mount and saves to session storage on change to persist through refreshes and accidental navigations
     useEffect(() => {
         try {
             sessionStorage.setItem(PAYMENT_STATE_KEY, JSON.stringify({
@@ -106,7 +108,8 @@ export default function PaymentProcess() {
         }
     }, [paymentType, frequency, method, pendingBooking]);
 
-    //ON UNMOUNT, CHECK IF CANCEL WAS REQUESTED AND CLEAR BOOKING DATA IF TRUE TO PREVENT STALE DATA ON NEXT VISIT
+
+    //clear booking data and session storage if user confirms cancellation
     useEffect(() => {
         return () => {
             if (cancelRequestedRef.current) {
@@ -116,8 +119,6 @@ export default function PaymentProcess() {
             }
         };
     }, [clearBookingData]);
-
-
 
     const travelerDocuments = (bookingData?.travelers || []).reduce(
         (acc, traveler) => {
@@ -154,7 +155,7 @@ export default function PaymentProcess() {
     }, [disableDeposit, paymentType]);
 
 
-    //REDIRECT IF NO BOOKING DATA
+    //redirect if no booking data
     const hasBookingData = Boolean(
         bookingData &&
         typeof bookingData === 'object' &&
@@ -174,7 +175,7 @@ export default function PaymentProcess() {
     }, [hasBookingData, navigate, searchParams]);
 
 
-    //CONVERT THE BASE64 BACK TO FILE OBJECT
+    //convert base64 to file object
     const base64ToFile = (base64Data, fileName, fileType) => {
         const arr = base64Data.split(',');
         const mime = arr[0].match(/:(.*?);/)[1] || fileType;
@@ -189,7 +190,8 @@ export default function PaymentProcess() {
         return new File([u8arr], fileName, { type: mime });
     };
 
-    //HANDLE UPLOAD CHANGE FOR PROOF OF PAYMENT
+
+    //handle upload change
     const handleUploadChange = async ({ fileList: newFileList }) => {
         const file = newFileList[0];
 
@@ -200,7 +202,8 @@ export default function PaymentProcess() {
         setFileList(newFileList.slice(-1));
     };
 
-    //VALIDATE FILE BEFORE UPLOAD
+
+    //validate file before upload
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
@@ -216,7 +219,8 @@ export default function PaymentProcess() {
         return false;
     };
 
-    //UPLOAD ALL FILES (PASSPORT, PHOTO, VISA) AND RETURN THEIR URLS
+
+    //upload all files and return their URLs 
     const uploadAllFiles = async (passportFiles, photoFiles, visaFiles) => {
         const formData = new FormData();
 
@@ -245,7 +249,8 @@ export default function PaymentProcess() {
         return res.urls;
     };
 
-    //GET THE INVOICE NUMBER
+
+    //get the invoice number
     useEffect(() => {
         const fetchMonthBookings = async () => {
             try {
@@ -258,7 +263,8 @@ export default function PaymentProcess() {
         fetchMonthBookings();
     }, []);
 
-    //REDIRECT IF NO BOOKING DATA - CHECK EARLY BEFORE ACCESSING ANY PROPERTIES
+
+    //redirect if no booking data
     if (!hasBookingData) {
         navigate('/home');
         return null; // Prevent rendering if no booking data
@@ -268,7 +274,8 @@ export default function PaymentProcess() {
     const invoiceNumber = `${dayjs().format("MM")}${String(monthBookingsCount + 1).padStart(2, "0")}`;
     const issueDate = dayjs().format("MMMM D, YYYY");
 
-    //COMPUTATION OF AMOUNT FOR INVOICE DISPLAY AND PAYMENT PAYLOAD
+
+    //computation for payment and invoice details
     const travelerCountAdult = bookingData?.travelerCounts?.adult || 0;
     const travelerCountChild = bookingData?.travelerCounts?.child || 0;
     const travelerCountInfant = bookingData?.travelerCounts?.infant || 0;
@@ -309,7 +316,8 @@ export default function PaymentProcess() {
     const email = bookingData?.leadEmail || 'Email'
     const phone = bookingData?.leadContact || 'Phone Number';
 
-    //PAYLOAD FOR PAYMENT
+
+    //payload for payment
     const paymentDetails = {
         paymentType,
         frequency,
@@ -319,7 +327,8 @@ export default function PaymentProcess() {
         infantRate: infantRate,
     }
 
-    //PAYLOAD FOR BOOKINGS
+
+    //payload for bookings
     const bookingDetails = {
         bookingType: bookingType,
         dateOfRegistration: bookingData.dateOfRegistration,
@@ -346,6 +355,7 @@ export default function PaymentProcess() {
         emergencyTitle: bookingData.emergencyTitle,
         paymentDetails: paymentDetails
     }
+
 
     //checkout
     const proceedBooking = async () => {
@@ -568,6 +578,8 @@ export default function PaymentProcess() {
         ? paymentDates[paymentDates.length - 1]
         : today;
 
+
+    //invoice
     const Invoice = {
         company: {
             name: 'M&RC Travel and Tours',
@@ -617,7 +629,7 @@ export default function PaymentProcess() {
 
     const totals = calculateTotals(Invoice.items);
 
-
+    //invoice document component
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -746,6 +758,8 @@ export default function PaymentProcess() {
         </Document>
     );
 
+
+    //invoice document styles
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: '#333', fontFamily: 'Helvetica' },
         logo: { width: 80, height: 80 },
@@ -788,6 +802,7 @@ export default function PaymentProcess() {
         scheduleAmount: { fontSize: 8, fontWeight: 'bold', color: '#305797' },
         scheduleNote: { marginTop: 6, fontSize: 8, color: '#e72323', fontStyle: 'italic' }
     });
+
 
 
 
@@ -947,36 +962,39 @@ export default function PaymentProcess() {
                                 </div>
                             </div>
 
-                            <Radio.Group
-                                onChange={(e) => setMethod(e.target.value)}
-                                value={method}
-                                className="payment-methods-cards"
-                                style={{ width: '100%', display: 'flex', gap: '16px' }}
-                            >
-                                <Radio.Button
-                                    value="paymongo"
-                                    className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
-                                    style={{ flex: 1, height: 'auto', padding: '20px' }}
+                            <div className="payment-methods-container">
+                                <Radio.Group
+                                    onChange={(e) => setMethod(e.target.value)}
+                                    value={method}
+                                    className="payment-methods-cards"
+                                    style={{ width: '100%', display: 'flex', gap: '16px' }}
                                 >
-                                    <div className="card-content">
-                                        <h3>Paymongo</h3>
-                                        <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
-                                        <p style={{ color: "#e72323", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
-                                    </div>
-                                </Radio.Button>
+                                    <Radio.Button
+                                        value="paymongo"
+                                        className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
+                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                    >
+                                        <div className="card-content">
+                                            <h3>Paymongo</h3>
+                                            <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
+                                            <p style={{ color: "#e72323", fontWeight: "500", fontStyle: "italic" }}>Note: The rate for using this payment method is 3.5%.</p>
+                                        </div>
+                                    </Radio.Button>
 
-                                <Radio.Button
-                                    value="manual"
-                                    className={`payment-card ${method === "manual" ? "selected" : ""}`}
-                                    style={{ flex: 1, height: 'auto', padding: '20px' }}
-                                >
-                                    <div className="card-content">
-                                        <h3>Manual Payment</h3>
-                                        <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
-                                        <p style={{ color: "#e72323", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
-                                    </div>
-                                </Radio.Button>
-                            </Radio.Group>
+                                    <Radio.Button
+                                        value="manual"
+                                        className={`payment-card ${method === "manual" ? "selected" : ""}`}
+                                        style={{ flex: 1, height: 'auto', padding: '20px' }}
+                                    >
+                                        <div className="card-content">
+                                            <h3>Manual Payment</h3>
+                                            <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
+                                            <p style={{ color: "#e72323", fontWeight: "500", fontStyle: "italic" }}>Note: The verification of your payment may take up to 1-2 business days.</p>
+                                        </div>
+                                    </Radio.Button>
+                                </Radio.Group>
+                            </div>
+
 
 
                             {method === 'manual' && (

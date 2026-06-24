@@ -1824,57 +1824,34 @@ export default function BookingProcess() {
                                 <div className="upload-passport-right">
                                     {previews[index] && fileLists[index]?.[0]?.type === 'application/pdf' ? (
                                         <div
-                                            className="passport-preview"
-                                            style={{
-                                                marginTop: '10px',
-                                                width: isDomesticPackage ? 420 : undefined,
-                                                height: isDomesticPackage ? 260 : undefined,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                backgroundColor: '#f0f0f0',
-                                                borderRadius: '4px',
-                                            }}
+                                            className={`passport-preview passport-preview-pdf ${isDomesticPackage ? 'passport-preview-domestic' : ''
+                                                }`}
                                         >
                                             <a
                                                 href={previews[index]}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                style={{
-                                                    padding: '10px 20px',
-                                                    backgroundColor: '#305797',
-                                                    color: 'white',
-                                                    borderRadius: '4px',
-                                                    textDecoration: 'none',
-                                                    cursor: 'pointer',
-                                                    fontWeight: '500',
-                                                }}
+                                                className="passport-preview-pdf-link"
                                             >
                                                 View PDF
                                             </a>
                                         </div>
                                     ) : previews[index] ? (
                                         <div
-                                            className="passport-preview"
-                                            style={{
-                                                marginTop: '10px',
-                                                width: isDomesticPackage ? 420 : undefined,
-                                                height: isDomesticPackage ? 260 : undefined,
-                                            }}
+                                            className={`passport-preview ${isDomesticPackage ? 'passport-preview-domestic' : ''
+                                                }`}
                                         >
                                             <img
                                                 src={previews[index]}
                                                 alt={`Passport Preview ${index + 1}`}
                                                 className="passport-preview-image"
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                         </div>
-                                    ) : null}
-                                    {!previews[index] && (
+                                    ) : (
                                         <div
-                                            className={`passport-preview image-placeholder${isDomesticPackage ? ' landscape' : ''}`}
+                                            className={`passport-preview image-placeholder ${isDomesticPackage ? 'passport-preview-domestic' : ''
+                                                }`}
                                             aria-hidden="true"
-                                            style={isDomesticPackage ? { width: 420, height: 260 } : undefined}
                                         >
                                             <span>{travelDocumentLabel} preview</span>
                                         </div>
