@@ -721,7 +721,7 @@ export default function PackageDomesticQuotation() {
                                         </div>
                                     ) : null}
                                     <div style={{ marginTop: 30 }}>
-                                        <label className="section-label" style={{ width: 700 }}> <span className='packagequotation-steps'>4</span>Provide comments or details about the itinerary for possible changes</label>
+                                        <label className="section-label" > <span className='packagequotation-steps'>4</span>Provide comments or details about the itinerary for possible changes</label>
                                         <h2 className='quotation-section-title'>Itinerary Notes</h2>
                                         <p className="quotation-section-subtitle">Provide any additional information or modifications you would like to make to the itinerary.</p>
                                         <div className="quotation-itinerary-grid">
