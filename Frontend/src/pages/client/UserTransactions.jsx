@@ -318,7 +318,7 @@ export default function UserTransactions() {
                 open={isViewModalOpen}
                 onCancel={() => setIsViewModalOpen(false)}
                 footer={null}
-                className="transaction-view-modal"
+                className="transaction-view-modal transaction-receipt-modal"
                 width={720}
                 centered={true}
             >
@@ -430,7 +430,7 @@ export default function UserTransactions() {
                     </div>
                 )}
 
-                <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+                <div className="receipt-modal-actions">
                     <Button
                         className='user-transactions-viewproof-button'
                         type="primary"

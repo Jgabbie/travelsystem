@@ -762,12 +762,12 @@ export default function TransactionManagement() {
             open={isViewModalOpen}
             onCancel={() => setIsViewModalOpen(false)}
             footer={null}
-            className="transaction-view-modal"
+            className="transaction-view-modal transaction-receipt-modal"
             width={720}
             centered={true}
           >
             {selectedTransaction && (
-              <div className="receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
+              <div className="receipt-container transaction-receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
                 <div className={`receipt-watermark ${receiptWatermarkClass}`}>{receiptWatermarkText}</div>
                 <div className="receipt-content">
                   <div className="receipt-header">
@@ -886,7 +886,7 @@ export default function TransactionManagement() {
                 </div>
               </div>
             )}
-            <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
+            <div className="transaction-receipt-actions">
               <Button
                 className='transactionmanagement-download-button'
                 type="primary"
