@@ -151,4 +151,10 @@
     .user-quotation-container {
         margin-top: 20px;
     }
+
+    .user-quotation-actions-field,
+    .user-quotation-search-input,
+    .user-quotation-select {
+        width: 100%;
+    }
 }

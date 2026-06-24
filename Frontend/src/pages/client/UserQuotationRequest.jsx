@@ -33,6 +33,7 @@ export default function UserQuotationRequest() {
         quotation?.status === "Approved";
 
 
+    //fetch quotation details
     useEffect(() => {
         const fetchQuotationDetails = async () => {
             setLoading(true);
@@ -66,6 +67,7 @@ export default function UserQuotationRequest() {
     }, []);
 
 
+    //handle accept quotation
     const handleAccept = (key) => {
         setIsAcceptModalOpen(false);
         try {
@@ -107,6 +109,8 @@ export default function UserQuotationRequest() {
         }
     };
 
+
+    //handle request revision
     const handleRevise = () => {
         if (notes === "" || notes.trim() === "" || notes.length > 50) {
             notification.error({ message: "Please provide notes for revision.", placement: 'topRight' });
@@ -128,6 +132,7 @@ export default function UserQuotationRequest() {
     };
 
 
+    //useEffect to set the signedPdfUrl whenever the quotation changes
     useEffect(() => {
         const latestRevision = quotation?.pdfRevisions?.filter(rev => rev?.url).slice(-1)[0];
         if (latestRevision) {
@@ -136,6 +141,9 @@ export default function UserQuotationRequest() {
             setSignedPdfUrl(null);
         }
     }, [quotation]);
+
+
+
 
     return (
         <ConfigProvider
@@ -185,10 +193,12 @@ export default function UserQuotationRequest() {
                                 {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
                                     <Card
                                         style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                        title={<Tag color="green">Quotation {quotation.status}</Tag>}
+                                        style={{ borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                        className='quotationrequest-status-card'
+                                        title={<Tag className="quotation-request-tag" color="green">Quotation {quotation.status}</Tag>}
                                     >
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            Your quotation is marked as {quotation.status.toLowerCase()}. If you need help, contact support.
+                                        <p className="quotation-request-tag-text">
+                                            This quotation has been successfully booked.
                                         </p>
                                     </Card>
                                 ) : null}

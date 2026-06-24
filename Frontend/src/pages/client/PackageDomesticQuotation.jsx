@@ -8,7 +8,7 @@ import '../../style/client/packagequotation.css'
 import '../../style/components/modals/modaldesign.css'
 import apiFetch from '../../config/fetchConfig'
 
-
+//helper function to build itinerary labels based on the provided itinerary and days
 const buildItineraryLabels = (itinerary, days) => {
     if (Array.isArray(itinerary) && itinerary.length) {
         return itinerary.map((label, index) => label || `Day ${index + 1}`)
@@ -31,6 +31,7 @@ export default function PackageDomesticQuotation() {
     const [loading, setLoading] = useState(true)
 
 
+    //fetch package details
     useEffect(() => {
         if (!packageItem) {
             notification.error({ message: 'No package selected for quotation.', placement: 'topRight' })
@@ -76,6 +77,7 @@ export default function PackageDomesticQuotation() {
         const options = { month: 'short', day: '2-digit', year: 'numeric' };
         return new Date(dateString).toLocaleDateString('en-US', options);
     };
+
 
     const itineraryLabels = useMemo(
         () => buildItineraryLabels(fixedItinerary, days),
@@ -171,6 +173,8 @@ export default function PackageDomesticQuotation() {
         setTravelers(total);
     }, [travelerType, adultCount, childCount, infantCount]);
 
+
+    //ensure that the total travelers do not exceed the selected date slots for group bookings
     useEffect(() => {
         if (travelerType !== 'group' || !selectedDateSlots || selectedDateSlots <= 0) return
 
@@ -198,6 +202,8 @@ export default function PackageDomesticQuotation() {
         setAdultCount(nextAdult)
     }, [selectedDateSlots, travelerType, adultCount, childCount, infantCount])
 
+
+    //handlers for traveler counters in group booking
     const handleTravelerCounterChange = (setter, currentValue, minValue) => {
         setter(Math.max(minValue, currentValue - 1))
     }
@@ -217,12 +223,14 @@ export default function PackageDomesticQuotation() {
 
     const travelerSlotsRemaining = selectedDateSlots ? Math.max(selectedDateSlots - totalTravelers, 0) : null
 
-    //CANCEL MODAL
+
+    //cancel button handler for booking success modal
     const onCancelModal = () => {
         setIsBookingSuccessOpen(false)
     }
 
-    //SUBMIT QUOTATION REQUEST
+
+    //form submission handler
     const handleSubmit = async () => {
         const missingItineraryNote = itineraryNotes.some((note) => !note.trim())
         const newErrors = {};
@@ -322,8 +330,10 @@ export default function PackageDomesticQuotation() {
             notification.error({ message: 'Failed to submit quotation request. Please try again later.', placement: 'topRight' })
             return
         }
-
     }
+
+
+
 
     return (
         <ConfigProvider
