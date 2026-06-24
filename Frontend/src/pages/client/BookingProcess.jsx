@@ -16,7 +16,7 @@ import BookingRegistrationTermsPart1 from '../../components/form/BookingRegistra
 import BookingRegistrationTermsPart2 from '../../components/form/BookingRegistrationTermsPart2';
 
 
-//FORMAT DATE FOR DISPLAY
+//format date for display
 const getDisplayDate = (value) => {
     if (!value) return ''
     if (typeof value === 'string') return value
@@ -31,7 +31,7 @@ const getDisplayDate = (value) => {
 }
 
 
-//INITIAL COUNT FOR GROUP BOOKING
+//initial count for group booking
 const INITIAL_COUNTS = {
     adult: 2,
     child: 0,
@@ -39,7 +39,7 @@ const INITIAL_COUNTS = {
 }
 
 
-//CONVERT FILE TO BASE64 STRING
+//convert file to base64 for upload
 const toBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -49,7 +49,7 @@ const toBase64 = (file) =>
     });
 
 
-//FOR COMPUTING AGE OF TRAVELERS BASED ON BIRTHDATE
+//for computing age based on birthdate
 const computeAge = (birthDate) => {
     if (!birthDate || !dayjs(birthDate).isValid()) return ''
     const today = dayjs()
@@ -62,7 +62,7 @@ const computeAge = (birthDate) => {
 }
 
 
-//GET AGE CATEGORY (ADULT, CHILD, INFANT) BASED ON AGE
+//get age category based on age
 const getAgeCategoryFromAge = (age) => {
     const numericAge = Number(age)
     if (!Number.isFinite(numericAge) || numericAge < 0) return ''
@@ -72,18 +72,18 @@ const getAgeCategoryFromAge = (age) => {
 }
 
 
-//CHECK IF TRAVELER TYPE IS MINOR (CHILD OR INFANT)
+//check if traveler type is minor (child or infant)
 const isMinorTravelerType = (travelerType) => {
     const normalized = String(travelerType || '').toLowerCase()
     return normalized === 'child' || normalized === 'infant'
 }
 
 
-//GET TRAVELER CATEGORY IN LOWERCASE FOR COMPARISONS
+//get traveler category based on traveler type
 const getTravelerCategory = (travelerType) => String(travelerType || '').toLowerCase()
 
 
-//GET BIRTHDAY BOUNDS (MIN AND MAX DATES) BASED ON TRAVELER TYPE FOR VALIDATION
+//get birthday bounds based on traveler type
 const getBirthdayBounds = (travelerType) => {
     const today = dayjs().startOf('day')
     const category = getTravelerCategory(travelerType)
@@ -115,7 +115,7 @@ const getBirthdayBounds = (travelerType) => {
 }
 
 
-//VALIDATE IF SELECTED BIRTHDATE IS ALLOWED FOR THE GIVEN TRAVELER TYPE
+//validate if the date is allowed for the traveler type
 const isDateAllowedForTraveler = (date, travelerType) => {
     if (!date || !dayjs(date).isValid()) return false
 
@@ -130,7 +130,7 @@ const isDateAllowedForTraveler = (date, travelerType) => {
 }
 
 
-//GET FUNCTION TO DISABLE DATES IN DATE PICKER BASED ON TRAVELER TYPE
+//get function to disable dates in date picker based on traveler type
 const getBirthdayDisabledDate = (travelerType) => {
     const { minDate, maxDate } = getBirthdayBounds(travelerType)
 
@@ -165,7 +165,8 @@ export default function BookingProcess() {
         bookingData.travelDate
     )
 
-    //REDIRECT TO HOME IF NO BOOKING DATA---------------------------------
+
+    //redirect to home if no booking data is present
     useEffect(() => {
         if (!hasBookingData) {
             navigate('/home');
@@ -173,7 +174,7 @@ export default function BookingProcess() {
     }, [hasBookingData, navigate]);
 
 
-    //OPEN GO BACK MODAL WHEN THE BROWSER BACK BUTTON IS USED--------------------------------
+    //open modal when user tries to go back in browser history
     useEffect(() => {
         const historyState = window.history.state || {}
 
@@ -206,12 +207,12 @@ export default function BookingProcess() {
     }, [])
 
 
-    //CLOSE MODAL
+    //close modal when user confirms to go back in history
     const onCancelModal = () => {
         setIsProceedModalOpen(false);
     }
 
-    //GET SUMMARY DATA
+    //get summary data
     const summary = hasBookingData ? bookingData : null
     const data = summary || {}
     const travelers = data.travelers?.length ? data.travelers : ['None selected']
@@ -281,7 +282,8 @@ export default function BookingProcess() {
     const startDate = data?.travelDate?.startDate ? dayjs(data.travelDate.startDate).format('MMMM D, YYYY') : 'N/A'
     const endDate = data?.travelDate?.endDate ? dayjs(data.travelDate.endDate).format('MMMM D, YYYY') : 'N/A'
 
-    //INCLUSIONS, EXCLUSIONS AND ITINERARY
+
+    //inclusions, exclusions, itinerary, and itinerary images
     const inclusions = data.inclusions || []
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
@@ -322,7 +324,7 @@ export default function BookingProcess() {
     })()
 
 
-    //TRAVELERS COUNTER MAX LIMITS
+    //travelers and traveler counts
     const maxAdults = data.maxAdults || 20
     const maxChildren = data.maxChildren || 10
     const maxInfants = data.maxInfants || 10
@@ -332,7 +334,7 @@ export default function BookingProcess() {
         : travelersTotal
 
 
-    //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
+    //room options for solo and group bookings
     const groupRoomOptions = [
         { value: 'TWIN', label: 'TWIN' },
         { value: 'DOUBLE', label: 'DOUBLE' },
@@ -340,7 +342,7 @@ export default function BookingProcess() {
     ]
 
 
-    //ROOM OPTIONS
+    //room options based on booking type
     const roomOptions = bookingType === 'Solo Booking'
         ? [{ value: 'SINGLE', label: 'SINGLE' }]
         : bookingType === 'Group Booking'
@@ -352,7 +354,8 @@ export default function BookingProcess() {
                 { value: 'TRIPLE', label: 'TRIPLE' },
             ]
 
-    //TRAVELER TYPE LABELS FOR DISPLAY
+
+    //traveler type labels based on solo/group selection and traveler counts
     const travelerTypeLabels = (() => {
         if (selectedSoloGrouped === 'solo') {
             return ['Adult']
@@ -366,7 +369,7 @@ export default function BookingProcess() {
     })()
 
 
-    //STATE FOR UPLOADED FILES AND PREVIEWS
+    //state for uploaded files, previews, and visa selections
     const [fileLists, setFileLists] = useState(
         Array.from({ length: travelers.length || 1 }, () => [])
     );
@@ -393,12 +396,12 @@ export default function BookingProcess() {
     const photoFileInputs = useRef([]);
 
 
-    //STATE FOR CURRENT STEP AND PDF GENERATION--------------------------------------
+    //state for current step and PDF generation
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
 
-    //UPDATE BOOKING TYPE IN CONTEXT WHEN SOLO/GROUP SELECTION CHANGES---------------
+    //update booking type in booking data when solo/group selection changes
     useEffect(() => {
         setBookingData(prev => ({
             ...prev,
@@ -407,7 +410,7 @@ export default function BookingProcess() {
     }, [selectedSoloGrouped]);
 
 
-    //ADJUST TRAVELERS ARRAY IN FORM BASED ON UPLOAD COUNT--------------------------------
+    //adjust travelers array in form and booking data when uploadTravelerCount changes
     useEffect(() => {
         const currentTravelers = form.getFieldValue('travelers') || []
         if (currentTravelers.length === uploadTravelerCount) return
@@ -422,6 +425,8 @@ export default function BookingProcess() {
         setBookingData(prev => ({ ...prev, travelers: nextTravelers }))
     }, [form, uploadTravelerCount, setBookingData])
 
+
+    //adjust visa selections, file lists, and previews when uploadTravelerCount changes
     useEffect(() => {
         setVisaSelections((prev) => {
             const next = [...prev]
@@ -453,7 +458,7 @@ export default function BookingProcess() {
     }, [uploadTravelerCount])
 
 
-    //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM--------------------------------
+    //if solo booking, ensure all travelers are set to SINGLE room type
     useEffect(() => {
         if (bookingType !== 'Solo Booking') return
         const travelers = form.getFieldValue('travelers') || []
@@ -468,7 +473,7 @@ export default function BookingProcess() {
     }, [bookingType, form, setBookingData])
 
 
-    //IF GROUP BOOKING, ENSURE NO TRAVELER IS SET TO SINGLE ROOM--------------------------------
+    //if group booking, ensure all travelers are set to allowed room types (not SINGLE)
     useEffect(() => {
         if (bookingType !== 'Group Booking') return
 
@@ -486,7 +491,7 @@ export default function BookingProcess() {
     }, [bookingType, form, setBookingData])
 
 
-    //IF CHILD/INFANT TRAVELER, FORCE ROOM TYPE TO N/A--------------------------------
+    //if child or infant traveler type is selected, ensure their room type is set to 'N/A'
     useEffect(() => {
         const travelers = form.getFieldValue('travelers') || []
         if (!travelers.length) return
@@ -517,7 +522,7 @@ export default function BookingProcess() {
     }, [form, travelerTypeLabels, bookingType, setBookingData])
 
 
-    //GO TO NEXT PAGE OF REGISTRATION - show verification modal first
+    //go to next step of registration, with validation and file processing
     const nextConfirmed = async () => {
         try {
             await form.validateFields();
@@ -648,6 +653,8 @@ export default function BookingProcess() {
         }
     };
 
+
+    //go to next step of registration, with verification modal for first step
     const next = async () => {
         if (currentStep === 0) {
             setIsVerifyModalOpen(true);
@@ -658,7 +665,7 @@ export default function BookingProcess() {
     };
 
 
-    //GO TO PREVIOUS PAGE OF REGISTRATION--------------------------------
+    //go to the previous step of registration
     const prev = () => setCurrentStep(currentStep - 1);
 
     const getUploadFileObj = (item) => {
@@ -666,9 +673,7 @@ export default function BookingProcess() {
     };
 
 
-
-
-    //VALIDATE UPLOADED FILES--------------------------------
+    //validate uploaded file type and size
     const validateFile = (file) => {
         const isValidType =
             file.type === 'image/jpeg' ||
@@ -690,7 +695,7 @@ export default function BookingProcess() {
     };
 
 
-    //FINAL SUBMISSION OF REGISTRATION--------------------------------
+    //final submission of the form, with validation and navigation to payment
     const handleFinalSubmit = async () => {
         setIsProceedModalOpen(false);
 
@@ -736,7 +741,7 @@ export default function BookingProcess() {
     };
 
 
-    //HANDLE FORM VALUE CHANGES--------------------------------
+    //handle form value changes to update booking data context
     const handleValuesChange = (changedValues, allValues) => {
         if (changedValues.travelers) {
             setBookingData(prev => ({
@@ -747,7 +752,7 @@ export default function BookingProcess() {
     };
 
 
-    //HANDLE FILE UPLOAD CHANGES--------------------------------
+    //handle file upload changes for passport and other travel documents
     const handleChange = (info, index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = info.fileList;
@@ -768,7 +773,7 @@ export default function BookingProcess() {
     };
 
 
-    //HANDLE 2BY2 PHOTO UPLOAD CHANGES--------------------------------
+    //handle 2x2 photo upload changes for travelers
     const handlePhotoChange = (info, index) => {
         const newFileLists = [...photoFileLists];
         newFileLists[index] = info.fileList;
@@ -788,6 +793,8 @@ export default function BookingProcess() {
         setPhotoPreviews(newPreviews);
     };
 
+
+    //handle visa upload changes for travelers
     const handleVisaChange = (info, index) => {
         const newFileLists = [...visaFileLists]
         newFileLists[index] = info.fileList
@@ -806,7 +813,7 @@ export default function BookingProcess() {
     }
 
 
-    //HANDLE RESET OF UPLOADED FILES--------------------------------
+    //handle reset of all uploads (passport and photo) for a traveler
     const handleResetUploads = (index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = [];
@@ -825,7 +832,8 @@ export default function BookingProcess() {
         setPhotoPreviews(newPhotoPreviews);
     };
 
-    // Reset only passport upload for a traveler
+
+    //reset only passport upload for a traveler
     const handleResetPassport = (index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = [];
@@ -836,7 +844,8 @@ export default function BookingProcess() {
         setPreviews(newPreviews);
     };
 
-    // Reset only 2x2 photo upload for a traveler
+
+    //reset only 2x2 photo upload for a traveler
     const handleResetPhoto = (index) => {
         const newPhotoFileLists = [...photoFileLists];
         newPhotoFileLists[index] = [];
@@ -848,7 +857,7 @@ export default function BookingProcess() {
     };
 
 
-    //UPDATE TRAVELER FIELD IN FORM AND CONTEXT--------------------------------
+    //update traveler field in form and booking data context
     const updateTravelerField = (index, field, value, extras = {}) => {
         const travelers = form.getFieldValue('travelers') || []
         const nextTravelers = travelers.map((traveler, travelerIndex) =>
@@ -861,7 +870,7 @@ export default function BookingProcess() {
     }
 
 
-    //CLEAN UP OBJECT URLS TO PREVENT MEMORY LEAKS--------------------------------
+    //cleanup object URLs for previews when component unmounts or previews change
     useEffect(() => {
         return () => {
             [...previews, ...photoPreviews, ...visaPreviews].forEach(url => {
@@ -871,7 +880,7 @@ export default function BookingProcess() {
     }, [previews, photoPreviews, visaPreviews]);
 
 
-    //FUNCTIONS TO INCREASE AND DECREASE TRAVELER COUNTS WITHIN MAX LIMITS--------------------------------
+    //functions to increase or decrease traveler counts, ensuring they stay within allowed limits
     const increaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.min(prev.adult + 1, maxAdults) }));
     const decreaseAdult = () => setCounts(prev => ({ ...prev, adult: Math.max(2, prev.adult - 1) }));
     const increaseChild = () => setCounts(prev => ({ ...prev, child: Math.min(prev.child + 1, maxChildren) }));
@@ -882,6 +891,9 @@ export default function BookingProcess() {
     if (!hasBookingData) {
         return null;
     }
+
+
+
 
     return (
         <ConfigProvider
@@ -934,7 +946,7 @@ export default function BookingProcess() {
                     onClick={() => {
                         setIsGoBackModalOpen(true);
                     }}
-                    style={{ display: 'flex', alignItems: 'center', marginLeft: 40 }}
+                    style={{ display: 'flex', alignItems: 'center' }}
                 >
                     <ArrowLeftOutlined />
                     Back
@@ -2141,6 +2153,6 @@ export default function BookingProcess() {
 
 
 
-        </ConfigProvider>
+        </ConfigProvider >
     )
 }

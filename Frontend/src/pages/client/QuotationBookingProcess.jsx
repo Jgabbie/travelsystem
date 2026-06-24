@@ -16,6 +16,8 @@ import BookingRegistrationTermsQuotePart1 from '../../components/form_quotationb
 import BookingRegistrationTermsQuotePart2 from '../../components/form_quotationbooking/BookingRegistrationTermsQuotePart2';
 import BookingRegistrationTravelersQuote from '../../components/form_quotationbooking/BookingRegistrationTravelersQuote';
 
+
+//convert file to base64 for preview and submission
 const toBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -25,7 +27,7 @@ const toBase64 = (file) =>
     });
 
 
-//COMPUTE AGE
+//compute age from birthdate for validation of traveler types (infant, child, adult)
 const computeAge = (birthDate) => {
     if (!birthDate || !dayjs(birthDate).isValid()) return ''
     const today = dayjs()
@@ -38,7 +40,7 @@ const computeAge = (birthDate) => {
 }
 
 
-//GET AGE CATEGORY BASED ON AGE
+//get age category (infant, child, adult) from age for validation and labeling
 const getAgeCategoryFromAge = (age) => {
     const numericAge = Number(age)
     if (!Number.isFinite(numericAge) || numericAge < 0) return ''
@@ -48,18 +50,18 @@ const getAgeCategoryFromAge = (age) => {
 }
 
 
-//CHECK IF TRAVELER TYPE IS MINOR (CHILD OR INFANT)
+//check if traveler type is minor (child or infant) for conditional logic in form and validation
 const isMinorTravelerType = (travelerType) => {
     const normalized = String(travelerType || '').toLowerCase()
     return normalized === 'child' || normalized === 'infant'
 }
 
 
-//GET TRAVELER CATEGORY IN LOWERCASE FOR COMPARISON
+//get traveler category (infant, child, adult) from traveler type for consistent handling of traveler types in form and validation
 const getTravelerCategory = (travelerType) => String(travelerType || '').toLowerCase()
 
 
-//GET BIRTHDAY BOUNDS FOR DATE PICKER BASED ON TRAVELER TYPE
+//get birthday bounds (min and max dates) based on traveler type for date picker restrictions and validation
 const getBirthdayBounds = (travelerType) => {
     const today = dayjs().startOf('day')
     const category = getTravelerCategory(travelerType)
@@ -91,7 +93,7 @@ const getBirthdayBounds = (travelerType) => {
 }
 
 
-//CHECK IF SELECTED DATE IS VALID FOR THE TRAVELER TYPE
+//check if selected date is valid for traveler type based on age restrictions for validation of traveler information
 const isDateAllowedForTraveler = (date, travelerType) => {
     if (!date || !dayjs(date).isValid()) return false
 
@@ -106,7 +108,7 @@ const isDateAllowedForTraveler = (date, travelerType) => {
 }
 
 
-//GET DISABLED DATES FOR DATE PICKER BASED ON TRAVELER TYPE
+//get disabled dates for date picker based on traveler type
 const getBirthdayDisabledDate = (travelerType) => {
     const { minDate, maxDate } = getBirthdayBounds(travelerType)
 
@@ -138,12 +140,14 @@ export default function QuotationBookingProcess() {
         quotationBookingData.travelDate
     )
 
-    //CLOSE MODAL
+
+    //close proceed modal
     const onCancelModal = () => {
         setIsProceedModalOpen(false);
     }
 
-    //GET SUMMARY DATA FROM BOOKING QUOTATION CONTEXT
+
+    //get summary data
     const summary = quotationBookingData || {}
     const data = summary
     const packageDescription = data.packageDescription || 'Secure a memorable trip with curated stays, activities, and guided experiences.'
@@ -221,7 +225,7 @@ export default function QuotationBookingProcess() {
     const visaRequired = data.visaRequired || false
 
 
-    //INCLUSIONS, EXCLUSIONS, ITINERARY
+    //inclusions, exclusions, itinerary, and itinerary images
     const inclusions = data.inclusions || []
     const exclusions = data.exclusions || []
     const itinerary = data.itinerary || {}
@@ -230,7 +234,7 @@ export default function QuotationBookingProcess() {
     console.log(itineraryImagesByDay)
 
 
-    //FORMAT ITINERARY ENTRIES
+    //format itinerary entries
     const itineraryEntries = (() => {
         const formatItineraryItem = (item) => {
             if (typeof item === 'string') return item;
@@ -313,8 +317,7 @@ export default function QuotationBookingProcess() {
     })()
 
 
-
-    //FETCH DETAILS FROM QUOTATION --------------------------------------------------------
+    //fetch quotation details
     useEffect(() => {
         if (!quotationBookingData?.quotationId) return;
 
@@ -421,7 +424,7 @@ export default function QuotationBookingProcess() {
 
 
 
-    //ROOM OPTIONS BASED ON BOOKING TYPE AND TRAVELER COUNT
+    //room options
     const groupRoomOptions = [
         { value: 'TWIN', label: 'TWIN' },
         { value: 'DOUBLE', label: 'DOUBLE' },
@@ -429,7 +432,7 @@ export default function QuotationBookingProcess() {
     ]
 
 
-    //IF SOLO BOOKING, ONLY SINGLE ROOM OPTION. 
+    //if solo booking, only allow single rooms. if group booking, allow twin, double, and triple rooms. if mixed or unspecified, allow all room types
     const roomOptions = bookingType === 'Solo Booking'
         ? [{ value: 'SINGLE', label: 'SINGLE' }]
         : bookingType === 'Group Booking'
@@ -441,7 +444,8 @@ export default function QuotationBookingProcess() {
                 { value: 'TRIPLE', label: 'TRIPLE' },
             ]
 
-    //TRAVELER TYPE LABELS FOR DISPLAY
+
+    //travelers type labels for labeling traveler information fields and validation based on traveler count and composition of adults, children, and infants
     const travelerTypeLabels = (() => {
         const labels = []
         labels.push(...Array(travelersCount.adult).fill('Adult'))
@@ -451,7 +455,7 @@ export default function QuotationBookingProcess() {
     })()
 
 
-    //STATE FOR UPLOADED FILES AND PREVIEWS
+    //state for file uploads and previews, structured as arrays of file lists and preview URLs for each traveler based on traveler count, for handling document uploads and previews in the form
     const [photoFileLists, setPhotoFileLists] = useState(
         Array.from({ length: totalTravelersCount || 1 }, () => [])
     );
@@ -484,12 +488,12 @@ export default function QuotationBookingProcess() {
     const photoFileInputs = useRef([]);
 
 
-    //STATE FOR CURRENT STEP AND PDF GENERATION
+    //state for current step in booking process and PDF generation status for controlling the multi-step form and handling PDF generation state
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
 
-    //RESET FILE UPLOADS AND PREVIEWS WHEN TRAVELER COUNT CHANGES
+    //reset file upload states when traveler count changes to ensure correct number of file inputs and previews for each traveler based on updated traveler count, and to clear out any files or previews that may no longer be relevant after a change in traveler count
     useEffect(() => {
         setFileLists(Array.from({ length: totalTravelersCount || 1 }, () => []));
         setPreviews(Array.from({ length: totalTravelersCount || 1 }, () => null));
@@ -528,7 +532,7 @@ export default function QuotationBookingProcess() {
     }, [uploadTravelerCount])
 
 
-    //ADJUST TRAVELERS ARRAY IN FORM BASED ON TRAVELER COUNT
+    //adjust traveler form fields based on traveler count and booking type to ensure correct number of traveler information fields and appropriate room type selections based on booking type, and to enforce room type restrictions for minor travelers based on traveler types
     useEffect(() => {
         const currentTravelers = form.getFieldValue('travelers') || []
         if (currentTravelers.length === uploadTravelerCount) return
@@ -544,7 +548,7 @@ export default function QuotationBookingProcess() {
     }, [form, uploadTravelerCount, setQuotationBookingData])
 
 
-    //IF SOLO BOOKING, SET ALL TRAVELERS TO SINGLE ROOM
+    //if solo booking, ensure all travelers are set to single room type. if group booking, ensure no travelers are set to single room type. to enforce appropriate room type selections based on booking type and to maintain consistency in traveler information when booking type changes
     useEffect(() => {
         if (bookingType !== 'Solo Booking') return
         const travelers = form.getFieldValue('travelers') || []
@@ -559,7 +563,7 @@ export default function QuotationBookingProcess() {
     }, [bookingType, form, setQuotationBookingData])
 
 
-    //IF GROUP BOOKING, ENSURE NO TRAVELER IS SET TO SINGLE ROOM
+    //if group booking, ensure no traveler is set to single room
     useEffect(() => {
         if (bookingType !== 'Group Booking') return
 
@@ -577,7 +581,7 @@ export default function QuotationBookingProcess() {
     }, [bookingType, form, setQuotationBookingData])
 
 
-    //IF CHILD/INFANT TRAVELER, FORCE ROOM TYPE TO N/A
+    //if child or infant traveler type are present, force N/A
     useEffect(() => {
         const travelers = form.getFieldValue('travelers') || []
         if (!travelers.length) return
@@ -608,7 +612,7 @@ export default function QuotationBookingProcess() {
     }, [form, travelerTypeLabels, bookingType, setQuotationBookingData])
 
 
-    //GO TO THE NEXT PAGE OF REGISTRATION - show verification modal first
+    //go to the next page of registration
     const nextConfirmed = async () => {
         try {
             await form.validateFields();
@@ -739,7 +743,7 @@ export default function QuotationBookingProcess() {
     };
 
 
-    //GO NEXT
+    //go next page
     const next = async () => {
         if (currentStep === 0) {
             setIsVerifyModalOpen(true);
@@ -749,11 +753,11 @@ export default function QuotationBookingProcess() {
     }
 
 
-    //GO TO THE PREVIOUS PAGE OF REGISTRATION
+    //go previous page
     const prev = () => setCurrentStep(currentStep - 1);
 
 
-    //VALIDATE UPLOADED FILES
+    //validate uploaded file
     const validateFile = (file) => {
         const isValidType =
             file.type === 'image/jpeg' ||
@@ -774,7 +778,8 @@ export default function QuotationBookingProcess() {
         return false;
     };
 
-    //FINAL SUBMISSION OF REGISTRATION
+
+    //final submission of registration details
     const handleFinalSubmit = async () => {
         try {
             await form.validateFields();
@@ -802,12 +807,13 @@ export default function QuotationBookingProcess() {
         }
     };
 
-    //HANDLE FORM VALUE CHANGES
-    const handleValuesChange = (changedValues, allValues) => {
 
+    //handle changes in form fields to update context data in real time as user fills out the form, ensuring that the latest form values are always reflected in the context for use in summary and final submission
+    const handleValuesChange = (changedValues, allValues) => {
     };
 
-    //HANDLE FILE UPLOAD CHANGES
+
+    //handle file upload changes for travel document uploads, updating file lists and generating previews for each traveler based on the index of the traveler in the form, to manage file uploads and provide visual feedback to the user through previews of uploaded documents
     const handleChange = (info, index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = info.fileList;
@@ -828,7 +834,7 @@ export default function QuotationBookingProcess() {
     };
 
 
-    //HANDLE 2BY2 PHOTO UPLOAD CHANGES
+    //handle 2x2 photo upload chnages
     const handlePhotoChange = (info, index) => {
         const newFileLists = [...photoFileLists];
         newFileLists[index] = info.fileList;
@@ -848,6 +854,8 @@ export default function QuotationBookingProcess() {
         setPhotoPreviews(newPreviews);
     };
 
+
+    //handle visa upload chnages
     const handleVisaChange = (info, index) => {
         const newFileLists = [...visaFileLists]
         newFileLists[index] = info.fileList
@@ -866,7 +874,7 @@ export default function QuotationBookingProcess() {
     }
 
 
-    //HANDLE RESET OF UPLOADED FILES
+    //handle reset of uploads
     const handleResetUploads = (index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = [];
@@ -886,8 +894,7 @@ export default function QuotationBookingProcess() {
     };
 
 
-
-    // RESET PASSPORT UPLOAD
+    // reset upload funtion for passport
     const handleResetPassport = (index) => {
         const newFileLists = [...fileLists];
         newFileLists[index] = [];
@@ -898,7 +905,8 @@ export default function QuotationBookingProcess() {
         setPreviews(newPreviews);
     };
 
-    // RESET 2BY2 PHOTO UPLOAD
+
+    // reset upload funtion for photo
     const handleResetPhoto = (index) => {
         const newPhotoFileLists = [...photoFileLists];
         newPhotoFileLists[index] = [];
@@ -910,7 +918,7 @@ export default function QuotationBookingProcess() {
     };
 
 
-    //UPDATE A SPECIFIC FIELD FOR A TRAVELER IN THE FORM AND CONTEXT
+    //update traveler field value in form and context when user edits traveler information fields, to keep form state and context data in sync as user makes changes to traveler information
     const updateTravelerField = (index, field, value, extras = {}) => {
         const travelers = form.getFieldValue('travelers') || []
         const nextTravelers = travelers.map((traveler, travelerIndex) =>
@@ -932,7 +940,7 @@ export default function QuotationBookingProcess() {
     }, [previews, photoPreviews, visaPreviews]);
 
 
-    //REDIRECT TO HOME IF NO QUOTATION DATA
+    //rediret to home if no quotation booking data is present to ensure that the booking process cannot be accessed without the necessary context data, and to provide a fallback navigation in case of direct access to the booking process page without going through the proper flow
     useEffect(() => {
         if (!hasQuotationBookingData) {
             navigate('/home', { replace: true });
@@ -940,7 +948,7 @@ export default function QuotationBookingProcess() {
     }, [hasQuotationBookingData, navigate]);
 
 
-    //OPEN GO BACK MODAL WHEN THE BROWSER BACK BUTTON IS USED--------------------------------
+    //open go back modal when user tries to navigate back using browser back button, to prevent accidental loss of data by confirming with the user before allowing them to leave the booking process, and to maintain the integrity of the booking process flow
     useEffect(() => {
         const historyState = window.history.state || {}
 
@@ -976,6 +984,7 @@ export default function QuotationBookingProcess() {
 
 
 
+
     return (
         <ConfigProvider
             theme={{
@@ -991,7 +1000,7 @@ export default function QuotationBookingProcess() {
                         onClick={() => {
                             setIsGoBackModalOpen(true)
                         }}
-                        style={{ display: 'flex', alignItems: 'center', marginLeft: '40px' }}
+                        style={{ display: 'flex', alignItems: 'center' }}
                     >
                         <ArrowLeftOutlined />
                         Back

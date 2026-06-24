@@ -20,12 +20,12 @@
 
 /* PAGE CONTAINER AND WHOLE PAGE CSS */
 .bookingprocess-container {
-    padding: 40px;
+    padding: 20px;
     background: #e9f0f7;
 }
 
 .booking-section {
-    margin: 40px;
+    margin-top: 20px;
     padding: 32px;
     background: #ffffff;
     border-radius: 16px;
@@ -573,103 +573,6 @@
 
 }
 
-@media (max-width: 1024px) {
-    .bookingprocess-container {
-        padding: 32px;
-    }
-
-    .booking-section,
-    .itinerary-inclusions-exclusions {
-        margin: 24px;
-        padding: 28px;
-    }
-
-    .booking-summary-content-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-summary-hero {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-summary-overview-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .bookingprocess-container {
-        padding: 24px;
-    }
-
-    .booking-section,
-    .itinerary-inclusions-exclusions {
-        margin: 20px;
-        padding: 24px;
-    }
-
-    .booking-section .booking-summary-images {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .booking-section .booking-summary-image:first-child {
-        height: 240px;
-    }
-
-    .itinerary-inclusions-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-summary-gallery-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 640px) {
-    .bookingprocess-container {
-        padding: 16px;
-    }
-
-    .booking-section,
-    .itinerary-inclusions-exclusions {
-        margin: 16px;
-        padding: 20px;
-    }
-
-    .booking-section .booking-summary-images {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-section .booking-summary-image:first-child {
-        height: 220px;
-    }
-
-    .booking-summary-gallery-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-summary-hero-image,
-    .booking-summary-hero-placeholder {
-        height: 240px;
-    }
-}
-
-@media (max-width: 480px) {
-    .bookingprocess-container {
-        padding: 12px;
-    }
-
-    .booking-section,
-    .itinerary-inclusions-exclusions {
-        margin: 12px;
-        padding: 16px;
-    }
-
-    .booking-section-title,
-    .itinerary-section-title {
-        font-size: 22px;
-    }
-}
 
 .itinerary-list {
     display: grid;
@@ -941,64 +844,7 @@
     color: #1f8f3a !important;
 }
 
-@media (max-width: 840px) {
-    .pdf-capture {
-        width: 100%;
-        min-height: 0;
-    }
 
-    .itinerary-inclusions-exclusions {
-        margin: 24px 16px;
-        padding: 20px;
-    }
-
-    .booking-section {
-        margin: 24px 16px;
-        padding: 20px;
-    }
-
-    .itinerary-inclusions-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-section-header {
-        margin-bottom: 18px;
-    }
-
-    .booking-section .booking-summary-content-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-section .booking-summary-card {
-        overflow: hidden;
-    }
-
-    .booking-summary-value {
-        text-align: left;
-    }
-
-    .booking-section .booking-summary-image {
-        width: 100%;
-        height: auto;
-        max-height: 220px;
-    }
-
-    .booking-section .upload-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .booking-section .upload-passport-right {
-        align-items: flex-start;
-    }
-}
-
-@media (max-width: 540px) {
-    .booking-section .booking-summary-image {
-        max-height: 180px;
-    }
-}
 
 .booking-section .upload-passport-traveler-fields {
     width: 100%;
@@ -1075,15 +921,46 @@
     margin-bottom: 10px;
 }
 
-@media (max-width: 900px) {
+
+@media (max-width: 1300px) {
     .booking-section .upload-card {
         flex-direction: column;
     }
+}
 
-    .booking-section .upload-passport-right {
-        align-items: flex-start;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+
+@media (max-width: 1024px) {
+
+    .bookingprocess-container {
+        padding: 32px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin: 24px;
+        padding: 28px;
+    }
+
+    .booking-summary-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-section .upload-card {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 900px) {
+    .booking-section .upload-card {
+        flex-direction: column;
     }
 
     .booking-section .passport-preview {
@@ -1095,5 +972,167 @@
     .booking-section .photo-preview {
         width: 180px;
         height: 180px;
+    }
+}
+
+@media (max-width: 840px) {
+    .pdf-capture {
+        width: 100%;
+        min-height: 0;
+    }
+
+    .itinerary-inclusions-exclusions {
+        margin: 24px 16px;
+        padding: 20px;
+    }
+
+    .booking-section {
+        margin: 24px 16px;
+        padding: 20px;
+    }
+
+    .itinerary-inclusions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-section-header {
+        margin-bottom: 18px;
+    }
+
+    .booking-section .booking-summary-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-section .booking-summary-card {
+        overflow: hidden;
+    }
+
+    .booking-summary-value {
+        text-align: left;
+    }
+
+    .booking-section .booking-summary-image {
+        width: 100%;
+        height: auto;
+        max-height: 220px;
+    }
+
+    .booking-section .upload-passport-right {
+        align-items: flex-start;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .bookingprocess-container {
+        padding: 24px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin: 20px;
+        padding: 24px;
+    }
+
+    .booking-section .booking-summary-images {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .booking-section .booking-summary-image:first-child {
+        height: 240px;
+    }
+
+    .itinerary-inclusions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .booking-section .visa-preview {
+        width: 100%;
+        max-width: 320px;
+        max-height: 220px;
+    }
+
+    .booking-section .passport-preview {
+        width: 100%;
+        max-width: 320px;
+        max-height: 220px;
+    }
+
+    .booking-section .photo-preview {
+        max-width: 140px;
+        max-height: 140px;
+    }
+}
+
+
+
+@media (max-width: 640px) {
+    .bookingprocess-container {
+        padding: 16px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin: 16px;
+        padding: 20px;
+    }
+
+    .booking-section .booking-summary-images {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-section .booking-summary-image:first-child {
+        height: 220px;
+    }
+
+    .booking-summary-gallery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-summary-hero-image,
+    .booking-summary-hero-placeholder {
+        height: 240px;
+    }
+}
+
+@media (max-width: 540px) {
+    .booking-section .booking-summary-image {
+        max-height: 180px;
+    }
+
+    .upload-passport-remove-button {
+        max-width: 120px;
+        font-size: 10px;
+    }
+
+    .upload-passport-button {
+        max-width: 120px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bookingprocess-container {
+        margin-top: 60px;
+        padding: 10px;
+    }
+
+    .booking-section,
+    .itinerary-inclusions-exclusions {
+        margin-top: 10px;
+        margin-left: 0px;
+        margin-right: 0px;
+        padding: 16px;
+    }
+
+    .booking-section-title,
+    .itinerary-section-title {
+        font-size: 22px;
     }
 }
