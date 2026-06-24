@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button, Card, Col, ConfigProvider, Radio, Row, Space, Tag, Typography, notification, Steps, Form, Upload, Spin, Modal } from "antd";
-import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined, CheckCircleOutlined, InfoCircleOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { ArrowLeftOutlined, ArrowRightOutlined, UploadOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { Page, Text, View, Document, StyleSheet, PDFViewer, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import jsPDF from 'jspdf';
@@ -16,9 +16,9 @@ import BookingRegistrationTermsInvoicePart1 from "../../components/form_bookingi
 import BookingRegistrationTermsInvoicePart2 from "../../components/form_bookinginvoice/BookingRegistrationTermsInvoicePart2";
 
 
-const { Title, Text: AntText } = Typography;
+const { Text: AntText } = Typography;
 
-//INSTALLMENT AND PAYMENT COMPUTATION LOGIC
+//installment and payment logic
 const getFrequencyWeeks = (value) => {
     if (value === 'Every week') return 1;
     if (value === 'Every 3 weeks') return 3;
@@ -88,7 +88,7 @@ const runInstallmentLogic = (invoice, bookingDetails, paidAmount = 0, bookingDat
     return { paymentSchedule, totalAmount, subtotal, nextUnpaid };
 };
 
-//CONVERT FILE TO BASE64 STRING
+//function to convert image to base64
 const getBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -122,6 +122,7 @@ export default function UserBookingInvoice() {
     const bookingId = booking?.bookingItem ?? booking?._id ?? booking?.id ?? booking?.bookingId ?? booking?.reference ?? booking?.ref ?? null;
 
 
+    //fetch booking data
     useEffect(() => {
         if (!reference || reference === "--") return;
 
@@ -171,7 +172,8 @@ export default function UserBookingInvoice() {
         fetchAllData();
     }, [reference]);
 
-    //PAYMENT STATUS COMPUTATION
+
+    //payment status computation
     const formatCurrency = useMemo(
         () => new Intl.NumberFormat("en-PH", {
             style: "currency",
@@ -206,7 +208,6 @@ export default function UserBookingInvoice() {
         return { label: "Balance Due", color: "orange" };
     };
 
-    const paymentStatus = getPaymentStatus();
     const packageName =
         bookingDetails.tourPackageTitle ||
         bookingDetails.packageName ||
@@ -246,7 +247,7 @@ export default function UserBookingInvoice() {
 
 
 
-    //DOCUMENTS
+    //documents
     const travelersWithDocs = bookingDetails?.travelers?.length
         ? bookingDetails.travelers
         : booking?.travelers || []
@@ -293,12 +294,15 @@ export default function UserBookingInvoice() {
         visaFiles
     ]);
 
-    //REGISTRATION FORM
+
+    //register form
     const [form] = Form.useForm();
     const pdfStepRef = useRef(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+
+    //enhance file previews for uploaded documents
     const enhanceFilePreviews = async (files) => {
         const updated = await Promise.all(
             files.map(async (file) => {
@@ -311,6 +315,8 @@ export default function UserBookingInvoice() {
         return updated;
     };
 
+
+    //handle file uploads for passport, photo, and visa
     const handlePassportUploadChange = async (index, { fileList: newFileList }) => {
         const updated = await enhanceFilePreviews(newFileList);
         setPassportUploadLists((prev) => {
@@ -338,6 +344,8 @@ export default function UserBookingInvoice() {
         });
     };
 
+
+    //file upload validation
     const beforeDocumentUpload = (file) => {
         const isImage = file.type === "image/jpeg" || file.type === "image/png";
         if (!isImage) {
@@ -368,6 +376,8 @@ export default function UserBookingInvoice() {
         return false;
     };
 
+
+    //handle traveler document uploads
     const uploadBookingDocuments = async (files) => {
         if (!files.length) return [];
         const formData = new FormData();
@@ -386,6 +396,8 @@ export default function UserBookingInvoice() {
         return uploadRes?.urls || [];
     };
 
+
+    //handle traveler document resubmission
     const handleSubmitTravelerResubmission = async (index) => {
         if (!bookingId) {
             notification.error({ message: "Booking ID not found.", placement: 'topRight' });
@@ -466,7 +478,8 @@ export default function UserBookingInvoice() {
         }
     };
 
-    //GO NEXT PAGE
+
+    //go to next page
     const next = async () => {
         try {
             await form.validateFields();
@@ -477,11 +490,11 @@ export default function UserBookingInvoice() {
         }
     };
 
-    //GO PREVIOUS PAGE
+    //go to previous page
     const prev = () => setCurrentStep(currentStep - 1);
 
 
-    //DOWNLOAD BOOKING REGISTRATION PDF
+    //download booking registration pdf
     const handleFinalSubmit = async () => {
         try {
             setDownloading(true);
@@ -565,17 +578,20 @@ export default function UserBookingInvoice() {
     };
 
 
-    //PAYMENT FUNCTIONS
+    //payment method selection
     const handleSelectPaymentMethod = (selectedMethod) => {
         setMethod(selectedMethod);
     };
 
+
+    //disable payment button if there are pending transactions
     const disablePayment = useMemo(() => {
         if (!transactions || transactions.length === 0) return false; // No transactions yet
         return transactions[0].status === "Pending";
     }, [transactions]);
 
 
+    //handle file upload for proof of payment
     const handleUploadChange = async ({ fileList: newFileList }) => {
         const file = newFileList[0];
 
@@ -586,6 +602,8 @@ export default function UserBookingInvoice() {
         setFileList(newFileList.slice(-1));
     };
 
+
+    //validate proof of payment file upload
     const beforeUpload = (file) => {
         const isImage = file.type === 'image/jpeg' || file.type === 'image/png';
         if (!isImage) {
@@ -601,7 +619,8 @@ export default function UserBookingInvoice() {
         return false;
     };
 
-    //CHECKOUT FUNCTION
+
+    //handle booking and payment processing
     const proceedBooking = async () => {
 
         if (!method) {
@@ -701,54 +720,7 @@ export default function UserBookingInvoice() {
     }
 
 
-
-
-    //BOOKING INVOICE NUMBER LOGIC
-    const buildInvoiceNumber = (allBookings, currentBooking) => {
-        if (!currentBooking) return "";
-        const createdAtValue = currentBooking.bookingDate || currentBooking.createdAt;
-        const createdAt = createdAtValue ? dayjs(createdAtValue) : null;
-        if (!createdAt || !createdAt.isValid()) return "";
-
-        const getIdentity = (item) =>
-            String(item?._id || item?.id || item?.reference || item?.ref || "");
-
-        const currentIdentity = getIdentity(currentBooking);
-        const monthKey = createdAt.format("MM");
-
-        const monthBookings = (allBookings || [])
-            .map((item) => ({
-                ...item,
-                _createdAt: item.bookingDate || item.createdAt,
-                _identity: getIdentity(item)
-            }))
-            .filter((item) => item._createdAt && dayjs(item._createdAt).isValid())
-            .filter((item) => dayjs(item._createdAt).isSame(createdAt, "month"));
-
-        monthBookings.sort((a, b) => {
-            const timeDiff = dayjs(a._createdAt).valueOf() - dayjs(b._createdAt).valueOf();
-            if (timeDiff !== 0) return timeDiff;
-            return a._identity.localeCompare(b._identity);
-        });
-
-        let index = monthBookings.findIndex((item) => item._identity === currentIdentity);
-
-        if (index < 0) {
-            const currentRef = String(currentBooking.reference || currentBooking.ref || "");
-            if (currentRef) {
-                index = monthBookings.findIndex(
-                    (item) => String(item.reference || item.ref || "") === currentRef
-                );
-            }
-        }
-
-        const sequence = index >= 0 ? index + 1 : monthBookings.length + 1;
-        return `${monthKey}${String(sequence).padStart(2, "0")}`;
-    };
-
-
-
-    //INSTALLMENT COMPUTATION
+    //installment and payment logic
     const [currentUnpaidInstallment, setCurrentUnpaidInstallment] = useState(null);
     const paymentFrequency = bookingDetails?.paymentDetails?.frequency || "Monthly";
 
@@ -867,7 +839,8 @@ export default function UserBookingInvoice() {
 
     const totals = calculateTotals(invoice.items);
 
-    //INVOICE DOCUMENT
+
+    //invoice document
     const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -1031,7 +1004,8 @@ export default function UserBookingInvoice() {
         </Document>
     );
 
-    //INVOICE STYLES
+
+    //invoice document styles
     const styles = StyleSheet.create({
         page: { padding: 40, fontSize: 9, color: "#333", fontFamily: "Helvetica" },
         logo: { width: 80, height: 80 },
@@ -1063,6 +1037,7 @@ export default function UserBookingInvoice() {
         totalDueValue: { fontSize: 10, fontWeight: "bold" },
         thankYou: { fontSize: 9, fontWeight: "bold", color: "#555" }
     });
+
 
 
     return (
@@ -1335,7 +1310,6 @@ export default function UserBookingInvoice() {
                                                 className="user-invoice-checkout-button"
                                                 type="primary"
                                                 size="large"
-                                                style={{ padding: '0 50px', height: '50px', fontSize: '16px', fontWeight: 'bold' }}
                                                 onClick={proceedBooking}
                                                 disabled={remainingBalance <= 0 || disablePayment}
                                             >
@@ -1349,12 +1323,6 @@ export default function UserBookingInvoice() {
                                             <div className="bank-accounts-section">
                                                 <h4 className="section-subtitle">Available Bank Accounts</h4>
                                                 <div className="bank-grid">
-                                                    <div className="bank-item">
-                                                        <span className="bank-name">BDO</span>
-                                                        <span className="account-number">006838032692</span>
-                                                        <span className="account-holder">M&RC TRAVEL AND TOURS</span>
-                                                        <span style={{ marginTop: 8, textAlign: 'center', color: '#6b7280', fontSize: 12 }}>No QR Code</span>
-                                                    </div>
                                                     <div className="bank-item">
                                                         <span className="bank-name">GCASH</span>
                                                         <span className="account-number">09690554806</span>
@@ -1375,6 +1343,11 @@ export default function UserBookingInvoice() {
                                                             style={{ width: 300, height: 'auto', marginTop: 8 }}
                                                         />
                                                     </div>
+                                                </div>
+                                                <div className="bank-item-noqr">
+                                                    <span className="bank-name">BDO</span>
+                                                    <span className="account-number">006838032692</span>
+                                                    <span className="account-holder">M&RC TRAVEL AND TOURS</span>
                                                 </div>
                                             </div>
 

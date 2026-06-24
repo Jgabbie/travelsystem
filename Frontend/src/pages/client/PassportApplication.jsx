@@ -7,7 +7,7 @@ import apiFetch from '../../config/fetchConfig';
 import '../../style/client/passportapplication.css';
 import dayjs from 'dayjs';
 
-// Status color mapping for passport application statuses
+// status color mapping for passport application statuses
 const getStatusColor = (status) => {
     switch ((status || '').toLowerCase()) {
         case 'application submitted':
@@ -37,6 +37,8 @@ const getStatusColor = (status) => {
     }
 };
 
+
+//steps for passport application process
 const PASSPORT_STEPS = [
     { title: 'Application Submitted', description: 'Application Submitted' },
     { title: 'Application Approved', description: 'Application Approved' },
@@ -90,7 +92,7 @@ export default function PassportApplication() {
     const fetchPassportApplication = `/passport/applications/${id}`;
 
 
-
+    //fetch passport application details, user email, and check for pending manual payments
     useEffect(() => {
         if (!id) {
             return
@@ -144,6 +146,8 @@ export default function PassportApplication() {
         checkPendingManualPayment();
     }, [id]);
 
+
+    //resubmission logic for requested documents
     const normalizeResubmissionTarget = (target) => {
         switch (target) {
             case 'birthCertificate':
@@ -156,6 +160,8 @@ export default function PassportApplication() {
         }
     };
 
+
+    //determine if resubmission is requested and which documents are requested for resubmission
     const requestedResubmissionTargets = (() => {
         const targets = [];
 
@@ -176,12 +182,16 @@ export default function PassportApplication() {
         return [...new Set(targets)];
     })();
 
+
+    //determine if resubmission is requested and which documents are requested for resubmission
     const resubmissionRequested = Boolean(
         application &&
         (application.status || '').toLowerCase() === 'payment completed' &&
         requestedResubmissionTargets.length > 0
     );
 
+
+    //check if a specific document target is requested for resubmission
     const isRequestedResubmissionTarget = (target) => !resubmissionRequested || requestedResubmissionTargets.includes(target);
 
     const hasSelectedFileForTarget = (target) => {
@@ -197,7 +207,8 @@ export default function PassportApplication() {
         }
     };
 
-    // Find the current step index based on status
+
+    // find the current step index based on status
     const currentStep = application
         ? Math.max(
             0,
@@ -207,7 +218,8 @@ export default function PassportApplication() {
         )
         : 0;
 
-    // Get deadline and set date from processSteps object
+
+    // get deadline and set date from processSteps object
     const getProcessStepInfo = (stepTitle) => {
         if (!application?.processSteps || !application.processSteps[stepTitle]) {
             return { setDate: null, deadlineDate: null };
@@ -219,17 +231,22 @@ export default function PassportApplication() {
         };
     };
 
-    // Compute status set date and deadline for client view
+
+    // compute status set date and deadline for client view
     const statusDeadlineDaysMap = {
         'Payment Completed': 5,
     };
 
+
+    // compute appointment date based on preferredDate or suggestedAppointmentScheduleChosen
     const appointmentDate = application?.preferredDate
         ? dayjs(application.preferredDate)
         : application?.suggestedAppointmentScheduleChosen && application.suggestedAppointmentScheduleChosen.date
             ? dayjs(application.suggestedAppointmentScheduleChosen.date)
             : null;
 
+
+    // get the most recent date when the current status was set
     const getStatusSetDate = (app) => {
         if (!app) return null;
         const history = app.statusHistory;
@@ -247,6 +264,8 @@ export default function PassportApplication() {
         return null;
     };
 
+
+    // get the most recent date when a specific step was set based on its title
     const getStepSetDateForTitle = (app, title) => {
         if (!app || !title) return null;
         const history = app.statusHistory;
@@ -261,7 +280,8 @@ export default function PassportApplication() {
         return null;
     };
 
-    // Get the most recent staff/admin who changed the status (if available)
+
+    // get the most recent staff/admin who changed the status (if available)
     const getManagerName = (app) => {
         try {
             if (!app) return null;
@@ -302,6 +322,7 @@ export default function PassportApplication() {
         }
     };
 
+
     const currentStatusSetDate = getStatusSetDate(application);
     const deadlineDays = application?.statusDeadlineDays ?? statusDeadlineDaysMap[application?.status] ?? null;
     let statusDeadlineDate = application?.statusDeadlineDate
@@ -323,7 +344,8 @@ export default function PassportApplication() {
 
     const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
 
-    // Auto-reject application if deadline is passed
+
+    // auto-reject application if deadline is passed
     useEffect(() => {
         if (!application || !statusDeadlineDate || hasProcessedRejection) return;
 

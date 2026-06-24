@@ -448,6 +448,16 @@
     flex-direction: column;
 }
 
+.bank-item-noqr {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
 /* Center images inside bank-item while keeping text left-aligned */
 .bank-item img {
     align-self: center;
