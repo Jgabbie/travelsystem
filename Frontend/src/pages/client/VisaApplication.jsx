@@ -56,6 +56,8 @@ export default function VisaApplication() {
 
     const normalizeResubmissionTarget = (target) => String(target || '').trim();
 
+
+    //determine if the application has requested resubmission targets, and normalize them for comparison
     const requestedResubmissionTargets = (() => {
         const targets = [];
 
@@ -86,6 +88,8 @@ export default function VisaApplication() {
             ? dayjs(application.suggestedAppointmentScheduleChosen.date)
             : null;
 
+
+    //get the date when the current status was set, or fallback to other relevant dates
     const getStatusSetDate = (app) => {
         if (!app) return null;
         const history = app.statusHistory;
@@ -103,6 +107,8 @@ export default function VisaApplication() {
         return null;
     };
 
+
+    //get the date when a specific step was set in the status history, based on the title of the step
     const getStepSetDateForTitle = (app, title) => {
         if (!app || !title) return null;
         const history = app.statusHistory;
@@ -117,7 +123,8 @@ export default function VisaApplication() {
         return null;
     };
 
-    // Get the most recent staff/admin who changed the status (if available)
+
+    //get the most recent staff/admin who changed the status (if available)
     const getManagerName = (app) => {
         try {
             if (!app) return null;
@@ -158,6 +165,7 @@ export default function VisaApplication() {
         }
     };
 
+
     const statusSetDate = getStatusSetDate(application);
     const managerName = getManagerName(application);
     const deadlineDays = application?.statusDeadlineDays ?? null;
@@ -186,7 +194,7 @@ export default function VisaApplication() {
                 : null;
 
 
-
+    //check for manual payments
     const checkPendingManualPayment = async () => {
         try {
             const transactionsRes = await apiFetch.get(`/transaction/application/${id}`);
@@ -223,13 +231,12 @@ export default function VisaApplication() {
         }
     };
 
-    //FETCH APPLICATION DETAILS
+
+    //fetch application details and requirements when the component mounts or when the id changes
     useEffect(() => {
         if (!id) {
             return;
         }
-
-
         const fetchApplication = async () => {
             setLoading(true);
             try {
@@ -261,7 +268,8 @@ export default function VisaApplication() {
         checkPendingManualPayment();
     }, [id]);
 
-    // FIND CURRENT STEP INDEX BASED ON APPLICATION STATUS
+
+    // find the current status in the process steps and determine the color for the step indicator
     const statusValue = statusText;
 
     const getStatusColor = (status) => {
@@ -317,12 +325,16 @@ export default function VisaApplication() {
     const hasDeliveryDate = Boolean(String(application?.deliveryDate || '').trim()) && String(application?.deliveryDate || '').toLowerCase() !== 'to be announced';
     const isDeliveryFeeUnavailable = deliveryFeeAmount <= 0 && !hasDeliveryDate;
 
+
+    //automatically switch to paymongo if the delivery fee is unavailable and the user has selected manual payment
     useEffect(() => {
         if (isDeliveryFeeStage && isDeliveryFeeUnavailable && method === 'manual') {
             setMethod('paymongo');
         }
     }, [isDeliveryFeeStage, isDeliveryFeeUnavailable, method]);
 
+
+    //check for valid file size before upload
     const beforeUpload = (file) => {
         const isLt3M = file.size / 1024 / 1024 < 3;
         if (!isLt3M) {
@@ -331,7 +343,8 @@ export default function VisaApplication() {
         return isLt3M || Upload.LIST_IGNORE;
     };
 
-    //SUBMIT DOCUMENTS
+
+    //submit the uploaded documents to the backend and update the application status accordingly
     const handleSubmitDocuments = async () => {
         if (uploading) {
             notification.warning({ message: "Please wait until uploads finish", placement: 'topRight' });
@@ -409,7 +422,8 @@ export default function VisaApplication() {
         }
     };
 
-    // DYNAMIC UPLOAD HANDLER FOR REQUIREMENTS
+
+    // dynamically update the file list when the user uploads or removes files, ensuring only one file is kept at a time
     const handleUploadChange = ({ fileList: newFileList }) => {
         if (newFileList.length > 1) {
             newFileList = [newFileList[newFileList.length - 1]];
@@ -425,7 +439,8 @@ export default function VisaApplication() {
         setFileList(newFileList);
     };
 
-    // HANDLE PAYMENT SUBMISSION
+
+    //payment submission function
     const handleSubmitPayment = async () => {
         if (method === 'manual' && fileList.length === 0) {
             notification.warning({ message: 'Please upload a receipt first.', placement: 'topRight' });
@@ -512,7 +527,8 @@ export default function VisaApplication() {
         }
     };
 
-    // HANDLE FILE PREVIEW (copied from PassportApplication)
+
+    // handle preview of uploaded files, opening them in a new tab if possible
     const handlePreview = (file) => {
         const src = typeof file === 'string'
             ? file
@@ -524,12 +540,13 @@ export default function VisaApplication() {
         notification.error({ message: 'Preview unavailable', placement: 'topRight' });
     };
 
-    // CONFIRM DOCUMENT SUBMISSION
+
+    // confirmation modal for submitting documents, ensuring the user is aware of the action
     const confirmSubmitDocuments = () => {
         setIsConfirmDocumentsOpen(true);
     };
 
-    // HANDLE REQUIREMENT UPLOAD
+    // handle the actual submission of documents after user confirmation
     const handleUpload = (requirementKey) => async ({ file, onSuccess, onError }) => {
         setUploading(true);
         try {
@@ -557,7 +574,8 @@ export default function VisaApplication() {
         }
     };
 
-    // MAP REQUIREMENT KEYS TO LABELS FOR DISPLAY
+
+    //map requirement keys to their labels
     const requirementLabelMap = requirements.reduce((acc, req, idx) => {
         const mapKey = req.key || req.req || req.label || `Requirement ${idx + 1}`;
         acc[mapKey] = req.req || req.label || mapKey;
@@ -584,15 +602,19 @@ export default function VisaApplication() {
         return key;
     };
 
+
+    //determine if a specific requirement is among the requested resubmission targets, allowing for conditional rendering or actions
     const isRequestedResubmissionTarget = (target) => {
         if (!resubmissionRequested) return true;
         return requestedResubmissionTargets.includes(normalizeResubmissionTarget(target));
     };
 
-    // Always display all requirements; we'll mark which ones were requested for resubmission
+
+    //always display all requirements; we'll mark which ones were requested for resubmission
     const visibleRequirements = requirements;
 
-    //HANDLE CONFIRMATION OF SUGGESTED APPOINTMENT
+
+    //submit suggested appointment schedule
     const handleConfirmSuggested = async () => {
         if (!application?.suggestedAppointmentSchedules || selectedSuggestedIndex === null) {
             notification.warning({ message: 'Please select an appointment option first.', placement: 'topRight' });
@@ -645,6 +667,8 @@ export default function VisaApplication() {
         }
     };
 
+
+    //submit passport release option and delivery address if applicable
     const handleReleaseOption = async () => {
         if (!releaseOption) {
             notification.warning({ message: 'Please select a release option first.', placement: 'topRight' });
@@ -670,6 +694,8 @@ export default function VisaApplication() {
         }
     }
 
+
+    //disable dates in the date picker to only allow selection of dates at least 2 weeks from today and exclude weekends
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
         const twoWeeksFromNow = today.add(14, 'day');
@@ -683,6 +709,8 @@ export default function VisaApplication() {
             )
         );
     };
+
+    //disable hours in the time picker to only allow selection of hours between 8 AM and 5 PM
     const disabledHours = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {
@@ -694,7 +722,7 @@ export default function VisaApplication() {
     }
 
 
-    //IF NO ID IN URL, GO BACK TO USER APPLICATIONS
+    //if the applicationId is not present in the location state, redirect the user to the home page
     useEffect(() => {
         if (!applicationId) {
             navigate('/home');
@@ -702,12 +730,15 @@ export default function VisaApplication() {
     }, [applicationId, navigate]);
 
 
-    //UPLOAD DOCUMENTS SECTION STATUS CONDITION
+    //determine if the user should see the payment completed or second chance message based on the application status and second chance flag
     const status = application?.status?.toLowerCase();
 
     const shouldShow =
         status === 'payment completed' ||
         application?.secondChance === true;
+
+
+
 
     return (
         <ConfigProvider theme={{ token: { colorPrimary: '#305797' } }}>
@@ -717,7 +748,7 @@ export default function VisaApplication() {
                     <Spin size="large" description={uploading ? "Uploading Documents..." : "Loading..."} />
                 </div>
             ) : (
-                <div className='visaapplication-container'>
+                <div>
                     <div className='visaapplication-container'>
                         <Button
                             className='visaapplication-back-button'

@@ -287,12 +287,11 @@
 }
 
 .passport-document-container-group {
-    display: flex;
-    flex-direction: row;
-    gap: 50px;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px;
+    width: 100%;
+    align-items: start;
 }
 
 .passport-document-uploaded-section {
@@ -392,6 +391,15 @@
 }
 
 @media (max-width: 980px) {
+    .passport-document-container-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .passport-document-container {
+        width: 100%;
+    }
+
     .app-detail-header {
         flex-direction: column;
     }
@@ -412,6 +420,15 @@
         gap: 42px;
     }
 
+    .passport-document-container-group {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .passport-document-container {
+        width: 100%;
+    }
+
     .passport-requirement-placeholder,
     .passport-requirement-file-preview-button {
         width: 150px;
@@ -430,6 +447,7 @@
 @media (max-width: 480px) {
 
     .passportapplication-container {
+        margin-top: 60px;
         padding-left: 16px;
         padding-right: 16px;
     }
@@ -456,6 +474,11 @@
 
     .passport-document-container {
         width: 100%;
+    }
+
+    .passport-document-container-group {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .passport-requirements-grid {

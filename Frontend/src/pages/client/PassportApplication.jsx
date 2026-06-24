@@ -393,7 +393,7 @@ export default function PassportApplication() {
     };
 
 
-    //SUBMIT PAYMENT
+    //submit payment function
     const handleSubmitPayment = async () => {
         if (method === 'manual' && fileList.length === 0) {
             notification.warning({ message: 'Please upload a receipt first.', placement: 'topRight' });
@@ -470,7 +470,7 @@ export default function PassportApplication() {
     };
 
 
-    //RENDER PREVIEW OF UPLOADED DOCUMENTS
+    //render file preview for uploaded documents
     const renderFilePreview = (fileList, setter) => {
         if (fileList.length === 0) return null;
 
@@ -513,7 +513,8 @@ export default function PassportApplication() {
         );
     };
 
-    //RENDER UPLOAD DOCUMENTS
+
+    //render upload documents
     const renderReadOnlyFile = (url, label) => {
         // Check if the URL contains '.pdf' (case insensitive)
         const isPdf = typeof url === 'string' && url.toLowerCase().split(/[?#]/)[0].endsWith('.pdf');
@@ -523,7 +524,7 @@ export default function PassportApplication() {
         }
 
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 320 }}>
+            <div>
                 <Button
                     className='passportapplication-preview-button'
                     size="small"
@@ -538,6 +539,8 @@ export default function PassportApplication() {
         );
     };
 
+
+    //get the preview file for a specific requirement key
     const getRequirementPreviewFile = (key) => {
         const submittedDocuments = application?.submittedDocuments || application?.documents || {};
 
@@ -553,7 +556,8 @@ export default function PassportApplication() {
         }
     };
 
-    //HANDLE PREVIEW FOR UPLOADED FILES
+
+    //handle preview of uploaded documents
     const handlePreview = (file) => {
         const src = typeof file === 'string'
             ? file
@@ -565,7 +569,8 @@ export default function PassportApplication() {
         notification.error({ message: 'Preview unavailable', placement: 'topRight' });
     };
 
-    //ADD PREVIEW URL TO FILES FOR UPLOADED DOCUMENTS
+
+    //add preview to uploaded files if not already present
     const withPreview = (newList) =>
         newList.map((file) => {
             if (!file.preview && file.originFileObj) {
@@ -574,6 +579,8 @@ export default function PassportApplication() {
             return file;
         });
 
+
+    //validate file size before uploading
     const beforeRequirementUpload = (file) => {
         const isLt3M = file.size / 1024 / 1024 < 3;
         if (!isLt3M) {
@@ -582,7 +589,8 @@ export default function PassportApplication() {
         return isLt3M || Upload.LIST_IGNORE;
     };
 
-    //HANDLE SUBMISSION OF UPLOADED DOCUMENTS
+
+    //handle submission of uploaded documents
     const handleSubmit = async () => {
         if (uploading) {
             notification.warning({ message: "Please wait until uploads finish", placement: 'topRight' });
@@ -625,8 +633,6 @@ export default function PassportApplication() {
                 appendedOrder.push('govId');
             }
 
-
-
             if (!formData.has("files")) {
                 notification.warning({ message: "Please upload the required documents before submitting.", placement: 'topRight' });
                 return;
@@ -668,7 +674,8 @@ export default function PassportApplication() {
         }
     };
 
-    //HANDLE CONFIRMATION OF SUGGESTED APPOINTMENT
+
+    //handle confirmation of suggested appointment schedule
     const handleConfirmSuggested = async () => {
         if (!application?.suggestedAppointmentSchedules || selectedSuggestedIndex === null) {
             notification.warning({ message: 'Please select an appointment option first.', placement: 'topRight' });
@@ -720,6 +727,7 @@ export default function PassportApplication() {
             setConfirmingSuggested(false);
         }
     };
+
     const disableDates = (current) => {
         const today = dayjs().startOf('day');
         const twoWeeksFromNow = today.add(14, 'day');
@@ -733,6 +741,7 @@ export default function PassportApplication() {
             )
         );
     };
+
     const disabledHours = () => {
         const hours = [];
         for (let i = 0; i < 24; i++) {
@@ -743,8 +752,7 @@ export default function PassportApplication() {
         return hours;
     }
 
-
-    //IF NO ID IN URL, GO BACK TO USER APPLICATIONS
+    //if no applicationId is provided in the location state, navigate back to home
     useEffect(() => {
         if (!id) {
             navigate('/home');
@@ -752,12 +760,14 @@ export default function PassportApplication() {
     }, [id, navigate]);
 
 
-    //UPLOAD DOCUMENTS SECTION STATUS CONDITION
+    // determine if the user should see the document upload section based on application status or second chance
     const status = application?.status?.toLowerCase();
 
     const shouldShow =
         status === 'payment completed' ||
         application?.secondChance === true;
+
+
 
 
     return (

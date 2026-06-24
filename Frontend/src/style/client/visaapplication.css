@@ -325,12 +325,7 @@
         gap: 58px;
     }
 
-    .visa-requirement-placeholder {
-        width: 92%;
-        max-width: 280px;
-        height: 38px;
-    }
-
+    .visa-requirement-placeholder,
     .visa-requirement-file-preview-button {
         width: 92%;
         max-width: 280px;
@@ -338,15 +333,26 @@
     }
 
     .visaapplication-upload-button,
-    .visaapplication-removefile-button,
-    .visa-requirement-file-preview-button {
+    .visaapplication-removefile-button {
         width: 92%;
         max-width: 280px;
         margin: 0 auto;
     }
 }
 
+@media (max-width: 980px) {
+    .app-detail-header {
+        flex-direction: column;
+    }
+
+}
+
 @media (max-width: 768px) {
+    .visaapplication-container {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
     .visa-requirements-grid {
         grid-template-columns: 1fr;
         justify-items: center;
@@ -376,6 +382,23 @@
 
 }
 
+@media (max-width: 600px) {
+    .visaapplication-container {
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+    .app-info-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .app-info-value {
+        text-align: left;
+        width: 100%;
+    }
+}
+
 @media (max-width: 480px) {
 
     .visa-requirement-placeholder {
@@ -393,12 +416,6 @@
 }
 
 
-@media (max-width: 980px) {
-    .app-detail-header {
-        flex-direction: column;
-    }
-
-}
 
 /* Custom Application Info Card (replaces Ant Descriptions) */
 .app-info-card {
@@ -441,16 +458,4 @@
 
 .app-detail-barcode-card {
     width: 100%;
-}
-
-@media (max-width: 600px) {
-    .app-info-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .app-info-value {
-        text-align: left;
-        width: 100%;
-    }
 }
