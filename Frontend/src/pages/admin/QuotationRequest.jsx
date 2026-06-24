@@ -925,9 +925,6 @@ export default function QuotationRequest() {
                             display: 'flex', gap: 16, alignItems: 'center'
                         }}>
 
-
-
-
                             <div
                                 ref={pdfContainerRef}
                                 style={{ position: "absolute", left: -9999, top: 0, width: 800 }}

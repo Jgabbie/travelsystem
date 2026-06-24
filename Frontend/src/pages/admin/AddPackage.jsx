@@ -1573,7 +1573,7 @@ export default function AddPackage() {
                   <div key={day} style={{ marginBottom: 24 }}>
                     <h4>{day.replace("day", "Day ")}:</h4>
                     <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-                      <div style={{ flex: "1 1 520px" }}>
+                      <div style={{ width: "100%" }}>
                         {values.itineraries[day].map((item, index) => {
                           const itineraryItem =
                             typeof item === "string"
@@ -1581,12 +1581,12 @@ export default function AddPackage() {
                               : item;
 
                           return (
-                            <Space key={index} style={{ display: "flex", marginBottom: 8 }}>
+                            <Space key={index} style={{ display: "flex", marginBottom: 8, width: "100%" }} wrap>
                               <Input
                                 status={errors.itineraries ? "error" : ""}
                                 className="add-package-inputs"
                                 value={itineraryItem.activity}
-                                style={{ minWidth: 450 }}
+                                style={{ width: "100%", minWidth: "280px" }}
                                 onKeyDown={(e) => {
                                   const allowedKeys = [
                                     "Backspace",

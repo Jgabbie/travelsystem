@@ -422,6 +422,11 @@
       font-size: 12px;
     }
 
+    .add-package-inputs {
+      max-width: 180px;
+      width: 100%;
+    }
+
     .add-package-inputs,
     .add-package-duration-select {
       font-size: 14px !important;

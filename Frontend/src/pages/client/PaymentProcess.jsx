@@ -140,7 +140,7 @@ export default function PaymentProcess() {
         ? bookingData.visaFiles
         : travelerDocuments.visa) || []
 
-    //DISABLE DEPOSIT IF TRAVEL DATE IS LESS THAN 7 DAYS AWAY
+    //disable deposit if travel date is less than 7 days from now
     const travelDateStart = bookingData?.travelDate?.startDate
         ? dayjs(bookingData.travelDate.startDate)
         : null;
@@ -628,6 +628,7 @@ export default function PaymentProcess() {
     };
 
     const totals = calculateTotals(Invoice.items);
+
 
     //invoice document component
     const MyDocument = () => (

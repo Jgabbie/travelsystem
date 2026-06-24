@@ -400,3 +400,219 @@
     background-color: #e9e9e9 !important;
     color: #305797 !important;
 }
+
+@media (max-width: 1200px) {
+    .mrc-form-page {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-form-page,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-page {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        min-height: auto;
+        padding: 12px !important;
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-form-header {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-logo {
+        width: auto;
+        max-width: 150px;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-intro {
+        font-size: 11px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-table {
+        width: 100%;
+        margin-bottom: 12px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-row {
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        min-height: 0;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-label {
+        min-width: 0;
+        padding: 8px 10px;
+        border-right: 0;
+        border-bottom: 1px solid #3a3a3a;
+        font-size: 10px;
+        overflow-wrap: anywhere;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-value {
+        width: 100%;
+        min-width: 0;
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 10px;
+        line-height: 1.3;
+        box-sizing: border-box;
+        overflow-wrap: anywhere;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-value>div,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-label>div {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-tour-details-input,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-inline-input,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-currency-input,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .ant-input,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .ant-input-affix-wrapper {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-value .mrc-currency-input {
+        height: 32px;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-value .mrc-currency-input .ant-input {
+        height: 30px;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-flight-header {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-flight-grid {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-flight-grid>div {
+        width: 100%;
+        min-width: 0;
+        flex-direction: column !important;
+        gap: 12px !important;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-flight-grid>div>div,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-flight-grid .ant-upload-wrapper,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-flight-grid .ant-upload {
+        width: 100%;
+        min-width: 0;
+        display: block;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-flight-grid img {
+        display: block;
+        width: 100% !important;
+        max-width: 100%;
+        height: auto !important;
+        max-height: 220px;
+        object-fit: cover;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .quotationformdetails-button {
+        width: 100%;
+        max-width: 100%;
+        min-height: 40px;
+        height: auto;
+        padding: 8px 12px;
+        white-space: normal;
+        line-height: 1.3;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-section,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-terms-box {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-wrap: anywhere;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-subtitle,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-note {
+        line-height: 1.4;
+        padding: 6px 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) textarea {
+        display: block;
+        width: 100% !important;
+        max-width: 100%;
+        min-width: 0;
+        padding: 8px;
+        font-size: 12px;
+        line-height: 1.4;
+        box-sizing: border-box;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-itinerary-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-itinerary-date {
+        width: fit-content;
+        max-width: 100%;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-itinerary-body {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-list,
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-terms-list {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-wrap: anywhere;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-terms-box {
+        padding: 12px;
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+    .mrc-overlay-wrapper:not(.pdf-content .mrc-overlay-wrapper) .mrc-quotation-terms-list {
+        padding-left: 18px;
+        gap: 8px;
+    }
+}
