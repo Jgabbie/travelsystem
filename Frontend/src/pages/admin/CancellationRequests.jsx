@@ -565,12 +565,13 @@ export default function CancellationRequests() {
                             type="primary"
                             onClick={async () => {
                                 try {
+                                    const date = dayjs().format("YYYY-MM-DD");
                                     const response = await fetch(selectedRequest.imageProof, { mode: 'cors' });
                                     const blob = await response.blob();
                                     const url = window.URL.createObjectURL(blob);
                                     const link = document.createElement('a');
                                     link.href = url;
-                                    link.download = 'cancellation_proof_' + selectedRequest.ref + '.png';
+                                    link.download = 'Cancellation_Proof_' + selectedRequest.ref + '_' + date + '.png';
                                     document.body.appendChild(link);
                                     link.click();
                                     document.body.removeChild(link);

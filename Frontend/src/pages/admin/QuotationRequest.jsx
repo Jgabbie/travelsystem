@@ -612,10 +612,11 @@ export default function QuotationRequest() {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
+            const date = dayjs().format("YYYY-MM-DD");
             const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = `quotation-${quotationReference}.pdf`;
+            link.download = `Quotation_${quotationReference}_${date}.pdf`;
             link.click();
             URL.revokeObjectURL(url);
 

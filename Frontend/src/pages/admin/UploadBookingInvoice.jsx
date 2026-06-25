@@ -200,11 +200,13 @@ export default function UploadBookingInvoice() {
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
             }
 
+            const date = dayjs().format("YYYY-MM-DD");
+
             const pdfBlob = pdf.output('blob');
             const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `Booking_${reference}.pdf`;
+            link.download = `Booking_${reference}_${date}.pdf`;
             link.click();
             URL.revokeObjectURL(url);
 

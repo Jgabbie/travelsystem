@@ -226,7 +226,9 @@ export default function TransactionManagement() {
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}.pdf`);
+      const date = dayjs().format("YYYY-MM-DD");
+
+      pdf.save(`Receipt-${selectedTransaction?.ref || 'download'}_${date}.pdf`);
 
       notification.success({ message: "Downloaded successfully!", key: "pdf", placement: "topRight" });
     } catch (error) {
@@ -931,12 +933,13 @@ export default function TransactionManagement() {
                 type="primary"
                 onClick={async () => {
                   try {
+                    const date = dayjs().format("YYYY-MM-DD");
                     const response = await fetch(proofTransaction.proofImage, { mode: 'cors' });
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = 'proof_of_payment_' + proofTransaction.ref + '.png';
+                    link.download = 'Proof_of_Payment_' + proofTransaction.ref + '_' + date + '.png';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
