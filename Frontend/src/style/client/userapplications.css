@@ -194,4 +194,11 @@
     .userapplications-container {
         margin-top: 20px;
     }
+
+    .userapplications-actions-field,
+    .userapplications-search-input,
+    .userapplications-select,
+    .userapplications-date-filter {
+        width: 100%;
+    }
 }

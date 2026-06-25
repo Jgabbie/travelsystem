@@ -584,7 +584,7 @@ body {
 
     .login-otp-container-modal {
         width: 100%;
-        max-width: 280px;
+        max-width: 270px;
         margin: 20px;
     }
 
@@ -598,7 +598,8 @@ body {
         font-size: 18px;
     }
 
-    #footer-text-modal {
+    #footer-text-modal,
+    .login-otp-button-links-modal-click-here {
         font-size: 14px;
     }
 
@@ -627,14 +628,14 @@ body {
     }
 
     #login-heading-modal {
-        font-size: 30px;
+        font-size: 34px;
+        margin-bottom: 0px;
     }
 
     #login-secondary-heading-modal {
-        font-size: 18px;
+        font-size: 20px;
     }
 
-    .login-labels-modal,
     .login-button-links-modal,
     .login-label-links-modal {
         font-size: 10px;

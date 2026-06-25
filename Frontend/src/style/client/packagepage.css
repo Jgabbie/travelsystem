@@ -970,6 +970,27 @@
     justify-content: flex-end;
 }
 
+@media (max-width: 992px) {
+    .package-box {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .package-reviews {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "summary"
+            "breakdown"
+            "list"
+            "form";
+    }
+
+    .package-review-list {
+        max-height: none;
+    }
+}
+
 @media (max-width: 640px) {
     .package-reviews-card .ant-card-body {
         padding: 14px;
@@ -1012,21 +1033,6 @@
     }
 }
 
-@media (max-width: 900px) {
-    .package-reviews {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-            "summary"
-            "breakdown"
-            "list"
-            "form";
-    }
-
-    .package-review-list {
-        max-height: none;
-    }
-}
-
 @media (max-width: 480px) {
     .package-review-summary {
         padding: 8px 10px;
@@ -1044,10 +1050,13 @@
     .package-review-form h3 {
         font-size: 15px;
     }
-}
 
-@media (max-width: 992px) {
-    .package-box {
-        grid-template-columns: 1fr;
+    .package-action-secondary,
+    .package-action-outline,
+    .package-availability-button,
+    .package-action-secondary,
+    .package-action-remove {
+        width: 100%;
+        font-size: 13px;
     }
 }

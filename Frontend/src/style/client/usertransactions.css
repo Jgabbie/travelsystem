@@ -194,6 +194,12 @@
         margin-top: 20px;
     }
 
+    .user-transactions-actions-field,
+    .user-transactions-search-input,
+    .user-transactions-select,
+    .user-transactions-date-filter {
+        width: 100%;
+    }
 
     .transaction-receipt-modal.ant-modal {
         width: calc(100% - 16px) !important;

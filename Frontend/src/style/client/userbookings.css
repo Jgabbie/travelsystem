@@ -200,4 +200,12 @@
     .user-bookings-container {
         margin-top: 20px;
     }
+
+    .user-bookings-actions-field,
+    .user-bookings-search-input,
+    .user-bookings-select,
+    .user-bookings-date-filter {
+        width: 100%;
+    }
+
 }

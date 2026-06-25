@@ -264,11 +264,7 @@
     }
 
     .choose-date-search,
-    .choose-date-datepicker {
-        max-width: 160px;
-        width: 100%;
-    }
-
+    .choose-date-datepicker,
     .choose-date-filters,
     .choose-date-actions {
         width: 100%;
@@ -306,13 +302,13 @@
     }
 
     .choose-date-search {
-        min-width: 300px !important;
-        width: 100%;
+        min-width: 220px !important;
+        width: 100% !important;
     }
 
     .choose-date-datepicker {
-        min-width: 300px !important;
-        width: 100%;
+        min-width: 220px !important;
+        width: 100% !important;
     }
 
 
@@ -393,7 +389,6 @@
         padding: 3px 7px;
     }
 
-
     .choose-date-filters,
     .choose-date-actions {
         width: 100%;
@@ -407,6 +402,52 @@
     .left-content-text,
     .left-content-text span {
         font-size: 10px;
+    }
+
+    .choose-date-int-modal .ant-modal {
+        width: calc(100% - 24px) !important;
+        max-width: none;
+        margin: 0 auto;
+    }
+
+    .choose-date-int-content {
+        width: 100%;
+        height: min(620px, calc(100vh - 48px));
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    .choose-date-space {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+
+    .choose-date-space>.ant-space-item {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .choose-date-search,
+    .choose-date-datepicker {
+        display: flex !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .choose-date-search .ant-input-group,
+    .choose-date-search .ant-input-affix-wrapper,
+    .choose-date-datepicker .ant-picker-input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .budget-cards-container {
+        grid-template-columns: 1fr;
     }
 
 }
