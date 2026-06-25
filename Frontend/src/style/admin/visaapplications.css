@@ -218,3 +218,14 @@
     }
 
 }
+
+
+@media (max-width: 480px) {
+
+    .visaapplications-export,
+    .visaapplications-archive,
+    .visaapplications-actions-buttons {
+        width: 100%;
+        flex: none !important;
+    }
+}

@@ -532,3 +532,13 @@
     }
 
 }
+
+@media (max-width: 480px) {
+
+    .visaservices-add-button,
+    .visaservices-archive-button,
+    .visaservices-actions-buttons {
+        width: 100%;
+        flex: none !important;
+    }
+}

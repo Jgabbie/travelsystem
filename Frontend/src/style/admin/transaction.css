@@ -823,6 +823,15 @@
 
 
 @media (max-width: 480px) {
+
+  .transactionmanagement-export-button,
+  .transactionmanagement-archive-button,
+  .transaction-actions-buttons {
+    width: 100%;
+    flex: none !important;
+  }
+
+
   .transaction-receipt-modal {
     width: calc(100vw - 16px) !important;
     max-width: calc(100vw - 16px) !important;
@@ -1018,6 +1027,8 @@
     width: 100%;
     height: 36px;
   }
+
+
 }
 
 

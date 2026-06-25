@@ -285,6 +285,17 @@
 
 }
 
+@media (max-width: 480px) {
+
+  .bookingmanagement-export-button,
+  .bookingmanagement-archive-button,
+  .bookingmanagement-actions-buttons {
+    width: 100%;
+    flex: none !important;
+  }
+
+}
+
 
 
 /* Modal content styling */

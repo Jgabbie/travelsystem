@@ -318,8 +318,8 @@ export default function AdminDashboard() {
       <h1 className="page-header">Dashboard</h1>
 
       <div className="dashboard-section">
-        <Row className="dashboard-section" gutter={20}>
-          <Col span={6}>
+        <Row className="dashboard-stats-row" gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={12} lg={6}>
             <Card className="dash-card">
               <div className="dash-card-content-vertical">
                 <p>Total Transactions</p>
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
             </Card>
           </Col>
 
-          <Col span={6}>
+          <Col xs={24} sm={12} md={12} lg={6}>
             <Card className="dash-card">
               <div className="dash-card-content-vertical">
                 <p>Total Bookings</p>
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
             </Card>
           </Col>
 
-          <Col span={6}>
+          <Col xs={24} sm={12} md={12} lg={6}>
             <Card className="dash-card">
               <div className="dash-card-content-vertical">
                 <p>Total Users</p>
@@ -355,7 +355,7 @@ export default function AdminDashboard() {
             </Card>
           </Col>
 
-          <Col span={6}>
+          <Col xs={24} sm={12} md={12} lg={6}>
             <Card className="dash-card">
               <div className="dash-card-content-vertical">
                 <p>Total Packages</p>

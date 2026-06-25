@@ -443,6 +443,7 @@ export default function ReviewRatings() {
                         columns={showArchived ? archivedColumns : columns}
                         dataSource={filteredRatings}
                         rowKey="id"
+                        scroll={{ x: 950 }}
                         loading={loading}
                         pagination={{ pageSize: 10, showSizeChanger: false }}
                         locale={{

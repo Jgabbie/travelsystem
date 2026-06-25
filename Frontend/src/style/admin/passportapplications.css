@@ -219,3 +219,13 @@
     }
 
 }
+
+@media (max-width: 480px) {
+
+    .passportapplications-export,
+    .passportapplications-archive,
+    .passportapplications-actions-buttons {
+        width: 100%;
+        flex: none !important;
+    }
+}

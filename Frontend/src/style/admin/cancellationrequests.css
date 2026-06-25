@@ -279,6 +279,16 @@
 
 }
 
+@media (max-width: 480px) {
+
+    .cancellations-export-button,
+    .cancellations-archive-button,
+    .cancel-actions-buttons {
+        width: 100%;
+        flex: none !important;
+    }
+}
+
 
 
 /* View modal */

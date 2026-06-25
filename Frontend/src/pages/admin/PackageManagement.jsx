@@ -437,7 +437,7 @@ export default function PackageManagement() {
                     </div>
 
                     <div className="package-actions-column">
-                      <Space direction="horizontal" size={8}>
+                      <Space direction="horizontal" size={8} wrap>
                         <Button
                           className="packagemanagement-view-button"
                           type="primary"

@@ -225,3 +225,13 @@
     }
 
 }
+
+@media (max-width: 480px) {
+
+    .quotation-export,
+    .quotation-archive,
+    .quotation-management-actions-buttons {
+        width: 100%;
+        flex: none !important;
+    }
+}

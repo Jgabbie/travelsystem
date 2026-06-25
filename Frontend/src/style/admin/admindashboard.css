@@ -295,33 +295,117 @@
 }
 
 @media (max-width: 464px) {
+  .admin-dashboard {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0 12px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
 
   .dashboard-section {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    margin-right: 0px;
   }
 
-  .dash-card {
-    min-width: 380px;
-    margin-right: 20px;
-  }
-
-  .dashboard-chart-card {
-    min-width: 380px;
+  .dashboard-section,
+  .dashboard-charts,
+  .dashboard-chart-row,
+  .dashboard-section-packages-cards {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     box-sizing: border-box;
   }
 
-  .dashboard-chart-row {
-    grid-template-columns: 1fr;
+  .dashboard-stats-row {
+    width: 100%;
   }
 
+  .dashboard-stats-row>.ant-col {
+    min-width: 0;
+  }
 
-  .dash-card-content-horizontal .dash-icon {
+  .dash-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .dash-card .ant-card-body {
+    padding: 16px;
+  }
+
+  .dash-card-content-vertical {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+  }
+
+  .dash-text {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dash-icon {
     font-size: 28px;
+    margin-bottom: 10px;
   }
 
-  .dash-card-content-horizontal .dash-text-vertical h2 {
+  .dash-card-head {
     font-size: 24px;
+  }
+
+  .dashboard-chart-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .dashboard-chart-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .dashboard-chart-card .ant-card-body {
+    min-width: 0;
+    padding: 14px;
+  }
+
+  .dashboard-chart-body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .dashboard-chart-header h2 {
+    font-size: 16px;
+  }
+
+  .dashboard-chart-header p {
+    font-size: 11px;
+  }
+
+  .dashboard-section-packages-cards h2 {
+    font-size: 18px;
+  }
+
+  .top-package-card,
+  .top-duration-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 }

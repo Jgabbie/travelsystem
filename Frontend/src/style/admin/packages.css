@@ -682,3 +682,14 @@
   }
 
 }
+
+@media (max-width: 480px) {
+
+  .packagemanagement-addpackage,
+  .packagemanagement-archive,
+  .packagemanagement-actions-buttons {
+    width: 100%;
+    flex: none !important;
+  }
+
+}
