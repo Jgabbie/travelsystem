@@ -487,7 +487,8 @@ const sendVisaDeadlineWarning = async (application) => {
             applicationNumber,
             status: statusLabel,
             deadlineDate: deadlineInfo.deadlineDate.format('YYYY-MM-DD'),
-        }
+        },
+        pushStatus: 'pending'
     });
 
     await transporter.sendMail({
@@ -580,7 +581,8 @@ const sendVisaPenaltyNotification = async (application, deadlineInfo) => {
             status: deadlineInfo.status,
             penaltyAmount: PENALTY_AMOUNT,
             deadlineDate: deadlineInfo.deadlineDate.format('YYYY-MM-DD'),
-        }
+        },
+        pushStatus: 'pending'
     });
 
     await transporter.sendMail({
@@ -665,7 +667,8 @@ const rejectVisaApplicationForDeadline = async (application, deadlineInfo, reach
                 rejectedForStatus: resolvedDeadlineInfo.status,
                 deadlineDate: resolvedDeadlineInfo.deadlineDate.format('YYYY-MM-DD'),
                 reachedSecondDeadline: Boolean(reachedSecondDeadline),
-            }
+            },
+            pushStatus: 'pending'
         });
     }
 
@@ -975,7 +978,8 @@ const requestVisaDocumentResubmission = async (req, res) => {
                 message: `Please resubmit your ${requestedSummary.toLowerCase()} for your application.`,
                 type: "visa",
                 link: "/user-applications",
-                metadata: { applicationId: application._id }
+                metadata: { applicationId: application._id },
+                pushStatus: 'pending'
             });
 
             await transporter.sendMail({
@@ -1129,7 +1133,8 @@ const suggestAppointmentSchedules = async (req, res) => {
                 message: `We suggested appointment options for your visa application. ${summary}`,
                 type: "visa",
                 link: "/user-applications",
-                metadata: { applicationId: application._id }
+                metadata: { applicationId: application._id },
+                pushStatus: 'pending'
             });
 
             await transporter.sendMail({
@@ -1301,7 +1306,8 @@ const updateVisaDeliveryDetails = async (req, res) => {
                 message: `Your delivery fee is PHP ${fee.toLocaleString()} and target date is ${deliveryDate}.`,
                 type: "visa",
                 link: "/user-applications",
-                metadata: { applicationId: application._id, deliveryFee: fee, deliveryDate }
+                metadata: { applicationId: application._id, deliveryFee: fee, deliveryDate },
+                pushStatus: 'pending'
             });
         }
 
@@ -1361,7 +1367,8 @@ const updateVisaApplicationStatus = async (req, res) => {
                     message: `Your Visa Application Status is now ${status}.`,
                     type: 'visa',
                     link: '/user-applications',
-                    metadata: { applicationId: updated._id, status }
+                    metadata: { applicationId: updated._id, status },
+                    pushStatus: 'pending'
                 });
 
                 await transporter.sendMail({

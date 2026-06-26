@@ -335,7 +335,8 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
             status: deadlineInfo.status,
             penaltyAmount: PENALTY_AMOUNT,
             deadlineDate: deadlineInfo.deadlineDate.format('YYYY-MM-DD'),
-        }
+        },
+        pushStatus: 'pending',
     });
 
     await transporter.sendMail({
@@ -424,7 +425,8 @@ const rejectPassportApplicationForDeadline = async (application, deadlineInfo, r
                 rejectedForStatus: deadlineInfo.status,
                 deadlineDate: deadlineInfo.deadlineDate.format('YYYY-MM-DD'),
                 reachedSecondDeadline: Boolean(reachedSecondDeadline),
-            }
+            },
+            pushStatus: 'pending',
         });
     }
 
@@ -608,7 +610,8 @@ const sendPassportDeadlineWarning = async (application) => {
             applicationNumber,
             status: statusLabel,
             deadlineDate: deadlineInfo.deadlineDate.format('YYYY-MM-DD'),
-        }
+        },
+        pushStatus: 'pending',
     });
 
     await transporter.sendMail({
@@ -887,7 +890,8 @@ const suggestAppointmentSchedules = async (req, res) => {
                 message: `We suggested appointment options for your passport application. ${summary}`,
                 type: "passport",
                 link: "/user-applications",
-                metadata: { applicationId: application._id }
+                metadata: { applicationId: application._id },
+                pushStatus: 'pending',
             });
 
             await transporter.sendMail({
@@ -1095,7 +1099,8 @@ const requestPassportDocumentResubmission = async (req, res) => {
                 message: `Please resubmit your ${requestedSummary.toLowerCase()} for your application.`,
                 type: "passport",
                 link: "/user-applications",
-                metadata: { applicationId: application._id }
+                metadata: { applicationId: application._id },
+                pushStatus: 'pending',
             });
 
             await transporter.sendMail({
@@ -1197,7 +1202,8 @@ const updatePassportStatus = async (req, res) => {
                     message: `Your passport application status is now ${status}.`,
                     type: 'passport',
                     link: '/user-applications',
-                    metadata: { applicationId: updated._id, status }
+                    metadata: { applicationId: updated._id, status },
+                    pushStatus: 'pending',
                 });
 
                 await transporter.sendMail({

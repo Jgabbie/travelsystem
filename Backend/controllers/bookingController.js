@@ -418,7 +418,8 @@ const requestDocumentResubmission = async (req, res) => {
             title: 'Document Resubmission Required',
             message: `Please resubmit your documents for booking ${booking.reference}.`,
             type: 'booking',
-            link: '/user-bookings'
+            link: '/user-bookings',
+            pushStatus: 'pending'
         })
 
         const user = await UserModel.findById(booking.userId).select('email username').lean()
@@ -538,7 +539,8 @@ const resubmitBookingDocuments = async (req, res) => {
             title: 'Documents Resubmitted',
             message: `Documents for booking ${booking.reference} were resubmitted.`,
             type: 'booking',
-            link: '/user-bookings'
+            link: '/user-bookings',
+            pushStatus: 'pending'
         })
 
         logAction('DOCUMENTS_RESUBMITTED', userId, {
@@ -767,7 +769,8 @@ const approveCancellation = async (req, res) => {
                 title: 'Cancellation Approved',
                 message: `Your cancellation request for booking ${booking.reference} was approved.`,
                 type: 'cancellation',
-                link: '/user-bookings'
+                link: '/user-bookings',
+                pushStatus: 'pending'
             })
 
             const user = await UserModel.findById(booking.userId).select('email username')
@@ -867,7 +870,8 @@ const disApproveCancellation = async (req, res) => {
                 title: 'Cancellation Rejected',
                 message: `Your cancellation request for booking ${booking.reference} was rejected.`,
                 type: 'cancellation',
-                link: '/user-bookings'
+                link: '/user-bookings',
+                pushStatus: 'pending'
             })
 
             const user = await UserModel.findById(booking.userId).select('email username')

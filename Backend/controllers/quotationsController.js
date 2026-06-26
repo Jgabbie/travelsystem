@@ -277,7 +277,8 @@ const uploadQuotationPDF = async (req, res) => {
                 message: `Your quotation ${quotation.reference} has a new PDF update.`,
                 type: 'quotation',
                 link: '/user-package-quotation',
-                metadata: { quotationId: quotation._id }
+                metadata: { quotationId: quotation._id },
+                pushStatus: 'pending'
             })
         } catch (notificationError) {
             console.error('Failed to create notification:', notificationError)

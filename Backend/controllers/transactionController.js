@@ -573,7 +573,8 @@ const rejectTransaction = async (req, res) => {
                 title: 'Manual Payment Rejected',
                 message: `Your manual payment for booking ${bookingReference} was rejected.`,
                 type: 'payment',
-                link: '/user-transactions'
+                link: '/user-transactions',
+                pushStatus: 'pending'
             })
 
             if (user?.email) {

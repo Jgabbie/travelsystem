@@ -201,6 +201,7 @@ const createManualPayment = async (req, res) => {
             message: `Your manual payment for booking ${booking.reference} has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!`,
             type: 'booking',
             link: '/user-bookings',
+            pushStatus: 'pending'
         });
 
 
@@ -338,6 +339,7 @@ const createManualPaymentQuotation = async (req, res) => {
             message: `Your manual payment for booking ${booking.reference} has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!`,
             type: 'booking',
             link: '/user-bookings',
+            pushStatus: 'pending'
         });
 
 
@@ -465,6 +467,7 @@ const createManualPaymentDeposit = async (req, res) => {
             message: `Your manual installment payment for booking ${booking.reference} has been received and is currently pending verification by our team. We will notify you once the verification is complete. This will take 1-2 business days. Thank you for your patience!`,
             type: 'payment',
             link: '/user-transactions',
+            pushStatus: 'pending'
         });
 
         try {
@@ -583,6 +586,7 @@ const createManualPaymentPassportPenalty = async (req, res) => {
             title: "Manual Payment Submitted",
             message: `Your manual payment for passport penalty fee ${passportApp.applicationNumber} has been submitted and is pending review.`,
             link: `/user-transactions`,
+            pushStatus: 'pending'
         });
 
         try {
@@ -699,6 +703,7 @@ const createManualPaymentVisaPenalty = async (req, res) => {
             title: "Manual Payment Submitted",
             message: `Your manual payment for visa penalty fee ${visaApp.applicationNumber} has been submitted and is pending review.`,
             link: `/user-transactions`,
+            pushStatus: 'pending'
         });
 
         try {
@@ -820,6 +825,7 @@ const createManualPaymentPassport = async (req, res) => {
             title: "Manual Payment Submitted",
             message: `Your manual payment for passport application ${passportApp.applicationNumber} has been submitted and is pending review.`,
             link: `/user-transactions`,
+            pushStatus: 'pending'
         });
 
         try {
@@ -937,6 +943,7 @@ const createManualPaymentVisa = async (req, res) => {
             title: "Manual Payment Submitted",
             message: `Your manual payment for visa application ${visaApp.applicationNumber} has been submitted and is pending review.`,
             link: `/user-transactions`,
+            pushStatus: 'pending'
         });
 
         try {
@@ -1053,6 +1060,7 @@ const createManualPaymentDeliveryFee = async (req, res) => {
             title: "Manual Payment Submitted",
             message: `Your manual payment for delivery fee ${visaApp.applicationNumber} has been submitted and is pending review.`,
             link: `/user-transactions`,
+            pushStatus: 'pending'
         });
 
         try {
@@ -2083,6 +2091,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 message: `Your visa application ${metadata.applicationNumber} was successful.`,
                 type: 'visa',
                 link: '/user-transactions',
+                pushStatus: 'pending'
             });
 
             try {
@@ -2186,6 +2195,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 message: `Your passport application ${metadata.applicationNumber} was successful.`,
                 type: 'passport',
                 link: '/user-transactions',
+                pushStatus: 'pending'
             });
 
             try {
@@ -2295,6 +2305,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 message: `Your visa application ${metadata.applicationNumber} was successful.`,
                 type: 'visa',
                 link: '/user-transactions',
+                pushStatus: 'pending'
             });
 
             try {
@@ -2400,6 +2411,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 message: `Your passport application ${metadata.applicationNumber} was successful.`,
                 type: 'passport',
                 link: '/user-transactions',
+                pushStatus: 'pending'
             });
 
             try {
@@ -2500,6 +2512,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 message: `Your delivery fee payment for application ${metadata.applicationNumber} was successful.`,
                 type: 'delivery-fee',
                 link: '/user-transactions',
+                pushStatus: 'pending'
             });
 
             try {
@@ -2611,6 +2624,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 message: `Your installment payment for booking ${metadata.bookingReference} was successful.`,
                 type: 'payment',
                 link: '/user-transactions',
+                pushStatus: 'pending'
             });
 
             try {
@@ -2758,6 +2772,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 type: 'booking',
                 link: '/user-bookings',
                 metadata: { bookingId: booking._id },
+                pushStatus: 'pending'
             });
 
             // Send booking confirmation email
@@ -2913,6 +2928,7 @@ const handlePayMongoWebhook = async (req, res) => {
                 type: 'booking',
                 link: '/user-bookings',
                 metadata: { bookingId: booking._id },
+                pushStatus: 'pending'
             });
 
             // Send booking confirmation email
