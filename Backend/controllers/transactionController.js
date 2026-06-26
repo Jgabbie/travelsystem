@@ -351,7 +351,8 @@ const updateTransaction = async (req, res) => {
                 title: 'Manual Payment Approved',
                 message: `Your manual payment for booking ${bookingReference} has been approved.`,
                 type: 'payment',
-                link: '/user-transactions'
+                link: '/user-transactions',
+                pushStatus: 'pending'
             })
 
             if (user?.email) {
