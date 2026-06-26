@@ -136,7 +136,7 @@ export default function UserManagement() {
     try {
       //logo
       const imgData = await getBase64ImageFromURL("/images/Logo.png");
-      doc.addImage(imgData, "PNG", 14, 12, 35, 22);
+      doc.addImage(imgData, "PNG", 14, 12, 24, 24);
     } catch (e) {
       console.warn("Logo not found at /public/images/Logo.png");
     }
@@ -144,12 +144,12 @@ export default function UserManagement() {
     // company info header
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("M&RC TRAVEL AND TOURS", 52, 18);
+    doc.text("M&RC TRAVEL AND TOURS", 40, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 52, 23);
-    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 52, 27);
-    doc.text("+639690554806 | info1@mrctravels.com", 52, 31);
+    doc.text("2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1, Brgy", 40, 23);
+    doc.text("San Antonio, Paranaque City, Philippines, 1709 PHL", 40, 27);
+    doc.text("+639690554806 | info1@mrctravels.com", 40, 31);
 
     // report title
     doc.setDrawColor(48, 87, 151);
