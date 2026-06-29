@@ -165,47 +165,132 @@ const incrementPackageSlotsForBooking = async (booking) => {
     return false
 }
 
-
-//CREATE TRANSACTION --------------------------------------------------------------------------
+//CREATE TRANSACTION
 const createTransaction = async (req, res) => {
-    const { transactionPayload } = req.body
-    const userId = req.userId
-
+    const { transactionPayload } = req.body;
+    const userId = req.userId;
 
     try {
-        if (!transactionPayload.bookingId || !transactionPayload.packageId || !transactionPayload.amount || !transactionPayload.method || !transactionPayload.status) {
-            return res.status(400).json({ message: "Missing required fields" })
+        if (!transactionPayload) {
+            return res.status(400).json({
+                message: "Transaction payload is required",
+            });
         }
 
-        const { invoiceNumber } = await generateTransactionInvoiceNumber()
+        const amount = Number(transactionPayload.amount);
 
-        const newTransaction = await TransactionModel.create({
-            bookingId: transactionPayload.bookingId,
-            packageId: transactionPayload.packageId,
+        if (
+            !Number.isFinite(amount) ||
+            amount <= 0 ||
+            !transactionPayload.method ||
+            !transactionPayload.status
+        ) {
+            return res.status(400).json({
+                message: "Amount, method, and status are required",
+            });
+        }
+
+        const items = Array.isArray(transactionPayload.items)
+            ? transactionPayload.items.map((item) => ({
+                quantity: Number(item.quantity),
+                description: String(item.description || "").trim(),
+                unitPrice: Number(item.unitPrice),
+                amount: Number(item.amount),
+            }))
+            : [];
+
+        const hasInvalidItem =
+            items.length === 0 ||
+            items.some(
+                (item) =>
+                    !item.description ||
+                    !Number.isFinite(item.quantity) ||
+                    item.quantity <= 0 ||
+                    !Number.isFinite(item.unitPrice) ||
+                    item.unitPrice < 0 ||
+                    !Number.isFinite(item.amount) ||
+                    item.amount <= 0
+            );
+
+        if (hasInvalidItem) {
+            return res.status(400).json({
+                message: "At least one valid transaction item is required",
+            });
+        }
+
+        const calculatedAmount = items.reduce(
+            (total, item) => total + item.amount,
+            0
+        );
+
+        if (Math.abs(calculatedAmount - amount) > 0.01) {
+            return res.status(400).json({
+                message: "Transaction amount does not match the items total",
+            });
+        }
+
+        const { invoiceNumber } =
+            await generateTransactionInvoiceNumber();
+
+        const transactionData = {
             userId,
             invoiceNumber,
             reference: generateTransactionReference(),
-            amount: transactionPayload.amount,
+            amount,
             method: transactionPayload.method,
             status: transactionPayload.status,
-        })
+            applicationType:
+                transactionPayload.applicationType ||
+                items[0]?.description ||
+                "Manual Transaction",
+            items,
+            transactionDate: transactionPayload.transactionDate
+                ? new Date(transactionPayload.transactionDate)
+                : new Date(),
+        };
 
-        logAction('TRANSACTION_CREATED', userId, { "Transaction Created": `Transaction Reference: ${newTransaction.reference} | Method: ${newTransaction.method} | Amount: ${newTransaction.amount}` })
-
-        const io = req.app.get('io')
-        if (io) {
-            io.emit('transaction:created', {
-                id: newTransaction._id,
-                createdAt: newTransaction.createdAt
-            })
+        // Keep these when the transaction is related to an existing booking.
+        if (transactionPayload.bookingId) {
+            transactionData.bookingId = transactionPayload.bookingId;
         }
 
-        res.status(201).json(newTransaction)
+        if (transactionPayload.packageId) {
+            transactionData.packageId = transactionPayload.packageId;
+        }
+
+        const newTransaction =
+            await TransactionModel.create(transactionData);
+
+        logAction("TRANSACTION_CREATED", userId, {
+            "Transaction Created":
+                `Transaction Reference: ${newTransaction.reference} | ` +
+                `Method: ${newTransaction.method} | ` +
+                `Amount: ${newTransaction.amount}`,
+        });
+
+        const io = req.app.get("io");
+
+        if (io) {
+            io.emit("transaction:created", {
+                id: newTransaction._id,
+                createdAt: newTransaction.createdAt,
+            });
+        }
+
+        return res.status(201).json(newTransaction);
     } catch (error) {
-        logAction('CREATE_TRANSACTION_ERROR', userId, { "Transaction Failed": `Error: ${error.message}` })
-        res.status(500).json({ message: "Failed to create transaction", error: error.message })
+        console.error("Create transaction error:", error);
+
+        logAction("CREATE_TRANSACTION_ERROR", userId, {
+            "Transaction Failed": `Error: ${error.message}`,
+        });
+
+        return res.status(500).json({
+            message: "Failed to create transaction",
+            error: error.message,
+        });
     }
-}
+};
 
 
 //GET USER TRANSACTIONS --------------------------------------------------------------------------

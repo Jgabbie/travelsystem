@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Input, Select, Button, Table, Tag, Space, DatePicker, Row, Col, Card, Statistic, Form, Modal, ConfigProvider, Image, Spin, notification } from "antd";
-import { SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, SwapOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, EyeOutlined, FilePdfOutlined, FileOutlined, CheckCircleFilled, InboxOutlined, TransactionOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
 import apiFetch from "../../config/fetchConfig";
+import { useAuth } from "../../hooks/useAuth";
 import "../../style/admin/transaction.css";
 import "../../style/components/modals/modaldesign.css";
 
@@ -28,7 +30,18 @@ const getBase64ImageFromURL = (url) => {
   });
 };
 
+const formatCurrency = (value) =>
+  `₱${Number(value || 0).toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
 export default function TransactionManagement() {
+  const navigate = useNavigate();
+  const { auth } = useAuth();
+  const isEmployee = auth?.role === 'Employee';
+  const basePath = isEmployee ? '/employee' : '';
+
   const [form] = Form.useForm();
   const receiptRef = useRef();
   const [searchText, setSearchText] = useState("");
@@ -68,7 +81,11 @@ export default function TransactionManagement() {
     firstname: t.userId?.firstname,
     lastname: t.userId?.lastname || "",
     package: t.packageId?.packageName || t.applicationType,
-    date: t.createdAt ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm") : "",
+    date: t.transactionDate
+      ? dayjs(t.transactionDate).format("YYYY-MM-DD HH:mm")
+      : t.createdAt
+        ? dayjs(t.createdAt).format("YYYY-MM-DD HH:mm")
+        : "",
     price: `₱${Number(t.amount || 0).toLocaleString()}`,
     amountRaw: Number(t.amount || 0),
     method: t.method?.charAt(0)?.toUpperCase() + t.method?.slice(1) || "No Method",
@@ -76,7 +93,21 @@ export default function TransactionManagement() {
     status: t.status || "No Status",
     proofImage: t.proofImage || null,
     proofImageType: t.proofImageType || "",
-    proofFileName: t.proofFileName || ""
+    proofFileName: t.proofFileName || "",
+    items:
+      Array.isArray(t.items) && t.items.length > 0
+        ? t.items
+        : [
+          {
+            quantity: 1,
+            description:
+              t.packageId?.packageName ||
+              t.applicationType ||
+              "Transaction",
+            unitPrice: Number(t.amount || 0),
+            amount: Number(t.amount || 0),
+          },
+        ],
   }));
 
   const fetchTransactions = async () => {
@@ -539,7 +570,21 @@ export default function TransactionManagement() {
     }
   ];
 
+  const selectedTransactionItems =
+    Array.isArray(selectedTransaction?.items)
+      ? selectedTransaction.items
+      : [];
 
+  const hasTransactionItems = selectedTransactionItems.length > 0;
+
+  const selectedItemsTotal = selectedTransactionItems.reduce(
+    (total, item) => total + Number(item.amount || 0),
+    0
+  );
+
+  const selectedReceiptTotal = hasTransactionItems
+    ? formatCurrency(selectedItemsTotal)
+    : selectedTransaction?.price || formatCurrency(selectedTransaction?.amountRaw);
 
 
   return (
@@ -663,6 +708,16 @@ export default function TransactionManagement() {
               </div>
 
               <div className="transaction-actions-buttons">
+                {!showArchived && (
+                  <Button
+                    className='transactionmanagement-add-button'
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => navigate(`${basePath}/transactions/add`)}
+                  >
+                    Add Transaction
+                  </Button>
+                )}
                 <Button
                   className='transactionmanagement-export-button'
                   type="primary"
@@ -760,6 +815,8 @@ export default function TransactionManagement() {
             </Form>
           </Modal>
 
+
+          {/* receipt modal */}
           <Modal
             open={isViewModalOpen}
             onCancel={() => setIsViewModalOpen(false)}
@@ -769,55 +826,99 @@ export default function TransactionManagement() {
             centered={true}
           >
             {selectedTransaction && (
-              <div className="receipt-container transaction-receipt-container" ref={receiptRef} style={{ padding: '20px', background: '#fff' }}>
-                <div className={`receipt-watermark ${receiptWatermarkClass}`}>{receiptWatermarkText}</div>
+              <div
+                className="receipt-container transaction-receipt-container"
+                ref={receiptRef}
+                style={{
+                  padding: "20px",
+                  background: "#fff",
+                }}
+              >
+                <div className={`receipt-watermark ${receiptWatermarkClass}`}>
+                  {receiptWatermarkText}
+                </div>
+
                 <div className="receipt-content">
                   <div className="receipt-header">
                     <div className="company-info">
-
                       <div className="header-flex-container">
-                        <img src="/images/Logo.png" alt="Company Logo" className="receipt-company-logo" />
+                        <img
+                          src="/images/Logo.png"
+                          alt="Company Logo"
+                          className="receipt-company-logo"
+                        />
 
                         <div className="address-details">
-                          <h2 className="brand-name">M&RC Travel and Tours</h2>
-                          <p className="sub-info">2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1</p>
-                          <p className="sub-info">Parañaque City, Philippines</p>
+                          <h2 className="brand-name">
+                            M&RC Travel and Tours
+                          </h2>
+
+                          <p className="sub-info">
+                            2nd Floor #1 Cor Fatima street, San Antonio Avenue Valley 1
+                          </p>
+
+                          <p className="sub-info">
+                            Parañaque City, Philippines
+                          </p>
+
                           <p className="sub-info">1709 PHL</p>
                           <p className="sub-info">+63 969 055 4806</p>
                           <p className="sub-info">info1@mrctravels.com</p>
                         </div>
                       </div>
-
-
                     </div>
+
                     <div className="receipt-title-box">
-                      <h1 className="receipt-title">INVOICE {selectedTransaction.invoiceNumber}</h1>
+                      <h1 className="receipt-title">
+                        INVOICE {selectedTransaction.invoiceNumber}
+                      </h1>
                     </div>
                   </div>
 
-                  {/* Billing & Meta Section */}
+                  {/* Billing and transaction information */}
                   <div className="receipt-meta">
                     <div className="billed-to">
                       <span className="label-blue">Billed To</span>
-                      <h3 className="customer-name" style={{ margin: 0 }}>
-                        {`${selectedTransaction.firstname || ""} ${selectedTransaction.lastname || ""}`.trim() || selectedTransaction.username || "Customer Name"}
+
+                      <h3
+                        className="customer-name"
+                        style={{ margin: 0 }}
+                      >
+                        {`${selectedTransaction.firstname || ""} ${selectedTransaction.lastname || ""
+                          }`.trim() ||
+                          selectedTransaction.username ||
+                          "Walk-in Customer"}
                       </h3>
                     </div>
+
                     <div className="receipt-details">
                       <div className="detail-item">
                         <span className="label-blue">Date</span>
+
                         <span>
-                          {(selectedTransaction.date || selectedTransaction.createdAt)
-                            ? dayjs(selectedTransaction.date || selectedTransaction.createdAt).format("DD-MM-YYYY")
+                          {selectedTransaction.date ||
+                            selectedTransaction.createdAt
+                            ? dayjs(
+                              selectedTransaction.date ||
+                              selectedTransaction.createdAt
+                            ).format("DD-MM-YYYY")
                             : "--"}
                         </span>
                       </div>
+
                       <div className="detail-item total-price">
-                        <span className="label-blue">Amount to Pay</span>
-                        <span className="value-blue">{selectedTransaction.price}</span>
+                        <span className="label-blue">
+                          Amount to Pay
+                        </span>
+
+                        <span className="value-blue">
+                          {selectedReceiptTotal}
+                        </span>
                       </div>
+
                       <div className="detail-item">
                         <span className="label-blue">Reference</span>
+
                         <span>
                           {selectedTransaction.ref || "--"}
                         </span>
@@ -825,7 +926,7 @@ export default function TransactionManagement() {
                     </div>
                   </div>
 
-                  {/* Items Table */}
+                  {/* Receipt Items */}
                   <table className="receipt-table">
                     <thead>
                       <tr>
@@ -835,52 +936,121 @@ export default function TransactionManagement() {
                         <th className="text-right">Amount</th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      <tr>
-                        <td>1</td>
-                        <td>{selectedTransaction.package || selectedTransaction.applicationType || "--"}</td>
-                        <td className="text-right">{selectedTransaction.price}</td>
-                        <td className="text-right">{selectedTransaction.price}</td>
-                      </tr>
+                      {hasTransactionItems ? (
+                        selectedTransactionItems.map((item, index) => (
+                          <tr key={item._id || `${item.description}-${index}`}>
+                            <td>{Number(item.quantity || 0)}</td>
+
+                            <td>
+                              {item.description || "--"}
+                            </td>
+
+                            <td className="text-right">
+                              {formatCurrency(item.unitPrice)}
+                            </td>
+
+                            <td className="text-right">
+                              {formatCurrency(item.amount)}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td>1</td>
+
+                          <td>
+                            {selectedTransaction.package ||
+                              selectedTransaction.applicationType ||
+                              "--"}
+                          </td>
+
+                          <td className="text-right">
+                            {selectedTransaction.price ||
+                              formatCurrency(
+                                selectedTransaction.amountRaw
+                              )}
+                          </td>
+
+                          <td className="text-right">
+                            {selectedTransaction.price ||
+                              formatCurrency(
+                                selectedTransaction.amountRaw
+                              )}
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
 
                   {/* Calculation Section */}
-                  <div className='receipt-bank-grid'>
-
-                    {/* Footer Notes */}
+                  <div className="receipt-bank-grid">
                     <div className="receipt-bank-info">
                       <div className="receipt-bank-section">
-                        <div className="receipt-bank-label">Bank Account:</div>
-                        <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
-                        <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
-                        <p className="receipt-bank-details">Account #: 006838032692</p>
+                        <div className="receipt-bank-label">
+                          Bank Account:
+                        </div>
+
+                        <p className="receipt-bank-details">
+                          Bank: BDO UNIBANK
+                        </p>
+
+                        <p className="receipt-bank-details">
+                          Account Name: M&RC Travel and Tours
+                        </p>
+
+                        <p className="receipt-bank-details">
+                          Account #: 006838032692
+                        </p>
                       </div>
 
                       <div className="receipt-bank-section">
-                        <div className="receipt-bank-label">USD Account:</div>
-                        <p className="receipt-bank-details">Bank: BDO UNIBANK</p>
-                        <p className="receipt-bank-details">Account Name: M&RC Travel and Tours</p>
-                        <p className="receipt-bank-details">Account #: 113190015176</p>
+                        <div className="receipt-bank-label">
+                          USD Account:
+                        </div>
+
+                        <p className="receipt-bank-details">
+                          Bank: BDO UNIBANK
+                        </p>
+
+                        <p className="receipt-bank-details">
+                          Account Name: M&RC Travel and Tours
+                        </p>
+
+                        <p className="receipt-bank-details">
+                          Account #: 113190015176
+                        </p>
                       </div>
 
                       <div className="receipt-bank-section">
-                        <div className="receipt-bank-label">GCash:</div>
-                        <p className="receipt-bank-details">Rhon Carle - 0968 888 0405</p>
-                        <p className="receipt-bank-details">Maricar Carle - 0969 055 4806</p>
+                        <div className="receipt-bank-label">
+                          GCash:
+                        </div>
+
+                        <p className="receipt-bank-details">
+                          Rhon Carle - 0968 888 0405
+                        </p>
+
+                        <p className="receipt-bank-details">
+                          Maricar Carle - 0969 055 4806
+                        </p>
                       </div>
                     </div>
-
 
                     <div className="receipt-summary">
                       <div className="receipt-summary-content">
                         <div className="summary-row">
                           <span>Total</span>
-                          <span>{selectedTransaction.price}</span>
+                          <span>{selectedReceiptTotal}</span>
                         </div>
+
                         <div className="summary-row total-row">
                           <span>Total Due</span>
-                          <span className="total-amount">{selectedTransaction.price}</span>
+
+                          <span className="total-amount">
+                            {selectedReceiptTotal}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -888,9 +1058,10 @@ export default function TransactionManagement() {
                 </div>
               </div>
             )}
+
             <div className="transaction-receipt-actions">
               <Button
-                className='transactionmanagement-download-button'
+                className="transactionmanagement-download-button"
                 type="primary"
                 onClick={handleDownloadPDF}
               >

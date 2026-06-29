@@ -42,6 +42,7 @@ import UploadBookingInvoice from "./pages/admin/UploadBookingInvoice";
 import UserManagement from "./pages/admin/UserManagement";
 import PackageManagement from "./pages/admin/PackageManagement";
 import AddPackage from "./pages/admin/AddPackage";
+import AddTransaction from "./pages/admin/AddTransaction";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import TransactionManagement from "./pages/admin/TransactionManagement";
 import ReviewRatings from "./pages/admin/ReviewRatings";
@@ -110,6 +111,7 @@ function App() {
                 <Route path="bookings/invoice" element={<UploadBookingInvoice />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="transactions" element={<TransactionManagement />} />
+                <Route path="transactions/add" element={<AddTransaction />} />
                 <Route path="packages" element={<PackageManagement />} />
                 <Route path="packages/add" element={<AddPackage />} />
                 <Route path="/packages/edit" element={<AddPackage />} />

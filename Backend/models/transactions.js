@@ -14,7 +14,35 @@ const TransactionSchema = new mongoose.Schema({
     proofImage: { type: String },
     proofImageType: { type: String },
     proofFileName: { type: String },
-    paymentType: { type: String }
+    paymentType: { type: String },
+    transactionDate: {
+        type: Date,
+        default: Date.now,
+    },
+    items: [
+        {
+            quantity: {
+                type: Number,
+                required: true,
+                min: 1,
+            },
+            description: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            unitPrice: {
+                type: Number,
+                required: true,
+                min: 0,
+            },
+            amount: {
+                type: Number,
+                required: true,
+                min: 0,
+            },
+        },
+    ],
 }, { timestamps: true });
 
 export default mongoose.model('transactions', TransactionSchema);

@@ -1,0 +1,300 @@
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+    .add-transaction-header {
+        margin: 0px auto 18px;
+        margin-bottom: 24px;
+    }
+
+    .add-transaction-header h1 {
+        font-family: "Montserrat", sans-serif;
+        font-size: 32px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .add-transaction-header p,
+    .add-transaction-items-heading p {
+        font-family: "Montserrat", sans-serif;
+        font-size: 14px;
+        color: #555;
+        margin: 0;
+    }
+
+    .add-transaction-container {
+        margin: 0 auto;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .add-transaction-section+.add-transaction-section {
+        margin-top: 30px;
+        padding-top: 26px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .add-transaction-section-title {
+        font-family: "Montserrat", sans-serif;
+        margin: 0 0 18px;
+        color: #305797;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .add-transaction-basic-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .add-transaction-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .add-transaction-field label {
+        font-family: "Montserrat", sans-serif;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .add-transaction-field .ant-picker,
+    .add-transaction-price-input {
+        width: 100%;
+        min-height: 42px;
+    }
+
+    .add-transaction-error {
+        min-height: 20px;
+        margin: 6px 0 0;
+        color: #ff4d4f;
+        font-size: 12px;
+    }
+
+    .add-transaction-items-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+        margin-bottom: 16px;
+    }
+
+    .add-transaction-items-heading .add-transaction-section-title {
+        margin-bottom: 4px;
+    }
+
+    .add-transaction-items-table {
+        overflow-x: auto;
+    }
+
+    .add-transaction-items-header,
+    .add-transaction-item-row {
+        display: grid;
+        grid-template-columns: 110px minmax(260px, 1fr) 190px 190px 44px;
+        gap: 12px;
+        align-items: center;
+        min-width: 870px;
+    }
+
+    .add-transaction-items-header {
+        font-family: "Montserrat", sans-serif;
+        padding: 11px 12px;
+        background: #305797;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .add-transaction-item-row {
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-top: 0;
+        background: #fff;
+    }
+
+    .add-transaction-item-row:last-child {
+        border-radius: 0 0 10px 10px;
+    }
+
+    .add-transaction-item-row .ant-input-number,
+    .add-transaction-item-row .ant-input-number-group-wrapper {
+        width: 100%;
+    }
+
+    .add-transaction-total-box {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 30px;
+        margin-top: 18px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        background: #f3f6fb;
+        color: #305797;
+    }
+
+    .add-transaction-total-box strong {
+        font-family: "Montserrat", sans-serif;
+        font-size: 20px;
+    }
+
+    .add-transaction-actions,
+    .add-transaction-preview-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .add-transaction-actions {
+        margin-top: 30px;
+    }
+
+    .add-transaction-preview-actions {
+        margin-top: 14px;
+    }
+
+    .add-transaction-receipt-modal .ant-modal-body {
+        position: relative;
+    }
+
+    .add-transaction-preview-watermark {
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        z-index: 0;
+        transform: translate(-50%, -50%) rotate(-28deg);
+        color: rgba(48, 87, 151, 0.08);
+        font-size: 78px;
+        font-weight: 800;
+        letter-spacing: 10px;
+        pointer-events: none;
+    }
+
+    .add-transaction-receipt-modal .receipt-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .add-transaction-receipt-modal .customer-name {
+        margin: 4px 0 0;
+    }
+
+    .add-transaction-review-button {
+        font-family: "Roboto", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background-color: #305797;
+        color: #fff;
+        border-radius: 10px;
+        width: 140px;
+        height: 30px;
+        border: none !important;
+        box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    }
+
+    .add-transaction-add-item-button {
+        font-family: "Roboto", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background-color: #305797;
+        color: #fff;
+        border-radius: 10px;
+        width: 100px;
+        height: 30px;
+        border: none !important;
+        box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    }
+
+    .add-transaction-confirm-button {
+        font-family: "Roboto", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background-color: #305797;
+        color: #fff;
+        border-radius: 10px;
+        width: 210px;
+        height: 30px;
+        border: none !important;
+        box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    }
+
+    .add-transaction-backtoedit-button {
+        font-family: "Roboto", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background-color: #305797;
+        color: #fff;
+        border-radius: 10px;
+        width: 150px;
+        height: 30px;
+        border: none !important;
+        box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    }
+
+    .add-transaction-cancel-button {
+        font-family: "Roboto", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background-color: #992A46;
+        color: #fff;
+        border-radius: 10px;
+        width: 90px;
+        height: 30px;
+        border: none !important;
+        box-shadow: 0 8px 20px rgba(153, 42, 70, 0.25);
+    }
+
+    .add-transaction-add-item-button:hover,
+    .add-transaction-review-button:hover,
+    .add-transaction-confirm-button:hover,
+    .add-transaction-backtoedit-button:hover,
+    .add-transaction-cancel-button:hover {
+        background-color: #e9e9e9 !important;
+        color: #305797 !important;
+    }
+
+    @media (max-width: 768px) {
+        .add-transaction-page {
+            padding: 16px;
+        }
+
+        .add-transaction-basic-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .add-transaction-items-heading {
+            flex-direction: column;
+        }
+
+        .add-transaction-items-heading .ant-btn {
+            width: 100%;
+        }
+
+        .add-transaction-actions,
+        .add-transaction-preview-actions {
+            flex-direction: column-reverse;
+        }
+
+        .add-transaction-actions .ant-btn,
+        .add-transaction-preview-actions .ant-btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .add-transaction-container .ant-card-body {
+            padding: 16px;
+        }
+
+        .add-transaction-total-box {
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .add-transaction-preview-watermark {
+            font-size: 44px;
+            letter-spacing: 5px;
+        }
+    }
