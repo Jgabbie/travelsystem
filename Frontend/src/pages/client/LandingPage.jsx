@@ -700,10 +700,18 @@ export default function LandingPage() {
                     <div className='for-you-section'>
                         <h1 className='for-you-text'>FOR YOU</h1>
 
-                        {recommendationMethod === 'collaborative' ? (
-                            <p className='for-you-method'>These are the recommended packages based on the packages you have rated.</p>
+                        {[
+                            'collaborative',
+                            'review-content-fallback'
+                        ].includes(recommendationMethod) ? (
+                            <p className='for-you-method'>
+                                These packages are recommended based on your ratings
+                                and the ratings of other travelers.
+                            </p>
                         ) : (
-                            <p className='for-you-method'>These are the recommended packages based on your preferences.</p>
+                            <p className='for-you-method'>
+                                These packages are recommended based on your travel preferences.
+                            </p>
                         )}
 
                         {!auth && !authLoading ? (
