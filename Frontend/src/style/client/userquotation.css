@@ -41,7 +41,7 @@
 .user-quotation-actions {
     width: 100%;
     margin-bottom: 20px;
-    background: #ffffff;
+    background: #305797;
     border-radius: 16px;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
 }
@@ -78,7 +78,7 @@
 .user-quotation-label {
     font-size: 13px;
     font-weight: 600;
-    color: #1f2a44;
+    color: #ffffff;
 }
 
 .user-quotation-search-input,

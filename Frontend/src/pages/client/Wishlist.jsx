@@ -19,7 +19,6 @@ export default function Wishlist() {
 
     const { Title, Text } = Typography
 
-
     // fetch wishlist items on component mount
     useEffect(() => {
         const loadWishlist = async () => {
@@ -153,12 +152,12 @@ export default function Wishlist() {
                         <p>Search and filter the packages you saved for later.</p>
                     </header>
 
-                    <Card className="wishlist-controls-card" bordered={false}>
+                    <Card className="wishlist-controls-card-search" bordered={false}>
                         <div className="wishlist-controls">
                             <div className="wishlist-search">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <SearchOutlined className='wishlist-primary-label-icon' />
-                                    <Text className="wishlist-primary-label">Search</Text>
+                                    <Text className="wishlist-primary-label-search">Search</Text>
                                 </div>
                                 <Input
                                     allowClear
@@ -167,6 +166,12 @@ export default function Wishlist() {
                                     onChange={(event) => setSearch(event.target.value)}
                                 />
                             </div>
+                        </div>
+                    </Card>
+
+                    <Card className="wishlist-controls-card" bordered={false}>
+                        <div className="wishlist-controls">
+
 
                             <Row gutter={[16, 16]} className="wishlist-filter-grid">
                                 <Col xs={24} sm={12} md={8}>
@@ -402,16 +407,6 @@ export default function Wishlist() {
 
                     </div>
                 </Modal>
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -28,8 +28,16 @@
     margin: 0;
 }
 
+.wishlist-primary-label-search {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: #ffffff;
+    margin: 0;
+}
+
 .wishlist-primary-label-icon {
-    color: #1f2a44;
+    color: #ffffff;
     font-size: 22px;
 }
 
@@ -51,8 +59,17 @@
 .wishlist-controls {
     max-width: 1280px;
     margin: 0 auto 24px;
+    margin-bottom: 0px;
     display: grid;
     gap: 16px;
+}
+
+.wishlist-controls-card-search {
+    max-width: 1280px;
+    margin: 0 auto 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
+    background: #305797;
 }
 
 .wishlist-controls-card {
