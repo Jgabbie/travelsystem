@@ -26,6 +26,9 @@ export default function AddPackage() {
   const [loadingPackage, setLoadingPackage] = useState(false);
   const [savingPackage, setSavingPackage] = useState(false);
 
+  const [availableTags, setAvailableTags] = useState([]);
+  const [loadingTags, setLoadingTags] = useState(false);
+
 
   //form values and errors
   const [errors, setErrors] = useState({
@@ -931,6 +934,103 @@ export default function AddPackage() {
   };
 
 
+  //normalize tags to be unique and trimmed
+  const normalizeTags = (tags = []) => {
+    const uniqueTags = new Map();
+
+    tags.forEach((tag) => {
+      const cleanedTag = String(tag || "").trim();
+
+      if (!cleanedTag) return;
+
+      const normalizedTag = cleanedTag.toLowerCase();
+
+      if (!uniqueTags.has(normalizedTag)) {
+        uniqueTags.set(normalizedTag, cleanedTag);
+      }
+    });
+
+    return Array.from(uniqueTags.values());
+  };
+
+
+  //load available package tags from backend
+  useEffect(() => {
+    const loadPackageTags = async () => {
+      setLoadingTags(true);
+
+      try {
+        const response = await apiFetch.get("/package-tags");
+
+        const returnedTags = Array.isArray(response)
+          ? response
+          : response?.tags || [];
+
+        const tagNames = returnedTags.map((tag) =>
+          typeof tag === "string" ? tag : tag.name
+        );
+
+        setAvailableTags(normalizeTags(tagNames));
+      } catch (error) {
+        console.error("Failed to load package tags:", error);
+
+        notification.error({
+          message: "Failed to load reusable package tags.",
+          placement: "topRight",
+        });
+      } finally {
+        setLoadingTags(false);
+      }
+    };
+
+    loadPackageTags();
+  }, []);
+
+
+  //handle tag changes and save new tags to backend
+  const handleTagsChange = async (nextTags) => {
+    const cleanedTags = normalizeTags(nextTags);
+
+    valueHandler("tags", cleanedTags);
+
+    const existingTagNames = new Set(
+      availableTags.map((tag) => tag.toLowerCase())
+    );
+
+    const newlyAddedTags = cleanedTags.filter(
+      (tag) => !existingTagNames.has(tag.toLowerCase())
+    );
+
+    if (!newlyAddedTags.length) return;
+
+    try {
+      const response = await apiFetch.post("/package-tags", {
+        tags: newlyAddedTags,
+      });
+
+      const returnedTags = response?.tags || [];
+
+      const savedTagNames = returnedTags.map((tag) =>
+        typeof tag === "string" ? tag : tag.name
+      );
+
+      setAvailableTags(normalizeTags(savedTagNames));
+    } catch (error) {
+      console.error("Failed to save reusable package tags:", error);
+
+      notification.error({
+        message:
+          error?.data?.message ||
+          error?.message ||
+          "The new tag could not be saved.",
+        placement: "topRight",
+      });
+    }
+  };
+
+
+
+
 
 
   return (
@@ -1254,16 +1354,43 @@ export default function AddPackage() {
 
               {/* Package Tags */}
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <label className="add-package-input-labels">Package Tags</label>
+                <label className="add-package-input-labels">
+                  Package Tags
+                </label>
+
                 <Select
                   mode="tags"
-                  style={{ width: "100%", marginBottom: 10 }}
+                  showSearch
+                  allowClear
+                  loading={loadingTags}
+                  placeholder="Select an existing tag or enter a new tag"
+                  tokenSeparators={[","]}
+                  style={{
+                    width: "100%",
+                    marginBottom: 10,
+                  }}
                   className={`add-package-inputs${errors.tags ? " add-package-inputs-error" : ""
                     }`}
                   value={values.tags}
-                  onChange={(value) => valueHandler("tags", value)}
+                  options={availableTags.map((tag) => ({
+                    label: tag,
+                    value: tag,
+                  }))}
+                  onChange={handleTagsChange}
+                  filterOption={(input, option) =>
+                    String(option?.label || "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                 />
-                <p className="add-package-error-message">{errors.tags}</p>
+
+                <p className="package-image-help">
+                  Select an existing tag or type a new tag and press Enter.
+                </p>
+
+                <p className="add-package-error-message">
+                  {errors.tags}
+                </p>
               </div>
 
               {/* Duration */}

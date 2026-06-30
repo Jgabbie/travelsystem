@@ -8,6 +8,8 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 
+
+import packageTagRoutes from "./routes/packageTagRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import logRoutes from "./routes/logRoutes.js";
@@ -122,6 +124,7 @@ app.use("/api/preferences", preferencesRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/recommendations', recommendationsRoutes);
+app.use("/api/package-tags", packageTagRoutes);
 
 //might remove later
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
