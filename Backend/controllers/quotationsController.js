@@ -1,10 +1,3 @@
-// const cloudinary = require('../config/cloudinary')
-// const QuotationModel = require('../models/quotations')
-// const ArchivedQuotationModel = require('../models/archivedquotations')
-// const UserModel = require('../models/user')
-// const NotificationModel = require('../models/notification')
-// const logAction = require('../utils/logger')
-
 import cloudinary from '../config/cloudinary.js'
 import QuotationModel from '../models/quotations.js'
 import ArchivedQuotationModel from '../models/archivedquotations.js'
@@ -13,7 +6,7 @@ import NotificationModel from '../models/notification.js'
 import logAction from '../utils/logger.js'
 
 
-//GENERATE UNIQUE QUOTATION REFERENCE -----------------------------------------------------
+//generate unique quotation reference
 const generateQuotationReference = () => {
     const timestamp = Date.now().toString().slice(-6)
     const random = Math.floor(1000 + Math.random() * 9000)
@@ -21,7 +14,7 @@ const generateQuotationReference = () => {
 }
 
 
-//CREATE QUOTATION ------------------------------------------------------------------------
+//create quotation function
 const createQuotation = async (req, res) => {
     const { packageId, quotationDetails } = req.body
     const userId = req.userId
@@ -66,7 +59,7 @@ const createQuotation = async (req, res) => {
 }
 
 
-//GET USER QUOTATIONS ---------------------------------------------------------------------
+//get user quotations function
 const getUserQuotations = async (req, res) => {
     const userId = req.userId
     try {
@@ -79,7 +72,7 @@ const getUserQuotations = async (req, res) => {
 }
 
 
-//GET ALL QUOTATIONS (ADMIN) --------------------------------------------------------------
+//get all quotations function 
 const getAllQuotations = async (_req, res) => {
     try {
         const quotations = await QuotationModel.find({}).sort({ createdAt: -1 })
@@ -92,7 +85,7 @@ const getAllQuotations = async (_req, res) => {
     }
 }
 
-//GET ARCHIVED QUOTATIONS (ADMIN) --------------------------------------------------------------
+//get archived quotations function
 const getArchivedQuotations = async (_req, res) => {
     try {
         const quotations = await ArchivedQuotationModel.find({}).sort({ archivedAt: -1 })
@@ -106,7 +99,7 @@ const getArchivedQuotations = async (_req, res) => {
 }
 
 
-//UPDATE QUOTATION ------------------------------------------------------------------------
+//update quotation function
 const updateQuotation = async (req, res) => {
     const { id } = req.params
     const { status, travelDetails } = req.body
@@ -130,7 +123,7 @@ const updateQuotation = async (req, res) => {
 }
 
 
-//DELETE QUOTATION ------------------------------------------------------------------------
+//archive quotation function
 const deleteQuotation = async (req, res) => {
     const { id } = req.params
 
@@ -162,7 +155,8 @@ const deleteQuotation = async (req, res) => {
     }
 }
 
-//RESTORE QUOTATION ------------------------------------------------------------------------
+
+//restore quotation function
 const restoreArchivedQuotation = async (req, res) => {
     const { id } = req.params
 
@@ -200,7 +194,7 @@ const restoreArchivedQuotation = async (req, res) => {
 }
 
 
-//GET SINGLE QUOTATION -------------------------------------------------------------------
+//get single quotation function
 const getQuotation = async (req, res) => {
     try {
         const { id } = req.params
@@ -224,7 +218,7 @@ const getQuotation = async (req, res) => {
 }
 
 
-//UPLOAD QUOTATION PDF -------------------------------------------------------------------
+//upload quotation PDF function
 const uploadQuotationPDF = async (req, res) => {
     const { id } = req.params;
     const file = req.file;
@@ -293,7 +287,7 @@ const uploadQuotationPDF = async (req, res) => {
 };
 
 
-//UPLOAD TRAVEL DETAILS (ADMIN) ---------------------------------------------------------
+//upload travel details function
 const uploadTravelDetails = async (req, res) => {
     const { id } = req.params
     const { travelDetails } = req.body
@@ -314,7 +308,8 @@ const uploadTravelDetails = async (req, res) => {
     }
 };
 
-//REQUEST REVISION (ADMIN) ----------------------------------------------------------------
+
+//request revision function
 const requestRevision = async (req, res) => {
     const { id } = req.params
     const { notes } = req.body

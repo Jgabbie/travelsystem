@@ -1,19 +1,3 @@
-// const TransactionModel = require('../models/transactions')
-// const ArchivedTransactionModel = require('../models/archivedtransactions')
-// const BookingModel = require('../models/booking')
-// const PackageModel = require('../models/package')
-// const VisaModel = require('../models/visas')
-// const PassportModel = require('../models/passport')
-// const NotificationModel = require('../models/notification')
-// const UserModel = require('../models/user')
-// const { setVisaSecondChance } = require('./visaController')
-// const { setPassportSecondChance } = require('./passportController')
-// const baseTransporter = require('../config/nodemailer')
-// const { buildBrandedEmail } = require('../utils/emailTemplate')
-// const logAction = require('../utils/logger')
-// const dayjs = require('dayjs')
-
-
 import TransactionModel from '../models/transactions.js'
 import ArchivedTransactionModel from '../models/archivedtransactions.js'
 import BookingModel from '../models/booking.js'
@@ -29,6 +13,8 @@ import { buildBrandedEmail } from '../utils/emailTemplate.js'
 import logAction from '../utils/logger.js'
 import dayjs from 'dayjs'
 
+
+//custom transporter that uses the baseTransporter but modifies the subject and html to include branding
 const transporter = {
     ...baseTransporter,
     sendMail: (mailOptions = {}) => {
@@ -47,18 +33,24 @@ const transporter = {
     },
 }
 
+
+//parse amount from string or number, removing any non-numeric characters
 const parseAmount = (value) => {
     if (value == null) return 0
     const parsed = Number(String(value).replace(/[^0-9.-]/g, ''))
     return Number.isFinite(parsed) ? parsed : 0
 }
 
+
+//generate transaction reference with timestamp and random number
 const generateTransactionReference = () => {
     const timestamp = Date.now().toString().slice(-6)
     const random = Math.floor(1000 + Math.random() * 9000)
     return `TX-${timestamp}${random}`
 }
 
+
+//generate transaction invoice number based on current month and count of transactions in that month
 const generateTransactionInvoiceNumber = async (date = new Date()) => {
     const invoiceDate = dayjs(date)
     const startOfMonth = invoiceDate.startOf('month').toDate()
@@ -78,6 +70,8 @@ const generateTransactionInvoiceNumber = async (date = new Date()) => {
     }
 }
 
+
+//get traveler count from booking
 const getTravelerCount = (booking) => {
     const rawTravelers = booking?.travelers
 
@@ -98,6 +92,8 @@ const getTravelerCount = (booking) => {
     return 1
 }
 
+
+//decrement package slots for booking
 const decrementPackageSlotsForBooking = async (booking) => {
     if (!booking?.packageId || !booking?.travelDate) return false
 
@@ -133,6 +129,8 @@ const decrementPackageSlotsForBooking = async (booking) => {
     return false
 }
 
+
+//increment package slots for booking
 const incrementPackageSlotsForBooking = async (booking) => {
     if (!booking?.packageId || !booking?.travelDate) return false
 
@@ -165,7 +163,8 @@ const incrementPackageSlotsForBooking = async (booking) => {
     return false
 }
 
-//CREATE TRANSACTION
+
+//create transaction function
 const createTransaction = async (req, res) => {
     const { transactionPayload } = req.body;
     const userId = req.userId;
@@ -293,7 +292,7 @@ const createTransaction = async (req, res) => {
 };
 
 
-//GET USER TRANSACTIONS --------------------------------------------------------------------------
+//get user transactions function
 const getUserTransactions = async (req, res) => {
     const userId = req.userId
     try {
@@ -306,7 +305,7 @@ const getUserTransactions = async (req, res) => {
 }
 
 
-//GET TRANSACTIONS FOR APPLICATION (VISA/PASSPORT) --------------------------------------------------------------------------
+//get transactions for application function
 const getTransactionsForApplication = async (req, res) => {
     const userId = req.userId
     const { applicationId } = req.params
@@ -319,17 +318,7 @@ const getTransactionsForApplication = async (req, res) => {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-//GET ALL TRANSACTIONS --------------------------------------------------------------------------
+//get all transactions function
 const getAllTransactions = async (_req, res) => {
     try {
         const transactions = await TransactionModel.find({})
@@ -344,6 +333,8 @@ const getAllTransactions = async (_req, res) => {
     }
 }
 
+
+//get transaction by ID function
 const getInvoiceNumber = async (_req, res) => {
     try {
         const invoiceData = await generateTransactionInvoiceNumber()
@@ -354,8 +345,7 @@ const getInvoiceNumber = async (_req, res) => {
 }
 
 
-
-//GET ARCHIVED TRANSACTIONS --------------------------------------------------------------------------
+//get archived transactions function
 const getArchivedTransactions = async (_req, res) => {
     try {
         const transactions = await ArchivedTransactionModel.find({})
@@ -370,7 +360,8 @@ const getArchivedTransactions = async (_req, res) => {
     }
 }
 
-//UPDATE TRANSACTIONS --------------------------------------------------------------------------
+
+//update transaction function
 const updateTransaction = async (req, res) => {
     const { id } = req.params
     const { status } = req.body
@@ -554,6 +545,8 @@ const updateTransaction = async (req, res) => {
     }
 }
 
+
+//delete transaction function
 const deleteTransaction = async (req, res) => {
     const { id } = req.params
 
@@ -591,7 +584,8 @@ const deleteTransaction = async (req, res) => {
     }
 }
 
-//RESTORE TRANSACTION (ADMIN) -----------------------------------------------------------------
+
+//restore transaction function
 const restoreArchivedTransaction = async (req, res) => {
     const { id } = req.params
 
@@ -634,6 +628,8 @@ const restoreArchivedTransaction = async (req, res) => {
     }
 }
 
+
+//reject transaction function
 const rejectTransaction = async (req, res) => {
     const { id } = req.params
     try {
@@ -733,4 +729,15 @@ const rejectTransaction = async (req, res) => {
     }
 }
 
-export { createTransaction, getUserTransactions, getTransactionsForApplication, getAllTransactions, getInvoiceNumber, getArchivedTransactions, updateTransaction, deleteTransaction, restoreArchivedTransaction, rejectTransaction };
+export {
+    createTransaction,
+    getUserTransactions,
+    getTransactionsForApplication,
+    getAllTransactions,
+    getInvoiceNumber,
+    getArchivedTransactions,
+    updateTransaction,
+    deleteTransaction,
+    restoreArchivedTransaction,
+    rejectTransaction
+};

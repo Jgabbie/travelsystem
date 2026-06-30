@@ -1,15 +1,11 @@
-// const express = require("express")
-// const cloudinary = require("../config/cloudinary")
-// const https = require("https")
-// const streamifier = require("streamifier")
-// const { upload } = require("../middleware/uploadFile")
-
 import express from 'express';
 import cloudinary from '../config/cloudinary.js';
 import https from 'https';
 import streamifier from 'streamifier';
 import { upload } from '../middleware/uploadFile.js';
 
+
+//upload to cloudinary function
 const uploadBufferToCloudinary = (file, folder) => new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
         { folder, resource_type: 'auto', type: 'private' },
@@ -22,6 +18,8 @@ const uploadBufferToCloudinary = (file, folder) => new Promise((resolve, reject)
     streamifier.createReadStream(file.buffer).pipe(stream);
 });
 
+
+//get cloudinary format function
 const getCloudinaryFormat = (uploadResult) => {
     if (uploadResult?.format) {
         return uploadResult.format;
@@ -35,6 +33,8 @@ const getCloudinaryFormat = (uploadResult) => {
     return segments.length > 1 ? segments.pop() : null;
 };
 
+
+//build private access URL function
 const buildPrivateAccessUrl = (req, uploadResult) => {
     if (!uploadResult?.public_id) {
         return null;
@@ -55,6 +55,7 @@ const buildPrivateAccessUrl = (req, uploadResult) => {
 };
 
 
+//upload receipt proof function
 const uploadReceiptProof = async (req, res) => {
 
     if (!req.file) {
@@ -78,6 +79,8 @@ const uploadReceiptProof = async (req, res) => {
     }
 }
 
+
+//upload booking documents function
 const uploadBookingDocuments = async (req, res) => {
 
     if (!req.files || req.files.length === 0) {
@@ -102,6 +105,8 @@ const uploadBookingDocuments = async (req, res) => {
     }
 };
 
+
+//upload package image function
 const uploadPackageImage = async (req, res) => {
 
     if (!req.files || req.files.length === 0) {
@@ -125,6 +130,8 @@ const uploadPackageImage = async (req, res) => {
     }
 };
 
+
+//upload package video function
 const uploadPackageVideo = async (req, res) => {
 
     if (!req.file) {
@@ -144,6 +151,8 @@ const uploadPackageVideo = async (req, res) => {
     }
 };
 
+
+//upload profile picture function
 const uploadProfilePicture = async (req, res) => {
 
     if (!req.file) {
@@ -167,6 +176,8 @@ const uploadProfilePicture = async (req, res) => {
     }
 };
 
+
+//upload passport requirements function
 const uploadPassportRequirements = async (req, res) => {
 
     if (!req.files) {
@@ -191,6 +202,8 @@ const uploadPassportRequirements = async (req, res) => {
     }
 }
 
+
+//upload visa requirements function
 const uploadVisaRequirements = async (req, res) => {
 
     if (!req.files) {
@@ -215,6 +228,8 @@ const uploadVisaRequirements = async (req, res) => {
     }
 }
 
+
+//upload cancellation proof function
 const uploadCancellationProof = async (req, res) => {
 
     if (!req.file) {
@@ -238,6 +253,8 @@ const uploadCancellationProof = async (req, res) => {
     }
 }
 
+
+//view quotation PDF function
 const viewQuotationPdf = async (req, res) => {
     try {
         const publicId = req.query.publicId;
@@ -295,4 +312,15 @@ const viewQuotationPdf = async (req, res) => {
     }
 }
 
-export { uploadReceiptProof, uploadBookingDocuments, uploadPackageImage, uploadPackageVideo, uploadProfilePicture, uploadPassportRequirements, uploadVisaRequirements, uploadCancellationProof, viewQuotationPdf };
+
+export {
+    uploadReceiptProof,
+    uploadBookingDocuments,
+    uploadPackageImage,
+    uploadPackageVideo,
+    uploadProfilePicture,
+    uploadPassportRequirements,
+    uploadVisaRequirements,
+    uploadCancellationProof,
+    viewQuotationPdf
+};

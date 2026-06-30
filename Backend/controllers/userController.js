@@ -1,11 +1,3 @@
-// const UserModel = require('../models/user');
-// const ArchivedUserModel = require('../models/archivedusers');
-// const bcrypt = require("bcryptjs");
-// const logAction = require('../utils/logger');
-// const baseTransporter = require('../config/nodemailer')
-// const { buildBrandedEmail } = require('../utils/emailTemplate')
-// const jwt = require('jsonwebtoken')
-
 import UserModel from '../models/user.js';
 import ArchivedUserModel from '../models/archivedusers.js';
 import bcrypt from "bcryptjs";
@@ -14,6 +6,8 @@ import baseTransporter from '../config/nodemailer.js';
 import { buildBrandedEmail } from '../utils/emailTemplate.js';
 import jwt from 'jsonwebtoken';
 
+
+//custom transporter that uses the baseTransporter but modifies the subject and html to include branding
 const transporter = {
     ...baseTransporter,
     sendMail: (mailOptions = {}) => {
@@ -32,6 +26,8 @@ const transporter = {
     },
 }
 
+
+//get user data function
 const getUserData = async (req, res) => {
     try {
         const { userId } = req
@@ -65,6 +61,8 @@ const getUserData = async (req, res) => {
     }
 }
 
+
+//update user data function
 const updateUserData = async (req, res) => {
     try {
         const { userId } = req
@@ -210,8 +208,7 @@ const updateUserData = async (req, res) => {
 }
 
 
-
-
+//mark login once function
 const getUsers = (req, res) => {
     UserModel.find()
         .then(users => res.json(users))
@@ -222,8 +219,7 @@ const getUsers = (req, res) => {
 };
 
 
-
-
+//get archived users function
 const getArchivedUsers = (req, res) => {
     ArchivedUserModel.find()
         .sort({ archivedAt: -1 })
@@ -235,7 +231,7 @@ const getArchivedUsers = (req, res) => {
 };
 
 
-
+//create users function
 const createUsers = async (req, res) => {
     const { username, firstname, lastname, password, email, phone, role } = req.body;
     const adminId = req.userId;
@@ -374,10 +370,6 @@ const createUsers = async (req, res) => {
             }
         }
 
-
-
-
-
         res.status(201).json({ message: "User created successfully" });
 
     } catch (err) {
@@ -386,6 +378,8 @@ const createUsers = async (req, res) => {
     }
 };
 
+
+//mark login once function
 const markLoginOnce = async (req, res) => {
     try {
         const { userId } = req
@@ -406,6 +400,8 @@ const markLoginOnce = async (req, res) => {
     }
 }
 
+
+//archive users function
 const delUsers = async (req, res) => {
     const { id } = req.params;
     const adminId = req.userId;
@@ -454,6 +450,8 @@ const delUsers = async (req, res) => {
     }
 };
 
+
+//restore archived user function
 const restoreArchivedUser = async (req, res) => {
     const { id } = req.params;
     const adminId = req.userId;
@@ -506,4 +504,14 @@ const restoreArchivedUser = async (req, res) => {
     }
 };
 
-export { getUsers, getArchivedUsers, createUsers, delUsers, restoreArchivedUser, getUserData, updateUserData, markLoginOnce };
+
+export {
+    getUsers,
+    getArchivedUsers,
+    createUsers,
+    delUsers,
+    restoreArchivedUser,
+    getUserData,
+    updateUserData,
+    markLoginOnce
+};

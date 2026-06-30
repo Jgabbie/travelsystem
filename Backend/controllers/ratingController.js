@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import logAction from '../utils/logger.js';
 import { scheduleRetrain } from '../utils/recommendationRetrainQueue.js';
 
+
+//submit rating function
 const submitRating = async (req, res) => {
     const { packageId, rating, review } = req.body;
     const userId = req.userId;
@@ -68,6 +70,8 @@ const submitRating = async (req, res) => {
     }
 };
 
+
+//get package ratings function
 const getPackageRatings = async (req, res) => {
     const { packageItem } = req.params
 
@@ -83,6 +87,8 @@ const getPackageRatings = async (req, res) => {
     }
 }
 
+
+//get user ratings function
 const getUserRatings = async (req, res) => {
     const userId = req.userId
 
@@ -96,6 +102,8 @@ const getUserRatings = async (req, res) => {
     }
 }
 
+
+//delete rating function
 const deleteRating = async (req, res) => {
     const { id } = req.params
     const userId = req.userId
@@ -128,6 +136,8 @@ const deleteRating = async (req, res) => {
     }
 }
 
+
+//archive rating function
 const adminDeleteRating = async (req, res) => {
     const { id } = req.params
     try {
@@ -168,6 +178,8 @@ const adminDeleteRating = async (req, res) => {
     }
 }
 
+
+//update rating function
 const updateRating = async (req, res) => {
     const { id } = req.params
     const { rating, review } = req.body
@@ -204,6 +216,8 @@ const updateRating = async (req, res) => {
     }
 }
 
+
+//get all ratings function
 const getAllRatings = async (_req, res) => {
     try {
         const ratings = await Rating.find({})
@@ -216,6 +230,8 @@ const getAllRatings = async (_req, res) => {
     }
 }
 
+
+//get average rating function
 const getAverageRating = async (req, res) => {
     try {
         const { id } = req.params;
@@ -248,6 +264,8 @@ const getAverageRating = async (req, res) => {
     }
 };
 
+
+//get average ratings function
 const getAverageRatings = async (_req, res) => {
     try {
         const result = await Rating.aggregate([
@@ -286,6 +304,8 @@ const getAverageRatings = async (_req, res) => {
     }
 };
 
+
+//get archived ratings function
 const getArchivedRatings = async (_req, res) => {
     try {
         const ratings = await ArchivedRatingModel.find({})
@@ -298,6 +318,8 @@ const getArchivedRatings = async (_req, res) => {
     }
 }
 
+
+//restore archived rating function
 const restoreArchivedRating = async (req, res) => {
     const { id } = req.params
 
@@ -346,4 +368,17 @@ const restoreArchivedRating = async (req, res) => {
     }
 }
 
-export { submitRating, getPackageRatings, deleteRating, adminDeleteRating, getUserRatings, getAllRatings, updateRating, getAverageRating, getAverageRatings, getArchivedRatings, restoreArchivedRating };
+
+export {
+    submitRating,
+    getPackageRatings,
+    deleteRating,
+    adminDeleteRating,
+    getUserRatings,
+    getAllRatings,
+    updateRating,
+    getAverageRating,
+    getAverageRatings,
+    getArchivedRatings,
+    restoreArchivedRating
+};

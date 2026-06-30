@@ -1,6 +1,8 @@
 import LogModel from '../models/log.js';
 import AuditModel from '../models/audit.js';
 
+
+//get logs function
 const getLogs = async (req, res) => {
     try {
         // Fetch logs and populate 'performedBy' with username, email, AND role
@@ -14,6 +16,8 @@ const getLogs = async (req, res) => {
     }
 };
 
+
+//get audits function
 const getAudits = async (req, res) => {
     try {
         const audits = await AuditModel.find()
@@ -26,4 +30,8 @@ const getAudits = async (req, res) => {
     }
 };
 
-export { getLogs, getAudits };
+
+export {
+    getLogs,
+    getAudits
+};

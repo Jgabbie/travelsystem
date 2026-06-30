@@ -16,7 +16,7 @@ import {
 } from '../utils/sessionAuth.js';
 
 
-// CREATE VERIFICATION LINK AND SEND EMAIL
+// create verification link and send email
 const createVerificationLink = async (email, token) => {
 
     const user = await UserModel.findOne({ email: email })
@@ -58,7 +58,7 @@ const createVerificationLink = async (email, token) => {
 }
 
 
-//SIGNUP FUNCTION
+//signup function
 const signupUser = async (req, res) => {
     const { username, firstname, lastname, password, email, phone } = req.body;
 
@@ -99,7 +99,7 @@ const signupUser = async (req, res) => {
 };
 
 
-//LOGIN FUNCTION
+//login function
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
     await connectToDatabase();
@@ -190,7 +190,7 @@ const loginUser = async (req, res) => {
 }
 
 
-//ALLOW LOGIN AFTER CHECKING OTP
+//allow login function (after OTP verification)
 const allowLogin = async (req, res) => {
     const { email, otp } = req.body
 
@@ -256,7 +256,7 @@ const allowLogin = async (req, res) => {
 }
 
 
-//REFRESH TOKEN FUNCTION
+//refresh token function
 const refreshToken = async (req, res) => {
     const { refreshToken } = req.cookies;
     if (!refreshToken) {
@@ -292,7 +292,7 @@ const refreshToken = async (req, res) => {
 }
 
 
-//CHECK DUPLICATE USERNAME OR EMAIL
+//check duplicates function
 const checkDups = async (req, res) => {
     const { username, email, phone } = req.body
     await connectToDatabase();
@@ -326,7 +326,7 @@ const checkDups = async (req, res) => {
 }
 
 
-//LOGOUT FUNCTION
+//logout function
 const logoutUser = async (req, res) => {
 
     try {
@@ -362,7 +362,7 @@ const logoutUser = async (req, res) => {
 }
 
 
-//SEND OTP FOR EMAIL VERIFICATION
+//send verification OTP function
 const sendVerifyOtp = async (req, res) => {
     try {
         const { email } = req.body
@@ -402,7 +402,7 @@ const sendVerifyOtp = async (req, res) => {
 }
 
 
-//VERIFY EMAIL FUNCTION
+//verify email function
 const verifyEmail = async (req, res) => {
     const { email, token } = req.body
 
@@ -443,7 +443,7 @@ const verifyEmail = async (req, res) => {
 }
 
 
-// CHECKS IF USER IS AUTHENTICATED
+// check if user is authenticated function
 const isAuthenticated = async (req, res) => {
     try {
         const userId = req.userId
@@ -473,7 +473,7 @@ const isAuthenticated = async (req, res) => {
 }
 
 
-// CHECKS IF USER IS VERIFIED (FOR FRONTEND TO KNOW WHETHER TO SHOW VERIFY ACCOUNT MODAL OR NOT)
+// check if user is verified function
 const isUserVerified = async (req, res) => {
     try {
         return res.status(200).json({ message: "User is Verified" })
@@ -483,7 +483,7 @@ const isUserVerified = async (req, res) => {
 }
 
 
-//SEND OTP FOR PASSWORD RESET
+//send reset OTP function
 const sendResetOtp = async (req, res) => {
     const { email } = req.body
 
@@ -528,7 +528,7 @@ const sendResetOtp = async (req, res) => {
 }
 
 
-// CHECKS THE OTP FOR PASSWORD RESET
+// check reset OTP function
 const checkResetOtp = async (req, res) => {
     const { email, otp } = req.body
 
@@ -557,7 +557,7 @@ const checkResetOtp = async (req, res) => {
 }
 
 
-//PASSWORD RESET FUNCTION
+//password reset function
 const resetPassword = async (req, res) => {
     const { newPassword, token } = req.body
 
@@ -599,4 +599,18 @@ const resetPassword = async (req, res) => {
 }
 
 
-export { loginUser, allowLogin, signupUser, checkDups, logoutUser, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, resetPassword, checkResetOtp, isUserVerified, refreshToken };
+export {
+    loginUser,
+    allowLogin,
+    signupUser,
+    checkDups,
+    logoutUser,
+    sendVerifyOtp,
+    verifyEmail,
+    isAuthenticated,
+    sendResetOtp,
+    resetPassword,
+    checkResetOtp,
+    isUserVerified,
+    refreshToken
+};

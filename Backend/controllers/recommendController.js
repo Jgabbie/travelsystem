@@ -3,15 +3,18 @@ import PackageModel from '../models/package.js';
 import mongoose from 'mongoose';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'https://recommendationtravex.onrender.com';
-const AI_SERVICE_TIMEOUT = 10000; // 10 seconds
+const AI_SERVICE_TIMEOUT = 60000; // 10 seconds
 
-// Create axios instance for AI service
+
+// create axios instance for AI service
 const aiService = axios.create({
     baseURL: AI_SERVICE_URL,
     timeout: AI_SERVICE_TIMEOUT
 });
 
-export const getRecommendations = async (req, res) => {
+
+//get recommendations function
+const getRecommendations = async (req, res) => {
     try {
         const userId = req.userId ? String(req.userId) : null;
         if (!userId) {
@@ -111,11 +114,9 @@ export const getRecommendations = async (req, res) => {
     }
 };
 
-/**
- * Trigger manual model training/retraining
- * Called after significant user interactions or on a schedule
- */
-export const trainModels = async (req, res) => {
+
+//trigger model training function
+const trainModels = async (req, res) => {
     try {
         console.log("[Train] Triggering model training...");
 
@@ -142,10 +143,9 @@ export const trainModels = async (req, res) => {
     }
 };
 
-/**
- * Check AI Service health and model status
- */
-export const checkHealth = async (req, res) => {
+
+//check AI service health function
+const checkHealth = async (req, res) => {
     try {
         const response = await aiService.get('/health');
 
@@ -162,3 +162,9 @@ export const checkHealth = async (req, res) => {
         });
     }
 };
+
+export {
+    getRecommendations,
+    trainModels,
+    checkHealth
+}

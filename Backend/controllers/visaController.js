@@ -9,6 +9,8 @@ import { buildBrandedEmail } from '../utils/emailTemplate.js';
 import logAction from '../utils/logger.js';
 import dayjs from 'dayjs';
 
+
+//custom transporter that uses the baseTransporter but modifies the subject and html to include branding
 const transporter = {
     ...baseTransporter,
     sendMail: (mailOptions = {}) => {
@@ -57,6 +59,8 @@ const VISA_STEPS_ORDER = [
     'Rejected'
 ];
 
+
+//build visa status total days map from steps function
 const buildVisaStatusTotalDaysMapFromSteps = (steps = []) => {
     const map = {};
     let total = 0;
@@ -77,6 +81,8 @@ const buildVisaStatusTotalDaysMapFromSteps = (steps = []) => {
     return map;
 };
 
+
+//get visa process steps from application function
 const getVisaProcessStepsFromApplication = (application) => {
     if (!application) return [];
 
@@ -87,6 +93,8 @@ const getVisaProcessStepsFromApplication = (application) => {
     return [];
 };
 
+
+//get visa status total days map from application function
 const getVisaDocumentLabel = (application, documentKey) => {
     if (!documentKey) return 'the selected document';
 
@@ -108,9 +116,10 @@ const getVisaDocumentLabel = (application, documentKey) => {
         .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-
 const VISA_TERMINAL_STATUSES = new Set(['Documents Submitted', 'Processing by Embassy', 'Embassy Approved', 'DFA Approved', 'Passport Released', 'Rejected']);
 
+
+//get current visa status function
 const getCurrentVisaStatus = (application) => {
     if (!application) return '';
 
@@ -121,6 +130,8 @@ const getCurrentVisaStatus = (application) => {
     return String(application.status || '').trim();
 };
 
+
+//get cloudinary format function
 const normalizeVisaDate = (value) => {
     if (!value) return null;
 
@@ -128,6 +139,8 @@ const normalizeVisaDate = (value) => {
     return parsed.isValid() ? parsed.startOf('day') : null;
 };
 
+
+//get visa process steps from service function
 const getVisaProcessStepsFromService = (application) => {
     if (!application) return [];
 
@@ -138,6 +151,8 @@ const getVisaProcessStepsFromService = (application) => {
     return [];
 };
 
+
+//build process steps function
 const buildProcessSteps = (application, serviceProcessSteps = []) => {
     const out = {};
     if (!application) return out;
@@ -182,6 +197,8 @@ const buildProcessSteps = (application, serviceProcessSteps = []) => {
     return out;
 };
 
+
+//get visa status set date function
 const getVisaStatusSetDate = (application, status) => {
     if (!application) return null;
 
@@ -200,6 +217,8 @@ const getVisaStatusSetDate = (application, status) => {
     return null;
 };
 
+
+//build visa status total days map from application function
 const getVisaStoredDeadlineDate = (application, status) => {
     if (!application || !status) return null;
 
@@ -225,6 +244,8 @@ const getVisaStoredDeadlineDate = (application, status) => {
     return null;
 };
 
+
+//get visa penalty deadline date function
 const getVisaPenaltyDeadlineDate = (application) => {
     if (!application) return null;
 
@@ -237,6 +258,8 @@ const getVisaPenaltyDeadlineDate = (application) => {
     return anchorDate ? anchorDate.add(PENALTY_PAYMENT_WINDOW_DAYS, 'day').startOf('day') : null;
 };
 
+
+//get visa second chance deadline date function
 const getVisaSecondChanceDeadlineDate = (application) => {
     if (!application) return null;
 
@@ -248,7 +271,7 @@ const getVisaSecondChanceDeadlineDate = (application) => {
 };
 
 
-//SETS SECONDDEADLINE AND CHANGE THE "PAYMENT COMPLETED" DEADLINE TO THE SECOND CHANCE DEADLINE
+//sets the second chance deadline and updates the process steps accordingly
 const setVisaSecondChance = (application) => {
     if (!application) return application;
 
@@ -275,7 +298,7 @@ const setVisaSecondChance = (application) => {
 };
 
 
-
+//get visa deadline info function
 const getVisaDeadlineInfo = (
     application,
     referenceDate = dayjs()
@@ -427,6 +450,8 @@ const getVisaDeadlineInfo = (
     };
 };
 
+
+//get visa deadline info function
 const decorateVisaApplication = (application) => {
     if (!application) return application;
 
@@ -451,6 +476,8 @@ const decorateVisaApplication = (application) => {
     };
 };
 
+
+//send visa deadline warning function
 const sendVisaDeadlineWarning = async (application) => {
     if (application?.onPenalty || application?.secondChance) {
         return { sent: false, application };
@@ -535,6 +562,8 @@ const sendVisaDeadlineWarning = async (application) => {
     return { sent: true, application };
 };
 
+
+//append visa status history function
 const appendVisaStatusHistory = (application, status, changedBy, changedByName) => {
     if (!application) return;
 
@@ -550,6 +579,8 @@ const appendVisaStatusHistory = (application, status, changedBy, changedByName) 
     });
 };
 
+
+//send visa penalty notification function
 const sendVisaPenaltyNotification = async (application, deadlineInfo) => {
     if (!application || !deadlineInfo) {
         return { sent: false, application };
@@ -618,6 +649,8 @@ const sendVisaPenaltyNotification = async (application, deadlineInfo) => {
     return { sent: true, application };
 };
 
+
+//reject visa application for deadline function
 const rejectVisaApplicationForDeadline = async (application, deadlineInfo, reachedSecondDeadline = false) => {
     if (!application) {
         return { rejected: false, application };
@@ -710,6 +743,8 @@ const rejectVisaApplicationForDeadline = async (application, deadlineInfo, reach
     return { rejected: true, application };
 };
 
+
+//mark visa application on penalty function
 const markVisaApplicationOnPenalty = async (application, deadlineInfo = null) => {
     if (!application) {
         return { penalized: false, application };
@@ -760,6 +795,7 @@ const markVisaApplicationOnPenalty = async (application, deadlineInfo = null) =>
 };
 
 
+//process visa deadline action function
 const processVisaDeadlineAction = async (application) => {
     const deadlineInfo = getVisaDeadlineInfo(application);
     if (!deadlineInfo) {
@@ -790,12 +826,15 @@ const processVisaDeadlineAction = async (application) => {
 };
 
 
+//generate application number function
 const generateApplicationNumber = () => {
     const timestamp = Date.now().toString().slice(-6);
     const random = Math.floor(1000 + Math.random() * 9000);
     return `APP-VISA-${timestamp}${random}`
 }
 
+
+//apply visa function
 const applyVisa = async (req, res) => {
     const { serviceName, preferredDate, preferredTime, purposeOfTravel, status } = req.body
     const userId = req.userId
@@ -862,6 +901,8 @@ const applyVisa = async (req, res) => {
     }
 }
 
+
+//update visa application with documents function
 const updateVisaApplicationWithDocs = async (req, res) => {
     try {
         const userId = req.userId
@@ -928,10 +969,10 @@ const updateVisaApplicationWithDocs = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error updating visa application', error: error.message })
     }
-
 }
 
-//REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------
+
+//request visa document resubmission function
 const requestVisaDocumentResubmission = async (req, res) => {
     const { id } = req.params;
     const { documentKey, documentKeys } = req.body;
@@ -1018,7 +1059,7 @@ const requestVisaDocumentResubmission = async (req, res) => {
 };
 
 
-
+//get all visa applications function
 const getVisaApplications = async (_req, res) => {
     try {
         const applications = await VisaModel.find({})
@@ -1056,6 +1097,7 @@ const getVisaApplications = async (_req, res) => {
 }
 
 
+//get user visa applications function
 const getUserVisaApplications = async (req, res) => {
     try {
         const userId = req.userId
@@ -1074,6 +1116,7 @@ const getUserVisaApplications = async (req, res) => {
 }
 
 
+//get visa application by ID function
 const getVisaApplicationById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -1095,6 +1138,7 @@ const getVisaApplicationById = async (req, res) => {
 };
 
 
+//suggest appointment schedules function
 const suggestAppointmentSchedules = async (req, res) => {
     const { id } = req.params;
     const { slots } = req.body;
@@ -1196,7 +1240,7 @@ const suggestAppointmentSchedules = async (req, res) => {
 };
 
 
-//CHOSEN SUGGESTED APPOINTMENT SCHEDULE ------------------------------------------------------
+//choose appointment schedule function
 const chooseAppointment = async (req, res) => {
     const { id } = req.params;
     const { date, time } = req.body;
@@ -1239,7 +1283,7 @@ const chooseAppointment = async (req, res) => {
 };
 
 
-//DELIVERY ADDRESS UPDATE FOR VISA APPLICATION ------------------------------------------------------
+//delivery option update function
 const passportReleaseOptionUpdate = async (req, res) => {
     const { id } = req.params;
     const { passportReleaseOption, deliveryAddress } = req.body;
@@ -1271,6 +1315,8 @@ const passportReleaseOptionUpdate = async (req, res) => {
     }
 };
 
+
+//update visa delivery details function
 const updateVisaDeliveryDetails = async (req, res) => {
     const { id } = req.params;
     const { deliveryFee, deliveryDate } = req.body;
@@ -1319,6 +1365,7 @@ const updateVisaDeliveryDetails = async (req, res) => {
 };
 
 
+//update visa application status function
 const updateVisaApplicationStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -1418,6 +1465,8 @@ const updateVisaApplicationStatus = async (req, res) => {
     }
 };
 
+
+//verify token checkout function
 const verifyTokenCheckout = async (req, res) => {
     const { token } = req.body;
     try {
@@ -1442,6 +1491,8 @@ const verifyTokenCheckout = async (req, res) => {
     }
 }
 
+
+//archive visa application function
 const archiveVisaApplication = async (req, res) => {
     const { id } = req.params
     try {
@@ -1487,6 +1538,8 @@ const archiveVisaApplication = async (req, res) => {
     }
 }
 
+
+//get archived visa applications function
 const getArchivedVisaApplications = async (_req, res) => {
     try {
         const applications = await ArchivedVisaApplicationModel.find({})
@@ -1500,6 +1553,8 @@ const getArchivedVisaApplications = async (_req, res) => {
     }
 }
 
+
+//restore archived visa application function
 const restoreArchivedVisaApplication = async (req, res) => {
     const { id } = req.params
     try {

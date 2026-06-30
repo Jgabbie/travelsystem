@@ -1,7 +1,7 @@
-// const transporter = require('../config/nodemailer')
-
 import transporter from '../config/nodemailer.js';
 
+
+//send contact email function
 const sendContactEmail = async (req, res) => {
     const { name, email, subject, message } = req.body;
 
@@ -80,4 +80,7 @@ const sendContactEmail = async (req, res) => {
     }
 }
 
-export { sendContactEmail };
+
+export {
+    sendContactEmail
+};

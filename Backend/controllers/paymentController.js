@@ -17,6 +17,8 @@ import logAction from '../utils/logger.js';
 import apiFetch from '../config/fetchConfig.js';
 import axios from 'axios';
 
+
+//custom transporter that uses the baseTransporter but modifies the subject and html to include branding
 const transporter = {
     ...baseTransporter,
     sendMail: (mailOptions = {}) => {
@@ -36,12 +38,15 @@ const transporter = {
 };
 
 
+//parse amount function that removes non-numeric characters and returns a number
 const parseAmount = (value) => {
     if (value == null) return 0;
     const parsed = Number(String(value).replace(/[^0-9.-]/g, ''));
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
+
+//normalize paymongo amount function that calculates the net amount after fees
 const normalizePaymongoAmount = (grossAmount) => {
     const amount = parseAmount(grossAmount);
     if (!amount) return 0;
@@ -49,6 +54,8 @@ const normalizePaymongoAmount = (grossAmount) => {
     return Math.max(amount - fee, 0);
 };
 
+
+//update booking payment status function
 const updateBookingPaymentStatus = async (bookingId) => {
     const booking = await BookingModel.findById(bookingId);
     if (!booking || ['Cancelled', 'cancellation requested'].includes(booking.status)) {
@@ -86,12 +93,15 @@ const updateBookingPaymentStatus = async (bookingId) => {
 };
 
 
+//generate transaction reference function
 const generateTransactionReference = () => {
     const timestamp = Date.now().toString().slice(-6);
     const random = Math.floor(1000 + Math.random() * 9000);
     return `TX-${timestamp}${random}`;
 };
 
+
+//generate transaction invoice number function
 const generateTransactionInvoiceNumber = async (date = new Date()) => {
     const invoiceDate = dayjs(date);
     const startOfMonth = invoiceDate.startOf('month').toDate();
@@ -111,6 +121,8 @@ const generateTransactionInvoiceNumber = async (date = new Date()) => {
     };
 };
 
+
+//parse paymongo signature function
 const parsePayMongoSignature = (header) => {
     if (!header) return null;
 
@@ -138,7 +150,8 @@ const parsePayMongoSignature = (header) => {
     return { timestamp, signature };
 };
 
-//MANUAL PAYMENT FOR NORMAL FIXED BOOKINGS
+
+//manual payment for booking function
 const createManualPayment = async (req, res) => {
     const userId = req.userId;
     try {
@@ -271,7 +284,7 @@ const createManualPayment = async (req, res) => {
 };
 
 
-//MANUAL PAYMENT FOR QUOTATION BOOKINGS
+//manual payment for quotation booking function
 const createManualPaymentQuotation = async (req, res) => {
     const userId = req.userId;
     try {
@@ -409,7 +422,7 @@ const createManualPaymentQuotation = async (req, res) => {
 };
 
 
-//MANUAL PAYMENT FOR DEPOSIT OR INSTALLMENTS
+//manual payment for deposit function
 const createManualPaymentDeposit = async (req, res) => {
     const userId = req.userId;
     try {
@@ -538,7 +551,7 @@ const createManualPaymentDeposit = async (req, res) => {
 };
 
 
-//MANUAL PAYMENT FOR PASSPORT PENALTY FEE
+//manual payment for passport penalty fee function
 const createManualPaymentPassportPenalty = async (req, res) => {
     const userId = req.userId;
 
@@ -655,7 +668,7 @@ const createManualPaymentPassportPenalty = async (req, res) => {
 };
 
 
-//MANUAL PAYMENT FOR VISA PENALTY FEE
+//manual payment for visa penalty fee function
 const createManualPaymentVisaPenalty = async (req, res) => {
     const userId = req.userId;
 
@@ -772,11 +785,7 @@ const createManualPaymentVisaPenalty = async (req, res) => {
 };
 
 
-
-
-
-
-//MANUAL PAYMENT FOR PASSPORT APPLICATIONS
+//manual payment for passport applications function
 const createManualPaymentPassport = async (req, res) => {
     const userId = req.userId;
 
@@ -894,7 +903,7 @@ const createManualPaymentPassport = async (req, res) => {
 };
 
 
-//MANUAL PAYMENT FOR VISA APPLICATIONS
+//manual payment for visa applications function
 const createManualPaymentVisa = async (req, res) => {
     const userId = req.userId;
 
@@ -1011,7 +1020,7 @@ const createManualPaymentVisa = async (req, res) => {
 };
 
 
-//MANUAL PAYMENT FOR DELIVERY FEE
+//manual payment for delivery fee
 const createManualPaymentDeliveryFee = async (req, res) => {
     const userId = req.userId;
 
@@ -1128,9 +1137,7 @@ const createManualPaymentDeliveryFee = async (req, res) => {
 };
 
 
-
-
-
+//checkout session for delivery fee
 const createCheckoutSessionDeliveryFee = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1227,9 +1234,7 @@ const createCheckoutSessionDeliveryFee = async (req, res) => {
 };
 
 
-
-
-
+//checkout session for passport applications
 const createCheckoutSessionPassport = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1326,8 +1331,7 @@ const createCheckoutSessionPassport = async (req, res) => {
 };
 
 
-
-
+//checkout session for visa applications
 const createCheckoutSessionVisa = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1424,6 +1428,7 @@ const createCheckoutSessionVisa = async (req, res) => {
 };
 
 
+//checkout session for passport penalty fee
 const createCheckoutSessionPassportPenalty = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1522,7 +1527,7 @@ const createCheckoutSessionPassportPenalty = async (req, res) => {
 };
 
 
-
+//checkout session for visa penalty fee
 const createCheckoutSessionVisaPenalty = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1621,11 +1626,7 @@ const createCheckoutSessionVisaPenalty = async (req, res) => {
 };
 
 
-
-
-
-
-
+//checkout session for passport penalty fee
 const createCheckoutSessionDeposit = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1727,7 +1728,8 @@ const createCheckoutSessionDeposit = async (req, res) => {
     }
 }
 
-//CHECKOUT FOR NORMAL FIXED BOOKINGS
+
+//checkout session for normal booking payment
 const createCheckoutSession = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1831,7 +1833,8 @@ const createCheckoutSession = async (req, res) => {
     }
 };
 
-//CHECKOUT FOR QUOTATION BOOKINGS
+
+//checkout session for quotation bookings
 const createCheckoutSessionQuotation = async (req, res) => {
     const userId = req.userId;
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -1938,9 +1941,9 @@ const createCheckoutSessionQuotation = async (req, res) => {
 
 //paymongo webhook handler
 const handlePayMongoWebhook = async (req, res) => {
-    console.log('🚀 Webhook HIT!');
+    console.log('Webhook HIT');
     res.status(200).send('OK'); // respond instantly
-    console.log('✅ RESPONSE SENT');
+    console.log('RESPONSE SENT');
 
 
     //check if secret key exists
@@ -1948,11 +1951,6 @@ const handlePayMongoWebhook = async (req, res) => {
         console.log('Webhook secret not configured');
         return
     }
-
-    //if the request body is a buffer, convert it to string for signature verification
-    // const rawBody = Buffer.isBuffer(req.body)
-    //     ? req.body.toString('utf8')
-    //     : JSON.stringify(req.body || {});
 
     if (!req.rawBody) {
         console.log('Raw body not captured. Check middleware.');
@@ -2030,9 +2028,9 @@ const handlePayMongoWebhook = async (req, res) => {
                 );
                 sessionAttributes = sessionResponse?.data?.attributes;
                 metadata = sessionAttributes?.metadata || {};
-                console.log('✅ Session metadata:', metadata);
+                console.log('Session metadata:', metadata);
             } catch (err) {
-                console.log('❌ Failed to fetch session:', err.data || err.message);
+                console.log('Failed to fetch session:', err.data || err.message);
             }
         }
 
@@ -2047,8 +2045,11 @@ const handlePayMongoWebhook = async (req, res) => {
 
         console.log('metadata:', metadata);
 
+
+
+        //visa application payment handling
         if (metadata.applicationId && metadata.applicationType === "Visa Application") {
-            console.log('🛂 Visa payment detected');
+            console.log('Visa payment detected');
             const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
@@ -2151,9 +2152,11 @@ const handlePayMongoWebhook = async (req, res) => {
             return
         }
 
+
+
         // if applicationId exists in metadata, we know this payment is for a passport application, so we create a transaction record linked to that application and send a notification to the user. We also send a confirmation email to the user about their passport payment. After handling the passport payment, we return early since we don't want to accidentally process it as a booking payment as well.
         if (metadata.applicationId && metadata.applicationType === "Passport Application") {
-            console.log('🛂 Passport payment detected');
+            console.log('Passport payment detected');
             const grossAmount =
                 Number(metadata.totalAmountCents || 0) / 100 ||
                 Number(sessionAttributes?.amount_total || 0) / 100;
@@ -2256,6 +2259,7 @@ const handlePayMongoWebhook = async (req, res) => {
             console.log('Passport payment processed successfully');
             return
         }
+
 
 
         //visa penalty fee
@@ -2474,7 +2478,8 @@ const handlePayMongoWebhook = async (req, res) => {
         }
 
 
-        //DELIVERY FEE PAYMENT ----------------------------------------------------------------------------------------
+
+        //delivery fee payment
         if (metadata.applicationId && metadata.applicationType === "Delivery Fee") {
             console.log('Delivery fee payment detected');
             const grossAmount =
@@ -2576,16 +2581,9 @@ const handlePayMongoWebhook = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-        //INSTALLMENT PAYMENT --------------------------------------------------------------------------
+        //installment payment
         if (metadata.transactionType === "Installment Payment") {
-            console.log('💰 Installment payment detected');
+            console.log('Installment payment detected');
 
             console.log('Installment payment metadata:', metadata);
 
@@ -2687,10 +2685,12 @@ const handlePayMongoWebhook = async (req, res) => {
             return
         }
 
-        //BOOKING PAYMENT ----------------------------------------------------------------------------------------
+
+
+        //booking payment
         // if packageId exists in metadata, we know this payment is for a tour package booking, so we either update an existing booking to "Successful" status or create a new booking if it doesn't exist. We also create a transaction record for this booking payment and send a notification to the user about their confirmed booking. Finally, we send a confirmation email to the user with the booking reference. After handling the booking payment, we return early since we've completed all necessary processing for this event.
         if (metadata.bookingId && metadata.transactionType === "Booking Payment") {
-            console.log('🛫 Booking payment detected');
+            console.log('Booking payment detected');
             console.log('PackageId in metadata:', metadata.packageId);
             let booking = await BookingModel.findById(metadata.bookingId);
 
@@ -2836,7 +2836,8 @@ const handlePayMongoWebhook = async (req, res) => {
         }
 
 
-        //QUOTATION PAYMENT -----------------------------------------------------------------------------
+
+        //quotation payment
         if (metadata.bookingId && metadata.transactionType === "Quotation Payment") {
             console.log('Quotation Booking payment detected');
             console.log('PackageId in metadata:', metadata.packageId);
@@ -2998,6 +2999,8 @@ const handlePayMongoWebhook = async (req, res) => {
     }
 };
 
+
+//create checkout token for paymongo
 const createCheckoutToken = async (req, res) => {
     const userId = req.userId;
     const { totalPrice } = req.body

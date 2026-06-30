@@ -63,6 +63,7 @@ const faqData = [
     }
 ];
 
+// function to normalize text for keyword extraction
 const normalizeText = (text) =>
     text
         .toLowerCase()
@@ -83,6 +84,8 @@ const faqKeywords = new Set(
     ])
 );
 
+
+// function to chunk text into smaller pieces with overlap
 const chunkText = (text, chunkSize = 1200, overlap = 200) => {
     const chunks = [];
     let start = 0;
@@ -103,6 +106,8 @@ const chunkText = (text, chunkSize = 1200, overlap = 200) => {
     return chunks;
 };
 
+
+// function to check if a message is off-topic based on keywords
 const embeddingClient = process.env.OPENAI_API_KEY
     ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     : null;
@@ -117,6 +122,8 @@ const getEmbedding = async (text) => {
     return response?.data?.[0]?.embedding || null;
 };
 
+
+// function to search knowledge chunks using vector search
 const searchKnowledge = async (queryEmbedding) => {
     if (!queryEmbedding) return [];
 
@@ -143,6 +150,8 @@ const searchKnowledge = async (queryEmbedding) => {
     return results;
 };
 
+
+// function to build package context for chatbot responses
 const buildPackageContext = async (message) => {
     const normalized = normalizeText(message);
     const wantsPackages = /\b(package|packages|tour|tours|available|availability|price|rate|promo|deal)\b/.test(normalized);
@@ -184,6 +193,8 @@ const buildPackageContext = async (message) => {
     return { text, names: packages.map((pkg) => pkg.packageName).filter(Boolean) };
 };
 
+
+// function to build visa service context for chatbot responses
 const buildVisaServiceContext = async () => {
     const services = await ServiceModel.find({}, {
         visaName: 1,
@@ -219,6 +230,8 @@ const buildVisaServiceContext = async () => {
     return { text, names: services.map((service) => service.visaName).filter(Boolean) };
 };
 
+
+// function to handle PDF ingestion and embedding
 const uploadKnowledge = async (req, res) => {
     try {
         if (!embeddingClient) {
@@ -265,6 +278,8 @@ const uploadKnowledge = async (req, res) => {
     }
 };
 
+
+// function to get the status of knowledge chunks in the database
 const knowledgeStatus = async (_req, res) => {
     try {
         const count = await KnowledgeChunk.countDocuments();
@@ -275,6 +290,8 @@ const knowledgeStatus = async (_req, res) => {
     }
 };
 
+
+// function to handle chatbot interactions
 const chatAction = async (req, res) => {
 
     const openai = new OpenAI({
@@ -400,4 +417,9 @@ const chatAction = async (req, res) => {
     }
 };
 
-export { chatAction, uploadKnowledge, knowledgeStatus };
+
+export {
+    chatAction,
+    uploadKnowledge,
+    knowledgeStatus
+};

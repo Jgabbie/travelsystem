@@ -8,6 +8,8 @@ import { buildBrandedEmail } from "../utils/emailTemplate.js";
 import logAction from '../utils/logger.js';
 import dayjs from 'dayjs';
 
+
+//custom transporter that uses the baseTransporter but modifies the subject and html to include branding
 const transporter = {
     ...baseTransporter,
     sendMail: (mailOptions = {}) => {
@@ -37,7 +39,7 @@ const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
 const PASSPORT_TERMINAL_STATUSES = new Set(['DFA Approved', 'Passport Released', 'Rejected']);
 
 
-//NORMALIZE DATE TO START OF DAY
+//normalizes a date value to a dayjs object at the start of the day, or returns null if invalid.
 const normalizePassportDate = (value) => {
     if (!value) return null;
 
@@ -45,9 +47,10 @@ const normalizePassportDate = (value) => {
     return parsed.isValid() ? parsed.startOf('day') : null;
 };
 
-// Return the day the given status was set on the application (startOf day).
-// Falls back to updatedAt or createdAt when no explicit history entry exists.
-//GET THE STATUS SET DATE FROM THE APPLICATION
+
+//return the day the given status was set on the application (startOf day).
+//falls back to updatedAt or createdAt when no explicit history entry exists.
+//get the date when the status was set on the application, or fallback to updatedAt or createdAt if not found
 const getStatusSetDateFromApplication = (application, status) => {
     if (!application) return null;
     const history = Array.isArray(application.statusHistory) ? application.statusHistory : [];
@@ -64,7 +67,7 @@ const getStatusSetDateFromApplication = (application, status) => {
 };
 
 
-//GETS THE STORED DEADLINE DATE FOR A PASSPORT APPLICATION STATUS
+//gets the stored deadline date for a given application and status, if it exists in processSteps or statusDeadlineDate.
 const getPassportStoredDeadlineDate = (application, status) => {
     if (!application || !status) return null;
 
@@ -91,7 +94,7 @@ const getPassportStoredDeadlineDate = (application, status) => {
 };
 
 
-//MAIN FUNCTION TO GET THE DEADLINE INFO FOR A PASSPORT APPLICATION
+//main function to get the deadline info for a passport application, including whether a warning should be sent or if it's overdue.
 const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
     if (!application) return null;
 
@@ -184,6 +187,8 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
         }
     }
 
+
+    //check if there's a stored deadline date for this status in the application (from processSteps or statusDeadlineDate)
     const storedDeadlineDate = getPassportStoredDeadlineDate(application, status);
     if (storedDeadlineDate) {
         const warningDate = storedDeadlineDate.subtract(1, 'day').startOf('day');
@@ -213,6 +218,7 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
     if (!Number.isFinite(deadlineDays)) return null;
 
     const preferredDate = normalizePassportDate(application.preferredDate);
+
 
     // Determine deadline anchor:
     // - For 'Processing by DFA' (or any mapping explicitly set to 0) we anchor to the appointment (`preferredDate`).
@@ -252,7 +258,7 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
 };
 
 
-//
+//get the penalty deadline date for a passport application, if it exists in the application or can be calculated from updatedAt/createdAt.
 const getPassportPenaltyDeadlineDate = (application) => {
     if (!application) return null;
 
@@ -265,6 +271,8 @@ const getPassportPenaltyDeadlineDate = (application) => {
     return anchorDate ? anchorDate.add(PENALTY_PAYMENT_WINDOW_DAYS, 'day').startOf('day') : null;
 };
 
+
+//get the second chance deadline date for a passport application, if it exists in the application or can be calculated from updatedAt/createdAt.
 const getPassportSecondChanceDeadlineDate = (application) => {
     if (!application) return null;
 
@@ -276,7 +284,7 @@ const getPassportSecondChanceDeadlineDate = (application) => {
 };
 
 
-//SETS SECONDDEADLINE AND CHANGE THE "PAYMENT COMPLETED" DEADLINE TO THE SECOND CHANCE DEADLINE
+//sets the second chance status and deadline on the application, if applicable, and updates processSteps accordingly.
 const setPassportSecondChance = (application) => {
     if (!application) return application;
 
@@ -303,7 +311,7 @@ const setPassportSecondChance = (application) => {
 };
 
 
-//SEND EMAIL AND NOTIFICATION IF THEIR APPLICATION IS ON PENALTY
+//send email and notification to the user about the passport application being on penalty, including the penalty amount and deadline.
 const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
     if (!application || !deadlineInfo) {
         return { sent: false, application };
@@ -373,7 +381,7 @@ const sendPassportPenaltyNotification = async (application, deadlineInfo) => {
 };
 
 
-//REJECTS APPLICATION IF PENALTY DEADLINE IS OVERDUE WITHOUT PAYMENT OR IF SECOND CHANCE DEADLINE IS OVERDUE
+//rejects the passport application for the given deadlineInfo, updates the status to 'Rejected', and sends notification and email to the user.
 const rejectPassportApplicationForDeadline = async (application, deadlineInfo, reachedSecondDeadline = false) => {
     if (!application || !deadlineInfo) {
         return { rejected: false, application };
@@ -469,7 +477,7 @@ const rejectPassportApplicationForDeadline = async (application, deadlineInfo, r
 };
 
 
-//MARKS APPLICATION ON PENALTY IF DEADLINE IS OVERDUE AND PENALTY NOT YET APPLIED
+//marks the passport application as on penalty, updates the application fields, and sends notification and email to the user.
 const markPassportApplicationOnPenalty = async (application, deadlineInfo = null) => {
     if (!application) {
         return { penalized: false, application };
@@ -522,7 +530,7 @@ const markPassportApplicationOnPenalty = async (application, deadlineInfo = null
 };
 
 
-//CHECKS DEADLINES AND APPLIES PENALTIES OR REJECTION IF NEEDED.
+//checks deadlines for the passport application, sends warnings if applicable, and handles penalty or rejection if overdue.
 const processPassportDeadlineAction = async (application) => {
     const deadlineInfo = getPassportDeadlineInfo(application);
 
@@ -573,7 +581,7 @@ const decoratePassportApplication = (application) => {
 };
 
 
-//SENDS WARNING NOTIFICATION FOR APPLICATIONS APPROACHING DEADLINE (1 DAY BEFORE)
+//sends warning email and notification to the user about the passport application deadline approaching, if applicable.
 const sendPassportDeadlineWarning = async (application) => {
     if (application?.onPenalty || application?.secondChance) {
         return { sent: false, application };
@@ -661,8 +669,7 @@ const sendPassportDeadlineWarning = async (application) => {
 
 
 
-
-//GENERATE RANDOM APPLICATION NUMBER -----------------------------------------------------
+//generate application number function
 const generateApplicationNumber = () => {
     const timestamp = Date.now().toString().slice(-6);
     const random = Math.floor(1000 + Math.random() * 9000);
@@ -670,7 +677,7 @@ const generateApplicationNumber = () => {
 }
 
 
-//APPLY FOR PASSPORT ----------------------------------------------------------------------
+//apply for passport function
 const applyPassport = async (req, res) => {
     try {
         const userId = req.userId
@@ -721,7 +728,7 @@ const applyPassport = async (req, res) => {
 };
 
 
-//UPDATE PASSPORT APPLICATION WITH DOCUMENTS ------------------------------------------------
+//update passport application with documents ------------------------------------------------
 const updatePassportApplicationWithDocs = async (req, res) => {
 
     try {
@@ -808,7 +815,7 @@ const updatePassportApplicationWithDocs = async (req, res) => {
 };
 
 
-//GET USER'S PASSPORT APPLICATIONS ------------------------------------------------------
+//get user's passport applications
 const getUserPassportApplications = async (req, res) => {
     try {
         const userId = req.userId
@@ -826,7 +833,7 @@ const getUserPassportApplications = async (req, res) => {
 }
 
 
-//GET PASSPORT APPLICATION BY ID ------------------------------------------------------
+//get passport application by ID
 const getPassportApplicationById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -850,7 +857,7 @@ const getPassportApplicationById = async (req, res) => {
 };
 
 
-//SUGGEST APPOINTMENT SCHEDULES ------------------------------------------------------
+//suggest appointment schedules for passport application
 const suggestAppointmentSchedules = async (req, res) => {
     const { id } = req.params;
     const { slots } = req.body;
@@ -953,7 +960,7 @@ const suggestAppointmentSchedules = async (req, res) => {
 };
 
 
-//CHOSEN SUGGESTED APPOINTMENT SCHEDULE ------------------------------------------------------
+//choose chosen suggested appointment schedule ------------------------------------------------------
 const chooseAppointment = async (req, res) => {
     const { id } = req.params;
     const { date, time } = req.body;
@@ -993,7 +1000,8 @@ const chooseAppointment = async (req, res) => {
     }
 };
 
-//DELIVERY ADDRESS UPDATE FOR PASSPORT APPLICATION ------------------------------------------------------
+
+//delivery option update for passport application
 const passportReleaseOptionUpdate = async (req, res) => {
     const { id } = req.params;
     const { passportReleaseOption, deliveryAddress } = req.body;
@@ -1032,6 +1040,8 @@ const passportReleaseOptionUpdate = async (req, res) => {
     }
 };
 
+
+//request passport document resubmission
 const requestPassportDocumentResubmission = async (req, res) => {
     const { id } = req.params;
     const { documentKey, documentKeys } = req.body;
@@ -1065,13 +1075,6 @@ const requestPassportDocumentResubmission = async (req, res) => {
         application.resubmissionTargets = [...new Set([...(application.resubmissionTargets || []), ...uniqueKeys])];
         application.submittedDocuments = application.submittedDocuments || {};
 
-        // for (const key of uniqueKeys) {
-        //     if (key === 'additionalDocs') {
-        //         application.submittedDocuments.additionalDocs = [];
-        //     } else {
-        //         application.set(`submittedDocuments.${key}`, null);
-        //     }
-        // }
 
         application.markModified('submittedDocuments');
         application.status = "Payment Completed";
@@ -1139,7 +1142,7 @@ const requestPassportDocumentResubmission = async (req, res) => {
 };
 
 
-//UPDATE PASSPORT APPLICATION STATUS ------------------------------------------------------
+//update passport application status
 const updatePassportStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -1251,7 +1254,7 @@ const updatePassportStatus = async (req, res) => {
 };
 
 
-//VERIFY TOKEN CHECKOUT FOR PASSPORT PAYMENT ------------------------------------------------------
+//verify token checkout for passport payment ------------------------------------------------------
 const verifyTokenCheckout = async (req, res) => {
     const { token } = req.body;
     try {
@@ -1276,6 +1279,8 @@ const verifyTokenCheckout = async (req, res) => {
     }
 }
 
+
+//archive passport application
 const archivePassportApplication = async (req, res) => {
     const { id } = req.params;
     try {
@@ -1314,6 +1319,8 @@ const archivePassportApplication = async (req, res) => {
     }
 };
 
+
+//get archived passport applications
 const getArchivedPassportApplications = async (_req, res) => {
     try {
         const applications = await ArchivedPassportApplicationModel.find({})
@@ -1326,6 +1333,8 @@ const getArchivedPassportApplications = async (_req, res) => {
     }
 };
 
+
+//restore archived passport application
 const restoreArchivedPassportApplication = async (req, res) => {
     const { id } = req.params;
     try {
@@ -1370,7 +1379,7 @@ const restoreArchivedPassportApplication = async (req, res) => {
 };
 
 
-// Ordered steps used to build the processSteps object stored on the application.
+// ordered steps used to build the processSteps object stored on the application.
 const STEPS_ORDER = [
     'Application Submitted',
     'Application Approved',
@@ -1384,8 +1393,9 @@ const STEPS_ORDER = [
     'Passport Released'
 ];
 
-// Build a processSteps object keyed by step name with setDate and deadlineDate (YYYY-MM-DD or null).
-// Deadline chaining rule: the first step's deadline = setDate + mapped days; subsequent deadlines
+
+// build a processSteps object keyed by step name with setDate and deadlineDate (YYYY-MM-DD or null).
+// deadline chaining rule: the first step's deadline = setDate + mapped days; subsequent deadlines
 // are computed by adding the mapped days to the previous step's computed deadline (if available).
 const buildProcessSteps = (application) => {
     const out = {};
@@ -1432,7 +1442,7 @@ const buildProcessSteps = (application) => {
 };
 
 
-//GET PASSPORT APPLICATIONS ----------------------------------------------------------------
+//get passport applications
 const getPassportApplications = async (req, res) => {
     try {
 
@@ -1450,10 +1460,6 @@ const getPassportApplications = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
-
-
-
 
 
 
@@ -1478,6 +1484,4 @@ export {
     processPassportDeadlineAction,
     setPassportSecondChance,
 };
-
-//REQUEST DOCUMENT RESUBMISSION ------------------------------------------------------
 

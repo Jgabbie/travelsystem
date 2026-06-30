@@ -1,5 +1,7 @@
 import NotificationModel from '../models/notification.js';
 
+
+//create notification function
 const createNotification = async (req, res) => {
     const { userId, title, message, type, link, metadata } = req.body
 
@@ -23,6 +25,8 @@ const createNotification = async (req, res) => {
     }
 }
 
+
+//get user notifications function
 const getUserNotifications = async (req, res) => {
     const limit = Number.parseInt(req.query.limit, 10) || 20
 
@@ -37,6 +41,8 @@ const getUserNotifications = async (req, res) => {
     }
 }
 
+
+//mark notification as read function
 const markNotificationRead = async (req, res) => {
     const { id } = req.params
 
@@ -57,6 +63,8 @@ const markNotificationRead = async (req, res) => {
     }
 }
 
+
+//mark all notifications as read function
 const markAllRead = async (req, res) => {
     try {
         await NotificationModel.updateMany(

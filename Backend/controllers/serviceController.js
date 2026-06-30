@@ -1,11 +1,9 @@
-// const ServiceModel = require('../models/service');
-// const ArchivedServiceModel = require('../models/archivedservices');
-// const logAction = require('../utils/logger')
-
 import ServiceModel from '../models/service.js';
 import ArchivedServiceModel from '../models/archivedservices.js';
 import logAction from '../utils/logger.js';
 
+
+//create service function
 const createService = async (req, res) => {
     const { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders } = req.body;
     const userId = req.userId;
@@ -31,6 +29,8 @@ const createService = async (req, res) => {
     }
 };
 
+
+//get all services function
 const getAllServices = async (req, res) => {
     const userId = req.userId;
 
@@ -53,6 +53,8 @@ const getAllServices = async (req, res) => {
     }
 };
 
+
+//update service function
 const updateService = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
@@ -76,6 +78,8 @@ const updateService = async (req, res) => {
     }
 };
 
+
+//delete service function
 const deleteService = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
@@ -107,6 +111,8 @@ const deleteService = async (req, res) => {
     }
 };
 
+
+//get archived services function
 const getArchivedServices = async (_req, res) => {
     try {
         const services = await ArchivedServiceModel.find({}).sort({ archivedAt: -1 });
@@ -129,6 +135,8 @@ const getArchivedServices = async (_req, res) => {
     }
 };
 
+
+//restore archived service function
 const restoreArchivedService = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
@@ -159,6 +167,8 @@ const restoreArchivedService = async (req, res) => {
     }
 };
 
+
+//get single service function
 const getService = async (req, res) => {
     const userId = req.userId;
     try {
@@ -181,4 +191,13 @@ const getService = async (req, res) => {
     }
 }
 
-export { createService, getAllServices, updateService, deleteService, getService, getArchivedServices, restoreArchivedService };
+
+export {
+    createService,
+    getAllServices,
+    updateService,
+    deleteService,
+    getService,
+    getArchivedServices,
+    restoreArchivedService
+};

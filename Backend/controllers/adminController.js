@@ -4,6 +4,8 @@ import PackageModel from "../models/package.js";
 import TransactionModel from "../models/transactions.js";
 import logAction from "../utils/logger.js";
 
+
+//get admins function
 const getAdmins = async (req, res) => {
     try {
         const admins = await UserModel.find({ role: "Admin" });
@@ -14,6 +16,8 @@ const getAdmins = async (req, res) => {
     }
 };
 
+
+//edit user function
 const editUser = async (req, res) => {
     const { id } = req.params;
     const { username, name, firstname, lastname, role } = req.body;
@@ -92,6 +96,8 @@ const editUser = async (req, res) => {
     }
 };
 
+
+//get dashboard stats function
 const getDashboardStats = async (req, res) => {
     try {
         const requester = await UserModel.findById(req.userId).lean();
@@ -118,5 +124,9 @@ const getDashboardStats = async (req, res) => {
     }
 };
 
-export { getAdmins, editUser, getDashboardStats };
+export {
+    getAdmins,
+    editUser,
+    getDashboardStats
+};
 

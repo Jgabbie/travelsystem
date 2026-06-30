@@ -9,6 +9,8 @@ import baseTransporter from "../config/nodemailer.js";
 import { buildBrandedEmail } from "../utils/emailTemplate.js";
 import mongoose from "mongoose";
 
+
+//function to send email notifications to users on wishlist when a package becomes available
 const transporter = {
     ...baseTransporter,
     sendMail: (mailOptions = {}) => {
@@ -31,12 +33,15 @@ const FRONTEND_URL = "http://localhost:3000";
 
 const sumSlots = (ranges = []) => ranges.reduce((total, range) => total + Number(range?.slots || 0), 0);
 
+//function to build a package link for email notifications
 const buildPackageLink = (pkg) => {
     const packageCode = encodeURIComponent(String(pkg?.packageCode || ""));
 
     return `${FRONTEND_URL}/package#${packageCode}`;
 };
 
+
+//function to find a package by its code or ID
 const findPackageByCodeParam = async (packageCodeParam) => {
     const byCode = await PackageModel.findOne({ packageCode: packageCodeParam });
     if (byCode) return byCode;
@@ -48,6 +53,8 @@ const findPackageByCodeParam = async (packageCodeParam) => {
     return null;
 };
 
+
+//function to find an archived package by its code or ID
 const findArchivedPackageByCodeParam = async (packageCodeParam) => {
     const byCode = await ArchivedPackageModel.findOne({ packageCode: packageCodeParam }).sort({ archivedAt: -1 });
     if (byCode) return byCode;
@@ -59,6 +66,8 @@ const findArchivedPackageByCodeParam = async (packageCodeParam) => {
     return null;
 };
 
+
+//function to notify users on the wishlist when a package becomes available
 const notifyWishlistUsers = async ({ packageId, title, message, type, link, metadata, emailSubject, emailHtml }) => {
     const wishlistEntries = await WishlistModel.find({ packageId })
         .populate("userId", "email username");
@@ -104,7 +113,7 @@ const notifyWishlistUsers = async ({ packageId, title, message, type, link, meta
 };
 
 
-//ADD PACKAGE
+//add package function
 const addPackage = async (req, res) => {
     const { name, code, pricePerPax, soloRate, childRate, infantRate, deposit, availableSlots, description, packageType, dateRanges, duration, hotels, airlines, termsAndConditions, inclusions, exclusions, itineraries, images, tags, visaRequired, video } = req.body;
     try {
@@ -175,7 +184,7 @@ const addPackage = async (req, res) => {
 };
 
 
-//GET PACKAGES (ADMIN)
+//get packages function
 const getPackages = async (req, res) => {
     try {
         const packages = await PackageModel.find();
@@ -215,7 +224,8 @@ const getPackages = async (req, res) => {
     }
 };
 
-//GET ARCHIVED PACKAGES (ADMIN)
+
+//get archived packages function
 const getArchivedPackages = async (_req, res) => {
     try {
         const packages = await ArchivedPackageModel.find().sort({ archivedAt: -1 });
@@ -255,6 +265,8 @@ const getArchivedPackages = async (_req, res) => {
     }
 };
 
+
+//get packages for users function
 const getPackagesForUsers = async (req, res) => {
     try {
         const packages = await PackageModel.find();
@@ -289,6 +301,8 @@ const getPackagesForUsers = async (req, res) => {
     }
 };
 
+
+//remove package function
 const removePackage = async (req, res) => {
     const packageItem = req.params.id || req.params.packageItem;
 
@@ -347,7 +361,8 @@ const removePackage = async (req, res) => {
     }
 };
 
-//RESTORE PACKAGE (ADMIN)
+
+//restore package function
 const restoreArchivedPackage = async (req, res) => {
     const packageItem = req.params.id;
 
@@ -415,6 +430,8 @@ const restoreArchivedPackage = async (req, res) => {
     }
 };
 
+
+//get package by code or ID function
 const getPackage = async (req, res) => {
     try {
         const { id } = req.params;
@@ -465,6 +482,8 @@ const getPackage = async (req, res) => {
     }
 };
 
+
+//update package function
 const updatePackage = async (req, res) => {
     const { id } = req.params;
 
@@ -577,6 +596,8 @@ const updatePackage = async (req, res) => {
     }
 };
 
+
+//get popular packages function
 const getPopularPackages = async (req, res) => {
     const limit = Number.parseInt(req.query.limit, 10) || 4;
 
@@ -628,6 +649,8 @@ const getPopularPackages = async (req, res) => {
     }
 };
 
+
+//update slots function
 const updateSlots = async (req, res) => {
     const slotsPayload = req.body;
     const packageCode = slotsPayload.packageItem || slotsPayload.packageCode || slotsPayload.packageId;
@@ -713,6 +736,8 @@ const updateSlots = async (req, res) => {
     }
 };
 
+
+//update discount function
 const updateDiscount = async (req, res) => {
     const { packageItem, packageCode, packageId, discountPercent } = req.body;
     const lookupCode = packageItem || packageCode || packageId;
@@ -800,4 +825,17 @@ const updateDiscount = async (req, res) => {
     }
 };
 
-export { addPackage, getPackages, getArchivedPackages, restoreArchivedPackage, getPackagesForUsers, removePackage, getPackage, updatePackage, getPopularPackages, updateSlots, updateDiscount };
+
+export {
+    addPackage,
+    getPackages,
+    getArchivedPackages,
+    restoreArchivedPackage,
+    getPackagesForUsers,
+    removePackage,
+    getPackage,
+    updatePackage,
+    getPopularPackages,
+    updateSlots,
+    updateDiscount
+};

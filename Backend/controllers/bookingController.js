@@ -33,7 +33,7 @@ const transporter = {
     },
 }
 
-
+//generate booking reference function
 const generateBookingReference = () => {
     const timestamp = Date.now().toString().slice(-6);
     const random = Math.floor(1000 + Math.random() * 9000);
@@ -47,7 +47,7 @@ const generateCancellationReference = () => {
 }
 
 
-//CREATE BOOKING -----------------------------------------------------------------
+//create booking function
 const createBooking = async (req, res) => {
 
     const { bookingPayload } = req.body
@@ -114,7 +114,8 @@ const createBooking = async (req, res) => {
     }
 }
 
-//GET USER BOOKINGS -----------------------------------------------------------------
+
+//get user bookings function
 const getUserBookings = async (req, res) => {
     const userId = req.userId;
     const successfulTransactionStatuses = ['successful', 'paid', 'fully paid', 'fully_paid'];
@@ -191,7 +192,7 @@ const getUserBookings = async (req, res) => {
 };
 
 
-//GET BOOKINGS TOTAL BASED ON MONTH -----------------------------------------------------------------
+//get bookings total based on month function
 const getBookingsTotalBaseOnMonth = async (req, res) => {
 
     try {
@@ -249,7 +250,7 @@ const getBookingsTotalBaseOnMonth = async (req, res) => {
     }
 };
 
-//GET ALL BOOKINGS (ADMIN) -----------------------------------------------------------------
+//get all bookings function
 const getAllBookings = async (_req, res) => {
     try {
         const bookings = await BookingModel.find({})
@@ -264,7 +265,7 @@ const getAllBookings = async (_req, res) => {
     }
 }
 
-//GET ARCHIVED BOOKINGS (ADMIN) -----------------------------------------------------------------
+//get archived bookings function
 const getArchivedBookings = async (_req, res) => {
     try {
         const bookings = await ArchivedBookingModel.find({})
@@ -280,6 +281,7 @@ const getArchivedBookings = async (_req, res) => {
 }
 
 
+//get booking by reference function
 const getBookingByReference = async (req, res) => {
     const userId = req.userId;
     const { reference } = req.params;
@@ -337,7 +339,8 @@ const getBookingByReference = async (req, res) => {
     }
 };
 
-//REQUEST DOCUMENT RESUBMISSION (ADMIN) -----------------------------------------------------------------
+
+//request document resubmission function
 const requestDocumentResubmission = async (req, res) => {
     const { id } = req.params
     const { travelerIndex } = req.body
@@ -474,7 +477,8 @@ const requestDocumentResubmission = async (req, res) => {
     }
 }
 
-//RESUBMIT BOOKING DOCUMENTS (USER) -----------------------------------------------------------------
+
+//resubmit booking documents function
 const resubmitBookingDocuments = async (req, res) => {
     const { id } = req.params
     const userId = req.userId
@@ -553,7 +557,8 @@ const resubmitBookingDocuments = async (req, res) => {
     }
 }
 
-//UPDATE BOOKING (ADMIN) -----------------------------------------------------------------
+
+//update booking function
 const updateBooking = async (req, res) => {
     const { id } = req.params
     const { status } = req.body
@@ -578,7 +583,8 @@ const updateBooking = async (req, res) => {
     }
 }
 
-//ARCHIVE BOOKING (ADMIN) -----------------------------------------------------------------
+
+//archive booking function
 const deleteBooking = async (req, res) => {
     const { id } = req.params
 
@@ -620,7 +626,8 @@ const deleteBooking = async (req, res) => {
     }
 }
 
-//RESTORE BOOKING (ADMIN) -----------------------------------------------------------------
+
+//restore archived booking function
 const restoreArchivedBooking = async (req, res) => {
     const { id } = req.params
 
@@ -667,7 +674,8 @@ const restoreArchivedBooking = async (req, res) => {
     }
 }
 
-//CANCEL BOOKING (USER) -----------------------------------------------------------------
+
+//cancel booking function
 const cancelBooking = async (req, res) => {
     const { id } = req.params
     const userId = req.userId
@@ -718,7 +726,7 @@ const cancelBooking = async (req, res) => {
 }
 
 
-//APPROVE CANCELLATION (ADMIN) -----------------------------------------------------------------
+//approve cancellation function
 const approveCancellation = async (req, res) => {
     const { id } = req.params
     try {
@@ -829,7 +837,7 @@ const approveCancellation = async (req, res) => {
 }
 
 
-//DISAPPROVE CANCELLATION (ADMIN) -----------------------------------------------------------------
+//disapprove cancellation function
 const disApproveCancellation = async (req, res) => {
     const { id } = req.params
     try {
@@ -930,7 +938,8 @@ const disApproveCancellation = async (req, res) => {
     }
 }
 
-//GET CANCELLATIONS (ADMIN) -----------------------------------------------------------------
+
+//get cancellations function
 const getcancellations = async (req, res) => {
     try {
         const cancellations = await CancellationModel.find({})
@@ -948,7 +957,8 @@ const getcancellations = async (req, res) => {
     }
 }
 
-//GET ARCHIVED CANCELLATIONS (ADMIN) -----------------------------------------------------------------
+
+//get archived cancellations function
 const getArchivedCancellations = async (req, res) => {
     try {
         const cancellations = await ArchivedCancellationModel.find({})
@@ -966,7 +976,8 @@ const getArchivedCancellations = async (req, res) => {
     }
 }
 
-//ARCHIVE CANCELLATION (ADMIN) -----------------------------------------------------------------
+
+//archive cancellation function
 const archiveCancellation = async (req, res) => {
     const { id } = req.params
 
@@ -998,7 +1009,8 @@ const archiveCancellation = async (req, res) => {
     }
 }
 
-//RESTORE CANCELLATION (ADMIN) -----------------------------------------------------------------
+
+//restore archived cancellation function
 const restoreArchivedCancellation = async (req, res) => {
     const { id } = req.params
 
@@ -1035,6 +1047,8 @@ const restoreArchivedCancellation = async (req, res) => {
     }
 }
 
+
+//verify token checkout function
 const verifyTokenCheckout = async (req, res) => {
     const { token } = req.body
 
@@ -1053,4 +1067,25 @@ const verifyTokenCheckout = async (req, res) => {
         return { valid: false, message: 'Error verifying token' }
     }
 }
-export { createBooking, getUserBookings, getAllBookings, getArchivedBookings, getBookingsTotalBaseOnMonth, updateBooking, deleteBooking, restoreArchivedBooking, cancelBooking, getcancellations, getArchivedCancellations, archiveCancellation, restoreArchivedCancellation, getBookingByReference, verifyTokenCheckout, approveCancellation, disApproveCancellation, requestDocumentResubmission, resubmitBookingDocuments };
+
+export {
+    createBooking,
+    getUserBookings,
+    getAllBookings,
+    getArchivedBookings,
+    getBookingsTotalBaseOnMonth,
+    updateBooking,
+    deleteBooking,
+    restoreArchivedBooking,
+    cancelBooking,
+    getcancellations,
+    getArchivedCancellations,
+    archiveCancellation,
+    restoreArchivedCancellation,
+    getBookingByReference,
+    verifyTokenCheckout,
+    approveCancellation,
+    disApproveCancellation,
+    requestDocumentResubmission,
+    resubmitBookingDocuments
+};
