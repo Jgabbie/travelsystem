@@ -138,18 +138,21 @@ const sendPenaltyEmail = async ({ to, username, bookingRef, addedAmount, totalPe
         to,
         subject: `Late Payment Penalty Applied: ${bookingRef}`,
         html: `
-        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
             <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
+
                 <h2 style="color:#305797; margin-top:0; margin-bottom:12px;">Late Payment Penalty Applied</h2>
                 <p style="color:#555; font-size:16px;">Hello <b>${username || 'Customer'}</b>,</p>
                 <p style="color:#555; font-size:15px; line-height:1.6;">A late payment penalty has been added to booking <b>${bookingRef}</b>.</p>
                 <p style="color:#555; font-size:15px; line-height:1.6;">Added penalty: <b>PHP ${formatMoney(addedAmount)}</b></p>
                 <p style="color:#555; font-size:15px; line-height:1.6;">Total accumulated penalty: <b>PHP ${formatMoney(totalPenalty)}</b></p>
                 <p style="color:#555; font-size:15px; line-height:1.6;">Please settle your account as soon as possible to avoid further penalties.</p>
+                
                 <a href="https://mrctravelandtours.com/home"
                     style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
                     Login to Your Account
                 </a>
+                
                 <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
                 <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
                     <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>

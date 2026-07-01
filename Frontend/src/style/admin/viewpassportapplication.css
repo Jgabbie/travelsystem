@@ -184,15 +184,15 @@
     width: 94%;
     max-width: 330px;
     height: 36px;
-    margin: 0 auto;
+    margin: 0px;
     border: 1px solid #d1dbe8;
 }
 
 .application-doc-item .viewpassport-preview-button,
 .application-doc-item .viewpassportapplication-download-button {
-    width: 94%;
-    max-width: 330px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+    margin: 0;
 }
 
 .application-doc-item {

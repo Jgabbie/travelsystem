@@ -25,6 +25,12 @@ MONGO_URI = os.getenv('MONGO_URI') or os.getenv(
     'MONGODB_URI') or 'mongodb://localhost:27017/'
 DB_NAME = os.getenv('MONGO_DB_NAME') or os.getenv('MONGODB_DB') or 'TravexDB'
 
+ACTIVE_PACKAGE_FILTER = {
+    'isArchived': {'$ne': True},
+    'archived': {'$ne': True},
+    'status': {'$nin': ['Archived', 'archived']}
+}
+
 
 def _user_id_filter(user_id):
     user_id = str(user_id)
@@ -92,14 +98,20 @@ def get_data_from_mongodb():
 
     db = client[DB_NAME]
 
-    packages_data = list(db['packages'].find({}, {
-        'packageName': 1,
-        'packageCode': 1,
-        'packageDescription': 1,
-        'packageType': 1,
-        'packageTags': 1,
-        'images': 1,
-    }))
+    packages_data = list(db['packages'].find(
+        ACTIVE_PACKAGE_FILTER,
+        {
+            'packageName': 1,
+            'packageCode': 1,
+            'packageDescription': 1,
+            'packageType': 1,
+            'packageTags': 1,
+            'images': 1,
+            'isArchived': 1,
+            'archived': 1,
+            'status': 1,
+        }
+    ))
 
     packages_df = pd.DataFrame(packages_data) if packages_data else pd.DataFrame(
         columns=['_id', 'packageName', 'packageCode',
@@ -224,6 +236,50 @@ def run_training_cycle():
     except Exception as e:
         print(f"[Training]  Error during training: {e}")
         return False
+
+
+def get_active_package_ids_from_mongodb():
+    """
+    Fetch the IDs of packages that are currently active.
+
+    This prevents stale model metadata from recommending a package
+    that was archived after the model was trained.
+    """
+    client = None
+
+    try:
+        client = MongoClient(
+            MONGO_URI,
+            serverSelectionTimeoutMS=5000
+        )
+
+        client.admin.command('ping')
+        db = client[DB_NAME]
+
+        active_packages = db['packages'].find(
+            ACTIVE_PACKAGE_FILTER,
+            {'_id': 1}
+        )
+
+        return {
+            str(package['_id'])
+            for package in active_packages
+            if package.get('_id') is not None
+        }
+
+    except Exception as error:
+        print(
+            '[Packages] Could not load active package IDs: '
+            f'{error}'
+        )
+
+        # None means the database check failed.
+        # Do not remove all recommendations because of a temporary DB error.
+        return None
+
+    finally:
+        if client is not None:
+            client.close()
 
 
 def train_and_save_models(packages_df, preferences_df, ratings_df):
@@ -554,6 +610,23 @@ def get_hybrid_recs(user_id, last_tour_name=None, num_recommendations=5):
             'packageId',
             dtype=str
         ).astype(str)
+
+        active_package_ids = get_active_package_ids_from_mongodb()
+        if active_package_ids is not None:
+            packages_df = packages_df[
+                packages_df['packageId'].isin(active_package_ids)
+            ].copy()
+
+            print(
+                f"[Recommendations] {len(packages_df)} active "
+                "packages are available"
+            )
+
+        if packages_df.empty:
+            return {
+                'error': 'No active packages available',
+                'recommendations': []
+            }
 
         user_id = str(user_id)
 

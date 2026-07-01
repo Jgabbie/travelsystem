@@ -62,27 +62,17 @@ const getRecommendations = async (req, res) => {
         const pkgMap = new Map(packagesFromDb.map(p => [String(p._id), p]));
 
         // Build ordered list preserving AI order. If DB record missing, keep a minimal fallback object.
-        const orderedPackages = [];
-        for (const rec of recommendations) {
-            const recId = rec.packageId || rec._id || null;
-            let pkg = recId ? pkgMap.get(String(recId)) : null;
-            if (pkg) {
-                orderedPackages.push(pkg);
-                continue;
-            }
+        const orderedPackages = recommendations
+            .map((rec) => {
+                const recId = rec.packageId || rec._id || null;
 
-            // Try matching by name when id lookup fails
-            if (rec.packageName) {
-                const byName = await PackageModel.findOne({ packageName: rec.packageName }).lean().exec();
-                if (byName) {
-                    orderedPackages.push(byName);
-                    continue;
+                if (!recId) {
+                    return null;
                 }
-            }
 
-            // As a last resort, include the AI-provided minimal info so caller receives same count
-            orderedPackages.push({ _id: recId || null, packageName: rec.packageName || null });
-        }
+                return pkgMap.get(String(recId)) || null;
+            })
+            .filter(Boolean);
 
         res.json({
             packages: orderedPackages,

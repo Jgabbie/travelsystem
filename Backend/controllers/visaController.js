@@ -526,6 +526,7 @@ const sendVisaDeadlineWarning = async (application) => {
             <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
+                    <h2 style="color:#305797;">Visa Deadline Reminder</h2>
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">One day remains to complete <b>${statusLabel}</b> for your visa application <b>${applicationNumber}</b>.</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Deadline: <b>${deadlineLabel}</b></p>
@@ -621,9 +622,10 @@ const sendVisaPenaltyNotification = async (application, deadlineInfo) => {
         to: user.email,
         subject: `Visa Application On Penalty: ${applicationNumber}`,
         html: `
-            <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
+            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
+                    <h2 style="color:#305797;">Visa Application On Penalty</h2>
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Your visa application <b>${applicationNumber}</b> is on penalty because <b>${deadlineInfo.status}</b> was not completed on time.</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Penalty fee: <b>PHP ${PENALTY_AMOUNT.toLocaleString('en-PH')}</b></p>
