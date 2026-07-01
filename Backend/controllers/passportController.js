@@ -1222,7 +1222,7 @@ const updatePassportStatus = async (req, res) => {
                     to: user.email,
                     subject: 'Passport Application Status Update',
                     html: `
-                        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                             <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
                                 <div style="text-align:center; color:#333; margin-top:15px;">

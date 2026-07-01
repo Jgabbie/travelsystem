@@ -246,8 +246,10 @@ const createManualPayment = async (req, res) => {
                                 <b>Package:</b> ${packageDoc.packageName} <br/>
                                 <b>Travel Dates:</b> ${bookingStart} to ${bookingEnd} <br/>
                                 <b>Total Paid:</b> ₱${amount.toFixed(2)}
+                            </p>
 
-                                <p> Enjoy your trip and thank you for choosing M&RC Travel and Tours! </p>
+                            <p style="color:#555; font-size:15px; line-height:1.6;"> 
+                                Enjoy your trip and thank you for choosing M&RC Travel and Tours! 
                             </p>
 
                             <p style="color:#777; font-size:13px; margin-top:30px;">
