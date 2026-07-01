@@ -346,7 +346,7 @@ export default function ViewPassportApplication() {
                 >
                     {isPdf ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                            <FilePdfOutlined style={{ color: '#ff4d4f' }} /> Preview File
+                            Preview PDF File
                         </span>
                     ) : (
                         'Preview File'
