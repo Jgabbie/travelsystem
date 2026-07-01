@@ -36,7 +36,15 @@ const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
     'Payment Completed': 5,
 };
 
-const PASSPORT_TERMINAL_STATUSES = new Set(['DFA Approved', 'Passport Released', 'Rejected']);
+const PASSPORT_TERMINAL_STATUSES = new Set([
+    'Documents Approved',
+    'Documents Received',
+    'Documents Submitted',
+    'Processing by DFA',
+    'DFA Approved',
+    'Passport Released',
+    'Rejected'
+]);
 
 
 //normalizes a date value to a dayjs object at the start of the day, or returns null if invalid.

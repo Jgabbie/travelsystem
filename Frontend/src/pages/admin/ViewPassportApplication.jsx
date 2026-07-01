@@ -22,6 +22,16 @@ const statusSteps = [
     { title: "Passport Released", summary: "Passport Released" },
 ];
 
+const PASSPORT_DEADLINE_STOP_STATUSES = new Set([
+    "Documents Approved",
+    "Documents Received",
+    "Documents Submitted",
+    "Processing by DFA",
+    "DFA Approved",
+    "Passport Released",
+    "Rejected",
+]);
+
 export default function ViewPassportApplication() {
     const location = useLocation();
     const { applicationId } = location.state || {};
@@ -42,6 +52,10 @@ export default function ViewPassportApplication() {
     const [descriptionColumn, setDescriptionColumn] = useState(2);
     const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
 
+
+    const shouldHideDeadline = PASSPORT_DEADLINE_STOP_STATUSES.has(
+        String(application?.status || "").trim()
+    );
 
     //fetch applications
     const fetchApplication = useCallback(async () => {
@@ -213,8 +227,13 @@ export default function ViewPassportApplication() {
     useEffect(() => {
         if (!application || !statusDeadlineDate || hasProcessedRejection) return;
 
-        const terminalStatuses = ['Rejected', 'Passport Released'];
-        if (terminalStatuses.includes(application.status)) return;
+        if (
+            PASSPORT_DEADLINE_STOP_STATUSES.has(
+                String(application.status || "").trim()
+            )
+        ) {
+            return;
+        }
 
         const isDeadlinePassed = statusDeadlineDate.isBefore(dayjs(), 'day');
         if (isDeadlinePassed) {
@@ -804,7 +823,7 @@ export default function ViewPassportApplication() {
                                                                     <div>Set on: {stepSetDate.format('MMM D, YYYY')}{daysAgo !== null ? ` • ${daysAgo} days ago` : ''}</div>
                                                                 )}
 
-                                                                {stepDeadlineDate && (
+                                                                {stepDeadlineDate && !shouldHideDeadline && (
                                                                     <div style={{ color: isOverdue ? '#ff4d4f' : '#333' }}>
                                                                         Deadline: {stepDeadlineDate.format('MMM D, YYYY')} ({isOverdue ? 'Deadline overdue' : (daysLeft === 0 ? (hoursLeft > 1 ? `${hoursLeft} hours left` : hoursLeft === 1 ? '1 hour left' : 'Less than 1 hour left') : `${daysLeft} days left`)})
                                                                     </div>

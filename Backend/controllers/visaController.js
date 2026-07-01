@@ -116,7 +116,15 @@ const getVisaDocumentLabel = (application, documentKey) => {
         .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-const VISA_TERMINAL_STATUSES = new Set(['Documents Submitted', 'Processing by Embassy', 'Embassy Approved', 'DFA Approved', 'Passport Released', 'Rejected']);
+const VISA_TERMINAL_STATUSES = new Set([
+    'Documents Approved',
+    'Documents Received',
+    'Documents Submitted',
+    'Processing by Embassy',
+    'Embassy Approved',
+    'Passport Released',
+    'Rejected'
+]);
 
 
 //get current visa status function

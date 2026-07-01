@@ -9,6 +9,16 @@ import { normalizeVisaProcessSteps } from "../../utils/visaDeadlineUtils";
 
 const { Title } = Typography;
 
+const VISA_DEADLINE_STOP_STATUSES = new Set([
+    "Documents Approved",
+    "Documents Received",
+    "Documents Submitted",
+    "Processing by Embassy",
+    "Embassy Approved",
+    "Passport Released",
+    "Rejected",
+]);
+
 export default function ViewVisaApplication() {
     const location = useLocation();
     const { applicationItem } = location.state
@@ -131,6 +141,10 @@ export default function ViewVisaApplication() {
     const statusText = Array.isArray(application?.status)
         ? application.status[application.status.length - 1]
         : application?.status;
+
+    const shouldHideDeadline = VISA_DEADLINE_STOP_STATUSES.has(
+        String(statusText || "").trim()
+    );
 
     const processStepEntries = useMemo(() => normalizeVisaProcessSteps(application?.processSteps), [application?.processSteps]);
 
@@ -878,7 +892,7 @@ export default function ViewVisaApplication() {
                                                                             </div>
                                                                         )}
 
-                                                                        {stepDeadlineDate && (
+                                                                        {stepDeadlineDate && !shouldHideDeadline && (
                                                                             <div
                                                                                 style={{
                                                                                     color: isOverdue ? '#ff4d4f' : '#333'
