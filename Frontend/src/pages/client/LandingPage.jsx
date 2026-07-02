@@ -825,7 +825,7 @@ export default function LandingPage() {
                         <div style={{ display: 'flex', gap: '50px', flexDirection: 'row', marginTop: 70, justifyContent: 'center' }}>
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <img src='/images/Packages_Logo.png' alt="Tour Package" width="65" height="65" />
+                                <img src='/images/map-marker-alt-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
                                 <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Tour Packages</h4>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
@@ -833,7 +833,7 @@ export default function LandingPage() {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <img src='/images/Passport_Logo.png' alt="Tour Package" width="65" height="65" />
+                                <img src='/images/passport-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
                                 <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Passport Assistance</h4>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
@@ -841,7 +841,7 @@ export default function LandingPage() {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <img src='/images/Visa_Logo.png' alt="Tour Package" width="65" height="65" />
+                                <img src='/images/stamp-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
                                 <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Visa Assistance</h4>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
@@ -849,7 +849,7 @@ export default function LandingPage() {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <img src='/images/Quotation_Logo.png' alt="Tour Package" width="65" height="65" />
+                                <img src='/images/file-signature-svgrepo-com.svg' alt="Tour Package" width="65" height="65" />
                                 <h4 className='aboutus-text' style={{ marginTop: 20, textAlign: 'center', fontSize: 20, fontWeight: 700 }}>Quotations</h4>
                                 <p className='aboutus-text' style={{ textAlign: 'center' }}>
                                     Discover our wide range of carefully crafted tour packages designed to suit every traveler's needs and preferences.
