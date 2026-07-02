@@ -717,7 +717,7 @@ export default function LandingPage() {
                         {!auth && !authLoading ? (
                             <div className='for-you-empty-state'>
                                 <p>Log in to get personalized package recommendations.</p>
-                                <Button type='primary' onClick={() => setIsLoginVisible(true)}>Log In</Button>
+                                <Button className='for-you-login-button' type='primary' onClick={() => setIsLoginVisible(true)}>Log In</Button>
                             </div>
                         ) : isForYouLoading ? (
                             <p className='for-you-status-text'>Loading recommendations...</p>

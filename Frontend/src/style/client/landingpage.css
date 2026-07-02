@@ -604,6 +604,26 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
+    text-align: center;
+}
+
+.for-you-login-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    background-color: #305797;
+    color: #fff;
+    border-radius: 10px;
+    width: 100px;
+    height: 35px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
+    margin-bottom: 20px;
+}
+
+.for-you-login-button:hover {
+    background-color: #e9e9e9;
+    color: #305797;
 }
 
 .for-you-grid {
@@ -1226,6 +1246,8 @@
     text-decoration: underline;
     font-weight: 600;
 }
+
+
 
 
 @media (max-width: 900px) {
