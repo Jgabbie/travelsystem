@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Input, ConfigProvider, Spin } from 'antd';
+import { Button, Modal, Input, ConfigProvider, Spin, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import '../../style/components/modals/signupmodal.css';
 import apiFetch from '../../config/fetchConfig';
@@ -15,10 +15,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSignupSuccessVisible, setIsSignupSuccessVisible] = useState(false);
 
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
     const [error, setError] = useState({
         username: '', firstname: '', lastname: '', password: [],
-        confirmPassword: [], email: '', phone: ''
+        confirmPassword: [], email: '', phone: '', terms: ''
     });
 
     const [values, setValues] = useState({
@@ -245,6 +247,14 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
     const handleSignup = async (e) => {
         e.preventDefault();
 
+        if (!acceptedTerms) {
+            setError((prev) => ({
+                ...prev,
+                terms: 'Please agree to the Terms and Conditions.'
+            }));
+            return;
+        }
+
         const fieldsToValidate = [
             "username",
             "firstname",
@@ -314,6 +324,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
             password: '',
             confirmPassword: '',
         })
+        setAcceptedTerms(false);
+        setIsTermsModalOpen(false);
         setShowPassword(false);
         isCloseSignup()
     }
@@ -486,6 +498,40 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     </div>
                                 </div>
 
+                                <div className="signup-terms-container-modal">
+                                    <Checkbox
+                                        checked={acceptedTerms}
+                                        onChange={(e) => {
+                                            const checked = e.target.checked;
+
+                                            setAcceptedTerms(checked);
+
+                                            setError((prev) => ({
+                                                ...prev,
+                                                terms: checked
+                                                    ? ''
+                                                    : 'Please agree to the Terms and Conditions.'
+                                            }));
+                                        }}
+                                    >
+                                        <p className='signup-terms-text-modal'>I agree to the</p>
+                                        <a
+                                            className='signup-terms-link-modal'
+                                            onClick={() => setIsTermsModalOpen(true)}
+                                        >
+                                            Terms and Conditions
+                                        </a>
+                                    </Checkbox>
+
+                                    <div className="signup-terms-error-container-modal">
+                                        {error.terms && (
+                                            <p className="signup-terms-error-modal">
+                                                {error.terms || ''}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                </div>
 
                                 <div className="signup-button-row-modal">
                                     <Button htmlType="submit" id='signup-button-modal'>Create Account</Button>
@@ -525,6 +571,89 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                         >
                             Continue to Login
                         </Button>
+                    </div>
+                </Modal>
+
+
+                <Modal
+                    open={isTermsModalOpen}
+                    title="Terms and Conditions"
+                    className="signup-terms-modal"
+                    footer={[
+                        <div className="signup-terms-footer">
+                            <Button
+                                key="close"
+                                type="primary"
+                                onClick={() => setIsTermsModalOpen(false)}
+                                className="signup-terms-close-button"
+                            >
+                                Close
+                            </Button>
+
+                            <Button
+                                key="agree"
+                                type="primary"
+                                className="signup-terms-agree-button"
+                                onClick={() => {
+                                    setAcceptedTerms(true);
+                                    setError('');
+                                    setIsTermsModalOpen(false);
+                                }}
+                            >
+                                I Agree
+                            </Button>
+                        </div>
+                    ]}
+                    onCancel={() => setIsTermsModalOpen(false)}
+                    centered
+                    width={1000}
+                >
+                    <div className="signup-terms-content-modal">
+                        <h3>1. Acceptance of Terms</h3>
+                        <p>
+                            By creating or accessing an account with M&RC Travel and Tours,
+                            you agree to comply with these Terms and Conditions.
+                        </p>
+
+                        <h3>2. Account Information</h3>
+                        <p>
+                            You are responsible for providing accurate account information
+                            and keeping your login credentials secure.
+                        </p>
+
+                        <h3>3. Booking and Payment</h3>
+                        <p>
+                            All bookings are subject to availability. Prices, deposits,
+                            payment deadlines, and cancellation policies may vary depending
+                            on the selected travel package or service.
+                        </p>
+
+                        <h3>4. Cancellations and Refunds</h3>
+                        <p>
+                            Cancellation and refund eligibility will depend on the applicable
+                            package, airline, hotel, embassy, or service provider policy.
+                        </p>
+
+                        <h3>5. User Responsibilities</h3>
+                        <p>
+                            Users must submit complete and valid information and documents.
+                            M&RC Travel and Tours will not be responsible for delays caused by
+                            incomplete, inaccurate, or expired documents.
+                        </p>
+
+                        <h3>6. Privacy</h3>
+                        <p>
+                            Personal information will be collected and processed only for
+                            account management, booking, payment, travel documentation, and
+                            related services.
+                        </p>
+
+                        <h3>7. Changes to the Terms</h3>
+                        <p>
+                            M&RC Travel and Tours may update these Terms and Conditions when
+                            necessary. Continued use of the platform means that you accept
+                            the updated terms.
+                        </p>
                     </div>
                 </Modal>
             </div>

@@ -67,6 +67,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
         e.preventDefault();
 
         setIsLoading(true);
+
         try {
             const response = await apiFetch.post('/auth/loginUser', {
                 username: values.username,
@@ -366,6 +367,8 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                 </Button>
                             </div>
                         </Modal>
+
+
                     </>
                 )}
 
