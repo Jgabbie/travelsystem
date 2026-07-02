@@ -946,6 +946,35 @@
     object-fit: cover;
 }
 
+.aboutus-service-icon {
+    transition:
+        transform 0.35s ease,
+        filter 0.35s ease;
+    cursor: pointer;
+}
+
+.aboutus-service-icon:hover {
+    transform: translateY(-8px) scale(1.12) rotate(3deg);
+    filter: drop-shadow(0 8px 8px rgba(48, 87, 151, 0.35));
+}
+
+.aboutus-service-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.aboutus-service-icon {
+    transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.35s ease;
+}
+
+.aboutus-service-item:hover .aboutus-service-icon {
+    transform: translateY(-8px) scale(1.12) rotate(3deg);
+    filter: drop-shadow(0 8px 8px rgba(48, 87, 151, 0.35));
+}
+
 
 .aboutus-vision-mission {
     display: flex;
@@ -985,6 +1014,39 @@
 .aboutus-accreditation img {
     max-width: 100%;
     height: auto;
+}
+
+.aboutus-accreditation-container {
+    display: flex;
+    flex-direction: row;
+    gap: 70px;
+    justify-content: center;
+}
+
+.aboutus-accreditation-item {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.aboutus-accreditation-image {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    transition:
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.4s ease;
+}
+
+.aboutus-accreditation-item:hover .aboutus-accreditation-image {
+    transform: translateY(-10px) scale(1.08);
+    filter: drop-shadow(0 12px 12px rgba(48, 87, 151, 0.35));
+}
+
+.aboutus-accreditation-text {
+    width: 600px;
+    text-align: center;
 }
 
 .ourservices-section {

@@ -168,23 +168,27 @@
 
 .wishlist-card .ant-card-body {
     display: flex;
+    align-items: stretch;
     gap: 16px;
     padding: 0;
     height: 100%;
 }
 
 .wishlist-card-image {
+    position: relative;
     flex: 0 0 260px;
-    height: 242px;
-    border-radius: 14px;
+    align-self: stretch;
+    min-height: 242px;
+    height: auto;
+    border-radius: 14px 0 0 14px;
     overflow: hidden;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
 }
 
 .wishlist-card-image img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -197,6 +201,11 @@
 }
 
 .wishlist-card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 12px;
     color: #64748b;
     font-weight: 600;
@@ -220,29 +229,37 @@
 
 .wishlist-card-header {
     display: flex;
-    justify-content: space-between;
-    gap: 12px;
+    width: 100%;
+}
+
+.wishlist-card-header>div {
+    width: 100%;
+    min-width: 0;
 }
 
 .wishlist-card-title {
+    display: block;
+    width: 100%;
     margin: 0 !important;
     font-size: 16px !important;
+    line-height: 1.45 !important;
     font-family: "Montserrat", sans-serif;
-    color: #305797 !important;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    color: #ffffff !important;
+    background-color: #305797;
+    padding: 10px;
+    border-radius: 20px;
+    overflow-wrap: anywhere;
+    word-break: normal;
     transition: all 0.3s ease;
 }
 
 .wishlist-card:hover .wishlist-card-title {
-    color: #1e3a5f !important;
+    color: #ffffff !important;
 }
 
 .wishlist-location {
     display: -webkit-box;
-    -webkit-line-clamp: 1;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -436,9 +453,11 @@
 
     .wishlist-card-image {
         width: 100%;
-        flex: unset;
+        flex: 0 0 220px;
+        min-height: 220px;
+        height: 220px;
+        align-self: auto;
         border-radius: 14px 14px 0 0;
-        height: 200px;
     }
 }
 
