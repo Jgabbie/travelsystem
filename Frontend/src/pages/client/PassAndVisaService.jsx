@@ -143,22 +143,56 @@ export default function PassAndVisaService() {
                                     <Empty description="No visa services found" />
                                 ) : (
                                     filteredVisas.map((visa) => (
-                                        <div className="visa-card" key={visa.visaItem}>
-                                            <div>
-                                                <h3>{visa.visaName}</h3>
-                                                <p>{visa.visaDescription}</p>
-                                                {visa.visaPrice && (
-                                                    <p className="visa-price">{`₱ ${visa.visaPrice}`}</p>
+                                        <div
+                                            className="passandvisa-visa-card"
+                                            key={visa.visaItem}
+                                        >
+                                            <div className="passandvisa-visa-media">
+                                                {visa.visaImage ? (
+                                                    <img
+                                                        src={visa.visaImage}
+                                                        alt={`${visa.visaName} flag`}
+                                                        className="passandvisa-visa-image"
+                                                        draggable={false}
+                                                    />
+                                                ) : (
+                                                    <div className="passandvisa-visa-image-placeholder">
+                                                        No image
+                                                    </div>
                                                 )}
                                             </div>
-                                            <div className="visa-actions">
-                                                <Button
-                                                    className="visa-apply-btn"
-                                                    type='primary'
-                                                    onClick={() => handleProtectedNavigation('/apply-visa', { visaName: visa.visaName })}
-                                                >
-                                                    Apply
-                                                </Button>
+
+                                            <div className="passandvisa-visa-content">
+                                                <div className="passandvisa-visa-information">
+                                                    <h3>{visa.visaName}</h3>
+
+                                                    <p className="passandvisa-visa-description">
+                                                        {visa.visaDescription}
+                                                    </p>
+
+                                                    {visa.visaPrice !== undefined &&
+                                                        visa.visaPrice !== null && (
+                                                            <p className="passandvisa-visa-price">
+                                                                ₱{Number(visa.visaPrice).toLocaleString()} per Applicant
+                                                            </p>
+                                                        )}
+                                                </div>
+
+                                                <div className="passandvisa-visa-actions">
+                                                    <Button
+                                                        className="visa-apply-btn"
+                                                        type="primary"
+                                                        onClick={() =>
+                                                            handleProtectedNavigation("/apply-visa", {
+                                                                visaItem: visa.visaItem,
+                                                                visaName: visa.visaName,
+                                                                visaImage: visa.visaImage
+                                                            })
+                                                        }
+                                                    >
+                                                        Apply
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))
