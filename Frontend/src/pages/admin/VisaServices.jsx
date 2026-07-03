@@ -237,60 +237,96 @@ export default function VisaServices() {
                 <Spin spinning={loading}>
                     {filteredServices.length > 0 ? filteredServices.map(service => (
                         <Card key={service.visaItem} className="visa-card">
-                            <div className="visa-container">
-                                <div className="visa-details">
-                                    <div className="visa-info">
-                                        <h5 className="visa-name">{service.visaName}</h5>
-                                        <h6 className="visa-price">₱{service.visaPrice?.toLocaleString() || '--'}</h6>
-                                    </div>
-                                    <p className="visa-description">{service.visaDescription}</p>
+                            <div className="visa-card-layout">
+                                <div className="visa-card-media">
+                                    {service.visaImage ? (
+                                        <img
+                                            src={service.visaImage}
+                                            alt={service.visaName || "Visa service"}
+                                            className="visa-card-image"
+                                            draggable={false}
+                                        />
+                                    ) : (
+                                        <div className="visa-card-image-placeholder">
+                                            No image available
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
 
-                            <div className="visa-actions">
-                                <Button
-                                    className="visaservices-view-button"
-                                    type="primary"
-                                    icon={<EyeOutlined />}
-                                    onClick={() => showModal(service)}
-                                >
-                                    View
-                                </Button>
-                                {showArchived ? (
-                                    <Button
-                                        icon={<CheckCircleOutlined />}
-                                        className="visaservices-restore-button"
-                                        type="primary"
-                                        onClick={() => {
-                                            setServiceToDelete(service.visaItem);
-                                            setIsRestoreModalOpen(true);
-                                        }}
-                                    >
-                                        Restore
-                                    </Button>
-                                ) : (
-                                    <>
+                                <div className="visa-card-content">
+                                    <div className="visa-card-information">
+                                        <div className="visa-info">
+                                            <h5 className="visa-name">
+                                                {service.visaName}
+                                            </h5>
+
+                                            <h6 className="visa-price">
+                                                ₱{Number(service.visaPrice || 0).toLocaleString()} per Applicant
+                                            </h6>
+                                        </div>
+
+                                        <p className="visa-description">
+                                            {service.visaDescription}
+                                        </p>
+                                    </div>
+
+                                    <div className="visa-actions">
                                         <Button
-                                            className="visaservices-edit-button"
+                                            className="visaservices-view-button"
                                             type="primary"
-                                            icon={<EditOutlined />}
-                                            onClick={() => navigate(`${basePath}/visa-services/edit`, { state: { serviceId: service.visaItem } })}
+                                            icon={<EyeOutlined />}
+                                            onClick={() => showModal(service)}
                                         >
-                                            Edit
+                                            View
                                         </Button>
-                                        <Button
-                                            className="visaservices-remove-button"
-                                            type="primary"
-                                            icon={<DeleteOutlined />}
-                                            onClick={() => {
-                                                setServiceToDelete(service.visaItem);
-                                                setIsDeleteModalOpen(true);
-                                            }}
-                                        >
-                                            Archive
-                                        </Button>
-                                    </>
-                                )}
+
+                                        {showArchived ? (
+                                            <Button
+                                                icon={<CheckCircleOutlined />}
+                                                className="visaservices-restore-button"
+                                                type="primary"
+                                                onClick={() => {
+                                                    setServiceToDelete(service.visaItem);
+                                                    setIsRestoreModalOpen(true);
+                                                }}
+                                            >
+                                                Restore
+                                            </Button>
+                                        ) : (
+                                            <>
+                                                <Button
+                                                    className="visaservices-edit-button"
+                                                    type="primary"
+                                                    icon={<EditOutlined />}
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `${basePath}/visa-services/edit`,
+                                                            {
+                                                                state: {
+                                                                    serviceId: service.visaItem
+                                                                }
+                                                            }
+                                                        )
+                                                    }
+                                                >
+                                                    Edit
+                                                </Button>
+
+                                                <Button
+                                                    className="visaservices-remove-button"
+                                                    type="primary"
+                                                    icon={<DeleteOutlined />}
+                                                    onClick={() => {
+                                                        setServiceToDelete(service.visaItem);
+                                                        setIsDeleteModalOpen(true);
+                                                    }}
+                                                >
+                                                    Archive
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </Card>
                     )) : (

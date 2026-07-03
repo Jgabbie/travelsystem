@@ -177,6 +177,50 @@ const uploadProfilePicture = async (req, res) => {
 };
 
 
+//upload service image function
+const uploadServiceImage = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({
+            message: 'No image uploaded.'
+        });
+    }
+
+    try {
+        if (!req.file.mimetype?.startsWith('image/')) {
+            return res.status(400).json({
+                message: 'Only image files are allowed.'
+            });
+        }
+
+        const uploadResult = await uploadBufferToCloudinary(
+            req.file,
+            'service-images'
+        );
+
+        /*
+         * Since your Cloudinary uploads use type: 'private',
+         * use the backend private-file route first instead of secure_url.
+         */
+        const imageUrl =
+            buildPrivateAccessUrl(req, uploadResult) ||
+            uploadResult?.secure_url;
+
+        return res.status(200).json({
+            message: 'Service image uploaded successfully.',
+            imageUrl,
+            publicId: uploadResult.public_id
+        });
+    } catch (err) {
+        console.error('Service image upload error:', err);
+
+        return res.status(500).json({
+            message: 'Service image upload failed.',
+            error: err.message
+        });
+    }
+};
+
+
 //upload passport requirements function
 const uploadPassportRequirements = async (req, res) => {
 
@@ -314,6 +358,7 @@ const viewQuotationPdf = async (req, res) => {
 
 
 export {
+    uploadServiceImage,
     uploadReceiptProof,
     uploadBookingDocuments,
     uploadPackageImage,

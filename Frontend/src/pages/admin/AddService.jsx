@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Input, Button, Card, Space, notification, ConfigProvider, Select } from "antd";
-import { PlusOutlined, DeleteOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { Input, Button, Card, Space, notification, ConfigProvider, Select, Upload, Image } from "antd";
+import { PlusOutlined, DeleteOutlined, ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import apiFetch from "../../config/fetchConfig";
 import "../../style/admin/addservice.css";
@@ -30,6 +30,8 @@ export default function AddService() {
         visaName: "",
         description: "",
         visaPrice: "",
+        imageFile: "",
+        imagePreview: "",
         requirements: [{ req: "", desc: "", isReq: "", applicationLink: "" }],
         standardProcessSteps: [],
         processSteps: [],
@@ -179,6 +181,60 @@ export default function AddService() {
     };
 
 
+    //handle image change function
+    const handleImageChange = (file) => {
+        const isImage = file.type?.startsWith("image/");
+
+        if (!isImage) {
+            notification.error({
+                message: "Invalid file",
+                description: "Please upload an image file.",
+                placement: "topRight"
+            });
+
+            return Upload.LIST_IGNORE;
+        }
+
+        const isBelow5MB = file.size / 1024 / 1024 < 5;
+
+        if (!isBelow5MB) {
+            notification.error({
+                message: "Image is too large",
+                description: "The image must be smaller than 5MB.",
+                placement: "topRight"
+            });
+
+            return Upload.LIST_IGNORE;
+        }
+
+        if (values.imagePreview?.startsWith("blob:")) {
+            URL.revokeObjectURL(values.imagePreview);
+        }
+
+        setValues((prev) => ({
+            ...prev,
+            imageFile: file,
+            imagePreview: URL.createObjectURL(file)
+        }));
+
+        // Prevent Ant Design from automatically uploading it.
+        return false;
+    };
+
+    const removeServiceImage = () => {
+        if (values.imagePreview?.startsWith("blob:")) {
+            URL.revokeObjectURL(values.imagePreview);
+        }
+
+        setValues((prev) => ({
+            ...prev,
+            visaImage: "",
+            imageFile: null,
+            imagePreview: ""
+        }));
+    };
+
+
     //save service function
     const saveService = async () => {
         const newErrors = {
@@ -193,56 +249,169 @@ export default function AddService() {
         setErrors(newErrors);
 
         if (hasError) {
-            notification.error({ message: 'Please fill all required fields correctly.', placement: 'topRight' });
+            notification.error({
+                message: "Please fill all required fields correctly.",
+                placement: "topRight"
+            });
             return;
+        }
+
+        let uploadedImageUrl = values.visaImage || "";
+
+        /*
+         * Upload the image separately.
+         * Do not manually set Content-Type because the browser must add
+         * the multipart boundary.
+         */
+        if (values.imageFile) {
+            try {
+                const imageFormData = new FormData();
+
+                // Must be "files" because the existing backend route uses upload.array("files", 3)
+                imageFormData.append("files", values.imageFile);
+
+                const uploadResult = await apiFetch.post(
+                    "/upload/upload-package-images",
+                    imageFormData
+                );
+
+                console.log("SERVICE IMAGE UPLOAD RESULT:", uploadResult);
+
+                uploadedImageUrl = uploadResult?.urls?.[0] || "";
+
+                if (!uploadedImageUrl) {
+                    throw new Error("The server did not return the uploaded image URL.");
+                }
+
+                uploadedImageUrl =
+                    uploadResult?.imageUrl ||
+                    uploadResult?.url ||
+                    uploadResult?.secure_url ||
+                    uploadResult?.urls?.[0] ||
+                    "";
+
+                if (!uploadedImageUrl) {
+                    throw new Error(
+                        "The image upload endpoint did not return an image URL."
+                    );
+                }
+            } catch (uploadError) {
+                console.error("SERVICE IMAGE UPLOAD ERROR:", uploadError);
+
+                notification.error({
+                    message: "Failed to upload service image.",
+                    description:
+                        uploadError?.response?.data?.error ||
+                        uploadError?.response?.data?.message ||
+                        uploadError?.message ||
+                        "Image upload failed.",
+                    placement: "topRight"
+                });
+
+                return;
+            }
         }
 
         const payload = {
             visaName: values.visaName.trim(),
             visaPrice: Number(values.visaPrice),
             visaDescription: values.description.trim(),
+            visaImage: uploadedImageUrl,
+
             visaRequirements: values.requirements.map((item) => ({
                 req: item.req.trim(),
                 desc: item.desc.trim(),
                 isReq: item.isReq,
-                applicationLink: item.applicationLink != null ? String(item.applicationLink).trim() : ""
+                applicationLink:
+                    item.applicationLink != null
+                        ? String(item.applicationLink).trim()
+                        : ""
             })),
-            // Merge standard steps with custom steps inserted after 'Documents Submitted'
+
             visaProcessSteps: (() => {
                 const sourceStandard = values.standardProcessSteps?.length
                     ? values.standardProcessSteps
                     : STANDARD_PROCESS_STEPS;
-                const idx = sourceStandard.findIndex(s => s.title === 'Documents Submitted');
-                const before = sourceStandard.slice(0, idx + 1);
-                const after = sourceStandard.slice(idx + 1);
-                const merged = [...before, ...values.processSteps, ...after];
+
+                const index = sourceStandard.findIndex(
+                    (step) => step.title === "Documents Submitted"
+                );
+
+                const before = sourceStandard.slice(0, index + 1);
+                const after = sourceStandard.slice(index + 1);
+
+                const merged = [
+                    ...before,
+                    ...values.processSteps,
+                    ...after
+                ];
+
                 return merged.map((step) => ({
-                    title: (step.title || "").trim(),
-                    description: (step.description || "").trim(),
-                    daysToBeCompleted: step.daysToBeCompleted === "" || step.daysToBeCompleted === null || step.daysToBeCompleted === undefined
-                        ? null
-                        : Number(step.daysToBeCompleted)
+                    title: String(step.title || "").trim(),
+                    description: String(step.description || "").trim(),
+                    daysToBeCompleted:
+                        step.daysToBeCompleted === "" ||
+                            step.daysToBeCompleted === null ||
+                            step.daysToBeCompleted === undefined
+                            ? 0
+                            : Number(step.daysToBeCompleted)
                 }));
             })(),
-            visaReminders: values.reminders.map((item) => item.trim()).filter((item) => item.length > 0),
+
+            visaReminders: values.reminders
+                .map((item) => item.trim())
+                .filter(Boolean)
         };
 
-        if (isEdit) {
-            await apiFetch.put(`/services/update-service/${serviceId}`, payload);
-            notification.success({
-                message: 'Visa service updated successfully.',
-                description: 'Changes to the visa service have been saved.',
-                placement: 'topRight'
-            });
-        } else {
-            await apiFetch.post("/services/create-service", payload);
-            notification.success({
-                message: 'Visa service created successfully.',
-                description: 'The new visa service has been created.',
-                placement: 'topRight'
+        console.log("SERVICE PAYLOAD:", payload);
+
+        try {
+            if (isEdit) {
+                const result = await apiFetch.put(
+                    `/services/update-service/${serviceId}`,
+                    payload
+                );
+
+                console.log("UPDATE SERVICE RESULT:", result);
+
+                notification.success({
+                    message: "Visa service updated successfully.",
+                    description: "Changes to the visa service have been saved.",
+                    placement: "topRight"
+                });
+            } else {
+                const result = await apiFetch.post(
+                    "/services/create-service",
+                    payload
+                );
+
+                console.log("CREATE SERVICE RESULT:", result);
+
+                notification.success({
+                    message: "Visa service created successfully.",
+                    description: "The new visa service has been created.",
+                    placement: "topRight"
+                });
+            }
+
+            navigate(`${basePath}/visa-services`);
+        } catch (serviceError) {
+            console.error("CREATE/UPDATE SERVICE ERROR:", serviceError);
+
+            notification.error({
+                message: isEdit
+                    ? "Failed to update visa service."
+                    : "Failed to create visa service.",
+                description:
+                    serviceError?.response?.data?.error ||
+                    serviceError?.response?.data?.message ||
+                    serviceError?.data?.error ||
+                    serviceError?.data?.message ||
+                    serviceError?.message ||
+                    "Service request failed.",
+                placement: "topRight"
             });
         }
-        navigate(`${basePath}/visa-services`);
     };
 
 
@@ -287,6 +456,9 @@ export default function AddService() {
                 setValues({
                     visaName: existing.visaName || "",
                     visaPrice: existing.visaPrice || "",
+                    visaImage: existing.visaImage || "",
+                    imageFile: null,
+                    imagePreview: existing.visaImage || "",
                     description: existing.visaDescription || "",
                     requirements: existing.visaRequirements?.length
                         ? existing.visaRequirements.map((item) => typeof item === "string" ? { req: item, desc: "", isReq: "" } : { req: item.req || "", desc: item.desc || "", isReq: item.isReq || "", applicationLink: item.applicationLink || "" })
@@ -399,6 +571,69 @@ export default function AddService() {
                                 }}
                             />
                             <p className="add-service-error-message">{errors.description}</p>
+                        </div>
+
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            <label className="add-service-input-labels">
+                                Visa Service Image
+                            </label>
+
+                            <Upload
+                                accept="image/png,image/jpeg,image/jpg,image/webp"
+                                maxCount={1}
+                                listType="picture"
+                                beforeUpload={handleImageChange}
+                                onRemove={removeServiceImage}
+                                fileList={
+                                    values.imageFile
+                                        ? [
+                                            {
+                                                uid: values.imageFile.uid || "-1",
+                                                name: values.imageFile.name,
+                                                status: "done",
+                                                originFileObj: values.imageFile,
+                                                thumbUrl: values.imagePreview
+                                            }
+                                        ]
+                                        : []
+                                }
+                            >
+                                {!values.imageFile && (
+                                    <Button icon={<UploadOutlined />}>
+                                        Select Image
+                                    </Button>
+                                )}
+                            </Upload>
+
+                            {!values.imageFile && values.visaImage && (
+                                <div style={{ marginTop: 8 }}>
+                                    <Image
+                                        src={values.visaImage}
+                                        alt="Visa service"
+                                        width={180}
+                                        height={120}
+                                        style={{
+                                            objectFit: "cover",
+                                            borderRadius: 6
+                                        }}
+                                    />
+
+                                    <div style={{ marginTop: 8 }}>
+                                        <Button
+                                            danger
+                                            size="small"
+                                            onClick={removeServiceImage}
+                                        >
+                                            Remove Image
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            <span style={{ fontSize: 12, color: "#777" }}>
+                                PNG, JPG, JPEG, or WEBP. Maximum size: 5MB.
+                            </span>
                         </div>
                     </div>
 

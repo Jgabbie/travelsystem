@@ -14,6 +14,6 @@ router.post('/upload-visa-requirements', upload.array('files', 20), uploadContro
 router.post('/upload-cancel-proof', upload.single('file'), uploadController.uploadCancellationProof);
 router.get('/quotation/signed-url', uploadController.viewQuotationPdf);
 router.get('/private-file', uploadController.viewQuotationPdf);
-
+router.post('/upload-service-image', upload.single('file'), uploadController.uploadServiceImage);
 
 export default router;

@@ -41,10 +41,127 @@
 
 .visa-card {
     margin-bottom: 16px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 6px 20px rgba(48, 87, 151, 0.12);
 }
 
 .visa-card .ant-card-body {
-    padding: 12px 16px;
+    padding: 0 !important;
+    height: 100%;
+}
+
+.visa-card-layout {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.visa-card-media {
+    width: 34%;
+    min-width: 320px;
+    max-width: 520px;
+    height: 100%;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.visa-card-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.visa-card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #f2f4f8;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.visa-card-content {
+    flex: 1;
+    min-width: 0;
+    padding: 34px 44px 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+.visa-card-information {
+    min-width: 0;
+}
+
+.visa-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.visa-name {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #111111;
+
+    /* Prevent very long names from changing card height */
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.visa-price {
+    margin: 6px 0 18px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #6e6e6e;
+}
+
+.visa-description {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #252525;
+    text-align: left;
+
+    /* Keep every card at the same height */
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+}
+
+.visa-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    /*
+     * This pushes the buttons to the bottom regardless
+     * of the description length.
+     */
+    margin-top: auto;
+    padding-top: 18px;
 }
 
 .visa-container {
@@ -161,15 +278,6 @@
     font-size: 12px;
 }
 
-.visa-actions {
-    display: flex;
-    justify-content: flex-end;
-    flex-direction: row;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-
 .search-input,
 .visaservices-search-input,
 .visa-date-filter,
@@ -203,16 +311,6 @@
     margin: 4px 0 12px 0;
 }
 
-.visa-description {
-    font-size: 12px;
-    margin: 6px 0;
-    text-align: justify;
-    display: block;
-    overflow: visible;
-    -webkit-line-clamp: unset;
-    -webkit-box-orient: unset;
-    line-height: 1.5;
-}
 
 .visa-available-slots {
     font-size: 16px;
@@ -488,6 +586,25 @@
     border-radius: 10px;
 }
 
+@media (max-width: 900px) {
+    .visa-card-layout {
+        height: 260px;
+    }
+
+    .visa-card-media {
+        width: 38%;
+        min-width: 260px;
+    }
+
+    .visa-card-content {
+        padding: 26px 28px 22px;
+    }
+
+    .visa-description {
+        -webkit-line-clamp: 3;
+    }
+}
+
 
 @media (max-width: 768px) {
     .package-toolbar {
@@ -499,9 +616,25 @@
         flex-direction: column;
     }
 
-    .package-media {
+    .visa-card-layout {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .visa-card-media {
         width: 100%;
         min-width: 0;
+        max-width: none;
+        height: 230px;
+    }
+
+    .visa-card-content {
+        min-height: 260px;
+        padding: 24px;
+    }
+
+    .visa-actions {
+        justify-content: flex-start;
     }
 
     .package-actions {

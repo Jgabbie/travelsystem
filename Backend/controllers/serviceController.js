@@ -5,7 +5,7 @@ import logAction from '../utils/logger.js';
 
 //create service function
 const createService = async (req, res) => {
-    const { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders } = req.body;
+    const { visaName, visaDescription, visaPrice, visaImage, visaRequirements, visaProcessSteps, visaReminders } = req.body;
     const userId = req.userId;
 
     try {
@@ -14,6 +14,7 @@ const createService = async (req, res) => {
             visaName,
             visaDescription,
             visaPrice,
+            visaImage,
             visaRequirements,
             visaProcessSteps,
             visaReminders
@@ -42,6 +43,7 @@ const getAllServices = async (req, res) => {
             visaName: service.visaName,
             visaDescription: service.visaDescription,
             visaPrice: service.visaPrice,
+            visaImage: service.visaImage,
             visaRequirements: service.visaRequirements,
             visaProcessSteps: service.visaProcessSteps,
             visaReminders: service.visaReminders,
@@ -58,12 +60,12 @@ const getAllServices = async (req, res) => {
 const updateService = async (req, res) => {
     const { id } = req.params;
     const userId = req.userId;
-    const { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders } = req.body;
+    const { visaName, visaDescription, visaPrice, visaImage, visaRequirements, visaProcessSteps, visaReminders } = req.body;
 
     try {
         const updatedService = await ServiceModel.findByIdAndUpdate(
             id,
-            { visaName, visaDescription, visaPrice, visaRequirements, visaProcessSteps, visaReminders },
+            { visaName, visaDescription, visaPrice, visaImage, visaRequirements, visaProcessSteps, visaReminders },
             { new: true }
         );
         if (!updatedService) {
@@ -94,6 +96,7 @@ const deleteService = async (req, res) => {
             originalServiceItem: id,
             visaName: service.visaName,
             visaPrice: service.visaPrice,
+            visaImage: service.visaImage,
             visaDescription: service.visaDescription,
             visaRequirements: service.visaRequirements,
             visaProcessSteps: service.visaProcessSteps,
@@ -122,6 +125,7 @@ const getArchivedServices = async (_req, res) => {
             visaName: service.visaName,
             visaPrice: service.visaPrice,
             visaDescription: service.visaDescription,
+            visaImage: service.visaImage,
             visaRequirements: service.visaRequirements,
             visaProcessSteps: service.visaProcessSteps,
             visaReminders: service.visaReminders,
@@ -152,6 +156,7 @@ const restoreArchivedService = async (req, res) => {
             visaName: archivedService.visaName,
             visaPrice: archivedService.visaPrice,
             visaDescription: archivedService.visaDescription,
+            visaImage: archivedService.visaImage,
             visaRequirements: archivedService.visaRequirements,
             visaProcessSteps: archivedService.visaProcessSteps,
             visaReminders: archivedService.visaReminders
@@ -180,6 +185,7 @@ const getService = async (req, res) => {
             visaName: service.visaName,
             visaDescription: service.visaDescription,
             visaPrice: service.visaPrice,
+            visaImage: service.visaImage,
             visaRequirements: service.visaRequirements,
             visaProcessSteps: service.visaProcessSteps,
             visaReminders: service.visaReminders,
@@ -190,6 +196,9 @@ const getService = async (req, res) => {
         res.status(500).json({ message: 'Error retrieving service', error: error.message });
     }
 }
+
+
+
 
 
 export {
