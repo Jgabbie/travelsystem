@@ -1011,7 +1011,7 @@ export default function LandingPage() {
                         <div className='contactus-section'>
                             <div className='contactus-section-left'>
                                 <h1 className='explore-text' style={{ marginBottom: 0, paddingBottom: 0 }}>Contact Us</h1>
-                                <div className='text-underline' style={{ backgroundColor: '#000000' }}></div>
+                                <div className='text-underline' style={{ backgroundColor: '#305797' }}></div>
                                 <p className='contactus-text'>
                                     Have questions or need assistance? Our friendly customer support team is here to help you with all your travel needs. Whether you’re looking for more information about our tour packages, need help with booking, or want to customize your itinerary, we’re just a message away. Contact us today and let us make your travel dreams a reality!
                                 </p>
@@ -1161,6 +1161,36 @@ export default function LandingPage() {
                                         </Button>
                                     </div>
                                 </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div className="contactus-map-section">
+                        <div className="contactus-map-layout">
+
+                            <div className="contactus-map-header">
+                                <h2 className="explore-text contactus-map-title">
+                                    Find Our Agency
+                                </h2>
+
+                                <div className="contactus-map-underline"></div>
+
+                                <p className="contactus-map-address">
+                                    2nd Floor #1 Cor Fatima Street, San Antonio Avenue Valley 1,
+                                    Brgy. San Antonio, Parañaque, Philippines, 1715
+                                </p>
+                            </div>
+
+                            <div className="contactus-map-container">
+                                <iframe
+                                    title="M&RC Travel and Tours Location"
+                                    src="https://www.google.com/maps?q=M%26RC%20Travel%20and%20Tours%20Paranaque&output=embed"
+                                    className="contactus-google-map"
+                                    loading="lazy"
+                                    allowFullScreen
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                ></iframe>
                             </div>
 
                         </div>
