@@ -301,6 +301,20 @@
     gap: 10px;
 }
 
+.passport-card .passport-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.passport-card-icon {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
 .passport-card h3 {
     margin: 0;
     font-size: 19px;

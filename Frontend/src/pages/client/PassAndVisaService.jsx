@@ -217,7 +217,15 @@ export default function PassAndVisaService() {
                                         }
                                     }}
                                 >
-                                    <h3>New Passport</h3>
+                                    <div className='passport-card-heading'>
+                                        <img
+                                            src="/images/plus-circle-svgrepo-com.svg"
+                                            alt=""
+                                            className="passport-card-icon"
+                                        />
+                                        <h3>New Passport</h3>
+                                    </div>
+
                                     <p>Apply for a passport for first-time applicants.</p>
                                     <p className="passport-price">₱ 2000</p>
                                 </div>
@@ -232,7 +240,14 @@ export default function PassAndVisaService() {
                                         }
                                     }}
                                 >
-                                    <h3>Renew Passport</h3>
+                                    <div className='passport-card-heading'>
+                                        <img
+                                            src="/images/refresh-f-svgrepo-com.svg"
+                                            alt=""
+                                            className="passport-card-icon"
+                                        />
+                                        <h3>Renew Passport</h3>
+                                    </div>
                                     <p>Renew your existing passport quickly.</p>
                                     <p className="passport-price">₱ 2000</p>
                                 </div>
