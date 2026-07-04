@@ -1038,7 +1038,7 @@ const requestVisaDocumentResubmission = async (req, res) => {
                 to: user.email,
                 subject: "Visa Documents Resubmission Requested",
                 html: `
-                    <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                    <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             <h2 style="color:#305797; margin-bottom:10px;">Visa Documents Resubmission Requested</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.firstname || user.username}</b>,</p>
@@ -1196,7 +1196,7 @@ const suggestAppointmentSchedules = async (req, res) => {
                 to: user.email,
                 subject: "Visa Appointment Options Available",
                 html: `
-                <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+                <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
         
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             
