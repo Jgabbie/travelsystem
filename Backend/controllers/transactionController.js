@@ -441,10 +441,6 @@ const updateTransaction = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797; margin-bottom:10px;">Manual Payment Approved</h2>
-
                             <p style="color:#555; font-size:16px;">Hello <b>${user.username || 'Customer'}</b>,</p>
 
                             <p style="color:#555; font-size:15px; line-height:1.6;">

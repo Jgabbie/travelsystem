@@ -1040,7 +1040,6 @@ const requestVisaDocumentResubmission = async (req, res) => {
                 html: `
                     <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                            <h2 style="color:#305797; margin-bottom:10px;">Visa Documents Resubmission Requested</h2>
                             <p style="color:#555; font-size:16px;">Hello <b>${user.firstname || user.username}</b>,</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">Our team needs you to resubmit your ${requestedSummary.toLowerCase()} for your application.</p>
                             <p style="color:#555; font-size:15px; line-height:1.6;">Please log in to your account to upload the updated documents.</p>
@@ -1197,12 +1196,8 @@ const suggestAppointmentSchedules = async (req, res) => {
                 subject: "Visa Appointment Options Available",
                 html: `
                 <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
-        
                         <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                             
-                            <img src="https://mrctravelandtours.com/images/Logo.png" style="width:100px; margin-bottom:15px;" />
-
-                            <h2 style="color:#305797;">Visa Appointment Options</h2>
                             <p style="color:#555;">We’ve found available schedules for your visa application.</p>
 
                             <div style="text-align:center; color:#333; margin-top:15px;">

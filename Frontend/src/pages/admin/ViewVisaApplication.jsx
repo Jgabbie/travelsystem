@@ -13,7 +13,6 @@ const VISA_DEADLINE_STOP_STATUSES = new Set([
     "Documents Approved",
     "Documents Received",
     "Documents Submitted",
-    "Processing by Embassy",
     "Embassy Approved",
     "Passport Released",
     "Rejected",
@@ -749,7 +748,7 @@ export default function ViewVisaApplication() {
                                                     No documents submitted.
                                                 </div>
                                             )}
-                                            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                                            {/* <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
                                                 <Button
                                                     className="viewvisaapplication-submitdocu-button"
                                                     type="primary"
@@ -758,7 +757,7 @@ export default function ViewVisaApplication() {
                                                 >
                                                     Resubmit Documents
                                                 </Button>
-                                            </div>
+                                            </div> */}
                                         </div>
 
                                         {statusText && String(statusText).toLowerCase() === "passport released" && application.passportReleaseOption === "delivery" && application.deliveryDate === "" && (

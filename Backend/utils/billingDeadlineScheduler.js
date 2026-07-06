@@ -106,7 +106,7 @@ const sendReminderEmail = async ({ to, username, bookingRef, label, dueDate, amo
         to,
         subject: `Payment Reminder: ${bookingRef} due on ${dueDate.format('MMM D, YYYY')}`,
         html: `
-        <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
             <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
                 <h2 style="color:#305797; margin-top:0; margin-bottom:12px;">Payment Reminder</h2>
                 <p style="color:#555; font-size:16px;">Hello <b>${username || 'Customer'}</b>,</p>

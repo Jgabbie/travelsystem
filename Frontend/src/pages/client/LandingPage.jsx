@@ -1168,6 +1168,16 @@ export default function LandingPage() {
 
                     <div className="contactus-map-section">
                         <div className="contactus-map-layout">
+                            <div className="contactus-map-container">
+                                <iframe
+                                    title="M&RC Travel and Tours Location"
+                                    src="https://www.google.com/maps?q=M%26RC%20Travel%20and%20Tours%20Paranaque&output=embed"
+                                    className="contactus-google-map"
+                                    loading="lazy"
+                                    allowFullScreen
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                ></iframe>
+                            </div>
 
                             <div className="contactus-map-header">
                                 <h2 className="explore-text contactus-map-title">
@@ -1182,16 +1192,7 @@ export default function LandingPage() {
                                 </p>
                             </div>
 
-                            <div className="contactus-map-container">
-                                <iframe
-                                    title="M&RC Travel and Tours Location"
-                                    src="https://www.google.com/maps?q=M%26RC%20Travel%20and%20Tours%20Paranaque&output=embed"
-                                    className="contactus-google-map"
-                                    loading="lazy"
-                                    allowFullScreen
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                ></iframe>
-                            </div>
+
 
                         </div>
                     </div>
