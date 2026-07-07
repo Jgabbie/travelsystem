@@ -55,6 +55,49 @@ const dfaLocations = [
     'DFA Zamboanga (Go-Velayo Building)'
 ];
 
+const steps = [
+    {
+        title: "Application Submitted",
+        desc: "Your passport application has been successfully submitted."
+    },
+    {
+        title: "Application Approved",
+        desc: "Your application has been reviewed and approved."
+    },
+    {
+        title: "Payment Completed",
+        desc: "The required passport assistance fee has been paid."
+    },
+    {
+        title: "Documents Uploaded",
+        desc: "The required application documents have been uploaded."
+    },
+    {
+        title: "Documents Approved",
+        desc: "Your uploaded documents have been reviewed and approved."
+    },
+    {
+        title: "Documents Received",
+        desc: "Your physical documents have been received."
+    },
+    {
+        title: "Documents Submitted",
+        desc: "Your documents have been submitted for processing."
+    },
+    {
+        title: "Processing By DFA",
+        desc: "Your passport application is currently being processed by DFA."
+    },
+    {
+        title: "DFA Approved",
+        desc: "Your passport application has been approved by DFA."
+    },
+    {
+        title: "Passport Released",
+        desc: "Your passport is ready for release or delivery."
+    }
+];
+
 export default function NewPassport() {
     const [loginModalVisible, setLoginModalVisible] = useState(false);
     const [sentModalVisible, setSentModalVisible] = useState(false);
@@ -235,34 +278,18 @@ export default function NewPassport() {
                             <div className="passport-panel">
                                 <h3>Step-by-step process</h3>
                                 <div className="passport-steps">
-                                    <div className="passport-step">
-                                        <span className="passport-step-number">1</span>
-                                        <div>
-                                            <h4>Book your DFA appointment</h4>
-                                            <p>Select your preferred DFA site and date.</p>
+                                    {steps.map((step, index) => (
+                                        <div className="passport-step" key={step.title}>
+                                            <span className="passport-step-number">
+                                                {index + 1}
+                                            </span>
+
+                                            <div>
+                                                <h4>{step.title}</h4>
+                                                <p>{step.desc}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="passport-step">
-                                        <span className="passport-step-number">2</span>
-                                        <div>
-                                            <h4>Prepare requirements</h4>
-                                            <p>Complete forms and secure supporting documents.</p>
-                                        </div>
-                                    </div>
-                                    <div className="passport-step">
-                                        <span className="passport-step-number">3</span>
-                                        <div>
-                                            <h4>Attend appointment</h4>
-                                            <p>Submit documents and complete biometrics.</p>
-                                        </div>
-                                    </div>
-                                    <div className="passport-step">
-                                        <span className="passport-step-number">4</span>
-                                        <div>
-                                            <h4>Track release</h4>
-                                            <p>Wait for delivery or pick-up availability.</p>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
                         </section>

@@ -493,7 +493,7 @@
 .package-price-label {
     display: inline-flex;
     align-self: flex-start;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.7px;
@@ -503,6 +503,18 @@
     border-radius: 999px;
     width: fit-content;
     max-width: 100%;
+}
+
+.package-price-label-cancel {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 24px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #ffffff;
+    border-radius: 999px;
+    max-width: 100%;
+    margin-bottom: 10px;
 }
 
 .package-pricepax {

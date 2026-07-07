@@ -8,7 +8,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 50px;
+    padding: 6px 50px;
     padding-right: 50px;
     background-color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -17,7 +17,7 @@
 }
 
 .navbar-spacer {
-    height: 90px;
+    height: 75px;
 }
 
 .logo-section {

@@ -1071,7 +1071,7 @@ export default function PackagePage() {
                                             }}
                                         >
                                             <p
-                                                className="package-price-label"
+                                                className="package-price-label-cancel"
                                                 style={{ color: '#fff' }}
                                             >
                                                 CANCELLATION POLICY
