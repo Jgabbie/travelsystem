@@ -786,7 +786,7 @@ export default function QuotationRequest() {
                     {/* BOOKED OR COMPLETE STATUS */}
                     {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
                         <Card
-                            style={{ borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                            style={{ borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed' }}
                             className={`quotationrequest-status-card${isBooked ? ' is-booked' : ''}`}
                             title={<Tag className="quotation-request-tag" color="green">Quotation {quotation.status}</Tag>}
                         >
@@ -1280,7 +1280,7 @@ export default function QuotationRequest() {
                             <h1 className='signup-success-heading'>Quotation Sent Successfully!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>The quotation has been sent.</p>

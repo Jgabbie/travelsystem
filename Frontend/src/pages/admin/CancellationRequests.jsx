@@ -684,7 +684,7 @@ export default function CancellationRequests() {
                     <h1 className='signup-success-heading'>Cancellation Request Accepted!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='signup-success-text'>The cancellation request has been accepted.</p>
@@ -721,7 +721,7 @@ export default function CancellationRequests() {
                     <h1 className='signup-success-heading'>Cancellation Request Rejected!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='signup-success-text'>The cancellation request has been rejected.</p>
@@ -840,7 +840,7 @@ export default function CancellationRequests() {
                     <h1 className='modal-heading'>Cancellation Request Archived Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The cancellation request has been archived.</p>
@@ -875,7 +875,7 @@ export default function CancellationRequests() {
                     <h1 className='modal-heading'>Cancellation Request Restored Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The cancellation request has been restored.</p>

@@ -700,7 +700,7 @@ export default function PackageManagement() {
             <h1 className='signup-success-heading'>Discount Applied!</h1>
 
             <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
             <p className='signup-success-text'>The discount has been applied successfully.</p>
@@ -737,7 +737,7 @@ export default function PackageManagement() {
             <h1 className='signup-success-heading'>Slots Saved!</h1>
 
             <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
             <p className='signup-success-text'>The slots have been saved successfully.</p>
@@ -856,7 +856,7 @@ export default function PackageManagement() {
             <h1 className='modal-heading'>Package Archived Successfully!</h1>
 
             <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
             <p className='modal-text'>The package has been archived.</p>
@@ -891,7 +891,7 @@ export default function PackageManagement() {
             <h1 className='modal-heading'>Package Restored Successfully!</h1>
 
             <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
             <p className='modal-text'>The package has been restored.</p>

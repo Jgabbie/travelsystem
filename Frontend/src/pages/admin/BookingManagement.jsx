@@ -746,7 +746,7 @@ export default function BookingManagement() {
             <h1 className='modal-heading'>Booking Edited Successfully!</h1>
 
             <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
             <p className='modal-text'>The booking has been edited.</p>
@@ -782,7 +782,7 @@ export default function BookingManagement() {
             <h1 className='modal-heading'>Booking Archived Successfully!</h1>
 
             <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
             <p className='modal-text'>The booking has been archived.</p>
@@ -819,7 +819,7 @@ export default function BookingManagement() {
             <h1 className='modal-heading'>Booking Restored Successfully!</h1>
 
             <div>
-              <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+              <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
             </div>
 
             <p className='modal-text'>The booking has been restored.</p>

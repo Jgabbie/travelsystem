@@ -946,7 +946,7 @@ export default function ViewVisaApplication() {
                     <h1 className='signup-success-heading'>Suggested Dates Sent!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='signup-success-text'>The suggested dates have been sent.</p>
@@ -983,7 +983,7 @@ export default function ViewVisaApplication() {
                     <h1 className='signup-success-heading'>Resubmit Documents Sent!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='signup-success-text'>The requested document resubmission has been sent.</p>
@@ -1022,7 +1022,7 @@ export default function ViewVisaApplication() {
                     <h1 className='signup-success-heading'>Submit Delivery Details!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='signup-success-text'>The delivery details have been submitted.</p>

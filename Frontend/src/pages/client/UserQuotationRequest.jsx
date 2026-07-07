@@ -192,8 +192,8 @@ export default function UserQuotationRequest() {
                                 {/* BOOKED OR COMPLETE STATUS */}
                                 {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
                                     <Card
-                                        style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
-                                        style={{ borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed' }}
+                                        style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed' }}
+                                        style={{ borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed' }}
                                         className='quotationrequest-status-card'
                                         title={<Tag className="quotation-request-tag" color="green">Quotation {quotation.status}</Tag>}
                                     >
@@ -378,7 +378,7 @@ export default function UserQuotationRequest() {
                                         <h2 className="userquotationrequest-revision-heading">Revision Requested</h2>
 
                                         <div>
-                                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                                         </div>
 
                                         <p className="userquotationrequest-revision-text">Your revision request has been submitted.</p>

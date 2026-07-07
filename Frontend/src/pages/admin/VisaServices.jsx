@@ -453,7 +453,7 @@ export default function VisaServices() {
                         <h1 className='modal-heading'>Service Archived!</h1>
 
                         <div>
-                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                         </div>
 
                         <p className='modal-text'>The service has been archived.</p>
@@ -529,7 +529,7 @@ export default function VisaServices() {
                         <h1 className='modal-heading'>Visa Service Restored Successfully!</h1>
 
                         <div>
-                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                         </div>
 
                         <p className='modal-text'>The visa service has been restored.</p>

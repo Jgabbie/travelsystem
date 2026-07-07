@@ -602,7 +602,7 @@ export default function VisaApplications() {
                     <h1 className='modal-heading'>Visa Application Archived Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The visa application has been archived.</p>
@@ -637,7 +637,7 @@ export default function VisaApplications() {
                     <h1 className='modal-heading'>Visa Application Restored Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The visa application has been restored.</p>

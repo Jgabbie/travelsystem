@@ -770,8 +770,8 @@ export default function VisaApplication() {
 
                                 {/* DELIVERY FEE FULLY PAID */}
                                 {isDeliveryFeePaid && (
-                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>DELIVERY FEE FULLY PAID</h2>
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>DELIVERY FEE FULLY PAID</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
                                             Your Delivery Fee payment has been verified.
                                             Kindly wait for further instructions regarding the release of your passport.
@@ -782,8 +782,8 @@ export default function VisaApplication() {
 
                                 {/* SUGGESTED APPOINTMENT */}
                                 {statusValue && statusValue.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>SUGGESTED APPOINTMENT</h2>
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>SUGGESTED APPOINTMENT</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
                                             You have successfully chosen your appointment schedule.
                                             Kindly wait for its approval. We will notify you once the date is available.
@@ -793,8 +793,8 @@ export default function VisaApplication() {
 
                                 {/*APPROVED APPOINTMENT DATE AND TIME */}
                                 {statusValue && statusValue.toLowerCase() === 'application approved' && (
-                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>YOUR APPOINTMENT DATE AND TIME</h2>
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>YOUR APPOINTMENT DATE AND TIME</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
                                             Your appointment has been scheduled for <strong>{application.suggestedAppointmentScheduleChosen.date === "" && application.suggestedAppointmentScheduleChosen.time === "" ? (dayjs(application.preferredDate).format('MMM D, YYYY')) : (dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY"))}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
                                         </p>
@@ -803,8 +803,8 @@ export default function VisaApplication() {
 
                                 {/* DOCUMENTS APPROVED */}
                                 {statusValue && statusValue.toLowerCase() === 'documents approved' && (
-                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>DOCUMENTS APPROVED</h2>
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>DOCUMENTS APPROVED</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
                                             Your uploaded documents have been approved by our team.
                                             You may now submit or deliver the physical copies of your documents to our office.
@@ -840,8 +840,8 @@ export default function VisaApplication() {
 
                                 {/* APPLICATION SUCCESS */}
                                 {statusValue && statusValue.toLowerCase() === 'embassy approved' && (
-                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>APPLICATION APPROVED</h2>
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>APPLICATION APPROVED</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
                                             Congratulations! Your application has been approved.
                                             Your visa documents will be released and delivered to you once the process is complete.
@@ -851,8 +851,8 @@ export default function VisaApplication() {
 
                                 {/* DOCUMENTS FOR RELEASE */}
                                 {statusValue && !isDeliveryFeePaid && statusValue.toLowerCase() === 'passport released' && (
-                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>DOCUMENTS FOR RELEASE</h2>
+                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>DOCUMENTS FOR RELEASE</h2>
                                         <p style={{ margin: 0, fontSize: 14 }}>
                                             Your visa documents are ready for release.
                                             Please proceed to the office to collect them or wait for delivery if you chose the delivery option.
@@ -1857,7 +1857,7 @@ export default function VisaApplication() {
                             <h1 className='signup-success-heading'>Date Selected Successfully!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>The date has been selected.</p>
@@ -1893,7 +1893,7 @@ export default function VisaApplication() {
                             <h1 className='signup-success-heading'>Documents Uploaded Successfully!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>The documents have been uploaded.</p>
@@ -1931,7 +1931,7 @@ export default function VisaApplication() {
                             <h1 className='signup-success-heading'>Passport Release Option Selected!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>You have selected a passport release option.</p>

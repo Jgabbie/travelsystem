@@ -708,7 +708,7 @@ export default function UserManagement() {
           <h1 className='modal-heading'>User Edited Successfully!</h1>
 
           <div>
-            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
           </div>
 
           <p className='modal-text'>The user has been edited.</p>
@@ -743,7 +743,7 @@ export default function UserManagement() {
           <h1 className='modal-heading'>User Archived Successfully!</h1>
 
           <div>
-            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
           </div>
 
           <p className='modal-text'>The user has been archived.</p>
@@ -779,7 +779,7 @@ export default function UserManagement() {
           <h1 className='modal-heading'>User Restored Successfully!</h1>
 
           <div>
-            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
           </div>
 
           <p className='modal-text'>The user has been restored.</p>

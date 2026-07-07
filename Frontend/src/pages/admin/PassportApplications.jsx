@@ -585,7 +585,7 @@ export default function PassportApplications() {
                     <h1 className='modal-heading'>Passport Application Archived Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The passport application has been archived.</p>
@@ -620,7 +620,7 @@ export default function PassportApplications() {
                     <h1 className='modal-heading'>Passport Application Restored Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The passport application has been restored.</p>

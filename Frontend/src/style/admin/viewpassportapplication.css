@@ -42,7 +42,7 @@
 
 .viewpassportapplication-tag-green-container {
     margin-bottom: 16px;
-    border-left: 4px solid #52c41a;
+    border-left: 4px solid #00bf63;
     background-color: rgba(82, 196, 26, 0.06);
     padding-top: 40px;
     padding-bottom: 40px;
@@ -54,7 +54,7 @@
 .viewpassportapplication-tag-green {
     font-family: "Montserrat", sans-serif;
     background: '#f6ffed';
-    color: #52c41a;
+    color: #00bf63;
     margin-bottom: 6px;
     font-size: 20px;
     font-weight: 600;

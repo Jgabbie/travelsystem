@@ -387,7 +387,7 @@ export default function Wishlist() {
                         <h1 className='signup-success-heading'>Package Removed!</h1>
 
                         <div>
-                            <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                            <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                         </div>
 
                         <p className='signup-success-text'>This Package has been removed from your Wishlist.</p>

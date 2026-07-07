@@ -1093,15 +1093,15 @@ export default function UserBookingInvoice() {
                         <Card className="user-invoice-card" style={{ marginBottom: 40 }}>
                             <div className="user-invoice-meta">
                                 <div className="user-invoice-meta-item">
-                                    <AntText type="secondary">Reference</AntText>
+                                    <h1 className="user-invoice-label">Reference</h1>
                                     <div className="user-invoice-value">{reference}</div>
                                 </div>
                                 <div className="user-invoice-meta-item">
-                                    <AntText type="secondary">Package</AntText>
+                                    <h1 className="user-invoice-label">Package</h1>
                                     <div className="user-invoice-value">{packageName}</div>
                                 </div>
                                 <div className="user-invoice-meta-item">
-                                    <AntText type="secondary">Travel Date</AntText>
+                                    <h1 className="user-invoice-label">Travel Date</h1>
                                     <div className="user-invoice-value">{travelDate}</div>
                                 </div>
                             </div>
@@ -1109,7 +1109,7 @@ export default function UserBookingInvoice() {
                             <Row gutter={[16, 16]} className="user-invoice-summary">
                                 <Col xs={24} md={8}>
                                     <Card className="user-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
-                                        <AntText type="secondary">Total Price</AntText>
+                                        <h1 className="user-invoice-label">Total Price</h1>
                                         <div className="user-invoice-amount">
                                             {Number(totalPriceWithPenalty).toLocaleString('en-PH', {
                                                 style: 'currency',
@@ -1122,7 +1122,7 @@ export default function UserBookingInvoice() {
                                 </Col>
                                 <Col xs={24} md={8}>
                                     <Card className="user-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
-                                        <AntText type="secondary">Paid Amount</AntText>
+                                        <h1 className="user-invoice-label">Paid Amount</h1>
                                         <div className="user-invoice-amount">
                                             {Number(paidAmount).toLocaleString('en-PH', {
                                                 style: 'currency',
@@ -1135,8 +1135,8 @@ export default function UserBookingInvoice() {
                                 </Col>
                                 <Col xs={24} md={8}>
                                     <Card className="user-invoice-stat user-invoice-highlight" variant={false}>
-                                        <Space orientation="vertical" size={4}>
-                                            <AntText type="secondary">Remaining Balance</AntText>
+                                        <Space orientation="vertical" size={1}>
+                                            <h1 className="user-invoice-label">Remaining Balance</h1>
                                             <div className="user-invoice-amount">
                                                 {Number(remainingBalance).toLocaleString('en-PH', {
                                                     style: 'currency',
@@ -1154,12 +1154,12 @@ export default function UserBookingInvoice() {
                             </Row>
 
                             {remainingBalance <= 0 && (
-                                <div style={{ marginBottom: 24, marginTop: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8, fontFamily: 'Montserrat, sans-serif' }}>
+                                <div style={{ marginBottom: 24, marginTop: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8, fontFamily: 'Montserrat, sans-serif' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                                         <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 26, lineHeight: 1 }} />
+                                            <CheckCircleOutlined style={{ color: '#00bf63', fontSize: 26, lineHeight: 1 }} />
                                         </span>
-                                        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#52c41a', lineHeight: 1.1 }}>YOU CAN NOW SUBMIT A REVIEW FOR THIS PACKAGE</h2>
+                                        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#00bf63', lineHeight: 1.1 }}>YOU CAN NOW SUBMIT A REVIEW FOR THIS PACKAGE</h2>
                                     </div>
 
                                     <p style={{ margin: 0, fontSize: 14 }}>
@@ -1187,19 +1187,18 @@ export default function UserBookingInvoice() {
                                 </div>
 
                                 <div className="user-invoice-column" style={{ marginTop: 10 }}>
-                                    <h2>Transaction History</h2>
+                                    <h2 className="user-invoice-heading">Transaction History</h2>
                                     <div style={{
                                         backgroundColor: '#f0f5ff',
-                                        border: '1px solid #adc6ff',
+                                        border: '2px solid rgba(48, 87, 151, 0.2)',
                                         padding: '8px 12px',
                                         borderRadius: '6px',
                                         marginBottom: '16px',
                                         fontSize: '13px',
-                                        color: '#2f54eb'
                                     }}>
-                                        <AntText data-info>
+                                        <p className="user-invoice-note-text" style={{ margin: 0 }}>
                                             <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
-                                        </AntText>
+                                        </p>
                                     </div>
 
                                     {persistedPenalty > 0 && (
@@ -1226,11 +1225,11 @@ export default function UserBookingInvoice() {
                                                 <Card key={index} size="small">
                                                     <Row justify="space-between">
                                                         <Col>
-                                                            <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
-                                                            <div><strong>Method:</strong> {txn.method || "N/A"}</div>
+                                                            <div className="user-invoice-transactiontext"><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
+                                                            <div className="user-invoice-transactiontext"><strong>Method:</strong> {txn.method || "N/A"}</div>
                                                         </Col>
                                                         <Col style={{ textAlign: "right" }}>
-                                                            <div><strong>
+                                                            <div className="user-invoice-transactiontext"><strong>
                                                                 {txn.amount.toLocaleString('en-PH', {
                                                                     style: 'currency',
                                                                     currency: 'PHP',
@@ -1393,8 +1392,8 @@ export default function UserBookingInvoice() {
 
                             {/* DOCUMENTS SECTION */}
                             <div style={{ marginBottom: 30 }}>
-                                <h2 className="payment-methods-title payment-section-title">Travelers Information</h2>
-                                <p className="payment-section-subtitle">
+                                <h2 className="user-invoice-booking-form-stepper-title">Travelers Information</h2>
+                                <p className="user-invoice-booking-form-stepper-text">
                                     Review and update traveler information as needed.
                                 </p>
                             </div>
@@ -1631,8 +1630,8 @@ export default function UserBookingInvoice() {
 
                                 <div className="booking-form-stepper-container">
                                     <div style={{ marginBottom: 30 }}>
-                                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                                        <h2 className="user-invoice-booking-form-stepper-title">Booking Registration</h2>
+                                        <p className="user-invoice-booking-form-stepper-text" >
                                             The form below is a summary of the traveler's booking registration details.
                                         </p>
                                     </div>
@@ -1737,7 +1736,8 @@ export default function UserBookingInvoice() {
 
                     </div>
                 </div >
-            )}
+            )
+            }
 
         </ConfigProvider >
     );

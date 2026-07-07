@@ -1191,7 +1191,7 @@ export default function ProfilePage() {
                             <h1 className='signup-success-heading'>Review Deleted!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>Your review has been successfully deleted.</p>
@@ -1243,7 +1243,7 @@ export default function ProfilePage() {
                             <h1 className='signup-success-heading'>User Profile Edited Successfully!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>Your user profile has been edited.</p>
@@ -1280,7 +1280,7 @@ export default function ProfilePage() {
                             <h1 className='signup-success-heading'>User Preferences Edited Successfully!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>Your user preferences has been edited.</p>

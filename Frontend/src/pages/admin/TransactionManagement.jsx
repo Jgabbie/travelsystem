@@ -1245,7 +1245,7 @@ export default function TransactionManagement() {
               <h1 className='modal-heading'>Transaction Edited Successfully!</h1>
 
               <div>
-                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
               </div>
 
               <p className='modal-text'>The transaction has been edited.</p>
@@ -1281,7 +1281,7 @@ export default function TransactionManagement() {
               <h1 className='modal-heading'>Transaction Archived Successfully!</h1>
 
               <div>
-                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
               </div>
 
               <p className='modal-text'>The transaction has been archived.</p>
@@ -1316,7 +1316,7 @@ export default function TransactionManagement() {
               <h1 className='modal-heading'>Transaction Restored Successfully!</h1>
 
               <div>
-                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
               </div>
 
               <p className='modal-text'>The transaction has been restored.</p>
@@ -1352,7 +1352,7 @@ export default function TransactionManagement() {
               <h1 className='modal-heading'>Payment Proof Accepted!</h1>
 
               <div>
-                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
               </div>
 
               <p className='modal-text'>The payment proof has been approved.</p>
@@ -1387,7 +1387,7 @@ export default function TransactionManagement() {
               <h1 className='modal-heading'>Payment Proof Rejected!</h1>
 
               <div>
-                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
               </div>
 
               <p className='modal-text'>The payment proof has been rejected.</p>

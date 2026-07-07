@@ -642,7 +642,7 @@ export default function QuotationManagement() {
                     <h1 className='modal-heading'>Quotation Archived Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The quotation has been archived.</p>
@@ -677,7 +677,7 @@ export default function QuotationManagement() {
                     <h1 className='modal-heading'>Quotation Restored Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The quotation has been restored.</p>

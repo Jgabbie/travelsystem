@@ -1365,7 +1365,7 @@ export default function PackagePage() {
                             <h1 className='signup-success-heading'>Package Added!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>This Package has been added to your Wishlist.</p>
@@ -1402,7 +1402,7 @@ export default function PackagePage() {
                             <h1 className='signup-success-heading'>Review Submitted!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>Your review has been successfully submitted.</p>
@@ -1440,7 +1440,7 @@ export default function PackagePage() {
                             <h1 className='signup-success-heading'>Review Edited!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>Your review has been successfully edited.</p>
@@ -1477,7 +1477,7 @@ export default function PackagePage() {
                             <h1 className='signup-success-heading'>Review Deleted!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>Your review has been successfully deleted.</p>

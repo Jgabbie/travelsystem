@@ -797,8 +797,8 @@ export default function PassportApplication() {
 
                     {/* SUGGESTED APPOINTMENT */}
                     {application?.status && application?.status?.toLowerCase() === 'application submitted' && application.suggestedAppointmentScheduleChosen.date !== "" && application.suggestedAppointmentScheduleChosen.time !== "" && (
-                        <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>SUGGESTED APPOINTMENT</h2>
+                        <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>SUGGESTED APPOINTMENT</h2>
                             <p style={{ margin: 0, fontSize: 14 }}>
                                 You have successfully chosen your appointment schedule.
                                 Kindly wait for its approval. We will notify you once the date is available.
@@ -808,8 +808,8 @@ export default function PassportApplication() {
 
                     {/*APPROVED APPOINTMENT DATE AND TIME */}
                     {application?.status && application?.status?.toLowerCase() === 'application approved' && (
-                        <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>YOUR APPOINTMENT DATE AND TIME</h2>
+                        <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>YOUR APPOINTMENT DATE AND TIME</h2>
                             <p style={{ margin: 0, fontSize: 14 }}>
                                 Your appointment has been scheduled for <strong>{dayjs(application.preferredDate).format('MMM D, YYYY') || dayjs(application.suggestedAppointmentScheduleChosen.date).format("MMM DD, YYYY")}</strong> at <strong>{application.suggestedAppointmentScheduleChosen.time || application.preferredTime}</strong>.
                             </p>
@@ -818,8 +818,8 @@ export default function PassportApplication() {
 
                     {/* DOCUMENTS APPROVED */}
                     {application?.status && application?.status?.toLowerCase() === 'documents approved' && (
-                        <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>DOCUMENTS APPROVED</h2>
+                        <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>DOCUMENTS APPROVED</h2>
                             <p style={{ margin: 0, fontSize: 14 }}>
                                 Your uploaded documents have been approved by our team.
                                 You may now submit or deliver the physical copies of your documents to our office.
@@ -855,8 +855,8 @@ export default function PassportApplication() {
 
                     {/* APPLICATION SUCCESS */}
                     {application?.status && application?.status?.toLowerCase() === 'dfa approved' && (
-                        <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>APPLICATION APPROVED</h2>
+                        <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>APPLICATION APPROVED</h2>
                             <p style={{ margin: 0, fontSize: 14 }}>
                                 Congratulations! Your application has been approved.
                                 Your passport has been released kindly pick it up in the DFA office.
@@ -866,8 +866,8 @@ export default function PassportApplication() {
 
                     {/* PASSPORT FOR RELEASE */}
                     {application?.status && application?.status?.toLowerCase() === 'passport released' && (
-                        <div style={{ marginBottom: 24, borderLeft: '4px solid #52c41a', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#52c41a' }}>PASSPORT FOR RELEASE</h2>
+                        <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>PASSPORT FOR RELEASE</h2>
                             <p style={{ margin: 0, fontSize: 14 }}>
                                 Your passport is ready for release.
                                 Please proceed to the DFA office to collect it.
@@ -1370,7 +1370,7 @@ export default function PassportApplication() {
                                                                 )
                                                             ) : (
                                                                 <div style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
-                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                    <CheckCircleFilled style={{ color: '#00bf63', fontSize: 14 }} />
                                                                     Valid Requirement
                                                                 </div>
                                                             )}
@@ -1431,7 +1431,7 @@ export default function PassportApplication() {
                                                                 )
                                                             ) : (
                                                                 <div style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
-                                                                    <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                    <CheckCircleFilled style={{ color: '#00bf63', fontSize: 14 }} />
                                                                     Valid Requirement
                                                                 </div>
                                                             )}
@@ -1493,7 +1493,7 @@ export default function PassportApplication() {
                                                                     )
                                                                 ) : (
                                                                     <div style={{ display: 'flex', width: '100%', justifyContent: 'center', alignItems: 'center', gap: 6, fontSize: 13, color: '#2e7d32', fontWeight: 600 }}>
-                                                                        <CheckCircleFilled style={{ color: '#52c41a', fontSize: 14 }} />
+                                                                        <CheckCircleFilled style={{ color: '#00bf63', fontSize: 14 }} />
                                                                         Valid Requirement
                                                                     </div>
                                                                 )}
@@ -1748,7 +1748,7 @@ export default function PassportApplication() {
                             <h1 className='signup-success-heading'>Date Selected Successfully!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>The date has been selected.</p>
@@ -1785,7 +1785,7 @@ export default function PassportApplication() {
                             <h1 className='signup-success-heading'>Documents Uploaded Successfully!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>The documents have been uploaded.</p>
@@ -1825,7 +1825,7 @@ export default function PassportApplication() {
                             <h1 className='signup-success-heading'>Passport Release Option Selected!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='signup-success-text'>You have selected a passport release option.</p>

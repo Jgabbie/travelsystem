@@ -509,7 +509,7 @@ export default function ReviewRatings() {
                     <h1 className='modal-heading'>Rating Archived Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The rating has been archived.</p>
@@ -584,7 +584,7 @@ export default function ReviewRatings() {
                     <h1 className='modal-heading'>Rating Restored Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='modal-text'>The rating has been restored.</p>

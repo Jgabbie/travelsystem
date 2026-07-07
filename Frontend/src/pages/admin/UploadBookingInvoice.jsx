@@ -696,15 +696,15 @@ export default function UploadBookingInvoice() {
                         <Card className="upload-invoice-card" style={{ marginBottom: 40 }}>
                             <div className="upload-invoice-meta">
                                 <div className="user-invoice-meta-item">
-                                    <AntText type="secondary">Reference</AntText>
+                                    <h1 className="upload-invoice-label">Reference</h1>
                                     <div className="upload-invoice-value">{booking?.reference || booking?.ref || booking?._id || "--"}</div>
                                 </div>
                                 <div className="user-invoice-meta-item">
-                                    <AntText type="secondary">Package</AntText>
+                                    <h1 className="upload-invoice-label">Package</h1>
                                     <div className="upload-invoice-value">{packageName}</div>
                                 </div>
                                 <div className="user-invoice-meta-item">
-                                    <AntText type="secondary">Travel Date</AntText>
+                                    <h1 className="upload-invoice-label">Travel Date</h1>
                                     <div className="upload-invoice-value">{travelDate}</div>
                                 </div>
                             </div>
@@ -712,7 +712,7 @@ export default function UploadBookingInvoice() {
                             <Row gutter={[16, 16]} className="upload-invoice-summary">
                                 <Col xs={24} md={8}>
                                     <Card className="upload-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
-                                        <AntText type="secondary">Total Price</AntText>
+                                        <h1 className="upload-invoice-label">Total Price</h1>
                                         <div className="upload-invoice-amount">
                                             {Number(totalPriceWithPenalty).toLocaleString('en-PH', {
                                                 style: 'currency',
@@ -725,7 +725,7 @@ export default function UploadBookingInvoice() {
                                 </Col>
                                 <Col xs={24} md={8}>
                                     <Card className="upload-invoice-stat" variant={false} style={{ paddingBottom: 30 }}>
-                                        <AntText type="secondary">Paid Amount</AntText>
+                                        <h1 className="upload-invoice-label">Paid Amount</h1>
                                         <div className="upload-invoice-amount">
                                             {Number(paidAmount).toLocaleString('en-PH', {
                                                 style: 'currency',
@@ -738,8 +738,8 @@ export default function UploadBookingInvoice() {
                                 </Col>
                                 <Col xs={24} md={8}>
                                     <Card className="upload-invoice-stat upload-invoice-highlight" variant={false}>
-                                        <Space orientation="vertical" size={4}>
-                                            <AntText type="secondary">Remaining Bal.</AntText>
+                                        <Space orientation="vertical" size={1}>
+                                            <h1 className="upload-invoice-label">Remaining Balance</h1>
                                             <div className="upload-invoice-amount">
                                                 {Number(remainingBalance).toLocaleString('en-PH', {
                                                     style: 'currency',
@@ -771,7 +771,7 @@ export default function UploadBookingInvoice() {
                                 </Col>
 
                                 <Col style={{ marginTop: 10 }} xs={24} lg={8}>
-                                    <h2>Transaction History</h2>
+                                    <h2 className="upload-invoice-heading">Transaction History</h2>
                                     <div style={{
                                         backgroundColor: "#f0f5ff",
                                         border: "1px solid #adc6ff",
@@ -779,11 +779,10 @@ export default function UploadBookingInvoice() {
                                         borderRadius: "6px",
                                         marginBottom: "16px",
                                         fontSize: "13px",
-                                        color: "#2f54eb"
                                     }}>
-                                        <AntText>
+                                        <p className="upload-invoice-note-text" style={{ margin: 0 }}>
                                             <strong>Note:</strong> Using a Paymongo gateway has a convenience fee of 3.5% and ₱15.
-                                        </AntText>
+                                        </p>
                                     </div>
 
                                     {persistedPenalty > 0 && (
@@ -810,11 +809,11 @@ export default function UploadBookingInvoice() {
                                                 <Card key={index} size="small">
                                                     <Row justify="space-between">
                                                         <Col>
-                                                            <div><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
-                                                            <div><strong>Method:</strong> {txn.method || "N/A"}</div>
+                                                            <div className="upload-invoice-transactiontext"><strong>Date:</strong> {dayjs(txn.createdAt).format("MMM D, YYYY")}</div>
+                                                            <div className="upload-invoice-transactiontext"><strong>Method:</strong> {txn.method || "N/A"}</div>
                                                         </Col>
                                                         <Col style={{ textAlign: "right" }}>
-                                                            <div>
+                                                            <div className="upload-invoice-transactiontext">
                                                                 <strong>
                                                                     {txn.amount.toLocaleString('en-PH', {
                                                                         style: 'currency',
@@ -840,8 +839,8 @@ export default function UploadBookingInvoice() {
                             {/* DOCUMENTS SECTION */}
                             <div>
                                 <div style={{ marginBottom: 30 }}>
-                                    <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Travelers Information</h2>
-                                    <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                                    <h2 className="upload-invoice-booking-form-stepper-title" >Travelers Information</h2>
+                                    <p className="upload-invoice-booking-form-stepper-text" >
                                         Review and request update traveler information as needed.
                                     </p>
                                 </div>
@@ -1035,8 +1034,8 @@ export default function UploadBookingInvoice() {
                                     </div>
 
                                     <div style={{ marginBottom: 30 }}>
-                                        <h2 className="booking-form-stepper-title" style={{ textAlign: "left" }}>Booking Registration</h2>
-                                        <p className="booking-form-stepper-text" style={{ textAlign: "left" }}>
+                                        <h2 className="upload-invoice-booking-form-stepper-title" >Booking Registration</h2>
+                                        <p className="upload-invoice-booking-form-stepper-text" >
                                             The form below is a summary of the traveler's booking registration details.
                                         </p>
                                     </div>

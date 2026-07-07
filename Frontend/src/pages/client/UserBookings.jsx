@@ -101,21 +101,62 @@ export default function UserBookings() {
     }
 
 
+    //clear cancellation form and reset state
+    const clearCancellationForm = () => {
+        if (previewImage) {
+            URL.revokeObjectURL(previewImage);
+        }
+
+        setPreviewImage(null);
+        setCancelReason('');
+        setCancelOtherReason('');
+        setCancelImages([]);
+        setCancelComments('');
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+
+    //close cancellation modal and reset state
+    const closeCancellationModal = () => {
+        setCancelModalOpen(false);
+        setCancelTargetKey(null);
+        clearCancellationForm();
+    };
+
+
     //handle image selection and preview for cancellation proof
     const handleImageChange = (event) => {
         const file = event.target.files?.[0];
+
         if (!file) return;
 
-        if (!file.type.startsWith("image/")) {
-            notification.error({ message: "Please select a valid image file.", placement: 'topRight' });
-            return;
-        }
-        if (file.size > 2 * 1024 * 1024) {
-            notification.error({ message: "Image must be 2MB or less.", placement: 'topRight' });
+        if (!file.type.startsWith('image/')) {
+            notification.error({
+                message: 'Please select a valid image file.',
+                placement: 'topRight'
+            });
+
+            event.target.value = '';
             return;
         }
 
-        // Just store file for later upload
+        if (file.size > 2 * 1024 * 1024) {
+            notification.error({
+                message: 'Image must be 2MB or less.',
+                placement: 'topRight'
+            });
+
+            event.target.value = '';
+            return;
+        }
+
+        if (previewImage) {
+            URL.revokeObjectURL(previewImage);
+        }
+
         setCancelImages([file]);
         setPreviewImage(URL.createObjectURL(file));
     };
@@ -123,66 +164,108 @@ export default function UserBookings() {
 
     //confirm cancellation by uploading proof and sending cancellation request
     const confirmCancelBooking = async () => {
-        setCancelModalOpen(false)
-        setLoadingCancel(true)
+        if (loadingCancel) return;
+
+        // Validate before closing the modal or showing the loading screen
+        if (!cancelTargetKey) {
+            notification.error({
+                message: 'Booking could not be identified',
+                description: 'Please close the cancellation form and try again.',
+                placement: 'topRight'
+            });
+            return;
+        }
 
         if (!cancelReason) {
-            notification.warning({ message: 'Please select a cancellation reason', placement: 'topRight' });
+            notification.warning({
+                message: 'Please select a cancellation reason',
+                placement: 'topRight'
+            });
             return;
         }
 
         if (cancelReason === 'Other' && !cancelOtherReason.trim()) {
-            notification.warning({ message: 'Please provide a cancellation reason', placement: 'topRight' });
+            notification.warning({
+                message: 'Please provide a cancellation reason',
+                placement: 'topRight'
+            });
             return;
         }
 
-        if (!cancelImages.length) {
-            notification.warning({ message: 'Please upload a supporting file', placement: 'topRight' });
+        if (!cancelImages.length || !cancelImages[0]) {
+            notification.warning({
+                message: 'Please upload a supporting file',
+                placement: 'topRight'
+            });
             return;
         }
 
         try {
-            let imageUrl = null;
+            setLoadingCancel(true);
 
-            // Upload image to Cloudinary
-            if (cancelImages[0]) {
-                const formData = new FormData();
-                formData.append("file", cancelImages[0]);
+            const formData = new FormData();
+            formData.append('file', cancelImages[0]);
 
-                const res = await apiFetch.post(
-                    "/upload/upload-cancel-proof",
-                    formData,
-                    {
-                        headers: { "Content-Type": "multipart/form-data" },
-                        withCredentials: true
-                    }
-                );
+            const uploadResponse = await apiFetch.post(
+                '/upload/upload-cancel-proof',
+                formData,
+                {
+                    withCredentials: true
+                }
+            );
 
-                imageUrl = res.url;
+            // Supports both a direct response and a regular Axios response
+            const imageUrl =
+                uploadResponse?.url ||
+                uploadResponse?.data?.url;
+
+            if (!imageUrl) {
+                throw new Error('Cancellation proof was uploaded without a file URL.');
             }
 
-            // Send cancellation payload
             const payload = {
-                reason: cancelReason === 'Other' ? cancelOtherReason : cancelReason,
-                comments: cancelComments || '',
+                reason:
+                    cancelReason === 'Other'
+                        ? cancelOtherReason.trim()
+                        : cancelReason,
+                comments: cancelComments.trim(),
                 imageProof: imageUrl
             };
 
-            const cancelEndpoint = `/booking/cancel/${cancelTargetKey}`;
-            await apiFetch.post(cancelEndpoint, payload);
+            await apiFetch.post(
+                `/booking/cancel/${cancelTargetKey}`,
+                payload
+            );
 
-            setCancelTargetKey(null)
-            setPreviewImage(null);
-            setCancelReason('')
-            setCancelOtherReason('')
-            setCancelImages([])
-            setCancelComments('')
-            setCancellationRequestedModalOpen(true)
+            // Immediately update the displayed status
+            setBookings((currentBookings) =>
+                currentBookings.map((booking) =>
+                    booking.key === cancelTargetKey
+                        ? {
+                            ...booking,
+                            status: 'Cancellation Requested'
+                        }
+                        : booking
+                )
+            );
+
+            setCancelModalOpen(false);
+            setCancelTargetKey(null);
+            clearCancellationForm();
+            setCancellationRequestedModalOpen(true);
         } catch (error) {
-            console.error(error);
-            notification.error({ message: 'Unable to cancel booking', placement: 'topRight' });
+            console.error('Cancellation request error:', error);
+
+            notification.error({
+                message: 'Unable to submit cancellation request',
+                description:
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    'Please check your connection and try again.',
+                placement: 'topRight'
+            });
         } finally {
-            setLoadingCancel(false)
+            setLoadingCancel(false);
         }
     };
 
@@ -249,11 +332,20 @@ export default function UserBookings() {
                     </Button>
                     <Button
                         className="user-bookings-cancel-button"
-                        type='primary'
+                        type="primary"
                         onClick={() => openPolicyModal(record.key)}
+                        disabled={[
+                            'Cancellation Requested',
+                            'Cancelled',
+                            'Completed'
+                        ].includes(record.status)}
                     >
                         <CloseCircleOutlined />
-                        Cancel
+                        {record.status === 'Cancellation Requested'
+                            ? 'Requested'
+                            : record.status === 'Cancelled'
+                                ? 'Cancelled'
+                                : 'Cancel'}
                     </Button>
                 </Space>
             )
@@ -386,10 +478,11 @@ export default function UserBookings() {
                                     Continue
                                 </Button>
                                 <Button
-                                    type='primary'
-                                    className='modal-button-cancel'
+                                    type="primary"
+                                    className="modal-button-cancel"
                                     onClick={() => {
                                         setPolicyModalOpen(false);
+                                        setCancelTargetKey(null);
                                     }}
                                 >
                                     Cancel
@@ -404,15 +497,7 @@ export default function UserBookings() {
 
                     <Modal
                         open={cancelModalOpen}
-                        onCancel={() => {
-                            setCancelModalOpen(false)
-                            setCancelTargetKey(null)
-                            setPreviewImage(null);
-                            setCancelReason('')
-                            setCancelOtherReason('')
-                            setCancelImages([])
-                            setCancelComments('')
-                        }}
+                        onCancel={closeCancellationModal}
                         footer={null}
                         title={(
                             <div className="logout-confirm-title" style={{ textAlign: 'center' }}>
@@ -495,33 +580,20 @@ export default function UserBookings() {
                             <div style={{ display: "flex", flexDirection: "row", gap: "10px", justifyContent: "flex-end", marginTop: "5px" }}>
 
                                 <Button
-                                    type='primary'
-                                    className='modal-button'
-                                    onClick={() => {
-                                        setCancelModalOpen(false);
-                                        setCancelTargetKey(null)
-                                        setPreviewImage(null);
-                                        setCancelReason('')
-                                        setCancelOtherReason('')
-                                        setCancelImages([])
-                                        setCancelComments('')
-                                    }}
+                                    type="primary"
+                                    className="modal-button"
+                                    onClick={closeCancellationModal}
+                                    disabled={loadingCancel}
                                 >
                                     Keep Booking
                                 </Button>
+
                                 <Button
-                                    type='primary'
-                                    className='modal-button-cancel'
-                                    onClick={() => {
-                                        confirmCancelBooking();
-                                        setCancelModalOpen(false);
-                                        setCancelTargetKey(null)
-                                        setPreviewImage(null);
-                                        setCancelReason('')
-                                        setCancelOtherReason('')
-                                        setCancelImages([])
-                                        setCancelComments('')
-                                    }}
+                                    type="primary"
+                                    className="modal-button-cancel"
+                                    onClick={confirmCancelBooking}
+                                    loading={loadingCancel}
+                                    disabled={loadingCancel}
                                 >
                                     Cancel Booking
                                 </Button>
@@ -544,7 +616,7 @@ export default function UserBookings() {
                             <h1 className='modal-heading'>Cancellation Requested!</h1>
 
                             <div>
-                                <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                                <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                             </div>
 
                             <p className='modal-text'>Your cancellation request has been submitted.</p>

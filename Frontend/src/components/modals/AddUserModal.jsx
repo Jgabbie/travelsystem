@@ -496,7 +496,7 @@ export default function AddUserModal({ isOpen, onClose, roleToAdd, refreshData }
                     <h1 className='signup-success-heading'>User Added Successfully!</h1>
 
                     <div>
-                        <CheckCircleFilled style={{ fontSize: 72, color: '#52c41a' }} />
+                        <CheckCircleFilled style={{ fontSize: 72, color: '#00bf63' }} />
                     </div>
 
                     <p className='signup-success-text'>The user has been added to the system.</p>
