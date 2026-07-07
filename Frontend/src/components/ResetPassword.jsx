@@ -332,7 +332,7 @@ export default function ResetPassword() {
                         onOk={handleOk}
                         onCancel={handleCancel}
                         centered={true}
-                        width={720}
+                        width={650}
                     >
 
                         <div className='resetpassword-container-modal'>

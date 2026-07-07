@@ -63,7 +63,7 @@ export default function VisaApplications() {
                 applicantName: a.applicantName,
                 serviceName: a.serviceName,
                 preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
-                preferredTime: a.preferredTime ? dayjs(a.preferredTime, 'HH:mm').format('hh:mm A') : 'Not Set',
+                preferredTime: a.preferredTime || 'Not Set',
                 status: a.status,
             }))
 
@@ -91,7 +91,7 @@ export default function VisaApplications() {
                 applicantName: a.applicantName,
                 serviceName: a.serviceName,
                 preferredDate: a.preferredDate ? dayjs(a.preferredDate).format('MMM DD, YYYY') : 'Not Set',
-                preferredTime: a.preferredTime ? dayjs(a.preferredTime, 'HH:mm').format('hh:mm A') : 'Not Set',
+                preferredTime: a.preferredTime || 'Not Set',
                 status: a.status,
             }))
 

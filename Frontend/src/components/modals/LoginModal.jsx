@@ -311,7 +311,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                             }}
                             footer={null}
                             centered={true}
-                            width={700}
+                            width={650}
                         >
                             <div className='login-otp-container-modal'>
                                 <h1 className='login-otp-heading-modal'>Verify OTP</h1>

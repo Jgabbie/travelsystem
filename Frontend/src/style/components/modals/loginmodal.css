@@ -279,69 +279,92 @@ body {
 
 /* OTP MODAL */
 .login-otp-modal {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    width: 650px !important;
+    max-width: calc(100vw - 32px) !important;
+}
+
+/* Do not make the Ant Design modal itself a flex container */
+.login-otp-modal .ant-modal-content {
+    padding: 0 !important;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.login-otp-modal .ant-modal-body {
+    padding: 40px 48px !important;
 }
 
 .login-otp-container-modal {
-    margin: 40px;
-    width: 600px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    text-align: center;
 }
 
 .login-otp-heading-modal {
+    width: 100%;
+    margin: 0 0 20px;
     font-family: "Montserrat", sans-serif;
     font-size: 45px;
     font-weight: 600;
+    line-height: 1.2;
     color: #305797;
-    line-height: 10px;
-    width: 350px;
-    margin-bottom: 40px;
-    margin-top: 20px;
+    text-align: center;
 }
 
 .login-otp-secondary-heading-modal {
+    width: 100%;
+    margin: 0 0 35px;
     font-family: "Montserrat", sans-serif;
     font-size: 18px;
     font-weight: 600;
+    line-height: 1.4;
     color: #305797;
-    margin-top: 3px;
-    margin-bottom: 40px;
-    line-height: 5px;
-    width: 420px;
+    text-align: center;
 }
 
-.ant-otp input {
+.login-otp-modal .ant-otp {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px auto;
+}
+
+.login-otp-modal .ant-otp input {
     width: 60px;
     height: 70px;
     font-size: 34px;
     font-family: "Montserrat", sans-serif;
 }
 
-.ant-otp input:hover {
+.login-otp-modal .ant-otp input:hover,
+.login-otp-modal .ant-otp input:focus {
     border-color: #305797 !important;
     border-width: 2px !important;
 }
 
-.ant-otp input:focus {
-    border-color: #305797 !important;
-    border-width: 2px !important;
+#error-message-modal {
+    width: 100%;
+    min-height: 20px;
+    margin: 8px auto;
+    color: #ff0000;
+    text-align: center;
 }
-
 
 #submit-otp-button {
+    display: block;
+    width: 220px;
+    height: 40px;
+    margin: 20px auto;
+    border: none;
+    border-radius: 10px;
+    background-color: #305797;
+    color: #ffffff;
     font-family: "Roboto", sans-serif;
     font-size: 15px;
     font-weight: 600;
-    background-color: #305797;
-    color: #fff;
-    border-radius: 10px;
-    width: 220px;
-    height: 40px;
-    border: none;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
-    margin-bottom: 20px;
 }
 
 #submit-otp-button:hover {
@@ -350,37 +373,14 @@ body {
 }
 
 #footer-text-modal {
+    width: 100%;
+    margin: 10px auto 0;
     font-family: "Montserrat", sans-serif;
     font-size: 18px;
     font-weight: 500;
+    line-height: 1.5;
     color: #305797;
-    width: 100%;
-    max-width: 550px;
-}
-
-#submit-otp-button,
-#footer-text-modal,
-.login-otp-heading-modal,
-.login-otp-secondary-heading-modal,
-.label-links-modal,
-#error-message-modal {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
     text-align: center;
-}
-
-.ant-otp {
-    display: flex;
-    justify-content: center;
-    margin: 20px auto;
-}
-
-#error-message-modal {
-    color: #ff0000;
-    width: 100%;
-    max-width: 500px;
-    height: 15px;
 }
 
 
@@ -510,36 +510,49 @@ body {
 @media (max-width: 600px) {
 
     .login-otp-modal {
-        width: 100% !important;
-        max-width: 480px !important;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin: 0 auto;
+    }
+
+    .login-otp-modal .ant-modal-body {
+        padding: 32px 20px !important;
     }
 
     .login-otp-container-modal {
         width: 100%;
-        max-width: 400px;
-        margin: 20px;
+        max-width: none;
+        margin: 0;
     }
 
     .login-otp-heading-modal {
-        width: 100%;
         font-size: 30px;
+        margin-bottom: 15px;
     }
 
     .login-otp-secondary-heading-modal {
+        font-size: 16px;
+        margin-bottom: 25px;
+    }
+
+    .login-otp-modal .ant-otp {
+        gap: 6px;
+    }
+
+    .login-otp-modal .ant-otp input {
+        width: 45px;
+        height: 55px;
+        font-size: 25px;
+    }
+
+    #submit-otp-button {
         width: 100%;
-        font-size: 18px;
+        max-width: 220px;
     }
 
-    #footer-text-modal {
+    #footer-text-modal,
+    .login-otp-button-links-modal-click-here {
         font-size: 14px;
-    }
-
-    .login-otp-button-links-modal {
-        font-size: 10px;
     }
 
 
@@ -575,38 +588,18 @@ body {
 
 @media (max-width: 480px) {
 
-    .login-otp-modal {
-        max-width: 400px !important;
-        width: 100% !important;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+    .login-otp-modal .ant-modal-body {
+        padding: 28px 14px !important;
     }
 
-    .login-otp-container-modal {
-        width: 100%;
-        max-width: 270px;
-        margin: 20px;
+    .login-otp-modal .ant-otp {
+        gap: 4px;
     }
 
-    .login-otp-heading-modal {
-        width: 100%;
-        font-size: 30px;
-    }
-
-    .login-otp-secondary-heading-modal {
-        width: 100%;
-        font-size: 18px;
-    }
-
-    #footer-text-modal,
-    .login-otp-button-links-modal-click-here {
-        font-size: 14px;
-    }
-
-    .login-otp-button-links-modal {
-        font-size: 10px;
+    .login-otp-modal .ant-otp input {
+        width: 38px;
+        height: 50px;
+        font-size: 22px;
     }
 
     .ant-modal-body,
