@@ -432,7 +432,7 @@ export default function UserTransactions() {
 
                 <div className="receipt-modal-actions">
                     <Button
-                        className='user-transactions-viewproof-button'
+                        className='user-transactions-downloadproof-button'
                         type="primary"
                         onClick={handleDownloadPDF}
                     >
@@ -453,7 +453,7 @@ export default function UserTransactions() {
                     selectedTransaction && selectedTransaction.proofImage ? (
                         <Space>
                             <Button
-                                className='user-transactions-viewproof-button'
+                                className='user-transactions-downloadproof-button'
                                 type="primary"
                                 style={{ marginTop: 8 }}
                                 onClick={async () => {

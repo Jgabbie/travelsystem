@@ -195,7 +195,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 160px;
     height: 35px;
     border: none !important;
@@ -203,8 +203,8 @@
 }
 
 .choose-date-proceed:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 .choose-date-clear {
@@ -213,7 +213,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 70px;
     height: 30px;
     border: none !important;
@@ -221,8 +221,8 @@
 }
 
 .choose-date-clear:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 
@@ -232,7 +232,7 @@
     font-weight: 600;
     background-color: #992A46;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 160px;
     height: 35px;
     border: none !important;
@@ -240,8 +240,8 @@
 }
 
 .choose-date-cancel:hover {
-    background-color: #e9e9e9 !important;
-    color: #992A46 !important;
+    background-color: #7D2239 !important;
+    color: #fff !important;
 }
 
 @media (max-width: 768px) {

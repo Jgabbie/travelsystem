@@ -187,7 +187,7 @@
         font-weight: 600;
         background-color: #305797;
         color: #fff;
-        border-radius: 10px;
+        border-radius: 16px;
         width: 140px;
         height: 30px;
         border: none !important;
@@ -200,7 +200,7 @@
         font-weight: 600;
         background-color: #305797;
         color: #fff;
-        border-radius: 10px;
+        border-radius: 16px;
         width: 100px;
         height: 30px;
         border: none !important;
@@ -213,7 +213,7 @@
         font-weight: 600;
         background-color: #305797;
         color: #fff;
-        border-radius: 10px;
+        border-radius: 16px;
         width: 210px;
         height: 30px;
         border: none !important;
@@ -226,7 +226,7 @@
         font-weight: 600;
         background-color: #305797;
         color: #fff;
-        border-radius: 10px;
+        border-radius: 16px;
         width: 150px;
         height: 30px;
         border: none !important;
@@ -239,7 +239,7 @@
         font-weight: 600;
         background-color: #992A46;
         color: #fff;
-        border-radius: 10px;
+        border-radius: 16px;
         width: 90px;
         height: 30px;
         border: none !important;
@@ -251,8 +251,8 @@
     .add-transaction-confirm-button:hover,
     .add-transaction-backtoedit-button:hover,
     .add-transaction-cancel-button:hover {
-        background-color: #e9e9e9 !important;
-        color: #305797 !important;
+        background-color: #244575 !important;
+        color: #fff !important;
     }
 
     @media (max-width: 768px) {

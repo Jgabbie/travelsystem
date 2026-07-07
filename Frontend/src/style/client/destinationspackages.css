@@ -346,7 +346,7 @@
 }
 
 .destinations-discount-tag {
-    background: #1f8f4c;
+    background: #00bf63;
     border: none;
     color: #ffffff;
     font-weight: 700;
@@ -357,7 +357,7 @@
 }
 
 .destinations-card:not(.destinations-card-disabled):hover .destinations-discount-tag {
-    background: #17743d;
+    background: #009e52;
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(31, 143, 76, 0.28);
 }

@@ -106,7 +106,7 @@
 .upload-passport-proceed {
     background-color: #fff !important;
     color: #305797 !important;
-    border-radius: 10px;
+    border-radius: 16px;
     border: solid 1px #305797 !important;
     font-weight: 600;
     height: 40px;
@@ -114,14 +114,14 @@
 }
 
 .upload-passport-proceed:hover {
-    background-color: #305797 !important;
+    background-color: #244575 !important;
     color: #fff !important;
 }
 
 .upload-passport-cancel {
     background-color: #fff !important;
     color: #992A46 !important;
-    border-radius: 10px;
+    border-radius: 16px;
     border: solid 1px #992A46 !important;
     font-weight: 600;
     height: 40px;
@@ -129,7 +129,7 @@
 }
 
 .upload-passport-cancel:hover {
-    background-color: #992A46 !important;
+    background-color: #7D2239 !important;
     color: #fff !important;
 }
 

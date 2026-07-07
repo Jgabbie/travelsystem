@@ -109,7 +109,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 70px;
     height: 50px;
     border: none !important;
@@ -117,8 +117,8 @@
 }
 
 .search-btn:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 
@@ -537,7 +537,7 @@
     position: absolute;
     top: 12px;
     right: 12px;
-    background: #1f8f3a;
+    background: #00bf63;
     color: #ffffff;
     font-weight: 700;
     padding: 6px 10px;
@@ -613,7 +613,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 100px;
     height: 35px;
     border: none;
@@ -622,8 +622,8 @@
 }
 
 .for-you-login-button:hover {
-    background-color: #e9e9e9;
-    color: #305797;
+    background-color: #244575;
+    color: #fff;
 }
 
 .for-you-grid {
@@ -1369,7 +1369,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 8px;
+    border-radius: 16px;
     width: 140px;
     height: 42px;
     border: none !important;
@@ -1378,8 +1378,8 @@
 }
 
 .contact-submit-button:hover {
-    background-color: #1e3f74 !important;
-    color: #ffffff !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 .error-text {

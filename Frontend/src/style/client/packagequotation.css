@@ -587,7 +587,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 130px;
     height: 40px;
     border: none !important;
@@ -595,8 +595,8 @@
 }
 
 .quotation-submit:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 .package-quotation-error {
@@ -642,7 +642,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 130px;
     height: 40px;
     border: none !important;
@@ -650,8 +650,8 @@
 }
 
 .quotation-modal-button:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 .packagequotation-back-button {
@@ -660,7 +660,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 130px;
     height: 40px;
     border: none !important;
@@ -668,8 +668,8 @@
 }
 
 .packagequotation-back-button:hover {
-    background-color: #e9e9e9 !important;
-    color: #305797 !important;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 .packagequotation-steps {
