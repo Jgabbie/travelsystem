@@ -853,9 +853,10 @@
 
 .contactus-map-address {
     margin: 30px 0 0;
-    color: #444444;
-    font-family: "Roboto", sans-serif;
-    font-size: 18px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    color: #000000;
+    font-size: 14px;
     line-height: 1.7;
 }
 
@@ -1926,6 +1927,7 @@
     .aboutus-text,
     .contactus-text {
         font-size: 12px;
+        text-align: center;
     }
 
     .contactus-text {
@@ -2003,6 +2005,7 @@
     }
 
     .contactus-map-address {
+        text-align: center;
         width: 100%;
         margin: 20px 0 0;
         font-size: 14px;

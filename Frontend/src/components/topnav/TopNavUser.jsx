@@ -41,6 +41,7 @@ export default function TopNavUser() {
                             menu={{
                                 items,
                                 onClick: handleMenuClick,
+                                className: 'topnav-dropdown-menu',
                             }}
                             className="user-dropdown"
                         >

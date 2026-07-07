@@ -131,6 +131,34 @@
     margin: 0;
 }
 
+/* Profile dropdown menu */
+.topnav-dropdown-menu {
+    min-width: 190px;
+    padding: 8px !important;
+}
+
+.topnav-dropdown-menu .ant-dropdown-menu-item {
+    min-height: 44px;
+    padding: 10px 14px !important;
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 7px;
+}
+
+.topnav-dropdown-menu .ant-dropdown-menu-item-icon {
+    font-size: 17px !important;
+    margin-right: 8px !important;
+}
+
+.topnav-dropdown-menu .ant-dropdown-menu-title-content {
+    font-size: 13px;
+}
+
+.topnav-dropdown-menu .ant-dropdown-menu-item-divider {
+    margin: 6px 4px;
+}
+
 
 @media (max-width: 900px) {
     .topnav {

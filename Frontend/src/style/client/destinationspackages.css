@@ -186,7 +186,7 @@
 
 .destinations-card {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 6px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     height: 100%;
@@ -215,7 +215,7 @@
     align-self: stretch;
     min-height: 242px;
     height: auto;
-    border-radius: 14px 0 0 14px;
+    border-radius: 6px 0 0 6px;
     overflow: hidden;
     border: 1px solid #e2e8f0;
     background: #f8fafc;

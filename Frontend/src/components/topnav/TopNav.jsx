@@ -115,7 +115,11 @@ export default function TopNav() {
               align={{
                 offset: [0, -5],
               }}
-              menu={{ items, onClick: handleMenuClick }}
+              menu={{
+                items,
+                onClick: handleMenuClick,
+                className: 'topnav-dropdown-menu',
+              }}
               className='user-dropdown'>
               <Space className='dropdown-space' align="center">
                 <div className='admin-nav-user-avatar'>
