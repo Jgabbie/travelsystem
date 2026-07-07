@@ -69,12 +69,12 @@
 
 .arrangement-card.is-selected {
     border-color: #305797;
-    box-shadow: 0 18px 34px rgba(48, 87, 151, 0.2);
-    transform: translateY(-2px);
+    background: linear-gradient(180deg, #f7faff 0%, #eef4ff 100%);
+    box-shadow: 0 18px 34px rgba(31, 42, 68, 0.18);
 }
 
 .arrangement-card:hover {
-    border-color: #cdd9f5;
+    border-color: #305797;
     box-shadow: 0 16px 30px rgba(31, 42, 68, 0.12);
     transform: translateY(-4px);
 }

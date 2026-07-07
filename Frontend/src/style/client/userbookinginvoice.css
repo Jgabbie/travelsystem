@@ -288,6 +288,68 @@
     color: #fff !important;
 }
 
+
+/* Payment Card */
+.payment-card {
+    border-radius: 16px;
+    border: 1px solid #e7ecf7;
+    box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    width: 100%;
+    text-align: left;
+}
+
+.payment-card h3 {
+    margin: 0 0 8px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #1f2a44;
+}
+
+.payment-card p {
+    font-family: "Montserrat", sans-serif;
+    margin: 0;
+    font-size: 13px;
+    color: #4e5b72;
+    line-height: 1.6;
+}
+
+.payment-card:hover {
+    transform: translateY(-4px);
+    border-color: #cdd9f5;
+    box-shadow: 0 16px 30px rgba(31, 42, 68, 0.12);
+}
+
+.payment-card.selected {
+    border-color: #305797;
+    background: #ecf4ff;
+    box-shadow: 0 16px 30px rgba(48, 87, 151, 0.16);
+}
+
+.payment-methods-cards .ant-radio-button-wrapper.payment-card {
+    border-radius: 16px !important;
+    overflow: hidden;
+    border-inline-start-width: 1px !important;
+}
+
+/* Removes Ant Design's connecting line between radio buttons */
+.payment-methods-cards .ant-radio-button-wrapper.payment-card::before {
+    display: none !important;
+}
+
+/* Ensure every corner remains rounded */
+.payment-methods-cards .ant-radio-button-wrapper:first-child,
+.payment-methods-cards .ant-radio-button-wrapper:last-child {
+    border-radius: 16px !important;
+}
+
+
+
+
 @media (max-width: 1024px) {
     .user-invoice-columns {
         grid-template-columns: 1fr;

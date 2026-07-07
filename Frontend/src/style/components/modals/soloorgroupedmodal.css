@@ -53,7 +53,8 @@
 
 .solo-group-card.is-selected {
     border-color: #305797;
-    box-shadow: 0 8px 18px rgba(48, 87, 151, 0.18);
+    background: linear-gradient(180deg, #f7faff 0%, #eef4ff 100%);
+    box-shadow: 0 18px 34px rgba(31, 42, 68, 0.18);
 }
 
 .solo-group-image {

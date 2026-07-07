@@ -212,10 +212,17 @@
 }
 
 .payment-section .payment-card p {
+    font-family: "Montserrat", sans-serif;
     margin: 0;
     font-size: 13px;
     color: #4e5b72;
     line-height: 1.6;
+}
+
+.payment-card:hover {
+    transform: translateY(-4px);
+    border-color: #cdd9f5;
+    box-shadow: 0 16px 30px rgba(31, 42, 68, 0.12);
 }
 
 .payment-section .payment-card.selected {
