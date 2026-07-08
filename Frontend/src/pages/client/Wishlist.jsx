@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Card, Col, Empty, Input, Row, Select, Tag, Typography, notification, ConfigProvider, Modal, Spin, Slider } from 'antd'
-import { DeleteOutlined, EyeOutlined, CheckCircleFilled, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EyeOutlined, CheckCircleFilled, SearchOutlined, StarFilled } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
 import '../../style/client/wishlist.css'
@@ -16,6 +16,7 @@ export default function Wishlist() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isPackageRemovedModalOpen, setIsPackageRemovedModalOpen] = useState(false)
     const [selectedWishlistId, setSelectedWishlistId] = useState(null);
+    const [averageRatings, setAverageRatings] = useState(() => new Map())
 
     const { Title, Text } = Typography
 
@@ -24,15 +25,43 @@ export default function Wishlist() {
         const loadWishlist = async () => {
             try {
                 setIsLoading(true)
-                const response = await apiFetch.get('/wishlist')
-                const wishlist = response?.wishlist || []
+
+                const [wishlistResponse, ratingResponse] = await Promise.all([
+                    apiFetch.get('/wishlist'),
+
+                    apiFetch
+                        .get('/rating/average-ratings')
+                        .catch(() => ({
+                            averagesPayload: []
+                        }))
+                ])
+
+                const wishlist =
+                    wishlistResponse?.wishlist || []
+
+                const ratingMap = new Map(
+                    (
+                        ratingResponse?.averagesPayload || []
+                    ).map((item) => [
+                        String(item.packageItem),
+                        Number(item.averageRating || 0)
+                    ])
+                )
 
                 setWishlistItems(wishlist)
+                setAverageRatings(ratingMap)
             } catch (error) {
                 const errorMessage =
-                    error?.data?.message || 'Unable to load wishlist.'
-                notification.error({ message: errorMessage, placement: 'topRight' })
+                    error?.data?.message ||
+                    'Unable to load wishlist.'
+
+                notification.error({
+                    message: errorMessage,
+                    placement: 'topRight'
+                })
+
                 setWishlistItems([])
+                setAverageRatings(new Map())
             } finally {
                 setIsLoading(false)
             }
@@ -65,6 +94,10 @@ export default function Wishlist() {
                 location: pkg.packageType || 'Package',
                 duration: pkg.packageDuration ? `${pkg.packageDuration} DAYS` : 'N/A',
                 price: pkg.packagePricePerPax ?? 0,
+                rating:
+                    averageRatings.get(
+                        String(resolvedPackageId)
+                    ) || 0,
                 discountPercent: Number(pkg.packageDiscountPercent) || 0,
                 category: pkg.packageType ? pkg.packageType.toUpperCase() : 'Other',
                 availability: availabilityLabel,
@@ -73,7 +106,7 @@ export default function Wishlist() {
                 image: pkg.images?.[0] || ''
             }
         })
-    }, [wishlistItems])
+    }, [wishlistItems, averageRatings])
 
 
     // memoized category options for the category filter
@@ -228,7 +261,7 @@ export default function Wishlist() {
                     <section className="wishlist-results">
                         <div className="wishlist-results-header">
                             <Title level={4}>Wishlisted Packages</Title>
-                            <Text type="secondary">{filteredPackages.length} found</Text>
+                            <Text className="wishlist-results-count" type="secondary">{filteredPackages.length} found</Text>
                         </div>
 
                         {isLoading ? (
@@ -241,86 +274,196 @@ export default function Wishlist() {
                             </div>
                         ) : (
                             <Row gutter={[18, 18]}>
-                                {filteredPackages.map((pkg) => (
-                                    <Col xs={24} sm={12} lg={12} xl={12} key={pkg.wishlistId || pkg.packageId}>
-                                        <Card
-                                            className="wishlist-card"
-                                            hoverable
+                                {filteredPackages.map((pkg) => {
+                                    const originalPrice =
+                                        Number(pkg.price || 0)
+
+                                    const finalPrice =
+                                        pkg.discountPercent > 0
+                                            ? originalPrice *
+                                            (1 - pkg.discountPercent / 100)
+                                            : originalPrice
+
+                                    const isUnavailable =
+                                        pkg.availableSlots <= 0
+
+                                    const availabilityClass =
+                                        String(pkg.availability)
+                                            .toLowerCase()
+                                            .replace(/\s+/g, '-')
+
+                                    return (
+                                        <Col
+                                            xs={24}
+                                            sm={12}
+                                            lg={12}
+                                            xl={8}
+                                            key={
+                                                pkg.wishlistId ||
+                                                pkg.packageId
+                                            }
                                         >
-                                            <div className="wishlist-card-image">
-                                                {pkg.image ? (
-                                                    <img src={pkg.image} alt={pkg.title} />
-                                                ) : (
-                                                    <div className="wishlist-card-image-placeholder">No image</div>
-                                                )}
-                                            </div>
-                                            <div className="wishlist-card-content">
-                                                <div className="wishlist-card-header">
-                                                    <div>
-                                                        <Title level={5} className="wishlist-card-title">
-                                                            {pkg.title}
-                                                        </Title>
-                                                    </div>
-                                                </div>
-                                                <div className="wishlist-card-meta">
-                                                    <Tag className="wishlist-type-tag">{pkg.typeLabel}</Tag>
-                                                    <Tag className={`wishlist-status-tag ${pkg.availability.replace(' ', '-')}`}>
-                                                        {pkg.availability}
-                                                    </Tag>
-                                                    <Text type="secondary">{pkg.duration}</Text>
-                                                </div>
-                                                <div className="wishlist-card-footer">
-                                                    <div className="wishlist-card-pricing">
-                                                        {pkg.discountPercent > 0 ? (
-                                                            <Text delete className="wishlist-price wishlist-price-old">
-                                                                ₱{Number(pkg.price || 0).toLocaleString()}
-                                                            </Text>
-                                                        ) : null}
-                                                        <Text className="wishlist-price">
-                                                            ₱{(
-                                                                pkg.discountPercent > 0
-                                                                    ? Number(pkg.price || 0) * (1 - pkg.discountPercent / 100)
-                                                                    : Number(pkg.price || 0)
-                                                            ).toLocaleString()}
-                                                        </Text>
-                                                        <Text className="wishlist-budget">
-                                                            {pkg.discountPercent > 0 ? 'Discounted / Pax' : 'Budget / Pax'}
-                                                        </Text>
-                                                    </div>
-                                                    <div className="wishlist-card-actions">
-                                                        <Button
-                                                            icon={<EyeOutlined />}
-                                                            type='primary'
-                                                            className={`wishlist-view-button${pkg.availableSlots <= 0 ? ' wishlist-view-button-disabled' : ''}`}
-                                                            onClick={() => navigate(`/package`, { state: { packageItem: pkg.packageId } })}
-                                                            disabled={pkg.availableSlots <= 0}
-                                                            style={pkg.availableSlots <= 0 ? { pointerEvents: 'none' } : {}}
-                                                        >
-                                                            View details
-                                                        </Button>
-                                                        <Button
-                                                            icon={<DeleteOutlined />}
-                                                            type='primary'
-                                                            className="wishlist-remove-button"
-                                                            onClick={() => {
+                                            <Card
+                                                className={`wishlist-reference-card${isUnavailable
+                                                    ? ' wishlist-reference-card-disabled'
+                                                    : ''
+                                                    }`}
+                                                hoverable={!isUnavailable}
+                                                onClick={() => {
+                                                    if (!isUnavailable) {
+                                                        navigate('/package', {
+                                                            state: {
+                                                                packageItem:
+                                                                    pkg.packageId
+                                                            }
+                                                        })
+                                                    }
+                                                }}
+                                                cover={
+                                                    <div className="wishlist-reference-cover">
+                                                        {pkg.image ? (
+                                                            <img
+                                                                className="wishlist-reference-image"
+                                                                src={pkg.image}
+                                                                alt={pkg.title}
+                                                                draggable={false}
+                                                            />
+                                                        ) : (
+                                                            <div className="wishlist-reference-image-placeholder">
+                                                                No Image
+                                                            </div>
+                                                        )}
+
+                                                        {pkg.discountPercent > 0 && (
+                                                            <div className="wishlist-reference-ribbon">
+                                                                {
+                                                                    pkg.discountPercent
+                                                                }
+                                                                % OFF
+                                                            </div>
+                                                        )}
+
+                                                        <button
+                                                            type="button"
+                                                            className="wishlist-reference-remove-icon"
+                                                            aria-label="Remove package from wishlist"
+                                                            onClick={(event) => {
+                                                                event.stopPropagation()
+                                                                setSelectedWishlistId(
+                                                                    pkg.wishlistId
+                                                                )
                                                                 setIsDeleteModalOpen(true)
-                                                                setSelectedWishlistId(pkg.wishlistId)
                                                             }}
                                                         >
-                                                            Remove
-                                                        </Button>
+                                                            <DeleteOutlined />
+                                                        </button>
+
+                                                        <span
+                                                            className={`wishlist-reference-status ${availabilityClass}`}
+                                                        >
+                                                            {pkg.availability}
+                                                        </span>
                                                     </div>
+                                                }
+                                            >
+                                                <h3 className="wishlist-reference-title">
+                                                    {pkg.title}
+                                                </h3>
+
+                                                <div className="wishlist-reference-pricing">
+                                                    {pkg.discountPercent > 0 && (
+                                                        <span className="wishlist-reference-old-price">
+                                                            ₱
+                                                            {originalPrice.toLocaleString(
+                                                                'en-PH'
+                                                            )}
+                                                        </span>
+                                                    )}
+
+                                                    <span className="wishlist-reference-price">
+                                                        ₱
+                                                        {finalPrice.toLocaleString(
+                                                            'en-PH',
+                                                            {
+                                                                maximumFractionDigits: 2
+                                                            }
+                                                        )}
+                                                    </span>
                                                 </div>
-                                                <div className="wishlist-card-badges">
-                                                    <Text type="secondary" className="wishlist-slots-count">Slots: {pkg.availableSlots}</Text>
-                                                    {pkg.discountPercent > 0 ? (
-                                                        <Tag className="wishlist-discount-tag">-{pkg.discountPercent}%</Tag>
-                                                    ) : null}
+
+                                                <p className="wishlist-reference-price-label">
+                                                    {pkg.discountPercent > 0
+                                                        ? 'Discounted price per person'
+                                                        : 'Starting price per person'}
+                                                </p>
+
+                                                <div className="wishlist-reference-details">
+                                                    <span>{pkg.duration}</span>
+
+                                                    <span className="wishlist-reference-divider">
+                                                        •
+                                                    </span>
+
+                                                    <span>{pkg.typeLabel}</span>
                                                 </div>
-                                            </div>
-                                        </Card>
-                                    </Col>
-                                ))}
+
+                                                <div className="wishlist-reference-metrics">
+                                                    <span className="wishlist-reference-slots">
+                                                        Slots Available: {pkg.availableSlots}
+                                                    </span>
+
+                                                    <span className="wishlist-reference-rating">
+                                                        <StarFilled style={{ color: "#ffde21" }} />
+                                                        {Number(pkg.rating || 0).toFixed(1)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="wishlist-reference-actions">
+                                                    <button
+                                                        type="button"
+                                                        className="wishlist-reference-view-button"
+                                                        disabled={isUnavailable}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation()
+
+                                                            if (!isUnavailable) {
+                                                                navigate('/package', {
+                                                                    state: {
+                                                                        packageItem:
+                                                                            pkg.packageId
+                                                                    }
+                                                                })
+                                                            }
+                                                        }}
+                                                    >
+                                                        <EyeOutlined />
+
+                                                        {isUnavailable
+                                                            ? 'UNAVAILABLE'
+                                                            : 'VIEW DETAILS'}
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="wishlist-reference-remove-button"
+                                                        onClick={(event) => {
+                                                            event.stopPropagation()
+
+                                                            setSelectedWishlistId(
+                                                                pkg.wishlistId
+                                                            )
+
+                                                            setIsDeleteModalOpen(true)
+                                                        }}
+                                                    >
+                                                        <DeleteOutlined />
+                                                        REMOVE
+                                                    </button>
+                                                </div>
+                                            </Card>
+                                        </Col>
+                                    )
+                                })}
                             </Row>
                         )}
                     </section>

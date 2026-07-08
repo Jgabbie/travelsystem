@@ -225,14 +225,36 @@ export default function LandingPage() {
                     packageCode: pkg.packageCode,
                     packageName: pkg.packageName,
                     packageDescription: pkg.packageDescription,
+
                     packageImages: Array.isArray(pkg.images)
                         ? pkg.images
                         : Array.isArray(pkg.packageImages)
                             ? pkg.packageImages
                             : [],
+
                     bookingCount: pkg.bookingCount || 0,
                     packageType: pkg.packageType || pkg.tourType || '',
-                    discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent)) ? Number(pkg.packageDiscountPercent) : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : (Number.isFinite(Number(pkg.discountPercentOff)) ? Number(pkg.discountPercentOff) : 0))
+
+                    packagePrice: Number(
+                        pkg.packagePricePerPax ??
+                        pkg.packagePrice ??
+                        pkg.price ??
+                        0
+                    ),
+
+                    packageDuration: Number(
+                        pkg.packageDuration ??
+                        pkg.duration ??
+                        0
+                    ),
+
+                    discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent))
+                        ? Number(pkg.packageDiscountPercent)
+                        : Number.isFinite(Number(pkg.discountPercent))
+                            ? Number(pkg.discountPercent)
+                            : Number.isFinite(Number(pkg.discountPercentOff))
+                                ? Number(pkg.discountPercentOff)
+                                : 0
                 }))
 
                 const trimmed = packages.slice(0, 3)
@@ -269,17 +291,37 @@ export default function LandingPage() {
                     const fallbackPackages = (fallbackResponse || [])
                         .slice(0, 3)
                         .map((pkg) => ({
-                            id: pkg._id,
+                            packageItem: pkg._id,
                             packageCode: pkg.packageCode,
                             packageName: pkg.packageName,
                             packageDescription: pkg.packageDescription,
+
                             packageImages: Array.isArray(pkg.images)
                                 ? pkg.images
                                 : Array.isArray(pkg.packageImages)
                                     ? pkg.packageImages
                                     : [],
+
                             packageType: pkg.packageType || pkg.tourType || '',
-                            discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent)) ? Number(pkg.packageDiscountPercent) : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : 0)
+
+                            packagePrice: Number(
+                                pkg.packagePricePerPax ??
+                                pkg.packagePrice ??
+                                pkg.price ??
+                                0
+                            ),
+
+                            packageDuration: Number(
+                                pkg.packageDuration ??
+                                pkg.duration ??
+                                0
+                            ),
+
+                            discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent))
+                                ? Number(pkg.packageDiscountPercent)
+                                : Number.isFinite(Number(pkg.discountPercent))
+                                    ? Number(pkg.discountPercent)
+                                    : 0
                         }))
 
                     setFallbackPopularPackages(fallbackPackages)
@@ -339,33 +381,63 @@ export default function LandingPage() {
 
                     return {
                         packageItem,
-                        packageCode: packageData?.packageCode || pkg?.packageCode || '',
+                        packageCode:
+                            packageData?.packageCode ||
+                            pkg?.packageCode ||
+                            '',
+
                         packageName:
                             packageData?.packageName ||
                             pkg?.packageName ||
                             'Recommended package',
+
                         packageDescription:
                             packageData?.packageDescription ||
                             pkg?.packageDescription ||
                             '',
+
                         packageImages: Array.isArray(packageData?.images)
                             ? packageData.images
                             : Array.isArray(packageData?.packageImages)
                                 ? packageData.packageImages
                                 : [],
+
                         packageType:
                             packageData?.packageType ||
                             packageData?.tourType ||
                             pkg?.packageType ||
                             pkg?.tourType ||
                             '',
+
+                        packagePrice: Number(
+                            packageData?.packagePricePerPax ??
+                            packageData?.packagePrice ??
+                            packageData?.price ??
+                            pkg?.packagePricePerPax ??
+                            pkg?.packagePrice ??
+                            pkg?.price ??
+                            0
+                        ),
+
+                        packageDuration: Number(
+                            packageData?.packageDuration ??
+                            packageData?.duration ??
+                            pkg?.packageDuration ??
+                            pkg?.duration ??
+                            0
+                        ),
+
                         discountPercent: Number.isFinite(
                             Number(packageData?.packageDiscountPercent)
                         )
                             ? Number(packageData.packageDiscountPercent)
                             : Number.isFinite(Number(packageData?.discountPercent))
                                 ? Number(packageData.discountPercent)
-                                : 0
+                                : Number.isFinite(Number(pkg?.packageDiscountPercent))
+                                    ? Number(pkg.packageDiscountPercent)
+                                    : Number.isFinite(Number(pkg?.discountPercent))
+                                        ? Number(pkg.discountPercent)
+                                        : 0
                     };
                 });
 
@@ -538,6 +610,26 @@ export default function LandingPage() {
         return `${text.slice(0, maxLength).trim()}...`
     }
 
+    const formatPackagePrice = (price) => {
+        const numericPrice = Number(price)
+
+        if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+            return 'Contact Us'
+        }
+
+        return `₱${numericPrice.toLocaleString('en-PH')}`
+    }
+
+    const formatPackageDuration = (duration) => {
+        const numericDuration = Number(duration)
+
+        if (!Number.isFinite(numericDuration) || numericDuration <= 0) {
+            return 'Flexible duration'
+        }
+
+        return `${numericDuration} ${numericDuration === 1 ? 'Day' : 'Days'}`
+    }
+
     return (
         <ConfigProvider
             theme={{
@@ -643,55 +735,77 @@ export default function LandingPage() {
                                                 <div className="popular-packages-slide" key={`popular-slide-${slideIndex}`}>
                                                     {slide.map((pkg) => (
                                                         <Card
-                                                            className='package-card popular-packages-card'
-                                                            key={pkg.packageItem}
+                                                            className="package-card popular-packages-card popular-reference-card"
+                                                            key={pkg.packageItem || pkg.packageCode}
                                                             hoverable
-                                                            onClick={() => navigate('/package', { state: { packageItem: pkg.packageItem } })}
+                                                            onClick={() =>
+                                                                navigate('/package', {
+                                                                    state: { packageItem: pkg.packageItem }
+                                                                })
+                                                            }
                                                             cover={
-                                                                <div className="popular-card-cover">
-                                                                    {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                                                                <div className="popular-reference-cover">
+                                                                    {pkg.packageImages?.length > 0 ? (
                                                                         <img
-                                                                            className="popular-card-image"
+                                                                            className="popular-reference-image"
                                                                             draggable={false}
                                                                             alt={pkg.packageName}
                                                                             src={pkg.packageImages[0]}
                                                                         />
                                                                     ) : (
-                                                                        <div className="popular-card-image popular-card-image-placeholder">
+                                                                        <div className="popular-reference-image popular-card-image-placeholder">
                                                                             No Image
                                                                         </div>
                                                                     )}
 
-                                                                    <div className="popular-card-badges">
-                                                                        {pkg.discountPercent > 0 && (
-                                                                            <span className="popular-card-badge">{pkg.discountPercent}% OFF</span>
-                                                                        )}
-                                                                        <span className="popular-card-type">
-                                                                            {(pkg.packageType && String(pkg.packageType).length)
-                                                                                ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1)
-                                                                                : 'Package'}
-                                                                        </span>
-                                                                    </div>
-
+                                                                    {pkg.discountPercent > 0 && (
+                                                                        <div className="popular-reference-ribbon">
+                                                                            {pkg.discountPercent}% OFF
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             }
                                                         >
-                                                            <div className="popular-card-title">
-                                                                <EnvironmentOutlined className="popular-card-title-icon" />
-                                                                <span>{pkg.packageName}</span>
+                                                            <h3 className="popular-reference-title">
+                                                                {pkg.packageName}
+                                                            </h3>
+
+                                                            <div className="popular-reference-price">
+                                                                {formatPackagePrice(pkg.packagePrice)}
                                                             </div>
-                                                            <p className="popular-card-description">
-                                                                {formatDescription(pkg.packageDescription, 120)}
+
+                                                            <p className="popular-reference-price-label">
+                                                                Starting price per person
                                                             </p>
+
+                                                            <div className="popular-reference-details">
+                                                                <span>
+                                                                    {formatPackageDuration(pkg.packageDuration)}
+                                                                </span>
+
+                                                                <span className="popular-reference-divider">•</span>
+
+                                                                <span>
+                                                                    {pkg.packageType
+                                                                        ? String(pkg.packageType).charAt(0).toUpperCase() +
+                                                                        String(pkg.packageType).slice(1)
+                                                                        : 'Tour Package'}
+                                                                </span>
+                                                            </div>
+
                                                             <button
                                                                 type="button"
-                                                                className="popular-card-cta"
+                                                                className="popular-reference-button"
                                                                 onClick={(event) => {
                                                                     event.stopPropagation()
-                                                                    navigate('/package', { state: { packageItem: pkg.packageItem } })
+
+                                                                    navigate('/package', {
+                                                                        state: { packageItem: pkg.packageItem }
+                                                                    })
                                                                 }}
                                                             >
-                                                                View Package
+                                                                <ShoppingCartOutlined />
+                                                                BOOK NOW
                                                             </button>
                                                         </Card>
                                                     ))}
@@ -760,8 +874,8 @@ export default function LandingPage() {
                             <div className='for-you-grid'>
                                 {forYouPackages.map((pkg) => (
                                     <Card
-                                        className='package-card for-you-card popular-packages-card'
-                                        key={pkg.packageItem}
+                                        className="package-card for-you-card popular-reference-card"
+                                        key={pkg.packageItem || pkg.packageCode}
                                         hoverable
                                         onClick={() =>
                                             navigate('/package', {
@@ -769,51 +883,72 @@ export default function LandingPage() {
                                             })
                                         }
                                         cover={
-                                            <div className="popular-card-cover">
-                                                {pkg.packageImages && pkg.packageImages.length > 0 ? (
+                                            <div className="popular-reference-cover">
+                                                {pkg.packageImages?.length > 0 ? (
                                                     <img
-                                                        className="popular-card-image"
+                                                        className="popular-reference-image"
                                                         draggable={false}
                                                         alt={pkg.packageName}
                                                         src={pkg.packageImages[0]}
                                                     />
                                                 ) : (
-                                                    <div className="popular-card-image popular-card-image-placeholder">
+                                                    <div className="popular-reference-image popular-card-image-placeholder">
                                                         No Image
                                                     </div>
                                                 )}
 
-                                                <div className="popular-card-badges">
-                                                    {pkg.discountPercent > 0 && (
-                                                        <span className="popular-card-badge">{pkg.discountPercent}% OFF</span>
-                                                    )}
-                                                    <span className="popular-card-type">
-                                                        {(pkg.packageType && String(pkg.packageType).length)
-                                                            ? String(pkg.packageType).charAt(0).toUpperCase() + String(pkg.packageType).slice(1)
-                                                            : 'Package'}
-                                                    </span>
-                                                </div>
+                                                {pkg.discountPercent > 0 && (
+                                                    <div className="popular-reference-ribbon">
+                                                        {pkg.discountPercent}% OFF
+                                                    </div>
+                                                )}
                                             </div>
                                         }
                                     >
-                                        <div className="popular-card-title">
-                                            <EnvironmentOutlined className="popular-card-title-icon" />
-                                            <span>{pkg.packageName}</span>
+                                        <h3 className="popular-reference-title">
+                                            {pkg.packageName}
+                                        </h3>
+
+                                        <div className="popular-reference-price">
+                                            {formatPackagePrice(pkg.packagePrice)}
                                         </div>
-                                        <p className="popular-card-description">
-                                            {formatDescription(pkg.packageDescription, 120)}
+
+                                        <p className="popular-reference-price-label">
+                                            Starting price per person
                                         </p>
+
+                                        <div className="popular-reference-details">
+                                            <span>
+                                                {formatPackageDuration(pkg.packageDuration)}
+                                            </span>
+
+                                            <span className="popular-reference-divider">
+                                                •
+                                            </span>
+
+                                            <span>
+                                                {pkg.packageType
+                                                    ? String(pkg.packageType).charAt(0).toUpperCase() +
+                                                    String(pkg.packageType).slice(1)
+                                                    : 'Tour Package'}
+                                            </span>
+                                        </div>
+
                                         <button
                                             type="button"
-                                            className="popular-card-cta"
+                                            className="popular-reference-button"
                                             onClick={(event) => {
-                                                event.stopPropagation()
+                                                event.stopPropagation();
+
                                                 navigate('/package', {
-                                                    state: { packageItem: pkg.packageItem }
-                                                })
+                                                    state: {
+                                                        packageItem: pkg.packageItem
+                                                    }
+                                                });
                                             }}
                                         >
-                                            View Package
+                                            <ShoppingCartOutlined />
+                                            BOOK NOW
                                         </button>
                                     </Card>
                                 ))}

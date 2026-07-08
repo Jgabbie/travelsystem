@@ -323,51 +323,153 @@
     border-color: #305797 !important;
 }
 
+
+
 .popular-packages-section {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 50px 20px 75px;
+    box-sizing: border-box;
     background-color: #305797;
-    padding-bottom: 50px;
-    padding-top: 20px;
+    overflow: hidden;
 }
 
 .popular-packages-text {
+    margin: 0 0 10px;
+    color: #ffffff;
     font-family: "Montserrat", sans-serif;
     font-size: 35px;
-    font-weight: 600;
-    color: #000000;
-    margin-top: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
 }
 
+.popular-packages-section>.for-you-method {
+    max-width: 700px;
+    margin: 0 0 30px;
+    color: #ffffff;
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* Carousel container */
 .popular-packages {
     width: 100%;
-    max-width: 1200px;
-    margin: 10px auto 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
 .popular-packages-carousel {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 16px;
     position: relative;
-}
-
-.popular-carousel-button {
-    border: none !important;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.popular-packages-viewport {
-    overflow: hidden;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    align-items: center;
+    gap: 18px;
     width: 100%;
 }
 
+/* Previous and next buttons */
+.popular-carousel-button {
+    position: relative;
+    z-index: 5;
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    color: #305797 !important;
+    background-color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.popular-carousel-button:hover:not(:disabled) {
+    color: #ffffff !important;
+    background-color: #244575 !important;
+}
+
+.popular-carousel-button:disabled {
+    color: #999999 !important;
+    background-color: #eeeeee !important;
+    opacity: 0.7;
+}
+
+/* Hide cards outside the current slide */
+.popular-packages-viewport {
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Moving carousel row */
 .popular-packages-track {
     display: flex;
+    width: 100%;
     transition: transform 600ms ease;
+}
+
+/* Each carousel slide */
+.popular-packages-slide {
+    min-width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 24px;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+/* Loading and empty messages */
+.popular-packages-section .popular-packages>p {
+    margin: 20px 0;
+    color: #ffffff;
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    text-align: center;
+}
+
+/* Carousel dots */
+.popular-packages-dots {
+    position: absolute;
+    left: 50%;
+    bottom: -35px;
+    display: flex;
+    gap: 10px;
+    transform: translateX(-50%);
+    z-index: 5;
+}
+
+.popular-packages-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.popular-packages-dots span.active {
+    background-color: #ffffff;
+    transform: scale(1.35);
+}
+
+
+
+
+/* Popular Packages card elements */
+.popular-packages {
+    width: 100%;
+    max-width: 1400px;
+    margin: 10px auto 30px;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
 .popular-packages-slide {
@@ -375,143 +477,166 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 24px;
-    padding: 6px 0;
+    padding: 10px 0;
 }
 
-.popular-packages-card.ant-card {
-    width: 100%;
-    max-width: 320px;
-    margin: 0 auto;
-    border-radius: 0;
-    height: 100%;
-}
-
-/* Add padding to the textual content inside popular package cards */
-.popular-packages-card .ant-card-body {
-    padding: 16px 18px 20px !important;
+/* Wider card */
+.popular-packages-section .popular-reference-card.ant-card {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: 380px;
     height: 100%;
-}
-
-/* row under package title */
-.popular-card-cover {
-    position: relative;
-    height: 250px;
+    margin: 0 auto;
     overflow: hidden;
-    border-radius: 0;
-    background: #f5f5f5;
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    box-shadow: none;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
-.popular-card-image {
+.popular-packages-section .popular-reference-card.ant-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.16);
+}
+
+.popular-packages-section .popular-reference-card .ant-card-cover {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+/* Remove height: 100% here because it clips the button */
+.popular-packages-section .popular-reference-card .ant-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    min-height: 220px;
+    padding: 18px 18px 20px !important;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.popular-reference-cover {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    background-color: #eeeeee;
+}
+
+.popular-reference-ribbon {
+    position: absolute;
+    top: 16px;
+    left: -38px;
+    z-index: 10;
+    width: 145px;
+    padding: 7px 0;
+    background-color: #ffd000;
+    color: #305797;
+    font-family: "Montserrat", sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-align: center;
+    transform: rotate(-45deg);
+    transform-origin: center;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+}
+
+.popular-reference-image {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
+    transition: transform 0.35s ease;
 }
 
-.popular-card-image-placeholder {
+.popular-reference-card:hover .popular-reference-image {
+    transform: scale(1.05);
+}
+
+.popular-reference-title {
+    width: 100%;
+    min-height: 42px;
+    margin: 0 0 6px;
+    color: #161616;
+    font-family: "Montserrat", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.popular-reference-price {
+    margin-bottom: 2px;
+    color: #244574;
+    font-family: "Montserrat", sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.popular-reference-price-label {
+    margin: 0 0 8px;
+    color: #929292;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+}
+
+.popular-reference-details {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #777;
-    font-weight: 600;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 18px;
+    margin-bottom: 16px;
+    color: #6d6d6d;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
 }
 
-.popular-card-badges {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 2;
-}
-
-.popular-card-badge {
-    background: #3bb66a;
-    color: #ffffff;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-    display: inline-flex;
+/* Ensure the button always appears */
+.popular-reference-button {
+    display: inline-flex !important;
+    flex-shrink: 0;
     align-items: center;
-    max-width: 75px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.popular-card-type {
-    background: #ffffff;
-    color: #2d4a7c;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-    text-transform: capitalize;
-}
-
-
-/* card layout */
-.popular-packages-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 0;
-    box-shadow: 0 12px 26px rgba(22, 34, 52, 0.18);
-}
-
-.popular-card-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 999px;
-    background: #2f5aa2;
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.3px;
-    margin-top: -40px;
-    margin-bottom: 12px;
-    position: relative;
-    z-index: 3;
-    box-shadow: 0 10px 18px rgba(20, 34, 58, 0.25);
-    width: 92%;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.popular-card-title-icon {
-    font-size: 18px;
-}
-
-.popular-card-description {
-    margin: 0 0 14px;
-    color: #37507c;
-    line-height: 1.5;
-    min-height: 64px;
-    flex: 1 1 auto;
-}
-
-.popular-card-cta {
-    border: none;
-    background: transparent;
-    color: #b52b2b;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    cursor: pointer;
-    padding: 0;
+    justify-content: center;
+    gap: 7px;
+    min-width: 130px;
+    height: 38px;
     margin-top: auto;
-    align-self: flex-start;
+    padding: 0 18px;
+    color: #ffffff;
+    background-color: #305797;
+    border: none;
+    border-radius: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    visibility: visible;
+    opacity: 1;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 }
 
-.popular-card-cta:hover {
-    color: #7f1d1d;
+.popular-reference-button:hover {
+    color: #ffffff;
+    background-color: #244575;
+    transform: translateY(-2px);
 }
+
+
 
 
 /* For-you card elements */
@@ -629,31 +754,53 @@
 
 .for-you-grid {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
     gap: 24px;
+    padding: 10px 20px;
+    box-sizing: border-box;
 }
 
-.for-you-card.ant-card {
+/* Same card design as Popular Packages */
+.for-you-section .popular-reference-card.ant-card {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    max-width: 320px;
+    max-width: 380px;
+    height: 100%;
     margin: 0 auto;
+    overflow: hidden;
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    box-shadow: none;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
-.for-you-card .ant-card-body {
-    padding: 12px 16px !important;
+.for-you-section .popular-reference-card.ant-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.16);
 }
 
-.for-you-card h2 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
-}
-
-.for-you-card p {
+.for-you-section .popular-reference-card .ant-card-cover {
+    flex-shrink: 0;
     margin: 0;
-    color: rgba(0, 0, 0, 0.8);
-    line-height: 1.4;
+}
+
+.for-you-section .popular-reference-card .ant-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    min-height: 220px;
+    padding: 18px 18px 20px !important;
+    box-sizing: border-box;
+    text-align: center;
 }
 
 @media (max-width: 1024px) {
@@ -663,6 +810,10 @@
 
     .for-you-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .for-you-section .popular-reference-card.ant-card {
+        max-width: 400px;
     }
 }
 
@@ -682,6 +833,11 @@
 
     .for-you-grid {
         grid-template-columns: 1fr;
+        padding: 10px 12px;
+    }
+
+    .for-you-section .popular-reference-card.ant-card {
+        max-width: 420px;
     }
 }
 
@@ -1623,6 +1779,10 @@
     .contactus-map-address {
         font-size: 16px;
     }
+
+    .popular-packages-section .popular-reference-card.ant-card {
+        max-width: 400px;
+    }
 }
 
 
@@ -1872,6 +2032,18 @@
     .footer-divider {
         margin-top: 20px;
     }
+
+    .popular-packages {
+        padding: 0 12px;
+    }
+
+    .popular-packages-section .popular-reference-card.ant-card {
+        max-width: 420px;
+    }
+
+    .popular-reference-cover {
+        height: 230px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2013,5 +2185,21 @@
         font-size: 14px;
         line-height: 1.6;
         overflow-wrap: anywhere;
+    }
+
+    .popular-packages-section .popular-reference-card.ant-card {
+        max-width: 340px;
+    }
+
+    .popular-reference-cover {
+        height: 200px;
+    }
+
+    .for-you-grid {
+        padding: 10px 8px;
+    }
+
+    .for-you-section .popular-reference-card.ant-card {
+        max-width: 340px;
     }
 }

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Card, Col, Input, InputNumber, Row, Select, Slider, Tag, Typography, ConfigProvider, Space, Spin, Empty, notification } from 'antd'
-import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined, SearchOutlined, StarFilled } from '@ant-design/icons'
+import { FacebookFilled, InstagramFilled, HeartFilled, HeartOutlined, SearchOutlined, StarFilled, ShoppingCartOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router-dom'
 import '../../style/client/destinationspackages.css'
 import apiFetch from '../../config/fetchConfig'
@@ -548,107 +548,207 @@ export default function DestinationsPackages() {
                             </div>
                         ) : (
                             <Row gutter={[18, 18]}>
-                                {filteredPackages.map((pkg) => (
-                                    <Col xs={24} sm={12} lg={12} xl={12} key={pkg.id}>
-                                        <Card
-                                            className={`destinations-card${pkg.availableSlots <= 0 ? ' destinations-card-disabled' : ''}`}
-                                            hoverable={pkg.availableSlots > 0}
-                                            onClick={() => {
-                                                if (pkg.availableSlots > 0) navigate('/package', { state: { packageItem: pkg.id } })
-                                            }}
-                                            style={pkg.availableSlots <= 0 ? { opacity: 0.6, pointerEvents: 'none', cursor: 'not-allowed' } : {}}
+                                {filteredPackages.map((pkg) => {
+                                    const hasTravelerCount =
+                                        Number.isFinite(travelersValue) &&
+                                        travelersValue > 0
+
+                                    const originalPrice = hasTravelerCount
+                                        ? pkg.budget * travelersValue
+                                        : pkg.budget
+
+                                    const finalPrice = hasTravelerCount
+                                        ? pkg.discountedBudget * travelersValue
+                                        : pkg.discountedBudget
+
+                                    const isUnavailable = pkg.availableSlots <= 0
+
+                                    return (
+                                        <Col
+                                            xs={24}
+                                            sm={12}
+                                            lg={12}
+                                            xl={8}
+                                            key={pkg.id}
                                         >
-                                            <div className="destinations-card-image">
-                                                {pkg.images ? (
-                                                    <img src={pkg.images} alt={pkg.packageName} />
-                                                ) : (
-                                                    <div className="destinations-card-image-placeholder">No Image</div>
-                                                )}
-                                            </div>
-                                            <div className="destinations-card-content">
-                                                <div className="destinations-card-header">
-                                                    <div>
-                                                        <Title level={5} className="destinations-card-title">
-                                                            {pkg.packageName}
-                                                        </Title>
-                                                    </div>
-                                                </div>
-                                                <div className="destinations-card-meta">
-                                                    <Tag className="destinations-type">{pkg.packageType}</Tag>
-                                                    <Tag className="destinations-status-tag">
-                                                        {pkg.availableSlots > 0 ? 'AVAILABLE' : 'UNAVAILABLE'}
-                                                    </Tag>
-                                                    <Text type="secondary">{pkg.days} days</Text>
-                                                </div>
-
-                                                <div className="destinations-card-activities">
-                                                    {pkg.tags?.map((tag) => (
-                                                        <Tag key={tag}>{tag}</Tag>
-                                                    ))}
-                                                </div>
-                                                <div className="destinations-card-footer">
-                                                    <div className="destinations-card-pricing">
-                                                        {pkg.discountPercent > 0 && (
-                                                            <Text
-                                                                delete
-                                                                className="destinations-price destinations-price-old"
-                                                            >
-                                                                ₱{(
-                                                                    Number.isFinite(travelersValue) && travelersValue > 0
-                                                                        ? pkg.budget * travelersValue
-                                                                        : pkg.budget
-                                                                ).toLocaleString()}
-                                                            </Text>
+                                            <Card
+                                                className={`destinations-reference-card${isUnavailable
+                                                    ? ' destinations-reference-card-disabled'
+                                                    : ''
+                                                    }`}
+                                                hoverable={!isUnavailable}
+                                                onClick={() => {
+                                                    if (!isUnavailable) {
+                                                        navigate('/package', {
+                                                            state: {
+                                                                packageItem: pkg.id
+                                                            }
+                                                        })
+                                                    }
+                                                }}
+                                                cover={
+                                                    <div className="destinations-reference-cover">
+                                                        {pkg.images ? (
+                                                            <img
+                                                                className="destinations-reference-image"
+                                                                src={pkg.images}
+                                                                alt={pkg.packageName}
+                                                                draggable={false}
+                                                            />
+                                                        ) : (
+                                                            <div className="destinations-reference-image-placeholder">
+                                                                No Image
+                                                            </div>
                                                         )}
-                                                        <Text className="destinations-price">
-                                                            ₱{(
-                                                                Number.isFinite(travelersValue) && travelersValue > 0
-                                                                    ? pkg.discountedBudget * travelersValue
-                                                                    : pkg.discountedBudget
-                                                            ).toLocaleString()}
-                                                            {Number.isFinite(travelersValue) && travelersValue > 0
-                                                                ? ` for ${travelersValue} person${travelersValue > 1 ? 's' : ''}`
-                                                                : ''}
-                                                        </Text>
-                                                        <Text className="destinations-budget">
-                                                            {Number.isFinite(travelersValue) && travelersValue > 0
-                                                                ? 'Total Budget'
-                                                                : pkg.discountPercent > 0
-                                                                    ? 'Discounted / Pax'
-                                                                    : 'Budget / Pax'}
-                                                        </Text>
-                                                    </div>
 
-                                                </div>
-                                                <div className="destinations-card-badges">
-                                                    <div className="destinations-card-meta">
-                                                        <Text type="secondary" className="destinations-slots-count">Slots: {pkg.availableSlots}</Text>
-                                                    </div>
-                                                    <Space style={{}}>
                                                         {pkg.discountPercent > 0 && (
-                                                            <Tag className="destinations-discount-tag">-{pkg.discountPercent}%</Tag>
+                                                            <div className="destinations-reference-ribbon">
+                                                                {pkg.discountPercent}% OFF
+                                                            </div>
                                                         )}
-                                                        <Tag className="destinations-rating"><StarFilled style={{ color: "#FFDE21", fontSize: 20 }} /> {pkg.rating.toFixed(1)}</Tag>
+
                                                         <button
                                                             type="button"
-                                                            className="destinations-wishlist-btn"
-                                                            onClick={(event) => handleWishlistToggle(event, pkg.id)}
-                                                            aria-label={wishlistedIds.has(String(pkg.id))
-                                                                ? 'Remove from wishlist'
-                                                                : 'Add to wishlist'}
+                                                            className="destinations-reference-wishlist"
+                                                            onClick={(event) =>
+                                                                handleWishlistToggle(
+                                                                    event,
+                                                                    pkg.id
+                                                                )
+                                                            }
+                                                            aria-label={
+                                                                wishlistedIds.has(
+                                                                    String(pkg.id)
+                                                                )
+                                                                    ? 'Remove from wishlist'
+                                                                    : 'Add to wishlist'
+                                                            }
                                                         >
-                                                            {wishlistedIds.has(String(pkg.id)) ? (
-                                                                <HeartFilled style={{ color: '#cf1322', fontSize: 25, marginTop: 5 }} />
+                                                            {wishlistedIds.has(
+                                                                String(pkg.id)
+                                                            ) ? (
+                                                                <HeartFilled />
                                                             ) : (
-                                                                <HeartOutlined style={{ color: '#305797', fontSize: 25, marginTop: 5 }} />
+                                                                <HeartOutlined />
                                                             )}
                                                         </button>
-                                                    </Space>
+
+                                                        <span
+                                                            className={`destinations-reference-status${isUnavailable
+                                                                ? ' unavailable'
+                                                                : ''
+                                                                }`}
+                                                        >
+                                                            {isUnavailable
+                                                                ? 'Unavailable'
+                                                                : 'Available'}
+                                                        </span>
+                                                    </div>
+                                                }
+                                            >
+                                                <h3 className="destinations-reference-title">
+                                                    {pkg.packageName}
+                                                </h3>
+
+                                                <div className="destinations-reference-pricing">
+                                                    {pkg.discountPercent > 0 && (
+                                                        <span className="destinations-reference-old-price">
+                                                            ₱
+                                                            {originalPrice.toLocaleString(
+                                                                'en-PH',
+                                                                {
+                                                                    maximumFractionDigits: 2
+                                                                }
+                                                            )}
+                                                        </span>
+                                                    )}
+
+                                                    <span className="destinations-reference-price">
+                                                        ₱
+                                                        {finalPrice.toLocaleString(
+                                                            'en-PH',
+                                                            {
+                                                                maximumFractionDigits: 2
+                                                            }
+                                                        )}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                        </Card>
-                                    </Col>
-                                ))}
+
+                                                <p className="destinations-reference-price-label">
+                                                    {hasTravelerCount
+                                                        ? `Total price for ${travelersValue} ${travelersValue === 1
+                                                            ? 'person'
+                                                            : 'people'
+                                                        }`
+                                                        : pkg.discountPercent > 0
+                                                            ? 'Discounted price per person'
+                                                            : 'Starting price per person'}
+                                                </p>
+
+                                                <div className="destinations-reference-details">
+                                                    <span>
+                                                        {pkg.days}{' '}
+                                                        {Number(pkg.days) === 1
+                                                            ? 'Day'
+                                                            : 'Days'}
+                                                    </span>
+
+                                                    <span className="destinations-reference-divider">
+                                                        •
+                                                    </span>
+
+                                                    <span>{pkg.packageType}</span>
+                                                </div>
+
+                                                {pkg.tags?.length > 0 && (
+                                                    <div className="destinations-reference-tags">
+                                                        {pkg.tags
+                                                            .slice(0, 3)
+                                                            .map((tag) => (
+                                                                <span key={tag}>
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                    </div>
+                                                )}
+
+                                                <div className="destinations-reference-information">
+                                                    <span className="destinations-reference-slots">
+                                                        Slots: {pkg.availableSlots}
+                                                    </span>
+
+                                                    <span className="destinations-reference-rating">
+                                                        <StarFilled style={{ color: "#ffde21" }} />
+                                                        {pkg.rating.toFixed(1)}
+                                                    </span>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    className="destinations-reference-button"
+                                                    disabled={isUnavailable}
+                                                    onClick={(event) => {
+                                                        event.stopPropagation()
+
+                                                        if (!isUnavailable) {
+                                                            navigate('/package', {
+                                                                state: {
+                                                                    packageItem: pkg.id
+                                                                }
+                                                            })
+                                                        }
+                                                    }}
+                                                >
+                                                    <ShoppingCartOutlined />
+
+                                                    {isUnavailable
+                                                        ? 'UNAVAILABLE'
+                                                        : 'BOOK NOW'}
+                                                </button>
+                                            </Card>
+                                        </Col>
+                                    )
+                                })}
                             </Row>
                         )}
                     </section>
