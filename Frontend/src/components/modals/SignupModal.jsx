@@ -382,7 +382,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                             <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleSignup}>
                                 <div className="signup-input-group-modal">
-                                    <label className='signup-labels-modal'>Username</label>
+                                    <label className='signup-labels-modal'>Username <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input status={hasFieldError(error.username) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("username", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                         if (!/^[A-Za-z0-9]+$/.test(e.key) || e.key === " " && e.key !== "Backspace") {
                                             e.preventDefault()
@@ -393,7 +393,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                                 <div className="signup-input-row-modal">
                                     <div className="signup-input-group-modal">
-                                        <label className='signup-labels-modal'>First name</label>
+                                        <label className='signup-labels-modal'>First name <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input status={hasFieldError(error.firstname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("firstname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
                                             const value = e.target.value;
                                             if (e.key === " " && value.length === 0) { e.preventDefault(); return; }
@@ -413,7 +413,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     </div>
 
                                     <div className="signup-input-group-modal">
-                                        <label className='signup-labels-modal'>Last name</label>
+                                        <label className='signup-labels-modal'>Last name <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input status={hasFieldError(error.lastname) ? "error" : ""} maxLength={20} onChange={(e) => { valueHandler("lastname", toProperCase(e.target.value)) }} autoComplete='off' onKeyDown={(e) => {
                                             const value = e.target.value;
                                             if ((e.key === " " || e.key === "-") && value.length === 0) { e.preventDefault(); return; }
@@ -436,7 +436,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                 </div>
 
                                 <div className="signup-input-group-modal">
-                                    <label className='signup-labels-modal'>Email</label>
+                                    <label className='signup-labels-modal'>Email <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input status={hasFieldError(error.email) ? "error" : ""} maxLength={40} onChange={(e) => valueHandler("email", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                         if (e.key === " " && e.key !== "Backspace") {
                                             e.preventDefault()
@@ -447,7 +447,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                 </div>
 
                                 <div className="signup-input-group-modal">
-                                    <label className='signup-labels-modal'>Phone Number</label>
+                                    <label className='signup-labels-modal'>Phone Number <span style={{ color: "#ff0000" }}>*</span></label>
                                     <Input status={hasFieldError(error.phone) ? "error" : ""} maxLength={13}
                                         onChange={(e) => {
                                             let value = e.target.value.replace(/\D/g, "");
@@ -476,7 +476,7 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                                 <div className="signup-input-row-modal">
                                     <div className="signup-input-group-modal">
-                                        <label className='signup-labels-modal'>Password</label>
+                                        <label className='signup-labels-modal'>Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={hasFieldError(error.password) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                             if (e.key === " " && e.key !== "Backspace") {
                                                 e.preventDefault()
@@ -487,12 +487,12 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                     </div>
 
                                     <div className="signup-input-group-modal">
-                                        <label className='signup-labels-modal'>Confirm Password</label>
+                                        <label className='signup-labels-modal'>Confirm Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={hasFieldError(error.confirmPassword) ? "error" : ""} maxLength={20} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                             if (e.key === " " && e.key !== "Backspace") {
                                                 e.preventDefault()
                                             }
-                                        }} visibilityToggle={{ visible: showConfirmPassword, onVisibleChange: setShowConfirmPassword }} value={values.confirmPassword} type="password" id="password" className='signup-input-fields-modal-group' name="password" required />
+                                        }} visibilityToggle={{ visible: showConfirmPassword, onVisibleChange: setShowConfirmPassword }} value={values.confirmPassword} type="password" id="confirmPassword" className='signup-input-fields-modal-group' name="confirmPassword" required />
 
                                         {renderErrorMessages(error.confirmPassword, "confirmPassword")}
                                     </div>
@@ -521,6 +521,8 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
                                         >
                                             Terms and Conditions
                                         </a>
+
+                                        <span style={{ color: "#ff0000" }}> *</span>
                                     </Checkbox>
 
                                     <div className="signup-terms-error-container-modal">

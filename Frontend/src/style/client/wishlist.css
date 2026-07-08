@@ -150,7 +150,7 @@
 
 .wishlist-card {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 6px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 10px 22px rgba(31, 42, 68, 0.08);
     height: 100%;
@@ -160,7 +160,7 @@
 }
 
 .wishlist-card:hover {
-    transform: translateY(-12px) scale(1.02);
+    transform: translateY(-4px) scale(1.00);
     box-shadow: 0 28px 48px rgba(48, 87, 151, 0.18), 0 8px 20px rgba(48, 87, 151, 0.12);
     border-color: rgba(48, 87, 151, 0.3);
     animation: cardHoverGlow 2s ease-in-out infinite;

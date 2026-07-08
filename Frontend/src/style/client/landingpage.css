@@ -589,6 +589,7 @@
 
 .for-you-method {
     margin: 0 0 22px;
+    font-family: "Montserrat", sans-serif;
     color: #4a628f;
     font-weight: 600;
 }
@@ -608,22 +609,22 @@
 }
 
 .for-you-login-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 14px;
     font-weight: 600;
-    background-color: #305797;
+    background-color: #305797 !important;
     color: #fff;
     border-radius: 16px;
     width: 100px;
     height: 35px;
-    border: none;
+    border: none !important;
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
     margin-bottom: 20px;
 }
 
 .for-you-login-button:hover {
-    background-color: #244575;
-    color: #fff;
+    background-color: #244575 !important;
+    color: #fff !important;
 }
 
 .for-you-grid {
@@ -852,7 +853,8 @@
 }
 
 .contactus-map-address {
-    margin: 30px 0 0;
+    margin: 10px 0 0;
+    margin-left: 30px;
     font-family: "Montserrat", sans-serif;
     font-weight: 500;
     color: #000000;

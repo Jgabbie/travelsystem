@@ -267,7 +267,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
 
                                     <form onCopy={blockShortcuts} onPaste={blockShortcuts} onCut={blockShortcuts} onKeyDown={blockClipboardKeys} onSubmit={handleLogin}>
                                         <div className='login-div-input-fields-modal'>
-                                            <label className='login-labels-modal' htmlFor="username">Username</label>
+                                            <label className='login-labels-modal' htmlFor="username">Username <span style={{ color: "#ff0000" }}>*</span></label>
                                             <Input status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, username: e.target.value })} autoComplete='off' onKeyDown={(e) => {
                                                 if (e.key === " " || e.key === "Backspace") {
                                                     return;
@@ -280,7 +280,7 @@ export default function LoginModal({ isOpenLogin, isCloseLogin, onLoginSuccess, 
                                         </div>
 
                                         <div className='login-div-input-fields-modal'>
-                                            <label className='login-labels-modal' htmlFor="password">Password</label>
+                                            <label className='login-labels-modal' htmlFor="password">Password <span style={{ color: "#ff0000" }}>*</span></label>
                                             <Input.Password status={error ? "error" : ""} maxLength={20} onChange={(e) => setValues({ ...values, password: e.target.value })} autoComplete='off' onKeyDown={(e) => {
                                                 if (e.key === " " && e.key !== "Backspace") {
                                                     e.preventDefault()

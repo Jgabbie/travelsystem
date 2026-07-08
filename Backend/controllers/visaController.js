@@ -120,11 +120,23 @@ const VISA_TERMINAL_STATUSES = new Set([
     'Documents Approved',
     'Documents Received',
     'Documents Submitted',
-    'Processing by Embassy',
     'Embassy Approved',
     'Passport Released',
     'Rejected'
 ]);
+
+// These statuses may display a deadline,
+// but they must never trigger a penalty or automatic rejection.
+const VISA_PENALTY_EXEMPT_STATUSES = new Set([
+    'application submitted',
+    'processing by embassy',
+]);
+
+const isVisaPenaltyExemptStatus = (status) => {
+    return VISA_PENALTY_EXEMPT_STATUSES.has(
+        String(status || '').trim().toLowerCase()
+    );
+};
 
 
 //get current visa status function
@@ -313,8 +325,7 @@ const getVisaDeadlineInfo = (
 ) => {
     if (!application) return null;
 
-    const currentStatus =
-        getCurrentVisaStatus(application);
+    const currentStatus = getCurrentVisaStatus(application);
 
     if (
         !currentStatus ||
@@ -323,12 +334,14 @@ const getVisaDeadlineInfo = (
         return null;
     }
 
+    const isPenaltyExempt = isVisaPenaltyExemptStatus(currentStatus);
+
     const processSteps = getVisaProcessStepsFromApplication(application);
     const computedDaysMap = buildVisaStatusTotalDaysMapFromSteps(processSteps);
 
     const currentDate = referenceDate.startOf('day');
 
-    if (application.secondChance) {
+    if (application.secondChance && !isPenaltyExempt) {
         const deadlineDate = getVisaSecondChanceDeadlineDate(application);
         if (!deadlineDate) {
             return null;
@@ -355,7 +368,7 @@ const getVisaDeadlineInfo = (
         };
     }
 
-    if (application.onPenalty) {
+    if (application.onPenalty && !isPenaltyExempt) {
         const deadlineDate = getVisaPenaltyDeadlineDate(application);
         if (!deadlineDate) {
             return null;
@@ -382,7 +395,43 @@ const getVisaDeadlineInfo = (
         };
     }
 
+
+    if (String(currentStatus).trim().toLowerCase() === 'processing by embassy') {
+        const deadlineDate =
+            normalizeVisaDate(application.preferredDate) ||
+            getVisaStoredDeadlineDate(application, currentStatus);
+
+        if (!deadlineDate) {
+            return null;
+        }
+
+        const currentDate = referenceDate.startOf('day');
+        const warningDate = deadlineDate.subtract(1, 'day').startOf('day');
+        const daysRemaining = deadlineDate.diff(currentDate, 'day');
+
+        return {
+            status: currentStatus,
+            totalDays:
+                computedDaysMap[currentStatus] ??
+                VISA_STATUS_TOTAL_DAYS_MAP[currentStatus] ??
+                null,
+            deadlineDays:
+                computedDaysMap[currentStatus] ??
+                VISA_STATUS_TOTAL_DAYS_MAP[currentStatus] ??
+                null,
+            statusDeadlineMap: computedDaysMap,
+            deadlineDate,
+            warningDate,
+            daysRemaining,
+            warningAlreadySent: false,
+            shouldSendWarning: false,
+            isOverdue: daysRemaining < 0,
+        };
+    }
+
+
     const storedDeadlineDate = getVisaStoredDeadlineDate(application, currentStatus);
+
     if (storedDeadlineDate) {
         const warningDate = storedDeadlineDate.subtract(1, 'day').startOf('day');
         const daysRemaining = storedDeadlineDate.diff(currentDate, 'day');
@@ -469,7 +518,37 @@ const decorateVisaApplication = (application) => {
 
     const deadlineInfo = getVisaDeadlineInfo(plainApplication);
     const statusText = getCurrentVisaStatus(plainApplication);
-    const processSteps = plainApplication.processSteps || buildProcessSteps(plainApplication, getVisaProcessStepsFromApplication(plainApplication));
+    const rebuiltProcessSteps = buildProcessSteps(
+        plainApplication,
+        getVisaProcessStepsFromApplication(plainApplication)
+    );
+
+    const storedProcessSteps =
+        plainApplication.processSteps &&
+            typeof plainApplication.processSteps === 'object'
+            ? plainApplication.processSteps
+            : {};
+
+    const processSteps = {
+        ...rebuiltProcessSteps
+    };
+
+    Object.entries(storedProcessSteps).forEach(([stepTitle, storedStep]) => {
+        const rebuiltStep = rebuiltProcessSteps[stepTitle] || {};
+
+        processSteps[stepTitle] = {
+            ...rebuiltStep,
+            ...(storedStep || {}),
+            setDate:
+                storedStep?.setDate ||
+                rebuiltStep?.setDate ||
+                null,
+            deadlineDate:
+                storedStep?.deadlineDate ||
+                rebuiltStep?.deadlineDate ||
+                null,
+        };
+    });
 
     return {
         ...plainApplication,
@@ -534,7 +613,6 @@ const sendVisaDeadlineWarning = async (application) => {
             <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
-                    <h2 style="color:#305797;">Visa Deadline Reminder</h2>
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">One day remains to complete <b>${statusLabel}</b> for your visa application <b>${applicationNumber}</b>.</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Deadline: <b>${deadlineLabel}</b></p>
@@ -630,10 +708,9 @@ const sendVisaPenaltyNotification = async (application, deadlineInfo) => {
         to: user.email,
         subject: `Visa Application On Penalty: ${applicationNumber}`,
         html: `
-            <div style="font-family: Arial, sans-serif; background:#305797; padding:30px 16px;">
+            <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                 <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
-                    <h2 style="color:#305797;">Visa Application On Penalty</h2>
                     <p style="color:#555; font-size:16px;">Hello <b>${displayName}</b>,</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Your visa application <b>${applicationNumber}</b> is on penalty because <b>${deadlineInfo.status}</b> was not completed on time.</p>
                     <p style="color:#555; font-size:15px; line-height:1.6;">Penalty fee: <b>PHP ${PENALTY_AMOUNT.toLocaleString('en-PH')}</b></p>
@@ -667,7 +744,8 @@ const rejectVisaApplicationForDeadline = async (application, deadlineInfo, reach
     }
 
     const currentStatus = getCurrentVisaStatus(application);
-    if (!currentStatus || VISA_TERMINAL_STATUSES.has(currentStatus) || currentStatus === 'Rejected') {
+    if (!currentStatus || VISA_TERMINAL_STATUSES.has(currentStatus) || isVisaPenaltyExemptStatus(currentStatus) || currentStatus === 'Rejected'
+    ) {
         return { rejected: false, application };
     }
 
@@ -760,6 +838,12 @@ const markVisaApplicationOnPenalty = async (application, deadlineInfo = null) =>
         return { penalized: false, application };
     }
 
+    const currentStatus = getCurrentVisaStatus(application);
+
+    if (isVisaPenaltyExemptStatus(currentStatus)) {
+        return { penalized: false, application };
+    }
+
     if (application.onPenalty || application.secondChance || String(application.status || '').trim() === 'Rejected') {
         return { penalized: false, application };
     }
@@ -807,32 +891,101 @@ const markVisaApplicationOnPenalty = async (application, deadlineInfo = null) =>
 
 //process visa deadline action function
 const processVisaDeadlineAction = async (application) => {
-    const deadlineInfo = getVisaDeadlineInfo(application);
-    if (!deadlineInfo) {
-        return { application, warned: false, rejected: false };
+    if (!application) {
+        return {
+            application,
+            warned: false,
+            rejected: false,
+            penalized: false
+        };
     }
 
-    const currentStatus = String(getCurrentVisaStatus(application) || '').trim();
-    const isPaymentCompleted = currentStatus.toLowerCase() === 'payment completed';
+    const currentStatus = String(
+        getCurrentVisaStatus(application) || ''
+    ).trim();
+
+    if (isVisaPenaltyExemptStatus(currentStatus)) {
+        const hasInvalidPenaltyState = Boolean(
+            application.onPenalty ||
+            application.secondChance ||
+            application.reachedSecondDeadline ||
+            application.penaltyDeadline
+        );
+
+        if (hasInvalidPenaltyState) {
+            application.onPenalty = false;
+            application.secondChance = false;
+            application.reachedSecondDeadline = false;
+            application.penaltyDeadline = '';
+
+            if (typeof application.save === 'function') {
+                await application.save();
+            }
+        }
+
+        return {
+            application,
+            warned: false,
+            rejected: false,
+            penalized: false
+        };
+    }
+
+    const deadlineInfo = getVisaDeadlineInfo(application);
+
+    if (!deadlineInfo) {
+        return {
+            application,
+            warned: false,
+            rejected: false,
+            penalized: false
+        };
+    }
+
+    const isPaymentCompleted =
+        currentStatus.toLowerCase() === 'payment completed';
 
     if (deadlineInfo.isOverdue) {
         if (application?.secondChance && isPaymentCompleted) {
-            return rejectVisaApplicationForDeadline(application, deadlineInfo, true);
+            return rejectVisaApplicationForDeadline(
+                application,
+                deadlineInfo,
+                true
+            );
         }
 
         if (application?.onPenalty) {
-            return rejectVisaApplicationForDeadline(application, deadlineInfo, false);
+            return rejectVisaApplicationForDeadline(
+                application,
+                deadlineInfo,
+                false
+            );
         }
 
-        return markVisaApplicationOnPenalty(application, deadlineInfo);
+        return markVisaApplicationOnPenalty(
+            application,
+            deadlineInfo
+        );
     }
 
     if (deadlineInfo.shouldSendWarning) {
-        const warningResult = await sendVisaDeadlineWarning(application);
-        return { ...warningResult, warned: true, rejected: false };
+        const warningResult =
+            await sendVisaDeadlineWarning(application);
+
+        return {
+            ...warningResult,
+            warned: true,
+            rejected: false,
+            penalized: false
+        };
     }
 
-    return { application, warned: false, rejected: false };
+    return {
+        application,
+        warned: false,
+        rejected: false,
+        penalized: false
+    };
 };
 
 

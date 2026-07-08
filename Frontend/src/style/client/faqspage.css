@@ -86,6 +86,7 @@
 }
 
 .faq-filter-button {
+    font-family: 'Montserrat', sans-serif;
     border-radius: 999px;
     border: 1px solid #d8e1f0;
     color: #1f3b66;
@@ -187,7 +188,7 @@
 }
 
 .faq-contact-button {
-    font-family: "Roboto", sans-serif;
+    font-family: "Montserrat", sans-serif;
     font-size: 15px;
     font-weight: 600;
     background-color: #305797;
@@ -204,6 +205,19 @@
     background-color: #244575 !important;
     color: #fff !important;
 }
+
+.faq-question {
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.faq-answer {
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
 
 @media (max-width: 1024px) {
     .faq-hero {

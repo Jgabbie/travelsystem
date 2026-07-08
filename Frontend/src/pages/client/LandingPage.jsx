@@ -323,21 +323,51 @@ export default function LandingPage() {
 
             try {
                 const response = await apiFetch.get('/recommendations')
-                const packages = (response?.packages || response?.tours || []).map((pkg) => ({
-                    id: pkg?._id || pkg?.packageId || pkg?.id || '',
-                    packageCode: pkg?.packageCode || pkg?._id || pkg?.packageId || pkg?.id || '',
-                    packageName: pkg?.packageName || 'Recommended package',
-                    packageDescription: pkg?.packageDescription || '',
-                    packageImages: Array.isArray(pkg.images)
-                        ? pkg.images
-                        : Array.isArray(pkg.packageImages)
-                            ? pkg.packageImages
-                            : [],
-                    packageType: pkg?.packageType || pkg?.tourType || '',
-                    discountPercent: Number.isFinite(Number(pkg.packageDiscountPercent))
-                        ? Number(pkg.packageDiscountPercent)
-                        : (Number.isFinite(Number(pkg.discountPercent)) ? Number(pkg.discountPercent) : 0)
-                }))
+                const packages = (response?.packages || response?.tours || []).map((pkg) => {
+                    // Supports both a direct package object and a populated packageItem object
+                    const packageData =
+                        pkg?.packageItem && typeof pkg.packageItem === 'object'
+                            ? pkg.packageItem
+                            : pkg;
+
+                    const packageItem =
+                        packageData?._id ||
+                        (typeof pkg?.packageItem === 'string' ? pkg.packageItem : '') ||
+                        pkg?.packageId ||
+                        pkg?.id ||
+                        '';
+
+                    return {
+                        packageItem,
+                        packageCode: packageData?.packageCode || pkg?.packageCode || '',
+                        packageName:
+                            packageData?.packageName ||
+                            pkg?.packageName ||
+                            'Recommended package',
+                        packageDescription:
+                            packageData?.packageDescription ||
+                            pkg?.packageDescription ||
+                            '',
+                        packageImages: Array.isArray(packageData?.images)
+                            ? packageData.images
+                            : Array.isArray(packageData?.packageImages)
+                                ? packageData.packageImages
+                                : [],
+                        packageType:
+                            packageData?.packageType ||
+                            packageData?.tourType ||
+                            pkg?.packageType ||
+                            pkg?.tourType ||
+                            '',
+                        discountPercent: Number.isFinite(
+                            Number(packageData?.packageDiscountPercent)
+                        )
+                            ? Number(packageData.packageDiscountPercent)
+                            : Number.isFinite(Number(packageData?.discountPercent))
+                                ? Number(packageData.discountPercent)
+                                : 0
+                    };
+                });
 
                 if (!isMounted) return
 
@@ -578,8 +608,10 @@ export default function LandingPage() {
                     </div>
 
                     <div className='popular-packages-section'>
-                        <h1 className='popular-packages-text' style={{ color: "#ffffff" }}>Popular Packages</h1>
-
+                        <h1 className='popular-packages-text' style={{ color: "#ffffff" }}>POPULAR PACKAGES</h1>
+                        <p className='for-you-method' style={{ color: "#ffffff" }} >
+                            These packages are the most booked and highly rated packages by the travelers.
+                        </p>
                         <div className='popular-packages'>
                             {isPopularLoading ? (
                                 <p>Loading popular packages...</p>
@@ -705,8 +737,7 @@ export default function LandingPage() {
                             'review-content-fallback'
                         ].includes(recommendationMethod) ? (
                             <p className='for-you-method'>
-                                These packages are recommended based on your ratings
-                                and the ratings of other travelers.
+                                These packages are recommended based on your ratings.
                             </p>
                         ) : (
                             <p className='for-you-method'>
@@ -716,7 +747,7 @@ export default function LandingPage() {
 
                         {!auth && !authLoading ? (
                             <div className='for-you-empty-state'>
-                                <p>Log in to get personalized package recommendations.</p>
+                                <p className='for-you-method' style={{ color: '#787878', fontSize: '14px' }}>Log in to get personalized package recommendations.</p>
                                 <Button className='for-you-login-button' type='primary' onClick={() => setIsLoginVisible(true)}>Log In</Button>
                             </div>
                         ) : isForYouLoading ? (
@@ -730,9 +761,13 @@ export default function LandingPage() {
                                 {forYouPackages.map((pkg) => (
                                     <Card
                                         className='package-card for-you-card popular-packages-card'
-                                        key={pkg.packageCode || pkg.id}
+                                        key={pkg.packageItem}
                                         hoverable
-                                        onClick={() => navigate('/package', { state: { packageCode: pkg.packageCode } })}
+                                        onClick={() =>
+                                            navigate('/package', {
+                                                state: { packageItem: pkg.packageItem }
+                                            })
+                                        }
                                         cover={
                                             <div className="popular-card-cover">
                                                 {pkg.packageImages && pkg.packageImages.length > 0 ? (
@@ -773,7 +808,9 @@ export default function LandingPage() {
                                             className="popular-card-cta"
                                             onClick={(event) => {
                                                 event.stopPropagation()
-                                                navigate('/package', { state: { packageCode: pkg.packageCode } })
+                                                navigate('/package', {
+                                                    state: { packageItem: pkg.packageItem }
+                                                })
                                             }}
                                         >
                                             View Package
@@ -1366,6 +1403,6 @@ export default function LandingPage() {
                 </div>
             </Modal>
 
-        </ConfigProvider>
+        </ConfigProvider >
     );
 }

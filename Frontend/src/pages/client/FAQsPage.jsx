@@ -154,8 +154,8 @@ export default function FAQsPage() {
                     ) : (
                         <Collapse accordion className="faq-collapse">
                             {filteredFaqs.map((item, index) => (
-                                <Panel header={item.question} key={`${item.question}-${index}`}>
-                                    <p>{item.answer}</p>
+                                <Panel className='faq-question' header={item.question} key={`${item.question}-${index}`}>
+                                    <p className='faq-answer'> &gt; {item.answer}</p>
                                 </Panel>
                             ))}
                         </Collapse>

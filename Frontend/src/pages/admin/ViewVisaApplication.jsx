@@ -857,7 +857,8 @@ export default function ViewVisaApplication() {
 
                                                         const stepInfo = getProcessStepInfoForTitle(application, stepTitle);
                                                         const stepSetDate = stepInfo?.setDate ? dayjs(stepInfo.setDate) : null;
-                                                        const stepDeadlineDate = stepInfo?.deadlineDate ? dayjs(stepInfo.deadlineDate) : null;
+                                                        const isProcessingByEmbassy = String(stepTitle || '').trim().toLowerCase() === 'processing by embassy';
+                                                        const stepDeadlineDate = stepInfo?.deadlineDate ? dayjs(stepInfo.deadlineDate) : isProcessingByEmbassy && application?.preferredDate ? dayjs(application.preferredDate).startOf('day') : null;
                                                         const daysAgo = stepSetDate ? dayjs().diff(stepSetDate, 'day') : null;
                                                         const daysLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'day') : null;
                                                         const hoursLeft = stepDeadlineDate ? stepDeadlineDate.diff(dayjs(), 'hour') : null;

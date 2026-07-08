@@ -217,9 +217,9 @@ export default function TopNavUser() {
 
     // navigation items for the top nav bar
     const navItems = [
-        { label: 'HOME', route: '/home' },
-        { label: 'DESTINATIONS', route: '/destinations-packages' },
-        { label: 'SERVICES', route: '/passandvisa-service' },
+        { label: 'Home', route: '/home' },
+        { label: 'Destinations', route: '/destinations-packages' },
+        { label: 'Services', route: '/passandvisa-service' },
         { label: 'FAQ', route: '/general-faq' },
     ];
 
