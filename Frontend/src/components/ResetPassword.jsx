@@ -228,7 +228,15 @@ export default function ResetPassword() {
                 },
             }}
         >
-            <Spin spinning={isLoading} tip="Loading..." size="large">
+            <>
+                {isLoading && (
+                    <div className="resetpassword-loading-overlay">
+                        <div className="resetpassword-loading-content">
+                            <Spin size="large" />
+                        </div>
+                    </div>
+                )}
+
                 <div>
                     {isOTPValid ?
                         <div className='newpassword-page-container'>
@@ -240,7 +248,7 @@ export default function ResetPassword() {
                                     </div>
 
                                     <div className='div-input-fields'>
-                                        <label className='newpassword-labels' htmlFor="password">Password</label>
+                                        <label className='newpassword-labels' htmlFor="password">Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={error.password.length ? "error" : ""} value={values.password} maxLength={16} onChange={(e) => valueHandler("password", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                             if (e.key === " " && e.key !== "Backspace") {
                                                 e.preventDefault()
@@ -248,12 +256,16 @@ export default function ResetPassword() {
                                         }} type="password" id="password" name="password" className='newpassword-input-fields' required />
                                     </div>
 
-                                    {error.password.length > 0 && (
-                                        <p id='error-message'>{error.password[0]}</p>
-                                    )}
+                                    <div className="newpassword-error-space">
+                                        {error.password.length > 0 && (
+                                            <p className="newpassword-error-message">
+                                                {error.password[0]}
+                                            </p>
+                                        )}
+                                    </div>
 
                                     <div className='div-input-fields'>
-                                        <label className='newpassword-labels' htmlFor="confirmPassword">Confirm Password</label>
+                                        <label className='newpassword-labels' htmlFor="confirmPassword">Confirm Password <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input.Password status={error.confirmPassword.length ? "error" : ""} value={values.confirmPassword} maxLength={16} onChange={(e) => valueHandler("confirmPassword", e.target.value)} autoComplete='off' onKeyDown={(e) => {
                                             if (e.key === " " && e.key !== "Backspace") {
                                                 e.preventDefault()
@@ -261,9 +273,13 @@ export default function ResetPassword() {
                                         }} type="password" id="confirmPassword" name="confirmPassword" className='newpassword-input-fields' required />
                                     </div>
 
-                                    {error.confirmPassword.length > 0 && (
-                                        <p id='error-message'>{error.confirmPassword[0]}</p>
-                                    )}
+                                    <div className="newpassword-error-space">
+                                        {error.confirmPassword.length > 0 && (
+                                            <p className="newpassword-error-message">
+                                                {error.confirmPassword[0]}
+                                            </p>
+                                        )}
+                                    </div>
 
                                     <div id='newpassword-links-container'>
                                         <Button className='newpassword-button-links' type='link' onClick={goToLogin}>Remembered your password? Go to Login</Button>
@@ -289,7 +305,7 @@ export default function ResetPassword() {
                                     </div>
 
                                     <div className='resetpassword-div-input-fields'>
-                                        <label className='labels' htmlFor="email">Email</label>
+                                        <label className='labels' htmlFor="email">Email <span style={{ color: "#ff0000" }}>*</span></label>
                                         <Input
                                             status={errorEmail ? "error" : ""}
                                             value={getEmail}
@@ -385,7 +401,7 @@ export default function ResetPassword() {
                     </Modal>
 
                 </div>
-            </Spin>
-        </ConfigProvider>
+            </>
+        </ConfigProvider >
     )
 }
