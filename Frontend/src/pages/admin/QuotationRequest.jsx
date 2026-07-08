@@ -785,15 +785,13 @@ export default function QuotationRequest() {
                     </div>
                     {/* BOOKED OR COMPLETE STATUS */}
                     {quotation?.status && ['booked', 'complete', 'completed'].includes(quotation.status.toLowerCase()) ? (
-                        <Card
-                            style={{ borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed' }}
-                            className={`quotationrequest-status-card${isBooked ? ' is-booked' : ''}`}
-                            title={<Tag className="quotation-request-tag" color="green">Quotation {quotation.status}</Tag>}
-                        >
-                            <p className="quotation-request-tag-text">
-                                This quotation has been successfully booked.
+                        <div style={{ marginBottom: 24, borderLeft: '4px solid #00bf63', backgroundColor: '#f6ffed', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#00bf63' }}>QUOTATION BOOKED</h2>
+                            <p style={{ margin: 0, fontSize: 14 }}>
+                                You have successfully booked this quotation.
+                                Kindly wait and prepare for further details about your booking.
                             </p>
-                        </Card>
+                        </div>
                     ) : null}
                     <div className="quotationrequest-content-stack">
                         <Card

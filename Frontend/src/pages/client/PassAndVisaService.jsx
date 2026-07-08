@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Input, ConfigProvider, Empty } from 'antd'
-import { FacebookFilled, InstagramFilled, SearchOutlined } from '@ant-design/icons'
+import { Button, Input, ConfigProvider, Empty, Card } from 'antd'
+import { FacebookFilled, InstagramFilled, SearchOutlined, FileTextOutlined } from '@ant-design/icons'
 import '../../style/client/passandvisaservice.css'
 import { useNavigate } from 'react-router-dom'
 import apiFetch from '../../config/fetchConfig'
@@ -142,60 +142,121 @@ export default function PassAndVisaService() {
                                 {filteredVisas.length === 0 ? (
                                     <Empty description="No visa services found" />
                                 ) : (
-                                    filteredVisas.map((visa) => (
-                                        <div
-                                            className="passandvisa-visa-card"
-                                            key={visa.visaItem}
-                                        >
-                                            <div className="passandvisa-visa-media">
-                                                {visa.visaImage ? (
-                                                    <img
-                                                        src={visa.visaImage}
-                                                        alt={`${visa.visaName} flag`}
-                                                        className="passandvisa-visa-image"
-                                                        draggable={false}
-                                                    />
-                                                ) : (
-                                                    <div className="passandvisa-visa-image-placeholder">
-                                                        No image
-                                                    </div>
-                                                )}
-                                            </div>
+                                    filteredVisas.map((visa) => {
+                                        const visaId =
+                                            visa.visaItem ||
+                                            visa._id ||
+                                            visa.id
 
-                                            <div className="passandvisa-visa-content">
-                                                <div className="passandvisa-visa-information">
-                                                    <h3>{visa.visaName}</h3>
+                                        const formattedPrice =
+                                            Number(visa.visaPrice) > 0
+                                                ? `₱${Number(
+                                                    visa.visaPrice
+                                                ).toLocaleString('en-PH')}`
+                                                : 'Contact Us'
 
-                                                    <p className="passandvisa-visa-description">
-                                                        {visa.visaDescription}
-                                                    </p>
+                                        const visaTypeLabel =
+                                            visa.visaType
+                                                ? String(visa.visaType)
+                                                : 'Visa Service'
 
-                                                    {visa.visaPrice !== undefined &&
-                                                        visa.visaPrice !== null && (
-                                                            <p className="passandvisa-visa-price">
-                                                                ₱{Number(visa.visaPrice).toLocaleString()} per Applicant
-                                                            </p>
+                                        const processingLabel =
+                                            visa.processing
+                                                ? String(visa.processing)
+                                                : ''
+
+                                        const handleApplyVisa = () => {
+                                            handleProtectedNavigation(
+                                                '/apply-visa',
+                                                {
+                                                    visaItem: visaId,
+                                                    visaName: visa.visaName,
+                                                    visaImage: visa.visaImage
+                                                }
+                                            )
+                                        }
+
+                                        return (
+                                            <Card
+                                                className="passandvisa-reference-card"
+                                                key={
+                                                    visaId ||
+                                                    visa.visaName
+                                                }
+                                                hoverable
+                                                onClick={handleApplyVisa}
+                                                cover={
+                                                    <div className="passandvisa-reference-cover">
+                                                        {visa.visaImage ? (
+                                                            <img
+                                                                src={visa.visaImage}
+                                                                alt={`${visa.visaName} visa`}
+                                                                className="passandvisa-reference-image"
+                                                                draggable={false}
+                                                            />
+                                                        ) : (
+                                                            <div className="passandvisa-reference-image-placeholder">
+                                                                No Image
+                                                            </div>
                                                         )}
+
+                                                        {processingLabel && (
+                                                            <span className="passandvisa-reference-processing">
+                                                                {processingLabel}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                }
+                                            >
+                                                <h3 className="passandvisa-reference-title">
+                                                    {visa.visaName}
+                                                </h3>
+
+                                                <p className="passandvisa-reference-description">
+                                                    {visa.visaDescription ||
+                                                        'Visa application assistance and document processing service.'}
+                                                </p>
+
+                                                <div className="passandvisa-reference-price">
+                                                    {formattedPrice}
                                                 </div>
 
-                                                <div className="passandvisa-visa-actions">
-                                                    <Button
-                                                        className="visa-apply-btn"
-                                                        type="primary"
-                                                        onClick={() =>
-                                                            handleProtectedNavigation("/apply-visa", {
-                                                                visaItem: visa.visaItem,
-                                                                visaName: visa.visaName,
-                                                                visaImage: visa.visaImage
-                                                            })
-                                                        }
-                                                    >
-                                                        Apply
-                                                    </Button>
+                                                <p className="passandvisa-reference-price-label">
+                                                    Service fee per applicant
+                                                </p>
+
+                                                <div className="passandvisa-reference-details">
+                                                    <span>
+                                                        {visaTypeLabel}
+                                                    </span>
+
+                                                    {processingLabel && (
+                                                        <>
+                                                            <span className="passandvisa-reference-divider">
+                                                                •
+                                                            </span>
+
+                                                            <span>
+                                                                {processingLabel}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        </div>
-                                    ))
+
+                                                <Button
+                                                    type="primary"
+                                                    className="passandvisa-reference-button"
+                                                    icon={<FileTextOutlined />}
+                                                    onClick={(event) => {
+                                                        event.stopPropagation()
+                                                        handleApplyVisa()
+                                                    }}
+                                                >
+                                                    APPLY NOW
+                                                </Button>
+                                            </Card>
+                                        )
+                                    })
                                 )}
                             </div>
                         </section>

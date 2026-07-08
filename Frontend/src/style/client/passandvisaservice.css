@@ -287,69 +287,213 @@
     width: 100%;
 }
 
-.passport-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    user-select: none;
+.visa-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 24px;
+}
+
+.passandvisa-reference-card.ant-card {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    width: 100%;
+    max-width: 380px;
+    height: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    box-shadow: none;
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 }
 
-.passport-card .passport-card-heading {
+.passandvisa-reference-card.ant-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(48, 87, 151, 0.35);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.16);
+}
+
+.passandvisa-reference-card .ant-card-cover {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.passandvisa-reference-card .ant-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    min-height: 300px;
+    padding: 18px 18px 20px !important;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Visa image */
+.passandvisa-reference-cover {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    background-color: #eeeeee;
+}
+
+.passandvisa-reference-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.passandvisa-reference-card:hover .passandvisa-reference-image {
+    transform: scale(1.05);
+}
+
+.passandvisa-reference-image-placeholder {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin: 0;
-}
-
-.passport-card-icon {
-    width: 30px;
-    height: 30px;
-    object-fit: contain;
-    flex-shrink: 0;
-}
-
-.passport-card h3 {
-    margin: 0;
-    font-size: 19px;
-    font-weight: 700;
-    color: #0f172a;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #777777;
+    background-color: #eeeeee;
     font-family: "Montserrat", sans-serif;
-}
-
-.passport-card p {
-    margin: 0;
-    color: #475569;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.passport-price {
+    font-size: 13px;
     font-weight: 600;
-    color: #1f2a44;
+    text-transform: uppercase;
 }
 
-.passport-card:hover,
-.passport-card:focus-visible {
-    border-color: #305797;
-    box-shadow: 0 12px 28px rgba(48, 87, 151, 0.2);
+/* Processing badge */
+.passandvisa-reference-processing {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    z-index: 6;
+    max-width: calc(100% - 24px);
+    padding: 6px 12px;
+    overflow: hidden;
+    color: #ffffff;
+    background-color: #00bf63;
+    border-radius: 999px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* Visa name */
+.passandvisa-reference-title {
+    display: -webkit-box;
+    width: 100%;
+    min-height: 46px;
+    margin: 0 0 8px;
+    overflow: hidden;
+    color: #161616;
+    font-family: "Montserrat", sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+/* Description */
+.passandvisa-reference-description {
+    display: -webkit-box;
+    width: 100%;
+    min-height: 63px;
+    margin: 0 0 12px;
+    overflow: hidden;
+    color: #667085;
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    line-height: 1.65;
+    text-align: center;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+/* Price */
+.passandvisa-reference-price {
+    margin-bottom: 2px;
+    color: #244574;
+    font-family: "Montserrat", sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.passandvisa-reference-price-label {
+    margin: 0 0 10px;
+    color: #929292;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+}
+
+/* Visa type and processing details */
+.passandvisa-reference-details {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 18px;
+    margin-bottom: 18px;
+    color: #6d6d6d;
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.passandvisa-reference-divider {
+    color: #b0b0b0;
+}
+
+/* Apply button */
+.passandvisa-reference-button.ant-btn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 140px;
+    height: 38px;
+    margin-top: auto;
+    padding: 0 18px;
+    color: #ffffff;
+    background-color: #305797;
+    border: none;
+    border-radius: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    box-shadow: none;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.passandvisa-reference-button.ant-btn:hover,
+.passandvisa-reference-button.ant-btn:focus {
+    color: #ffffff !important;
+    background-color: #244575 !important;
     transform: translateY(-2px);
-}
-
-.passport-card:active {
-    transform: translateY(0);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
-}
-
-.passport-card:focus-visible {
-    outline: 3px solid rgba(48, 87, 151, 0.35);
-    outline-offset: 3px;
 }
 
 .passandvisa-hero-section {
@@ -396,6 +540,25 @@
     max-width: 700px;
     margin: 0 auto;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.passport-card-heading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.passport-card-heading h3 {
+    margin: 0;
+}
+
+.passport-card-icon {
+    width: 35px;
+    height: 35px;
+    flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {

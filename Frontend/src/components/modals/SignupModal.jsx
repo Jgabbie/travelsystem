@@ -579,85 +579,124 @@ export default function SignupModal({ isOpenSignup, isCloseSignup, onOpenLogin }
 
                 <Modal
                     open={isTermsModalOpen}
-                    title="Terms and Conditions"
+                    rootClassName="signup-terms-modal-root"
                     className="signup-terms-modal"
-                    footer={[
+                    closable={false}
+                    maskClosable={false}
+                    footer={
                         <div className="signup-terms-footer">
                             <Button
-                                key="close"
-                                type="primary"
+                                type="text"
                                 onClick={() => setIsTermsModalOpen(false)}
                                 className="signup-terms-close-button"
                             >
-                                Close
+                                Cancel
                             </Button>
 
                             <Button
-                                key="agree"
                                 type="primary"
                                 className="signup-terms-agree-button"
                                 onClick={() => {
                                     setAcceptedTerms(true);
-                                    setError('');
+
+                                    setError((prev) => ({
+                                        ...prev,
+                                        terms: ''
+                                    }));
+
                                     setIsTermsModalOpen(false);
                                 }}
                             >
-                                I Agree
+                                Agree
                             </Button>
                         </div>
-                    ]}
+                    }
                     onCancel={() => setIsTermsModalOpen(false)}
                     centered
-                    width={1000}
+                    width={850}
                 >
+                    <div className="signup-terms-header">
+                        <h2>Terms and Conditions</h2>
+                        <h3>Your Agreement</h3>
+                    </div>
+
                     <div className="signup-terms-content-modal">
-                        <h3>1. Acceptance of Terms</h3>
-                        <p>
-                            By creating or accessing an account with M&RC Travel and Tours,
-                            you agree to comply with these Terms and Conditions.
+                        <p className="signup-terms-revised">
+                            Last Revised: July 8, 2026
                         </p>
 
-                        <h3>2. Account Information</h3>
                         <p>
-                            You are responsible for providing accurate account information
-                            and keeping your login credentials secure.
+                            Welcome to M&amp;RC Travel and Tours. This platform is provided as
+                            a service to our users and may be used for travel bookings,
+                            passport assistance, visa assistance, quotations, and other
+                            related travel services. Because these Terms and Conditions
+                            contain legal obligations, please read them carefully.
                         </p>
 
-                        <h3>3. Booking and Payment</h3>
+                        <h4>1. Acceptance of Terms</h4>
                         <p>
-                            All bookings are subject to availability. Prices, deposits,
-                            payment deadlines, and cancellation policies may vary depending
-                            on the selected travel package or service.
+                            By creating or accessing an account with M&amp;RC Travel and Tours,
+                            you agree to comply with and be bound by these Terms and Conditions.
+                            If you do not agree with these terms, please do not create an
+                            account or use the platform.
                         </p>
 
-                        <h3>4. Cancellations and Refunds</h3>
+                        <h4>2. Account Information</h4>
+                        <p>
+                            You are responsible for providing complete, accurate, and updated
+                            account information. You are also responsible for keeping your
+                            username, password, and other account credentials secure.
+                        </p>
+
+                        <h4>3. Booking and Payment</h4>
+                        <p>
+                            All bookings are subject to availability. Package prices,
+                            deposits, payment schedules, payment deadlines, and additional
+                            charges may vary depending on the selected travel package or
+                            service.
+                        </p>
+
+                        <h4>4. Cancellations and Refunds</h4>
                         <p>
                             Cancellation and refund eligibility will depend on the applicable
-                            package, airline, hotel, embassy, or service provider policy.
+                            package, airline, hotel, embassy, travel provider, or service
+                            provider policy. Certain payments and processing fees may be
+                            non-refundable.
                         </p>
 
-                        <h3>5. User Responsibilities</h3>
+                        <h4>5. User Responsibilities</h4>
                         <p>
-                            Users must submit complete and valid information and documents.
-                            M&RC Travel and Tours will not be responsible for delays caused by
-                            incomplete, inaccurate, or expired documents.
+                            Users must submit complete, accurate, and valid information and
+                            documents. M&amp;RC Travel and Tours will not be responsible for
+                            delays, penalties, rejections, or additional expenses caused by
+                            incomplete, inaccurate, invalid, or expired documents.
                         </p>
 
-                        <h3>6. Privacy</h3>
+                        <h4>6. Passport and Visa Services</h4>
+                        <p>
+                            Passport and visa processing times may depend on the Department of
+                            Foreign Affairs, embassies, consulates, and other government
+                            agencies. Approval of an application is determined solely by the
+                            appropriate government authority.
+                        </p>
+
+                        <h4>7. Privacy</h4>
                         <p>
                             Personal information will be collected and processed only for
-                            account management, booking, payment, travel documentation, and
-                            related services.
+                            account management, travel bookings, payments, travel
+                            documentation, customer support, and other related services.
                         </p>
 
-                        <h3>7. Changes to the Terms</h3>
+                        <h4>8. Changes to the Terms</h4>
                         <p>
-                            M&RC Travel and Tours may update these Terms and Conditions when
-                            necessary. Continued use of the platform means that you accept
-                            the updated terms.
+                            M&amp;RC Travel and Tours may revise these Terms and Conditions
+                            whenever necessary. Continued use of the platform after changes
+                            are published means that you accept the updated terms.
                         </p>
                     </div>
                 </Modal>
+
+
             </div>
         </ConfigProvider>
     )
