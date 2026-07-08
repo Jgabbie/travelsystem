@@ -44,9 +44,15 @@
     box-shadow: 0 8px 20px rgba(48, 87, 151, 0.25);
 }
 
-.chatbot-send-button:hover {
+.chatbot-send-button:hover:not(:disabled) {
     background-color: #244575 !important;
     color: #fff !important;
+}
+
+.chatbot-send-button:disabled,
+.chatbot-send-button:disabled:hover {
+    cursor: pointer;
+    opacity: 0.5;
 }
 
 .chatbot-message-row {

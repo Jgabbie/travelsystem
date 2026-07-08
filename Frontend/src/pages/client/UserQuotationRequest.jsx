@@ -214,8 +214,8 @@ export default function UserQuotationRequest() {
 
                                     {/* QUOTATION PDF REVISIONS HISTORY */}
                                     <div className="history-grid-container">
-                                        <div className="custom-hisory-card">
-                                            <h2>Quotation Revision History</h2>
+                                        <div className="custom-history-card">
+                                            <h2 className="custom-history-card-heading">Quotation Revision History</h2>
                                             {quotation.pdfRevisions?.filter((rev) => rev?.url)?.length === 0 ? (
                                                 <p className="empty-state">No PDF revisions uploaded yet.</p>
                                             ) : (
@@ -238,8 +238,8 @@ export default function UserQuotationRequest() {
                                             )}
                                         </div>
 
-                                        <div className="custom-hisory-card">
-                                            <h2>Revision Notes History</h2>
+                                        <div className="custom-history-card">
+                                            <h2 className="custom-history-card-heading">Revision Notes History</h2>
                                             {quotation.revisionComments.length === 0 ? (
                                                 <p className="empty-state">No revision comments yet.</p>
                                             ) : (

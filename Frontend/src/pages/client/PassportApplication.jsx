@@ -935,12 +935,19 @@ export default function PassportApplication() {
                                                                     <div
                                                                         key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
                                                                         onClick={() => setSelectedSuggestedIndex(index)}
-                                                                        className='passportapplication-suggestedoption-card'
+                                                                        className={`passportapplication-suggestedoption-card ${isSelected ? 'selected' : ''
+                                                                            }`}
                                                                         style={{
                                                                             border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
                                                                             boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
                                                                         }}
                                                                     >
+                                                                        {isSelected && (
+                                                                            <span className="passportapplication-selected-tag">
+                                                                                Selected
+                                                                            </span>
+                                                                        )}
+
                                                                         <Tag color="blue">Option {index + 1}</Tag>
                                                                         <div className='passportapplication-suggestedoptions-date' style={{ marginTop: 8, fontWeight: 600 }}>
                                                                             {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
@@ -955,6 +962,8 @@ export default function PassportApplication() {
                                                             {/* "Others" Option Card */}
                                                             <div
                                                                 onClick={() => setSelectedSuggestedIndex('others')}
+                                                                className={`passportapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                    }`}
                                                                 style={{
                                                                     padding: 16,
                                                                     borderRadius: 16,
@@ -1041,6 +1050,12 @@ export default function PassportApplication() {
                                                             className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                                             style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                         >
+                                                            {method === "paymongo" && (
+                                                                <span className="payment-card-selected-tag">
+                                                                    Selected
+                                                                </span>
+                                                            )}
+
                                                             <div className="card-content">
                                                                 <h3>Paymongo</h3>
                                                                 <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
@@ -1053,6 +1068,12 @@ export default function PassportApplication() {
                                                             className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                                             style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                         >
+                                                            {method === "manual" && (
+                                                                <span className="payment-card-selected-tag">
+                                                                    Selected
+                                                                </span>
+                                                            )}
+
                                                             <div className="card-content">
                                                                 <h3>Manual Payment</h3>
                                                                 <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
@@ -1193,6 +1214,12 @@ export default function PassportApplication() {
                                                             className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                                             style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                         >
+                                                            {method === "paymongo" && (
+                                                                <span className="payment-card-selected-tag">
+                                                                    Selected
+                                                                </span>
+                                                            )}
+
                                                             <div className="card-content">
                                                                 <h3>Paymongo</h3>
                                                                 <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
@@ -1205,6 +1232,12 @@ export default function PassportApplication() {
                                                             className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                                             style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                         >
+                                                            {method === "manual" && (
+                                                                <span className="payment-card-selected-tag">
+                                                                    Selected
+                                                                </span>
+                                                            )}
+
                                                             <div className="card-content">
                                                                 <h3>Manual Payment</h3>
                                                                 <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>

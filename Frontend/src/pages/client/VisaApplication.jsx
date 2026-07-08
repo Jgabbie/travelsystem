@@ -921,12 +921,14 @@ export default function VisaApplication() {
 
                                                             <div
                                                                 onClick={() => setReleaseOption('pickup')}
+                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                    }`}
                                                                 style={{
                                                                     border: releaseOption === 'pickup'
                                                                         ? '2px solid #305797'
                                                                         : '1px solid #f0f0f0',
-                                                                    flex: '1 1 220px', // ✅ responsive width instead of fixed
-                                                                    maxWidth: 400,     // ✅ prevents cards from getting too wide
+                                                                    flex: '1 1 220px',
+                                                                    maxWidth: 400,
                                                                     padding: 16,
                                                                     textAlign: 'center',
                                                                     cursor: 'pointer',
@@ -934,6 +936,12 @@ export default function VisaApplication() {
                                                                     borderRadius: 12,
                                                                 }}
                                                             >
+                                                                {releaseOption === 'pickup' && (
+                                                                    <span className="visaapplication-selected-tag">
+                                                                        Selected
+                                                                    </span>
+                                                                )}
+
                                                                 <h3 style={{ marginBottom: 8, fontSize: 14 }}>PICK UP</h3>
                                                                 <p style={{ color: '#305797', fontWeight: 500, fontSize: 13 }}>
                                                                     Claim your visa documents at our office
@@ -942,6 +950,8 @@ export default function VisaApplication() {
 
                                                             <div
                                                                 onClick={() => setReleaseOption('delivery')}
+                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                    }`}
                                                                 style={{
                                                                     border: releaseOption === 'delivery'
                                                                         ? '2px solid #305797'
@@ -955,6 +965,12 @@ export default function VisaApplication() {
                                                                     borderRadius: 12,
                                                                 }}
                                                             >
+                                                                {releaseOption === 'delivery' && (
+                                                                    <span className="visaapplication-selected-tag">
+                                                                        Selected
+                                                                    </span>
+                                                                )}
+
                                                                 <h3 style={{ marginBottom: 8, fontSize: 14 }}>DELIVERY</h3>
                                                                 <p style={{ color: '#305797', fontWeight: 500, fontSize: 13 }}>
                                                                     Have your visa documents delivered to you
@@ -1007,12 +1023,20 @@ export default function VisaApplication() {
                                                                             <div
                                                                                 key={`${slot.date || 'date'}-${slot.time || 'time'}-${index}`}
                                                                                 onClick={() => setSelectedSuggestedIndex(index)}
-                                                                                className='visaapplication-suggestedoption-card'
+                                                                                className={`visaapplication-selection-card visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                                    }`}
                                                                                 style={{
                                                                                     border: isSelected ? '2px solid #305797' : '1px solid #f0f0f0',
                                                                                     boxShadow: isSelected ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
                                                                                 }}
                                                                             >
+                                                                                {isSelected && (
+                                                                                    <span className="visaapplication-selected-tag">
+                                                                                        Selected
+                                                                                    </span>
+                                                                                )}
+
+
                                                                                 <Tag color="blue">Option {index + 1}</Tag>
                                                                                 <div className='visaapplication-suggestedoptions-date' style={{ marginTop: 8, fontWeight: 600 }}>
                                                                                     {dayjs(slot.date).format("MMM DD, YYYY") || 'Date TBD'}
@@ -1025,6 +1049,8 @@ export default function VisaApplication() {
                                                                     {/* "Others" Option Card */}
                                                                     <div
                                                                         onClick={() => setSelectedSuggestedIndex('others')}
+                                                                        className={`visaapplication-suggestedoption-card ${selectedSuggestedIndex === 'others' ? 'selected' : ''
+                                                                            }`}
                                                                         style={{
                                                                             padding: 16,
                                                                             borderRadius: 16,
@@ -1032,6 +1058,11 @@ export default function VisaApplication() {
                                                                             boxShadow: selectedSuggestedIndex === 'others' ? '0 0 0 2px rgba(48,87,151,0.15)' : 'none'
                                                                         }}
                                                                     >
+                                                                        {selectedSuggestedIndex === 'others' && (
+                                                                            <span className="visaapplication-selected-tag">
+                                                                                Selected
+                                                                            </span>
+                                                                        )}
                                                                         <Tag color="orange">Others</Tag>
                                                                         <div className='visaapplication-suggestedoptions-group' style={{ marginTop: 8 }}>
                                                                             <Space orientation="vertical" style={{ width: '100%' }}>
@@ -1111,6 +1142,12 @@ export default function VisaApplication() {
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                                                     style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
+                                                                    {method === "paymongo" && (
+                                                                        <span className="payment-card-selected-tag">
+                                                                            Selected
+                                                                        </span>
+                                                                    )}
+
                                                                     <div className="card-content" >
                                                                         <h3>Paymongo</h3>
                                                                         <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
@@ -1123,6 +1160,12 @@ export default function VisaApplication() {
                                                                     className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                                                     style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
+                                                                    {method === "manual" && (
+                                                                        <span className="payment-card-selected-tag">
+                                                                            Selected
+                                                                        </span>
+                                                                    )}
+
                                                                     <div className="card-content">
                                                                         <h3>Manual Payment</h3>
                                                                         <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>
@@ -1261,6 +1304,13 @@ export default function VisaApplication() {
                                                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                                                     style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
+
+                                                                    {method === "paymongo" && (
+                                                                        <span className="payment-card-selected-tag">
+                                                                            Selected
+                                                                        </span>
+                                                                    )}
+
                                                                     <div className="card-content" >
                                                                         <h3>Paymongo</h3>
                                                                         <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
@@ -1273,6 +1323,12 @@ export default function VisaApplication() {
                                                                     className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                                                     style={{ flex: 1, height: 'auto', padding: '20px', borderRadius: 8 }}
                                                                 >
+                                                                    {method === "manual" && (
+                                                                        <span className="payment-card-selected-tag">
+                                                                            Selected
+                                                                        </span>
+                                                                    )}
+
                                                                     <div className="card-content">
                                                                         <h3>Manual Payment</h3>
                                                                         <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>

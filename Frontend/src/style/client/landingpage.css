@@ -1522,8 +1522,8 @@
 }
 
 .contact-submit-button {
-    font-family: "Roboto", sans-serif;
-    font-size: 13px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
     font-weight: 600;
     background-color: #305797;
     color: #fff;
@@ -1535,9 +1535,18 @@
     align-self: flex-start;
 }
 
-.contact-submit-button:hover {
+.contact-submit-button:hover:not(:disabled) {
     background-color: #244575 !important;
     color: #fff !important;
+}
+
+.contact-submit-button:disabled,
+.contact-submit-button:disabled:hover {
+    background-color: #305797 !important;
+    color: #ffffff !important;
+    box-shadow: none;
+    cursor: pointer;
+    opacity: 0.5;
 }
 
 .error-text {

@@ -1586,7 +1586,7 @@ const updateVisaApplicationStatus = async (req, res) => {
 
                                 <p style="color:#555;">Your visa application status has been updated.</p>
 
-                                <div style="text-align:center; color:#333; margin-top:15px;">
+                                <div style="text-align:left; color:#333; margin-top:15px;">
                                     <p style="font-size:16px; margin-bottom:10px;">Hello ${user.firstname || user.username},</p>
                                     <p>Your Visa Application Status is now <strong>${status}</strong>.</p>
                                 </div>
