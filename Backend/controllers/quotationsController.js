@@ -4,6 +4,8 @@ import ArchivedQuotationModel from '../models/archivedquotations.js'
 import UserModel from '../models/user.js'
 import NotificationModel from '../models/notification.js'
 import logAction from '../utils/logger.js'
+import transporter from '../config/nodemailer.js'
+import { buildBrandedEmail } from '../utils/emailTemplate.js'
 
 
 //generate unique quotation reference
@@ -276,6 +278,73 @@ const uploadQuotationPDF = async (req, res) => {
             })
         } catch (notificationError) {
             console.error('Failed to create notification:', notificationError)
+        }
+
+        // Send email notification
+        try {
+            if (quotationUser?.email) {
+                const recipientName =
+                    quotationUser.firstname ||
+                    quotationUser.username ||
+                    'Customer'
+
+                const clientUrl =
+                    process.env.FRONTEND_URL ||
+                    'http://localhost:3000'
+
+                const quotationPageUrl =
+                    `${clientUrl}/user-package-quotation`
+
+                const mailOptions = {
+                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    to: quotationUser.email,
+                    subject: `Quotation Update - ${quotation.reference}`,
+                    html: buildBrandedEmail({
+                        title: 'Quotation Update Available',
+                        introHtml: `Hello <strong>${recipientName}</strong>,`,
+                        bodyHtml: `
+                            <p style="margin:0 0 12px;">
+                                A new PDF has been uploaded for your quotation.
+                            </p>
+
+                            <div style="margin:16px 0; padding:14px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                <p style="margin:0 0 8px;">
+                                    <strong>Quotation reference:</strong>
+                                    ${quotation.reference}
+                                </p>
+
+                                <p style="margin:0 0 8px;">
+                                    <strong>PDF version:</strong>
+                                    ${versionNumber}
+                                </p>
+
+                                <p style="margin:0;">
+                                    <strong>Status:</strong>
+                                    Under Review
+                                </p>
+                            </div>
+
+                            <p style="margin:0;">
+                                You may view the updated quotation and submit a revision request through your account.
+                            </p>
+                        `,
+                        ctaText: 'View Quotation',
+                        ctaUrl: quotationPageUrl
+                    })
+                }
+
+                await transporter.sendMail(mailOptions)
+            } else {
+                console.error(
+                    `Unable to send quotation email: customer email was not found for ${quotation.reference}`
+                )
+            }
+        } catch (emailError) {
+            // The PDF remains uploaded even when the email fails.
+            console.error(
+                'Failed to send quotation update email:',
+                emailError
+            )
         }
 
         logAction('QUOTATION_FORM_UPLOADED', req.userId, { "Quotation Form Uploaded": `Reference: ${quotation.reference}` });
