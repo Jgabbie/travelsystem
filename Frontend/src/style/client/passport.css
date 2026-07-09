@@ -71,7 +71,8 @@
     padding: 22px 24px;
 }
 
-.passport-panel h3 {
+.passport-panel h3,
+.renew-passport-card.passport-panel h3 {
     margin: 0 0 16px;
     font-size: 22px;
     font-weight: 700;

@@ -98,6 +98,14 @@ const steps = [
     }
 ];
 
+const reminders = [
+    'Make sure all personal information matches your PSA birth certificate and valid ID.',
+    'Bring the original copies and photocopies of all required documents.',
+    'Arrive at the selected DFA location at least 30 minutes before your appointment.',
+    'Wear proper attire for your passport photo.',
+    'Your preferred appointment schedule is still subject to confirmation and availability.'
+];
+
 export default function NewPassport() {
     const [loginModalVisible, setLoginModalVisible] = useState(false);
     const [sentModalVisible, setSentModalVisible] = useState(false);
@@ -263,9 +271,25 @@ export default function NewPassport() {
                 <div className="passport-page">
 
                     <div className='passport-content'>
+                        <p
+                            style={{
+                                marginTop: 10,
+                                marginBottom: 15,
+                                marginLeft: 20,
+                                fontWeight: 700,
+                                fontSize: 30,
+                                fontFamily: 'Montserrat, sans-serif',
+                                color: '#992A46'
+                            }}
+                        >
+                            New Passport
+                        </p>
+
+                        {/* First row: Requirements and Reminders */}
                         <section className="passport-grid">
                             <div className="passport-panel">
                                 <h3>Requirements</h3>
+
                                 <ul className="passport-list">
                                     <li>Confirmed DFA appointment</li>
                                     <li>Accomplished application form</li>
@@ -276,7 +300,27 @@ export default function NewPassport() {
                             </div>
 
                             <div className="passport-panel">
+                                <h3>Reminders</h3>
+
+                                {reminders.length ? (
+                                    <ul className="passport-list">
+                                        {reminders.map((item, index) => (
+                                            <li key={`reminder-${index}`}>
+                                                {item}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>No reminders available.</p>
+                                )}
+                            </div>
+                        </section>
+
+                        {/* Second row: Process and Application Details */}
+                        <section className="passport-grid">
+                            <div className="passport-panel">
                                 <h3>Step-by-step process</h3>
+
                                 <div className="passport-steps">
                                     {steps.map((step, index) => (
                                         <div className="passport-step" key={step.title}>
@@ -292,92 +336,122 @@ export default function NewPassport() {
                                     ))}
                                 </div>
                             </div>
-                        </section>
 
-                        <section className="renew-passport-card">
-                            <h3>Application Details</h3>
-                            <div
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    padding: '6px 12px',
-                                    marginTop: 6,
-                                    marginBottom: 14,
-                                    borderRadius: 999,
-                                    background: 'rgba(48, 87, 151, 0.08)',
-                                    border: '1px solid rgba(48, 87, 151, 0.25)',
-                                    color: '#305797',
-                                    fontWeight: 600,
-                                }}
-                            >
-                                <span>Passport Fee</span>
-                                <span>PHP 2,000</span>
-                            </div>
-                            <div className="passport-form" style={{ display: 'flex', flexDirection: 'row' }}>
+                            <section className="renew-passport-card passport-panel">
+                                <h3>Application Details</h3>
 
-                                <div className="form-group-section">
-                                    <div className="form-group">
-                                        <label className="passport-label">Select DFA location</label>
-                                        <Select
-                                            className={`passport-select ${error.location ? 'input-error' : ''}`}
-                                            placeholder="Choose a DFA site"
-                                            value={location}
-                                            onChange={(value) => setLocation(value)}
-                                            options={dfaLocations.map((item) => ({ value: item, label: item }))}
-                                            popupRender={(menu) => (
-                                                <>
-                                                    {menu}
-                                                    <div style={{ padding: '8px', textAlign: 'center' }}>
-                                                        <em>More locations available on the official DFA website</em>
-                                                    </div>
-                                                </>
-                                            )}
-                                        />
-                                        <p className="error-message">
-                                            {error.location || ''}
-                                        </p>
-                                    </div>
+                                <div
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                        padding: '6px 12px',
+                                        marginTop: 6,
+                                        marginBottom: 14,
+                                        borderRadius: 999,
+                                        background: 'rgba(48, 87, 151, 0.08)',
+                                        border: '1px solid rgba(48, 87, 151, 0.25)',
+                                        color: '#305797',
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    <span>Passport Fee</span>
+                                    <span>PHP 2,000</span>
+                                </div>
 
-                                    <div className="form-group">
-                                        <label className="passport-label">Preferred date</label>
-                                        <DatePicker
-                                            value={preferredDate ? dayjs(preferredDate) : null}
-                                            disabledDate={disableDates}
-                                            showNow={false}
-                                            onChange={(date) => setPreferredDate(date ? date.format('YYYY-MM-DD') : '')}
-                                            className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
-                                        />
-                                        <p className="error-message">
-                                            {error.preferredDate || ''}
-                                        </p>
-                                    </div>
+                                <div
+                                    className="passport-form"
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row'
+                                    }}
+                                >
+                                    <div className="form-group-section">
+                                        <div className="form-group">
+                                            <label className="passport-label">
+                                                Select DFA location
+                                            </label>
 
-                                    <div className='form-group'>
-                                        <label className="passport-label">Preferred time</label>
-                                        <TimePicker
-                                            value={preferredTime ? dayjs(preferredTime, 'h:mm A') : null}
-                                            format="h:mm A"
-                                            use12Hours
-                                            showNow={false}
-                                            minuteStep={30}
-                                            disabledTime={() => ({
-                                                disabledHours
-                                            })}
-                                            onChange={(time) => setPreferredTime(time ? time.format('h:mm A') : '')}
-                                            className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
-                                        />
-                                        <p className="error-message">
-                                            {error.preferredTime || ''}
-                                        </p>
+                                            <Select
+                                                className={`passport-select ${error.location ? 'input-error' : ''}`}
+                                                placeholder="Choose a DFA site"
+                                                value={location}
+                                                onChange={(value) => setLocation(value)}
+                                                options={dfaLocations.map((item) => ({
+                                                    value: item,
+                                                    label: item
+                                                }))}
+                                            />
+
+                                            <p className="error-message">
+                                                {error.location || ''}
+                                            </p>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="passport-label">
+                                                Preferred date
+                                            </label>
+
+                                            <DatePicker
+                                                value={preferredDate ? dayjs(preferredDate) : null}
+                                                disabledDate={disableDates}
+                                                showNow={false}
+                                                onChange={(date) =>
+                                                    setPreferredDate(
+                                                        date ? date.format('YYYY-MM-DD') : ''
+                                                    )
+                                                }
+                                                className={`passport-input ${error.preferredDate ? 'input-error' : ''}`}
+                                            />
+
+                                            <p className="error-message">
+                                                {error.preferredDate || ''}
+                                            </p>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="passport-label">
+                                                Preferred time
+                                            </label>
+
+                                            <TimePicker
+                                                value={
+                                                    preferredTime
+                                                        ? dayjs(preferredTime, 'h:mm A')
+                                                        : null
+                                                }
+                                                format="h:mm A"
+                                                use12Hours
+                                                showNow={false}
+                                                minuteStep={30}
+                                                disabledTime={() => ({
+                                                    disabledHours
+                                                })}
+                                                onChange={(time) =>
+                                                    setPreferredTime(
+                                                        time ? time.format('h:mm A') : ''
+                                                    )
+                                                }
+                                                className={`passport-input ${error.preferredTime ? 'input-error' : ''}`}
+                                            />
+
+                                            <p className="error-message">
+                                                {error.preferredTime || ''}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 
-                            </div>
-
-                            <Button className="passport-submit" type="primary" onClick={submitRequest} loading={isSubmitting}>
-                                Submit request
-                            </Button>
+                                <Button
+                                    className="passport-submit"
+                                    type="primary"
+                                    onClick={submitRequest}
+                                    loading={isSubmitting}
+                                >
+                                    Submit request
+                                </Button>
+                            </section>
                         </section>
                     </div>
 
