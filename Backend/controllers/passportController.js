@@ -36,6 +36,17 @@ const PASSPORT_STATUS_DEADLINE_DAYS_MAP = {
     'Payment Completed': 5,
 };
 
+const PASSPORT_PENALTY_ELIGIBLE_STATUSES = new Set([
+    'payment completed',
+    'documents uploaded',
+]);
+
+const isPassportPenaltyEligibleStatus = (status) => (
+    PASSPORT_PENALTY_ELIGIBLE_STATUSES.has(
+        String(status || '').trim().toLowerCase()
+    )
+);
+
 const PASSPORT_TERMINAL_STATUSES = new Set([
     'Documents Approved',
     'Documents Received',
@@ -107,21 +118,28 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
     if (!application) return null;
 
     const status = String(application.status || '').trim();
-    if (!status || PASSPORT_TERMINAL_STATUSES.has(status)) return null;
+
+    if (!status || PASSPORT_TERMINAL_STATUSES.has(status)) {
+        return null;
+    }
 
     const currentDate = referenceDate.startOf('day');
+    const isPenaltyEligible = isPassportPenaltyEligibleStatus(status);
 
-    if (application.secondChance) {
+    if (application.secondChance && isPenaltyEligible) {
         const deadlineDate = getPassportSecondChanceDeadlineDate(application);
+
         if (!deadlineDate) return null;
 
         const warningDate = deadlineDate.subtract(1, 'day').startOf('day');
         const daysRemaining = deadlineDate.diff(currentDate, 'day');
-        const warningAlreadySent = Array.isArray(application.deadlineWarnings)
-            && application.deadlineWarnings.some((warning) => (
-                warning
-                && warning.status === `${status}|SECOND_CHANCE`
-                && warning.deadlineDate === deadlineDate.format('YYYY-MM-DD')
+
+        const warningAlreadySent =
+            Array.isArray(application.deadlineWarnings) &&
+            application.deadlineWarnings.some((warning) => (
+                warning &&
+                warning.status === `${status}|SECOND_CHANCE` &&
+                warning.deadlineDate === deadlineDate.format('YYYY-MM-DD')
             ));
 
         return {
@@ -138,17 +156,20 @@ const getPassportDeadlineInfo = (application, referenceDate = dayjs()) => {
         };
     }
 
-    if (application.onPenalty) {
+    if (application.onPenalty && isPenaltyEligible) {
         const deadlineDate = getPassportPenaltyDeadlineDate(application);
+
         if (!deadlineDate) return null;
 
         const warningDate = deadlineDate.subtract(1, 'day').startOf('day');
         const daysRemaining = deadlineDate.diff(currentDate, 'day');
-        const warningAlreadySent = Array.isArray(application.deadlineWarnings)
-            && application.deadlineWarnings.some((warning) => (
-                warning
-                && warning.status === `${status}|PENALTY`
-                && warning.deadlineDate === deadlineDate.format('YYYY-MM-DD')
+
+        const warningAlreadySent =
+            Array.isArray(application.deadlineWarnings) &&
+            application.deadlineWarnings.some((warning) => (
+                warning &&
+                warning.status === `${status}|PENALTY` &&
+                warning.deadlineDate === deadlineDate.format('YYYY-MM-DD')
             ));
 
         return {
@@ -296,18 +317,33 @@ const getPassportSecondChanceDeadlineDate = (application) => {
 const setPassportSecondChance = (application) => {
     if (!application) return application;
 
-    const secondChanceDeadlineDate = getPassportSecondChanceDeadlineDate(application);
+    const currentStatus = String(application.status || '').trim();
+
+    if (!isPassportPenaltyEligibleStatus(currentStatus)) {
+        return application;
+    }
+
+    const secondChanceDeadlineDate =
+        getPassportSecondChanceDeadlineDate(application);
 
     if (secondChanceDeadlineDate) {
         application.secondChance = true;
-        application.secondDeadline = secondChanceDeadlineDate.format('YYYY-MM-DD');
+        application.secondDeadline =
+            secondChanceDeadlineDate.format('YYYY-MM-DD');
+
         application.processSteps = {
             ...(application.processSteps || {}),
-            'Payment Completed': {
-                ...((application.processSteps && application.processSteps['Payment Completed']) || {}),
-                deadlineDate: secondChanceDeadlineDate.format('YYYY-MM-DD'),
+            [currentStatus]: {
+                ...(
+                    (application.processSteps &&
+                        application.processSteps[currentStatus]) ||
+                    {}
+                ),
+                deadlineDate:
+                    secondChanceDeadlineDate.format('YYYY-MM-DD'),
             },
         };
+
         application.penaltyDeadline = '';
 
         if (typeof application.markModified === 'function') {
@@ -396,7 +432,13 @@ const rejectPassportApplicationForDeadline = async (application, deadlineInfo, r
     }
 
     const currentStatus = String(application.status || '').trim();
-    if (!currentStatus || currentStatus === 'Rejected' || PASSPORT_TERMINAL_STATUSES.has(currentStatus)) {
+
+    if (
+        !currentStatus ||
+        currentStatus === 'Rejected' ||
+        PASSPORT_TERMINAL_STATUSES.has(currentStatus) ||
+        !isPassportPenaltyEligibleStatus(currentStatus)
+    ) {
         return { rejected: false, application };
     }
 
@@ -491,7 +533,17 @@ const markPassportApplicationOnPenalty = async (application, deadlineInfo = null
         return { penalized: false, application };
     }
 
-    if (application.onPenalty || application.secondChance || String(application.status || '').trim() === 'Rejected') {
+    const currentStatus = String(application.status || '').trim();
+
+    if (!isPassportPenaltyEligibleStatus(currentStatus)) {
+        return { penalized: false, application };
+    }
+
+    if (
+        application.onPenalty ||
+        application.secondChance ||
+        currentStatus === 'Rejected'
+    ) {
         return { penalized: false, application };
     }
 
@@ -540,33 +592,111 @@ const markPassportApplicationOnPenalty = async (application, deadlineInfo = null
 
 //checks deadlines for the passport application, sends warnings if applicable, and handles penalty or rejection if overdue.
 const processPassportDeadlineAction = async (application) => {
+    if (!application) {
+        return {
+            application,
+            warned: false,
+            penalized: false,
+            rejected: false
+        };
+    }
+
+    const currentStatus = String(application.status || '').trim();
+
+    // Remove any stale penalty state after moving to another status.
+    if (!isPassportPenaltyEligibleStatus(currentStatus)) {
+        const hasInvalidPenaltyState = Boolean(
+            application.onPenalty ||
+            application.secondChance ||
+            application.reachedSecondDeadline ||
+            application.penaltyDeadline ||
+            application.secondDeadline
+        );
+
+        if (hasInvalidPenaltyState) {
+            application.onPenalty = false;
+            application.secondChance = false;
+            application.reachedSecondDeadline = false;
+            application.penaltyDeadline = '';
+            application.secondDeadline = '';
+
+            if (typeof application.save === 'function') {
+                await application.save();
+            }
+        }
+
+        return {
+            application,
+            warned: false,
+            penalized: false,
+            rejected: false
+        };
+    }
+
     const deadlineInfo = getPassportDeadlineInfo(application);
 
     if (!deadlineInfo) {
-        return { application, warned: false, penalized: false, rejected: false };
+        return {
+            application,
+            warned: false,
+            penalized: false,
+            rejected: false
+        };
     }
 
-    const currentStatus = String(application?.status || '').trim();
-    const isPaymentCompleted = currentStatus.toLowerCase() === 'payment completed';
-
-    if (application?.secondChance && isPaymentCompleted && deadlineInfo.isOverdue) {
-        return rejectPassportApplicationForDeadline(application, deadlineInfo, true);
+    if (application.secondChance && deadlineInfo.isOverdue) {
+        return rejectPassportApplicationForDeadline(
+            application,
+            deadlineInfo,
+            true
+        );
     }
 
-    if (application?.onPenalty && !application?.secondChance && deadlineInfo.isOverdue) {
-        return rejectPassportApplicationForDeadline(application, deadlineInfo, false);
+    if (
+        application.onPenalty &&
+        !application.secondChance &&
+        deadlineInfo.isOverdue
+    ) {
+        return rejectPassportApplicationForDeadline(
+            application,
+            deadlineInfo,
+            false
+        );
     }
 
-    if (!application?.onPenalty && !application?.secondChance && deadlineInfo.isOverdue) {
-        return markPassportApplicationOnPenalty(application, deadlineInfo);
+    if (
+        !application.onPenalty &&
+        !application.secondChance &&
+        deadlineInfo.isOverdue
+    ) {
+        return markPassportApplicationOnPenalty(
+            application,
+            deadlineInfo
+        );
     }
 
-    if (deadlineInfo.shouldSendWarning && !application?.onPenalty && !application?.secondChance) {
-        const warningResult = await sendPassportDeadlineWarning(application);
-        return { ...warningResult, warned: true, penalized: false, rejected: false };
+    if (
+        deadlineInfo.shouldSendWarning &&
+        !application.onPenalty &&
+        !application.secondChance
+    ) {
+        const warningResult =
+            await sendPassportDeadlineWarning(application);
+
+        return {
+            ...warningResult,
+            warned: true,
+            penalized: false,
+            rejected: false
+        };
     }
 
-    return { application, warned: false, penalized: false, rejected: false };
+    return {
+        application,
+        warned: false,
+        penalized: false,
+        rejected: false
+    };
 };
 
 const decoratePassportApplication = (application) => {
@@ -591,6 +721,12 @@ const decoratePassportApplication = (application) => {
 
 //sends warning email and notification to the user about the passport application deadline approaching, if applicable.
 const sendPassportDeadlineWarning = async (application) => {
+    const currentStatus = String(application?.status || '').trim();
+
+    if (!isPassportPenaltyEligibleStatus(currentStatus)) {
+        return { sent: false, application };
+    }
+
     if (application?.onPenalty || application?.secondChance) {
         return { sent: false, application };
     }

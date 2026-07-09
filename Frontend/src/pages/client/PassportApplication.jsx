@@ -91,6 +91,19 @@ export default function PassportApplication() {
 
     const fetchPassportApplication = `/passport/applications/${id}`;
 
+    const penaltyEligibleStatuses = new Set([
+        'payment completed',
+        'documents uploaded'
+    ]);
+
+    const isPenaltyEligible = penaltyEligibleStatuses.has(
+        String(application?.status || '').trim().toLowerCase()
+    );
+
+    const isPenaltyPayment = Boolean(
+        application?.onPenalty && isPenaltyEligible
+    );
+
 
     //fetch passport application details, user email, and check for pending manual payments
     useEffect(() => {
@@ -331,50 +344,23 @@ export default function PassportApplication() {
             ? appointmentDate.subtract(deadlineDays, 'day').startOf('day')
             : null;
 
-    if (String(application?.status || '').toLowerCase() === 'payment completed' && application?.secondChance && application?.secondDeadline) {
+    if (
+        isPenaltyEligible &&
+        application?.secondChance &&
+        application?.secondDeadline
+    ) {
         statusDeadlineDate = dayjs(application.secondDeadline);
     }
-    const penaltyStateLabel = application?.reachedSecondDeadline
-        ? 'Penalty Expired'
-        : application?.secondChance
-            ? 'Penalty Paid'
-            : application?.onPenalty
-                ? 'On Penalty'
-                : null;
 
-    const [hasProcessedRejection, setHasProcessedRejection] = useState(false);
-
-
-    // auto-reject application if deadline is passed
-    useEffect(() => {
-        if (!application || !statusDeadlineDate || hasProcessedRejection) return;
-
-        const terminalStatuses = ['Rejected', 'Passport Released'];
-        if (terminalStatuses.includes(application.status)) return;
-
-        const isDeadlinePassed = statusDeadlineDate.isBefore(dayjs(), 'day');
-        if (isDeadlinePassed) {
-            setHasProcessedRejection(true);
-            const updateStatus = async () => {
-                try {
-                    await apiFetch.put(
-                        `/passport/applications/${id}/status`,
-                        { status: 'Rejected' },
-                        { withCredentials: true }
-                    );
-                    notification.warning({
-                        message: 'Application Rejected',
-                        description: 'Your application has been rejected due to missed deadline.',
-                        placement: 'topRight'
-                    });
-                    setApplication(prev => ({ ...prev, status: 'Rejected' }));
-                } catch (err) {
-                    console.error('Failed to auto-reject application:', err);
-                }
-            };
-            updateStatus();
-        }
-    }, [statusDeadlineDate, application, hasProcessedRejection, id]);
+    const penaltyStateLabel = !isPenaltyEligible
+        ? null
+        : application?.reachedSecondDeadline
+            ? 'Penalty Expired'
+            : application?.secondChance
+                ? 'Penalty Paid'
+                : application?.onPenalty
+                    ? 'On Penalty'
+                    : null;
 
     //for payment
     const handleUploadChange = ({ fileList: newFileList }) => {
@@ -417,8 +403,11 @@ export default function PassportApplication() {
 
                 const imageUrl = uploadRes.url;
 
-                const amountToPay = application?.onPenalty ? 1500 : 2000;
-                const endpoint = application?.onPenalty ? '/payment/manual-passport-penalty' : '/payment/manual-passport';
+                const amountToPay = isPenaltyPayment ? 1500 : 2000;
+
+                const endpoint = isPenaltyPayment
+                    ? '/payment/manual-passport-penalty'
+                    : '/payment/manual-passport';
                 const paymentRes = await apiFetch.post(endpoint, {
                     applicationId: application._id,
                     applicationNumber: application.applicationNumber,
@@ -448,7 +437,9 @@ export default function PassportApplication() {
 
 
                 // Send request to create checkout session
-                const endpoint = application?.onPenalty ? '/payment/create-checkout-session-passport-penalty' : '/payment/create-checkout-session-passport';
+                const endpoint = isPenaltyPayment
+                    ? '/payment/create-checkout-session-passport-penalty'
+                    : '/payment/create-checkout-session-passport';
                 const paymongoResponse = await apiFetch.post(endpoint, payload);
                 const checkoutUrl = paymongoResponse?.data?.attributes?.checkout_url;
                 // Redirect user to PayMongo checkout

@@ -54,6 +54,19 @@ export default function VisaApplication() {
         ? application.status[application.status.length - 1]
         : application?.status;
 
+    const penaltyEligibleStatuses = new Set([
+        'payment completed',
+        'documents uploaded'
+    ]);
+
+    const isPenaltyEligible = penaltyEligibleStatuses.has(
+        String(statusText || '').trim().toLowerCase()
+    );
+
+    const isPenaltyPayment = Boolean(
+        application?.onPenalty && isPenaltyEligible
+    );
+
     const normalizeResubmissionTarget = (target) => String(target || '').trim();
 
 
@@ -182,16 +195,23 @@ export default function VisaApplication() {
                     : null)
         : null;
 
-    if (String(statusText || '').toLowerCase() === 'payment completed' && application?.secondChance && application?.secondDeadline) {
+    if (
+        isPenaltyEligible &&
+        application?.secondChance &&
+        application?.secondDeadline
+    ) {
         statusDeadlineDate = dayjs(application.secondDeadline);
     }
-    const penaltyStateLabel = application?.reachedSecondDeadline
-        ? 'Penalty Expired'
-        : application?.secondChance
-            ? 'Penalty Paid'
-            : application?.onPenalty
-                ? 'On Penalty'
-                : null;
+
+    const penaltyStateLabel = !isPenaltyEligible
+        ? null
+        : application?.reachedSecondDeadline
+            ? 'Penalty Expired'
+            : application?.secondChance
+                ? 'Penalty Paid'
+                : application?.onPenalty
+                    ? 'On Penalty'
+                    : null;
 
 
     //check for manual payments
@@ -457,7 +477,11 @@ export default function VisaApplication() {
 
             if (method === 'manual') {
                 const file = fileList[0].originFileObj;
-                const amountToPay = application?.onPenalty ? 1500 : (isDeliveryFeeStage ? deliveryFeeAmount : servicePrice);
+                const amountToPay = isPenaltyPayment
+                    ? 1500
+                    : isDeliveryFeeStage
+                        ? deliveryFeeAmount
+                        : servicePrice;
 
                 const formData = new FormData();
                 formData.append("file", file);
@@ -470,7 +494,7 @@ export default function VisaApplication() {
 
                 const endpoint = isDeliveryFeeStage
                     ? '/payment/manual-delivery-fee'
-                    : application?.onPenalty
+                    : isPenaltyPayment
                         ? '/payment/manual-visa-penalty'
                         : '/payment/manual-visa';
                 const paymentRes = await apiFetch.post(endpoint, {
@@ -496,7 +520,7 @@ export default function VisaApplication() {
                     applicationNumber: application.applicationNumber,
                     totalPrice: isDeliveryFeeStage
                         ? deliveryFeeAmount
-                        : application?.onPenalty
+                        : isPenaltyPayment
                             ? 1500
                             : servicePrice,
                 };
@@ -504,7 +528,7 @@ export default function VisaApplication() {
                 // Send request to create checkout session
                 const endpoint = isDeliveryFeeStage
                     ? '/payment/create-checkout-session-delivery-fee'
-                    : application?.onPenalty
+                    : isPenaltyPayment
                         ? '/payment/create-checkout-session-visa-penalty'
                         : '/payment/create-checkout-session-visa';
                 const paymongoResponse = await apiFetch.post(endpoint, payload);
@@ -826,17 +850,19 @@ export default function VisaApplication() {
                                     )}
 
                                 {/* APPLICATION DENIED */}
-                                {statusValue && statusValue.toLowerCase() === 'rejected' && (
-                                    <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
-                                        <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f' }}>APPLICATION DENIED</h2>
-                                        <p style={{ margin: 0, fontSize: 14 }}>
-                                            Unfortunately, your application has been denied.
-                                            You may contact our support team for further assistance or clarification regarding your application.
-                                            For now, your documents will be delivered back to you.
-                                            Please check your email for the details of the document return process.
-                                        </p>
-                                    </div>
-                                )}
+                                {statusValue &&
+                                    statusValue.toLowerCase() !== 'rejected' &&
+                                    isPenaltyPayment && (
+                                        <div style={{ marginBottom: 24, borderLeft: '4px solid #ff4d4f', backgroundColor: '#fff1f0', padding: 16, paddingBottom: 40, paddingTop: 40, borderRadius: 8 }}>
+                                            <h2 style={{ marginBottom: 10, fontSize: 20, fontWeight: 600, color: '#ff4d4f' }}>APPLICATION DENIED</h2>
+                                            <p style={{ margin: 0, fontSize: 14 }}>
+                                                Unfortunately, your application has been denied.
+                                                You may contact our support team for further assistance or clarification regarding your application.
+                                                For now, your documents will be delivered back to you.
+                                                Please check your email for the details of the document return process.
+                                            </p>
+                                        </div>
+                                    )}
 
                                 {/* APPLICATION SUCCESS */}
                                 {statusValue && statusValue.toLowerCase() === 'embassy approved' && (

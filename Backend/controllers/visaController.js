@@ -125,19 +125,16 @@ const VISA_TERMINAL_STATUSES = new Set([
     'Rejected'
 ]);
 
-// These statuses may display a deadline,
-// but they must never trigger a penalty or automatic rejection.
-const VISA_PENALTY_EXEMPT_STATUSES = new Set([
-    'application submitted',
-    'processing by embassy',
+const VISA_PENALTY_ELIGIBLE_STATUSES = new Set([
+    'payment completed',
+    'documents uploaded',
 ]);
 
-const isVisaPenaltyExemptStatus = (status) => {
-    return VISA_PENALTY_EXEMPT_STATUSES.has(
+const isVisaPenaltyEligibleStatus = (status) => {
+    return VISA_PENALTY_ELIGIBLE_STATUSES.has(
         String(status || '').trim().toLowerCase()
     );
 };
-
 
 //get current visa status function
 const getCurrentVisaStatus = (application) => {
@@ -295,18 +292,33 @@ const getVisaSecondChanceDeadlineDate = (application) => {
 const setVisaSecondChance = (application) => {
     if (!application) return application;
 
-    const secondChanceDeadlineDate = getVisaSecondChanceDeadlineDate(application);
+    const currentStatus = getCurrentVisaStatus(application);
+
+    if (!isVisaPenaltyEligibleStatus(currentStatus)) {
+        return application;
+    }
+
+    const secondChanceDeadlineDate =
+        getVisaSecondChanceDeadlineDate(application);
 
     if (secondChanceDeadlineDate) {
         application.secondChance = true;
-        application.secondDeadline = secondChanceDeadlineDate.format('YYYY-MM-DD');
+        application.secondDeadline =
+            secondChanceDeadlineDate.format('YYYY-MM-DD');
+
         application.processSteps = {
             ...(application.processSteps || {}),
-            'Payment Completed': {
-                ...((application.processSteps && application.processSteps['Payment Completed']) || {}),
-                deadlineDate: secondChanceDeadlineDate.format('YYYY-MM-DD'),
+            [currentStatus]: {
+                ...(
+                    (application.processSteps &&
+                        application.processSteps[currentStatus]) ||
+                    {}
+                ),
+                deadlineDate:
+                    secondChanceDeadlineDate.format('YYYY-MM-DD'),
             },
         };
+
         application.penaltyDeadline = '';
 
         if (typeof application.markModified === 'function') {
@@ -334,14 +346,14 @@ const getVisaDeadlineInfo = (
         return null;
     }
 
-    const isPenaltyExempt = isVisaPenaltyExemptStatus(currentStatus);
+    const isPenaltyEligible = isVisaPenaltyEligibleStatus(currentStatus);
 
     const processSteps = getVisaProcessStepsFromApplication(application);
     const computedDaysMap = buildVisaStatusTotalDaysMapFromSteps(processSteps);
 
     const currentDate = referenceDate.startOf('day');
 
-    if (application.secondChance && !isPenaltyExempt) {
+    if (application.secondChance && isPenaltyEligible) {
         const deadlineDate = getVisaSecondChanceDeadlineDate(application);
         if (!deadlineDate) {
             return null;
@@ -368,7 +380,7 @@ const getVisaDeadlineInfo = (
         };
     }
 
-    if (application.onPenalty && !isPenaltyExempt) {
+    if (application.onPenalty && isPenaltyEligible) {
         const deadlineDate = getVisaPenaltyDeadlineDate(application);
         if (!deadlineDate) {
             return null;
@@ -566,6 +578,12 @@ const decorateVisaApplication = (application) => {
 
 //send visa deadline warning function
 const sendVisaDeadlineWarning = async (application) => {
+    const currentStatus = getCurrentVisaStatus(application);
+
+    if (!isVisaPenaltyEligibleStatus(currentStatus)) {
+        return { sent: false, application };
+    }
+
     if (application?.onPenalty || application?.secondChance) {
         return { sent: false, application };
     }
@@ -744,7 +762,12 @@ const rejectVisaApplicationForDeadline = async (application, deadlineInfo, reach
     }
 
     const currentStatus = getCurrentVisaStatus(application);
-    if (!currentStatus || VISA_TERMINAL_STATUSES.has(currentStatus) || isVisaPenaltyExemptStatus(currentStatus) || currentStatus === 'Rejected'
+
+    if (
+        !currentStatus ||
+        VISA_TERMINAL_STATUSES.has(currentStatus) ||
+        !isVisaPenaltyEligibleStatus(currentStatus) ||
+        currentStatus === 'Rejected'
     ) {
         return { rejected: false, application };
     }
@@ -840,11 +863,15 @@ const markVisaApplicationOnPenalty = async (application, deadlineInfo = null) =>
 
     const currentStatus = getCurrentVisaStatus(application);
 
-    if (isVisaPenaltyExemptStatus(currentStatus)) {
+    if (!isVisaPenaltyEligibleStatus(currentStatus)) {
         return { penalized: false, application };
     }
 
-    if (application.onPenalty || application.secondChance || String(application.status || '').trim() === 'Rejected') {
+    if (
+        application.onPenalty ||
+        application.secondChance ||
+        currentStatus === 'Rejected'
+    ) {
         return { penalized: false, application };
     }
 
@@ -904,12 +931,15 @@ const processVisaDeadlineAction = async (application) => {
         getCurrentVisaStatus(application) || ''
     ).trim();
 
-    if (isVisaPenaltyExemptStatus(currentStatus)) {
+    // Clear penalty values when the application is not in
+    // Payment Completed or Documents Uploaded.
+    if (!isVisaPenaltyEligibleStatus(currentStatus)) {
         const hasInvalidPenaltyState = Boolean(
             application.onPenalty ||
             application.secondChance ||
             application.reachedSecondDeadline ||
-            application.penaltyDeadline
+            application.penaltyDeadline ||
+            application.secondDeadline
         );
 
         if (hasInvalidPenaltyState) {
@@ -917,6 +947,7 @@ const processVisaDeadlineAction = async (application) => {
             application.secondChance = false;
             application.reachedSecondDeadline = false;
             application.penaltyDeadline = '';
+            application.secondDeadline = '';
 
             if (typeof application.save === 'function') {
                 await application.save();
@@ -942,11 +973,8 @@ const processVisaDeadlineAction = async (application) => {
         };
     }
 
-    const isPaymentCompleted =
-        currentStatus.toLowerCase() === 'payment completed';
-
     if (deadlineInfo.isOverdue) {
-        if (application?.secondChance && isPaymentCompleted) {
+        if (application.secondChance) {
             return rejectVisaApplicationForDeadline(
                 application,
                 deadlineInfo,
@@ -954,7 +982,7 @@ const processVisaDeadlineAction = async (application) => {
             );
         }
 
-        if (application?.onPenalty) {
+        if (application.onPenalty) {
             return rejectVisaApplicationForDeadline(
                 application,
                 deadlineInfo,
