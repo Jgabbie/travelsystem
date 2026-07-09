@@ -174,6 +174,8 @@ export default function QuotationBookingProcess() {
         return { adult: 1, child: 0, infant: 0 };
     })();
 
+    console.log("summary", summary)
+
     const travelersTotal = travelersCount.adult + travelersCount.child + travelersCount.infant
     const uploadTravelerCount = travelersTotal || 1
 
@@ -216,7 +218,10 @@ export default function QuotationBookingProcess() {
         }
     ]
     const packageName = data.packageName || 'Tour Package'
-    const packageType = data.packageType || 'fixed'
+    const packageType =
+        data?.packageType ||
+        data?.packageId?.packageType ||
+        'fixed'
     const isDomesticPackage = String(packageType).toLowerCase().includes('domestic')
     const travelDocumentLabel = isDomesticPackage ? 'Valid ID' : 'Passport'
     const travelDocumentShortLabel = isDomesticPackage ? 'valid ID' : 'passport'
@@ -1197,8 +1202,8 @@ export default function QuotationBookingProcess() {
 
                             {itineraryEntries.length ? (
                                 <div className='itinerary-list'>
-                                    {itineraryEntries.map((day) => (
-                                        <details key={day.key} className='itinerary-day'>
+                                    {itineraryEntries.map((day, index) => (
+                                        <details key={day.key} className='itinerary-day' open={index === 0}>
                                             <summary className='itinerary-day-label'>{day.label}</summary>
                                             {day.images?.length > 0 && (
                                                 <div className='itinerary-day-images'>

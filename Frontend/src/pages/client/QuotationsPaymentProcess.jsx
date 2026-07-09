@@ -839,6 +839,12 @@ export default function QuotationsPaymentProcess() {
                                                 disabled={disableDeposit}
                                                 className={`payment-card ${paymentType === "deposit" ? "selected" : ""} ${disableDeposit ? "payment-card-disabled" : ""}`}
                                             >
+                                                {paymentType === "deposit" && (
+                                                    <span className="payment-card-selected-tag">
+                                                        Selected
+                                                    </span>
+                                                )}
+
                                                 <div style={{ width: '100%' }}>
                                                     <h3>Deposit</h3>
                                                     <p>Make a partial payment to secure your booking. Choose this option to pay a portion of the total amount.</p>
@@ -870,6 +876,12 @@ export default function QuotationsPaymentProcess() {
                                             </Radio.Button>
 
                                             <Radio.Button value="full" className={`payment-card ${paymentType === "full" ? "selected" : ""}`}>
+                                                {paymentType === "full" && (
+                                                    <span className="payment-card-selected-tag">
+                                                        Selected
+                                                    </span>
+                                                )}
+
                                                 <div>
                                                     <h3>Full Payment</h3>
                                                     <p>Pay the full amount to secure your booking and not worry about future payment deadlines.</p>
@@ -951,6 +963,12 @@ export default function QuotationsPaymentProcess() {
                                     className={`payment-card ${method === "paymongo" ? "selected" : ""}`}
                                     style={{ flex: 1, height: 'auto', padding: '20px' }}
                                 >
+                                    {method === "paymongo" && (
+                                        <span className="payment-card-selected-tag">
+                                            Selected
+                                        </span>
+                                    )}
+
                                     <div className="card-content">
                                         <h3>Paymongo</h3>
                                         <p>Pay securely via Credit Card, GCash, or Maya. Rates depend on the transaction method.</p>
@@ -963,6 +981,12 @@ export default function QuotationsPaymentProcess() {
                                     className={`payment-card ${method === "manual" ? "selected" : ""}`}
                                     style={{ flex: 1, height: 'auto', padding: '20px' }}
                                 >
+                                    {method === "manual" && (
+                                        <span className="payment-card-selected-tag">
+                                            Selected
+                                        </span>
+                                    )}
+
                                     <div className="card-content">
                                         <h3>Manual Payment</h3>
                                         <p>Direct deposit. You will need to upload proof of payment for manual verification by our team.</p>

@@ -3,6 +3,7 @@ import BookingModel from '../models/booking.js';
 import TransactionModel from '../models/transactions.js';
 import NotificationModel from '../models/notification.js';
 import transporter from '../config/nodemailer.js';
+import { buildBrandedEmail } from '../utils/emailTemplate.js';
 
 const PENALTY_AMOUNT = 200;
 const REMINDER_DAYS_BEFORE_DUE = 3;
@@ -98,35 +99,130 @@ const buildPaymentSchedule = (booking, totalPaid = 0) => {
     return { schedule, isDeposit };
 };
 
-const sendReminderEmail = async ({ to, username, bookingRef, label, dueDate, amount }) => {
+const sendReminderEmail = async ({ to, username, bookingRef, label, dueDate, amount, }) => {
     if (!to) return;
+
+    const clientUrl =
+        process.env.FRONTEND_URL || 'https://mrctravelandtours.com';
+
+    const accountUrl = `${clientUrl.replace(/\/$/, '')}/user-bookings`;
 
     await transporter.sendMail({
         from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
         to,
         subject: `Payment Reminder: ${bookingRef} due on ${dueDate.format('MMM D, YYYY')}`,
-        html: `
-        <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
-            <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
-                <h2 style="color:#305797; margin-top:0; margin-bottom:12px;">Payment Reminder</h2>
-                <p style="color:#555; font-size:16px;">Hello <b>${username || 'Customer'}</b>,</p>
-                <p style="color:#555; font-size:15px; line-height:1.6;">This is a reminder that your <b>${label}</b> for booking <b>${bookingRef}</b> is due on <b>${dueDate.format('MMM D, YYYY')}</b>.</p>
-                <p style="color:#555; font-size:15px; line-height:1.6;">Amount due: <b>PHP ${formatMoney(amount)}</b></p>
-                <p style="color:#555; font-size:15px; line-height:1.6;">Please settle your account on or before the deadline to avoid penalties.</p>
-                <a href="https://mrctravelandtours.com/home"
-                    style="display:inline-block; margin-top:26px; padding:12px 24px; background:#305797; color:#ffffff; text-decoration:none; border-radius:999px; font-size:12px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase;">
-                    Login to Your Account
-                </a>
-                <hr style="margin:30px 0; border:none; border-top:1px solid #eee;" />
-                <div style="max-width:520px; margin:auto; padding:15px; text-align:center; color:#555; font-size:12px;">
-                    <p style="font-size:10px; margin-bottom:5px;">This is an automated message, please do not reply.</p>
-                    <p>M&RC Travel and Tours</p>
-                    <p>info1@mrctravels.com</p>
-                    <p>&copy; ${new Date().getFullYear()} M&RC Travel and Tours. All rights reserved.</p>
+        html: buildBrandedEmail({
+            title: 'Payment Reminder',
+
+            introHtml: `
+                Hello <strong>${username || 'Customer'}</strong>,
+            `,
+
+            bodyHtml: `
+                <p style="margin:0 0 14px; line-height:1.6;">
+                    This is a reminder that your
+                    <strong>${label}</strong> for booking
+                    <strong>${bookingRef}</strong> is approaching its payment deadline.
+                </p>
+
+                <div style="
+                    margin:8px 0 16px;
+                    background:#f8fafc;
+                    padding:16px;
+                    border-radius:10px;
+                    border:1px dashed #cbd5e1;
+                ">
+                    <table
+                        role="presentation"
+                        width="100%"
+                        cellspacing="0"
+                        cellpadding="0"
+                        style="
+                            border-collapse:collapse;
+                            font-size:14px;
+                            color:#334155;
+                        "
+                    >
+                        <tr>
+                            <td style="padding:6px 0; color:#64748b;">
+                                Booking Reference
+                            </td>
+
+                            <td style="
+                                padding:6px 0;
+                                text-align:right;
+                                font-weight:700;
+                                color:#992A46;
+                            ">
+                                ${bookingRef}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding:6px 0; color:#64748b;">
+                                Payment
+                            </td>
+
+                            <td style="
+                                padding:6px 0;
+                                text-align:right;
+                                font-weight:600;
+                            ">
+                                ${label}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding:6px 0; color:#64748b;">
+                                Due Date
+                            </td>
+
+                            <td style="
+                                padding:6px 0;
+                                text-align:right;
+                                font-weight:600;
+                            ">
+                                ${dueDate.format('MMMM D, YYYY')}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding:6px 0; color:#64748b;">
+                                Amount Due
+                            </td>
+
+                            <td style="
+                                padding:6px 0;
+                                text-align:right;
+                                font-size:17px;
+                                font-weight:700;
+                                color:#992A46;
+                            ">
+                                PHP ${formatMoney(amount)}
+                            </td>
+                        </tr>
+                    </table>
                 </div>
-            </div>
-        </div>
-        `,
+
+                <p style="margin:0 0 10px; line-height:1.6;">
+                    Please settle your account on or before the deadline to avoid
+                    late payment penalties.
+                </p>
+
+                <p style="
+                    margin:0;
+                    font-size:13px;
+                    color:#64748b;
+                    line-height:1.5;
+                ">
+                    This is an automated payment reminder. Please disregard this
+                    message if you have already completed the payment.
+                </p>
+            `,
+
+            ctaText: 'View My Booking',
+            ctaUrl: accountUrl,
+        }),
     });
 };
 

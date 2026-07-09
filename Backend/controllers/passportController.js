@@ -1221,7 +1221,7 @@ const updatePassportStatus = async (req, res) => {
                         <div style="font-family: Arial, sans-serif; background:#ffffff; padding:30px 16px;">
                             <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:0; padding:30px 32px; text-align:left;">
 
-                                <div style="text-align:center; color:#333; margin-top:15px;">
+                                <div style="text-align:left; color:#333; margin-top:15px;">
                                     <p style="font-size:16px; margin-bottom:10px;">Hello ${user.firstname || user.username},</p>
                                     <p>Your Passport Application Status is now <strong>${status}</strong>.</p>
                                 </div>

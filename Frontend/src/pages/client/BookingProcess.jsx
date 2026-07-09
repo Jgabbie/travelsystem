@@ -157,6 +157,8 @@ export default function BookingProcess() {
     const [selectedSoloGrouped, setSelectedSoloGrouped] = useState('solo')
     const [counts, setCounts] = useState(INITIAL_COUNTS)
 
+    const [openItineraryDays, setOpenItineraryDays] = useState([]);
+
     const hasBookingData = Boolean(
         bookingData &&
         typeof bookingData === 'object' &&
@@ -323,6 +325,19 @@ export default function BookingProcess() {
             }))
     })()
 
+    const firstItineraryKey = itineraryEntries[0]?.key;
+
+    useEffect(() => {
+        if (!firstItineraryKey) return;
+
+        setOpenItineraryDays((previousDays) => {
+            if (previousDays.length > 0) {
+                return previousDays;
+            }
+
+            return [firstItineraryKey];
+        });
+    }, [firstItineraryKey]);
 
     //travelers and traveler counts
     const maxAdults = data.maxAdults || 20
@@ -1170,10 +1185,16 @@ export default function BookingProcess() {
                                 className={`solo-group-card${selectedSoloGrouped === 'solo' ? ' is-selected' : ''}`}
                                 onClick={() => setSelectedSoloGrouped('solo')}
                             >
+                                {selectedSoloGrouped === 'solo' && (
+                                    <span className="solo-group-selected-tag">
+                                        Selected
+                                    </span>
+                                )}
+
                                 <div className="solo-group-image solo" />
                                 <h3>Single Supplement / Solo Booking</h3>
                                 <p className="booking-summary-overview-text">Book for yourself with a single traveler setup.</p>
-                                <p style={{ fontStyle: "italic", color: "#e72323", fontWeight: "500", fontSize: "14px" }}>Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
+                                <p className="booking-summary-overview-text-note" >Note: A single supplement fee may apply which can be more than the usual rate. The per pax rate only apply to group with minimum of 2 travelers.</p>
                             </button>
 
                             <button
@@ -1185,10 +1206,16 @@ export default function BookingProcess() {
                                 }}
                                 disabled={isGroupDisabled}
                             >
+                                {selectedSoloGrouped === 'group' && (
+                                    <span className="solo-group-selected-tag">
+                                        Selected
+                                    </span>
+                                )}
+
                                 <div className="solo-group-image group" />
                                 <h3>Grouped Booking</h3>
                                 <p className="booking-summary-overview-text">Plan a trip for a group with shared activities.</p>
-                                <p style={{ fontStyle: "italic", color: "#e72323", fontWeight: "500", fontSize: "14px" }}>Note: Group booking should have a minimum of 2 travelers.</p>
+                                <p className="booking-summary-overview-text-note" >Note: Group booking should have a minimum of 2 travelers.</p>
                             </button>
                         </div>
                     </div>
@@ -1284,8 +1311,25 @@ export default function BookingProcess() {
 
                             {itineraryEntries.length ? (
                                 <div className='itinerary-list'>
-                                    {itineraryEntries.map((day) => (
-                                        <details key={day.key} className='itinerary-day'>
+                                    {itineraryEntries.map((day, index) => (
+                                        <details
+                                            key={day.key}
+                                            className='itinerary-day'
+                                            open={openItineraryDays.includes(day.key)}
+                                            onToggle={(event) => {
+                                                const isOpen = event.currentTarget.open;
+
+                                                setOpenItineraryDays((previousDays) => {
+                                                    if (isOpen) {
+                                                        return previousDays.includes(day.key)
+                                                            ? previousDays
+                                                            : [...previousDays, day.key];
+                                                    }
+
+                                                    return previousDays.filter((key) => key !== day.key);
+                                                });
+                                            }}
+                                        >
                                             <summary className='itinerary-day-label'>{day.label}</summary>
                                             {day.images?.length > 0 && (
                                                 <div className='itinerary-day-images'>
@@ -1906,7 +1950,7 @@ export default function BookingProcess() {
                     </div>
                     <div className='upload-passport-notes'>
 
-                        <div style={{ marginTop: 10 }}>
+                        <div>
                             <strong >Note for Room Type:</strong>
                             <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
                                 <li>TWIN and DOUBLE rooms require two travelers to be listed</li>
@@ -1917,8 +1961,8 @@ export default function BookingProcess() {
                             </ul>
                         </div>
 
-                        <div>
-                            <strong>Note:</strong>
+                        <div style={{ marginTop: 15 }}>
+                            <strong>Note for Valid ID/Passport:</strong>
                             <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
 
                                 {isDomesticPackage ? (
@@ -1932,7 +1976,7 @@ export default function BookingProcess() {
                             </ul>
                         </div>
 
-                        <div style={{ marginTop: 10 }}>
+                        <div style={{ marginTop: 15 }}>
                             <strong >Note for 2x2 ID Photos:</strong>
                             <ul style={{ margin: '5px 0 0 15px', padding: 0 }}>
                                 <li>Upload a clear image of the 2x2 ID photo</li>

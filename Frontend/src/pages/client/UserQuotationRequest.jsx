@@ -44,7 +44,10 @@ export default function UserQuotationRequest() {
 
                 setQuotation({
                     packageId: quotationData.packageId || null,
-                    packageType: quotationData.quotationDetails?.packageType || "N/A",
+                    packageType:
+                        quotationData.packageId?.packageType ||
+                        quotationData.quotationDetails?.packageType ||
+                        '',
                     userId: quotationData.userId || null,
                     packageName: quotationData.packageId?.packageName || "N/A",
                     travelDetails: quotationData.travelDetails || {},
@@ -78,6 +81,8 @@ export default function UserQuotationRequest() {
             const travelersValue = details.travelers || 1;
             const hotelValue = details.preferredHotels || details.hotel || "";
             const airlineValue = details.preferredAirlines || details.airline || "";
+
+
 
             setQuotationBookingData(prev => ({
                 ...prev,

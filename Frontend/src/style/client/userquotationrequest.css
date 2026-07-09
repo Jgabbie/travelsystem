@@ -240,7 +240,7 @@
 }
 
 .acceptbutton-userquotationrequest:hover {
-    background-color: #009e52;
+    background-color: #009e52 !important;
     color: #fff !important;
 }
 
@@ -270,8 +270,8 @@
 }
 
 .acceptbutton-userquotationrequest:not(:disabled):hover {
-    background-color: #e9e9e9 !important;
-    color: #00bf63;
+    background-color: #009e52 !important;
+    color: #ffffff;
     cursor: pointer;
 }
 
@@ -366,7 +366,7 @@
     font-weight: 600;
     background-color: #305797;
     color: #fff;
-    border-radius: 10px;
+    border-radius: 16px;
     width: 220px;
     height: 40px;
     border: none !important;

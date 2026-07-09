@@ -53,9 +53,15 @@ export default function AllInOrLandArrangementModal({
                         className={`arrangement-card${selection === 'fixed' ? ' is-selected' : ''}`}
                         onClick={() => handleSelect('fixed')}
                     >
+                        {selection === 'fixed' && (
+                            <span className="arrangement-selected-tag">
+                                Selected
+                            </span>
+                        )}
+
                         <div className="arrangement-image fixed" aria-hidden="true" />
                         <h3>All in Package</h3>
-                        <p style={{ textAlign: "justify" }}>
+                        <p className="arrangement-description" style={{ textAlign: "justify" }}>
                             In this selection, you will receive a fixed itinerary based on the current package. This allows you to proceed with the booking process without any changes to the package details.
                         </p>
                     </button>
@@ -65,12 +71,18 @@ export default function AllInOrLandArrangementModal({
                         className={`arrangement-card${selection === 'private' ? ' is-selected' : ''}`}
                         onClick={() => handleSelect('private')}
                     >
+                        {selection === 'private' && (
+                            <span className="arrangement-selected-tag">
+                                Selected
+                            </span>
+                        )}
+
                         <div className="arrangement-image private" aria-hidden="true" />
                         <h3>Private Tour</h3>
-                        <p style={{ textAlign: "justify" }}>
+                        <p className="arrangement-description" style={{ textAlign: "justify" }}>
                             In this selection, you can customize the itinerary of the current package. This allows you to send quotation request for more personalized experience.
                         </p>
-                        <p style={{ color: "#e72323", fontWeight: "500", textAlign: "justify", fontStyle: "italic", fontSize: '12px' }}>
+                        <p className="arrangement-note">
                             Note: This option may have a higher price than the All in Package arrangement, as it offers more flexibility and customization. The final price will depend on the specific changes you request.
                         </p>
                     </button>

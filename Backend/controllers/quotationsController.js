@@ -201,7 +201,7 @@ const getQuotation = async (req, res) => {
     try {
         const { id } = req.params
         const quotation = await QuotationModel.findById(id)
-            .populate('packageId', 'packageName packageItineraries packageInclusions packageExclusions')
+            .populate('packageId', 'packageName packageType packageItineraries packageInclusions packageExclusions')
             .populate('userId', 'username')
 
         if (!quotation) return res.status(404).json({ message: "Quotation not found" })
@@ -222,14 +222,35 @@ const getQuotation = async (req, res) => {
 
 //upload quotation PDF function
 const uploadQuotationPDF = async (req, res) => {
-    const { id } = req.params;
-    const file = req.file;
+    const { id } = req.params
+    const file = req.file
 
     if (!file) {
-        return res.status(400).json({ message: "No PDF file uploaded" });
+        return res.status(400).json({
+            message: 'No PDF file uploaded'
+        })
     }
 
     try {
+        // Find quotation first before uploading
+        const quotation = await QuotationModel.findById(id)
+
+        if (!quotation) {
+            return res.status(404).json({
+                message: 'Quotation not found'
+            })
+        }
+
+        // Get the employee/admin who uploaded the PDF
+        const uploader = await UserModel.findById(req.userId)
+            .select('username')
+
+        // Get the customer who owns the quotation
+        const quotationUser = await UserModel.findById(quotation.userId)
+            .select('email firstname username')
+
+        const versionNumber = quotation.pdfRevisions.length + 1
+
         const uploadResult = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
                 {
@@ -238,34 +259,32 @@ const uploadQuotationPDF = async (req, res) => {
                     format: 'pdf'
                 },
                 (error, result) => {
-                    if (error) return reject(error);
-                    resolve(result);
+                    if (error) {
+                        return reject(error)
+                    }
+
+                    resolve(result)
                 }
-            );
+            )
 
-            stream.end(file.buffer);
-        });
+            stream.end(file.buffer)
+        })
 
-        const pdfUrl = uploadResult.secure_url;
-        const quotation = await QuotationModel.findById(id);
-
-        if (!quotation) {
-            return res.status(404).json({ message: "Quotation not found" });
-        }
-
-        const userName = await UserModel.findById(req.userId).select('username')
-
+        const pdfUrl = uploadResult.secure_url
 
         quotation.status = 'Under Review'
+
         quotation.pdfRevisions.push({
             url: pdfUrl,
-            version: quotation.pdfRevisions.length + 1,
-            uploaderName: userName.username,
-            uploadedBy: req.userId, uploadedAt: new Date()
-        });
+            version: versionNumber,
+            uploaderName: uploader?.username || 'Administrator',
+            uploadedBy: req.userId,
+            uploadedAt: new Date()
+        })
 
-        await quotation.save();
+        await quotation.save()
 
+        // Create in-app notification
         try {
             await NotificationModel.create({
                 userId: quotation.userId,
@@ -273,87 +292,202 @@ const uploadQuotationPDF = async (req, res) => {
                 message: `Your quotation ${quotation.reference} has a new PDF update.`,
                 type: 'quotation',
                 link: '/user-package-quotation',
-                metadata: { quotationId: quotation._id },
+                metadata: {
+                    quotationId: quotation._id
+                },
                 pushStatus: 'pending'
             })
         } catch (notificationError) {
-            console.error('Failed to create notification:', notificationError)
+            console.error(
+                'Failed to create quotation notification:',
+                notificationError
+            )
         }
 
         // Send email notification
-        try {
-            if (quotationUser?.email) {
-                const recipientName =
-                    quotationUser.firstname ||
-                    quotationUser.username ||
-                    'Customer'
+        // Send email notification
+        let emailSent = false
+        let emailErrorMessage = null
 
-                const clientUrl =
-                    process.env.FRONTEND_URL ||
-                    'http://localhost:3000'
+        if (!quotationUser?.email) {
+            emailErrorMessage =
+                `Customer email was not found for quotation ${quotation.reference}`
 
-                const quotationPageUrl =
-                    `${clientUrl}/user-package-quotation`
+            console.error(emailErrorMessage)
+        } else {
+            const recipientName =
+                quotationUser.firstname ||
+                quotationUser.username ||
+                'Customer'
 
+            const clientUrl =
+                process.env.FRONTEND_URL ||
+                'http://localhost:3000'
+
+            const quotationPageUrl =
+                `${clientUrl}/user-package-quotation`
+
+            const senderEmail =
+                process.env.SENDER_EMAIL ||
+                process.env.SMTP_USER
+
+            if (!senderEmail) {
+                emailErrorMessage =
+                    'SENDER_EMAIL and SMTP_USER are not configured.'
+
+                console.error(emailErrorMessage)
+            } else {
                 const mailOptions = {
-                    from: `"M&RC Travel and Tours" <${process.env.SENDER_EMAIL}>`,
+                    from: `"M&RC Travel and Tours" <${senderEmail}>`,
                     to: quotationUser.email,
-                    subject: `Quotation Update - ${quotation.reference}`,
+                    subject: `Quotation Available - ${quotation.reference}`,
                     html: buildBrandedEmail({
-                        title: 'Quotation Update Available',
+                        title: 'Your Quotation Is Available',
                         introHtml: `Hello <strong>${recipientName}</strong>,`,
                         bodyHtml: `
-                            <p style="margin:0 0 12px;">
-                                A new PDF has been uploaded for your quotation.
-                            </p>
+                    <p style="margin:0 0 12px;">
+                        Your requested quotation is now available.
+                    </p>
 
-                            <div style="margin:16px 0; padding:14px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                                <p style="margin:0 0 8px;">
-                                    <strong>Quotation reference:</strong>
-                                    ${quotation.reference}
-                                </p>
+                    <div style="
+                        margin:16px 0;
+                        padding:14px 16px;
+                        background:#f8fafc;
+                        border:1px solid #e2e8f0;
+                        border-radius:10px;
+                    ">
+                        <p style="margin:0 0 8px;">
+                            <strong>Quotation reference:</strong>
+                            ${quotation.reference}
+                        </p>
 
-                                <p style="margin:0 0 8px;">
-                                    <strong>PDF version:</strong>
-                                    ${versionNumber}
-                                </p>
+                        <p style="margin:0 0 8px;">
+                            <strong>PDF version:</strong>
+                            ${versionNumber}
+                        </p>
 
-                                <p style="margin:0;">
-                                    <strong>Status:</strong>
-                                    Under Review
-                                </p>
-                            </div>
+                        <p style="margin:0;">
+                            <strong>Status:</strong>
+                            Under Review
+                        </p>
+                    </div>
 
-                            <p style="margin:0;">
-                                You may view the updated quotation and submit a revision request through your account.
-                            </p>
-                        `,
+                    <p style="margin:0;">
+                        You can view the quotation and submit a revision
+                        request through your account.
+                    </p>
+                `,
                         ctaText: 'View Quotation',
                         ctaUrl: quotationPageUrl
                     })
                 }
 
-                await transporter.sendMail(mailOptions)
-            } else {
-                console.error(
-                    `Unable to send quotation email: customer email was not found for ${quotation.reference}`
-                )
+                // Retry once when the first SMTP request fails
+                for (let attempt = 1; attempt <= 2; attempt += 1) {
+                    try {
+                        console.log(
+                            `Sending quotation email attempt ${attempt}:`,
+                            {
+                                quotationReference: quotation.reference,
+                                recipient: quotationUser.email,
+                                sender: senderEmail
+                            }
+                        )
+
+                        const emailResult =
+                            await transporter.sendMail(mailOptions)
+
+                        const acceptedRecipients =
+                            Array.isArray(emailResult?.accepted)
+                                ? emailResult.accepted
+                                : []
+
+                        const rejectedRecipients =
+                            Array.isArray(emailResult?.rejected)
+                                ? emailResult.rejected
+                                : []
+
+                        if (
+                            acceptedRecipients.length === 0 &&
+                            rejectedRecipients.length > 0
+                        ) {
+                            throw new Error(
+                                `Email rejected for: ${rejectedRecipients.join(', ')}`
+                            )
+                        }
+
+                        emailSent = true
+                        emailErrorMessage = null
+
+                        console.log(
+                            'Quotation email sent successfully:',
+                            {
+                                quotationReference: quotation.reference,
+                                recipient: quotationUser.email,
+                                accepted: acceptedRecipients,
+                                rejected: rejectedRecipients,
+                                messageId: emailResult?.messageId,
+                                response: emailResult?.response
+                            }
+                        )
+
+                        break
+                    } catch (emailError) {
+                        emailErrorMessage =
+                            emailError?.response ||
+                            emailError?.message ||
+                            'Unknown email sending error'
+
+                        console.error(
+                            `Quotation email attempt ${attempt} failed:`,
+                            {
+                                quotationReference: quotation.reference,
+                                recipient: quotationUser.email,
+                                message: emailError?.message,
+                                code: emailError?.code,
+                                command: emailError?.command,
+                                response: emailError?.response,
+                                responseCode: emailError?.responseCode
+                            }
+                        )
+
+                        if (attempt < 2) {
+                            await new Promise((resolve) =>
+                                setTimeout(resolve, 1000)
+                            )
+                        }
+                    }
+                }
             }
-        } catch (emailError) {
-            // The PDF remains uploaded even when the email fails.
-            console.error(
-                'Failed to send quotation update email:',
-                emailError
-            )
         }
 
-        logAction('QUOTATION_FORM_UPLOADED', req.userId, { "Quotation Form Uploaded": `Reference: ${quotation.reference}` });
+        logAction(
+            'QUOTATION_FORM_UPLOADED',
+            req.userId,
+            {
+                'Quotation Form Uploaded':
+                    `Reference: ${quotation.reference}`
+            }
+        )
 
-        res.status(200).json({ message: "PDF uploaded successfully", quotation: quotation });
+        return res.status(emailSent ? 200 : 207).json({
+            message: emailSent
+                ? 'PDF uploaded and quotation email sent successfully'
+                : 'PDF uploaded, but the quotation email was not sent',
+            quotation,
+            emailSent,
+            emailRecipient: quotationUser?.email || null,
+            emailError: emailSent ? null : emailErrorMessage
+        })
     } catch (error) {
-        res.status(500).json({ message: 'Error uploading PDF', error });
+        console.error('UPLOAD QUOTATION PDF ERROR:', error)
+
+        return res.status(500).json({
+            message: 'Error uploading PDF',
+            error: error.message
+        })
     }
-};
+}
 
 
 //upload travel details function

@@ -53,6 +53,7 @@
     color: #4e5b72;
     font-size: 14px;
     max-width: 520px;
+    text-align: justify;
 }
 
 .card-title {
@@ -261,9 +262,19 @@
 }
 
 .booking-summary-overview-text {
+    font-family: "Montserrat", sans-serif;
     margin: 0 0 16px;
     font-size: 13px;
     color: #6b7280;
+}
+
+.booking-summary-overview-text-note {
+    font-family: "Montserrat", sans-serif;
+    color: #e72323;
+    font-weight: 500;
+    text-align: justify;
+    font-style: italic;
+    font-size: 10px;
 }
 
 .booking-summary-content-grid {
@@ -322,6 +333,8 @@
 }
 
 .booking-section .solo-group-card {
+    position: relative;
+    overflow: hidden;
     border-radius: 20px;
     border: 1px solid #e7ecf7;
     box-shadow: 0 10px 20px rgba(31, 42, 68, 0.08);
@@ -332,6 +345,29 @@
     transform: translateY(-4px);
     border-color: #cdd9f5;
     box-shadow: 0 16px 30px rgba(31, 42, 68, 0.12);
+}
+
+.booking-section .solo-group-selected-tag {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 5;
+
+    padding: 5px 10px;
+
+    color: #305797;
+    background-color: #e8f0ff;
+    border: 1px solid #cfe0ff;
+    border-radius: 999px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+
+    pointer-events: none;
 }
 
 .booking-section .solo-group-card.is-selected {
@@ -478,8 +514,26 @@
 }
 
 .booking-section .upload-passport-notes {
-    border-radius: 12px;
-    border: 1px solid #f5d37a;
+    border: 1px dashed #cfd8ee;
+    background: #f7f9ff;
+}
+
+.upload-passport-notes strong {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2a44;
+    text-align: left;
+}
+
+
+.upload-passport-notes li {
+    font-family: "Montserrat", sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1f2a44;
+    text-align: left;
+    line-height: 1.5;
 }
 
 .upload-passport-label {
